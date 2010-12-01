@@ -1,0 +1,523 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<library>
+  <addon plugin="ares.dynworld.loader.factories">
+    <factory name="krystal" maxradius="0.6" imposterradius="0.4" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y=".85" z="0" /> <size x=".3" y="1.7" z=".3" /> </box>
+      <attr name="category" value="NPC" />
+    </factory>
+    <factory name="franky_frankie" maxradius="0.6" imposterradius="0.4" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y=".25" z="0" /> <size x=".3" y=".5" z=".3" /> </box>
+      <attr name="category" value="NPC" />
+    </factory>
+    <factory name="RBHouseBlock1" maxradius="1.0" imposterradius="-1" mass="2000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="8" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="RBHouseBlock2" maxradius="1.0" imposterradius="-1" mass="2000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="8" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="RBHousePart1" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="4" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="RBRoof" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y="0.5" z="0" /> <size x="8" y="1" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="HouseBlock1" maxradius="1.0" imposterradius="-1" mass="2000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="8" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="HouseBlock2" maxradius="1.0" imposterradius="-1" mass="2000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="8" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="HousePart1" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="4" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="HousePart2" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="4" y="4.5" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="HousePart3" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <size x="4" y="4.5" z="4" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="Roof" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y="0.5" z="0" /> <size x="8" y="1" z="8" /> </box>
+      <attr name="category" value="Buildings" />
+    </factory>
+    <factory name="Wall" maxradius="1.0" imposterradius="-1" mass="100">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Buildings" />
+    </factory>
+
+    <factory name="ConcreteBridge" maxradius="1.0" imposterradius="-1" mass="1000">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y="6" z="0" /> <size x="6" y="12" z="1.4" /> </box>
+      <box> <offset x="0" y="12.5" z="0" /> <size x="7" y="1" z="8" /> </box>
+      <box> <offset x="-3.75" y="13.25" z="0" /> <size x="1.5" y=".5" z="8" /> </box>
+      <box> <offset x="3.75" y="13.25" z="0" /> <size x="1.5" y=".5" z="8" /> </box>
+      <box> <offset x="0" y="13.15" z="0" /> <size x="6" y=".3" z="8" /> </box>
+      <attr name="category" value="Street" />
+    </factory>
+
+    <factory name="HouseBlock2Ruin" maxradius="1.0" imposterradius=".5" mass="100">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y="0.1" z="0" /> <size x="8" y="0.2" z="8" /> </box>
+      <box> <offset x="-2.5" y="4.4" z="0" /> <size x="3" y="0.2" z="8" /> </box>
+
+      <box> <offset x="-3.85" y="2.35" z="0" /> <size x=".3" y="4.3" z="8" /> </box>
+      <box> <offset x="-2.5" y="2.35" z="-3.85" /> <size x="3" y="4.3" z=".3" /> </box>
+      <box> <offset x="0.5" y="1.85" z="-3.85" /> <size x="3" y="3.3" z=".3" /> </box>
+      <box> <offset x="3.5" y="0.85" z="-3.85" /> <size x="1" y="1.5" z=".3" /> </box>
+
+      <box> <offset x="3.85" y="0.7" z="0" /> <size x=".3" y="1" z="8" /> </box>
+      <box> <offset x="-2.5" y="2.35" z="3.85" /> <size x="3" y="4.3" z="-.3" /> </box>
+      <box> <offset x="0.5" y="1.85" z="3.85" /> <size x="3" y="3.3" z="-.3" /> </box>
+      <box> <offset x="3" y="0.85" z="3.85" /> <size x="2" y="2" z="-.3" /> </box>
+      <attr name="category" value="Ruins" />
+    </factory>
+
+    <factory name="BrokenWall1" maxradius="0.8" imposterradius=".7" mass="100">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenWall2" maxradius="0.8" imposterradius=".7" mass="100">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenInnerWall1" maxradius="0.8" imposterradius=".6" mass="80">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenInnerWall2" maxradius="0.8" imposterradius=".6" mass="90">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenInnerWall3" maxradius="0.8" imposterradius=".6" mass="60">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenInnerWall4" maxradius="0.8" imposterradius=".6" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenOuterWall1" maxradius="0.8" imposterradius=".7" mass="70">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenOuterWall2" maxradius="0.8" imposterradius=".7" mass="70">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenOuterWall3" maxradius="0.8" imposterradius=".7" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenCeiling1" maxradius="0.8" imposterradius=".6" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenCeiling2" maxradius="0.8" imposterradius=".6" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="RoofPiece1" maxradius="0.4" imposterradius=".3" mass="10">
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="WallPiece1" maxradius="0.4" imposterradius=".3" mass="10">
+      <convexmesh />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="BrokenWallStone1" maxradius="0.4" imposterradius=".3" mass="5">
+      <box />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="Brick" maxradius="0.4" imposterradius=".3" mass="2">
+      <box />
+      <attr name="category" value="Ruins" />
+    </factory>
+    <factory name="RoadBroken1" maxradius="1.0" imposterradius=".5" mass="200">
+      <attr name="defaultstatic" value="true" />
+      <box> <offset x="0" y="0.15" z="0" /> <size x="4" y="0.3" z="4" /> </box>
+      <attr name="category" value="Ruins" />
+    </factory>
+
+    <factory name="Road" maxradius="1.0" imposterradius=".5" mass="200">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Road2" maxradius="1.0" imposterradius=".5" mass="300">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="RoadBend" maxradius="1.0" imposterradius=".5" mass="300">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="BRoad" maxradius="1.0" imposterradius=".5" mass="250">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="BRoad2" maxradius="1.0" imposterradius=".5" mass="360">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="BRoadBend" maxradius="1.0" imposterradius=".5" mass="360">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="ConcreteFence" maxradius="1.0" imposterradius=".5" mass="40">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="ConcreteFenceS" maxradius="1.0" imposterradius=".5" mass="20">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="ConcreteFenceP" maxradius="1.0" imposterradius=".5" mass="10">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pavement4" maxradius="1.0" imposterradius=".5" mass="10">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pavement2.5" maxradius="1.0" imposterradius=".5" mass="7">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pavement2" maxradius="1.0" imposterradius=".5" mass="5">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pavement1.5" maxradius="1.0" imposterradius=".5" mass="4">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pavement4NoB" maxradius="1.0" imposterradius=".5" mass="10">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pavement1.5NoB" maxradius="1.0" imposterradius=".5" mass="4">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="PavementBend" maxradius="1.0" imposterradius=".5" mass="6">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="PavementRoadBend" maxradius="1.0" imposterradius=".5" mass="10">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="Pool" maxradius="0.4" imposterradius=".3" mass="6">
+      <attr name="defaultstatic" value="true" />
+      <cylinder />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="PoolDown" maxradius="0.5" imposterradius=".4" mass="6">
+      <attr name="defaultstatic" value="true" />
+      <cylinder />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="CPool" maxradius="0.3" imposterradius=".2" mass="3">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+    <factory name="CPoolDown" maxradius="0.4" imposterradius=".3" mass="2">
+      <attr name="defaultstatic" value="true" />
+      <box />
+      <attr name="category" value="Street" />
+    </factory>
+
+    <factory name="Cup" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Kitchen" />
+    </factory>
+    <factory name="Plate" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Kitchen" />
+    </factory>
+    <factory name="KitchenKnife" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Kitchen" />
+    </factory>
+
+    <factory name="Steak" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Food" />
+    </factory>
+    <factory name="Apple" maxradius="0.4" imposterradius=".3" mass="1">
+      <sphere />
+      <attr name="category" value="Food" />
+    </factory>
+    <factory name="Milk" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Food" />
+    </factory>
+    <factory name="Can" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Food" />
+    </factory>
+
+    <factory name="Crate" maxradius="0.5" imposterradius=".3" mass="6">
+      <box />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Barrel" maxradius="0.5" imposterradius=".3" mass="3">
+      <cylinder />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Money" maxradius="0.4" imposterradius=".2" mass="1">
+      <box />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Ladder" maxradius="0.5" imposterradius=".4" mass="3">
+      <box />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Dustbin" maxradius="0.5" imposterradius=".3" mass="2">
+      <cylinder />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Door" maxradius="0.5" imposterradius=".4" mass="2">
+      <box />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Plank" maxradius="0.4" imposterradius=".3" mass="1">
+      <box />
+      <attr name="category" value="Objects" />
+    </factory>
+
+    <factory name="BareTree" maxradius="0.7" imposterradius=".5" mass="10">
+      <cylinder radius=".5" length="6">
+	<offset y="3" />
+      </cylinder>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Tree2" maxradius="0.7" imposterradius=".5" mass="10">
+      <cylinder radius=".5" length="6">
+	<offset y="3" />
+      </cylinder>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Grass02" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Grass03" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Grass04" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Grass05" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Reeds01" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Wheat03" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Wheat04" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+    <factory name="Wheat05" maxradius="0.5" imposterradius=".4" mass="1">
+      <box>  <offset y=".1" /> <size x=".2" y=".2" z=".2" /> </box>
+      <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Nature" />
+    </factory>
+
+    <factory name="Box" maxradius="0.5" imposterradius="-1" mass="4">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="SmallBox" maxradius="0.5" imposterradius="-1" mass="3">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="TinyBox" maxradius="0.5" imposterradius="-1" mass="2">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="MicroBox" maxradius="0.5" imposterradius="-1" mass="1">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="Sphere" maxradius="0.5" imposterradius="-1" mass="6">
+      <sphere />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="SmallSphere" maxradius="0.5" imposterradius="-1" mass="3">
+      <sphere />
+      <attr name="category" value="Varia" />
+    </factory>
+
+    <factory name="Rock1" maxradius="0.5" imposterradius=".3" mass="8">
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="Rock2" maxradius="0.5" imposterradius=".3" mass="5">
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="Rock3" maxradius="0.5" imposterradius=".3" mass="5">
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="RockMedium1" maxradius="0.6" imposterradius=".4" mass="25">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="RockLarge1" maxradius="0.7" imposterradius=".5" mass="50">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="RockLarge2" maxradius="0.7" imposterradius=".5" mass="40">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="RockLarge3" maxradius="0.7" imposterradius=".5" mass="45">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="RockMossy1" maxradius="0.7" imposterradius=".5" mass="40">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="RockHuge1" maxradius="0.9" imposterradius=".7" mass="100">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="DirtHeap" maxradius="0.7" imposterradius=".6" mass="45">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="DirtHeap2" maxradius="0.7" imposterradius=".6" mass="45">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+    <factory name="Rubbish" maxradius="0.6" imposterradius=".5" mass="45">
+      <attr name="defaultstatic" value="true" />
+      <convexmesh />
+      <attr name="category" value="Rubble" />
+    </factory>
+
+    <factory name="Rack" maxradius="0.5" imposterradius=".4" mass="5">
+      <attr name="category" value="Furniture" />
+      <box> <offset x="0" y="0.05" z="0" /> <size x="2" y="0.1" z="0.6" /> </box>
+      <box> <offset x="0" y="0.55" z="0" /> <size x="2" y="0.1" z="0.6" /> </box>
+      <box> <offset x="0" y="1.05" z="0" /> <size x="2" y="0.1" z="0.6" /> </box>
+      <box> <offset x="0" y="1.55" z="0" /> <size x="2" y="0.1" z="0.6" /> </box>
+      <box> <offset x="0" y="2.05" z="0" /> <size x="2" y="0.1" z="0.6" /> </box>
+      <box> <offset x="-1.05" y="1.05" z="0" /> <size x="0.1" y="2.1" z="0.6" /> </box>
+      <box> <offset x="1.05" y="1.05" z="0" /> <size x="0.1" y="2.1" z="0.6" /> </box>
+    </factory>
+
+    <factory name="WoodenBox" maxradius="0.5" imposterradius=".4" mass="1">
+      <attr name="category" value="Furniture" />
+      <box> <offset x="0" y="0.015" z="0" /> <size x=".4" y="0.03" z="0.4" /> </box>
+      <box> <offset x="0" y="0.1" z="-.185" /> <size x=".4" y="0.2" z="0.03" /> </box>
+      <box> <offset x="0" y="0.1" z=".185" /> <size x=".4" y="0.2" z="0.03" /> </box>
+      <box> <offset x="-.185" y="0.1" z="0" /> <size x=".03" y="0.2" z="0.4" /> </box>
+      <box> <offset x=".185" y="0.1" z="0" /> <size x=".03" y="0.2" z="0.4" /> </box>
+    </factory>
+
+    <factory name="Table" maxradius="0.5" imposterradius=".4" mass="4">
+      <attr name="category" value="Furniture" />
+      <box> <offset x="0" y="0.95" z="0" /> <size x="2" y="0.1" z="1.2" /> </box>
+      <box> <offset x="-0.91" y="0.475" z="-0.51" /> <size x=".08" y="0.9" z=".08" /> </box>
+      <box> <offset x="0.91" y="0.475" z="-0.51" /> <size x=".08" y="0.9" z=".08" /> </box>
+      <box> <offset x="-0.91" y="0.475" z="0.51" /> <size x=".08" y="0.9" z=".08" /> </box>
+      <box> <offset x="0.91" y="0.475" z="0.51" /> <size x=".08" y="0.9" z=".08" /> </box>
+    </factory>
+
+    <factory name="Chair" maxradius="0.5" imposterradius=".4" mass="2">
+      <attr name="category" value="Furniture" />
+      <box> <offset x="-0.05" y="0.25" z="0" /> <size x="0.5" y="0.5" z="0.5" /> </box>
+      <box> <offset x="0.28" y="1.0" z="0" /> <size x="0.05" y="0.3" z="0.5" /> </box>
+      <box> <offset x="0.2" y="0.7" z="0" /> <size x="0.05" y="0.3" z="0.5" /> </box>
+    </factory>
+
+    <curve name="CurvedStreet" width="6" sideheight=".2">
+      <attr name="category" value="Street" />
+      <attr name="maxradius" value="1.0" />
+      <attr name="imposterradius" value="-1" />
+      <attr name="mass" value="250" />
+      <material name="road_texture.jpg" />
+      <point pos="0 0 0" front="0 0 1" up="0 1 0" />
+      <point pos="0 0 5" front="0 0 1" up="0 1 0" />
+    </curve>
+  </addon>
+</library>

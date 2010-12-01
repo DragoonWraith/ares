@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- curvemesh.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>utility.curvemesh</name>
+        <implementation>CurvedMeshCreator</implementation>
+        <description>Curved Mesh Plugin</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

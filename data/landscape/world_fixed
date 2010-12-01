@@ -1,0 +1,121 @@
+<?xml ?>
+<world>
+    <plugins>
+        <plugin name="terrainFact">crystalspace.mesh.loader.factory.terrain2</plugin>
+        <plugin name="terrain">crystalspace.mesh.loader.terrain2</plugin>
+    </plugins>
+    <textures>
+      <texture name="grass-texture-2.jpg">
+        <file>/this/data/textures/grass-texture-2.jpg</file>
+      </texture>
+    </textures>
+    <shaders>
+        <shader> <file>/shader/terrain_fixed_base.xml</file> </shader>
+        <shader> <file>/shader/terrain_fixed_splatting.xml</file> </shader>
+	<!--
+	<shader> <file>/shader/terrain/splat.xml</file> </shader>
+        <shader> <file>/shader/terrain/terrain.xml</file> </shader>
+	-->
+    </shaders>
+    <materials>
+        <material name="Grass">
+            <texture>grass-texture-2.jpg</texture>
+            <shadervar name="texture scale" type="vector2">32,32</shadervar>
+            <shader type="terrain splat">terrain_fixed_splatting</shader>
+        </material>
+        <material name="Dirt">
+            <texture>dirt_01.jpg</texture>
+            <shadervar name="texture scale" type="vector2">32,32</shadervar>
+            <shader type="terrain splat">terrain_fixed_splatting</shader>
+            <shadervar type="texture" name="tex normal">dirt_01_n.png</shadervar>
+            <shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+        </material>
+        <material name="Rock">
+            <texture>rocky_surface.jpg</texture>
+            <shadervar name="texture scale" type="vector2">32,32</shadervar>
+            <shader type="terrain splat">terrain_fixed_splatting</shader>
+            <shadervar type="texture" name="tex normal">rocky_surface_n.png</shadervar>
+            <shadervar type="vector4" name="specular">0.4,0.4,0.4,0.4</shadervar>
+        </material>
+        <material name="RealRock">
+            <texture>RealRock56BoH.jpg</texture>
+            <shadervar name="texture scale" type="vector2">32,32</shadervar>
+            <shader type="terrain splat">terrain_fixed_splatting</shader>
+            <shadervar type="texture" name="tex normal">RealRock56BoH_n.png</shadervar>
+            <shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+        </material>
+    </materials>
+    <meshfact name="TerrainFact">
+        <plugin>terrainFact</plugin>
+        <params>
+            <renderer>crystalspace.mesh.object.terrain2.bruteblockrenderer</renderer>
+            <collider>crystalspace.mesh.object.terrain2.collider</collider>
+            <feeder>crystalspace.mesh.object.terrain2.simpledatafeeder</feeder>
+            <maxloadedcells>20</maxloadedcells>
+            <cells>
+                <celldefault>
+                    <gridsize width="65" height="65" />
+                    <materialmapsize width="65" height="65" />
+                    <size x="256" y="8" z="256" />
+                </celldefault>
+                <cell>
+                    <name>0</name>
+                    <position x="-128" y="-128" />
+                    <basematerial>Dirt</basematerial>
+                    <feederproperties>
+                      <param name="heightmap source">/this/data/landscape/heightmap.png</param>
+                      <param name="materialmap source">/this/data/landscape/materialmap.png</param>
+                    </feederproperties>
+                </cell>
+            </cells>
+        </params>
+    </meshfact>
+
+    <meshfact name='River'>
+        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+        <ztest/>
+        <params>
+            <material>water512.jpg</material>
+            <v x="-128" y="2.2" z="-128" u="0" v="0" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <v x="128" y="2.2" z="-128" u="100" v="0" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <v x="-128" y="2.2" z="128" u="0" v="100" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <v x="128" y="2.2" z="128" u="100" v="100" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <t v1="2" v2="1" v3="0" />
+            <t v1="3" v2="1" v3="2" />
+            <manualcolors/>
+        </params>
+    </meshfact>
+
+    <sector name="room">
+      <!--
+        <meshobj name="River">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <ztest/>
+            <priority>transp</priority>
+            <params> <factory>River</factory> </params>
+        </meshobj>
+        -->
+        <meshobj name="Terrain">
+            <plugin>terrain</plugin>
+            <params>
+                <factory>TerrainFact</factory>
+                <materialpalette>
+                    <material>Dirt</material>
+                    <material>Grass</material>
+                    <material>Rock</material>
+                    <material>RealRock</material>
+                </materialpalette>
+                <cells>
+                    <cell>
+                        <name>0</name>
+                        <renderproperties>
+                            <shadervar name="texture lod distance" type="vector3">200.000000,200.000000,200.000000</shadervar>
+                        </renderproperties>
+                    </cell>
+                </cells>
+            </params>
+            <priority>wall</priority>
+	    <staticlit />
+        </meshobj>
+    </sector>
+</world>

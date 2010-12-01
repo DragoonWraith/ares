@@ -1,0 +1,12 @@
+SubDir TOP ares ;
+
+Description ares : "The Ares Project Editor" ;
+Application ares :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs ares : CRYSTAL ;
+ExternalLibs ares : CEGUI ;
+if $(CEL.DESIRED) = yes && $(CEL.AVAILABLE) = yes
+{
+  ExternalLibs ares : CEL ;
+}
+

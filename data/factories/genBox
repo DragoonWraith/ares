@@ -1,0 +1,411 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<library>
+
+    <shaders>
+	<shader> <file>/shader/reflect/water_plane.xml</file> </shader>
+	<shader> <file>/shader/lighting/lighting_imposter.xml</file> </shader>
+    </shaders>
+
+    <library path="/pt_plants" file="library" />
+    <library path="/instancedFactories" file="library" />
+
+    <textures>
+
+        <texture name="glowmap.png">
+		<file>/this/data/textures/glowmap.png</file>
+        </texture>
+
+        <texture name="rocky_surface.jpg">
+		<file>/this/data/textures/rocky_surface.jpg</file>
+        </texture>
+        <texture name="rocky_surface_n.png">
+		<file>/this/data/textures/rocky_surface_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="RealRock56BoH.jpg">
+		<file>/this/data/textures/RealRock56BoH.jpg</file>
+        </texture>
+        <texture name="RealRock56BoH_n.png">
+		<file>/this/data/textures/RealRock56BoH_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="red_brick.jpg">
+		<file>/this/data/textures/red_brick.jpg</file>
+        </texture>
+        <texture name="red_brick_n.png">
+		<file>/this/data/textures/red_brick_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="tree_bark.jpg">
+		<file>/this/data/textures/tree_bark.jpg</file>
+        </texture>
+        <texture name="tree_bark_n.png">
+		<file>/this/data/textures/tree_bark_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="rooftile.jpg">
+		<file>/this/data/textures/rooftile.jpg</file>
+        </texture>
+        <texture name="rooftile_n.png">
+		<file>/this/data/textures/rooftile_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="plaster.png">
+		<file>/this/data/textures/plaster.png</file>
+        </texture>
+
+        <texture name="apple.jpg">
+		<file>/this/data/textures/apple.jpg</file>
+        </texture>
+
+        <texture name="steak.jpg">
+		<file>/this/data/textures/steak.jpg</file>
+        </texture>
+
+        <texture name="concrete-rock-texture.jpg">
+		<file>/this/data/textures/concrete-rock-texture.jpg</file>
+        </texture>
+        <texture name="concrete-rock-texture_n.png">
+		<file>/this/data/textures/concrete-rock-texture_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="dirt_01.jpg">
+		<file>/this/data/textures/dirt_01.jpg</file>
+        </texture>
+        <texture name="dirt_01_n.png">
+		<file>/this/data/textures/dirt_01_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="oldmetal.jpg">
+		<file>/this/data/textures/oldmetal.jpg</file>
+        </texture>
+        <texture name="oldmetal_grey.jpg">
+		<file>/this/data/textures/oldmetal_grey.jpg</file>
+        </texture>
+        <texture name="oldmetalDOT3.png">
+		<file>/this/data/textures/oldmetalDOT3.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="bricks.jpg">
+		<file>/this/data/textures/bricks.jpg</file>
+        </texture>
+        <texture name="bricksDOT3.png">
+		<file>/this/data/textures/bricksDOT3.png</file>
+		<class>normalmap</class>
+        </texture>
+        <texture name="bricks_n.png">
+		<file>/this/data/textures/bricks_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="parket.jpg">
+		<file>/this/data/textures/parket.jpg</file>
+        </texture>
+        <texture name="parketDOT3.png">
+		<file>/this/data/textures/parketDOT3.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="stone2.jpg">
+		<file>/this/data/textures/stone2.jpg</file>
+        </texture>
+        <texture name="stone2DOT3.png">
+		<file>/this/data/textures/stone2DOT3.png</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="wood_barrel_d.jpg">
+		<file>/this/data/textures/wood_barrel_d.jpg</file>
+        </texture>
+        <texture name="wood_barrel_n.png">
+		<file>/this/data/textures/wood_barrel_n.png</file>
+		<class>normalmap</class>
+        </texture>
+        <texture name="wood_barrel_h.jpg">
+		<file>/this/data/textures/wood_barrel_h.jpg</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="concrete_floor4_3.jpg">
+		<file>/this/data/textures/concrete_floor4_3.jpg</file>
+        </texture>
+        <texture name="concrete_floor4_3_n.jpg">
+		<file>/this/data/textures/concrete_floor4_3_n.jpg</file>
+		<class>normalmap</class>
+        </texture>
+        <texture name="concrete_floor4_3_h.jpg">
+		<file>/this/data/textures/concrete_floor4_3_h.jpg</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="castle-brick3_d.jpg">
+		<file>/this/data/textures/castle-brick3_d.jpg</file>
+        </texture>
+        <texture name="castle-brick1_n.jpg">
+		<file>/this/data/textures/castle-brick1_n.jpg</file>
+		<class>normalmap</class>
+        </texture>
+        <texture name="castle-brick1_h.jpg">
+		<file>/this/data/textures/castle-brick1_h.jpg</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="wall-stone2_2_d.jpg">
+		<file>/this/data/textures/wall-stone2_2_d.jpg</file>
+        </texture>
+        <texture name="wall-stone2_n.jpg">
+		<file>/this/data/textures/wall-stone2_n.jpg</file>
+		<class>normalmap</class>
+        </texture>
+        <texture name="wall-stone2_h.jpg">
+		<file>/this/data/textures/wall-stone2_h.jpg</file>
+		<class>normalmap</class>
+        </texture>
+
+        <texture name="rock_2_4w.jpg">
+		<file>/this/data/textures/rock_2_4w.jpg</file>
+        </texture>
+        <texture name="rock_2_4w_n.png">
+		<file>/this/data/textures/rock_2_4w_n.png</file>
+		<class>normalmap</class>
+        </texture>
+
+	<texture name="water_n">
+	  <file>/this/data/textures/generic_water_001_anim.mng</file>
+	</texture>
+
+	<!--
+        <texture name="skyBox">
+            <type>crystalspace.texture.loader.cubemap</type>
+            <params>
+	      <north>/this/data/textures/swiss1_f.jpg</north>
+	      <south>/this/data/textures/swiss1_b.jpg</south>
+	      <east>/this/data/textures/swiss1_r.jpg</east>
+	      <west>/this/data/textures/swiss1_l.jpg</west>
+	      <top>/this/data/textures/swiss1_u.jpg</top>
+	      <bottom>/this/data/textures/swiss1_d.jpg</bottom>
+            </params>
+        </texture>
+	-->
+</textures>
+<materials>
+    <material name="water512.jpg">
+      <shader type="depthwrite">*null</shader>
+      <shader type="base">reflect_water_plane</shader>
+      <shader type="diffuse">reflect_water_plane</shader>
+      <shadervar type="texture" name="tex normal">water_n</shadervar>
+      <!--<shadervar type="texture" name="tex environment">skyBox</shadervar>-->
+      <shadervar type="vector4" name="water fog color">0,0.1,.15,1</shadervar>
+      <shadervar type="float" name="water fog density">3</shadervar>
+      <shadervar type="vector4" name="specular">1,1,1,1</shadervar>
+      <shadervar name="water perturb scale" type="vector4">0.9,0.9,0,0</shadervar>
+    </material>
+
+	<material name="apple.jpg">
+		<texture>apple.jpg</texture>
+	</material>
+	<material name="steak.jpg">
+		<texture>steak.jpg</texture>
+	</material>
+
+	<material name="rooftile.jpg">
+		<texture>rooftile.jpg</texture>
+		<shadervar type="texture" name="tex normal">rooftile_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.7,0.7,0.7,0.7</shadervar>
+	</material>
+
+	<material name="red_brick.jpg">
+		<texture>red_brick.jpg</texture>
+		<shadervar type="texture" name="tex normal">red_brick_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.5,0.5,0.5,0.5</shadervar>
+		<!--<shadervar type="texture" name="tex glow">glowmap.png</shadervar>-->
+	</material>
+
+	<material name="RealRock56BoH.jpg">
+		<texture>RealRock56BoH.jpg</texture>
+		<shadervar type="texture" name="tex normal">RealRock56BoH_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+
+	<material name="rocky_surface.jpg">
+		<texture>rocky_surface.jpg</texture>
+		<shadervar type="texture" name="tex normal">rocky_surface_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.4,0.4,0.4,0.4</shadervar>
+	</material>
+
+	<material name="tree_bark.jpg">
+		<texture>tree_bark.jpg</texture>
+		<shadervar type="texture" name="tex normal">tree_bark_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+
+	<material name="dirt_01.jpg">
+		<texture>dirt_01.jpg</texture>
+		<shadervar type="texture" name="tex normal">dirt_01_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+
+	<material name="plaster.png">
+		<texture>plaster.png</texture>
+		<shadervar type="texture" name="tex normal">rock_2_4w_n.png</shadervar>
+	</material>
+
+	<material name="bricks.jpg">
+		<texture>bricks.jpg</texture>
+		<shadervar type="texture" name="tex normal">bricks_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+	<material name="concrete-rock-texture">
+		<texture>concrete-rock-texture.jpg</texture>
+		<shadervar type="texture" name="tex normal">concrete-rock-texture_n.png</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+	<material name="oldmetal.jpg">
+		<texture>oldmetal.jpg</texture>
+		<shadervar type="texture" name="tex normal">oldmetalDOT3.png</shadervar>
+	</material>
+	<material name="oldmetal_grey.jpg">
+		<texture>oldmetal_grey.jpg</texture>
+		<shadervar type="texture" name="tex normal">oldmetalDOT3.png</shadervar>
+	</material>
+	<material name="stone2">
+		<texture>stone2.jpg</texture>
+		<shadervar type="texture" name="tex normal">stone2DOT3.png</shadervar>
+	</material>
+	<material name="parket.jpg">
+		<texture>parket.jpg</texture>
+		<shadervar type="texture" name="tex normal">parketDOT3.png</shadervar>
+	</material>
+	<material name="rock_2_4w.jpg">
+		<texture>rock_2_4w.jpg</texture>
+		<shadervar type="texture" name="tex normal">rock_2_4w_n.png</shadervar>
+	</material>
+	<material name="wood_barrel_d.jpg">
+		<texture>wood_barrel_d.jpg</texture>
+		<shadervar type="texture" name="tex normal">wood_barrel_n.png</shadervar>
+		<shadervar type="texture" name="tex height">wood_barrel_h.jpg</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+	<material name="concrete_floor">
+		<texture>concrete_floor4_3.jpg</texture>
+		<shadervar type="texture" name="tex normal">concrete_floor4_3_n.jpg</shadervar>
+		<shadervar type="texture" name="tex height">concrete_floor4_3_h.jpg</shadervar>
+		<shadervar type="vector4" name="specular">0.4,0.4,0.4,0.4</shadervar>
+	</material>
+	<material name="castle-brick3_d.jpg">
+		<texture>castle-brick3_d.jpg</texture>
+		<shadervar type="texture" name="tex normal">castle-brick1_n.jpg</shadervar>
+		<shadervar type="texture" name="tex height">castle-brick1_h.jpg</shadervar>
+		<shadervar type="vector4" name="specular">0.3,0.3,0.3,0.3</shadervar>
+	</material>
+	<material name="wall-stone">
+		<texture>wall-stone2_2_d.jpg</texture>
+		<shadervar type="texture" name="tex normal">wall-stone2_n.jpg</shadervar>
+		<shadervar type="texture" name="tex height">wall-stone2_h.jpg</shadervar>
+		<shadervar type="vector4" name="specular">0.1,0.1,0.1,0.1</shadervar>
+	</material>
+</materials>
+
+<meshfact name='Box'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>oldmetal.jpg</material>
+<box>
+  <min x="-.5" y="0" z="-.5" />
+  <max x=".5" y="0.6" z=".5" />
+</box>
+    </params>
+  </meshfact>
+
+<meshfact name='SmallBox'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>oldmetal.jpg</material>
+<box>
+  <min x="-.3" y="0" z="-.3" />
+  <max x=".3" y="0.3" z=".3" />
+</box>
+    </params>
+  </meshfact>
+
+<meshfact name='TinyBox'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>oldmetal.jpg</material>
+<box>
+  <min x="-.15" y="0" z="-.15" />
+  <max x=".15" y="0.3" z=".15" />
+</box>
+    </params>
+  </meshfact>
+
+<meshfact name='MicroBox'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>oldmetal.jpg</material>
+<box>
+  <min x="-.07" y="0" z="-.07" />
+  <max x=".07" y="0.14" z=".07" />
+</box>
+    </params>
+  </meshfact>
+
+<meshfact name='Wall'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>castle-brick3_d.jpg</material>
+<box>
+  <min x="-1" y="0" z="-.2" />
+  <max x="1" y="2" z=".2" />
+</box>
+    </params>
+  </meshfact>
+
+<meshfact name='Sphere'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>water512.jpg</material>
+<sphere radius=".5" rimvertices="16">
+  <center x="0" y="0" z="0" />
+</sphere>
+    </params>
+  </meshfact>
+
+<meshfact name='SmallSphere'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>stone2</material>
+<sphere radius=".25" rimvertices="10">
+  <center x="0" y="0" z="0" />
+</sphere>
+    </params>
+  </meshfact>
+
+<meshfact name='Crate'>
+<plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+<zuse/>
+<params>
+<material>wood_barrel_d.jpg</material>
+<box>
+  <min x="-.5" y="0" z="-.5" />
+  <max x=".5" y="0.6" z=".5" />
+</box>
+    </params>
+  </meshfact>
+
+</library>

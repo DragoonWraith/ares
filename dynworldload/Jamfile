@@ -1,0 +1,7 @@
+SubDir TOP dynworldload ;
+
+Description dynworldload : "Dynamic World Loader Plugin" ;
+Plugin dynworldload :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs dynworldload : CRYSTAL ;
+

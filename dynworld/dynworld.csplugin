@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- dynworld.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>utility.dynamicworld</name>
+        <implementation>DynamicWorld</implementation>
+        <description>Dynamic World Plugin</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

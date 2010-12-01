@@ -1,0 +1,263 @@
+<?xml ?>
+<world>
+    <plugins>
+        <plugin name="terrainFact">crystalspace.mesh.loader.factory.terrain2</plugin>
+        <plugin name="terrain">crystalspace.mesh.loader.terrain2</plugin>
+    </plugins>
+
+    <library path="/river" file="library" />
+
+    <textures>
+        <texture name="grass-texture-2.jpg">
+	    <file>/this/data/textures/grass-texture-2.jpg</file>
+	</texture>
+        <texture name="cobgrass.png">
+	    <file>/data/terrained/cobgrass.png</file>
+	</texture>
+	<texture name="cliff34ug6.jpg">
+	    <file>/data/terrained/cliff34ug6.jpg</file>
+	</texture>
+
+	<texture name="perlin0.png">
+	  <file>/this/data/textures/perlin0.png</file>
+	</texture>
+	<texture name="perlin3.png">
+	  <file>/this/data/textures/perlin3.png</file>
+	</texture>
+	<texture name="perlin1.png">
+	  <file>/this/data/textures/perlin1.png</file>
+	</texture>
+	<texture name="perlin2.png">
+	  <file>/this/data/textures/perlin2.png</file>
+	</texture>
+
+    	<texture name="nightsky">
+	  <file>/this/data/textures/stars.png</file>
+	    <class>nocompress</class>
+	</texture>
+
+    </textures>
+
+    <shaders>
+        <shader> <file>/shader/terrain/terrain.xml</file> </shader>
+        <shader> <file>/shader/sky/basic_cubemap.xml</file> </shader>
+        <shader> <file>/shader/lighting/fullbright.xml</file> </shader>
+	<shader> <file>/this/data/shader/sky.xml</file> </shader>
+	<shader> <file>/this/data/shader/clouds2.xml</file> </shader>
+    </shaders>
+
+    <materials>
+	<material name="sky">
+	  <shader type="depthwrite">*null</shader>
+	    <shader type="standard">sky</shader>
+	    <shadervar type="texture" name="tex night">nightsky</shadervar>
+
+	    <!--<shadervar name="sun direction" type="vector3">0.994484, 0.033993, 0.099223</shadervar>-->
+	</material>
+	<material name="clouds">
+	    <texture>perlin0.png</texture>
+	    <shader type="depthwrite">*null</shader>
+	    <shader type="standard">clouds2</shader>
+	    <shadervar type="texture" name="noise2">perlin2.png</shadervar>
+	    <shadervar type="texture" name="noise3">perlin3.png</shadervar>
+	    <shadervar type="texture" name="noise1">perlin1.png</shadervar>
+	    <shadervar type="vector3" name="cloudcol">0.79,0.79,0.79</shadervar>
+	    <shadervar type="vector2" name="mnvars">1.79999995232,0.20000000298</shadervar>
+	    <shadervar type="vector2" name="specular">0.0,0.3800000011921</shadervar>
+	    <shadervar type="vector2" name="control2">0.20000000298,0.699999988079</shadervar>
+	    <shadervar type="vector2" name="control3">0.20000000298,0.20000000298</shadervar>
+	    <shadervar type="vector2" name="control1">0.20000000298,0.20000000298</shadervar>
+	    <shadervar type="vector3" name="skycol">0.85,0.85,0.85</shadervar>
+	    <shadervar type="vector2" name="windvec">0.20000000298,0.300000011921</shadervar>
+	    <!--<shadervar type="float" name="timeOfDay">0</shadervar>-->
+</material>
+
+	<!--
+        <material name="sky">
+            <shader type="base">sky_basic_cubemap</shader>
+            <shader type="diffuse">sky_basic_cubemap</shader>
+            <shadervar type="texture" name="tex sky">sky</shadervar>
+        </material>
+	-->
+
+        <material name="terrain">
+	      <texture>no</texture>
+	      <shader type="diffuse">terrain</shader>
+              <shader type="ambient">terrain</shader>
+
+	      <shadervar type="texture" name="tex material1">grass-texture-2.jpg</shadervar>
+	      <shadervar type="texture" name="tex material2">rocky_surface.jpg</shadervar>
+	      <shadervar type="texture" name="tex material3">dirt_01.jpg</shadervar>
+
+	      <shadervar type="vector2" name="material1 texscale">15.0,15.0</shadervar>
+	      <shadervar type="vector2" name="material2 texscale">15.0,15.0</shadervar>
+	      <shadervar type="vector2" name="material3 texscale">15.0,15.0</shadervar>
+
+	      <!-- minheight,maxheight,minslope,maxslope -->
+	      <shadervar type="vector4" name="material1 attributes">-10.0,5,-0.001,0.3</shadervar>
+	      <shadervar type="vector4" name="material2 attributes">2.0,17.0,0.2,1.0</shadervar>    
+	      <shadervar type="vector4" name="material3 attributes">-10.0,9.0,0.1,0.4</shadervar>
+       </material>
+    </materials>
+
+    <addon>
+        <plugin>crystalspace.terraformer.simple.loader</plugin>
+        <params>
+            <name>densityMap</name>
+	    <floatmap type="densitymap" scale="1" offset="0">
+	        /this/data/landscape/densitymap.png
+	    </floatmap>
+            <scale x="256" y="1" z="256" />
+        </params>
+    </addon>
+
+    <meshfact name="TerrainFact">
+        <plugin>terrainFact</plugin>
+        <params>
+            <renderer>crystalspace.mesh.object.terrain2.bruteblockrenderer</renderer>
+            <collider>crystalspace.mesh.object.terrain2.collider</collider>
+            <feeder>crystalspace.mesh.object.terrain2.simpledatafeeder</feeder>
+            <maxloadedcells>20</maxloadedcells>
+            <cells>
+                <celldefault>
+                    <gridsize width="65" height="65" />
+                    <materialmapsize width="65" height="65" />
+                    <size x="256" y="16" z="256" />
+                </celldefault>
+                <cell>
+                    <name>0</name>
+                    <position x="-128" y="-128" />
+                    <basematerial>terrain</basematerial>
+                    <feederproperties>
+                      <param name="heightmap source">/this/data/landscape/heightmap.png</param>
+                      <param name="materialmap source">/this/data/landscape/materialmap.png</param>
+                    </feederproperties>
+                </cell>
+            </cells>
+        </params>
+    </meshfact>
+
+    <!--
+    <meshfact name="sky">
+        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+        <nolighting />
+        <params>
+            <sphere rimvertices="6" reversed="true">
+                <radius x="1000" y="1000" z="1000" />
+            </sphere>
+	    <material>sky</material>
+        </params>
+    </meshfact>
+    -->
+
+    <meshfact name="skydome">
+        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+	<params>
+	    <material>sky</material>
+	    <lighting>no</lighting>
+	    <sphere rimvertices='16' reversed="true">
+		<radius y='2500' x='2500' z='2500'/>
+		<center y='0' x='0' z='0'/>
+	    </sphere>
+	    <color red="1" green="1" blue="1" />
+	</params>
+	<trimesh> <id>shadows</id> </trimesh>
+	<zuse />
+	<noshadows />
+	<nolighting />
+    </meshfact>
+
+    <meshfact name="clouddome">
+        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+	<params>
+	    <material>clouds</material>
+	    <lighting>no</lighting>
+	    <sphere rimvertices='16' reversed="true" toponly="true">
+		<radius y='200' x='2000' z='2000'/>
+		<center y='5' x='0' z='0'/>
+	    </sphere>
+	    <color red="1" green="1" blue="1" />
+	</params>
+	<trimesh> <id>shadows</id> </trimesh>
+	<zuse />
+	<noshadows />
+	<nolighting />
+    </meshfact>
+
+    <!--
+    <meshfact name='River'>
+        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+        <ztest/>
+        <params>
+            <material>water512.jpg</material>
+            <v x="-128" y="3" z="-128" u="0" v="0" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <v x="128" y="3" z="-128" u="100" v="0" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <v x="-128" y="3" z="128" u="0" v="100" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <v x="128" y="3" z="128" u="100" v="100" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
+            <t v1="2" v2="1" v3="0" />
+            <t v1="3" v2="1" v3="2" />
+            <manualcolors/>
+        </params>
+    </meshfact>
+    -->
+
+    <sector name="room">
+      <cullerp plugin="crystalspace.culling.frustvis" />
+        <meshobj name="clouds">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <priority>transp</priority>
+            <params> <factory>clouddome</factory> </params>
+        </meshobj>
+        <meshobj name="sky">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <priority>object</priority>
+            <params> <factory>skydome</factory> </params>
+	</meshobj>
+	<!--
+        <meshobj name="SkyBox">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+	    <params>
+	      <factory>sky</factory>
+	      <material>sky</material>
+	    </params>
+	    <camera/>
+            <priority>sky</priority>
+	    <move>
+	      <v x="0" y="0" z="0" />
+	    </move>
+	</meshobj>
+	-->
+        <meshobj name="River">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <ztest/>
+            <priority>transp</priority>
+            <params> <factory>River</factory> </params>
+	    <move>
+	      <v x="0" y="3" z="0" />
+	    </move>
+        </meshobj>
+        <meshobj name="Terrain">
+            <plugin>terrain</plugin>
+            <params>
+                <factory>TerrainFact</factory>
+            </params>
+            <priority>wall</priority>
+        </meshobj>
+
+        <meshgen name="grass">
+            <geometry>
+                <factory maxdist="30" name="Grass02_i" />
+                <radius>0.1</radius>
+		<densitymap factor="5">densityMap</densitymap>
+            </geometry>
+            <!--<densityscale mindist="26" maxdist="30" maxfactor="0" />-->
+            <alphascale mindist="22" maxdist="30" />
+            <samplebox>
+                <min x="-256" y="-200" z="-256" />
+                <max x="256" y="200" z="256" />
+            </samplebox>
+            <meshobj>Terrain</meshobj>
+        </meshgen>
+
+    </sector>
+</world>
