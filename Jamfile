@@ -1,14 +1,10 @@
-TOP ?= "c:/System9/proj/cs/ares_trunk" ;
+TOP ?= "/home/cvb/Crystal/Ares" ;
 BUILDTOP ?= "." ;
 
 SubDir TOP ;
 
 IncludeDir ;
-IncludeDir ares ;
-IncludeDir aresed ;
-IncludeDir dynworld ;
-IncludeDir dynworldload ;
-IncludeDir curvemesh ;
+IncludeDir "include" ;
 IncludeDir $(BUILDTOP) : : literal transient ;
 
 CleanDir clean :
@@ -111,9 +107,4 @@ if $(CEL.DESIRED) = yes
 #MsvcGenConfig SUPERCOOL.LIBS : supercool.lib ;
 #MsvcGenConfig SUPERCOOL.LIBS.DEBUG : supercooldebug.lib ;
 
-SubInclude TOP src/ares ;
-SubInclude TOP src/nature ;
-SubInclude TOP src/aresed ;
-SubInclude TOP src/dynworld ;
-SubInclude TOP src/dynworldload ;
-SubInclude TOP src/curvemesh ;
+SubInclude TOP src ;
