@@ -151,7 +151,7 @@ private:
   csArray<iDynamicObject*> current_objects;
 
   /// Create the room.
-  bool CreateWalls ();
+  bool SetupWorld ();
 
   /// Setup stuff after map loading.
   bool PostLoadMap ();

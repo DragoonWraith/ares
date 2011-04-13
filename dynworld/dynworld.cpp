@@ -124,6 +124,7 @@ DynamicFactory::DynamicFactory (DynamicWorld* world, const char* name,
     return;
   }
 
+  imposterradius = 0;
   if (imposterradius > 0)
   {
     imposterFactory = scfQueryInterface<iImposterFactory> (factory);

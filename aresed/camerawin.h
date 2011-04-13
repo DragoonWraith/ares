@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 #include <ivaria/icegui.h>
 
-#include "appares.h"
+#include "apparesed.h"
 
 class AppAresEdit;
 struct iDynamicObject;

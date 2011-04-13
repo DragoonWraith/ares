@@ -30,8 +30,8 @@ CS_IMPLEMENT_APPLICATION
 
 int main(int argc, char** argv)
 {
-  csPrintf ("This application is a place holder and will in the future run the actual game made by aresed.\n");
-  exit (0);
+  //csPrintf ("This application is a place holder and will in the future run the actual game made by aresed.\n");
+  //exit (0);
   // Open the main system. This will open all the previously loaded plug-ins.
   csPrintf ("ares version 0.1 by Jorrit Tyberghein.\n");
 

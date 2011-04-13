@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "appares.h"
+#include "apparesed.h"
 #ifdef USE_CEL
 #include <celtool/initapp.h>
 #endif
@@ -1115,7 +1115,7 @@ bool AppAresEdit::Application()
   if (!InitPhysics ())
     return false;
 
-  if (!CreateWalls ())
+  if (!SetupWorld ())
     return false;
 
   dynworld->Setup (sector, dynSys);
@@ -1192,7 +1192,7 @@ bool AppAresEdit::PostLoadMap ()
   return true;
 }
 
-bool AppAresEdit::CreateWalls ()
+bool AppAresEdit::SetupWorld ()
 {
   if (!LoadLibrary ("/this/data/factories/", "genBox"))
     return ReportError ("Error loading library!");

@@ -25,15 +25,14 @@ THE SOFTWARE.
 #ifndef __APPARES_H__
 #define __APPARES_H__
 
-#include <stdarg.h>
-
-// CS Includes
-#include "csutil/csbaseeventh.h"
-#include "cstool/csapplicationframework.h"
+#include <crystalspace.h>
 
 // CEL Includes
 #include "physicallayer/messaging.h"
 #include "actorsettings.h"
+
+#include "include/idynworld.h"
+#include "include/icurvemesh.h"
 
 struct iEngine;
 struct iLoader;
@@ -69,12 +68,40 @@ private:
   csRef<iKeyboardDriver> kbd;
   csRef<iVirtualClock> vc;
   csRef<FramePrinter> printer;
+  csRef<iVFS> vfs;
+  csRef<iShaderManager> shaderMgr;
+  csRef<iShaderVarStringSet> strings;
+  csRef<iCollideSystem> cdsys;
+
+  csRef<iDynamicWorld> dynworld;
+  csRef<iCurvedMeshCreator> curvedMeshCreator;
 
   csRef<iCelPlLayer> pl;
   csRef<iCelEntity> game;
   csRef<iCelEntity> entity_cam;
 
   ActorSettings actorsettings;
+
+  iSector* sector;
+  iCamera* camera;
+
+  CS::ShaderVarStringID string_sunDirection;
+  float sun_alfa;
+  float sun_theta;
+  float min_light;
+  csTicks currentTime;
+  bool do_auto_time;
+
+  /// The player has a flashlight.
+  csRef<iLight> camlight;
+  /// The sun.
+  csRef<iLight> sun;
+  void UpdateTime (csTicks ticks);
+
+  /// Physics.
+  csRef<iDynamics> dyn;
+  csRef<iDynamicSystem> dynSys;
+  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
 
   /**
    * Setup everything that needs to be rendered on screen. This routine
@@ -90,15 +117,26 @@ private:
    */
   virtual bool OnKeyboard (iEvent &event);
 
-  bool CreateRoom ();
+  bool SetupWorld ();
+  bool PostLoadMap ();
+  bool InitPhysics ();
   void CreateActor ();
   void CreateActionIcon ();
   void CreateSettingBar ();
   void ConnectWires ();
 
+  /// Load a library file with the given VFS path.
+  bool LoadLibrary (const char* path, const char* file);
+
 public:
   AppAres ();
   virtual ~AppAres ();
+
+  /**
+   * Load the world from a file.
+   */
+  void LoadFile (const char* filename);
+  void LoadDoc (iDocument* doc);
 
   /**
    * Final cleanup.

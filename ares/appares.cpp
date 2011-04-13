@@ -22,60 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include "cssysdef.h"
 #include "appares.h"
-#include "csutil/sysfunc.h"
-#include "iutil/vfs.h"
-#include "iutil/object.h"
-#include "iutil/cmdline.h"
-#include "csutil/cscolor.h"
-#include "csutil/csobject.h"
-#include "cstool/csview.h"
-#include "cstool/initapp.h"
-#include "csutil/event.h"
-#include "csutil/common_handlers.h"
-#include "iutil/eventq.h"
-#include "iutil/event.h"
-#include "iutil/objreg.h"
-#include "iutil/csinput.h"
-#include "iutil/virtclk.h"
-#include "iutil/plugin.h"
-#include "iengine/sector.h"
-#include "iengine/engine.h"
-#include "iengine/camera.h"
-#include "iengine/campos.h"
-#include "iengine/light.h"
-#include "iengine/texture.h"
-#include "iengine/mesh.h"
-#include "iengine/movable.h"
-#include "iengine/material.h"
-#include "iengine/collection.h"
-#include "imesh/sprite3d.h"
-#include "imesh/object.h"
-#include "ivideo/graph3d.h"
-#include "ivideo/graph2d.h"
-#include "ivideo/txtmgr.h"
-#include "ivideo/texture.h"
-#include "ivideo/material.h"
-#include "ivideo/fontserv.h"
-#include "igraphic/imageio.h"
-#include "imap/loader.h"
-#include "isndsys/ss_loader.h"
-#include "isndsys/ss_renderer.h"
-#include "ivaria/reporter.h"
-#include "ivaria/stdrep.h"
-#include "ivaria/collider.h"
-#include "csutil/cmdhelp.h"
-#include "csutil/csshlib.h"
+#include <celtool/initapp.h>
 
-#include "celtool/initapp.h"
 #include "celtool/persisthelper.h"
 #include "tools/billboard.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/propfact.h"
 #include "physicallayer/propclas.h"
 #include "physicallayer/entity.h"
-#include "physicallayer/persist.h"
 #include "behaviourlayer/bl.h"
 #include "propclass/test.h"
 #include "propclass/delegcam.h"
@@ -121,9 +76,83 @@ void AppAres::OnExit ()
   printer.Invalidate ();
 }
 
+void AppAres::UpdateTime (csTicks ticks)
+{
+  iCamera* cam = camera;
+
+  static float lastStep = float (ticks % 100000) / 100000.0;
+  float step = float (ticks % 100000) / 100000.0;
+
+  // Don't update if the time has not changed much.
+  if ((step - lastStep) < 0.0001f && (step - lastStep) > -0.0001f) return;
+  lastStep = step;
+
+  //=[ Sun position ]===================================
+  //TODO: Make the sun stay longer at its highest point at noon.
+  float temp = step * 2.0f;
+  if (temp > 1.0f) temp  = 2.0f - temp;
+
+  sun_theta = (2.0f*temp - 1.0f)*0.85;
+  sun_alfa = 1.605f * sin(-step * 2.0f*PI) - 3.21f;
+
+  // Update the values.
+  csVector3 sun_vec;
+  sun_vec.x = cos(sun_theta)*sin(sun_alfa);
+  sun_vec.y = sin(sun_theta);
+  //if (sun_vec.y <= 0) sun_vec.y = 0;
+  sun_vec.z = cos(sun_theta)*cos(sun_alfa);
+  csShaderVariable* var = shaderMgr->GetVariableAdd(string_sunDirection);
+  var->SetValue(sun_vec);
+
+  // Set the sun position.
+  csReversibleTransform trans(csMatrix3(), (sun_vec*1000.0f)+cam->GetTransform().GetOrigin());
+  trans.LookAt (sun_vec*-1, csVector3(0,1,0));
+  sun->GetMovable()->SetTransform (trans);
+  sun->GetMovable()->UpdateMove();
+
+  //=[ Sun brightness ]===================================
+  // This is just "Lambert's cosine law" shifted so midday is 0, and
+  // multiplied by 1.9 instead of 2 to extend the daylight after sunset to
+  float brightness = cos((step - 0.5f) * PI * 1.9f);
+  //csColor sunlight(brightness * 1.5f);
+  csColor sunlight(brightness);
+  sunlight.ClampDown();
+  // The ambient color is adjusted to give a slightly more yellow colour at
+  // midday, graduating to a purplish blue at midnight. Adjust "min_light"
+  // in options to make it playable at night.
+  float amb = cos((step - 0.5f) * PI * 2.2f);
+  csColor ambient((amb*0.125f)+0.075f+min_light, (amb*0.15f)+0.05f+min_light,
+        (amb*0.1f)+0.08f+min_light);
+  ambient.ClampDown();
+
+  // Update the values.
+  sector->SetDynamicAmbientLight(ambient);
+  sun->SetColor(sunlight);
+
+  //=[ Clouds ]========================================
+  //<shadervar type="vector3" name="cloudcol">0.98,0.59,0.46</shadervar>
+  float brightnessc = (amb * 0.6f) + 0.4f;
+  CS::ShaderVarStringID time = strings->Request("timeOfDay");
+  csRef<csShaderVariable> sv = shaderMgr->GetVariableAdd(time);
+  sv->SetValue(brightnessc);
+}
+
 void AppAres::Frame ()
 {
   // We let the entity system do this so there is nothing here.
+  csTicks elapsed_time = vc->GetElapsedTicks ();
+  UpdateTime (currentTime);
+  if (do_auto_time)
+    currentTime += elapsed_time;
+
+  //if (do_simulation)
+  {
+    float dynamicSpeed = 1.0f;
+    const float speed = elapsed_time / 1000.0;
+    dyn->Step (speed / dynamicSpeed);
+  }
+
+  dynworld->PrepareView (camera, elapsed_time);
 }
 
 
@@ -143,42 +172,6 @@ bool AppAres::OnKeyboard (iEvent &ev)
       // the object registry and then post the event.
       csRef<iEventQueue> q = csQueryRegistry<iEventQueue> (object_reg);
       q->GetEventOutlet ()->Broadcast (csevQuit (object_reg));
-    }
-    else if (code == CSKEY_F1)
-    {
-      csRef<iCelPersistence> p = 
-      	csQueryRegistry<iCelPersistence> (object_reg);
-      celStandardLocalEntitySet set (pl);
-      size_t i;
-      for (i = 0 ; i < pl->GetEntityCount () ; i++)
-        set.AddEntity (pl->GetEntityByIndex (i));
-      if (!p->Save (&set, "/this/savefile"))
-      {
-        printf ("Error!\n");
-	fflush (stdout);
-      }
-      else
-      {
-        printf ("Saved to /this/savefile!\n");
-	fflush (stdout);
-	game = 0;
-	pl->RemoveEntities ();
-      }
-    }
-    else if (code == CSKEY_F2)
-    {
-      csRef<iCelPersistence> p = 
-      	csQueryRegistry<iCelPersistence> (object_reg);
-      celStandardLocalEntitySet set (pl);
-      if (!p->Load (&set, "/this/savefile"))
-      {
-        printf ("Error!\n");
-	fflush (stdout);
-      }
-      else
-      {
-        game = pl->FindEntity ("room");
-      }
     }
   }
   return false;
@@ -220,6 +213,54 @@ void AppAres::CreateSettingBar ()
   bb->SetPosition (100000, 1000);
   bb->SetSize (200000, 30000);
   bb->GetFlags ().SetAll (0);
+}
+
+void AppAres::LoadDoc (iDocument* doc)
+{
+  //CleanupWorld ();
+
+  csRef<iDocumentNode> root = doc->GetRoot ();
+  csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
+  csRef<iDocumentNode> curveNode = dynlevelNode->GetNode ("curves");
+  if (curveNode)
+  {
+    csRef<iString> error = curvedMeshCreator->Load (curveNode);
+    if (error)
+    {
+      printf ("ERROR: %s\n", error->GetData ()); fflush (stdout);
+      return;
+    }
+  }
+
+  csRef<iDocumentNode> dynworldNode = dynlevelNode->GetNode ("dynworld");
+  if (dynworldNode)
+  {
+    csRef<iString> error = dynworld->Load (dynworldNode);
+    if (error)
+    {
+      printf ("ERROR: %s\n", error->GetData ()); fflush (stdout);
+      return;
+    }
+  }
+}
+
+void AppAres::LoadFile (const char* filename)
+{
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  csRef<iDocument> doc = docsys->CreateDocument ();
+  csRef<iDataBuffer> buf = vfs->ReadFile (filename);
+  const char* error = doc->Parse (buf->GetData ());
+  if (error)
+  {
+    printf ("ERROR: %s\n", error); fflush (stdout);
+    return;
+  }
+
+  LoadDoc (doc);
 }
 
 void AppAres::CreateActor ()
@@ -292,31 +333,22 @@ void AppAres::CreateActor ()
   //jump->SetDoubleJumpSpeed (7.0f);
 
   csRef<iPcTrackingCamera> trackcam = celQueryPropertyClassEntity<iPcTrackingCamera> (entity_cam);
-  trackcam->SetPanSpeed (8);
-  trackcam->SetTiltSpeed (4.5);
+  trackcam->SetPanSpeed (2.5);
+  trackcam->SetTiltSpeed (1.2);
+
+  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (entity_cam);
+  camera = cam->GetCamera ();
 
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (entity_cam);
-  bool hascal3d = true;
-  pcmesh->SetPath ("/cellib/objects");
-  hascal3d = pcmesh->SetMesh ("test", "cally.cal3d");
-  //pcmesh->SetPath ("/lib/kwartz");
-  //hascal3d = pcmesh->SetMesh ("kwartz_fact", "kwartz.lib");
+  pcmesh->SetPath ("/lib/kwartz");
+  pcmesh->SetMesh ("kwartz_fact", "kwartz.lib");
+  pcmesh->MoveMesh (sector, csVector3 (0, 10, 0));
 
   csRef<iPcLinearMovement> pclinmove = celQueryPropertyClassEntity<iPcLinearMovement> (entity_cam);
-  if (hascal3d)
-  {
-    pclinmove->InitCD (
-      csVector3 (0.8f, 0.8f,  0.8f),
-      csVector3 (0.5f, 0.5f,  0.5f),
-      csVector3 (0.0f, 0.01f, 0.0f));
-  }
-  else
-  {
-    pclinmove->InitCD (
-      csVector3 (0.5f,  0.8f, 0.5f),
-      csVector3 (0.5f,  0.4f, 0.5f),
-      csVector3 (0.0f, -0.4f, 0.0f));
-  }
+  pclinmove->InitCD (
+      csVector3 (0.5f,  0.6f, 0.5f),
+      csVector3 (0.5f,  0.3f, 0.5f),
+      csVector3 (0.0f, -0.3f, 0.0f));
 
   csRef<iPcTrigger> trigger = celQueryPropertyClassEntity<iPcTrigger> (entity_cam);
   trigger->SetupTriggerSphere (0, csVector3 (0), 1.0);
@@ -372,75 +404,113 @@ void AppAres::ConnectWires ()
   wire->AddOutput ("cel.bag.action.SendMessage", 0, params);
 }
 
-bool AppAres::CreateRoom ()
+bool AppAres::InitPhysics ()
 {
-  csRef<iCelEntity> entity_room;
+  dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
+  if (!dyn) return ReportError ("Error loading bullet plugin!");
 
-  //===============================
-  // Create the room entity.
-  //===============================
-  entity_room = pl->CreateEntity ("room", 0, 0,
-  	"pcworld.zonemanager",
-	"pctools.inventory",
-  	CEL_PROPCLASS_END);
+  dynSys = dyn->CreateSystem ();
+  if (!dynSys) return ReportError ("Error creating dynamic system!");
+  //dynSys->SetLinearDampener(.3f);
+  dynSys->SetRollingDampener(.995f);
+  dynSys->SetGravity (csVector3 (0.0f, -9.81f, 0.0f));
 
-  //===============================
-  // Engine init.
-  //===============================
+  bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+  bullet_dynSys->SetInternalScale (1.0f);
+  bullet_dynSys->SetStepParameters (0.005f, 2, 10);
+
+  return true;
+}
+
+bool AppAres::LoadLibrary (const char* path, const char* file)
+{
+  // Set current VFS dir to the level dir, helps with relative paths in maps
+  vfs->PushDir (path);
+  if (!loader->LoadLibraryFile (file))
+  {
+    vfs->PopDir ();
+    return ReportError("Couldn't load library file %s!", path);
+  }
+  vfs->PopDir ();
+  return true;
+}
+
+bool AppAres::SetupWorld ()
+{
+  if (!LoadLibrary ("/this/data/factories/", "genBox"))
+    return ReportError ("Error loading library!");
+
+  vfs->Mount ("/aresnode", "data$/node.zip");
+  if (!LoadLibrary ("/aresnode/", "library"))
+    return ReportError ("Error loading library!");
+  vfs->PopDir ();
+  vfs->Unmount ("/aresnode", "data$/node.zip");
+
+  vfs->Mount ("/aresdata", "data$/rack.zip");
+  if (!LoadLibrary ("/aresdata/", "library"))
+    return ReportError ("Error loading library!");
+  vfs->PopDir ();
+  vfs->Unmount ("/aresdata", "data$/rack.zip");
+
+  csLoadResult rc = loader->Load ("/lib/krystal/krystal.xml");
+  if (!rc.success)
+    return ReportError ("Can't load Krystal library file!");
+
+  rc = loader->Load ("/lib/frankie/frankie.xml");
+  if (!rc.success)
+    return ReportError ("Can't load Frankie library file!");
+
+  if (!LoadLibrary ("/this/data/", "dynworldFactories.xml"))
+    return ReportError ("Error loading library!");
+
+  //-------------------------------------
+  // Make the floor.
+  //-------------------------------------
+  vfs->ChDir ("/this/data/landscape");
+  if (!loader->LoadMapFile ("world", false))
+  {
+    ReportError ("Error couldn't load terrain level!");
+    return false;
+  }
+  sector = engine->FindSector ("room");
+
+  // Find the terrain mesh
+  csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
+  if (!terrainWrapper)
+  {
+    ReportError("Error cannot find the terrain mesh!");
+    return false;
+  }
+
+  csRef<iTerrainSystem> terrain =
+    scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
+  if (!terrain)
+  {
+    ReportError("Error cannot find the terrain interface!");
+    return false;
+  }
+
+  // Create a terrain collider for each cell of the terrain
+  for (size_t i = 0; i < terrain->GetCellCount (); i++)
+    bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
+
+  iLightList* lightList = sector->GetLights ();
+  lightList->RemoveAll ();
+
+  //sun = engine->CreateLight("Sun", csVector3(0,40,0),9999999.0f, csColor(1.0f), CS_LIGHT_DYNAMICTYPE_DYNAMIC);
+  //sun->SetType(CS_LIGHT_DIRECTIONAL);
+  sun = engine->CreateLight("Sun", csVector3(10),9000, csColor(.3,.2,.1));
+  lightList->Add (sun);
+
+  camlight = engine->CreateLight(0, csVector3(0,0,0), 10, csColor (.8,.9,1));
+  lightList->Add (camlight);
+
+  shaderMgr = csQueryRegistry<iShaderManager> (object_reg);
+  strings = csQueryRegistryTagInterface<iShaderVarStringSet> (object_reg, "crystalspace.shader.variablenameset");
+  string_sunDirection = strings->Request ("sun direction");
+
   engine->Prepare ();
-
-  csRef<iCommandLineParser> cmdline = 
-  	csQueryRegistry<iCommandLineParser> (object_reg);
-  csString path, file;
-  path = cmdline->GetName (0);
-  if (!path.IsEmpty ())
-  {
-    file = cmdline->GetName (1);
-    if (file.IsEmpty ()) file = "level.xml";
-  }
-  else
-  {
-    //path = "/cellib/lev";
-    //file = "basic_level.xml";
-    path = "/cellib/smallhouse";
-    file = "level.xml";
-  }
-
-  csRef<iVFS> vfs = csQueryRegistry<iVFS> (object_reg);
-  csStringArray paths;
-  paths.Push ("/cellib/lev/");
-  if (!vfs->ChDirAuto (path, &paths, 0, file))
-    return ReportError ("Bad file path '%s' at '%s'!", file.GetData (),
-    	path.GetData ());
-
-  csRef<iPcZoneManager> pczonemgr = celQueryPropertyClassEntity<iPcZoneManager> (entity_room);
-  if (!pczonemgr->Load (0, file))
-    return ReportError ("Error loading level '%s' at '%s'!", file.GetData (),
-    	path.GetData ());
-
-  scfString regionname, startname;
-  pczonemgr->GetLastStartLocation (&regionname, &startname);
-
-  CreateActor ();
-  if (!entity_cam) return false;
-  csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (entity_cam);
-  if (!pccamera) return false;
-  pccamera->SetZoneManager (pczonemgr, true, regionname, startname);
-  if (pczonemgr->PointMesh ("camera", regionname, startname)
-  	!= CEL_ZONEERROR_OK)
-    return ReportError ("Error finding start position!");
-
-  csRef<iPcInventory> pcinv_room = celQueryPropertyClassEntity<iPcInventory> (entity_room);
-  if (!pcinv_room->AddEntity (entity_cam)) return false;
-
-  game = entity_room;
-
-  CreateActionIcon ();
-  CreateSettingBar ();
-
-  ConnectWires ();
-
-  actorsettings.Initialize (pl);
+  //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
 
   return true;
 }
@@ -469,7 +539,9 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.renderer.software",
 		iSndSysRenderer),
-	CS_REQUEST_PLUGIN ("crystalspace.device.joystick", iEventPlug),
+	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
+	CS_REQUEST_PLUGIN("utility.dynamicworld", iDynamicWorld),
+	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_END))
   {
     return ReportError ("Can't initialize plugins!");
@@ -486,6 +558,15 @@ bool AppAres::OnInitialize (int argc, char* argv[])
   return true;
 }
 
+bool AppAres::PostLoadMap ()
+{
+  // Initialize collision objects for all loaded objects.
+  csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
+
+  CreateActor ();
+  return true;
+}
+
 bool AppAres::Application ()
 {
   // i.e. all windows will be opened.
@@ -496,9 +577,15 @@ bool AppAres::Application ()
   vc = csQueryRegistry<iVirtualClock> (object_reg);
   if (!vc) return ReportError ("Can't find the virtual clock!");
 
+  vfs = csQueryRegistry<iVFS> (object_reg);
+  if (!vfs) return ReportError("Failed to locate vfs!");
+
   // Find the pointer to engine plugin
   engine = csQueryRegistry<iEngine> (object_reg);
   if (!engine) return ReportError ("No iEngine plugin!");
+
+  cdsys = csQueryRegistry<iCollideSystem> (object_reg);
+  if (!cdsys) return ReportError ("Failed to locate CD system!");
 
   loader = csQueryRegistry<iLoader> (object_reg);
   if (!loader) return ReportError ("No iLoader plugin!");
@@ -512,7 +599,24 @@ bool AppAres::Application ()
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
   if (!pl) return ReportError ("CEL physical layer missing!");
 
-  if (!CreateRoom ()) return false;
+  curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
+  if (!curvedMeshCreator) return ReportError("Failed to load the curved mesh creator plugin!");
+
+  dynworld = csQueryRegistry<iDynamicWorld> (object_reg);
+  if (!dynworld) return ReportError("Failed to locate dynamic world!");
+
+  if (!InitPhysics ())
+    return false;
+
+  if (!SetupWorld ())
+    return false;
+
+  dynworld->Setup (sector, dynSys);
+
+  if (!PostLoadMap ())
+    return ReportError ("Error during PostLoadMap()!");
+
+  LoadFile ("/saves/testworld");
 
   printer.AttachNew (new FramePrinter (object_reg));
 

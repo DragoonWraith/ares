@@ -25,8 +25,6 @@ THE SOFTWARE.
 #ifndef __ACTORSETTINGS_H__
 #define __ACTORSETTINGS_H__
 
-#include <stdarg.h>
-
 // CEL Includes
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"

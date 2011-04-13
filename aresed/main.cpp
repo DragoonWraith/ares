@@ -23,7 +23,7 @@ THE SOFTWARE.
  */
 
 #include "ares.h"
-#include "appares.h"
+#include "apparesed.h"
 #include <csutil/sysfunc.h> // Provides csPrintf()
 
 CS_IMPLEMENT_APPLICATION
