@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- nature.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>utility.nature</name>
+        <implementation>Nature</implementation>
+        <description>Nature Plugin</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

@@ -111,9 +111,9 @@ if $(CEL.DESIRED) = yes
 #MsvcGenConfig SUPERCOOL.LIBS : supercool.lib ;
 #MsvcGenConfig SUPERCOOL.LIBS.DEBUG : supercooldebug.lib ;
 
-SubInclude TOP ares ;
-SubInclude TOP nature ;
-SubInclude TOP aresed ;
-SubInclude TOP dynworld ;
-SubInclude TOP dynworldload ;
-SubInclude TOP curvemesh ;
+SubInclude TOP src/ares ;
+SubInclude TOP src/nature ;
+SubInclude TOP src/aresed ;
+SubInclude TOP src/dynworld ;
+SubInclude TOP src/dynworldload ;
+SubInclude TOP src/curvemesh ;

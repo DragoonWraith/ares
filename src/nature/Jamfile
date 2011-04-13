@@ -1,0 +1,7 @@
+SubDir TOP src nature ;
+
+Description nature : "Nature Plugin" ;
+Plugin nature :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs nature : CRYSTAL ;
+

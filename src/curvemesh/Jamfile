@@ -1,4 +1,4 @@
-SubDir TOP curvemesh ;
+SubDir TOP src curvemesh ;
 
 Description curvemesh : "Curved Mesh Plugin" ;
 Plugin curvemesh :

@@ -1,4 +1,4 @@
-SubDir TOP dynworld ;
+SubDir TOP src dynworld ;
 
 Description dynworld : "Dynamic World Plugin" ;
 Plugin dynworld :

@@ -1,4 +1,4 @@
-SubDir TOP ares ;
+SubDir TOP src ares ;
 
 Description ares : "The Ares Project Editor" ;
 Application ares :

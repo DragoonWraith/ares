@@ -1,4 +1,4 @@
-SubDir TOP dynworldload ;
+SubDir TOP src dynworldload ;
 
 Description dynworldload : "Dynamic World Loader Plugin" ;
 Plugin dynworldload :
