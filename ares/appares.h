@@ -33,6 +33,7 @@ THE SOFTWARE.
 
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
+#include "include/inature.h"
 
 struct iEngine;
 struct iLoader;
@@ -69,12 +70,13 @@ private:
   csRef<iVirtualClock> vc;
   csRef<FramePrinter> printer;
   csRef<iVFS> vfs;
-  csRef<iShaderManager> shaderMgr;
-  csRef<iShaderVarStringSet> strings;
   csRef<iCollideSystem> cdsys;
 
   csRef<iDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
+
+  csRef<iNature> nature;
+  csTicks currentTime;
 
   csRef<iCelPlLayer> pl;
   csRef<iCelEntity> game;
@@ -85,18 +87,8 @@ private:
   iSector* sector;
   iCamera* camera;
 
-  CS::ShaderVarStringID string_sunDirection;
-  float sun_alfa;
-  float sun_theta;
-  float min_light;
-  csTicks currentTime;
-  bool do_auto_time;
-
   /// The player has a flashlight.
   csRef<iLight> camlight;
-  /// The sun.
-  csRef<iLight> sun;
-  void UpdateTime (csTicks ticks);
 
   /// Physics.
   csRef<iDynamics> dyn;

@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <ivaria/icegui.h>
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
+#include "include/inature.h"
 
 #include "aresed.h"
 #include "filereq.h"
@@ -57,6 +58,7 @@ class AppAresEdit :
 private:
   csRef<iDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
+  csRef<iNature> nature;
 
   csRef<iGraphics3D> g3d;
   csRef<iKeyboardDriver> kbd;
@@ -64,17 +66,11 @@ private:
   csRef<iLoader> loader;
   csRef<iVirtualClock> vc;
   csRef<iVFS> vfs;
-  csRef<iShaderManager> shaderMgr;
-  csRef<iShaderVarStringSet> strings;
 
   MainMode* mainMode;
   CurveMode* curveMode;
   EditingMode* editMode;
 
-  CS::ShaderVarStringID string_sunDirection;
-  float sun_alfa;
-  float sun_theta;
-  float min_light;
   csTicks currentTime;
   bool do_auto_time;
 
@@ -110,8 +106,6 @@ private:
 
   /// The player has a flashlight.
   csRef<iLight> camlight;
-  /// The sun.
-  csRef<iLight> sun;
 
   /// Our collider used for gravity and CD (collision detection).
   csColliderActor collider_actor;
@@ -206,8 +200,6 @@ private:
 
   FileReq* filereq;
   CameraWindow* camwin;
-
-  void UpdateTime (csTicks current);
 
 public:
   /**

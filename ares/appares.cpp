@@ -68,6 +68,7 @@ AppAres::AppAres ()
 
 AppAres::~AppAres ()
 {
+  currentTime = 0;
 }
 
 void AppAres::OnExit ()
@@ -76,74 +77,12 @@ void AppAres::OnExit ()
   printer.Invalidate ();
 }
 
-void AppAres::UpdateTime (csTicks ticks)
-{
-  iCamera* cam = camera;
-
-  static float lastStep = float (ticks % 100000) / 100000.0;
-  float step = float (ticks % 100000) / 100000.0;
-
-  // Don't update if the time has not changed much.
-  if ((step - lastStep) < 0.0001f && (step - lastStep) > -0.0001f) return;
-  lastStep = step;
-
-  //=[ Sun position ]===================================
-  //TODO: Make the sun stay longer at its highest point at noon.
-  float temp = step * 2.0f;
-  if (temp > 1.0f) temp  = 2.0f - temp;
-
-  sun_theta = (2.0f*temp - 1.0f)*0.85;
-  sun_alfa = 1.605f * sin(-step * 2.0f*PI) - 3.21f;
-
-  // Update the values.
-  csVector3 sun_vec;
-  sun_vec.x = cos(sun_theta)*sin(sun_alfa);
-  sun_vec.y = sin(sun_theta);
-  //if (sun_vec.y <= 0) sun_vec.y = 0;
-  sun_vec.z = cos(sun_theta)*cos(sun_alfa);
-  csShaderVariable* var = shaderMgr->GetVariableAdd(string_sunDirection);
-  var->SetValue(sun_vec);
-
-  // Set the sun position.
-  csReversibleTransform trans(csMatrix3(), (sun_vec*1000.0f)+cam->GetTransform().GetOrigin());
-  trans.LookAt (sun_vec*-1, csVector3(0,1,0));
-  sun->GetMovable()->SetTransform (trans);
-  sun->GetMovable()->UpdateMove();
-
-  //=[ Sun brightness ]===================================
-  // This is just "Lambert's cosine law" shifted so midday is 0, and
-  // multiplied by 1.9 instead of 2 to extend the daylight after sunset to
-  float brightness = cos((step - 0.5f) * PI * 1.9f);
-  //csColor sunlight(brightness * 1.5f);
-  csColor sunlight(brightness);
-  sunlight.ClampDown();
-  // The ambient color is adjusted to give a slightly more yellow colour at
-  // midday, graduating to a purplish blue at midnight. Adjust "min_light"
-  // in options to make it playable at night.
-  float amb = cos((step - 0.5f) * PI * 2.2f);
-  csColor ambient((amb*0.125f)+0.075f+min_light, (amb*0.15f)+0.05f+min_light,
-        (amb*0.1f)+0.08f+min_light);
-  ambient.ClampDown();
-
-  // Update the values.
-  sector->SetDynamicAmbientLight(ambient);
-  sun->SetColor(sunlight);
-
-  //=[ Clouds ]========================================
-  //<shadervar type="vector3" name="cloudcol">0.98,0.59,0.46</shadervar>
-  float brightnessc = (amb * 0.6f) + 0.4f;
-  CS::ShaderVarStringID time = strings->Request("timeOfDay");
-  csRef<csShaderVariable> sv = shaderMgr->GetVariableAdd(time);
-  sv->SetValue(brightnessc);
-}
-
 void AppAres::Frame ()
 {
   // We let the entity system do this so there is nothing here.
   csTicks elapsed_time = vc->GetElapsedTicks ();
-  UpdateTime (currentTime);
-  if (do_auto_time)
-    currentTime += elapsed_time;
+  nature->UpdateTime (currentTime, camera);
+  currentTime += elapsed_time;
 
   //if (do_simulation)
   {
@@ -497,17 +436,10 @@ bool AppAres::SetupWorld ()
   iLightList* lightList = sector->GetLights ();
   lightList->RemoveAll ();
 
-  //sun = engine->CreateLight("Sun", csVector3(0,40,0),9999999.0f, csColor(1.0f), CS_LIGHT_DYNAMICTYPE_DYNAMIC);
-  //sun->SetType(CS_LIGHT_DIRECTIONAL);
-  sun = engine->CreateLight("Sun", csVector3(10),9000, csColor(.3,.2,.1));
-  lightList->Add (sun);
+  nature->InitSector (sector);
 
   camlight = engine->CreateLight(0, csVector3(0,0,0), 10, csColor (.8,.9,1));
   lightList->Add (camlight);
-
-  shaderMgr = csQueryRegistry<iShaderManager> (object_reg);
-  strings = csQueryRegistryTagInterface<iShaderVarStringSet> (object_reg, "crystalspace.shader.variablenameset");
-  string_sunDirection = strings->Request ("sun direction");
 
   engine->Prepare ();
   //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
@@ -541,6 +473,7 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 		iSndSysRenderer),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("utility.dynamicworld", iDynamicWorld),
+	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_END))
   {
@@ -603,7 +536,10 @@ bool AppAres::Application ()
   if (!curvedMeshCreator) return ReportError("Failed to load the curved mesh creator plugin!");
 
   dynworld = csQueryRegistry<iDynamicWorld> (object_reg);
-  if (!dynworld) return ReportError("Failed to locate dynamic world!");
+  if (!dynworld) return ReportError("Failed to locate dynamic world plugin!");
+
+  nature = csQueryRegistry<iNature> (object_reg);
+  if (!nature) return ReportError("Failed to locate nature plugin!");
 
   if (!InitPhysics ())
     return false;
