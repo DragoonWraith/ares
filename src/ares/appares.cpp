@@ -285,9 +285,9 @@ void AppAres::CreateActor ()
 
   csRef<iPcLinearMovement> pclinmove = celQueryPropertyClassEntity<iPcLinearMovement> (entity_cam);
   pclinmove->InitCD (
-      csVector3 (0.5f,  0.6f, 0.5f),
-      csVector3 (0.5f,  0.3f, 0.5f),
-      csVector3 (0.0f, -0.3f, 0.0f));
+      csVector3 (0.5f,  0.8f, 0.5f),
+      csVector3 (0.5f,  0.4f, 0.5f),
+      csVector3 (0.0f, -0.4f, 0.0f));
 
   csRef<iPcTrigger> trigger = celQueryPropertyClassEntity<iPcTrigger> (entity_cam);
   trigger->SetupTriggerSphere (0, csVector3 (0), 1.0);
