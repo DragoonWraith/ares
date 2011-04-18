@@ -510,7 +510,7 @@
       <box> <offset x="0.2" y="0.7" z="0" /> <size x="0.05" y="0.3" z="0.5" /> </box>
     </factory>
 
-    <curve name="CurvedStreet" width="6" sideheight=".2">
+    <curve name="CurvedStreet" width="6" sideheight=".9">
       <attr name="category" value="Street" />
       <attr name="maxradius" value="1.0" />
       <attr name="imposterradius" value="-1" />

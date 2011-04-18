@@ -213,9 +213,9 @@ void CurveMode::SmoothPoint (size_t idx, bool regen)
   const csVector3& p2 = editingCurveFactory->GetPosition (idx+1);
   csVector3 fr = ((p2 - pos).Unit () + (pos - p1).Unit ()) / 2.0;
   csVector3 up = editingCurveFactory->GetUp (idx);
-  csVector3 right = fr % up;
-  up = (fr % right).Unit ();
-  editingCurveFactory->ChangePoint (idx, pos, fr, -up);
+  //csVector3 right = fr % up;
+  //up = - (fr % right).Unit ();
+  editingCurveFactory->ChangePoint (idx, pos, fr, up);
   if (regen)
   {
     editingCurveFactory->GenerateFactory ();

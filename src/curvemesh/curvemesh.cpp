@@ -263,8 +263,9 @@ void CurvedFactory::GeneratePoints ()
     csPath anchorPath (anchorPoints.GetSize ());
     GeneratePath (anchorPath, anchorPoints);
 
+    float splineCountFactor = 2.0f;
     float totalDistance = GetTotalDistance (anchorPoints);
-    size_t count = size_t (totalDistance) + 1;
+    size_t count = size_t (totalDistance * splineCountFactor) + 1;
     points.DeleteAll ();
 
     for (size_t i = 0 ; i <= count ; i++)
@@ -275,15 +276,27 @@ void CurvedFactory::GeneratePoints ()
       anchorPath.GetInterpolatedPosition (pos);
       anchorPath.GetInterpolatedForward (front);
       anchorPath.GetInterpolatedUp (up);
+      csVector3 right = (width / 2.0) * (front % up);
+      csVector3 rightPos = pos + right;
+      csVector3 leftPos = pos - right;
+
+      float highestY = -100000.0f;
       pos = meshtrans.This2Other (pos);
+      rightPos = meshtrans.This2Other (rightPos);
+      leftPos = meshtrans.This2Other (leftPos);
       // @@@ Ignore transformation for front/up?
-      csSectorHitBeamResult result = sector->HitBeamPortals (
-	  pos + csVector3 (0, 10, 0), pos - csVector3 (0, 10, 0));
-      if (result.mesh)
-      {
-	pos.y = result.isect.y;
-      }
+      csSectorHitBeamResult result;
+      result  = sector->HitBeamPortals (pos + csVector3 (0, 2, 0), pos - csVector3 (0, 3, 0));
+      if (result.mesh && result.isect.y > highestY) highestY = result.isect.y;
+      result  = sector->HitBeamPortals (rightPos + csVector3 (0, 2, 0), rightPos - csVector3 (0, 3, 0));
+      if (result.mesh && result.isect.y > highestY) highestY = result.isect.y;
+      result  = sector->HitBeamPortals (leftPos + csVector3 (0, 2, 0), leftPos - csVector3 (0, 3, 0));
+      if (result.mesh && result.isect.y > highestY) highestY = result.isect.y;
+
+      if (highestY > -99999.0f)
+	pos.y = highestY;
       pos = meshtrans.Other2This (pos);
+
       points.Push (PathEntry (pos, front, up));
     }
 
