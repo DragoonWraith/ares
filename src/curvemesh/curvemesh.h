@@ -67,11 +67,21 @@ private:
   iMaterialWrapper* material;
   float width;
   float sideHeight;
+  float offsetHeight;
+
+  iMeshWrapper* flattenMesh;
 
   csRef<iMeshFactoryWrapper> factory;
   csRef<iGeneralFactoryState> state;
 
   csArray<PathEntry> points;
+  csArray<PathEntry> anchorPoints;
+
+  void FlattenPointsToMesh (csVector3& leftPos, csVector3& rightPos);
+
+  void GeneratePoints ();
+  void GeneratePath (csPath& path, const csArray<PathEntry>& pts);
+  float GetTotalDistance (const csArray<PathEntry>& pts);
 
 public:
   CurvedFactory (CurvedMeshCreator* creator, const char* name);
@@ -79,6 +89,7 @@ public:
 
   virtual const char* GetName () const { return name; }
   virtual iMeshFactoryWrapper* GetFactory () { return factory; }
+  virtual void FlattenToGround (iMeshWrapper* mesh);
   virtual void GenerateFactory ();
   virtual void SetMaterial (const char* materialName);
   virtual void SetCharacteristics (float width, float sideHeight);
@@ -91,19 +102,19 @@ public:
   virtual void DeletePoint (size_t idx);
   virtual size_t GetPointCount () const
   {
-    return points.GetSize ();
+    return anchorPoints.GetSize ();
   }
   virtual const csVector3& GetPosition (size_t idx) const
   {
-    return points[idx].pos;
+    return anchorPoints[idx].pos;
   }
   virtual const csVector3& GetFront (size_t idx) const
   {
-    return points[idx].front;
+    return anchorPoints[idx].front;
   }
   virtual const csVector3& GetUp (size_t idx) const
   {
-    return points[idx].up;
+    return anchorPoints[idx].up;
   }
 
   void Save (iDocumentNode* node, iSyntaxService* syn);

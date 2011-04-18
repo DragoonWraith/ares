@@ -104,10 +104,24 @@ void CurveMode::FramePre()
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
     csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
 
+    iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
     csVector3 newPosition;
     if (doDragRestrictY)
     {
       csIntersect3::SegmentYPlane (startBeam, endBeam, dragRestrictY, newPosition);
+    }
+    else if (doDragMesh)
+    {
+      csVector3 pos = endBeam - startBeam;
+      pos.Normalize ();
+      pos = camera->GetTransform ().GetOrigin () + pos * 1000.0f;
+      csFlags oldFlags = mesh->GetFlags ();
+      mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
+      csSectorHitBeamResult result = camera->GetSector ()->HitBeamPortals (
+	  camera->GetTransform ().GetOrigin (), pos);
+      mesh->GetFlags ().SetAll (oldFlags.Get ());
+      if (!result.mesh) return;	// Safety, we hit no mesh so better don't do anything.
+      newPosition = result.isect;
     }
     else
     {
@@ -115,7 +129,6 @@ void CurveMode::FramePre()
       newPosition.Normalize ();
       newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
     }
-    iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
     const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
     for (size_t i = 0 ; i < dragPoints.GetSize () ; i++)
     {
@@ -300,8 +313,10 @@ void CurveMode::FlatPoint (size_t idx)
     pos.y += sideHeight / 2.0;
     pos = meshtrans.Other2This (pos);
     editingCurveFactory->ChangePoint (idx, pos, f, u);
-    if (autoSmooth) DoAutoSmooth ();
-    editingCurveFactory->GenerateFactory ();
+    if (autoSmooth)
+      DoAutoSmooth ();
+    else
+      editingCurveFactory->GenerateFactory ();
     aresed->GetCurrentObjects ()[0]->RefreshColliders ();
   }
 }
@@ -365,6 +380,10 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
     const csVector3& up = editingCurveFactory->GetUp (id);
     editingCurveFactory->AddPoint (pos + front, front, up);
     if (autoSmooth) DoAutoSmooth ();
+
+    iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
+    editingCurveFactory->FlattenToGround (mesh);
+
     editingCurveFactory->GenerateFactory ();
     aresed->GetCurrentObjects ()[0]->RefreshColliders ();
   }
@@ -400,7 +419,7 @@ bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
   {
     StopDrag ();
 
-    if (ctrl || alt)
+    //if (ctrl || alt)
     {
       do_dragging = true;
 
@@ -417,10 +436,16 @@ bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
       }
 
       dragDistance = (isect - startBeam).Norm ();
-      doDragRestrictY = alt;
-      if (doDragRestrictY)
+      if (alt)
       {
+        doDragRestrictY = true;
+	doDragMesh = false;
         dragRestrictY = isect.y;
+      }
+      else if (!ctrl)
+      {
+	doDragRestrictY = false;
+	doDragMesh = true;
       }
     }
   }

@@ -53,6 +53,7 @@ private:
   csArray<DragPoint> dragPoints;
   float dragDistance;
   bool doDragRestrictY;	// Only drag on the y-plane.
+  bool doDragMesh;	// Drag on the mesh.
   float dragRestrictY;
   void StopDrag ();
 

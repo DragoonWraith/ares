@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 
 class csVector3;
+struct iMeshWrapper;
 
 struct iCurvedFactory : public virtual iBase
 {
@@ -41,8 +42,17 @@ struct iCurvedFactory : public virtual iBase
   virtual iMeshFactoryWrapper* GetFactory () = 0;
 
   /**
+   * If this is called the mesh will be flattened to geometry
+   * in the current sector.
+   */
+  virtual void FlattenToGround (iMeshWrapper* mesh) = 0;
+
+  /**
    * Recreate the factory. This should be called the first time
    * after setting up the path and everytime after changing the path.
+   * It will optionally make use of the information as given
+   * by the FlattenToGround() in order to flatten the curve to the
+   * ground.
    */
   virtual void GenerateFactory () = 0;
 

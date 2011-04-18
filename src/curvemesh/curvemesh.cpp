@@ -38,6 +38,8 @@ THE SOFTWARE.
 #include "csgeom/tri.h"
 
 #include "imap/services.h"
+#include "iengine/movable.h"
+#include "iengine/sector.h"
 
 #include "curvemesh.h"
 
@@ -53,11 +55,78 @@ CurvedFactory::CurvedFactory (CurvedMeshCreator* creator, const char* name) :
 {
   material = 0;
   width = 1.0;
-  sideHeight = 0.2;
+  sideHeight = 0.4;
+  offsetHeight = 0.1;
+  flattenMesh = 0;
 }
 
 CurvedFactory::~CurvedFactory ()
 {
+}
+
+void CurvedFactory::FlattenToGround (iMeshWrapper* mesh)
+{
+  flattenMesh = mesh;
+}
+
+void CurvedFactory::FlattenPointsToMesh (csVector3& leftPos, csVector3& rightPos)
+{
+  const csReversibleTransform& meshtrans = flattenMesh->GetMovable ()->GetTransform ();
+  iSector* sector = flattenMesh->GetMovable ()->GetSectors ()->Get (0);
+  csFlags oldFlags = flattenMesh->GetFlags ();
+  flattenMesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
+  rightPos = meshtrans.This2Other (rightPos);
+  leftPos = meshtrans.This2Other (leftPos);
+  csSectorHitBeamResult resultRight = sector->HitBeamPortals (rightPos + csVector3 (0, 2, 0), rightPos - csVector3 (0, 2, 0));
+  csSectorHitBeamResult resultLeft = sector->HitBeamPortals (leftPos + csVector3 (0, 2, 0), leftPos - csVector3 (0, 2, 0));
+  flattenMesh->GetFlags ().SetAll (oldFlags.Get ());
+  if (resultRight.mesh)
+    rightPos = resultRight.isect;
+  rightPos = meshtrans.Other2This (rightPos);
+  if (resultLeft.mesh)
+    leftPos = resultLeft.isect;
+  leftPos = meshtrans.Other2This (leftPos);
+}
+
+void CurvedFactory::GeneratePath (csPath& path, const csArray<PathEntry>& pts)
+{
+  size_t l = pts.GetSize ();
+  size_t i;
+
+  //float totalDistance = GetTotalDistance (pts);
+  //float travelDistance = 0.0f;
+
+  float* times = new float[l];
+  for (i = 0 ; i < l ; i++)
+  {
+    //if (i > 0)
+      //travelDistance += sqrt (csSquaredDist::PointPoint (pts[i-1].pos, pts[i].pos));
+    //times[i] = travelDistance / totalDistance;
+    times[i] = float (i) / float (l-1);
+    //float old = float (i) / float (l-1);
+    //printf ("i, new:%g old:%g\n", times[i], old); fflush (stdout);
+  }
+  path.SetTimes (times);
+  delete[] times;
+
+  for (i = 0 ; i < l ; i++)
+  {
+    path.SetPositionVector (i, pts[i].pos);
+    path.SetForwardVector (i, pts[i].front);
+    path.SetUpVector (i, pts[i].up);
+  }
+}
+
+float CurvedFactory::GetTotalDistance (const csArray<PathEntry>& pts)
+{
+  size_t l = pts.GetSize ();
+  float totalDistance = 0.0f;
+  for (size_t i = 0 ; i < l-1 ; i++)
+  {
+    float dist = sqrt (csSquaredDist::PointPoint (pts[i].pos, pts[i+1].pos));
+    totalDistance += dist;
+  }
+  return totalDistance;
 }
 
 void CurvedFactory::GenerateFactory ()
@@ -68,29 +137,11 @@ void CurvedFactory::GenerateFactory ()
 	"crystalspace.mesh.object.genmesh", name);
     state = scfQueryInterface<iGeneralFactoryState> (factory->GetMeshObjectFactory ());
   }
-  size_t l = points.GetSize ();
-  size_t i;
 
-  csPath path (l);
-
-  float* times = new float[l];
-  for (i = 0 ; i < l ; i++) times[i] = float (i) / float (l-1);
-  path.SetTimes (times);
-  delete[] times;
-
-  for (i = 0 ; i < l ; i++)
-  {
-    path.SetPositionVector (i, points[i].pos);
-    path.SetForwardVector (i, points[i].front);
-    path.SetUpVector (i, points[i].up);
-  }
-
-  float totalDistance = 0;
-  for (i = 0 ; i < l-1 ; i++)
-  {
-    float dist = sqrt (csSquaredDist::PointPoint (points[i].pos, points[i+1].pos));
-    totalDistance += dist;
-  }
+  GeneratePoints ();
+  csPath path (points.GetSize ());
+  GeneratePath (path, points);
+  float totalDistance = GetTotalDistance (points);
 
   // @@@todo, the entire detail on the path should be customizable. Also it should
   // use less detail on relatively straight lines.
@@ -112,12 +163,13 @@ void CurvedFactory::GenerateFactory ()
   path.GetInterpolatedPosition (prevPos);
 
   float traveledDistance = 0;
-  for (i = 0 ; i < samples ; i++)
+  for (size_t i = 0 ; i < samples ; i++)
   {
     float time = float (i) / float (samples-1);
     path.CalculateAtTime (time);
     path.GetInterpolatedPosition (pos);
     traveledDistance += sqrt (csSquaredDist::PointPoint (pos, prevPos));
+    //printf ("%d time=%g pos=%g,%g,%g dist=%g\n", i, time, pos.x, pos.y, pos.z, traveledDistance); fflush (stdout);
     prevPos = pos;
 
     path.GetInterpolatedForward (front);
@@ -125,11 +177,19 @@ void CurvedFactory::GenerateFactory ()
 
     csVector3 right = (width / 2.0) * (front % up);
     csVector3 down = -up.Unit () * sideHeight;
+    csVector3 offsetUp = up.Unit () * offsetHeight;
 
-    *vertices++ = pos + right;
-    *vertices++ = pos - right;
-    *vertices++ = pos + right + down;
-    *vertices++ = pos - right + down;
+    csVector3 rightPos = pos + right;
+    csVector3 leftPos = pos - right;
+    //if (flattenMesh)
+      //FlattenPointsToMesh (leftPos, rightPos);
+    rightPos += offsetUp;
+    leftPos += offsetUp;
+
+    *vertices++ = rightPos;
+    *vertices++ = leftPos;
+    *vertices++ = rightPos + down;
+    *vertices++ = leftPos + down;
     *normals++ = (up*.8+right*.2).Unit ();
     *normals++ = (up*.8-right*.2).Unit ();
     *normals++ = right;
@@ -142,7 +202,7 @@ void CurvedFactory::GenerateFactory ()
 
   csTriangle* tris = state->GetTriangles ();
   int vtidx = 0;
-  for (i = 0 ; i < samples-1 ; i++)
+  for (size_t i = 0 ; i < samples-1 ; i++)
   {
     *tris++ = csTriangle (vtidx+5, vtidx+1, vtidx+0);
     *tris++ = csTriangle (vtidx+4, vtidx+5, vtidx+0);
@@ -177,18 +237,62 @@ void CurvedFactory::SetCharacteristics (float width, float sideHeight)
 size_t CurvedFactory::AddPoint (const csVector3& pos, const csVector3& front,
       const csVector3& up)
 {
-  return points.Push (PathEntry (pos, front.Unit (), up.Unit ()));
+  return anchorPoints.Push (PathEntry (pos, front.Unit (), up.Unit ()));
 }
 
 void CurvedFactory::ChangePoint (size_t idx, const csVector3& pos,
     const csVector3& front, const csVector3& up)
 {
-  points[idx] = PathEntry (pos, front.Unit (), up.Unit ());
+  anchorPoints[idx] = PathEntry (pos, front.Unit (), up.Unit ());
 }
 
 void CurvedFactory::DeletePoint (size_t idx)
 {
-  points.DeleteIndex (idx);
+  anchorPoints.DeleteIndex (idx);
+}
+
+void CurvedFactory::GeneratePoints ()
+{
+  if (flattenMesh)
+  {
+    csFlags oldFlags = flattenMesh->GetFlags ();
+    flattenMesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
+    iSector* sector = flattenMesh->GetMovable ()->GetSectors ()->Get (0);
+    const csReversibleTransform& meshtrans = flattenMesh->GetMovable ()->GetTransform ();
+
+    csPath anchorPath (anchorPoints.GetSize ());
+    GeneratePath (anchorPath, anchorPoints);
+
+    float totalDistance = GetTotalDistance (anchorPoints);
+    size_t count = size_t (totalDistance) + 1;
+    points.DeleteAll ();
+
+    for (size_t i = 0 ; i <= count ; i++)
+    {
+      float time = float (i) / float (count);
+      anchorPath.CalculateAtTime (time);
+      csVector3 pos, front, up;
+      anchorPath.GetInterpolatedPosition (pos);
+      anchorPath.GetInterpolatedForward (front);
+      anchorPath.GetInterpolatedUp (up);
+      pos = meshtrans.This2Other (pos);
+      // @@@ Ignore transformation for front/up?
+      csSectorHitBeamResult result = sector->HitBeamPortals (
+	  pos + csVector3 (0, 10, 0), pos - csVector3 (0, 10, 0));
+      if (result.mesh)
+      {
+	pos.y = result.isect.y;
+      }
+      pos = meshtrans.Other2This (pos);
+      points.Push (PathEntry (pos, front, up));
+    }
+
+    flattenMesh->GetFlags ().SetAll (oldFlags.Get ());
+  }
+  else
+  {
+    points = anchorPoints;
+  }
 }
 
 void CurvedFactory::Save (iDocumentNode* node, iSyntaxService* syn)
@@ -198,16 +302,16 @@ void CurvedFactory::Save (iDocumentNode* node, iSyntaxService* syn)
   node->SetAttributeAsFloat ("sideheight", sideHeight);
   node->SetAttribute ("material", material->QueryObject ()->GetName ());
   size_t i;
-  for (i = 0 ; i < points.GetSize () ; i++)
+  for (i = 0 ; i < anchorPoints.GetSize () ; i++)
   {
     csRef<iDocumentNode> el = node->CreateNodeBefore (CS_NODE_ELEMENT);
     el->SetValue ("p");
     csString vector;
-    vector.Format ("%g %g %g", points[i].pos.x, points[i].pos.y, points[i].pos.z);
+    vector.Format ("%g %g %g", anchorPoints[i].pos.x, anchorPoints[i].pos.y, anchorPoints[i].pos.z);
     el->SetAttribute ("pos", (const char*)vector);
-    vector.Format ("%g %g %g", points[i].front.x, points[i].front.y, points[i].front.z);
+    vector.Format ("%g %g %g", anchorPoints[i].front.x, anchorPoints[i].front.y, anchorPoints[i].front.z);
     el->SetAttribute ("front", (const char*)vector);
-    vector.Format ("%g %g %g", points[i].up.x, points[i].up.y, points[i].up.z);
+    vector.Format ("%g %g %g", anchorPoints[i].up.x, anchorPoints[i].up.y, anchorPoints[i].up.z);
     el->SetAttribute ("up", (const char*)vector);
   }
 }
@@ -220,7 +324,7 @@ bool CurvedFactory::Load (iDocumentNode* node, iSyntaxService* syn)
   if (fabs (sideHeight) < .0001) sideHeight = 0.2;
   csString materialName = node->GetAttributeValue ("material");
   SetMaterial (materialName);
-  points.DeleteAll ();
+  anchorPoints.DeleteAll ();
   csRef<iDocumentNodeIterator> it = node->GetNodes ();
   while (it->HasNext ())
   {
