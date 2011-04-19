@@ -270,6 +270,11 @@ bool AppAresEdit::OnMouseDown (iEvent& ev)
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
 
+  if (but == 3)	// MouseWheelUp
+    collider_actor.Move (1.0f, 6.0f, CS_VEC_FORWARD * 3.0f, csVector3 (0));
+  else if (but == 4)	// MouseWheelDown
+    collider_actor.Move (1.0f, 6.0f, CS_VEC_BACKWARD * 3.0f, csVector3 (0));
+
   return editMode->OnMouseDown (ev, but, mouseX, mouseY);
 }
 
