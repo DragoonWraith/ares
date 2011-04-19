@@ -383,7 +383,6 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
 
     iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
     editingCurveFactory->FlattenToGround (mesh);
-
     editingCurveFactory->GenerateFactory ();
     aresed->GetCurrentObjects ()[0]->RefreshColliders ();
   }

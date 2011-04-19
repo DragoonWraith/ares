@@ -192,6 +192,8 @@ private:
   bool OnMainTabButtonClicked (const CEGUI::EventArgs&);
   bool OnCurveTabButtonClicked (const CEGUI::EventArgs&);
 
+  bool SwitchToCurveMode ();
+
   CEGUI::Checkbox* simulationCheck;
   CEGUI::PushButton* undoButton;
   CEGUI::Window* filenameLabel;

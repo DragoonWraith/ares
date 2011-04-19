@@ -734,6 +734,11 @@ bool AppAresEdit::OnMainTabButtonClicked (const CEGUI::EventArgs&)
 
 bool AppAresEdit::OnCurveTabButtonClicked (const CEGUI::EventArgs&)
 {
+  return SwitchToCurveMode ();
+}
+
+bool AppAresEdit::SwitchToCurveMode ()
+{
   if (current_objects.GetSize () != 1) return true;
   csString name = current_objects[0]->GetFactory ()->GetName ();
   if (!curvedMeshCreator->GetCurvedFactory (name)) return true;
@@ -1229,12 +1234,13 @@ void AppAresEdit::SpawnItem (const csString& name)
 {
   PushUndo ("New");
   csString fname;
+  iCurvedFactory* curvedFactory = 0;
   CurvedFactoryCreator* cfc = FindFactoryCreator (name);
   if (cfc)
   {
     curvedFactoryCounter++;
     fname.Format("%s%d", name.GetData (), curvedFactoryCounter);
-    iCurvedFactory* curvedFactory = curvedMeshCreator->AddCurvedFactory (fname, name);
+    curvedFactory = curvedMeshCreator->AddCurvedFactory (fname, name);
     curvedFactory->GenerateFactory ();
 
     iDynamicFactory* fact = dynworld->AddFactory (fname, cfc->maxradius, cfc->imposterradius);
@@ -1309,6 +1315,9 @@ void AppAresEdit::SpawnItem (const csString& name)
   if (static_factories.In (fname))
     dynobj->MakeStatic ();
   SetCurrentObject (dynobj);
+
+  if (curvedFactory)
+    SwitchToCurveMode ();
 }
 
 bool AppAresEdit::InitPhysics ()
