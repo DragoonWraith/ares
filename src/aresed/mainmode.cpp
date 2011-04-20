@@ -220,7 +220,7 @@ void MainMode::StopDrag ()
 
 void MainMode::FramePre()
 {
-  iCamera* camera = aresed->GetCamera ();
+  iCamera* camera = aresed->GetCsCamera ();
   iGraphics2D* g2d = aresed->GetG2D ();
   if (do_dragging)
   {
@@ -363,7 +363,7 @@ bool MainMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
   bool alt = mod & CSMASK_ALT;
 
   // Compute the end beam points
-  iCamera* camera = aresed->GetCamera ();
+  iCamera* camera = aresed->GetCsCamera ();
   csVector2 v2d (mouseX, aresed->GetG2D ()->GetHeight () - mouseY);
   csVector3 v3d = camera->InvPerspective (v2d, 10000);
   csVector3 startBeam = camera->GetTransform ().GetOrigin ();

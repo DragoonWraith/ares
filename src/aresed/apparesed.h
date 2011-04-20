@@ -36,12 +36,7 @@ THE SOFTWARE.
 #include "filereq.h"
 #include "mainmode.h"
 #include "curvemode.h"
-
-struct CamLocation
-{
-  csVector3 pos;
-  csVector3 rot;
-};
+#include "camera.h"
 
 class CameraWindow;
 
@@ -84,8 +79,6 @@ private:
 
   /// A pointer to the collision detection system.
   csRef<iCollideSystem> cdsys;
-  bool do_panning;
-  csVector3 panningCenter;
 
   /// Our window system.
   csRef<iCEGUI> cegui;
@@ -107,8 +100,8 @@ private:
   /// The player has a flashlight.
   csRef<iLight> camlight;
 
-  /// Our collider used for gravity and CD (collision detection).
-  csColliderActor collider_actor;
+  /// Camera.
+  Camera camera;
 
   /**
    * A list with all curved factories which are generated indirectly through
@@ -218,7 +211,8 @@ public:
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   iEngine* GetEngine () const { return engine; }
   CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const { return bullet_dynSys; }
-  iCamera* GetCamera () const { return view->GetCamera (); }
+  iCamera* GetCsCamera () const { return view->GetCamera (); }
+  iCollideSystem* GetCollisionSystem () const { return cdsys; }
   iCurvedMeshCreator* GetCurvedMeshCreator () const { return curvedMeshCreator; }
   iCEGUI* GetCEGUI () const { return cegui; }
   iDynamicWorld* GetDynamicWorld () const { return dynworld; }
@@ -233,43 +227,6 @@ public:
   void SetCurrentObject (iDynamicObject* dynobj);
   void AddCurrentObject (iDynamicObject* dynobj);
 
-  /**
-   * Move the camera.
-   */
-  void CamMove (const csVector3& pos);
-
-  /**
-   * Move the camera and let it look in some direction.
-   */
-  void CamMoveAndLookAt (const csVector3& pos, const csVector3& rot);
-
-  /**
-   * Let the camera look in some direction.
-   */
-  void CamLookAt (const csVector3& rot);
-
-  /**
-   * Get the current camera position and rotation.
-   */
-  CamLocation GetCameraLocation ();
-
-  /**
-   * Set the current camera position and rotation.
-   */
-  void SetCameraLocation (const CamLocation& loc);
-
-  /// Enable gravity.
-  void EnableGravity ();
-
-  /// Disable gravity.
-  void DisableGravity ();
-
-  /// Enable panning.
-  void EnablePanning (const csVector3& center);
-
-  /// Disable panning.
-  void DisablePanning ();
-
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
 
@@ -278,6 +235,9 @@ public:
 
   /// Spawn an item.
   void SpawnItem (const csString& name);
+
+  /// Get the camera.
+  Camera& GetCamera () { return camera; }
 
   /**
    * Delete all currently selected objects.

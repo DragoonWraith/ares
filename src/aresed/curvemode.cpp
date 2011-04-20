@@ -93,7 +93,7 @@ void CurveMode::StopDrag ()
 
 void CurveMode::FramePre()
 {
-  iCamera* camera = aresed->GetCamera ();
+  iCamera* camera = aresed->GetCsCamera ();
   iGraphics2D* g2d = aresed->GetG2D ();
   if (do_dragging)
   {
@@ -155,7 +155,7 @@ void CurveMode::Frame2D()
   iGraphics2D* g2d = aresed->GetG2D ();
 
   float sy = g2d->GetHeight ();
-  iCamera* camera = aresed->GetCamera ();
+  iCamera* camera = aresed->GetCsCamera ();
   const csOrthoTransform& camtrans = camera->GetTransform ();
   iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
@@ -236,7 +236,7 @@ size_t CurveMode::FindCurvePoint (int mouseX, int mouseY)
   iGraphics2D* g2d = aresed->GetG2D ();
 
   float sy = g2d->GetHeight ();
-  iCamera* camera = aresed->GetCamera ();
+  iCamera* camera = aresed->GetCsCamera ();
   const csOrthoTransform& camtrans = camera->GetTransform ();
   float bestSqDist = 1000000000.0;
   size_t bestIdx = csArrayItemNotFound;
@@ -300,7 +300,7 @@ void CurveMode::FlatPoint (size_t idx)
   const csVector3& f = editingCurveFactory->GetFront (idx);
   const csVector3& u = editingCurveFactory->GetUp (idx);
   pos.y += 100.0;
-  iSector* sector = aresed->GetCamera ()->GetSector ();
+  iSector* sector = aresed->GetCsCamera ()->GetSector ();
 
   csFlags oldFlags = mesh->GetFlags ();
   mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
@@ -396,7 +396,7 @@ bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
   if (mouseX > aresed->GetViewWidth ()) return false;
   if (mouseY > aresed->GetViewHeight ()) return false;
 
-  csVector3 startBeam = aresed->GetCamera ()->GetTransform ().GetOrigin ();
+  csVector3 startBeam = aresed->GetCsCamera ()->GetTransform ().GetOrigin ();
 
   uint32 mod = csMouseEventHelper::GetModifiers (&ev);
   bool shift = mod & CSMASK_SHIFT;

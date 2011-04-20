@@ -39,7 +39,7 @@ static csVector3 GetConfigVector (iConfigFile* config,
   return v;
 }
 
-AppAresEdit::AppAresEdit() : csApplicationFramework()
+AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
 {
   SetApplicationName("ares");
   do_debug = false;
@@ -51,7 +51,6 @@ AppAresEdit::AppAresEdit() : csApplicationFramework()
   editMode = 0;
   mainMode = 0;
   curveMode = 0;
-  do_panning = false;
   curvedFactoryCounter = 0;
 }
 
@@ -65,65 +64,15 @@ AppAresEdit::~AppAresEdit()
 
 void AppAresEdit::DoStuffOncePerFrame()
 {
-  /* Note: this code is taken from simpmap tutorial.
-           /c/System9/proj/CrystalSpaceLibs/common/include/elements/CEGUICheckbox.h:Remove or customize it !
-  */
   // First get elapsed time from the virtual clock.
   csTicks elapsed_time = vc->GetElapsedTicks ();
-  iCamera* camera = view->GetCamera ();
-  nature->UpdateTime (currentTime, camera);
+  nature->UpdateTime (currentTime, GetCsCamera ());
   if (do_auto_time)
     currentTime += elapsed_time;
-  // speed is a "magic value" which can help with FPS independence
-  //float speed = (elapsed_time / 1000.0) * (0.03 * 20);
 
-  csVector3 obj_move (0);
-  csVector3 obj_rotate (0);
-  bool slow = kbd->GetKeyState (CSKEY_CTRL);
+  camera.Frame (elapsed_time);
 
-  if (kbd->GetKeyState (CSKEY_SHIFT))
-  {
-    // If the user is holding down shift, the arrow keys will cause
-    // the camera to strafe up, down, left or right from it's
-    // current position.
-    if (kbd->GetKeyState ('d'))
-      obj_move = CS_VEC_RIGHT * 3.0f;
-    if (kbd->GetKeyState ('a'))
-      obj_move = CS_VEC_LEFT * 3.0f;
-    if (kbd->GetKeyState ('w'))
-      obj_move = CS_VEC_UP * 3.0f;
-    if (kbd->GetKeyState ('s'))
-      obj_move = CS_VEC_DOWN * 3.0f;
-  }
-  else
-  { 
-    // left and right cause the camera to rotate on the global Y
-    // axis; page up and page down cause the camera to rotate on the
-    // _camera's_ X axis (more on this in a second) and up and down
-    // arrows cause the camera to go forwards and backwards.
-    if (kbd->GetKeyState ('d'))
-      obj_rotate.Set (0, 1, 0);
-    if (kbd->GetKeyState ('a'))
-      obj_rotate.Set (0, -1, 0);
-    if (kbd->GetKeyState (CSKEY_PGUP))
-      obj_rotate.Set (1, 0, 0);
-    if (kbd->GetKeyState (CSKEY_PGDN))
-      obj_rotate.Set (-1, 0, 0);
-    if (kbd->GetKeyState ('w'))
-      obj_move = CS_VEC_FORWARD * 3.0f;
-    if (kbd->GetKeyState ('s'))
-      obj_move = CS_VEC_BACKWARD * 3.0f;
-  } 
-
-  const float speed = elapsed_time / 1000.0;
-
-  collider_actor.Move (speed, slow ? 0.5f : 2.0f, obj_move, obj_rotate);
-
-  // To get the camera/actor position, you can use that:
-  //iCamera* cam = view->GetCamera ();
-  //csVector3 pos (cam->GetTransform ().GetOrigin ());
-
-  csReversibleTransform tc = camera->GetTransform ();
+  csReversibleTransform tc = GetCsCamera ()->GetTransform ();
   //csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (0, 0, .5);
   csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (2, 0, 2);
   camlight->GetMovable ()->GetTransform ().SetOrigin (pos);
@@ -134,10 +83,11 @@ void AppAresEdit::DoStuffOncePerFrame()
   if (do_simulation)
   {
     float dynamicSpeed = 1.0f;
+    const float speed = elapsed_time / 1000.0;
     dyn->Step (speed / dynamicSpeed);
   }
 
-  dynworld->PrepareView (view->GetCamera (), elapsed_time);
+  dynworld->PrepareView (GetCsCamera (), elapsed_time);
 }
 
 void AppAresEdit::Frame()
@@ -270,10 +220,8 @@ bool AppAresEdit::OnMouseDown (iEvent& ev)
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
 
-  if (but == 3)	// MouseWheelUp
-    collider_actor.Move (1.0f, 6.0f, CS_VEC_FORWARD * 3.0f, csVector3 (0));
-  else if (but == 4)	// MouseWheelDown
-    collider_actor.Move (1.0f, 6.0f, CS_VEC_BACKWARD * 3.0f, csVector3 (0));
+  if (camera.OnMouseDown (ev, but, mouseX, mouseY))
+    return true;
 
   return editMode->OnMouseDown (ev, but, mouseX, mouseY);
 }
@@ -283,6 +231,9 @@ bool AppAresEdit::OnMouseUp (iEvent& ev)
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
+
+  if (camera.OnMouseUp (ev, but, mouseX, mouseY))
+    return true;
 
   return editMode->OnMouseUp (ev, but, mouseX, mouseY);
 }
@@ -399,57 +350,6 @@ bool AppAresEdit::OnSimulationSelected (const CEGUI::EventArgs&)
 {
   do_simulation = simulationCheck->isSelected ();
   return true;
-}
-
-CamLocation AppAresEdit::GetCameraLocation ()
-{
-  CamLocation loc;
-  loc.pos = view->GetCamera ()->GetTransform ().GetOrigin ();
-  loc.rot = collider_actor.GetRotation ();
-  return loc;
-}
-
-void AppAresEdit::SetCameraLocation (const CamLocation& loc)
-{
-  view->GetCamera ()->GetTransform ().SetOrigin (loc.pos);
-  collider_actor.SetRotation (loc.rot);
-}
-
-void AppAresEdit::CamMove (const csVector3& pos)
-{
-  view->GetCamera ()->GetTransform ().SetOrigin (pos);
-}
-
-void AppAresEdit::CamMoveAndLookAt (const csVector3& pos, const csVector3& rot)
-{
-  view->GetCamera ()->GetTransform ().SetOrigin (pos);
-  collider_actor.SetRotation (rot);
-}
-
-void AppAresEdit::CamLookAt (const csVector3& rot)
-{
-  collider_actor.SetRotation (rot);
-}
-
-void AppAresEdit::EnableGravity ()
-{
-  collider_actor.SetGravity (9.806);
-}
-
-void AppAresEdit::DisableGravity ()
-{
-  collider_actor.SetGravity (0);
-}
-
-void AppAresEdit::EnablePanning (const csVector3& center)
-{
-  do_panning = true;
-  panningCenter = center;
-}
-
-void AppAresEdit::DisablePanning ()
-{
-  do_panning = false;
 }
 
 void AppAresEdit::DeleteSelectedObjects ()
@@ -1118,25 +1018,8 @@ bool AppAresEdit::PostLoadMap ()
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
-  // Creates an accessor for configuration settings.
-  csConfigAccess cfgAcc (GetObjectRegistry ());
-
-  // Find the starting position in this level.
-  csVector3 pos (0, 10, 0);
-  // Now we need to position the camera in our world.
-  view->GetCamera ()->SetSector (sector);
-  view->GetCamera ()->GetTransform ().SetOrigin (pos);
-
-  // Initialize our collider actor.
-  collider_actor.SetCollideSystem (cdsys);
-  collider_actor.SetEngine (engine);
-  collider_actor.SetGravity (9.806);
-  // Read the values from config files, and use default values if not set.
-  csVector3 legs (GetConfigVector (cfgAcc, "Actor.Legs", "0.2,0.5,0.2"));
-  csVector3 body (GetConfigVector (cfgAcc, "Actor.Body", "0.2,1.8,0.2"));
-  csVector3 shift (GetConfigVector (cfgAcc, "Actor.Shift", "0.0,-1.7,0.0"));
-  collider_actor.InitializeColliders (view->GetCamera (),
-        legs, body, shift);
+  // Setup the camera.
+  camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
 
   return true;
 }
