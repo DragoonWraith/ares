@@ -296,16 +296,12 @@ void Camera::CamLookAtPosition (const csVector3& center)
 
 void Camera::CamZoom (int x, int y)
 {
-  csVector3 startBeam, endBeam, isect;
-  if (!aresed->TraceBeam (x, y, startBeam, endBeam, isect))
-  {
-    csSectorHitBeamResult result = camera->GetSector ()->HitBeamPortals (startBeam, endBeam);
-    if (!result.mesh) return;
-    isect = result.isect;
-  }
+  csVector2 v2d (x, aresed->GetG2D ()->GetHeight () - y);
+  csVector3 v3d = camera->InvPerspective (v2d, 10);
+  csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
 
-  CamLookAtPosition (isect);
-  CamMove (startBeam + (isect-startBeam) * 0.1f);
+  CamLookAtPosition (endBeam);
+  CamMove (endBeam);
 }
 
 void Camera::EnableGravity ()
