@@ -180,30 +180,10 @@ bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
   return true;
 }
 
-static float GetAngle2D (float dx, float dy)
-{
-  if (dy < 0)
-    return 2 * M_PI - acos (dx);
-  else
-    return acos (dx);
-}
-
-static float GetHorizontalAngle (const csVector3& diff)
-{
-  csVector2 diff2 (diff.x, diff.z);
-  float n = diff2.Norm ();
-  if (fabs (n) < .00001) return 0.0;
-  diff2 /= n;
-  return GetAngle2D (diff2.y, diff2.x);
-}
-
 bool CameraWindow::OnLookAtButtonClicked (const CEGUI::EventArgs& e)
 {
   csVector3 center = GetCenterSelected ();
-  iCamera* cam = aresed->GetCsCamera ();
-  csVector3 diff = center - cam->GetTransform ().GetOrigin ();
-  float angle = GetHorizontalAngle (diff);
-  aresed->GetCamera ().CamLookAt (csVector3 (0, angle, 0));
+  aresed->GetCamera ().CamLookAtPosition (center);
   return true;
 }
 

@@ -286,6 +286,12 @@ public:
   void SetStaticSelectedObjects (bool st);
 
   /**
+   * Given a screen position, calculate the rigid body at that position.
+   */
+  iRigidBody* TraceBeam (int x, int y, csVector3& startBeam, csVector3& endBeam,
+      csVector3& isect);
+
+  /**
    * Final cleanup.
    */
   virtual void OnExit();

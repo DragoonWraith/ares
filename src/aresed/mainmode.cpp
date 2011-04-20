@@ -363,38 +363,8 @@ bool MainMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
   bool alt = mod & CSMASK_ALT;
 
   // Compute the end beam points
-  iCamera* camera = aresed->GetCsCamera ();
-  csVector2 v2d (mouseX, aresed->GetG2D ()->GetHeight () - mouseY);
-  csVector3 v3d = camera->InvPerspective (v2d, 10000);
-  csVector3 startBeam = camera->GetTransform ().GetOrigin ();
-  csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
-
-  // Trace the physical beam
-  iRigidBody* hitBody = 0;
-  csVector3 isect;
-  CS::Physics::Bullet::HitBeamResult result = aresed->GetBulletSystem ()->HitBeam (startBeam, endBeam);
-  if (result.body)
-  {
-    hitBody = result.body->QueryRigidBody ();
-    isect = result.isect;
-  }
-  else
-  {
-    printf ("Work around needed!\n"); fflush (stdout);
-    // @@@ This is a workaround for the fact that bullet->HitBeam() doesn't appear to work
-    // on mesh colliders.
-    csSectorHitBeamResult result2 = camera->GetSector ()->HitBeamPortals (startBeam, endBeam);
-    if (result2.mesh)
-    {
-      iDynamicObject* dynobj = aresed->GetDynamicWorld ()->FindObject (result2.mesh);
-      if (dynobj)
-      {
-        hitBody = dynobj->GetBody ();
-        isect = result2.isect;
-      }
-    }
-  }
-
+  csVector3 startBeam, endBeam, isect;
+  iRigidBody* hitBody = aresed->TraceBeam (mouseX, mouseY, startBeam, endBeam, isect);
   if (!hitBody)
   {
     aresed->SetCurrentObject (0);

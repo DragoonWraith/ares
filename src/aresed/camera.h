@@ -48,6 +48,14 @@ protected:
   bool do_panning;
   csVector3 panningCenter;
 
+  bool do_gravity;
+
+  CamLocation current;
+  CamLocation desired;
+
+  void InterpolateCamera (csTicks elapsed_time);
+  void SetCameraTransform (const CamLocation& loc);
+
 public:
   Camera (AppAresEdit* aresed);
 
@@ -66,6 +74,11 @@ public:
   void CamMove (const csVector3& pos);
 
   /**
+   * Move the camera relative in camera space.
+   */
+  void CamMoveRelative (const csVector3& offset, const csVector3& rotate);
+
+  /**
    * Move the camera and let it look in some direction.
    */
   void CamMoveAndLookAt (const csVector3& pos, const csVector3& rot);
@@ -74,6 +87,16 @@ public:
    * Let the camera look in some direction.
    */
   void CamLookAt (const csVector3& rot);
+
+  /**
+   * Let the camera look at some position.
+   */
+  void CamLookAtPosition (const csVector3& pos);
+
+  /**
+   * Zoom the camera to a given location as pointed too by the mouse.
+   */
+  void CamZoom (int x, int y);
 
   /**
    * Get the current camera position and rotation.

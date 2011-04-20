@@ -30,15 +30,6 @@ THE SOFTWARE.
 #include <csgeom/math3d.h>
 #include "camerawin.h"
 
-// Convenience function to get a csVector3 from a config file.
-static csVector3 GetConfigVector (iConfigFile* config,
-        const char* key, const char* def)
-{
-  csVector3 v;
-  csScanStr (config->GetStr (key, def), "%f,%f,%f", &v.x, &v.y, &v.z);
-  return v;
-}
-
 AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
 {
   SetApplicationName("ares");
@@ -212,6 +203,43 @@ void AppAresEdit::SetCurrentObject (iDynamicObject* dynobj)
   }
   mainMode->CurrentObjectsChanged (current_objects);
   camwin->CurrentObjectsChanged (current_objects);
+}
+
+iRigidBody* AppAresEdit::TraceBeam (int x, int y, csVector3& startBeam, csVector3& endBeam,
+    csVector3& isect)
+{
+  // Compute the end beam points
+  iCamera* cam = GetCsCamera ();
+  csVector2 v2d (x, GetG2D ()->GetHeight () - y);
+  csVector3 v3d = cam->InvPerspective (v2d, 10000);
+  startBeam = cam->GetTransform ().GetOrigin ();
+  endBeam = cam->GetTransform ().This2Other (v3d);
+
+  // Trace the physical beam
+  iRigidBody* hitBody = 0;
+  CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (startBeam, endBeam);
+  if (result.body)
+  {
+    hitBody = result.body->QueryRigidBody ();
+    isect = result.isect;
+  }
+  else
+  {
+    printf ("Work around needed!\n"); fflush (stdout);
+    // @@@ This is a workaround for the fact that bullet->HitBeam() doesn't appear to work
+    // on mesh colliders.
+    csSectorHitBeamResult result2 = cam->GetSector ()->HitBeamPortals (startBeam, endBeam);
+    if (result2.mesh)
+    {
+      iDynamicObject* dynobj = GetDynamicWorld ()->FindObject (result2.mesh);
+      if (dynobj)
+      {
+        hitBody = dynobj->GetBody ();
+        isect = result2.isect;
+      }
+    }
+  }
+  return hitBody;
 }
 
 bool AppAresEdit::OnMouseDown (iEvent& ev)
