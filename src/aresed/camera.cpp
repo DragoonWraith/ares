@@ -196,6 +196,18 @@ void Camera::SetCameraTransform (const CamLocation& loc)
     rot = csYRotMatrix3 (loc.rot.y);
   else
     rot = csXRotMatrix3 (loc.rot.x) * csYRotMatrix3 (loc.rot.y) * csZRotMatrix3 (loc.rot.z);
+
+#if 0
+  // The code below is equivalent to the code above.
+  // Don't know if it is better ot not though.
+  csQuaternion quat;
+  csVector3 r = loc.rot;
+  r.x = -r.x;
+  quat.SetEulerAngles (r);
+  rot.Set (quat);
+  rot.Invert ();
+#endif
+
   csOrthoTransform ot (rot, camera->GetTransform().GetOrigin ());
   camera->SetTransform (ot);
 }
@@ -260,43 +272,17 @@ void Camera::CamLookAt (const csVector3& rot)
     collider_actor.SetRotation (desired.rot);
 }
 
-static float GetAngle2D (float dx, float dy)
-{
-  if (dy < 0)
-    return 2 * M_PI - acos (dx);
-  else
-    return acos (dx);
-}
-
-static float GetHorizontalAngle (const csVector3& diff)
-{
-  csVector2 diff2 (diff.x, diff.z);
-  float n = diff2.Norm ();
-  if (fabs (n) < .00001) return 0.0;
-  diff2 /= n;
-  return GetAngle2D (diff2.y, diff2.x);
-}
-
-static float GetVerticalAngle (const csVector3& diff)
-{
-  csVector2 diff2 (diff.y, diff.z);
-  float n = diff2.Norm ();
-  if (fabs (n) < .00001) return 0.0;
-  diff2 /= n;
-  return GetAngle2D (diff2.y, diff2.x);
-}
-
 void Camera::CamLookAtPosition (const csVector3& center)
 {
   csVector3 diff = center - camera->GetTransform ().GetOrigin ();
-  float hangle = GetHorizontalAngle (diff);
-  float vangle = GetVerticalAngle (diff);
-  //printf ("diff=%g,%g,%g hangle=%g vangle=%g -> ", diff.x, diff.y, diff.z, hangle, vangle); fflush (stdout);
-  if (hangle >= PI/2.0f && hangle <= PI*1.5f)
-  {
-    vangle = PI - vangle;
-  }
-  CamLookAt (csVector3 (vangle, hangle, 0));
+
+  csOrthoTransform trans = camera->GetTransform ();
+  trans.LookAt (diff, csVector3 (0, 1, 0));
+  csQuaternion quat;
+  quat.SetMatrix (trans.GetT2O ());
+  csVector3 euler = quat.GetEulerAngles ();
+  euler.x = -euler.x;
+  CamLookAt (euler);
 }
 
 void Camera::CamZoom (int x, int y)
