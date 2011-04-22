@@ -179,7 +179,7 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     float distance = 0.0f;
     if (kbd->GetKeyState ('d')) rot_speed_y += 0.08f;
     if (kbd->GetKeyState ('a')) rot_speed_y -= 0.08f;
-    if (kbd->GetKeyState ('w')) panningDistance -= 0.5f;
+    if (kbd->GetKeyState ('w')) panningDistance = csMax (0.5f, panningDistance - 0.5f);
     if (kbd->GetKeyState ('s')) panningDistance += 0.5f;
     if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x -= 0.08f;
     if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x += 0.08f;
@@ -234,13 +234,23 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   if (but == 3)	// MouseWheelUp
   {
-    CamZoom (mouseX, mouseY, true);
-    return true;
+    if (!do_panning) 
+      CamZoom (mouseX, mouseY, true);
+    else
+      panningDistance = csMax (0.5f, panningDistance - 10.0f);
+    {
+      return true;
+    }
   }
   else if (but == 4)	// MouseWheelDown
   {
-    CamZoom (mouseX, mouseY, false);
-    return true;
+    if (!do_panning) 
+      CamZoom (mouseX, mouseY, false);
+    else
+      panningDistance += 10.0f;
+    {
+      return true;
+    }
   }
   else if (but == 2)
   {
