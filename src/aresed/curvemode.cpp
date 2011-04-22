@@ -343,13 +343,13 @@ bool CurveMode::OnFlattenButtonClicked (const CEGUI::EventArgs&)
 
 bool CurveMode::OnRotLeftButtonClicked (const CEGUI::EventArgs&)
 {
-  RotateCurrent (-M_PI);
+  RotateCurrent (-PI);
   return true;
 }
 
 bool CurveMode::OnRotRightButtonClicked (const CEGUI::EventArgs&)
 {
-  RotateCurrent (M_PI);
+  RotateCurrent (PI);
   return true;
 }
 

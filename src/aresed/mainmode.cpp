@@ -132,13 +132,13 @@ bool MainMode::OnDelButtonClicked (const CEGUI::EventArgs&)
 
 bool MainMode::OnRotLeftButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->RotateCurrent (M_PI);
+  aresed->RotateCurrent (PI);
   return true;
 }
 
 bool MainMode::OnRotRightButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->RotateCurrent (-M_PI);
+  aresed->RotateCurrent (-PI);
   return true;
 }
 

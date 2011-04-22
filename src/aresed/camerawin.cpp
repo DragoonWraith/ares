@@ -32,25 +32,25 @@ bool CameraWindow::OnNorthButtonClicked (const CEGUI::EventArgs& e)
 
 bool CameraWindow::OnSouthButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, M_PI, 0));
+  aresed->GetCamera ().CamLookAt (csVector3 (0, PI, 0));
   return true;
 }
 
 bool CameraWindow::OnWestButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, -M_PI/2, 0));
+  aresed->GetCamera ().CamLookAt (csVector3 (0, -PI/2, 0));
   return true;
 }
 
 bool CameraWindow::OnEastButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, M_PI/2, 0));
+  aresed->GetCamera ().CamLookAt (csVector3 (0, PI/2, 0));
   return true;
 }
 
 bool CameraWindow::OnTopDownButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-M_PI/2, 0, 0));
+  aresed->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
   return true;
 }
 
@@ -160,7 +160,7 @@ bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
   float xdim = box.MaxX ()-box.MinX ();
   float zdim = box.MaxZ ()-box.MinZ ();
   csVector3 origin = box.GetCenter () + csVector3 (0, MAX(xdim,zdim), 0);
-  aresed->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-M_PI/2, 0, 0));
+  aresed->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
   return true;
 }
 

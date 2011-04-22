@@ -532,13 +532,13 @@ static void FindBestAlignedTransform (const csReversibleTransform& masterTrans,
     csVector3 front = masterCopy.GetFront ();
     csVector3 fr = slaveTrans.GetFront ();
     float angle = GetAngle (front.x, front.z, fr.x, fr.z);
-    if (fabs (angle) <= (M_PI / 4.0))
+    if (fabs (angle) <= (PI / 4.0))
     {
       slaveTrans.SetO2T (masterCopy.GetO2T ());
       return;
     }
     i--;
-    masterCopy.RotateOther (csVector3 (0, 1, 0), M_PI/2.0);
+    masterCopy.RotateOther (csVector3 (0, 1, 0), PI/2.0);
   }
 }
 
