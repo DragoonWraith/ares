@@ -53,7 +53,7 @@ AppAresEdit::~AppAresEdit()
   delete curveMode;
 }
 
-void AppAresEdit::DoStuffOncePerFrame()
+void AppAresEdit::DoStuffOncePerFrame ()
 {
   // First get elapsed time from the virtual clock.
   csTicks elapsed_time = vc->GetElapsedTicks ();
@@ -61,7 +61,7 @@ void AppAresEdit::DoStuffOncePerFrame()
   if (do_auto_time)
     currentTime += elapsed_time;
 
-  camera.Frame (elapsed_time);
+  camera.Frame (elapsed_time, mouseX, mouseY);
 
   csReversibleTransform tc = GetCsCamera ()->GetTransform ();
   //csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (0, 0, .5);
@@ -81,7 +81,7 @@ void AppAresEdit::DoStuffOncePerFrame()
   dynworld->PrepareView (GetCsCamera (), elapsed_time);
 }
 
-void AppAresEdit::Frame()
+void AppAresEdit::Frame ()
 {
   /*
     Note: if you use CEL, you probably don't want to call DoStuffOncePerFrame()
@@ -128,6 +128,10 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
   // Save the mouse position
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
+
+  if (camera.OnMouseMove (ev, mouseX, mouseY))
+    return true;
+
   return editMode->OnMouseMove(ev, mouseX, mouseY);
 
   return false;
@@ -205,7 +209,8 @@ void AppAresEdit::SetCurrentObject (iDynamicObject* dynobj)
   camwin->CurrentObjectsChanged (current_objects);
 }
 
-iRigidBody* AppAresEdit::TraceBeam (int x, int y, csVector3& startBeam, csVector3& endBeam,
+iRigidBody* AppAresEdit::TraceBeam (int x, int y,
+    csVector3& startBeam, csVector3& endBeam,
     csVector3& isect)
 {
   // Compute the end beam points
@@ -266,6 +271,26 @@ bool AppAresEdit::OnMouseUp (iEvent& ev)
   return editMode->OnMouseUp (ev, but, mouseX, mouseY);
 }
 
+bool AppAresEdit::AreObjectsSelected () const
+{
+  return current_objects.GetSize () >= 1;
+}
+
+csVector3 AppAresEdit::GetCenterSelected ()
+{
+  csVector3 center (0);
+  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicObject* dynobj = it.Next ();
+    const csBox3& box = dynobj->GetFactory ()->GetBBox ();
+    const csReversibleTransform& tr = dynobj->GetTransform ();
+    center += tr.This2Other (box.GetCenter ());
+  }
+  center /= current_objects.GetSize ();
+  return center;
+}
+
 bool AppAresEdit::OnKeyboard(iEvent& ev)
 {
   if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
@@ -296,6 +321,18 @@ bool AppAresEdit::OnKeyboard(iEvent& ev)
     else if (code == CSKEY_F3)
     {
       do_auto_time = !do_auto_time;
+    }
+    else if (code == 'p')
+    {
+      if (GetCamera ().IsPanningEnabled ())
+      {
+	GetCamera ().DisablePanning ();
+      }
+      else if (AreObjectsSelected ())
+      {
+        csVector3 center = GetCenterSelected ();
+        GetCamera ().EnablePanning (center);
+      }
     }
     else if (code == 'c')
     {

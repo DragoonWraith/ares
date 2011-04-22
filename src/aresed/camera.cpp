@@ -30,19 +30,24 @@ THE SOFTWARE.
 Camera::Camera (AppAresEdit* aresed) : aresed (aresed)
 {
   do_panning = false;
+  do_mouse_panning = false;
   do_gravity = false;
   camera = 0;
 }
 
 void Camera::EnablePanning (const csVector3& center)
 {
+  DisableGravity ();
   do_panning = true;
   panningCenter = center;
+  CamLookAtPosition (center);
+  panningDistance = sqrt (csSquaredDist::PointPoint (center, desired.pos));
 }
 
 void Camera::DisablePanning ()
 {
   do_panning = false;
+  // @@@ Bug! In case camera window is open it should be notified!
 }
 
 // Convenience function to get a csVector3 from a config file.
@@ -94,17 +99,76 @@ void Camera::InterpolateCamera (csTicks elapsed_time)
   SetCameraTransform (current);
 }
 
-void Camera::Frame (csTicks elapsed_time)
+float Camera::CalculatePanningVerticalAngle ()
+{
+  csVector3 rpos = desired.pos - panningCenter;
+  float normalizedY = rpos.y / panningDistance;
+  if (normalizedY >= 1.0f) normalizedY = 1.0f;
+  float angle = acos (normalizedY);
+  if (rpos.z < 0.0f) angle = PI*2.0f - angle;
+  return angle;
+}
+
+float Camera::CalculatePanningHorizontalAngle ()
+{
+  csVector3 rpos = desired.pos - panningCenter;
+  float normalizedX = rpos.x / panningDistance;
+  if (normalizedX >= 1.0f) normalizedX = 1.0f;
+  float angle = acos (normalizedX);
+  if (rpos.z < 0.0f) angle = PI*2.0f - angle;
+  return angle;
+}
+
+csVector3 Camera::CalculatePanningPosition (float angleX, float angleY)
+{
+  csVector3 rpos (0);
+  rpos.x = cos (angleY) * panningDistance;
+  rpos.y = cos (angleX) * panningDistance;
+  rpos.z = sin (angleY) * panningDistance;
+  return panningCenter + rpos;
+}
+
+void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)
+{
+  float angleX = CalculatePanningVerticalAngle ();
+  float angleY = CalculatePanningHorizontalAngle ();
+
+  panningDistance += distance;
+  angleX += rot_speed_x;
+  angleY += rot_speed_y;
+  desired.pos = CalculatePanningPosition (angleX, angleY);
+  CamLookAtPosition (panningCenter);
+}
+
+void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
 {
   if (!do_gravity)
     InterpolateCamera (elapsed_time);
 
+  if (do_mouse_panning) return;
+
   iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
 
-  csVector3 obj_move (0);
   float rot_speed_y = 0.0f;
   float rot_speed_x = 0.0f;
+
+  if (do_panning)
+  {
+    float distance = 0.0f;
+    if (kbd->GetKeyState ('d')) rot_speed_y += 0.08f;
+    if (kbd->GetKeyState ('a')) rot_speed_y -= 0.08f;
+    if (kbd->GetKeyState ('w')) panningDistance -= 0.5f;
+    if (kbd->GetKeyState ('s')) panningDistance += 0.5f;
+    if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x -= 0.08f;
+    if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x += 0.08f;
+    if (panningDistance < 0.1f) panningDistance = 0.1f;
+    float speed = slow ? 0.1f : 1.0f;
+    Pan (rot_speed_x * speed, rot_speed_y * speed, distance * speed);
+    return;
+  }
+
+  csVector3 obj_move (0);
   if (kbd->GetKeyState (CSKEY_SHIFT))
   {
     // If the user is holding down shift, the arrow keys will cause
@@ -157,11 +221,54 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     CamMoveRelative (CS_VEC_BACKWARD * 10.0f, 0.0f, 0.0f);
     return true;
   }
+  else if (but == 2)
+  {
+    DisablePanning ();
+    if (!do_mouse_panning)
+    {
+      csVector3 start, end, isect;
+      aresed->TraceBeam (mouseX, mouseY, start, end, isect);
+      EnablePanning (isect);
+      if (panningDistance > 200.0f)
+      {
+	// Safety.
+	DisablePanning ();
+      }
+      else
+      {
+	do_mouse_panning = true;
+	int w = aresed->GetG2D ()->GetWidth ();
+	int h = aresed->GetG2D ()->GetHeight ();
+	aresed->GetG2D ()->SetMousePosition (w / 2, h / 2);
+      }
+    }
+  }
   return false;
 }
 
 bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  if (but == 2)
+  {
+    if (do_mouse_panning)
+    {
+      do_mouse_panning = false;
+      DisablePanning ();
+    }
+  }
+  return false;
+}
+
+bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
+{
+  if (do_mouse_panning)
+  {
+    int w = aresed->GetG2D ()->GetWidth () / 2;
+    int h = aresed->GetG2D ()->GetHeight () / 2;
+    aresed->GetG2D ()->SetMousePosition (w, h);
+    Pan (float (mouseY-h) / 30.0f, float (w-mouseX) / 30.0f, 0.0f);
+    return true;
+  }
   return false;
 }
 
@@ -269,7 +376,8 @@ void Camera::CamLookAt (const csVector3& rot)
 
 void Camera::CamLookAtPosition (const csVector3& center)
 {
-  csVector3 diff = center - camera->GetTransform ().GetOrigin ();
+  //csVector3 diff = center - camera->GetTransform ().GetOrigin ();
+  csVector3 diff = center - desired.pos;
 
   csOrthoTransform trans = camera->GetTransform ();
   trans.LookAt (diff, csVector3 (0, 1, 0));
@@ -290,6 +398,8 @@ void Camera::CamZoom (int x, int y)
 
 void Camera::EnableGravity ()
 {
+  if (do_gravity) return;
+  DisablePanning ();
   do_gravity = true;
   collider_actor.SetGravity (9.806);
   CamMoveAndLookAt (current.pos, current.rot);
@@ -297,6 +407,8 @@ void Camera::EnableGravity ()
 
 void Camera::DisableGravity ()
 {
+  if (!do_gravity) return;
+  // @@@ Bug! In case camera window is open it should be notified!
   do_gravity = false;
   collider_actor.SetGravity (0);
   if (camera)

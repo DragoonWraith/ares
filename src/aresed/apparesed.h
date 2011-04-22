@@ -286,6 +286,16 @@ public:
   void SetStaticSelectedObjects (bool st);
 
   /**
+   * Return the center of all selected objects.
+   */
+  csVector3 GetCenterSelected ();
+  
+  /**
+   * Return true if there are selected objects.
+   */
+  bool AreObjectsSelected () const;
+
+  /**
    * Given a screen position, calculate the rigid body at that position.
    */
   iRigidBody* TraceBeam (int x, int y, csVector3& startBeam, csVector3& endBeam,

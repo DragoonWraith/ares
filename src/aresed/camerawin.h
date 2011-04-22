@@ -76,7 +76,6 @@ private:
   bool OnPanSelected (const CEGUI::EventArgs&);
   CEGUI::Checkbox* panCheck;
 
-  csVector3 GetCenterSelected ();
   csBox3 GetBoxSelected ();
 
 public:

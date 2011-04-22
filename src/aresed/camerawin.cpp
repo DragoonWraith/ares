@@ -114,22 +114,6 @@ bool CameraWindow::OnR4ButtonClicked (const CEGUI::EventArgs& e)
   return true;
 }
 
-csVector3 CameraWindow::GetCenterSelected ()
-{
-  csArray<iDynamicObject*>& objects = aresed->GetCurrentObjects ();
-  csVector3 center (0);
-  csArray<iDynamicObject*>::Iterator it = objects.GetIterator ();
-  while (it.HasNext ())
-  {
-    iDynamicObject* dynobj = it.Next ();
-    const csBox3& box = dynobj->GetFactory ()->GetBBox ();
-    const csReversibleTransform& tr = dynobj->GetTransform ();
-    center += tr.This2Other (box.GetCenter ());
-  }
-  center /= objects.GetSize ();
-  return center;
-}
-
 csBox3 CameraWindow::GetBoxSelected ()
 {
   csArray<iDynamicObject*>& objects = aresed->GetCurrentObjects ();
@@ -182,8 +166,11 @@ bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
 
 bool CameraWindow::OnLookAtButtonClicked (const CEGUI::EventArgs& e)
 {
-  csVector3 center = GetCenterSelected ();
-  aresed->GetCamera ().CamLookAtPosition (center);
+  if (aresed->AreObjectsSelected ())
+  {
+    csVector3 center = aresed->GetCenterSelected ();
+    aresed->GetCamera ().CamLookAtPosition (center);
+  }
   return true;
 }
 
@@ -198,6 +185,8 @@ bool CameraWindow::OnMoveToButtonClicked (const CEGUI::EventArgs& e)
 
 void CameraWindow::Show ()
 {
+  gravityCheck->setSelected(aresed->GetCamera ().IsGravityEnabled ());
+  panCheck->setSelected(aresed->GetCamera ().IsPanningEnabled ());
   camwin->show ();
 }
 
@@ -215,8 +204,11 @@ bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
 {
   if (panCheck->isSelected ())
   {
-    csVector3 center = GetCenterSelected ();
-    aresed->GetCamera ().EnablePanning (center);
+    if (aresed->AreObjectsSelected ())
+    {
+      csVector3 center = aresed->GetCenterSelected ();
+      aresed->GetCamera ().EnablePanning (center);
+    }
   }
   else
   {

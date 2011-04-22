@@ -47,7 +47,9 @@ protected:
   csColliderActor collider_actor;
 
   bool do_panning;
+  bool do_mouse_panning;
   csVector3 panningCenter;
+  float panningDistance;
 
   bool do_gravity;
 
@@ -56,18 +58,24 @@ protected:
 
   void InterpolateCamera (csTicks elapsed_time);
   void SetCameraTransform (const CamLocation& loc);
+  float CalculatePanningHorizontalAngle ();
+  float CalculatePanningVerticalAngle ();
+  csVector3 CalculatePanningPosition (float angleX, float angleY);
+  void Pan (float rot_speed_x, float rot_speed_y, float distance);
 
 public:
   Camera (AppAresEdit* aresed);
 
   void Init (iCamera* camera, iSector* sector, const csVector3& pos);
 
+  bool IsPanningEnabled () const { return do_panning; }
   void EnablePanning (const csVector3& center);
   void DisablePanning ();
 
-  void Frame (csTicks elapsed);
+  void Frame (csTicks elapsed, int mouseX, int mouseY);
   bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
   bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
+  bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
 
   /**
    * Move the camera.
@@ -118,6 +126,8 @@ public:
    * Set the current camera position and rotation.
    */
   void SetCameraLocation (const CamLocation& loc);
+
+  bool IsGravityEnabled () const { return do_gravity; }
 
   /// Enable gravity.
   void EnableGravity ();

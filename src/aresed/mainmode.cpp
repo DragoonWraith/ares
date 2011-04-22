@@ -350,7 +350,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   return false;
 }
 
-bool MainMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
+bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (!(but == 0 || but == 1)) return false;
 
