@@ -32,7 +32,8 @@ class AppAresEdit;
 struct CamLocation
 {
   csVector3 pos;
-  csVector3 rot;
+  //csVector3 rot;
+  csQuaternion rot;
 };
 
 class Camera
@@ -76,12 +77,22 @@ public:
   /**
    * Move the camera relative in camera space.
    */
-  void CamMoveRelative (const csVector3& offset, const csVector3& rotate);
+  void CamMoveRelative (const csVector3& offset, float angleX, float angleY);
+
+  /**
+   * Move the camera and let it look in some direction.
+   */
+  void CamMoveAndLookAt (const csVector3& pos, const csQuaternion& rot);
 
   /**
    * Move the camera and let it look in some direction.
    */
   void CamMoveAndLookAt (const csVector3& pos, const csVector3& rot);
+
+  /**
+   * Let the camera look in some direction.
+   */
+  void CamLookAt (const csQuaternion& rot);
 
   /**
    * Let the camera look in some direction.

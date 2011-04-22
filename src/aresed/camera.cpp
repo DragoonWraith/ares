@@ -62,7 +62,6 @@ void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos)
   camera->SetSector (sector);
   camera->GetTransform ().SetOrigin (pos);
   current.pos = pos;
-  current.rot = csVector3 (0, 0, 0);
   desired = current;
 
   // Initialize our collider actor.
@@ -80,41 +79,17 @@ void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos)
   collider_actor.InitializeColliders (camera, legs, body, shift);
 }
 
-static float InterpolateAngle (float desired, float current, float damping)
-{
-  float PI2 = PI * 2.0f;
-  while (desired < 0) desired += PI2;
-  while (desired >= PI2) desired -= PI2;
-  while (current < 0) current += PI2;
-  while (current >= PI2) current -= PI2;
-
-  if (fabs (current-desired) < PI)
-    return current + (desired - current) * damping;
-
-  if (current < desired)
-    current += PI2;
-  else
-    desired += PI2;
-
-  current += (desired - current) * damping;
-  if (current >= PI2) current -= PI2;
-  else if (current < 0) current += PI2;
-  return current;
-}
-
 void Camera::InterpolateCamera (csTicks elapsed_time)
 {
   float sqdist = csSquaredDist::PointPoint (current.pos, desired.pos);
-  bool rotEqual = (current.rot - desired.rot).IsZero ();
+  bool rotEqual = (current.rot.v - desired.rot.v).IsZero ()
+    && fabs (current.rot.w - desired.rot.w) < 0.00001f;
   if (sqdist < 0.02f && rotEqual) return;
 
   float damping = 10.0f * float (elapsed_time) / 1000.0f;
   if (damping >= 1.0f) damping = 1.0f;
   current.pos += (desired.pos - current.pos) * damping;
-
-  current.rot.x = InterpolateAngle (desired.rot.x, current.rot.x, damping);
-  current.rot.y = InterpolateAngle (desired.rot.y, current.rot.y, damping);
-  current.rot.z = InterpolateAngle (desired.rot.z, current.rot.z, damping);
+  current.rot = current.rot.SLerp (desired.rot, damping);
 
   SetCameraTransform (current);
 }
@@ -128,16 +103,17 @@ void Camera::Frame (csTicks elapsed_time)
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
 
   csVector3 obj_move (0);
-  csVector3 obj_rotate (0);
+  float rot_speed_y = 0.0f;
+  float rot_speed_x = 0.0f;
   if (kbd->GetKeyState (CSKEY_SHIFT))
   {
     // If the user is holding down shift, the arrow keys will cause
     // the camera to strafe up, down, left or right from it's
     // current position.
-    if (kbd->GetKeyState ('d')) obj_move = CS_VEC_RIGHT * 3.0f;
-    if (kbd->GetKeyState ('a')) obj_move = CS_VEC_LEFT * 3.0f;
-    if (kbd->GetKeyState ('w')) obj_move = CS_VEC_UP * 3.0f;
-    if (kbd->GetKeyState ('s')) obj_move = CS_VEC_DOWN * 3.0f;
+    if (kbd->GetKeyState ('d')) obj_move += CS_VEC_RIGHT * 3.0f;
+    if (kbd->GetKeyState ('a')) obj_move += CS_VEC_LEFT * 3.0f;
+    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_UP * 3.0f;
+    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_DOWN * 3.0f;
   }
   else
   {
@@ -145,23 +121,25 @@ void Camera::Frame (csTicks elapsed_time)
     // axis; page up and page down cause the camera to rotate on the
     // _camera's_ X axis (more on this in a second) and up and down
     // arrows cause the camera to go forwards and backwards.
-    if (kbd->GetKeyState ('d')) obj_rotate.Set (0, 1, 0);
-    if (kbd->GetKeyState ('a')) obj_rotate.Set (0, -1, 0);
-    if (kbd->GetKeyState (CSKEY_PGUP)) obj_rotate.Set (1, 0, 0);
-    if (kbd->GetKeyState (CSKEY_PGDN)) obj_rotate.Set (-1, 0, 0);
-    if (kbd->GetKeyState ('w')) obj_move = CS_VEC_FORWARD * 3.0f;
-    if (kbd->GetKeyState ('s')) obj_move = CS_VEC_BACKWARD * 3.0f;
-  } 
+    if (kbd->GetKeyState ('d')) rot_speed_y -= 0.1f;
+    if (kbd->GetKeyState ('a')) rot_speed_y += 0.1f;
+    if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x += 0.1f;
+    if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x -= 0.1f;
+    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_FORWARD * 3.0f;
+    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_BACKWARD * 3.0f;
+  }
 
   if (do_gravity)
   {
     const float speed = elapsed_time / 1000.0;
-    collider_actor.Move (speed, slow ? 0.5f : 2.0f, obj_move, obj_rotate);
+    csVector3 obj_rotate = rot_speed_x * csVector3 (1, 0, 0) +
+      rot_speed_y * csVector3 (0, -1, 0);
+    collider_actor.Move (speed, slow ? 0.5f : 2.0f, obj_move, obj_rotate * 10.0f);
   }
   else
   {
     float speed = slow ? 0.1f : 1.0f;
-    CamMoveRelative (obj_move * speed, obj_rotate * speed);
+    CamMoveRelative (obj_move * speed, rot_speed_x * speed, rot_speed_y * speed);
   }
 }
 
@@ -176,7 +154,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
   else if (but == 4)	// MouseWheelDown
   {
-    CamMoveRelative (CS_VEC_BACKWARD * 10.0f, csVector3 (0));
+    CamMoveRelative (CS_VEC_BACKWARD * 10.0f, 0.0f, 0.0f);
     return true;
   }
   return false;
@@ -189,27 +167,25 @@ bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 
 void Camera::SetCameraTransform (const CamLocation& loc)
 {
-  camera->GetTransform ().SetOrigin (loc.pos);
-
-  csMatrix3 rot;
-  if (fabs (loc.rot.x) < SMALL_EPSILON && fabs (loc.rot.z) < SMALL_EPSILON)
-    rot = csYRotMatrix3 (loc.rot.y);
-  else
-    rot = csXRotMatrix3 (loc.rot.x) * csYRotMatrix3 (loc.rot.y) * csZRotMatrix3 (loc.rot.z);
-
-#if 0
-  // The code below is equivalent to the code above.
-  // Don't know if it is better ot not though.
-  csQuaternion quat;
-  csVector3 r = loc.rot;
-  r.x = -r.x;
-  quat.SetEulerAngles (r);
-  rot.Set (quat);
-  rot.Invert ();
-#endif
-
-  csOrthoTransform ot (rot, camera->GetTransform().GetOrigin ());
+  csMatrix3 rot = loc.rot.GetMatrix ();
+  csOrthoTransform ot (rot, loc.pos);
   camera->SetTransform (ot);
+}
+
+static csQuaternion RotationToQuat (const csVector3& rot)
+{
+  csVector3 r = rot;
+  r.y = -r.y;
+  csQuaternion quat;
+  quat.SetEulerAngles (r);
+  return quat;
+}
+
+static csVector3 QuatToRotation (const csQuaternion& quat)
+{
+  csVector3 euler = quat.GetEulerAngles ();
+  euler.y = -euler.y;
+  return euler;
 }
 
 CamLocation Camera::GetCameraLocation ()
@@ -218,7 +194,7 @@ CamLocation Camera::GetCameraLocation ()
   {
     CamLocation loc;
     loc.pos = camera->GetTransform ().GetOrigin ();
-    loc.rot = collider_actor.GetRotation ();
+    loc.rot = RotationToQuat (collider_actor.GetRotation ());
     return loc;
   }
   else
@@ -231,7 +207,7 @@ void Camera::SetCameraLocation (const CamLocation& loc)
   if (do_gravity)
   {
     camera->GetTransform ().SetOrigin (loc.pos);
-    collider_actor.SetRotation (loc.rot);
+    collider_actor.SetRotation (QuatToRotation (loc.rot));
   }
 }
 
@@ -242,22 +218,29 @@ void Camera::CamMove (const csVector3& pos)
     camera->GetTransform ().SetOrigin (pos);
 }
 
-void Camera::CamMoveRelative (const csVector3& offset, const csVector3& rotate)
+void Camera::CamMoveRelative (const csVector3& offset, float angleX, float angleY)
 {
   if (do_gravity)
   {
     desired = GetCameraLocation ();
   }
   desired.pos += camera->GetTransform ().This2OtherRelative (offset);
-  desired.rot += rotate / 10.0f;
+  if (fabs (angleX) > 0.0001 || fabs (angleY) > 0.0001)
+  {
+    csQuaternion rotQuatX, rotQuatY;
+    rotQuatX.SetAxisAngle (csVector3 (1, 0, 0), angleX);
+    rotQuatY.SetAxisAngle (csVector3 (0, 1, 0), angleY);
+    desired.rot = rotQuatX * desired.rot;
+    desired.rot = desired.rot * rotQuatY;
+  }
   if (do_gravity)
   {
     camera->GetTransform ().SetOrigin (desired.pos);
-    collider_actor.SetRotation (desired.rot);
+    collider_actor.SetRotation (QuatToRotation (desired.rot));
   }
 }
 
-void Camera::CamMoveAndLookAt (const csVector3& pos, const csVector3& rot)
+void Camera::CamMoveAndLookAt (const csVector3& pos, const csQuaternion& rot)
 {
   desired.pos = pos;
   desired.rot = rot;
@@ -265,11 +248,23 @@ void Camera::CamMoveAndLookAt (const csVector3& pos, const csVector3& rot)
     SetCameraLocation (desired);
 }
 
-void Camera::CamLookAt (const csVector3& rot)
+void Camera::CamMoveAndLookAt (const csVector3& pos, const csVector3& rot)
+{
+  CamMoveAndLookAt (pos, RotationToQuat (rot));
+}
+
+void Camera::CamLookAt (const csQuaternion& rot)
 {
   desired.rot = rot;
   if (do_gravity)
-    collider_actor.SetRotation (desired.rot);
+    collider_actor.SetRotation (QuatToRotation (desired.rot));
+}
+
+void Camera::CamLookAt (const csVector3& rot)
+{
+  desired.rot = RotationToQuat (rot);
+  if (do_gravity)
+    collider_actor.SetRotation (rot);
 }
 
 void Camera::CamLookAtPosition (const csVector3& center)
@@ -279,10 +274,8 @@ void Camera::CamLookAtPosition (const csVector3& center)
   csOrthoTransform trans = camera->GetTransform ();
   trans.LookAt (diff, csVector3 (0, 1, 0));
   csQuaternion quat;
-  quat.SetMatrix (trans.GetT2O ());
-  csVector3 euler = quat.GetEulerAngles ();
-  euler.x = -euler.x;
-  CamLookAt (euler);
+  quat.SetMatrix (trans.GetO2T ());
+  CamLookAt (quat);
 }
 
 void Camera::CamZoom (int x, int y)
@@ -309,7 +302,7 @@ void Camera::DisableGravity ()
   if (camera)
   {
     current.pos = camera->GetTransform ().GetOrigin ();
-    current.rot = collider_actor.GetRotation ();
+    current.rot = RotationToQuat (collider_actor.GetRotation ());
     desired = current;
   }
 }
