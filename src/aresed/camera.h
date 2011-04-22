@@ -51,6 +51,8 @@ protected:
   csVector3 panningCenter;
   float panningDistance;
 
+  bool do_mouse_dragging;
+
   bool do_gravity;
 
   CamLocation current;

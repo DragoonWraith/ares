@@ -31,6 +31,7 @@ Camera::Camera (AppAresEdit* aresed) : aresed (aresed)
 {
   do_panning = false;
   do_mouse_panning = false;
+  do_mouse_dragging = false;
   do_gravity = false;
   camera = 0;
 }
@@ -167,6 +168,7 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     InterpolateCamera (elapsed_time);
 
   if (do_mouse_panning) return;
+  if (do_mouse_dragging) return;
 
   iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
@@ -252,9 +254,22 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       return true;
     }
   }
-  else if (but == 2)
+  else if (but == 2)	// Middle mouse
   {
     DisablePanning ();
+    do_mouse_panning = false;
+    if (!do_mouse_dragging)
+    {
+      csVector3 start, end, isect;
+      aresed->TraceBeam (mouseX, mouseY, start, end, isect);
+      panningCenter = isect;
+      do_mouse_dragging = true;
+    }
+  }
+  else if (but == 1)	// RMB
+  {
+    DisablePanning ();
+    do_mouse_dragging = false;
     if (!do_mouse_panning)
     {
       csVector3 start, end, isect;
@@ -281,6 +296,13 @@ bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (but == 2)
   {
+    if (do_mouse_dragging)
+    {
+      do_mouse_dragging = false;
+    }
+  }
+  else if (but == 1)
+  {
     if (do_mouse_panning)
     {
       do_mouse_panning = false;
@@ -299,6 +321,17 @@ bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
     aresed->GetG2D ()->SetMousePosition (w, h);
     Pan (float (mouseY-h) / 30.0f, float (w-mouseX) / 30.0f, 0.0f);
     return true;
+  }
+  else if (do_mouse_dragging)
+  {
+    csVector2 v2d (mouseX, aresed->GetG2D ()->GetHeight () - mouseY);
+    csVector3 v3d = camera->InvPerspective (v2d, 10000.0f);
+    csVector3 startBeam = camera->GetTransform ().GetOrigin ();
+    csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
+    csVector3 isect;
+    csIntersect3::SegmentYPlane (startBeam, endBeam, panningCenter.y, isect);
+    desired.pos += panningCenter - isect;
+    ClampDesiredLocation ();
   }
   return false;
 }
