@@ -213,12 +213,12 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   if (but == 3)	// MouseWheelUp
   {
-    CamZoom (mouseX, mouseY);
+    CamZoom (mouseX, mouseY, true);
     return true;
   }
   else if (but == 4)	// MouseWheelDown
   {
-    CamMoveRelative (CS_VEC_BACKWARD * 10.0f, 0.0f, 0.0f);
+    CamZoom (mouseX, mouseY, false);
     return true;
   }
   else if (but == 2)
@@ -386,14 +386,52 @@ void Camera::CamLookAtPosition (const csVector3& center)
   CamLookAt (quat);
 }
 
-void Camera::CamZoom (int x, int y)
+void Camera::CamBlendLookAtPosition (const csVector3& center, float weight)
+{
+  csOrthoTransform trans = camera->GetTransform ();
+  csVector3 diff = center - trans.GetOrigin ();
+
+  csQuaternion currentQuat;
+  if (weight < 0.9999f)
+    currentQuat.SetMatrix (trans.GetO2T ());
+
+  trans.LookAt (diff, csVector3 (0, 1, 0));
+  csQuaternion quat;
+  quat.SetMatrix (trans.GetO2T ());
+
+  if (weight < 0.9999f)
+    quat = currentQuat.SLerp (quat, weight);
+
+  CamLookAt (quat);
+}
+
+void Camera::CamZoom (int x, int y, bool forward)
 {
   csVector2 v2d (x, aresed->GetG2D ()->GetHeight () - y);
-  csVector3 v3d = camera->InvPerspective (v2d, 10);
-  csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
+  csVector3 v3d = camera->InvPerspective (v2d, 10.0f);
+  csVector3 endBeamMove = camera->GetTransform ().This2Other (forward ? v3d : -v3d);
+  csVector3 endBeamLookAt = camera->GetTransform ().This2Other (v3d);
 
-  CamLookAtPosition (endBeam);
-  CamMove (endBeam);
+  int halfw = aresed->GetG2D ()->GetWidth () / 2;
+  int halfh = aresed->GetG2D ()->GetHeight () / 2;
+  int dx = x - halfw;
+  int dy = y - halfh;
+
+  csQuaternion quat;
+  quat.SetMatrix (camera->GetTransform ().GetT2O ());
+  csVector3 euler = quat.GetEulerAngles ();
+
+  if (euler.x < -1.55f && dy > 0)
+    dy = 0;
+  if (euler.x < 1.55f && dy < 0)
+    dy = 0;
+
+  dx *= dx;
+  dy *= dy;
+  float weight = csQsqrt (dx + dy) * csQisqrt (halfw * halfw + halfh * halfh);
+
+  CamBlendLookAtPosition (endBeamLookAt, weight);
+  CamMove (endBeamMove);
 }
 
 void Camera::EnableGravity ()

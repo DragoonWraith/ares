@@ -113,9 +113,14 @@ public:
   void CamLookAtPosition (const csVector3& pos);
 
   /**
+   * Blend the current camera orientation with a look at some position.
+   */
+  void CamBlendLookAtPosition (const csVector3& pos, float weight = 1.0f);
+
+  /**
    * Zoom the camera to a given location as pointed too by the mouse.
    */
-  void CamZoom (int x, int y);
+  void CamZoom (int x, int y, bool forward);
 
   /**
    * Get the current camera position and rotation.
