@@ -73,7 +73,7 @@ void Nature::UpdateTime (csTicks ticks, iCamera* camera)
 {
   iCamera* cam = camera;
 
-  static float lastStep = float (ticks % 100000) / 100000.0;
+  static float lastStep = -1000.0f;
   float step = float (ticks % 100000) / 100000.0;
 
   // Don't update if the time has not changed much.

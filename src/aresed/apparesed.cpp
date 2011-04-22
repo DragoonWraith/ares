@@ -37,7 +37,7 @@ AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
   do_simulation = true;
   filereq = 0;
   camwin = 0;
-  currentTime = 0;
+  currentTime = 31000;
   do_auto_time = false;
   editMode = 0;
   mainMode = 0;
