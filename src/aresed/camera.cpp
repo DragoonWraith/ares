@@ -128,6 +128,25 @@ csVector3 Camera::CalculatePanningPosition (float angleX, float angleY)
   return panningCenter + rpos;
 }
 
+static float TestVerticalBeam (const csVector3& start, float distance, iCamera* camera)
+{
+  csVector3 end = start;
+  end.y -= distance;
+  iSector* sector = camera->GetSector ();
+
+  csSectorHitBeamResult result = sector->HitBeamPortals (start, end);
+  if (result.mesh)
+    return result.isect.y;
+  else
+    return end.y-.1;
+}
+
+void Camera::ClampDesiredLocation ()
+{
+  float y = TestVerticalBeam (desired.pos + csVector3 (0, 100, 0), 300, camera);
+  if (desired.pos.y < y+0.5f) desired.pos.y = y+0.5f;
+}
+
 void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)
 {
   float angleX = CalculatePanningVerticalAngle ();
@@ -137,6 +156,8 @@ void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)
   angleX += rot_speed_x;
   angleY += rot_speed_y;
   desired.pos = CalculatePanningPosition (angleX, angleY);
+  ClampDesiredLocation ();
+
   CamLookAtPosition (panningCenter);
 }
 
@@ -321,6 +342,7 @@ void Camera::SetCameraLocation (const CamLocation& loc)
 void Camera::CamMove (const csVector3& pos)
 {
   desired.pos = pos;
+  ClampDesiredLocation ();
   if (do_gravity)
     camera->GetTransform ().SetOrigin (pos);
 }
@@ -332,6 +354,7 @@ void Camera::CamMoveRelative (const csVector3& offset, float angleX, float angle
     desired = GetCameraLocation ();
   }
   desired.pos += camera->GetTransform ().This2OtherRelative (offset);
+  ClampDesiredLocation ();
   if (fabs (angleX) > 0.0001 || fabs (angleY) > 0.0001)
   {
     csQuaternion rotQuatX, rotQuatY;
@@ -351,6 +374,7 @@ void Camera::CamMoveAndLookAt (const csVector3& pos, const csQuaternion& rot)
 {
   desired.pos = pos;
   desired.rot = rot;
+  ClampDesiredLocation ();
   if (do_gravity)
     SetCameraLocation (desired);
 }

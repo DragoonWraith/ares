@@ -63,6 +63,10 @@ protected:
   csVector3 CalculatePanningPosition (float angleX, float angleY);
   void Pan (float rot_speed_x, float rot_speed_y, float distance);
 
+  // Possibly clamp the desired location to the height of the terrain to
+  // avoid getting the camera in the ground.
+  void ClampDesiredLocation ();
+
 public:
   Camera (AppAresEdit* aresed);
 
