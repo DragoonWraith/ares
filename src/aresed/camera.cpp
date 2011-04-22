@@ -154,6 +154,7 @@ void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)
   float angleY = CalculatePanningHorizontalAngle ();
 
   panningDistance += distance;
+  if (panningCenter < 0.1f) panningCenter = 0.1f;
   angleX += rot_speed_x;
   angleY += rot_speed_y;
   desired.pos = CalculatePanningPosition (angleX, angleY);
@@ -181,11 +182,10 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     float distance = 0.0f;
     if (kbd->GetKeyState ('d')) rot_speed_y += 0.08f;
     if (kbd->GetKeyState ('a')) rot_speed_y -= 0.08f;
-    if (kbd->GetKeyState ('w')) panningDistance = csMax (0.5f, panningDistance - 0.5f);
-    if (kbd->GetKeyState ('s')) panningDistance += 0.5f;
+    if (kbd->GetKeyState ('w')) distance -= 0.5f;
+    if (kbd->GetKeyState ('s')) distance += 0.5f;
     if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x -= 0.08f;
     if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x += 0.08f;
-    if (panningDistance < 0.1f) panningDistance = 0.1f;
     float speed = slow ? 0.1f : 1.0f;
     Pan (rot_speed_x * speed, rot_speed_y * speed, distance * speed);
     return;
