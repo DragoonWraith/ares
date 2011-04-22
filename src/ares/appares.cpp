@@ -272,8 +272,8 @@ void AppAres::CreateActor ()
   //jump->SetDoubleJumpSpeed (7.0f);
 
   csRef<iPcTrackingCamera> trackcam = celQueryPropertyClassEntity<iPcTrackingCamera> (entity_cam);
-  trackcam->SetPanSpeed (2.5);
-  trackcam->SetTiltSpeed (1.2);
+  trackcam->SetPanSpeed (2.5f);
+  trackcam->SetTiltSpeed (1.2f);
 
   csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (entity_cam);
   camera = cam->GetCamera ();
@@ -438,7 +438,7 @@ bool AppAres::SetupWorld ()
 
   nature->InitSector (sector);
 
-  camlight = engine->CreateLight(0, csVector3(0,0,0), 10, csColor (.8,.9,1));
+  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
   lightList->Add (camlight);
 
   engine->Prepare ();

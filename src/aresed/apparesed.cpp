@@ -436,8 +436,8 @@ void AppAresEdit::MoveCurrent (const csVector3& baseVector)
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
   bool fast = kbd->GetKeyState (CSKEY_SHIFT);
   csVector3 vector = baseVector;
-  if (slow) vector *= .01;
-  else if (!fast) vector *= .1;
+  if (slow) vector *= 0.01f;
+  else if (!fast) vector *= 0.1f;
 
   csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
   while (it.HasNext ())
@@ -1050,7 +1050,7 @@ bool AppAresEdit::Application()
   }
 
   iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
-  fact->AddRigidBox (csVector3 (0), csVector3 (.2), 1.0);
+  fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
   AddItem ("Nodes", "Node");
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryTemplateCount () ; i++)
@@ -1153,7 +1153,7 @@ bool AppAresEdit::SetupWorld ()
 
   nature->InitSector (sector);
 
-  camlight = engine->CreateLight(0, csVector3(0,0,0), 10, csColor (.8,.9,1));
+  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
   lightList->Add (camlight);
 
   engine->Prepare ();

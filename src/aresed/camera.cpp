@@ -506,7 +506,7 @@ void Camera::EnableGravity ()
   if (do_gravity) return;
   DisablePanning ();
   do_gravity = true;
-  collider_actor.SetGravity (9.806);
+  collider_actor.SetGravity (9.806f);
   CamMoveAndLookAt (current.pos, current.rot);
 }
 

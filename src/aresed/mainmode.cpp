@@ -358,9 +358,9 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   if (mouseY > aresed->GetViewHeight ()) return false;
 
   uint32 mod = csMouseEventHelper::GetModifiers (&ev);
-  bool shift = mod & CSMASK_SHIFT;
-  bool ctrl = mod & CSMASK_CTRL;
-  bool alt = mod & CSMASK_ALT;
+  bool shift = (mod & CSMASK_SHIFT) != 0;
+  bool ctrl = (mod & CSMASK_CTRL) != 0;
+  bool alt = (mod & CSMASK_ALT) != 0;
 
   // Compute the end beam points
   csVector3 startBeam, endBeam, isect;

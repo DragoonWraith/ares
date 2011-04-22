@@ -48,7 +48,6 @@ enum {
   CELSET_ANALOG_MOVE_SPEED,
   CELSET_ANALOG_MOVE_ACCEL,
   CELSET_ANALOG_MOVE_DECEL,
-  CELSET_ANALOG_TURNING_SPEED,
   CELSET_ANALOG_MIN_TURNING_SPEED,
   CELSET_ANALOG_MAX_TURNING_SPEED,
   CELSET_DELEGCAM_TRANSITION_TIME,
@@ -151,9 +150,6 @@ void ActorSettings::UpdateSetting ()
     case CELSET_ANALOG_MOVE_DECEL:
       str.Format ("Analog(movement deceleration): %g", analog->GetMovementDeceleration ());
       break;
-    case CELSET_ANALOG_TURNING_SPEED:
-      str.Format ("Analog(turning speed): %g", analog->GetTurningSpeed ());
-      break;
     case CELSET_ANALOG_MIN_TURNING_SPEED:
       str.Format ("Analog(minimum turning speed): %g", analog->GetMinimumTurningSpeed ());
       break;
@@ -223,9 +219,6 @@ void ActorSettings::ChangeSetting (float dir)
     case CELSET_ANALOG_MOVE_DECEL:
       analog->SetMovementDeceleration (analog->GetMovementDeceleration () + 0.1 * dir);
       break;
-    case CELSET_ANALOG_TURNING_SPEED:
-      analog->SetTurningSpeed (analog->GetTurningSpeed () + 0.1 * dir);
-      break;
     case CELSET_ANALOG_MIN_TURNING_SPEED:
       analog->SetMinimumTurningSpeed (analog->GetMinimumTurningSpeed () + 0.1 * dir);
       break;
@@ -284,19 +277,19 @@ bool ActorSettings::ReceiveMessage (csStringID msg_id, iCelParameterBlock* param
   }
   if (msg_id == id_decrease_setting_slow || msg_id == id_decrease_setting_slow_repeat)
   {
-    ChangeSetting (-0.1);
+    ChangeSetting (-0.1f);
     UpdateSetting ();
     return true;
   }
   if (msg_id == id_increase_setting_slow || msg_id == id_increase_setting_slow_repeat)
   {
-    ChangeSetting (0.1);
+    ChangeSetting (0.1f);
     UpdateSetting ();
     return true;
   }
   if (msg_id == id_decrease_setting_fast || msg_id == id_decrease_setting_fast_repeat)
   {
-    ChangeSetting (-10);
+    ChangeSetting (-10.0f);
     UpdateSetting ();
     return true;
   }

@@ -177,7 +177,7 @@ public:
     csRef<iRigidBody> body = DOCollider::Create (dynSys, mesh, trans, sharedBody);
     const csMatrix3 tm;
     csOrthoTransform t (tm, offset);
-    t.RotateThis (csVector3 (1, 0, 0), 3.141592653589 / 2);
+    t.RotateThis (csVector3 (1.0f, 0.0f, 0.0f), HALF_PI);
     body->AttachColliderCylinder (length, radius, t, 10, 1, 0.8f);
     return body;
   }
@@ -356,11 +356,11 @@ struct DOCollector
       float maxradiusRelative = dynobj->GetFactory ()->GetMaximumRadiusRelative ();
       float sqrad = sqradius * maxradiusRelative * maxradiusRelative;
       if (dynobj->IsStatic ())
-	sqrad *= 1.1;
+        sqrad *= 1.1f;
       if (csIntersect3::BoxSphere (dynobj->GetBBox (), center, sqrad))
       {
-	prevObjects.Delete (dynobj);
-	objects.Add (dynobj);
+        prevObjects.Delete (dynobj);
+        objects.Add (dynobj);
       }
     }
     return true;

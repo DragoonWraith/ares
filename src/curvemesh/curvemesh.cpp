@@ -53,11 +53,11 @@ CS_PLUGIN_NAMESPACE_BEGIN(CurvedMesh)
 CurvedFactory::CurvedFactory (CurvedMeshCreator* creator, const char* name) :
   scfImplementationType (this), creator (creator), name (name)
 {
-  material = 0;
-  width = 1.0;
-  sideHeight = 0.4;
-  offsetHeight = 0.1;
-  flattenMesh = 0;
+  material = nullptr;
+  width = 1.0f;
+  sideHeight = 0.4f;
+  offsetHeight = 0.1f;
+  flattenMesh = nullptr;
 }
 
 CurvedFactory::~CurvedFactory ()
@@ -334,7 +334,7 @@ bool CurvedFactory::Load (iDocumentNode* node, iSyntaxService* syn)
   width = node->GetAttributeValueAsFloat ("width");
   if (fabs (width) < .0001) width = 1.0;
   sideHeight = node->GetAttributeValueAsFloat ("sideheight");
-  if (fabs (sideHeight) < .0001) sideHeight = 0.2;
+  if (fabs (sideHeight) < 0.0001f) sideHeight = 0.2f;
   csString materialName = node->GetAttributeValue ("material");
   SetMaterial (materialName);
   anchorPoints.DeleteAll ();
@@ -369,8 +369,8 @@ bool CurvedFactory::Load (iDocumentNode* node, iSyntaxService* syn)
 CurvedFactoryTemplate::CurvedFactoryTemplate (CurvedMeshCreator* creator,
     const char* name) : scfImplementationType (this), creator (creator), name (name)
 {
-  width = 1.0;
-  sideHeight = 0.2;
+  width = 1.0f;
+  sideHeight = 0.2f;
 }
 
 CurvedFactoryTemplate::~CurvedFactoryTemplate ()

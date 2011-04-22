@@ -65,7 +65,7 @@ bool Nature::Initialize (iObjectRegistry *object_reg)
 void Nature::InitSector (iSector* sector)
 {
   iLightList* lightList = sector->GetLights ();
-  sun = engine->CreateLight("Sun", csVector3(10),9000, csColor(.3,.2,.1));
+  sun = engine->CreateLight("Sun", csVector3 (10.0f), 9000, csColor (0.3f, 0.2f, 0.1f));
   lightList->Add (sun);
 }
 
