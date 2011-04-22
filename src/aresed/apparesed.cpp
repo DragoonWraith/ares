@@ -91,7 +91,7 @@ void AppAresEdit::Frame ()
 
   DoStuffOncePerFrame ();
 
-  if (g3d->BeginDraw(engine->GetBeginDrawFlags() | CSDRAW_3DGRAPHICS))
+  if (g3d->BeginDraw(CSDRAW_3DGRAPHICS))
   {
     // Draw frame.
 #ifdef USE_CEL
@@ -1040,7 +1040,7 @@ bool AppAresEdit::Application()
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
-    printf ("%d %s\n", i, fact->GetName ()); fflush (stdout);
+    printf ("%ld %s\n", i, fact->GetName ()); fflush (stdout);
     csBox3 bbox = fact->GetPhysicsBBox ();
     factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
     const char* st = fact->GetAttribute ("defaultstatic");
