@@ -197,10 +197,10 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     // If the user is holding down shift, the arrow keys will cause
     // the camera to strafe up, down, left or right from it's
     // current position.
-    if (kbd->GetKeyState ('d')) obj_move += CS_VEC_RIGHT * 3.0f;
-    if (kbd->GetKeyState ('a')) obj_move += CS_VEC_LEFT * 3.0f;
-    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_UP * 3.0f;
-    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_DOWN * 3.0f;
+    if (kbd->GetKeyState ('d')) obj_move += CS_VEC_RIGHT * 2.0f;
+    if (kbd->GetKeyState ('a')) obj_move += CS_VEC_LEFT * 2.0f;
+    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_UP * 2.0f;
+    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_DOWN * 2.0f;
   }
   else
   {
@@ -212,8 +212,8 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     if (kbd->GetKeyState ('a')) rot_speed_y += 0.1f;
     if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x += 0.1f;
     if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x -= 0.1f;
-    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_FORWARD * 3.0f;
-    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_BACKWARD * 3.0f;
+    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_FORWARD * 2.0f;
+    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_BACKWARD * 2.0f;
   }
 
   if (do_gravity)
