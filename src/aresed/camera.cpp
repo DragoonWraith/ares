@@ -154,7 +154,7 @@ void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)
   float angleY = CalculatePanningHorizontalAngle ();
 
   panningDistance += distance;
-  if (panningCenter < 0.1f) panningCenter = 0.1f;
+  if (panningDistance < 0.5f) panningDistance = 0.5f;
   angleX += rot_speed_x;
   angleY += rot_speed_y;
   desired.pos = CalculatePanningPosition (angleX, angleY);
@@ -236,56 +236,51 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   if (but == 3)	// MouseWheelUp
   {
-    if (!do_panning) 
-      CamZoom (mouseX, mouseY, true);
+    if (do_panning) 
+      Pan (0.0f, 0.0f, -10.0f);
     else
-      panningDistance = csMax (0.5f, panningDistance - 10.0f);
-    {
-      return true;
-    }
+      CamZoom (mouseX, mouseY, true);
+    return true;
   }
   else if (but == 4)	// MouseWheelDown
   {
-    if (!do_panning) 
-      CamZoom (mouseX, mouseY, false);
+    if (do_panning) 
+      Pan (0.0f, 0.0f, 10.0f);
     else
-      panningDistance += 10.0f;
-    {
-      return true;
-    }
+      CamZoom (mouseX, mouseY, false);
+    return true;
   }
   else if (but == 2)	// Middle mouse
   {
-    DisablePanning ();
-    do_mouse_panning = false;
-    if (!do_mouse_dragging)
+    iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
+    if (kbd->GetKeyState (CSKEY_SHIFT))
     {
-      csVector3 start, end, isect;
-      aresed->TraceBeam (mouseX, mouseY, start, end, isect);
-      panningCenter = isect;
-      do_mouse_dragging = true;
-    }
-  }
-  else if (but == 1)	// RMB
-  {
-    DisablePanning ();
-    do_mouse_dragging = false;
-    if (!do_mouse_panning)
-    {
-      csVector3 start, end, isect;
-      aresed->TraceBeam (mouseX, mouseY, start, end, isect);
-      EnablePanning (isect);
-      if (panningDistance > 200.0f)
+      do_mouse_dragging = false;
+      if (!do_mouse_panning)
       {
-	// Safety.
-	DisablePanning ();
+        csVector3 start, end, isect;
+        aresed->TraceBeam (mouseX, mouseY, start, end, isect);
+        panningCenter = isect;
+        CamLookAtPosition (isect);
+        panningDistance = sqrt (csSquaredDist::PointPoint (isect, desired.pos));
+        if (panningDistance < 200.0f)
+        {
+	  do_mouse_panning = true;
+	  int w = aresed->GetG2D ()->GetWidth ();
+	  int h = aresed->GetG2D ()->GetHeight ();
+	  aresed->GetG2D ()->SetMousePosition (w / 2, h / 2);
+        }
       }
-      else
+    }
+    else
+    {
+      do_mouse_panning = false;
+      if (!do_mouse_dragging)
       {
-	do_mouse_panning = true;
-	int w = aresed->GetG2D ()->GetWidth ();
-	int h = aresed->GetG2D ()->GetHeight ();
-	aresed->GetG2D ()->SetMousePosition (w / 2, h / 2);
+        csVector3 start, end, isect;
+        aresed->TraceBeam (mouseX, mouseY, start, end, isect);
+        panningCenter = isect;
+        do_mouse_dragging = true;
       }
     }
   }
@@ -296,18 +291,8 @@ bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (but == 2)
   {
-    if (do_mouse_dragging)
-    {
-      do_mouse_dragging = false;
-    }
-  }
-  else if (but == 1)
-  {
-    if (do_mouse_panning)
-    {
-      do_mouse_panning = false;
-      DisablePanning ();
-    }
+    do_mouse_dragging = false;
+    do_mouse_panning = false;
   }
   return false;
 }

@@ -367,18 +367,18 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   iRigidBody* hitBody = aresed->TraceBeam (mouseX, mouseY, startBeam, endBeam, isect);
   if (!hitBody)
   {
-    aresed->SetCurrentObject (0);
+    if (but == 0) aresed->SetCurrentObject (0);
     return false;
   }
 
   iDynamicObject* newobj = aresed->GetDynamicWorld ()->FindObject (hitBody);
-  if (shift)
-    aresed->AddCurrentObject (newobj);
-  else
-    aresed->SetCurrentObject (newobj);
-
   if (but == 0)
   {
+    if (shift)
+      aresed->AddCurrentObject (newobj);
+    else
+      aresed->SetCurrentObject (newobj);
+
     StopDrag ();
 
     if (ctrl || alt)
