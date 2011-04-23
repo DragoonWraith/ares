@@ -209,6 +209,14 @@ void AppAresEdit::SetCurrentObject (iDynamicObject* dynobj)
   camwin->CurrentObjectsChanged (current_objects);
 }
 
+bool AppAresEdit::TraceBeamTerrain (const csVector3& start,
+    const csVector3& end, csVector3& isect)
+{
+  csHitBeamResult result = terrainMesh->HitBeam (start, end);
+  isect = result.isect;
+  return result.hit;
+}
+
 iRigidBody* AppAresEdit::TraceBeam (int x, int y,
     csVector3& startBeam, csVector3& endBeam,
     csVector3& isect)
@@ -1127,6 +1135,8 @@ bool AppAresEdit::SetupWorld ()
     return false;
   }
   sector = engine->FindSector ("room");
+  // @@@ Bad: hardcoded terrain name! Don't do this at home!
+  terrainMesh = sector->GetMeshes ()->FindByName ("Terrain");
 
   // Find the terrain mesh
   csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");

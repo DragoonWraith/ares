@@ -129,23 +129,14 @@ csVector3 Camera::CalculatePanningPosition (float angleX, float angleY)
   return panningCenter + rpos;
 }
 
-static float TestVerticalBeam (const csVector3& start, float distance, iCamera* camera)
-{
-  csVector3 end = start;
-  end.y -= distance;
-  iSector* sector = camera->GetSector ();
-
-  csSectorHitBeamResult result = sector->HitBeamPortals (start, end);
-  if (result.mesh)
-    return result.isect.y;
-  else
-    return end.y-.1;
-}
-
 void Camera::ClampDesiredLocation ()
 {
-  float y = TestVerticalBeam (desired.pos + csVector3 (0, 100, 0), 300, camera);
-  if (desired.pos.y < y+0.5f) desired.pos.y = y+0.5f;
+  csVector3 isect;
+  if (aresed->TraceBeamTerrain (desired.pos + csVector3 (0, 100, 0),
+      desired.pos - csVector3 (0, 100, 0), isect))
+  {
+    if (desired.pos.y < isect.y+0.5f) desired.pos.y = isect.y+0.5f;
+  }
 }
 
 void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)

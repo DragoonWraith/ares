@@ -100,6 +100,9 @@ private:
   /// The player has a flashlight.
   csRef<iLight> camlight;
 
+  /// The terrain mesh.
+  iMeshWrapper* terrainMesh;
+
   /// Camera.
   Camera camera;
 
@@ -299,6 +302,12 @@ public:
    * Given a screen position, calculate the rigid body at that position.
    */
   iRigidBody* TraceBeam (int x, int y, csVector3& startBeam, csVector3& endBeam,
+      csVector3& isect);
+
+  /**
+   * Hit a beam with the terrain and return the intersection point.
+   */
+  bool TraceBeamTerrain (const csVector3& start, const csVector3& end,
       csVector3& isect);
 
   /**
