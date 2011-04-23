@@ -391,7 +391,7 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
 
 bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (!(but == 0 || but == 1)) return false;
+  if (but != 1) return false;
 
   if (mouseX > aresed->GetViewWidth ()) return false;
   if (mouseY > aresed->GetViewHeight ()) return false;
@@ -414,38 +414,35 @@ bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
   else
     SetCurrentPoint (idx);
 
-  if (but == 0)
+  StopDrag ();
+
+  //if (ctrl || alt)
   {
-    StopDrag ();
+    do_dragging = true;
 
-    //if (ctrl || alt)
+    csArray<size_t>::Iterator it = selectedPoints.GetIterator ();
+    while (it.HasNext ())
     {
-      do_dragging = true;
+      size_t id = it.Next ();
+      csVector3 pos = GetWorldPosPoint (id);
+      DragPoint dob;
 
-      csArray<size_t>::Iterator it = selectedPoints.GetIterator ();
-      while (it.HasNext ())
-      {
-	size_t id = it.Next ();
-	csVector3 pos = GetWorldPosPoint (id);
-	DragPoint dob;
+      dob.kineOffset = isect - pos;
+      dob.idx = id;
+      dragPoints.Push (dob);
+    }
 
-	dob.kineOffset = isect - pos;
-	dob.idx = id;
-	dragPoints.Push (dob);
-      }
-
-      dragDistance = (isect - startBeam).Norm ();
-      if (alt)
-      {
-        doDragRestrictY = true;
-	doDragMesh = false;
-        dragRestrictY = isect.y;
-      }
-      else if (!ctrl)
-      {
-	doDragRestrictY = false;
-	doDragMesh = true;
-      }
+    dragDistance = (isect - startBeam).Norm ();
+    if (alt)
+    {
+      doDragRestrictY = true;
+      doDragMesh = false;
+      dragRestrictY = isect.y;
+    }
+    else if (!ctrl)
+    {
+      doDragRestrictY = false;
+      doDragMesh = true;
     }
   }
 

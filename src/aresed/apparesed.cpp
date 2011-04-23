@@ -330,7 +330,7 @@ bool AppAresEdit::OnKeyboard(iEvent& ev)
     {
       do_auto_time = !do_auto_time;
     }
-    else if (code == 'p')
+    else if (code == '.')
     {
       if (GetCamera ().IsPanningEnabled ())
       {

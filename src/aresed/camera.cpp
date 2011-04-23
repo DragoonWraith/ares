@@ -246,6 +246,21 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
     if (kbd->GetKeyState (CSKEY_SHIFT))
     {
+      do_mouse_panning = false;
+      if (!do_mouse_dragging)
+      {
+        csVector3 start, end, isect;
+        aresed->TraceBeam (mouseX, mouseY, start, end, isect);
+        panningCenter = isect;
+        do_mouse_dragging = true;
+      }
+    }
+    else if (kbd->GetKeyState (CSKEY_CTRL))
+    {
+      // @@@ Implement zoom.
+    }
+    else
+    {
       do_mouse_dragging = false;
       if (!do_mouse_panning)
       {
@@ -261,17 +276,6 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 	  int h = aresed->GetG2D ()->GetHeight ();
 	  aresed->GetG2D ()->SetMousePosition (w / 2, h / 2);
         }
-      }
-    }
-    else
-    {
-      do_mouse_panning = false;
-      if (!do_mouse_dragging)
-      {
-        csVector3 start, end, isect;
-        aresed->TraceBeam (mouseX, mouseY, start, end, isect);
-        panningCenter = isect;
-        do_mouse_dragging = true;
       }
     }
   }
