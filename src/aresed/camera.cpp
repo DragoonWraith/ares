@@ -299,7 +299,7 @@ bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
     int w = aresed->GetG2D ()->GetWidth () / 2;
     int h = aresed->GetG2D ()->GetHeight () / 2;
     aresed->GetG2D ()->SetMousePosition (w, h);
-    Pan (float (mouseY-h) / 30.0f, float (w-mouseX) / 30.0f, 0.0f);
+    Pan (float (mouseY-h) / 50.0f, float (w-mouseX) / 50.0f, 0.0f);
     return true;
   }
   else if (do_mouse_dragging)
