@@ -1249,30 +1249,35 @@ void AppAresEdit::SpawnItem (const csString& name)
   tc.SetOrigin (newPosition);
   iDynamicObject* dynobj = dynworld->AddObject (fname, tc);
 
-  // Make sure the object is above the ground on all four corners too.
-  const csBox3& box = dynobj->GetBBox ();
-  float dist = (box.MaxY () - box.MinY ()) * 2.0;
-  float y1 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYz), dist, camera);
-  if (yorigin < 999999.0) y1 -= yorigin;
-  float y2 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYz), dist, camera);
-  if (yorigin < 999999.0) y2 -= yorigin;
-  float y3 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYZ), dist, camera);
-  if (yorigin < 999999.0) y3 -= yorigin;
-  float y4 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYZ), dist, camera);
-  if (yorigin < 999999.0) y4 -= yorigin;
-  bool changed = false;
-  if (y1 > newPosition.y) { newPosition.y = y1; changed = true; }
-  if (y2 > newPosition.y) { newPosition.y = y2; changed = true; }
-  if (y3 > newPosition.y) { newPosition.y = y3; changed = true; }
-  if (y4 > newPosition.y) { newPosition.y = y4; changed = true; }
-  if (changed)
+  if (!static_factories.In (fname))
   {
-    dynobj->MakeKinematic ();
-    csReversibleTransform trans = dynobj->GetTransform ();
-    printf ("Changed: orig=%g new=%g\n", trans.GetOrigin ().y, newPosition.y); fflush (stdout);
-    trans.SetOrigin (newPosition);
-    dynobj->SetTransform (trans);
-    dynobj->UndoKinematic ();
+    // For a dynamic object we make sure the object is above the ground on
+    // all four corners too. This is to ensure that the object doesn't jump
+    // up suddenly because it was embedded in the ground partially.
+    const csBox3& box = dynobj->GetBBox ();
+    float dist = (box.MaxY () - box.MinY ()) * 2.0;
+    float y1 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYz), dist, camera);
+    if (yorigin < 999999.0) y1 -= yorigin;
+    float y2 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYz), dist, camera);
+    if (yorigin < 999999.0) y2 -= yorigin;
+    float y3 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYZ), dist, camera);
+    if (yorigin < 999999.0) y3 -= yorigin;
+    float y4 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYZ), dist, camera);
+    if (yorigin < 999999.0) y4 -= yorigin;
+    bool changed = false;
+    if (y1 > newPosition.y) { newPosition.y = y1; changed = true; }
+    if (y2 > newPosition.y) { newPosition.y = y2; changed = true; }
+    if (y3 > newPosition.y) { newPosition.y = y3; changed = true; }
+    if (y4 > newPosition.y) { newPosition.y = y4; changed = true; }
+    if (changed)
+    {
+      dynobj->MakeKinematic ();
+      csReversibleTransform trans = dynobj->GetTransform ();
+      printf ("Changed: orig=%g new=%g\n", trans.GetOrigin ().y, newPosition.y); fflush (stdout);
+      trans.SetOrigin (newPosition);
+      dynobj->SetTransform (trans);
+      dynobj->UndoKinematic ();
+    }
   }
 
   if (static_factories.In (fname))
