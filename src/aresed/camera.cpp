@@ -366,16 +366,10 @@ void Camera::CamMove (const csVector3& pos)
 {
   desired.pos = pos;
   ClampDesiredLocation ();
-  if (do_gravity)
-    camera->GetTransform ().SetOrigin (pos);
 }
 
 void Camera::CamMoveRelative (const csVector3& offset, float angleX, float angleY)
 {
-  if (do_gravity)
-  {
-    desired = GetCameraLocation ();
-  }
   desired.pos += camera->GetTransform ().This2OtherRelative (offset);
   ClampDesiredLocation ();
   if (fabs (angleX) > 0.0001 || fabs (angleY) > 0.0001)
@@ -386,11 +380,6 @@ void Camera::CamMoveRelative (const csVector3& offset, float angleX, float angle
     desired.rot = rotQuatX * desired.rot;
     desired.rot = desired.rot * rotQuatY;
   }
-  if (do_gravity)
-  {
-    camera->GetTransform ().SetOrigin (desired.pos);
-    collider_actor.SetRotation (QuatToRotation (desired.rot));
-  }
 }
 
 void Camera::CamMoveAndLookAt (const csVector3& pos, const csQuaternion& rot)
@@ -398,8 +387,6 @@ void Camera::CamMoveAndLookAt (const csVector3& pos, const csQuaternion& rot)
   desired.pos = pos;
   desired.rot = rot;
   ClampDesiredLocation ();
-  if (do_gravity)
-    SetCameraLocation (desired);
 }
 
 void Camera::CamMoveAndLookAt (const csVector3& pos, const csVector3& rot)
@@ -411,7 +398,11 @@ void Camera::CamLookAt (const csQuaternion& rot)
 {
   desired.rot = rot;
   if (do_gravity)
-    collider_actor.SetRotation (QuatToRotation (desired.rot));
+  {
+    csVector3 vrot = QuatToRotation (desired.rot);
+    vrot.x = vrot.z = 0.0f;
+    collider_actor.SetRotation (vrot);
+  }
 }
 
 void Camera::CamLookAt (const csVector3& rot)
@@ -487,7 +478,10 @@ void Camera::EnableGravity ()
   DisablePanning ();
   do_gravity = true;
   collider_actor.SetGravity (9.806f);
-  CamMoveAndLookAt (current.pos, current.rot);
+  camera->GetTransform ().SetOrigin (current.pos);
+  csVector3 vrot = QuatToRotation (desired.rot);
+  vrot.x = vrot.z = 0.0f;
+  collider_actor.SetRotation (vrot);
 }
 
 void Camera::DisableGravity ()
@@ -501,6 +495,7 @@ void Camera::DisableGravity ()
     current.pos = camera->GetTransform ().GetOrigin ();
     current.rot = RotationToQuat (collider_actor.GetRotation ());
     desired = current;
+    desired.pos.y += 1.0f;
   }
 }
 
