@@ -129,6 +129,35 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
 
+#if USE_DECAL
+  iCamera* cam = GetCsCamera ();
+  csVector2 v2d (mouseX, GetG2D ()->GetHeight () - mouseY);
+  csVector3 v3d = cam->InvPerspective (v2d, 10000);
+  csVector3 start = cam->GetTransform ().GetOrigin ();
+  csVector3 end = cam->GetTransform ().This2Other (v3d);
+
+#if 1
+  csSectorHitBeamResult result = GetCsCamera ()->GetSector()->HitBeamPortals (start, end);
+  if (result.mesh)
+  {
+    printf ("hit!\n"); fflush (stdout);
+    cursorDecal = decalMgr->CreateDecal (cursorDecalTemplate,
+        cam->GetSector (), result.isect, csVector3 (0, 1, 0),
+	csVector3 (0, -1, 0), 1.0f, 1.0f, cursorDecal);
+  }
+#else
+  csHitBeamResult result = terrainMesh->HitBeam (start, end);
+  if (result.hit)
+  {
+    printf ("hit!\n"); fflush (stdout);
+    cursorDecal = decalMgr->CreateDecal (cursorDecalTemplate,
+        cam->GetSector (), result.isect, csVector3 (0, 1, 0),
+	csVector3 (0, 1, 0), 1.0f, 1.0f, cursorDecal);
+  }
+#endif
+
+#endif
+
   if (camera.OnMouseMove (ev, mouseX, mouseY))
     return true;
 
@@ -923,6 +952,7 @@ bool AppAresEdit::OnInitialize(int argc, char* argv[])
 	CS_REQUEST_PLUGIN("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("crystalspace.cegui.wrapper", iCEGUI),
+	CS_REQUEST_PLUGIN("crystalspace.decal.manager", iDecalManager),
 	CS_REQUEST_PLUGIN("utility.dynamicworld", iDynamicWorld),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
@@ -950,6 +980,18 @@ void AppAresEdit::AddItem (const char* category, const char* itemname)
   csStringArray a;
   categories.Get (category, a).Push (itemname);
 }
+
+#if USE_DECAL
+bool AppAresEdit::SetupDecal ()
+{
+  iMaterialWrapper* material = engine->GetMaterialList ()->FindByName ("stone2");
+  if (!material)
+    return ReportError("Can't find cursor decal material!");
+  cursorDecalTemplate = decalMgr->CreateDecalTemplate (material);
+  cursorDecal = 0;
+  return true;
+}
+#endif
 
 bool AppAresEdit::Application()
 {
@@ -994,7 +1036,11 @@ bool AppAresEdit::Application()
   engine = csQueryRegistry<iEngine> (r);
   if (!engine)
     return ReportError("Failed to locate 3D engine!");
-    
+
+  decalMgr = csQueryRegistry<iDecalManager> (r);
+  if (!decalMgr)
+    return ReportError("Failed to load decal manager!");
+
   printer.AttachNew(new FramePrinter(GetObjectRegistry()));
 
   vc = csQueryRegistry<iVirtualClock> (r);
@@ -1093,6 +1139,11 @@ bool AppAresEdit::PostLoadMap ()
 
   // Setup the camera.
   camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
+
+#if USE_DECAL
+  if (!SetupDecal ())
+    return false;
+#endif
 
   return true;
 }

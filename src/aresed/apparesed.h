@@ -38,6 +38,8 @@ THE SOFTWARE.
 #include "curvemode.h"
 #include "camera.h"
 
+#define USE_DECAL 0
+
 class CameraWindow;
 
 class CurvedFactoryCreator
@@ -61,6 +63,12 @@ private:
   csRef<iLoader> loader;
   csRef<iVirtualClock> vc;
   csRef<iVFS> vfs;
+  csRef<iDecalManager> decalMgr;
+
+#if USE_DECAL
+  csRef<iDecalTemplate> cursorDecalTemplate;
+  iDecal* cursorDecal;
+#endif
 
   MainMode* mainMode;
   CurveMode* curveMode;
@@ -145,6 +153,11 @@ private:
 
   /// Setup stuff after map loading.
   bool PostLoadMap ();
+
+#if USE_DECAL
+  /// Setup the decals.
+  bool SetupDecal ();
+#endif
 
   /// Load a library file with the given VFS path.
   bool LoadLibrary (const char* path, const char* file);
