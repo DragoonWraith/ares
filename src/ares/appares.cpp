@@ -67,11 +67,11 @@ AppAres::AppAres ()
 {
   SetApplicationName ("Ares");
   worldLoader = 0;
+  currentTime = 31000;
 }
 
 AppAres::~AppAres ()
 {
-  currentTime = 31000;
   delete worldLoader;
 }
 
