@@ -773,15 +773,15 @@ void AppAresEdit::LoadFile (const char* filename)
 
   sector = engine->FindSector ("room");
 
-  // @@@ Error handling.
-  SetupDynWorld ();
-
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
   {
     iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
     static_factories.Add (cfact->GetName ());
   }
   curvedFactories = worldLoader->GetCurvedFactories ();
+
+  // @@@ Error handling.
+  SetupDynWorld ();
 
   // @@@ Error handling.
   PostLoadMap ();
@@ -998,7 +998,7 @@ bool AppAresEdit::SetupDynWorld ()
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
-    if (curvedFactories.Contains (fact)) continue;
+    if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", i, fact->GetName ()); fflush (stdout);
     csBox3 bbox = fact->GetPhysicsBBox ();
     factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
