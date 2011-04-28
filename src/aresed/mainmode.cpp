@@ -224,7 +224,6 @@ void MainMode::FramePre()
   iGraphics2D* g2d = aresed->GetG2D ();
   if (do_dragging)
   {
-    aresed->PushUndo ("Move");
     // Keep the drag joint at the same distance to the camera
     csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
     csVector3 v3d = camera->InvPerspective (v2d, 10000);
@@ -238,7 +237,6 @@ void MainMode::FramePre()
   }
   else if (do_kinematic_dragging)
   {
-    aresed->PushUndo ("Move");
     csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
     csVector3 v3d = camera->InvPerspective (v2d, 10000);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
@@ -286,10 +284,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     {
       iDynamicObject* dynobj = it.Next ();
       if (dynobj->IsStatic ())
-      {
-	aresed->PushUndo ("Static");
 	dynobj->MakeDynamic ();
-      }
       else
 	dynobj->MakeStatic ();
     }
@@ -426,8 +421,6 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
   else if (but == 0)
   {
-    aresed->PushUndo ("Move");
-
     // Add a force at the point clicked
     csVector3 force = endBeam - startBeam;
     force.Normalize ();

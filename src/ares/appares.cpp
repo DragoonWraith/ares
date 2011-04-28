@@ -57,6 +57,8 @@ THE SOFTWARE.
 #include "propclass/billboard.h"
 #include "propclass/prop.h"
 
+#include "common/worldload.h"
+
 #define PATHFIND_VERBOSE 0
 
 //-----------------------------------------------------------------------------
@@ -64,11 +66,13 @@ THE SOFTWARE.
 AppAres::AppAres ()
 {
   SetApplicationName ("Ares");
+  worldLoader = 0;
 }
 
 AppAres::~AppAres ()
 {
   currentTime = 0;
+  delete worldLoader;
 }
 
 void AppAres::OnExit ()
@@ -374,79 +378,6 @@ bool AppAres::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
-bool AppAres::SetupWorld ()
-{
-  if (!LoadLibrary ("/this/data/factories/", "genBox"))
-    return ReportError ("Error loading library!");
-
-  vfs->Mount ("/aresnode", "data$/node.zip");
-  if (!LoadLibrary ("/aresnode/", "library"))
-    return ReportError ("Error loading library!");
-  vfs->PopDir ();
-  vfs->Unmount ("/aresnode", "data$/node.zip");
-
-  vfs->Mount ("/aresdata", "data$/rack.zip");
-  if (!LoadLibrary ("/aresdata/", "library"))
-    return ReportError ("Error loading library!");
-  vfs->PopDir ();
-  vfs->Unmount ("/aresdata", "data$/rack.zip");
-
-  csLoadResult rc = loader->Load ("/lib/krystal/krystal.xml");
-  if (!rc.success)
-    return ReportError ("Can't load Krystal library file!");
-
-  rc = loader->Load ("/lib/frankie/frankie.xml");
-  if (!rc.success)
-    return ReportError ("Can't load Frankie library file!");
-
-  if (!LoadLibrary ("/this/data/", "dynworldFactories.xml"))
-    return ReportError ("Error loading library!");
-
-  //-------------------------------------
-  // Make the floor.
-  //-------------------------------------
-  vfs->ChDir ("/this/data/landscape");
-  if (!loader->LoadMapFile ("world", false))
-  {
-    ReportError ("Error couldn't load terrain level!");
-    return false;
-  }
-  sector = engine->FindSector ("room");
-
-  // Find the terrain mesh
-  csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
-  if (!terrainWrapper)
-  {
-    ReportError("Error cannot find the terrain mesh!");
-    return false;
-  }
-
-  csRef<iTerrainSystem> terrain =
-    scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
-  if (!terrain)
-  {
-    ReportError("Error cannot find the terrain interface!");
-    return false;
-  }
-
-  // Create a terrain collider for each cell of the terrain
-  for (size_t i = 0; i < terrain->GetCellCount (); i++)
-    bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
-
-  iLightList* lightList = sector->GetLights ();
-  lightList->RemoveAll ();
-
-  nature->InitSector (sector);
-
-  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
-  lightList->Add (camlight);
-
-  engine->Prepare ();
-  //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
-
-  return true;
-}
-
 bool AppAres::OnInitialize (int argc, char* argv[])
 {
   if (!celInitializer::SetupConfigManager (object_reg,
@@ -497,6 +428,32 @@ bool AppAres::PostLoadMap ()
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
   CreateActor ();
+
+  // Find the terrain mesh
+  csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
+  if (!terrainWrapper)
+  {
+    ReportError("Error cannot find the terrain mesh!");
+    return false;
+  }
+
+  csRef<iTerrainSystem> terrain =
+    scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
+  if (!terrain)
+  {
+    ReportError("Error cannot find the terrain interface!");
+    return false;
+  }
+
+  // Create a terrain collider for each cell of the terrain
+  for (size_t i = 0; i < terrain->GetCellCount (); i++)
+    bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
+
+  nature->InitSector (sector);
+
+  engine->Prepare ();
+  //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
+
   return true;
 }
 
@@ -541,18 +498,18 @@ bool AppAres::Application ()
   nature = csQueryRegistry<iNature> (object_reg);
   if (!nature) return ReportError("Failed to locate nature plugin!");
 
+  worldLoader = new WorldLoader (object_reg);
+
   if (!InitPhysics ())
     return false;
 
-  if (!SetupWorld ())
-    return false;
+  worldLoader->LoadFile ("/saves/testworld");
+  sector = engine->FindSector ("room");
 
   dynworld->Setup (sector, dynSys);
 
   if (!PostLoadMap ())
     return ReportError ("Error during PostLoadMap()!");
-
-  LoadFile ("/saves/testworld");
 
   printer.AttachNew (new FramePrinter (object_reg));
 

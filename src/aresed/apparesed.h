@@ -41,25 +41,13 @@ THE SOFTWARE.
 #define USE_DECAL 0
 
 class CameraWindow;
+class WorldLoader;
 
 class CurvedFactoryCreator
 {
 public:
   csString name;
   float maxradius, imposterradius, mass;
-};
-
-class Asset
-{
-private:
-  csString path;
-  csString file;
-
-public:
-  Asset (const char* path, const char* file) : path (path), file (file) { }
-
-  const csString& GetPath () const { return path; }
-  const csString& GetFile () const { return file; }
 };
 
 class AppAresEdit :
@@ -83,11 +71,11 @@ private:
   iDecal* cursorDecal;
 #endif
 
-  csArray<Asset> assets;
-
   MainMode* mainMode;
   CurveMode* curveMode;
   EditingMode* editMode;
+
+  WorldLoader* worldLoader;
 
   csTicks currentTime;
   bool do_auto_time;
@@ -150,10 +138,6 @@ private:
   /// Categories with items.
   csHash<csStringArray,csString> categories;
 
-  /// Undo stack.
-  csRefArray<iDocument> undoStack;
-  csStringArray undoOperations;
-
   /// Debug drawing enabled.
   bool do_debug;
 
@@ -205,8 +189,6 @@ private:
    * Initialize window system.
    */
   bool InitWindowSystem ();
-
-  csString lastUndoType;
 
   /// Set the state of the tabs buttons based on selected objects.
   void SetButtonState ();
@@ -265,9 +247,6 @@ public:
 
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
-
-  /// We are about to do an operation, push an undo.
-  void PushUndo (const char* type);
 
   /// Spawn an item.
   void SpawnItem (const csString& name);
@@ -357,13 +336,11 @@ public:
    * Save the current world.
    */
   void SaveFile (const char* filename);
-  csRef<iDocument> SaveDoc ();
 
   /**
    * Load the world from a file.
    */
   void LoadFile (const char* filename);
-  bool LoadDoc (iDocument* doc);
 
   /**
    * Main initialization routine.  This routine should set up basic facilities

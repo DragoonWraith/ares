@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <cstool/simplestaticlighter.h>
 #include <csgeom/math3d.h>
 #include "camerawin.h"
+#include "common/worldload.h"
 
 AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
 {
@@ -43,6 +44,7 @@ AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
   mainMode = 0;
   curveMode = 0;
   curvedFactoryCounter = 0;
+  worldLoader = 0;
 }
 
 AppAresEdit::~AppAresEdit()
@@ -51,6 +53,7 @@ AppAresEdit::~AppAresEdit()
   delete camwin;
   delete mainMode;
   delete curveMode;
+  delete worldLoader;
 }
 
 void AppAresEdit::DoStuffOncePerFrame ()
@@ -191,10 +194,7 @@ void AppAresEdit::SetStaticSelectedObjects (bool st)
     else
     {
       if (dynobj->IsStatic ())
-      {
-        PushUndo ("Static");
         dynobj->MakeDynamic ();
-      }
     }
   }
 }
@@ -468,7 +468,6 @@ bool AppAresEdit::OnSimulationSelected (const CEGUI::EventArgs&)
 
 void AppAresEdit::DeleteSelectedObjects ()
 {
-  PushUndo ("Del");
   csArray<iDynamicObject*> objects = current_objects;
   SetCurrentObject (0);
   csArray<iDynamicObject*>::Iterator it = objects.GetIterator ();
@@ -481,7 +480,6 @@ void AppAresEdit::DeleteSelectedObjects ()
 
 void AppAresEdit::MoveCurrent (const csVector3& baseVector)
 {
-  PushUndo ("Move");
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
   bool fast = kbd->GetKeyState (CSKEY_SHIFT);
   csVector3 vector = baseVector;
@@ -505,7 +503,6 @@ void AppAresEdit::MoveCurrent (const csVector3& baseVector)
 
 void AppAresEdit::RotateCurrent (float baseAngle)
 {
-  PushUndo ("Rot");
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
   bool fast = kbd->GetKeyState (CSKEY_SHIFT);
   float angle = baseAngle;
@@ -596,7 +593,6 @@ void AppAresEdit::AlignSelectedObjects ()
   if (current_objects.GetSize () <= 1) return;
   if (!current_objects[0]->GetMesh ()) return;
 
-  PushUndo ("Align");
   const csReversibleTransform& trans = current_objects[0]->GetMesh ()->GetMovable ()->GetTransform ();
 
   csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
@@ -619,7 +615,6 @@ void AppAresEdit::StackSelectedObjects ()
   if (current_objects.GetSize () <= 1) return;
   if (!current_objects[0]->GetMesh ()) return;
 
-  PushUndo ("Stack");
   csReversibleTransform firstTrans = current_objects[0]->GetMesh ()->GetMovable ()->GetTransform ();
   csBox3 firstBbox = current_objects[0]->GetFactory ()->GetPhysicsBBox ();
 
@@ -650,7 +645,6 @@ void AppAresEdit::SameYSelectedObjects ()
   if (current_objects.GetSize () <= 1) return;
   if (!current_objects[0]->GetMesh ()) return;
 
-  PushUndo ("=Y");
   csReversibleTransform trans = current_objects[0]->GetMesh ()->GetMovable ()->GetTransform ();
   float y = trans.GetOrigin ().y;
 
@@ -676,7 +670,6 @@ void AppAresEdit::SetPosSelectedObjects ()
   if (current_objects.GetSize () <= 1) return;
   if (!current_objects[0]->GetMesh ()) return;
 
-  PushUndo ("SetPos");
   csReversibleTransform firstTrans = current_objects[0]->GetMesh ()->GetMovable ()
     ->GetTransform ();
   csBox3 firstBbox = current_objects[0]->GetFactory ()->GetPhysicsBBox ();
@@ -705,7 +698,6 @@ void AppAresEdit::SetPosSelectedObjects ()
 
 void AppAresEdit::RotResetSelectedObjects ()
 {
-  PushUndo ("Rot");
   csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
   while (it.HasNext ())
   {
@@ -718,24 +710,6 @@ void AppAresEdit::RotResetSelectedObjects ()
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
   }
-}
-
-void AppAresEdit::PushUndo (const char* type)
-{
-  if (lastUndoType == type) return;
-  csRef<iDocument> xml = SaveDoc ();
-  undoStack.Push (xml);
-  undoOperations.Push (type);
-  while (undoStack.GetSize () > 10)
-  {
-    undoStack.DeleteIndex (0);
-    undoOperations.DeleteIndex (0);
-  }
-  csString t;
-  t.Format ("Undo(%s)", undoOperations[undoOperations.GetSize ()-1]);
-  undoButton->setText(CEGUI::String (t.GetData ()));
-  undoButton->enable ();
-  lastUndoType = type;
 }
 
 bool AppAresEdit::OnMainTabButtonClicked (const CEGUI::EventArgs&)
@@ -776,18 +750,11 @@ bool AppAresEdit::SwitchToCurveMode ()
 void AppAresEdit::CleanupWorld ()
 {
   SetCurrentObject (0);
-  dynworld->DeleteObjects ();
-  dynworld->DeleteFactories ();
-  curvedMeshCreator->DeleteFactories ();
-  curvedMeshCreator->DeleteCurvedFactoryTemplates ();
 
-  assets.DeleteAll ();
   curvedFactories.DeleteAll ();
   factory_to_origin_offset.DeleteAll ();
   curvedFactoryCreators.DeleteAll ();
   static_factories.DeleteAll ();
-  undoStack.DeleteAll ();
-  undoOperations.DeleteAll ();
 
   camlight = 0;
   engine->DeleteAll ();
@@ -795,64 +762,14 @@ void AppAresEdit::CleanupWorld ()
 
 bool AppAresEdit::OnUndoButtonClicked (const CEGUI::EventArgs&)
 {
-  if (undoStack.GetSize () <= 0) return true;
-  csRef<iDocument> doc = undoStack.Pop ();
-  undoOperations.Pop ();
-  if (undoStack.GetSize () <= 0)
-  {
-    undoButton->setText("Undo()");
-    undoButton->disable ();
-  }
-  else
-  {
-    csString t;
-    t.Format ("Undo(%s)", undoOperations[undoOperations.GetSize ()-1]);
-    undoButton->setText(CEGUI::String (t.GetData ()));
-  }
-  // @@@ Error handling.
-  LoadDoc (doc);
-  lastUndoType = "";
   return true;
-}
-
-csRef<iDocument> AppAresEdit::SaveDoc ()
-{
-  csRef<iDocumentSystem> docsys;
-  docsys.AttachNew (new csTinyDocumentSystem ());
-  csRef<iDocument> doc = docsys->CreateDocument ();
-
-  csRef<iDocumentNode> root = doc->CreateRoot ();
-  csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
-  rootNode->SetValue ("dynlevel");
-
-  for (size_t i = 0 ; i < assets.GetSize () ; i++)
-  {
-    const Asset& asset = assets[i];
-    csRef<iDocumentNode> assetNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-    assetNode->SetValue ("asset");
-    assetNode->SetAttribute ("path", asset.GetPath ());
-    assetNode->SetAttribute ("file", asset.GetFile ());
-  }
-
-  csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-  dynworldNode->SetValue ("dynworld");
-  dynworld->Save (dynworldNode);
-
-  csRef<iDocumentNode> curveNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-  curveNode->SetValue ("curves");
-  curvedMeshCreator->Save (curveNode);
-  return doc;
 }
 
 void AppAresEdit::SaveFile (const char* filename)
 {
   filenameLabel->setText (CEGUI::String (filename));
-  csRef<iDocument> doc = SaveDoc ();
-
-  csRef<iString> xml;
-  xml.AttachNew (new scfString ());
-  doc->Write (xml);
-  vfs->WriteFile (filename, xml->GetData (), xml->Length ());
+  // @@@ Error handling.
+  worldLoader->SaveFile (filename);
 }
 
 struct SaveCallback : public OKCallback
@@ -873,80 +790,26 @@ bool AppAresEdit::OnSaveButtonClicked (const CEGUI::EventArgs&)
 
 void AppAresEdit::LoadFile (const char* filename)
 {
-  csRef<iDocumentSystem> docsys;
-  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
-  if (!docsys)
-    docsys.AttachNew (new csTinyDocumentSystem ());
-
-  csRef<iDocument> doc = docsys->CreateDocument ();
-  csRef<iDataBuffer> buf = vfs->ReadFile (filename);
-  const char* error = doc->Parse (buf->GetData ());
-  if (error)
-  {
-    printf ("ERROR: %s\n", error); fflush (stdout);
-    return;
-  }
-
-  PushUndo ("Load");
-  // @@@ Error handling.
-  LoadDoc (doc);
-}
-
-bool AppAresEdit::LoadDoc (iDocument* doc)
-{
   CleanupWorld ();
   SetupWorld ();
 
-  csRef<iDocumentNode> root = doc->GetRoot ();
-  csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
+  // @@@ Error handling.
+  worldLoader->LoadFile (filename);
 
-  csRef<iDocumentNodeIterator> it = dynlevelNode->GetNodes ();
-  while (it->HasNext ())
-  {
-    csRef<iDocumentNode> child = it->Next ();
-    if (child->GetType () != CS_NODE_ELEMENT) continue;
-    csString value = child->GetValue ();
-    if (value == "asset")
-    {
-      csString path = child->GetAttributeValue ("path");
-      csString file = child->GetAttributeValue ("file");
-      if (!LoadLibrary (path, file))
-        return ReportError ("Error loading asset '%s'!", (const char*)file);
-      assets.Push (Asset (path, file));
-    }
-    // Ignore the other tags. These are processed below.
-  }
+  sector = engine->FindSector ("room");
 
-  if (!SetupDynWorld ())
-    return false;
-
-  csRef<iDocumentNode> curveNode = dynlevelNode->GetNode ("curves");
-  if (curveNode)
-  {
-    csRef<iString> error = curvedMeshCreator->Load (curveNode);
-    if (error)
-      return ReportError ("ERROR: %s\n", error->GetData ());
-  }
+  // @@@ Error handling.
+  SetupDynWorld ();
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
   {
     iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
-    iDynamicFactory* fact = dynworld->AddFactory (cfact->GetName (), 1.0, -1);
-    fact->AddRigidMesh (csVector3 (0), 10.0);
     static_factories.Add (cfact->GetName ());
-    curvedFactories.Push (fact);
   }
+  curvedFactories = worldLoader->GetCurvedFactories ();
 
-  csRef<iDocumentNode> dynworldNode = dynlevelNode->GetNode ("dynworld");
-  if (dynworldNode)
-  {
-    csRef<iString> error = dynworld->Load (dynworldNode);
-    if (error)
-      return ReportError ("ERROR: %s\n", error->GetData ());
-  }
-
-  sector = engine->FindSector ("room");
-  return PostLoadMap ();
+  // @@@ Error handling.
+  PostLoadMap ();
 }
 
 struct LoadCallback : public OKCallback
@@ -1108,6 +971,8 @@ bool AppAresEdit::Application()
   if (!cfgmgr)
     return ReportError ("Failed to locate the configuration manager plugin!");
 
+  worldLoader = new WorldLoader (r);
+
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
 
@@ -1154,6 +1019,7 @@ bool AppAresEdit::SetupDynWorld ()
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
+    if (curvedFactories.Contains (fact)) continue;
     printf ("%d %s\n", i, fact->GetName ()); fflush (stdout);
     csBox3 bbox = fact->GetPhysicsBBox ();
     factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
@@ -1265,7 +1131,6 @@ static float TestVerticalBeam (const csVector3& start, float distance, iCamera* 
 
 void AppAresEdit::SpawnItem (const csString& name)
 {
-  PushUndo ("New");
   csString fname;
   iCurvedFactory* curvedFactory = 0;
   CurvedFactoryCreator* cfc = FindFactoryCreator (name);

@@ -54,7 +54,7 @@ struct iCelBlLayer;
 struct iCelPropertyClass;
 struct iCelPropertyClassFactory;
 
-class AppAres;
+class WorldLoader;
 
 /**
  * Main application class of AppAres.
@@ -82,13 +82,12 @@ private:
   csRef<iCelEntity> game;
   csRef<iCelEntity> entity_cam;
 
+  WorldLoader* worldLoader;
+
   ActorSettings actorsettings;
 
   iSector* sector;
   iCamera* camera;
-
-  /// The player has a flashlight.
-  csRef<iLight> camlight;
 
   /// Physics.
   csRef<iDynamics> dyn;
@@ -109,7 +108,6 @@ private:
    */
   virtual bool OnKeyboard (iEvent &event);
 
-  bool SetupWorld ();
   bool PostLoadMap ();
   bool InitPhysics ();
   void CreateActor ();

@@ -98,7 +98,6 @@ void CurveMode::FramePre()
   if (do_dragging)
   {
     //@@@ Implement undo for curve editing too?
-    aresed->PushUndo ("MoveCurve");
     csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
     csVector3 v3d = camera->InvPerspective (v2d, 10000);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
@@ -264,7 +263,6 @@ size_t CurveMode::FindCurvePoint (int mouseX, int mouseY)
 
 void CurveMode::RotateCurrent (float baseAngle)
 {
-  aresed->PushUndo ("RotCurve");
   bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
   bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
   float angle = baseAngle;

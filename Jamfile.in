@@ -5,6 +5,7 @@ SubDir TOP ;
 
 IncludeDir ;
 IncludeDir "include" ;
+IncludeDir "src" ;
 IncludeDir $(BUILDTOP) : : literal transient ;
 
 CleanDir clean :
