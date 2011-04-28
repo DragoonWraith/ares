@@ -37,17 +37,29 @@ THE SOFTWARE.
 #include "mainmode.h"
 #include "curvemode.h"
 #include "camera.h"
+#include "selection.h"
 
 #define USE_DECAL 0
 
 class CameraWindow;
 class WorldLoader;
+class AppAresEdit;
 
 class CurvedFactoryCreator
 {
 public:
   csString name;
   float maxradius, imposterradius, mass;
+};
+
+class AresEditSelectionListener : public SelectionListener
+{
+private:
+  AppAresEdit* aresed;
+
+public:
+  AresEditSelectionListener (AppAresEdit* aresed) : aresed (aresed) { }
+  virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 };
 
 class AppAresEdit :
@@ -144,8 +156,8 @@ private:
   /// Do simulation.
   bool do_simulation;
 
-  // Selected objects.
-  csArray<iDynamicObject*> current_objects;
+  /// The selection.
+  Selection* selection;
 
   /// Create the room.
   bool SetupWorld ();
@@ -240,10 +252,8 @@ public:
   int GetViewWidth () const { return view_width; }
   int GetViewHeight () const { return view_height; }
 
-  /// Manipulate the current objects.
-  csArray<iDynamicObject*>& GetCurrentObjects () { return current_objects; }
-  void SetCurrentObject (iDynamicObject* dynobj);
-  void AddCurrentObject (iDynamicObject* dynobj);
+  Selection* GetSelection () const { return selection; }
+  void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
@@ -305,11 +315,6 @@ public:
    */
   csVector3 GetCenterSelected ();
   
-  /**
-   * Return true if there are selected objects.
-   */
-  bool AreObjectsSelected () const;
-
   /**
    * Given a screen position, calculate the rigid body at that position.
    */

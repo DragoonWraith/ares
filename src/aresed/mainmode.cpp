@@ -209,7 +209,7 @@ void MainMode::StopDrag ()
   if (do_kinematic_dragging)
   {
     do_kinematic_dragging = false;
-    csArray<iDynamicObject*>::Iterator it = aresed->GetCurrentObjects ().GetIterator ();
+    SelectionIterator it = aresed->GetSelection ()->GetIterator ();
     while (it.HasNext ())
     {
       iDynamicObject* dynobj = it.Next ();
@@ -279,7 +279,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
   if (code == '2')
   {
-    csArray<iDynamicObject*>::Iterator it = aresed->GetCurrentObjects ().GetIterator ();
+    SelectionIterator it = aresed->GetSelection ()->GetIterator ();
     while (it.HasNext ())
     {
       iDynamicObject* dynobj = it.Next ();
@@ -288,7 +288,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
       else
 	dynobj->MakeStatic ();
     }
-    CurrentObjectsChanged (aresed->GetCurrentObjects ());
+    CurrentObjectsChanged (aresed->GetSelection ()->GetObjects ());
   }
   else if (code == 'h')
   {
@@ -362,7 +362,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   iRigidBody* hitBody = aresed->TraceBeam (mouseX, mouseY, startBeam, endBeam, isect);
   if (!hitBody)
   {
-    if (but == 1) aresed->SetCurrentObject (0);
+    if (but == 1) aresed->GetSelection ()->SetCurrentObject (0);
     return false;
   }
 
@@ -370,9 +370,9 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   if (but == 1)
   {
     if (shift)
-      aresed->AddCurrentObject (newobj);
+      aresed->GetSelection ()->AddCurrentObject (newobj);
     else
-      aresed->SetCurrentObject (newobj);
+      aresed->GetSelection ()->SetCurrentObject (newobj);
 
     StopDrag ();
 
@@ -380,7 +380,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     {
       do_kinematic_dragging = true;
 
-      csArray<iDynamicObject*>::Iterator it = aresed->GetCurrentObjects ().GetIterator ();
+      SelectionIterator it = aresed->GetSelection ()->GetIterator ();
       while (it.HasNext ())
       {
 	iDynamicObject* dynobj = it.Next ();

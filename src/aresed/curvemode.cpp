@@ -59,7 +59,7 @@ CurveMode::CurveMode (AppAresEdit* aresed)
 
 void CurveMode::Start ()
 {
-  csString name = aresed->GetCurrentObjects ()[0]->GetFactory ()->GetName ();
+  csString name = aresed->GetSelection ()->GetFirst ()->GetFactory ()->GetName ();
   editingCurveFactory = aresed->GetCurvedMeshCreator ()->GetCurvedFactory (name);
   selectedPoints.Empty ();
   do_dragging = false;
@@ -103,7 +103,7 @@ void CurveMode::FramePre()
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
     csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
 
-    iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
+    iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
     csVector3 newPosition;
     if (doDragRestrictY)
     {
@@ -141,7 +141,7 @@ void CurveMode::FramePre()
     }
     if (autoSmooth) DoAutoSmooth ();
     editingCurveFactory->GenerateFactory ();
-    aresed->GetCurrentObjects ()[0]->RefreshColliders ();
+    aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
 
@@ -156,7 +156,7 @@ void CurveMode::Frame2D()
   float sy = g2d->GetHeight ();
   iCamera* camera = aresed->GetCsCamera ();
   const csOrthoTransform& camtrans = camera->GetTransform ();
-  iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
   for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
   {
@@ -200,7 +200,7 @@ void CurveMode::DoAutoSmooth ()
   for (size_t i = 1 ; i < editingCurveFactory->GetPointCount ()-1 ; i++)
     SmoothPoint (i, false);
   editingCurveFactory->GenerateFactory ();
-  aresed->GetCurrentObjects ()[0]->RefreshColliders ();
+  aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
 void CurveMode::SmoothPoint (size_t idx, bool regen)
@@ -218,13 +218,13 @@ void CurveMode::SmoothPoint (size_t idx, bool regen)
   if (regen)
   {
     editingCurveFactory->GenerateFactory ();
-    aresed->GetCurrentObjects ()[0]->RefreshColliders ();
+    aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
 
 csVector3 CurveMode::GetWorldPosPoint (size_t idx)
 {
-  iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
   const csVector3& pos = editingCurveFactory->GetPosition (idx);
   return meshtrans.This2Other (pos);
@@ -285,13 +285,13 @@ void CurveMode::RotateCurrent (float baseAngle)
     editingCurveFactory->ChangePoint (id, pos, tr.GetFront (), u);
   }
   editingCurveFactory->GenerateFactory ();
-  aresed->GetCurrentObjects ()[0]->RefreshColliders ();
+  aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
 void CurveMode::FlatPoint (size_t idx)
 {
   float sideHeight = editingCurveFactory->GetSideHeight ();
-  iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
   csVector3 pos = editingCurveFactory->GetPosition (idx);
   pos = meshtrans.This2Other (pos);
@@ -315,7 +315,7 @@ void CurveMode::FlatPoint (size_t idx)
       DoAutoSmooth ();
     else
       editingCurveFactory->GenerateFactory ();
-    aresed->GetCurrentObjects ()[0]->RefreshColliders ();
+    aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
 
@@ -379,10 +379,10 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
     editingCurveFactory->AddPoint (pos + front, front, up);
     if (autoSmooth) DoAutoSmooth ();
 
-    iMeshWrapper* mesh = aresed->GetCurrentObjects ()[0]->GetMesh ();
+    iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
     editingCurveFactory->FlattenToGround (mesh);
     editingCurveFactory->GenerateFactory ();
-    aresed->GetCurrentObjects ()[0]->RefreshColliders ();
+    aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
   return false;
 }

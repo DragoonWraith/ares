@@ -29,7 +29,14 @@ THE SOFTWARE.
 #include <cstool/simplestaticlighter.h>
 #include <csgeom/math3d.h>
 #include "camerawin.h"
+#include "selection.h"
 #include "common/worldload.h"
+
+void AresEditSelectionListener::SelectionChanged (
+    const csArray<iDynamicObject*>& current_objects)
+{
+  aresed->SelectionChanged (current_objects);
+}
 
 AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
 {
@@ -45,6 +52,7 @@ AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
   curveMode = 0;
   curvedFactoryCounter = 0;
   worldLoader = 0;
+  selection = 0;
 }
 
 AppAresEdit::~AppAresEdit()
@@ -54,6 +62,7 @@ AppAresEdit::~AppAresEdit()
   delete mainMode;
   delete curveMode;
   delete worldLoader;
+  delete selection;
 }
 
 void AppAresEdit::DoStuffOncePerFrame ()
@@ -182,7 +191,7 @@ bool AppAresEdit::OnUnhandledEvent (iEvent& event)
 
 void AppAresEdit::SetStaticSelectedObjects (bool st)
 {
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -202,9 +211,9 @@ void AppAresEdit::SetStaticSelectedObjects (bool st)
 void AppAresEdit::SetButtonState ()
 {
   bool curveTabEnable = false;
-  if (current_objects.GetSize () == 1)
+  if (selection->GetSize () == 1)
   {
-    csString name = current_objects[0]->GetFactory ()->GetName ();
+    csString name = selection->GetFirst ()->GetFactory ()->GetName ();
     if (!curvedMeshCreator->GetCurvedFactory (name))
       curveTabEnable = true;
   }
@@ -214,37 +223,8 @@ void AppAresEdit::SetButtonState ()
     curveTabButton->disable ();
 }
 
-void AppAresEdit::AddCurrentObject (iDynamicObject* dynobj)
+void AppAresEdit::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
-  if (!dynobj) return;
-  if (current_objects.Find (dynobj) != csArrayItemNotFound)
-  {
-    current_objects.Delete (dynobj);
-    dynobj->SetHilight (false);
-  }
-  else
-  {
-    current_objects.Push (dynobj);
-    dynobj->SetHilight (true);
-  }
-  mainMode->CurrentObjectsChanged (current_objects);
-}
-
-void AppAresEdit::SetCurrentObject (iDynamicObject* dynobj)
-{
-  if (current_objects.Find (dynobj) != csArrayItemNotFound) return;
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
-  while (it.HasNext ())
-  {
-    iDynamicObject* dynobj = it.Next ();
-    dynobj->SetHilight (false);
-  }
-  current_objects.DeleteAll ();
-  if (dynobj)
-  {
-    current_objects.Push (dynobj);
-    dynobj->SetHilight (true);
-  }
   mainMode->CurrentObjectsChanged (current_objects);
   camwin->CurrentObjectsChanged (current_objects);
 }
@@ -320,15 +300,10 @@ bool AppAresEdit::OnMouseUp (iEvent& ev)
   return editMode->OnMouseUp (ev, but, mouseX, mouseY);
 }
 
-bool AppAresEdit::AreObjectsSelected () const
-{
-  return current_objects.GetSize () >= 1;
-}
-
 csVector3 AppAresEdit::GetCenterSelected ()
 {
   csVector3 center (0);
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -336,7 +311,7 @@ csVector3 AppAresEdit::GetCenterSelected ()
     const csReversibleTransform& tr = dynobj->GetTransform ();
     center += tr.This2Other (box.GetCenter ());
   }
-  center /= current_objects.GetSize ();
+  center /= selection->GetSize ();
   return center;
 }
 
@@ -377,7 +352,7 @@ bool AppAresEdit::OnKeyboard(iEvent& ev)
       {
 	GetCamera ().DisablePanning ();
       }
-      else if (AreObjectsSelected ())
+      else if (selection->HasSelection ())
       {
         csVector3 center = GetCenterSelected ();
         GetCamera ().EnablePanning (center);
@@ -468,9 +443,9 @@ bool AppAresEdit::OnSimulationSelected (const CEGUI::EventArgs&)
 
 void AppAresEdit::DeleteSelectedObjects ()
 {
-  csArray<iDynamicObject*> objects = current_objects;
-  SetCurrentObject (0);
-  csArray<iDynamicObject*>::Iterator it = objects.GetIterator ();
+  csArray<iDynamicObject*> objects = selection->GetObjects ();
+  selection->SetCurrentObject (0);
+  SelectionIterator it = objects.GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -486,7 +461,7 @@ void AppAresEdit::MoveCurrent (const csVector3& baseVector)
   if (slow) vector *= 0.01f;
   else if (!fast) vector *= 0.1f;
 
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -510,7 +485,7 @@ void AppAresEdit::RotateCurrent (float baseAngle)
   else if (fast) angle /= 2.0;
   else angle /= 8.0;
 
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -590,16 +565,16 @@ static void FindBestAlignedTransform (const csReversibleTransform& masterTrans,
 
 void AppAresEdit::AlignSelectedObjects ()
 {
-  if (current_objects.GetSize () <= 1) return;
-  if (!current_objects[0]->GetMesh ()) return;
+  if (selection->GetSize () <= 1) return;
+  if (!selection->GetFirst ()->GetMesh ()) return;
 
-  const csReversibleTransform& trans = current_objects[0]->GetMesh ()->GetMovable ()->GetTransform ();
+  const csReversibleTransform& trans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
 
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
-    if (dynobj == current_objects[0]) continue;
+    if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
     dynobj->MakeKinematic ();
@@ -612,17 +587,17 @@ void AppAresEdit::AlignSelectedObjects ()
 
 void AppAresEdit::StackSelectedObjects ()
 {
-  if (current_objects.GetSize () <= 1) return;
-  if (!current_objects[0]->GetMesh ()) return;
+  if (selection->GetSize () <= 1) return;
+  if (!selection->GetFirst ()->GetMesh ()) return;
 
-  csReversibleTransform firstTrans = current_objects[0]->GetMesh ()->GetMovable ()->GetTransform ();
-  csBox3 firstBbox = current_objects[0]->GetFactory ()->GetPhysicsBBox ();
+  csReversibleTransform firstTrans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
+  csBox3 firstBbox = selection->GetFirst ()->GetFactory ()->GetPhysicsBBox ();
 
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
-    if (dynobj == current_objects[0]) continue;
+    if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
     dynobj->MakeKinematic ();
@@ -642,17 +617,17 @@ void AppAresEdit::StackSelectedObjects ()
 
 void AppAresEdit::SameYSelectedObjects ()
 {
-  if (current_objects.GetSize () <= 1) return;
-  if (!current_objects[0]->GetMesh ()) return;
+  if (selection->GetSize () <= 1) return;
+  if (!selection->GetFirst ()->GetMesh ()) return;
 
-  csReversibleTransform trans = current_objects[0]->GetMesh ()->GetMovable ()->GetTransform ();
+  csReversibleTransform trans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
   float y = trans.GetOrigin ().y;
 
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
-    if (dynobj == current_objects[0]) continue;
+    if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
     dynobj->MakeKinematic ();
@@ -667,18 +642,18 @@ void AppAresEdit::SameYSelectedObjects ()
 
 void AppAresEdit::SetPosSelectedObjects ()
 {
-  if (current_objects.GetSize () <= 1) return;
-  if (!current_objects[0]->GetMesh ()) return;
+  if (selection->GetSize () <= 1) return;
+  if (!selection->GetFirst ()->GetMesh ()) return;
 
-  csReversibleTransform firstTrans = current_objects[0]->GetMesh ()->GetMovable ()
+  csReversibleTransform firstTrans = selection->GetFirst ()->GetMesh ()->GetMovable ()
     ->GetTransform ();
-  csBox3 firstBbox = current_objects[0]->GetFactory ()->GetPhysicsBBox ();
+  csBox3 firstBbox = selection->GetFirst ()->GetFactory ()->GetPhysicsBBox ();
 
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
-    if (dynobj == current_objects[0]) continue;
+    if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
@@ -698,7 +673,7 @@ void AppAresEdit::SetPosSelectedObjects ()
 
 void AppAresEdit::RotResetSelectedObjects ()
 {
-  csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
+  SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -732,8 +707,8 @@ bool AppAresEdit::OnCurveTabButtonClicked (const CEGUI::EventArgs&)
 
 bool AppAresEdit::SwitchToCurveMode ()
 {
-  if (current_objects.GetSize () != 1) return true;
-  csString name = current_objects[0]->GetFactory ()->GetName ();
+  if (selection->GetSize () != 1) return true;
+  csString name = selection->GetFirst ()->GetFactory ()->GetName ();
   if (!curvedMeshCreator->GetCurvedFactory (name)) return true;
 
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
@@ -749,7 +724,7 @@ bool AppAresEdit::SwitchToCurveMode ()
 
 void AppAresEdit::CleanupWorld ()
 {
-  SetCurrentObject (0);
+  selection->SetCurrentObject (0);
 
   curvedFactories.DeleteAll ();
   factory_to_origin_offset.DeleteAll ();
@@ -972,6 +947,10 @@ bool AppAresEdit::Application()
     return ReportError ("Failed to locate the configuration manager plugin!");
 
   worldLoader = new WorldLoader (r);
+  selection = new Selection (this);
+  SelectionListener* listener = new AresEditSelectionListener (this);
+  selection->AddSelectionListener (listener);
+  listener->DecRef ();
 
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
@@ -1217,7 +1196,7 @@ void AppAresEdit::SpawnItem (const csString& name)
 
   if (static_factories.In (fname))
     dynobj->MakeStatic ();
-  SetCurrentObject (dynobj);
+  selection->SetCurrentObject (dynobj);
 
   if (curvedFactory)
     SwitchToCurveMode ();

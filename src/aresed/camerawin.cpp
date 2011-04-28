@@ -116,9 +116,8 @@ bool CameraWindow::OnR4ButtonClicked (const CEGUI::EventArgs& e)
 
 csBox3 CameraWindow::GetBoxSelected ()
 {
-  csArray<iDynamicObject*>& objects = aresed->GetCurrentObjects ();
   csBox3 totalbox;
-  csArray<iDynamicObject*>::Iterator it = objects.GetIterator ();
+  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -166,7 +165,7 @@ bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
 
 bool CameraWindow::OnLookAtButtonClicked (const CEGUI::EventArgs& e)
 {
-  if (aresed->AreObjectsSelected ())
+  if (aresed->GetSelection ()->HasSelection ())
   {
     csVector3 center = aresed->GetCenterSelected ();
     aresed->GetCamera ().CamLookAtPosition (center);
@@ -204,7 +203,7 @@ bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
 {
   if (panCheck->isSelected ())
   {
-    if (aresed->AreObjectsSelected ())
+    if (aresed->GetSelection ()->HasSelection ())
     {
       csVector3 center = aresed->GetCenterSelected ();
       aresed->GetCamera ().EnablePanning (center);
