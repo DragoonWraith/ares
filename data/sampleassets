@@ -8,6 +8,9 @@
 
     <library path="/pt_plants" file="library" />
     <library path="/instancedFactories" file="library" />
+    <library path="/aresdata" file="library" />
+    <!--<library>/lib/frankie/frankie.xml</library>-->
+    <!--<library>/lib/krystal/krystal.xml</library>-->
 
     <textures>
 

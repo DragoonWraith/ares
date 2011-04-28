@@ -1094,7 +1094,7 @@ bool AppAresEdit::Application()
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
-    printf ("%ld %s\n", i, fact->GetName ()); fflush (stdout);
+    printf ("%d %s\n", i, fact->GetName ()); fflush (stdout);
     csBox3 bbox = fact->GetPhysicsBBox ();
     factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
     const char* st = fact->GetAttribute ("defaultstatic");
@@ -1150,20 +1150,14 @@ bool AppAresEdit::PostLoadMap ()
 
 bool AppAresEdit::SetupWorld ()
 {
-  if (!LoadLibrary ("/this/data/factories/", "genBox"))
-    return ReportError ("Error loading library!");
-
   vfs->Mount ("/aresnode", "data$/node.zip");
   if (!LoadLibrary ("/aresnode/", "library"))
     return ReportError ("Error loading library!");
   vfs->PopDir ();
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
-  vfs->Mount ("/aresdata", "data$/rack.zip");
-  if (!LoadLibrary ("/aresdata/", "library"))
+  if (!LoadLibrary ("/this/data/", "sampleassets"))
     return ReportError ("Error loading library!");
-  vfs->PopDir ();
-  vfs->Unmount ("/aresdata", "data$/rack.zip");
 
   csLoadResult rc = loader->Load ("/lib/krystal/krystal.xml");
   if (!rc.success)
