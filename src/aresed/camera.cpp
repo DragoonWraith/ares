@@ -292,6 +292,12 @@ bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
   return false;
 }
 
+void Camera::OnFocusLost ()
+{
+  do_mouse_dragging = false;
+  do_mouse_panning = false;
+}
+
 bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
   if (do_mouse_panning)

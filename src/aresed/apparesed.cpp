@@ -166,6 +166,17 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
   return false;
 }
 
+bool AppAresEdit::OnUnhandledEvent (iEvent& event)
+{
+  if (event.Name == FocusLost)
+  {
+    camera.OnFocusLost ();
+    editMode->OnFocusLost ();
+    return true;
+  }
+  return false;
+}
+
 void AppAresEdit::SetStaticSelectedObjects (bool st)
 {
   csArray<iDynamicObject*>::Iterator it = current_objects.GetIterator ();
@@ -961,6 +972,8 @@ bool AppAresEdit::OnInitialize(int argc, char* argv[])
 
   // "Warm up" the event handler so it can interact with the world
   csBaseEventHandler::Initialize(GetObjectRegistry());
+
+  FocusLost = csevFocusLost (GetObjectRegistry ());
  
   return true;
 }

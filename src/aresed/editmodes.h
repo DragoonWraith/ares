@@ -53,6 +53,7 @@ public:
   virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)  { return false; }
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)  { return false; }
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY)  { return false; }
+  virtual void OnFocusLost () { }
 };
 
 #endif // __aresed_editmodes_h

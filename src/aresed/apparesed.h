@@ -167,6 +167,9 @@ private:
   virtual bool OnMouseDown(iEvent&);
   virtual bool OnMouseUp(iEvent&);
   virtual bool OnMouseMove (iEvent&);
+  virtual bool OnUnhandledEvent (iEvent&);
+
+  csEventID FocusLost;
 
   int mouseX, mouseY;
 

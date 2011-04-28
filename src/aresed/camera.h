@@ -82,6 +82,7 @@ public:
   bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
   bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
   bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
+  void OnFocusLost ();
 
   /**
    * Move the camera.
