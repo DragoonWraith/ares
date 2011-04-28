@@ -123,12 +123,6 @@ public:
   virtual ~AppAres ();
 
   /**
-   * Load the world from a file.
-   */
-  void LoadFile (const char* filename);
-  void LoadDoc (iDocument* doc);
-
-  /**
    * Final cleanup.
    */
   virtual void OnExit ();

@@ -72,6 +72,7 @@ void Nature::InitSector (iSector* sector)
 void Nature::UpdateTime (csTicks ticks, iCamera* camera)
 {
   iCamera* cam = camera;
+  if (!cam->GetSector ()) return;
 
   static float lastStep = -1000.0f;
   float step = float (ticks % 100000) / 100000.0;

@@ -71,7 +71,7 @@ AppAres::AppAres ()
 
 AppAres::~AppAres ()
 {
-  currentTime = 0;
+  currentTime = 31000;
   delete worldLoader;
 }
 
@@ -156,54 +156,6 @@ void AppAres::CreateSettingBar ()
   bb->SetPosition (100000, 1000);
   bb->SetSize (200000, 30000);
   bb->GetFlags ().SetAll (0);
-}
-
-void AppAres::LoadDoc (iDocument* doc)
-{
-  //CleanupWorld ();
-
-  csRef<iDocumentNode> root = doc->GetRoot ();
-  csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
-  csRef<iDocumentNode> curveNode = dynlevelNode->GetNode ("curves");
-  if (curveNode)
-  {
-    csRef<iString> error = curvedMeshCreator->Load (curveNode);
-    if (error)
-    {
-      printf ("ERROR: %s\n", error->GetData ()); fflush (stdout);
-      return;
-    }
-  }
-
-  csRef<iDocumentNode> dynworldNode = dynlevelNode->GetNode ("dynworld");
-  if (dynworldNode)
-  {
-    csRef<iString> error = dynworld->Load (dynworldNode);
-    if (error)
-    {
-      printf ("ERROR: %s\n", error->GetData ()); fflush (stdout);
-      return;
-    }
-  }
-}
-
-void AppAres::LoadFile (const char* filename)
-{
-  csRef<iDocumentSystem> docsys;
-  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
-  if (!docsys)
-    docsys.AttachNew (new csTinyDocumentSystem ());
-
-  csRef<iDocument> doc = docsys->CreateDocument ();
-  csRef<iDataBuffer> buf = vfs->ReadFile (filename);
-  const char* error = doc->Parse (buf->GetData ());
-  if (error)
-  {
-    printf ("ERROR: %s\n", error); fflush (stdout);
-    return;
-  }
-
-  LoadDoc (doc);
 }
 
 void AppAres::CreateActor ()
@@ -424,6 +376,8 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 
 bool AppAres::PostLoadMap ()
 {
+  dynworld->Setup (sector, dynSys);
+
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
@@ -505,8 +459,6 @@ bool AppAres::Application ()
 
   worldLoader->LoadFile ("/saves/testworld");
   sector = engine->FindSector ("room");
-
-  dynworld->Setup (sector, dynSys);
 
   if (!PostLoadMap ())
     return ReportError ("Error during PostLoadMap()!");
