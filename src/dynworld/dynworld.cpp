@@ -60,6 +60,11 @@ MeshCache::MeshCache ()
 
 MeshCache::~MeshCache ()
 {
+  RemoveMeshes ();
+}
+
+void MeshCache::RemoveMeshes ()
+{
   csHash<MeshCacheFactory*,csString>::GlobalIterator it = meshFactories.GetIterator ();
   while (it.HasNext ())
   {
@@ -67,6 +72,7 @@ MeshCache::~MeshCache ()
     MeshCacheFactory* mf = it.Next (key);
     delete mf;
   }
+  meshFactories.DeleteAll ();
 }
 
 iMeshWrapper* MeshCache::AddMesh (iEngine* engine,
@@ -510,6 +516,12 @@ void DynamicWorld::RemoveFactory (iDynamicFactory* factory)
   factories.Delete (static_cast<DynamicFactory*> (factory));
 }
 
+void DynamicWorld::DeleteFactories ()
+{
+  factory_hash.DeleteAll ();
+  factories.DeleteAll ();
+}
+
 iDynamicObject* DynamicWorld::AddObject (const char* factory,
     const csReversibleTransform& trans)
 {
@@ -528,6 +540,7 @@ void DynamicWorld::DeleteObjects ()
   {
     DeleteObject (objects[0]);
   }
+  meshCache.RemoveMeshes ();
 }
 
 void DynamicWorld::DeleteObject (iDynamicObject* dynobj)

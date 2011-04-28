@@ -181,6 +181,7 @@ public:
   {
     return factoryTemplates[idx];
   }
+  virtual void DeleteCurvedFactoryTemplates ();
 
   virtual void DeleteFactories ();
   virtual iCurvedFactory* AddCurvedFactory (const char* name, const char* templatename);

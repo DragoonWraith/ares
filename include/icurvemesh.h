@@ -181,6 +181,8 @@ struct iCurvedMeshCreator : public virtual iBase
    * Get a factory template.
    */
   virtual iCurvedFactoryTemplate* GetCurvedFactoryTemplate (size_t idx) const = 0;
+  /// Delete all factory templates.
+  virtual void DeleteCurvedFactoryTemplates () = 0;
 
   //-----------------------------------------------------------------------------
 

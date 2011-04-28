@@ -454,6 +454,11 @@ CurvedFactoryTemplate* CurvedMeshCreator::FindFactoryTemplate (const char* name)
   return 0;
 }
 
+void CurvedMeshCreator::DeleteCurvedFactoryTemplates ()
+{
+  factoryTemplates.DeleteAll ();
+}
+
 iCurvedFactory* CurvedMeshCreator::AddCurvedFactory (const char* name, const char* templatename)
 {
   CurvedFactoryTemplate* cftemp = FindFactoryTemplate (templatename);

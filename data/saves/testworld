@@ -1,8 +1,13 @@
 <dynlevel>
+    <asset path="/this/data/" file="sampleassets" />
+    <asset path="/lib/krystal/" file="krystal.xml" />
+    <asset path="/lib/frankie/" file="frankie.xml" />
+    <asset path="/this/data/" file="dynworldFactories.xml" />
+    <asset path="/this/data/landscape" file="world" />
     <dynworld>
-        <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 1.85651e-009 1 8.42799e-015 1 1.85651e-009 -1 -4.3999e-017 -1.05411e-007" v="-6.42182 -3.68983 17.6079" />
-        <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 1.85651e-009 1 8.42799e-015 1 1.85651e-009 -1 -4.3999e-017 -1.05411e-007" v="1.57818 -3.68983 17.6079" />
-        <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 1.85651e-009 1 7.98439e-015 1 1.85651e-009 -1 -4.3999e-017 -1.05411e-007" v="9.57817 -3.68983 17.6079" />
+        <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.65085e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="-6.42182 -3.68983 17.6079" />
+        <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.65085e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="1.57818 -3.68983 17.6079" />
+        <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.20725e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="9.57817 -3.68983 17.6079" />
         <obj fact="Reeds01" static="true" m="0.999488 0 0.0319921 0 1 0 -0.0319921 0 0.999488" v="-2.97796 2.47914 14.5892" />
         <obj fact="Reeds01" static="true" m="0.635606 0 -0.772013 0 1 0 0.772013 0 0.635606" v="7.42639 2.85043 10.2821" />
         <obj fact="RockMedium1" static="true" m="0.861762 0.340808 -0.375788 -0.134366 0.867621 0.478727 0.489195 -0.362056 0.793476" v="6.26898 3.52322 9.36616" />
@@ -37,6 +42,7 @@
         <obj fact="Apple" m="-0.467615 0.883889 -0.00877523 0.824783 0.439873 0.35531 0.317915 0.158911 -0.934707" v="-33.0387 5.22363 -41.8858" />
         <obj fact="PoolDown" static="true" m="0.99664 0 -0.08191 5.63535e-017 1 -1.27601e-015 0.08191 0 0.99664" v="-2.26396 6.86514 -55.1133" />
         <obj fact="Pool" static="true" m="0.99664 0 -0.08191 -1.26047e-017 1 -1.26407e-015 0.08191 0 0.99664" v="-2.26396 7.01515 -55.1133" />
+        <obj fact="franky_frankie" static="true" m="0.614291 0 -0.789079 0 1 0 0.789079 0 0.614291" v="-8.97528 9.81017 13.5718" />
     </dynworld>
     <curves>
         <fact name="CurvedStreet1" width="6" sideheight="0.2" material="road_texture.jpg">

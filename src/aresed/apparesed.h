@@ -49,6 +49,19 @@ public:
   float maxradius, imposterradius, mass;
 };
 
+class Asset
+{
+private:
+  csString path;
+  csString file;
+
+public:
+  Asset (const char* path, const char* file) : path (path), file (file) { }
+
+  const csString& GetPath () const { return path; }
+  const csString& GetFile () const { return file; }
+};
+
 class AppAresEdit :
   public csApplicationFramework, public csBaseEventHandler
 {
@@ -69,6 +82,8 @@ private:
   csRef<iDecalTemplate> cursorDecalTemplate;
   iDecal* cursorDecal;
 #endif
+
+  csArray<Asset> assets;
 
   MainMode* mainMode;
   CurveMode* curveMode;
@@ -153,6 +168,8 @@ private:
 
   /// Setup stuff after map loading.
   bool PostLoadMap ();
+
+  bool SetupDynWorld ();
 
 #if USE_DECAL
   /// Setup the decals.
@@ -346,7 +363,7 @@ public:
    * Load the world from a file.
    */
   void LoadFile (const char* filename);
-  void LoadDoc (iDocument* doc);
+  bool LoadDoc (iDocument* doc);
 
   /**
    * Main initialization routine.  This routine should set up basic facilities

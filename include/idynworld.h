@@ -211,6 +211,9 @@ struct iDynamicWorld : public virtual iBase
    */
   virtual void RemoveFactory (iDynamicFactory* factory) = 0;
 
+  /// Remove all factories.
+  virtual void DeleteFactories () = 0;
+
   /**
    * Get the number of factories.
    */

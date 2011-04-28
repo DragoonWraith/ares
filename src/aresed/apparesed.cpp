@@ -252,6 +252,7 @@ void AppAresEdit::SetCurrentObject (iDynamicObject* dynobj)
 bool AppAresEdit::TraceBeamTerrain (const csVector3& start,
     const csVector3& end, csVector3& isect)
 {
+  if (!terrainMesh) return false;
   csHitBeamResult result = terrainMesh->HitBeam (start, end);
   isect = result.isect;
   return result.hit;
@@ -776,18 +777,20 @@ void AppAresEdit::CleanupWorld ()
 {
   SetCurrentObject (0);
   dynworld->DeleteObjects ();
+  dynworld->DeleteFactories ();
   curvedMeshCreator->DeleteFactories ();
+  curvedMeshCreator->DeleteCurvedFactoryTemplates ();
 
-  csArray<iDynamicFactory*>::Iterator it = curvedFactories.GetIterator ();
-  while (it.HasNext ())
-  {
-    iDynamicFactory* dfact = it.Next ();
-    static_factories.Delete (dfact->GetName ());
-    factory_to_origin_offset.DeleteAll (dfact->GetName ());
-    dynworld->RemoveFactory (dfact);
-  }
+  assets.DeleteAll ();
   curvedFactories.DeleteAll ();
+  factory_to_origin_offset.DeleteAll ();
+  curvedFactoryCreators.DeleteAll ();
+  static_factories.DeleteAll ();
+  undoStack.DeleteAll ();
+  undoOperations.DeleteAll ();
 
+  camlight = 0;
+  engine->DeleteAll ();
 }
 
 bool AppAresEdit::OnUndoButtonClicked (const CEGUI::EventArgs&)
@@ -806,6 +809,7 @@ bool AppAresEdit::OnUndoButtonClicked (const CEGUI::EventArgs&)
     t.Format ("Undo(%s)", undoOperations[undoOperations.GetSize ()-1]);
     undoButton->setText(CEGUI::String (t.GetData ()));
   }
+  // @@@ Error handling.
   LoadDoc (doc);
   lastUndoType = "";
   return true;
@@ -820,6 +824,15 @@ csRef<iDocument> AppAresEdit::SaveDoc ()
   csRef<iDocumentNode> root = doc->CreateRoot ();
   csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
   rootNode->SetValue ("dynlevel");
+
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    const Asset& asset = assets[i];
+    csRef<iDocumentNode> assetNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+    assetNode->SetValue ("asset");
+    assetNode->SetAttribute ("path", asset.GetPath ());
+    assetNode->SetAttribute ("file", asset.GetFile ());
+  }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
   dynworldNode->SetValue ("dynworld");
@@ -875,24 +888,44 @@ void AppAresEdit::LoadFile (const char* filename)
   }
 
   PushUndo ("Load");
+  // @@@ Error handling.
   LoadDoc (doc);
 }
 
-void AppAresEdit::LoadDoc (iDocument* doc)
+bool AppAresEdit::LoadDoc (iDocument* doc)
 {
   CleanupWorld ();
+  SetupWorld ();
 
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
+
+  csRef<iDocumentNodeIterator> it = dynlevelNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "asset")
+    {
+      csString path = child->GetAttributeValue ("path");
+      csString file = child->GetAttributeValue ("file");
+      if (!LoadLibrary (path, file))
+        return ReportError ("Error loading asset '%s'!", (const char*)file);
+      assets.Push (Asset (path, file));
+    }
+    // Ignore the other tags. These are processed below.
+  }
+
+  if (!SetupDynWorld ())
+    return false;
+
   csRef<iDocumentNode> curveNode = dynlevelNode->GetNode ("curves");
   if (curveNode)
   {
     csRef<iString> error = curvedMeshCreator->Load (curveNode);
     if (error)
-    {
-      printf ("ERROR: %s\n", error->GetData ()); fflush (stdout);
-      return;
-    }
+      return ReportError ("ERROR: %s\n", error->GetData ());
   }
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
@@ -909,11 +942,11 @@ void AppAresEdit::LoadDoc (iDocument* doc)
   {
     csRef<iString> error = dynworld->Load (dynworldNode);
     if (error)
-    {
-      printf ("ERROR: %s\n", error->GetData ()); fflush (stdout);
-      return;
-    }
+      return ReportError ("ERROR: %s\n", error->GetData ());
   }
+
+  sector = engine->FindSector ("room");
+  return PostLoadMap ();
 }
 
 struct LoadCallback : public OKCallback
@@ -922,7 +955,6 @@ struct LoadCallback : public OKCallback
   LoadCallback (AppAresEdit* ares) : ares (ares) { }
   virtual void OkPressed (const char* filename)
   {
-    printf ("OkPressed %s\n", filename); fflush (stdout);
     ares->LoadFile (filename);
   }
 };
@@ -1099,11 +1131,26 @@ bool AppAresEdit::Application()
   if (!SetupWorld ())
     return false;
 
-  dynworld->Setup (sector, dynSys);
-
   if (!PostLoadMap ())
     return ReportError ("Error during PostLoadMap()!");
 
+  if (!SetupDynWorld ())
+    return false;
+
+#if USE_DECAL
+  if (!SetupDecal ())
+    return false;
+#endif
+
+  // Start the default run/event loop.  This will return only when some code,
+  // such as OnKeyboard(), has asked the run loop to terminate.
+  Run();
+
+  return true;
+}
+
+bool AppAresEdit::SetupDynWorld ()
+{
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
@@ -1137,26 +1184,47 @@ bool AppAresEdit::Application()
 
     curvedFactoryCreators.Push (creator);
   }
-
-  // Start the default run/event loop.  This will return only when some code,
-  // such as OnKeyboard(), has asked the run loop to terminate.
-  Run();
-
   return true;
 }
 
 bool AppAresEdit::PostLoadMap ()
 {
+  dynworld->Setup (sector, dynSys);
+
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
+  // @@@ Bad: hardcoded terrain name! Don't do this at home!
+  terrainMesh = sector->GetMeshes ()->FindByName ("Terrain");
+
+  if (terrainMesh)
+  {
+    csRef<iTerrainSystem> terrain =
+      scfQueryInterface<iTerrainSystem> (terrainMesh->GetMeshObject ());
+    if (!terrain)
+    {
+      ReportError("Error cannot find the terrain interface!");
+      return false;
+    }
+
+    // Create a terrain collider for each cell of the terrain
+    for (size_t i = 0; i < terrain->GetCellCount (); i++)
+      bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
+  }
+
+  iLightList* lightList = sector->GetLights ();
+  lightList->RemoveAll ();
+
+  nature->InitSector (sector);
+
+  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
+  lightList->Add (camlight);
+
+  engine->Prepare ();
+  //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
+
   // Setup the camera.
   camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
-
-#if USE_DECAL
-  if (!SetupDecal ())
-    return false;
-#endif
 
   return true;
 }
@@ -1169,63 +1237,7 @@ bool AppAresEdit::SetupWorld ()
   vfs->PopDir ();
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
-  if (!LoadLibrary ("/this/data/", "sampleassets"))
-    return ReportError ("Error loading library!");
-
-  csLoadResult rc = loader->Load ("/lib/krystal/krystal.xml");
-  if (!rc.success)
-    return ReportError ("Can't load Krystal library file!");
-
-  rc = loader->Load ("/lib/frankie/frankie.xml");
-  if (!rc.success)
-    return ReportError ("Can't load Frankie library file!");
-
-  if (!LoadLibrary ("/this/data/", "dynworldFactories.xml"))
-    return ReportError ("Error loading library!");
-
-  //-------------------------------------
-  // Make the floor.
-  //-------------------------------------
-  vfs->ChDir ("/this/data/landscape");
-  if (!loader->LoadMapFile ("world", false))
-  {
-    ReportError ("Error couldn't load terrain level!");
-    return false;
-  }
-  sector = engine->FindSector ("room");
-  // @@@ Bad: hardcoded terrain name! Don't do this at home!
-  terrainMesh = sector->GetMeshes ()->FindByName ("Terrain");
-
-  // Find the terrain mesh
-  csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
-  if (!terrainWrapper)
-  {
-    ReportError("Error cannot find the terrain mesh!");
-    return false;
-  }
-
-  csRef<iTerrainSystem> terrain =
-    scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
-  if (!terrain)
-  {
-    ReportError("Error cannot find the terrain interface!");
-    return false;
-  }
-
-  // Create a terrain collider for each cell of the terrain
-  for (size_t i = 0; i < terrain->GetCellCount (); i++)
-    bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
-
-  iLightList* lightList = sector->GetLights ();
-  lightList->RemoveAll ();
-
-  nature->InitSector (sector);
-
-  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
-  lightList->Add (camlight);
-
-  engine->Prepare ();
-  //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
+  sector = engine->CreateSector ("room");
 
   return true;
 }
@@ -1368,7 +1380,8 @@ bool AppAresEdit::LoadLibrary (const char* path, const char* file)
 {
   // Set current VFS dir to the level dir, helps with relative paths in maps
   vfs->PushDir (path);
-  if (!loader->LoadLibraryFile (file))
+  csLoadResult rc = loader->Load (file);
+  if (!rc.success)
   {
     vfs->PopDir ();
     return ReportError("Couldn't load library file %s!", path);

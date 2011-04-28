@@ -70,6 +70,7 @@ public:
   iMeshWrapper* AddMesh (iEngine* engine, iMeshFactoryWrapper* factory,
       iSector* sector, const csReversibleTransform& trans);
   void RemoveMesh (iMeshWrapper* mesh);
+  void RemoveMeshes ();
 };
 
 class DOCollider
@@ -396,6 +397,7 @@ public:
   virtual iDynamicFactory* AddFactory (const char* factory, float maxradius,
       float imposterradius);
   virtual void RemoveFactory (iDynamicFactory* factory);
+  virtual void DynamicWorld::DeleteFactories ();
   virtual size_t GetFactoryCount () const { return factories.GetSize () ; }
   virtual iDynamicFactory* GetFactory (size_t index) const { return factories[index]; }
 
