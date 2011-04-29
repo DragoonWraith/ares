@@ -221,44 +221,34 @@ void MainMode::StopDrag ()
 void MainMode::FramePre()
 {
   iCamera* camera = aresed->GetCsCamera ();
-  iGraphics2D* g2d = aresed->GetG2D ();
   if (do_dragging)
   {
     // Keep the drag joint at the same distance to the camera
-    csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
-    csVector3 v3d = camera->InvPerspective (v2d, 10000);
-    csVector3 startBeam = camera->GetTransform ().GetOrigin ();
-    csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
-
-    csVector3 newPosition = endBeam - startBeam;
+    csSegment3 beam = aresed->GetMouseBeam ();
+    csVector3 newPosition = beam.End () - beam.Start ();
     newPosition.Normalize ();
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
     dragJoint->SetPosition (newPosition);
   }
   else if (do_kinematic_dragging)
   {
-    csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
-    csVector3 v3d = camera->InvPerspective (v2d, 1000);
-    csVector3 startBeam = camera->GetTransform ().GetOrigin ();
-    csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
-
+    csSegment3 beam = aresed->GetMouseBeam (1000.0f);
     csVector3 newPosition;
     if (doDragRestrictY)
     {
-      if (fabs (startBeam.y-endBeam.y) < 0.1f) return;
-      if (endBeam.y < startBeam.y && dragRestrictY > startBeam.y) return;
-      if (endBeam.y > startBeam.y && dragRestrictY < startBeam.y) return;
-      float dist = csIntersect3::SegmentYPlane (startBeam, endBeam, dragRestrictY,
-	  newPosition);
+      if (fabs (beam.Start ().y-beam.End ().y) < 0.1f) return;
+      if (beam.End ().y < beam.Start ().y && dragRestrictY > beam.Start ().y) return;
+      if (beam.End ().y > beam.Start ().y && dragRestrictY < beam.Start ().y) return;
+      float dist = csIntersect3::SegmentYPlane (beam, dragRestrictY, newPosition);
       if (dist > 0.08f)
       {
-	newPosition = startBeam + (endBeam-startBeam).Unit () * 80.0f;
+	newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
 	newPosition.y = dragRestrictY;
       }
     }
     else
     {
-      newPosition = endBeam - startBeam;
+      newPosition = beam.End () - beam.Start ();
       newPosition.Normalize ();
       newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
     }
@@ -367,8 +357,9 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   bool alt = (mod & CSMASK_ALT) != 0;
 
   // Compute the end beam points
-  csVector3 startBeam, endBeam, isect;
-  iRigidBody* hitBody = aresed->TraceBeam (mouseX, mouseY, startBeam, endBeam, isect);
+  csVector3 isect;
+  csSegment3 beam = aresed->GetBeam (mouseX, mouseY);
+  iRigidBody* hitBody = aresed->TraceBeam (beam, isect);
   if (!hitBody)
   {
     if (but == 0) aresed->GetSelection ()->SetCurrentObject (0);
@@ -402,7 +393,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 	dragObjects.Push (dob);
       }
 
-      dragDistance = (isect - startBeam).Norm ();
+      dragDistance = (isect - beam.Start ()).Norm ();
       doDragRestrictY = alt;
       if (doDragRestrictY)
       {
@@ -416,7 +407,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       dragJoint->Attach (hitBody, isect);
 
       do_dragging = true;
-      dragDistance = (isect - startBeam).Norm ();
+      dragDistance = (isect - beam.Start ()).Norm ();
 
       // Set some dampening on the rigid body to have a more stable dragging
       csRef<CS::Physics::Bullet::iRigidBody> csBody =
@@ -430,14 +421,23 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
   else if (but == 1)
   {
-    // Add a force at the point clicked
-    csVector3 force = endBeam - startBeam;
-    force.Normalize ();
-    if (shift)
-      force *= -hitBody->GetMass ();
+    if (ctrl)
+    {
+      //if (aresed->TraceBeamTerrain (start, end, isect))
+      //{
+      //}
+    }
     else
-      force *= hitBody->GetMass ();
-    hitBody->AddForceAtPos (force, isect);
+    {
+      // Add a force at the point clicked
+      csVector3 force = beam.End () - beam.Start ();
+      force.Normalize ();
+      if (shift)
+        force *= -hitBody->GetMass ();
+      else
+        force *= hitBody->GetMass ();
+      hitBody->AddForceAtPos (force, isect);
+    }
     return true;
   }
 

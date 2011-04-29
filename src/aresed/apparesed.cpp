@@ -142,14 +142,11 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
   mouseY = csMouseEventHelper::GetY (&ev);
 
 #if USE_DECAL
-  iCamera* cam = GetCsCamera ();
-  csVector2 v2d (mouseX, GetG2D ()->GetHeight () - mouseY);
-  csVector3 v3d = cam->InvPerspective (v2d, 10000);
-  csVector3 start = cam->GetTransform ().GetOrigin ();
-  csVector3 end = cam->GetTransform ().This2Other (v3d);
+  csSegment3 beam = GetMouseBeam ();
 
 #if 1
-  csSectorHitBeamResult result = GetCsCamera ()->GetSector()->HitBeamPortals (start, end);
+  csSectorHitBeamResult result = GetCsCamera ()->GetSector()->HitBeamPortals (
+      beam.Start (), beam.End ());
   if (result.mesh)
   {
     printf ("hit!\n"); fflush (stdout);
@@ -158,7 +155,7 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
 	csVector3 (0, -1, 0), 1.0f, 1.0f, cursorDecal);
   }
 #else
-  csHitBeamResult result = terrainMesh->HitBeam (start, end);
+  csHitBeamResult result = terrainMesh->HitBeam (beam.Start (), beam.End ());
   if (result.hit)
   {
     printf ("hit!\n"); fflush (stdout);
@@ -238,20 +235,27 @@ bool AppAresEdit::TraceBeamTerrain (const csVector3& start,
   return result.hit;
 }
 
-iRigidBody* AppAresEdit::TraceBeam (int x, int y,
-    csVector3& startBeam, csVector3& endBeam,
-    csVector3& isect)
+csSegment3 AppAresEdit::GetBeam (int x, int y, float maxdist)
 {
-  // Compute the end beam points
   iCamera* cam = GetCsCamera ();
   csVector2 v2d (x, GetG2D ()->GetHeight () - y);
-  csVector3 v3d = cam->InvPerspective (v2d, 10000);
-  startBeam = cam->GetTransform ().GetOrigin ();
-  endBeam = cam->GetTransform ().This2Other (v3d);
+  csVector3 v3d = cam->InvPerspective (v2d, maxdist);
+  csVector3 start = cam->GetTransform ().GetOrigin ();
+  csVector3 end = cam->GetTransform ().This2Other (v3d);
+  return csSegment3 (start, end);
+}
 
+csSegment3 AppAresEdit::GetMouseBeam (float maxdist)
+{
+  return GetBeam (mouseX, mouseY, maxdist);
+}
+
+iRigidBody* AppAresEdit::TraceBeam (const csSegment3& beam, csVector3& isect)
+{
   // Trace the physical beam
   iRigidBody* hitBody = 0;
-  CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (startBeam, endBeam);
+  CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (
+      beam.Start (), beam.End ());
   if (result.body)
   {
     hitBody = result.body->QueryRigidBody ();
@@ -262,7 +266,8 @@ iRigidBody* AppAresEdit::TraceBeam (int x, int y,
     printf ("Work around needed!\n"); fflush (stdout);
     // @@@ This is a workaround for the fact that bullet->HitBeam() doesn't appear to work
     // on mesh colliders.
-    csSectorHitBeamResult result2 = cam->GetSector ()->HitBeamPortals (startBeam, endBeam);
+    csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
+	beam.Start (), beam.End ());
     if (result2.mesh)
     {
       iDynamicObject* dynobj = GetDynamicWorld ()->FindObject (result2.mesh);
@@ -1131,14 +1136,8 @@ void AppAresEdit::SpawnItem (const csString& name)
   }
 
   // Use the camera transform.
-  iGraphics2D* g2d = g3d->GetDriver2D ();
-  iCamera* camera = view->GetCamera ();
-  csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
-  csVector3 v3d = camera->InvPerspective (v2d, 50);
-  csVector3 startBeam = camera->GetTransform ().GetOrigin ();
-  csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
-
-  csSectorHitBeamResult result = sector->HitBeamPortals (startBeam, endBeam);
+  csSegment3 beam = GetMouseBeam (50.0f);
+  csSectorHitBeamResult result = sector->HitBeamPortals (beam.Start (), beam.End ());
 
   float yorigin = factory_to_origin_offset.Get (fname, 1000000.0);
 
@@ -1151,12 +1150,12 @@ void AppAresEdit::SpawnItem (const csString& name)
   }
   else
   {
-    newPosition = endBeam - startBeam;
+    newPosition = beam.End () - beam.Start ();
     newPosition.Normalize ();
-    newPosition = camera->GetTransform ().GetOrigin () + newPosition * 3.0f;
+    newPosition = GetCsCamera ()->GetTransform ().GetOrigin () + newPosition * 3.0f;
   }
 
-  csReversibleTransform tc = view->GetCamera ()->GetTransform ();
+  csReversibleTransform tc = GetCsCamera ()->GetTransform ();
   csVector3 front = tc.GetFront ();
   front.y = 0;
   tc.LookAt (front, csVector3 (0, 1, 0));
@@ -1170,13 +1169,13 @@ void AppAresEdit::SpawnItem (const csString& name)
     // up suddenly because it was embedded in the ground partially.
     const csBox3& box = dynobj->GetBBox ();
     float dist = (box.MaxY () - box.MinY ()) * 2.0;
-    float y1 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYz), dist, camera);
+    float y1 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYz), dist, GetCsCamera ());
     if (yorigin < 999999.0) y1 -= yorigin;
-    float y2 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYz), dist, camera);
+    float y2 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYz), dist, GetCsCamera ());
     if (yorigin < 999999.0) y2 -= yorigin;
-    float y3 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYZ), dist, camera);
+    float y3 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYZ), dist, GetCsCamera ());
     if (yorigin < 999999.0) y3 -= yorigin;
-    float y4 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYZ), dist, camera);
+    float y4 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_XYZ), dist, GetCsCamera ());
     if (yorigin < 999999.0) y4 -= yorigin;
     bool changed = false;
     if (y1 > newPosition.y) { newPosition.y = y1; changed = true; }

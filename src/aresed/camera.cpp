@@ -249,9 +249,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       do_mouse_panning = false;
       if (!do_mouse_dragging)
       {
-        csVector3 start, end, isect;
-        aresed->TraceBeam (mouseX, mouseY, start, end, isect);
-        panningCenter = isect;
+        aresed->TraceBeam (aresed->GetBeam (mouseX, mouseY), panningCenter);
         do_mouse_dragging = true;
       }
     }
@@ -264,11 +262,10 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       do_mouse_dragging = false;
       if (!do_mouse_panning)
       {
-        csVector3 start, end, isect;
-        aresed->TraceBeam (mouseX, mouseY, start, end, isect);
-        panningCenter = isect;
-        CamLookAtPosition (isect);
-        panningDistance = sqrt (csSquaredDist::PointPoint (isect, desired.pos));
+        aresed->TraceBeam (aresed->GetBeam (mouseX, mouseY), panningCenter);
+        CamLookAtPosition (panningCenter);
+        panningDistance = sqrt (csSquaredDist::PointPoint (
+	      panningCenter, desired.pos));
         if (panningDistance < 200.0f)
         {
 	  do_mouse_panning = true;

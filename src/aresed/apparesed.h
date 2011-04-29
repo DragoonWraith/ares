@@ -314,12 +314,23 @@ public:
    * Return the center of all selected objects.
    */
   csVector3 GetCenterSelected ();
+
+  /**
+   * Calculate a segment representing a beam that starts from camera
+   * position towards a given point on screen.
+   */
+  csSegment3 GetBeam (int x, int y, float maxdist = 1000.0f);
   
   /**
-   * Given a screen position, calculate the rigid body at that position.
+   * Calculate a segment representing a beam that starts from camera
+   * position towards a given point on screen as pointed to by the mouse.
    */
-  iRigidBody* TraceBeam (int x, int y, csVector3& startBeam, csVector3& endBeam,
-      csVector3& isect);
+  csSegment3 GetMouseBeam (float maxdist = 1000.0f);
+  
+  /**
+   * Given a beam, calculate the rigid body at that position.
+   */
+  iRigidBody* TraceBeam (const csSegment3& beam, csVector3& isect);
 
   /**
    * Hit a beam with the terrain and return the intersection point.
