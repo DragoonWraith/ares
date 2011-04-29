@@ -311,13 +311,23 @@ bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
   else if (do_mouse_dragging)
   {
     csVector2 v2d (mouseX, aresed->GetG2D ()->GetHeight () - mouseY);
-    csVector3 v3d = camera->InvPerspective (v2d, 10000.0f);
+    csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
     csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
     csVector3 isect;
-    csIntersect3::SegmentYPlane (startBeam, endBeam, panningCenter.y, isect);
+    if (fabs (startBeam.y-endBeam.y) < 0.1f) return true;
+    if (endBeam.y < startBeam.y && panningCenter.y > startBeam.y) return true;
+    if (endBeam.y > startBeam.y && panningCenter.y < startBeam.y) return true;
+    float dist = csIntersect3::SegmentYPlane (startBeam, endBeam, panningCenter.y,
+	isect);
+    if (dist > 0.15f)
+    {
+      isect = startBeam + (endBeam-startBeam).Unit () * 150.0f;
+      isect.y = panningCenter.y;
+    }
     desired.pos += panningCenter - isect;
     ClampDesiredLocation ();
+    return true;
   }
   return false;
 }
