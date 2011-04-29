@@ -238,14 +238,23 @@ void MainMode::FramePre()
   else if (do_kinematic_dragging)
   {
     csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
-    csVector3 v3d = camera->InvPerspective (v2d, 10000);
+    csVector3 v3d = camera->InvPerspective (v2d, 1000);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
     csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
 
     csVector3 newPosition;
     if (doDragRestrictY)
     {
-      csIntersect3::SegmentYPlane (startBeam, endBeam, dragRestrictY, newPosition);
+      if (fabs (startBeam.y-endBeam.y) < 0.1f) return;
+      if (endBeam.y < startBeam.y && dragRestrictY > startBeam.y) return;
+      if (endBeam.y > startBeam.y && dragRestrictY < startBeam.y) return;
+      float dist = csIntersect3::SegmentYPlane (startBeam, endBeam, dragRestrictY,
+	  newPosition);
+      if (dist > 0.08f)
+      {
+	newPosition = startBeam + (endBeam-startBeam).Unit () * 80.0f;
+	newPosition.y = dragRestrictY;
+      }
     }
     else
     {
