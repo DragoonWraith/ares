@@ -389,7 +389,7 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
 
 bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (but != 1) return false;
+  if (but != 0) return false;
 
   if (mouseX > aresed->GetViewWidth ()) return false;
   if (mouseY > aresed->GetViewHeight ()) return false;
