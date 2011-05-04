@@ -43,8 +43,7 @@ THE SOFTWARE.
 
 #include "curvemesh.h"
 
-
-#define V(x)
+#define VERBOSE 0
 
 
 CS_PLUGIN_NAMESPACE_BEGIN(CurvedMesh)
@@ -132,7 +131,10 @@ void ClingyPath::FitToTerrain (size_t idx, float width, iMeshWrapper* thisMesh)
     dy -= lowerY;
     dyL -= lowerY;
     dyR -= lowerY;
-    V((printf ("        FitToTerrain %d, dy=%g/%g/%g, lowerY=%g\n", idx, dyL, dy, dyR, lowerY); fflush (stdout);))
+#   if VERBOSE
+    printf ("        FitToTerrain %d, dy=%g/%g/%g, lowerY=%g\n",
+	idx, dyL, dy, dyR, lowerY); fflush (stdout);
+#   endif
   }
 
   if ((hL && dyL < BOTTOM_MARGIN) || (h && dy < BOTTOM_MARGIN) || (hR && dyR < BOTTOM_MARGIN))
@@ -142,11 +144,16 @@ void ClingyPath::FitToTerrain (size_t idx, float width, iMeshWrapper* thisMesh)
     float raiseY = cmax (hL, BOTTOM_MARGIN-dyL, hR, BOTTOM_MARGIN-dyR);
     raiseY = cmax (true, raiseY, h, BOTTOM_MARGIN-dy);
     points[idx].pos.y += raiseY;
-    V((printf ("        FitToTerrain %d, dy=%g/%g/%g, raiseY=%g\n", idx, dyL, dy, dyR, raiseY); fflush (stdout);))
+#   if VERBOSE
+    printf ("        FitToTerrain %d, dy=%g/%g/%g, raiseY=%g\n",
+	idx, dyL, dy, dyR, raiseY); fflush (stdout);
+#   endif
   }
   else
   {
-    V((printf ("        FitToTerrain %d, dy=%g/%g/%g\n", idx, dyL, dy, dyR); fflush (stdout);))
+#   if VERBOSE
+    printf ("        FitToTerrain %d, dy=%g/%g/%g\n", idx, dyL, dy, dyR); fflush (stdout);
+#   endif
   }
 }
 
@@ -206,11 +213,13 @@ void ClingyPath::GeneratePath (csPath& path)
     path.SetPositionVector (i, points[i].pos);
     path.SetForwardVector (i, points[i].front);
     path.SetUpVector (i, points[i].up);
-    //printf ("        path %d (%g): pos:%g,%g,%g front:%g,%g,%g up:%g,%g,%g\n",
-	//i, points[i].time,
-	//points[i].pos.x, points[i].pos.y, points[i].pos.z,
-	//points[i].front.x, points[i].front.y, points[i].front.z,
-	//points[i].up.x, points[i].up.y, points[i].up.z);
+#   if VERBOSE
+    printf ("        path %d (%g): pos:%g,%g,%g front:%g,%g,%g up:%g,%g,%g\n",
+	i, points[i].time,
+	points[i].pos.x, points[i].pos.y, points[i].pos.z,
+	points[i].front.x, points[i].front.y, points[i].front.z,
+	points[i].up.x, points[i].up.y, points[i].up.z);
+#   endif
   }
 }
 
@@ -242,8 +251,11 @@ void ClingyPath::CalcMinMaxDY (size_t segIdx, float width, iMeshWrapper* thisMes
   if (steps <= 1) return;	// Segment is too small. Don't do anything.
   float timeStep = (endTime-startTime) / float (steps);
   if (timeStep < 0.0001) return;	// Segment is too small. Don't do anything.
-V((printf ("  CalcMinMaxDY: segIdx=%d dist=%g steps=%d time:%g/%g timeStep=%g\n", segIdx, dist, steps, startTime, endTime, timeStep);))
+# if VERBOSE
+  printf ("  CalcMinMaxDY: segIdx=%d dist=%g steps=%d time:%g/%g timeStep=%g\n",
+      segIdx, dist, steps, startTime, endTime, timeStep);
   Dump (10);
+# endif
   for (float t = startTime ; t <= endTime ; t += timeStep)
   {
     path.CalculateAtTime (t);
@@ -272,7 +284,10 @@ V((printf ("  CalcMinMaxDY: segIdx=%d dist=%g steps=%d time:%g/%g timeStep=%g\n"
 	  lowerY = dy - LOOSE_BOTTOM_MARGIN;
       }
       if (lowerY > maxLowerY) maxLowerY = lowerY;
-    V((printf ("        CalcMinMaxDY %g, dy=%g/%g/%g, lowerY=%g\n", t, dyL, dy, dyR, lowerY); fflush (stdout);))
+#     if VERBOSE
+      printf ("        CalcMinMaxDY %g, dy=%g/%g/%g, lowerY=%g\n",
+	  t, dyL, dy, dyR, lowerY); fflush (stdout);
+#     endif
     }
 
     if ((hL && dyL < LOOSE_BOTTOM_MARGIN) || (h && dy < LOOSE_BOTTOM_MARGIN) || (hR && dyR < LOOSE_BOTTOM_MARGIN))
@@ -282,11 +297,17 @@ V((printf ("  CalcMinMaxDY: segIdx=%d dist=%g steps=%d time:%g/%g timeStep=%g\n"
       float raiseY = cmax (hL, LOOSE_BOTTOM_MARGIN-dyL, hR, LOOSE_BOTTOM_MARGIN-dyR);
       raiseY = cmax (true, raiseY, h, LOOSE_BOTTOM_MARGIN-dy);
       if (raiseY > maxRaiseY) maxRaiseY = raiseY;
-    V((printf ("        CalcMinMaxDY %g, dy=%g/%g/%g, raiseY=%g\n", t, dyL, dy, dyR, raiseY); fflush (stdout);))
+#     if VERBOSE
+      printf ("        CalcMinMaxDY %g, dy=%g/%g/%g, raiseY=%g\n",
+	  t, dyL, dy, dyR, raiseY); fflush (stdout);
+#     endif
     }
     else
     {
-      V((printf ("        CalcMinMaxDY %g, dy=%g/%g/%g\n", t, dyL, dy, dyR); fflush (stdout);))
+#     if VERBOSE
+      printf ("        CalcMinMaxDY %g, dy=%g/%g/%g\n",
+	  t, dyL, dy, dyR); fflush (stdout);
+#     endif
     }
   }
 }
@@ -302,7 +323,10 @@ static float FindHorizontalMiddlePoint (csPath& path,
   path.GetInterpolatedPosition (pos);
   float d1 = Distance2d (pos1, pos);
   float d2 = Distance2d (pos, pos2);
-  V((printf ("t1=%g t2=%g time=%g d1=%g d2=%g error=%g\n", t1, t2, time, d1, d2, error); fflush (stdout);))
+# if VERBOSE
+  printf ("t1=%g t2=%g time=%g d1=%g d2=%g error=%g\n",
+      t1, t2, time, d1, d2, error); fflush (stdout);
+# endif
   if (fabs (d1-d2) < error)
     return time;
   if (d1 > d2)
@@ -333,9 +357,15 @@ void ClingyPath::SplitSegment (size_t segIdx)
   path.GetInterpolatedPosition (pe.pos);
   path.GetInterpolatedForward (pe.front);
   path.GetInterpolatedUp (pe.up);
-  V((printf ("  Split segment %d (time: %g/%g -> %g) pos=%g,%g,%g\n", segIdx, startTime, endTime, time, pe.pos.x, pe.pos.y, pe.pos.z); fflush (stdout);
-  printf ("      seg1: %g,%g,%g\n", points[segIdx].pos.x, points[segIdx].pos.y, points[segIdx].pos.z);
-  printf ("      seg2: %g,%g,%g\n", points[segIdx+1].pos.x, points[segIdx+1].pos.y, points[segIdx+1].pos.z);))
+# if VERBOSE
+  printf ("  Split segment %d (time: %g/%g -> %g) pos=%g,%g,%g\n",
+      segIdx, startTime, endTime, time, pe.pos.x, pe.pos.y, pe.pos.z);
+  printf ("      seg1: %g,%g,%g\n",
+      points[segIdx].pos.x, points[segIdx].pos.y, points[segIdx].pos.z);
+  printf ("      seg2: %g,%g,%g\n",
+      points[segIdx+1].pos.x, points[segIdx+1].pos.y, points[segIdx+1].pos.z);
+  fflush (stdout);
+# endif
 
   points.Insert (segIdx+1, pe);
 }
@@ -377,9 +407,7 @@ void ClingyPath::Flatten (iMeshWrapper* thisMesh, float width)
 
 void ClingyPath::Dump (int indent)
 {
-  bool a = true;
-  V((a=false;))
-  if (a) return;
+# if VERBOSE
   static char* sspaces = "                                                    ";
   char spaces[100];
   strcpy (spaces, sspaces);
@@ -392,6 +420,7 @@ void ClingyPath::Dump (int indent)
 	);
   fflush (stdout);
   spaces[indent] = ' ';
+# endif
 }
 
 //---------------------------------------------------------------------------------------
@@ -415,17 +444,26 @@ CurvedFactory::~CurvedFactory ()
 
 void CurvedFactory::GenerateGeometry (iMeshWrapper* thisMesh)
 {
-V((printf ("#############################################################\n"); fflush (stdout);))
+# if VERBOSE
+  printf ("#############################################################\n");
+  fflush (stdout);
+# endif
   csFlags oldFlags = thisMesh->GetFlags ();
   thisMesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
 
   clingyPath.SetBasePoints (anchorPoints);
-V((printf ("GenerateGeometry: Flatten\n"); fflush (stdout);))
+# if VERBOSE
+  printf ("GenerateGeometry: Flatten\n"); fflush (stdout);
+# endif
   clingyPath.Flatten (thisMesh, width);
   csPath path (1);
-V((printf ("GenerateGeometry: GeneratePath\n"); fflush (stdout);))
+# if VERBOSE
+  printf ("GenerateGeometry: GeneratePath\n"); fflush (stdout);
+# endif
   clingyPath.GeneratePath (path);
-printf ("Path has %d control points\n", clingyPath.GetWorkingPointCount ()); fflush (stdout);
+  printf ("Path has %d control points\n",
+      clingyPath.GetWorkingPointCount ());
+  fflush (stdout);
   float totalDistance = clingyPath.GetTotalDistance ();
 
   // @@@todo, the entire detail on the path should be customizable. Also it should
