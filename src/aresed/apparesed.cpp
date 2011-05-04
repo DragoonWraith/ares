@@ -1076,6 +1076,10 @@ bool AppAresEdit::PostLoadMap ()
   // Setup the camera.
   camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
 
+  // Force the update of the clock.
+  nature->UpdateTime (currentTime+100, GetCsCamera ());
+  nature->UpdateTime (currentTime, GetCsCamera ());
+
   return true;
 }
 
