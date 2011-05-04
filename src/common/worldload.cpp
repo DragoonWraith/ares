@@ -88,6 +88,9 @@ bool WorldLoader::LoadDoc (iDocument* doc)
   {
     iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
     iDynamicFactory* fact = dynworld->AddFactory (cfact->GetName (), 1.0, -1);
+    csRef<iGeometryGenerator> ggen = scfQueryInterface<iGeometryGenerator> (cfact);
+    if (ggen)
+      fact->SetGeometryGenerator (ggen);
     fact->AddRigidMesh (csVector3 (0), 10.0);
     curvedFactories.Push (fact);
   }

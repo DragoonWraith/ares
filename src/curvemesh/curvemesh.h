@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "iengine/engine.h"
 #include "iengine/mesh.h"
 
+#include "include/igeometrygen.h"
 #include "include/icurvemesh.h"
 
 CS_PLUGIN_NAMESPACE_BEGIN(CurvedMesh)
@@ -53,13 +54,83 @@ CS_PLUGIN_NAMESPACE_BEGIN(CurvedMesh)
 struct PathEntry
 {
   csVector3 pos, front, up;
+  float time;
+  PathEntry () { }
   PathEntry (const csVector3& pos, const csVector3& front, const csVector3& up) :
     pos (pos), front (front), up (up) { }
 };
 
+class ClingyPath
+{
+private:
+  /// The base points.
+  csArray<PathEntry> basePoints;
+
+  /// The working points.
+  csArray<PathEntry> points;
+
+  /**
+   * Given a segment index, return the start and end time
+   * on the path.
+   */
+  void GetSegmentTime (const csPath& path, size_t segIdx,
+      float& startTime, float& endTime);
+
+public:
+  /// Set the base points.
+  void SetBasePoints (const csArray<PathEntry> pts);
+
+  /**
+   * Refresh working path. Copy the base path to the working path.
+   */
+  void RefreshWorkingPath ();
+
+  /**
+   * Fit a point of the working path to the ground.
+   */
+  void FitToTerrain (size_t idx, float width, iMeshWrapper* thisMesh);
+
+  /**
+   * Fix slope of the working path at this index so that the up vector points
+   * correctly depending on the height of the neighbouring points.
+   */
+  void FixSlope (size_t idx);
+
+  /**
+   * Calculate how much this segment would have to raise or lower in
+   * order to better fit the landscape.
+   */
+  void CalcMinMaxDY (size_t segIdx, float width, iMeshWrapper* thisMesh,
+      float& maxRaiseY, float& maxLowerY);
+
+  /**
+   * Split a segment.
+   */
+  void SplitSegment (size_t segIdx);
+
+  /**
+   * The whole thing. Take the base points and generate a new set
+   * of points that nicely matches the landscape.
+   */
+  void Flatten (iMeshWrapper* thisMesh, float width);
+
+  /// Generate a path from the working points.
+  void GeneratePath (csPath& path);
+
+  /// Calculate the total distance of the path.
+  float GetTotalDistance ();
+
+  /// Dump this path.
+  void Dump (int indent);
+
+  /// Get the number of working points.
+  size_t GetWorkingPointCount () const { return points.GetSize (); }
+};
+
 class CurvedMeshCreator;
 
-class CurvedFactory : public scfImplementation1<CurvedFactory, iCurvedFactory>
+class CurvedFactory : public scfImplementation2<CurvedFactory, iCurvedFactory,
+  iGeometryGenerator>
 {
 private:
   CurvedMeshCreator* creator;
@@ -69,19 +140,11 @@ private:
   float sideHeight;
   float offsetHeight;
 
-  iMeshWrapper* flattenMesh;
-
   csRef<iMeshFactoryWrapper> factory;
   csRef<iGeneralFactoryState> state;
 
-  csArray<PathEntry> points;
+  ClingyPath clingyPath;
   csArray<PathEntry> anchorPoints;
-
-  void FlattenPointsToMesh (csVector3& leftPos, csVector3& rightPos);
-
-  void GeneratePoints ();
-  void GeneratePath (csPath& path, const csArray<PathEntry>& pts);
-  float GetTotalDistance (const csArray<PathEntry>& pts);
 
 public:
   CurvedFactory (CurvedMeshCreator* creator, const char* name);
@@ -89,8 +152,6 @@ public:
 
   virtual const char* GetName () const { return name; }
   virtual iMeshFactoryWrapper* GetFactory () { return factory; }
-  virtual void FlattenToGround (iMeshWrapper* mesh);
-  virtual void GenerateFactory ();
   virtual void SetMaterial (const char* materialName);
   virtual void SetCharacteristics (float width, float sideHeight);
   virtual float GetWidth () const { return width; }
@@ -119,6 +180,8 @@ public:
 
   void Save (iDocumentNode* node, iSyntaxService* syn);
   bool Load (iDocumentNode* node, iSyntaxService* syn);
+
+  virtual void GenerateGeometry (iMeshWrapper* mesh);
 };
 
 class CurvedFactoryTemplate : public scfImplementation1<CurvedFactoryTemplate,

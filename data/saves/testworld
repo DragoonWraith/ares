@@ -44,6 +44,7 @@
         <obj fact="Pool" static="true" m="0.99664 0 -0.08191 -1.26047e-017 1 -1.26407e-015 0.08191 0 0.99664" v="-2.26396 7.01515 -55.1133" />
         <obj fact="franky_frankie" static="true" m="0.614291 0 -0.789079 0 1 0 0.789079 0 0.614291" v="-8.97528 9.81017 13.5718" />
     </dynworld>
+    <!--
     <curves>
         <fact name="CurvedStreet1" width="6" sideheight="0.2" material="road_texture.jpg">
             <p pos="0.218141 -4.04982e-010 -3.40604" front="0 0 1" up="0 1 0" />
@@ -51,4 +52,5 @@
             <p pos="-0.935614 0.330896 1.43637" front="0 0 1" up="0 1 0" />
         </fact>
     </curves>
+    -->
 </dynlevel>

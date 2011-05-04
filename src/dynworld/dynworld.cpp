@@ -336,6 +336,9 @@ void DynamicObject::PrepareMesh (DynamicWorld* world)
   mesh = world->meshCache.AddMesh (world->engine, factory->GetMeshFactory (),
       world->sector, trans);
   mesh->GetMovable ()->AddListener (this);
+  iGeometryGenerator* ggen = factory->GetGeometryGenerator ();
+  if (ggen)
+    ggen->GenerateGeometry (mesh);
   InstallHilight (is_hilight);
   CS_ASSERT (hilight_installed == is_hilight);
   SetFade (fade);

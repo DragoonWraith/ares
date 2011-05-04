@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __ARES_DYNWORLD_H__
 
 #include "csutil/scf.h"
+#include "include/igeometrygen.h"
 
 class csBox3;
 class csVector3;
@@ -45,6 +46,13 @@ struct iDynamicFactory : public virtual iBase
   SCF_INTERFACE(iDynamicFactory,0,0,1);
 
   virtual const char* GetName () const = 0;
+
+  /**
+   * Set a geometry generator that is going to be used as soon
+   * as a mesh is created from this factory.
+   */
+  virtual void SetGeometryGenerator (iGeometryGenerator* gen) = 0;
+  virtual iGeometryGenerator* GetGeometryGenerator () const = 0;
 
   /**
    * Generic attribute system.

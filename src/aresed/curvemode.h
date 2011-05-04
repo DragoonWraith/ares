@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2010 by Jorrit Tyberghein
+Copyright (c) 2011 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "editmodes.h"
 
+struct iGeometryGenerator;
+
 struct DragPoint
 {
   size_t idx;
@@ -38,6 +40,7 @@ class CurveMode : public EditingMode
 {
 private:
   iCurvedFactory* editingCurveFactory;
+  csRef<iGeometryGenerator> ggen;
 
   /**
    * Find the curve point closest to the mouse position.

@@ -217,6 +217,7 @@ private:
   csBox3 physBbox;
   float maxradiusRelative;
 
+  csRef<iGeometryGenerator> geometryGenerator;
   csRef<iImposterFactory> imposterFactory;
   float imposterradius;
   csHash<csString,csString> attributes;
@@ -229,6 +230,14 @@ public:
   virtual const csBox3& GetBBox () const { return bbox; }
   virtual const csBox3& GetPhysicsBBox () const { return physBbox; }
 
+  virtual void SetGeometryGenerator (iGeometryGenerator* ggen)
+  {
+    geometryGenerator = ggen;
+  }
+  virtual iGeometryGenerator* GetGeometryGenerator () const
+  {
+    return geometryGenerator;
+  }
   virtual void SetAttribute (const char* name, const char* value);
   virtual const char* GetAttribute (const char* name) const;
 

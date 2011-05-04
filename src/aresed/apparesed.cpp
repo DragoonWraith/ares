@@ -1123,9 +1123,12 @@ void AppAresEdit::SpawnItem (const csString& name)
     curvedFactoryCounter++;
     fname.Format("%s%d", name.GetData (), curvedFactoryCounter);
     curvedFactory = curvedMeshCreator->AddCurvedFactory (fname, name);
-    curvedFactory->GenerateFactory ();
 
     iDynamicFactory* fact = dynworld->AddFactory (fname, cfc->maxradius, cfc->imposterradius);
+    csRef<iGeometryGenerator> ggen = scfQueryInterface<iGeometryGenerator> (curvedFactory);
+    if (ggen)
+      fact->SetGeometryGenerator (ggen);
+
     fact->AddRigidMesh (csVector3 (0), cfc->mass);
     static_factories.Add (fname);
     curvedFactories.Push (fact);

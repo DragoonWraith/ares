@@ -61,6 +61,7 @@ void CurveMode::Start ()
 {
   csString name = aresed->GetSelection ()->GetFirst ()->GetFactory ()->GetName ();
   editingCurveFactory = aresed->GetCurvedMeshCreator ()->GetCurvedFactory (name);
+  ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
   selectedPoints.Empty ();
   do_dragging = false;
   dragPoints.Empty ();
@@ -97,7 +98,6 @@ void CurveMode::FramePre()
   iGraphics2D* g2d = aresed->GetG2D ();
   if (do_dragging)
   {
-    //@@@ Implement undo for curve editing too?
     csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
     csVector3 v3d = camera->InvPerspective (v2d, 10000);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
@@ -140,7 +140,7 @@ void CurveMode::FramePre()
 	  editingCurveFactory->GetUp (idx));
     }
     if (autoSmooth) DoAutoSmooth ();
-    editingCurveFactory->GenerateFactory ();
+    ggen->GenerateGeometry (mesh);
     aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
@@ -199,7 +199,8 @@ void CurveMode::DoAutoSmooth ()
   if (editingCurveFactory->GetPointCount () <= 2) return;
   for (size_t i = 1 ; i < editingCurveFactory->GetPointCount ()-1 ; i++)
     SmoothPoint (i, false);
-  editingCurveFactory->GenerateFactory ();
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
+  ggen->GenerateGeometry (mesh);
   aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
@@ -217,7 +218,8 @@ void CurveMode::SmoothPoint (size_t idx, bool regen)
   editingCurveFactory->ChangePoint (idx, pos, fr, up);
   if (regen)
   {
-    editingCurveFactory->GenerateFactory ();
+    iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
+    ggen->GenerateGeometry (mesh);
     aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
@@ -284,7 +286,8 @@ void CurveMode::RotateCurrent (float baseAngle)
     tr.RotateOther (u, angle);
     editingCurveFactory->ChangePoint (id, pos, tr.GetFront (), u);
   }
-  editingCurveFactory->GenerateFactory ();
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
+  ggen->GenerateGeometry (mesh);
   aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
@@ -314,7 +317,7 @@ void CurveMode::FlatPoint (size_t idx)
     if (autoSmooth)
       DoAutoSmooth ();
     else
-      editingCurveFactory->GenerateFactory ();
+      ggen->GenerateGeometry (mesh);
     aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
@@ -380,8 +383,7 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
     if (autoSmooth) DoAutoSmooth ();
 
     iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
-    editingCurveFactory->FlattenToGround (mesh);
-    editingCurveFactory->GenerateFactory ();
+    ggen->GenerateGeometry (mesh);
     aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
   return false;

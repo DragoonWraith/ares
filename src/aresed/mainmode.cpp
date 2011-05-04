@@ -423,9 +423,6 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   {
     if (ctrl)
     {
-      //if (aresed->TraceBeamTerrain (start, end, isect))
-      //{
-      //}
     }
     else
     {

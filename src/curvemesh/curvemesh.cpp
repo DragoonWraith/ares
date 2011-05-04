@@ -44,104 +44,389 @@ THE SOFTWARE.
 #include "curvemesh.h"
 
 
+#define V(x)
+
 
 CS_PLUGIN_NAMESPACE_BEGIN(CurvedMesh)
 {
 
 //---------------------------------------------------------------------------------------
 
-CurvedFactory::CurvedFactory (CurvedMeshCreator* creator, const char* name) :
-  scfImplementationType (this), creator (creator), name (name)
+void ClingyPath::SetBasePoints (const csArray<PathEntry> pts)
 {
-  material = nullptr;
-  width = 1.0f;
-  sideHeight = 0.4f;
-  offsetHeight = 0.1f;
-  flattenMesh = nullptr;
-}
-
-CurvedFactory::~CurvedFactory ()
-{
-}
-
-void CurvedFactory::FlattenToGround (iMeshWrapper* mesh)
-{
-  flattenMesh = mesh;
-}
-
-void CurvedFactory::FlattenPointsToMesh (csVector3& leftPos, csVector3& rightPos)
-{
-  const csReversibleTransform& meshtrans = flattenMesh->GetMovable ()->GetTransform ();
-  iSector* sector = flattenMesh->GetMovable ()->GetSectors ()->Get (0);
-  csFlags oldFlags = flattenMesh->GetFlags ();
-  flattenMesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
-  rightPos = meshtrans.This2Other (rightPos);
-  leftPos = meshtrans.This2Other (leftPos);
-  csSectorHitBeamResult resultRight = sector->HitBeamPortals (rightPos + csVector3 (0, 2, 0), rightPos - csVector3 (0, 2, 0));
-  csSectorHitBeamResult resultLeft = sector->HitBeamPortals (leftPos + csVector3 (0, 2, 0), leftPos - csVector3 (0, 2, 0));
-  flattenMesh->GetFlags ().SetAll (oldFlags.Get ());
-  if (resultRight.mesh)
-    rightPos = resultRight.isect;
-  rightPos = meshtrans.Other2This (rightPos);
-  if (resultLeft.mesh)
-    leftPos = resultLeft.isect;
-  leftPos = meshtrans.Other2This (leftPos);
-}
-
-void CurvedFactory::GeneratePath (csPath& path, const csArray<PathEntry>& pts)
-{
+  basePoints = pts;
   size_t l = pts.GetSize ();
-  size_t i;
 
-  //float totalDistance = GetTotalDistance (pts);
-  //float travelDistance = 0.0f;
-
-  float* times = new float[l];
-  for (i = 0 ; i < l ; i++)
-  {
-    //if (i > 0)
-      //travelDistance += sqrt (csSquaredDist::PointPoint (pts[i-1].pos, pts[i].pos));
-    //times[i] = travelDistance / totalDistance;
-    times[i] = float (i) / float (l-1);
-    //float old = float (i) / float (l-1);
-    //printf ("i, new:%g old:%g\n", times[i], old); fflush (stdout);
-  }
-  path.SetTimes (times);
-  delete[] times;
-
-  for (i = 0 ; i < l ; i++)
-  {
-    path.SetPositionVector (i, pts[i].pos);
-    path.SetForwardVector (i, pts[i].front);
-    path.SetUpVector (i, pts[i].up);
-  }
-}
-
-float CurvedFactory::GetTotalDistance (const csArray<PathEntry>& pts)
-{
-  size_t l = pts.GetSize ();
   float totalDistance = 0.0f;
   for (size_t i = 0 ; i < l-1 ; i++)
   {
     float dist = sqrt (csSquaredDist::PointPoint (pts[i].pos, pts[i+1].pos));
     totalDistance += dist;
   }
+  float travelDistance = 0.0f;
+
+  basePoints[0].time = 0.0f;
+  for (size_t i = 1 ; i < l ; i++)
+  {
+    travelDistance += sqrt (csSquaredDist::PointPoint (pts[i-1].pos, pts[i].pos));
+    basePoints[i].time = travelDistance / totalDistance;
+  }
+}
+
+void ClingyPath::RefreshWorkingPath ()
+{
+  points = basePoints;
+}
+
+static bool HeightDiff (const csVector3& pos, iMeshWrapper* thisMesh, float& dy)
+{
+  const csReversibleTransform& meshtrans = thisMesh->GetMovable ()->GetTransform ();
+  csVector3 p = meshtrans.This2Other (pos);
+  iSector* sector = thisMesh->GetMovable ()->GetSectors ()->Get (0);
+  csSectorHitBeamResult result = sector->HitBeamPortals (
+      p + csVector3 (0, 2, 0), p - csVector3 (0, 2, 0));
+  if (result.mesh)
+  {
+    dy = p.y - result.isect.y;
+    return true;
+  }
+  else
+  {
+    dy = 0.0f;
+    return false;
+  }
+}
+
+//#define BOTTOM_MARGIN .02f
+//#define TOP_MARGIN 1.0f
+#define BOTTOM_MARGIN .1f
+#define TOP_MARGIN .1f
+
+static float cmax (bool u1, float v1, bool u2, float v2)
+{
+  if (u1 && u2)
+    return MAX (v1, v2);
+  else if (u1)
+    return v1;
+  return v2;
+}
+
+void ClingyPath::FitToTerrain (size_t idx, float width, iMeshWrapper* thisMesh)
+{
+  const csVector3& pos = points[idx].pos;
+  csVector3 right = (width / 2.0) * (points[idx].front % points[idx].up);
+  csVector3 rightPos = pos + right;
+  csVector3 leftPos = pos - right;
+
+  float dyL, dy, dyR;
+  bool hL = HeightDiff (leftPos, thisMesh, dyL);
+  bool h  = HeightDiff (pos, thisMesh, dy);
+  bool hR = HeightDiff (rightPos, thisMesh, dyR);
+
+  if ((hL && dyL > TOP_MARGIN) || (hR && dyR > TOP_MARGIN))
+  {
+    // First we lower the segment. After that we check if it is
+    // not too low.
+    float lowerY = cmax (hL, dyL-TOP_MARGIN, hR, dyR-TOP_MARGIN);
+    points[idx].pos.y -= lowerY;
+    dy -= lowerY;
+    dyL -= lowerY;
+    dyR -= lowerY;
+    V((printf ("        FitToTerrain %d, dy=%g/%g/%g, lowerY=%g\n", idx, dyL, dy, dyR, lowerY); fflush (stdout);))
+  }
+
+  if ((hL && dyL < BOTTOM_MARGIN) || (h && dy < BOTTOM_MARGIN) || (hR && dyR < BOTTOM_MARGIN))
+  {
+    // Some part of this point gets (almost) under the terrain. Need to raise
+    // everything.
+    float raiseY = cmax (hL, BOTTOM_MARGIN-dyL, hR, BOTTOM_MARGIN-dyR);
+    raiseY = cmax (true, raiseY, h, BOTTOM_MARGIN-dy);
+    points[idx].pos.y += raiseY;
+    V((printf ("        FitToTerrain %d, dy=%g/%g/%g, raiseY=%g\n", idx, dyL, dy, dyR, raiseY); fflush (stdout);))
+  }
+  else
+  {
+    V((printf ("        FitToTerrain %d, dy=%g/%g/%g\n", idx, dyL, dy, dyR); fflush (stdout);))
+  }
+}
+
+void ClingyPath::FixSlope (size_t idx)
+{
+  if (points.GetSize () <= 1) return;
+  const csVector3& pos = points[idx].pos;
+  csVector3 fr;
+  if (idx == 0)
+  {
+    csVector3& p2 = points[idx+1].pos;
+    fr = (p2 - pos).Unit ();
+  }
+  else if (idx == points.GetSize ()-1)
+  {
+    csVector3& p1 = points[idx-1].pos;
+    fr = (pos - p1).Unit ();
+  }
+  else
+  {
+    csVector3& p1 = points[idx-1].pos;
+    csVector3& p2 = points[idx+1].pos;
+    fr = ((p2 - pos).Unit () + (pos - p1).Unit ()) / 2.0;
+  }
+  csVector3 right = fr % points[idx].up;
+  points[idx].up = - (fr % right).Unit ();
+}
+
+static float Distance2d (const csVector3& p1, const csVector3& p2)
+{
+  csVector2 p1two (p1.x, p1.z);
+  csVector2 p2two (p2.x, p2.z);
+  csVector2 d = p1two - p2two;
+  return sqrt (d*d);
+}
+
+float ClingyPath::GetTotalDistance ()
+{
+  size_t l = points.GetSize ();
+  float totalDistance = 0.0f;
+  for (size_t i = 0 ; i < l-1 ; i++)
+  {
+    float dist = sqrt (csSquaredDist::PointPoint (points[i].pos, points[i+1].pos));
+    //float dist = Distance2d (points[i].pos, points[i+1].pos);
+    totalDistance += dist;
+  }
   return totalDistance;
 }
 
-void CurvedFactory::GenerateFactory ()
+void ClingyPath::GeneratePath (csPath& path)
 {
-  if (!factory)
+  size_t l = points.GetSize ();
+  path.Setup (l);
+  for (size_t i = 0 ; i < l ; i++)
   {
-    factory = creator->engine->CreateMeshFactory (
-	"crystalspace.mesh.object.genmesh", name);
-    state = scfQueryInterface<iGeneralFactoryState> (factory->GetMeshObjectFactory ());
+    path.SetTime (i, points[i].time);
+    path.SetPositionVector (i, points[i].pos);
+    path.SetForwardVector (i, points[i].front);
+    path.SetUpVector (i, points[i].up);
+    //printf ("        path %d (%g): pos:%g,%g,%g front:%g,%g,%g up:%g,%g,%g\n",
+	//i, points[i].time,
+	//points[i].pos.x, points[i].pos.y, points[i].pos.z,
+	//points[i].front.x, points[i].front.y, points[i].front.z,
+	//points[i].up.x, points[i].up.y, points[i].up.z);
   }
+}
 
-  GeneratePoints ();
-  csPath path (points.GetSize ());
-  GeneratePath (path, points);
-  float totalDistance = GetTotalDistance (points);
+void ClingyPath::GetSegmentTime (const csPath& path, size_t segIdx,
+    float& startTime, float& endTime)
+{
+  const float* times = path.GetTimes ();
+  startTime = times[segIdx];
+  endTime = times[segIdx+1];
+}
+
+#define PATH_STEP .1f
+#define LOOSE_BOTTOM_MARGIN .02f
+#define LOOSE_TOP_MARGIN 1.0f
+
+void ClingyPath::CalcMinMaxDY (size_t segIdx, float width, iMeshWrapper* thisMesh,
+    float& maxRaiseY, float& maxLowerY)
+{
+  csPath path (1);
+  GeneratePath (path);
+  float startTime, endTime;
+  GetSegmentTime (path, segIdx, startTime, endTime);
+
+  maxRaiseY = -1.0f;
+  maxLowerY = -1.0f;
+
+  float dist = sqrt (csSquaredDist::PointPoint (points[segIdx].pos, points[segIdx+1].pos));
+  int steps = int (dist / PATH_STEP);
+  if (steps <= 1) return;	// Segment is too small. Don't do anything.
+  float timeStep = (endTime-startTime) / float (steps);
+  if (timeStep < 0.0001) return;	// Segment is too small. Don't do anything.
+V((printf ("  CalcMinMaxDY: segIdx=%d dist=%g steps=%d time:%g/%g timeStep=%g\n", segIdx, dist, steps, startTime, endTime, timeStep);))
+  Dump (10);
+  for (float t = startTime ; t <= endTime ; t += timeStep)
+  {
+    path.CalculateAtTime (t);
+    csVector3 pos, front, up;
+    path.GetInterpolatedPosition (pos);
+    path.GetInterpolatedForward (front);
+    path.GetInterpolatedUp (up);
+    csVector3 right = (width / 2.0) * (front % up);
+    csVector3 rightPos = pos + right;
+    csVector3 leftPos = pos - right;
+
+    float dyL, dy, dyR;
+    bool hL = HeightDiff (leftPos, thisMesh, dyL);
+    bool h  = HeightDiff (pos, thisMesh, dy);
+    bool hR = HeightDiff (rightPos, thisMesh, dyR);
+    if ((hL && dyL > LOOSE_TOP_MARGIN) || (hR && dyR > LOOSE_TOP_MARGIN))
+    {
+      float lowerY = cmax (hL, dyL-LOOSE_TOP_MARGIN, hR, dyR-LOOSE_TOP_MARGIN);
+      if (lowerY > 0.0f)
+      {
+	if (hL && dyL-lowerY < LOOSE_BOTTOM_MARGIN)
+	  lowerY = dyL - LOOSE_BOTTOM_MARGIN;
+	if (hR && dyR-lowerY < LOOSE_BOTTOM_MARGIN)
+	  lowerY = dyR - LOOSE_BOTTOM_MARGIN;
+	if (h && dy-lowerY < LOOSE_BOTTOM_MARGIN)
+	  lowerY = dy - LOOSE_BOTTOM_MARGIN;
+      }
+      if (lowerY > maxLowerY) maxLowerY = lowerY;
+    V((printf ("        CalcMinMaxDY %g, dy=%g/%g/%g, lowerY=%g\n", t, dyL, dy, dyR, lowerY); fflush (stdout);))
+    }
+
+    if ((hL && dyL < LOOSE_BOTTOM_MARGIN) || (h && dy < LOOSE_BOTTOM_MARGIN) || (hR && dyR < LOOSE_BOTTOM_MARGIN))
+    {
+      // Some part of this point gets (almost) under the terrain. Need to raise
+      // everything.
+      float raiseY = cmax (hL, LOOSE_BOTTOM_MARGIN-dyL, hR, LOOSE_BOTTOM_MARGIN-dyR);
+      raiseY = cmax (true, raiseY, h, LOOSE_BOTTOM_MARGIN-dy);
+      if (raiseY > maxRaiseY) maxRaiseY = raiseY;
+    V((printf ("        CalcMinMaxDY %g, dy=%g/%g/%g, raiseY=%g\n", t, dyL, dy, dyR, raiseY); fflush (stdout);))
+    }
+    else
+    {
+      V((printf ("        CalcMinMaxDY %g, dy=%g/%g/%g\n", t, dyL, dy, dyR); fflush (stdout);))
+    }
+  }
+}
+
+static float FindHorizontalMiddlePoint (csPath& path,
+    float error,
+    float t1, const csVector3& pos1,
+    float t2, const csVector3& pos2)
+{
+  float time = (t1+t2) / 2.0f;
+  path.CalculateAtTime (time);
+  csVector3 pos;
+  path.GetInterpolatedPosition (pos);
+  float d1 = Distance2d (pos1, pos);
+  float d2 = Distance2d (pos, pos2);
+  V((printf ("t1=%g t2=%g time=%g d1=%g d2=%g error=%g\n", t1, t2, time, d1, d2, error); fflush (stdout);))
+  if (fabs (d1-d2) < error)
+    return time;
+  if (d1 > d2)
+    return FindHorizontalMiddlePoint (path, error, t1, pos1, time, pos);
+  else
+    return FindHorizontalMiddlePoint (path, error, time, pos, t2, pos2);
+}
+
+void ClingyPath::SplitSegment (size_t segIdx)
+{
+  csPath path (1);
+  GeneratePath (path);
+  float startTime, endTime;
+  GetSegmentTime (path, segIdx, startTime, endTime);
+
+  //float time = (startTime+endTime) / 2.0f;
+  csVector3 pos1, pos2;
+  path.CalculateAtTime (startTime);
+  path.GetInterpolatedPosition (pos1);
+  path.CalculateAtTime (endTime);
+  path.GetInterpolatedPosition (pos2);
+  float time = FindHorizontalMiddlePoint (path, 0.01f, startTime, pos1,
+      endTime, pos2);
+
+  path.CalculateAtTime (time);
+  PathEntry pe;
+  pe.time = time;
+  path.GetInterpolatedPosition (pe.pos);
+  path.GetInterpolatedForward (pe.front);
+  path.GetInterpolatedUp (pe.up);
+  V((printf ("  Split segment %d (time: %g/%g -> %g) pos=%g,%g,%g\n", segIdx, startTime, endTime, time, pe.pos.x, pe.pos.y, pe.pos.z); fflush (stdout);
+  printf ("      seg1: %g,%g,%g\n", points[segIdx].pos.x, points[segIdx].pos.y, points[segIdx].pos.z);
+  printf ("      seg2: %g,%g,%g\n", points[segIdx+1].pos.x, points[segIdx+1].pos.y, points[segIdx+1].pos.z);))
+
+  points.Insert (segIdx+1, pe);
+}
+
+void ClingyPath::Flatten (iMeshWrapper* thisMesh, float width)
+{
+  RefreshWorkingPath ();
+
+  // Flatten the terrain first.
+  for (size_t i = 0 ; i < points.GetSize () ; i++)
+    FitToTerrain (i, width, thisMesh);
+  Dump (2);
+
+  // Now fix the slope.
+  for (size_t i = 0 ; i < points.GetSize () ; i++)
+    FixSlope (i);
+
+  size_t segIdx = 0;
+  float maxRaiseY, maxLowerY;
+  while (segIdx < points.GetSize ()-1)
+  {
+    CalcMinMaxDY (segIdx, width, thisMesh, maxRaiseY, maxLowerY);
+    if (maxRaiseY > 0.0f || maxLowerY > 0.0f)
+    {
+      // The segment needs improving. Let's split it.
+      SplitSegment (segIdx);
+      FitToTerrain (segIdx+1, width, thisMesh);
+      FixSlope (segIdx);
+      FixSlope (segIdx+1);
+      FixSlope (segIdx+2);
+    }
+    else
+    {
+      // This segment is ok. We can go to the next.
+      segIdx++;
+    }
+  }
+}
+
+void ClingyPath::Dump (int indent)
+{
+  bool a = true;
+  V((a=false;))
+  if (a) return;
+  static char* sspaces = "                                                    ";
+  char spaces[100];
+  strcpy (spaces, sspaces);
+  spaces[indent] = 0;
+  for (size_t i = 0 ; i < points.GetSize () ; i++)
+    printf ("%s%d: pos:%g,%g,%g front:%g,%g,%g up:%g,%g,%g\n", spaces, i,
+	points[i].pos.x, points[i].pos.y, points[i].pos.z,
+	points[i].front.x, points[i].front.y, points[i].front.z,
+	points[i].up.x, points[i].up.y, points[i].up.z
+	);
+  fflush (stdout);
+  spaces[indent] = ' ';
+}
+
+//---------------------------------------------------------------------------------------
+
+CurvedFactory::CurvedFactory (CurvedMeshCreator* creator, const char* name) :
+  scfImplementationType (this), creator (creator), name (name)
+{
+  material = 0;
+  width = 1.0f;
+  sideHeight = 0.4f;
+  offsetHeight = 0.1f;
+
+  factory = creator->engine->CreateMeshFactory (
+	"crystalspace.mesh.object.genmesh", name);
+  state = scfQueryInterface<iGeneralFactoryState> (factory->GetMeshObjectFactory ());
+}
+
+CurvedFactory::~CurvedFactory ()
+{
+}
+
+void CurvedFactory::GenerateGeometry (iMeshWrapper* thisMesh)
+{
+V((printf ("#############################################################\n"); fflush (stdout);))
+  csFlags oldFlags = thisMesh->GetFlags ();
+  thisMesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
+
+  clingyPath.SetBasePoints (anchorPoints);
+V((printf ("GenerateGeometry: Flatten\n"); fflush (stdout);))
+  clingyPath.Flatten (thisMesh, width);
+  csPath path (1);
+V((printf ("GenerateGeometry: GeneratePath\n"); fflush (stdout);))
+  clingyPath.GeneratePath (path);
+printf ("Path has %d control points\n", clingyPath.GetWorkingPointCount ()); fflush (stdout);
+  float totalDistance = clingyPath.GetTotalDistance ();
 
   // @@@todo, the entire detail on the path should be customizable. Also it should
   // use less detail on relatively straight lines.
@@ -181,8 +466,6 @@ void CurvedFactory::GenerateFactory ()
 
     csVector3 rightPos = pos + right;
     csVector3 leftPos = pos - right;
-    //if (flattenMesh)
-      //FlattenPointsToMesh (leftPos, rightPos);
     rightPos += offsetUp;
     leftPos += offsetUp;
 
@@ -215,6 +498,8 @@ void CurvedFactory::GenerateFactory ()
 
   factory->GetMeshObjectFactory ()->SetMaterialWrapper (material);
   state->Invalidate ();
+
+  thisMesh->GetFlags ().SetAll (oldFlags.Get ());
 }
 
 void CurvedFactory::SetMaterial (const char* materialName)
@@ -249,63 +534,6 @@ void CurvedFactory::ChangePoint (size_t idx, const csVector3& pos,
 void CurvedFactory::DeletePoint (size_t idx)
 {
   anchorPoints.DeleteIndex (idx);
-}
-
-void CurvedFactory::GeneratePoints ()
-{
-  if (flattenMesh)
-  {
-    csFlags oldFlags = flattenMesh->GetFlags ();
-    flattenMesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
-    iSector* sector = flattenMesh->GetMovable ()->GetSectors ()->Get (0);
-    const csReversibleTransform& meshtrans = flattenMesh->GetMovable ()->GetTransform ();
-
-    csPath anchorPath (anchorPoints.GetSize ());
-    GeneratePath (anchorPath, anchorPoints);
-
-    float splineCountFactor = 2.0f;
-    float totalDistance = GetTotalDistance (anchorPoints);
-    size_t count = size_t (totalDistance * splineCountFactor) + 1;
-    points.DeleteAll ();
-
-    for (size_t i = 0 ; i <= count ; i++)
-    {
-      float time = float (i) / float (count);
-      anchorPath.CalculateAtTime (time);
-      csVector3 pos, front, up;
-      anchorPath.GetInterpolatedPosition (pos);
-      anchorPath.GetInterpolatedForward (front);
-      anchorPath.GetInterpolatedUp (up);
-      csVector3 right = (width / 2.0) * (front % up);
-      csVector3 rightPos = pos + right;
-      csVector3 leftPos = pos - right;
-
-      float highestY = -100000.0f;
-      pos = meshtrans.This2Other (pos);
-      rightPos = meshtrans.This2Other (rightPos);
-      leftPos = meshtrans.This2Other (leftPos);
-      // @@@ Ignore transformation for front/up?
-      csSectorHitBeamResult result;
-      result  = sector->HitBeamPortals (pos + csVector3 (0, 2, 0), pos - csVector3 (0, 3, 0));
-      if (result.mesh && result.isect.y > highestY) highestY = result.isect.y;
-      result  = sector->HitBeamPortals (rightPos + csVector3 (0, 2, 0), rightPos - csVector3 (0, 3, 0));
-      if (result.mesh && result.isect.y > highestY) highestY = result.isect.y;
-      result  = sector->HitBeamPortals (leftPos + csVector3 (0, 2, 0), leftPos - csVector3 (0, 3, 0));
-      if (result.mesh && result.isect.y > highestY) highestY = result.isect.y;
-
-      if (highestY > -99999.0f)
-	pos.y = highestY;
-      pos = meshtrans.Other2This (pos);
-
-      points.Push (PathEntry (pos, front, up));
-    }
-
-    flattenMesh->GetFlags ().SetAll (oldFlags.Get ());
-  }
-  else
-  {
-    points = anchorPoints;
-  }
 }
 
 void CurvedFactory::Save (iDocumentNode* node, iSyntaxService* syn)
@@ -359,7 +587,6 @@ bool CurvedFactory::Load (iDocumentNode* node, iSyntaxService* syn)
       AddPoint (pos, front, up);
     }
   }
-  GenerateFactory ();
 
   return true;
 }
