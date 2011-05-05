@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
 #include "include/inature.h"
+#include "include/imarker.h"
 
 #include "aresed.h"
 #include "filereq.h"
@@ -69,6 +70,7 @@ private:
   csRef<iDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iNature> nature;
+  csRef<iMarkerManager> markerMgr;
 
   csRef<iGraphics3D> g3d;
   csRef<iKeyboardDriver> kbd;
@@ -247,6 +249,8 @@ public:
   iCEGUI* GetCEGUI () const { return cegui; }
   iDynamicWorld* GetDynamicWorld () const { return dynworld; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
+  iMarkerManager* GetMarkerManager () const { return markerMgr; }
+
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }
   int GetViewWidth () const { return view_width; }

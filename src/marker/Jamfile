@@ -1,0 +1,7 @@
+SubDir TOP src marker ;
+
+Description marker : "Marker Plugin" ;
+Plugin marker :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs marker : CRYSTAL ;
+

@@ -48,6 +48,8 @@ private:
    */
   size_t FindCurvePoint (int mouseX, int mouseY);
 
+  csArray<iMarker*> markers;
+
   csArray<size_t> selectedPoints;
   void SetCurrentPoint (size_t idx);
   void AddCurrentPoint (size_t idx);
@@ -85,11 +87,15 @@ private:
   CEGUI::Checkbox* autoSmoothCheck;
   void DoAutoSmooth ();
 
+  void UpdateMarkers ();
+  void UpdateMarkerSelection ();
+
 public:
   CurveMode (AppAresEdit* aresed);
   virtual ~CurveMode () { }
 
   virtual void Start ();
+  virtual void Stop ();
 
   virtual void FramePre();
   virtual void Frame3D();

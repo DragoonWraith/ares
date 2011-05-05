@@ -6,3 +6,4 @@ SubInclude TOP src curvemesh ;
 SubInclude TOP src dynworld ;
 SubInclude TOP src dynworldload ;
 SubInclude TOP src nature ;
+SubInclude TOP src marker ;

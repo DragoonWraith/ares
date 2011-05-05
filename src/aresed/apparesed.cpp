@@ -118,6 +118,7 @@ void AppAresEdit::Frame ()
   }
 
   editMode->Frame3D ();
+  markerMgr->Frame3D ();
 
   if (do_debug)
     bullet_dynSys->DebugDraw (view);
@@ -131,6 +132,7 @@ void AppAresEdit::Frame ()
   g2d->Write (font, 200, g2d->GetHeight ()-20, colorWhite, -1, buf);
 
   editMode->Frame2D ();
+  markerMgr->Frame2D ();
 
   cegui->Render ();
 }
@@ -841,6 +843,7 @@ bool AppAresEdit::OnInitialize(int argc, char* argv[])
 	CS_REQUEST_PLUGIN("crystalspace.decal.manager", iDecalManager),
 	CS_REQUEST_PLUGIN("utility.dynamicworld", iDynamicWorld),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
+	CS_REQUEST_PLUGIN("utility.marker", iMarkerManager),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_END))
     return ReportError("Failed to initialize plugins!");
@@ -917,6 +920,9 @@ bool AppAresEdit::Application()
   nature = csQueryRegistry<iNature> (r);
   if (!nature) return ReportError("Failed to locate nature plugin!");
 
+  markerMgr = csQueryRegistry<iMarkerManager> (r);
+  if (!markerMgr) return ReportError("Failed to locate marker manager plugin!");
+
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (r);
   if (!curvedMeshCreator)
     return ReportError("Failed to load the curved mesh creator plugin!");
@@ -957,6 +963,21 @@ bool AppAresEdit::Application()
   selection->AddSelectionListener (listener);
   listener->DecRef ();
 
+  iMarkerColor* red = markerMgr->CreateMarkerColor ("red");
+  red->SetRGBColor (SELECTION_NONE, .5, 0, 0, 1);
+  red->SetRGBColor (SELECTION_SELECTED, 1, 0, 0, 1);
+  red->SetRGBColor (SELECTION_ACTIVE, 1, 0, 0, 1);
+  red->SetPenWidth (SELECTION_NONE, 1.0f);
+  red->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  red->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+  iMarkerColor* green = markerMgr->CreateMarkerColor ("green");
+  green->SetRGBColor (SELECTION_NONE, 0, .5, 0, 1);
+  green->SetRGBColor (SELECTION_SELECTED, 0, 1, 0, 1);
+  green->SetRGBColor (SELECTION_ACTIVE, 0, 1, 0, 1);
+  green->SetPenWidth (SELECTION_NONE, 1.0f);
+  green->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  green->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
 
@@ -967,6 +988,8 @@ bool AppAresEdit::Application()
   view_width = (int)(g2d->GetWidth () * 0.86);
   view_height = g2d->GetHeight ();
   view->SetRectangle (0, 0, view_width, view_height);
+
+  markerMgr->SetCamera (GetCsCamera ());
 
   // Set the window title.
   iNativeWindow* nw = g2d->GetNativeWindow ();
@@ -1168,6 +1191,7 @@ void AppAresEdit::SpawnItem (const csString& name)
   tc.LookAt (front, csVector3 (0, 1, 0));
   tc.SetOrigin (newPosition);
   iDynamicObject* dynobj = dynworld->AddObject (fname, tc);
+  dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))
   {

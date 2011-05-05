@@ -57,6 +57,45 @@ CurveMode::CurveMode (AppAresEdit* aresed)
     CEGUI::Event::Subscriber(&CurveMode::OnAutoSmoothSelected, this));
 }
 
+void CurveMode::UpdateMarkers ()
+{
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
+  if (editingCurveFactory->GetPointCount () != markers.GetSize ())
+  {
+    Stop ();
+    for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
+    {
+      iMarker* marker = aresed->GetMarkerManager ()->CreateMarker ();
+      markers.Push (marker);
+      marker->AttachMesh (mesh);
+    }
+  }
+
+  iMarkerColor* red = aresed->GetMarkerManager ()->FindMarkerColor ("red");
+  iMarkerColor* green = aresed->GetMarkerManager ()->FindMarkerColor ("green");
+
+  for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
+  {
+    csVector3 pos = editingCurveFactory->GetPosition (i);
+    csVector3 front = editingCurveFactory->GetFront (i);
+    csVector3 up = editingCurveFactory->GetUp (i);
+    iMarker* marker = markers[i];
+    marker->Clear ();
+    marker->Line (MARKER_OBJECT, pos, pos+front, green);
+    marker->Line (MARKER_OBJECT, pos, pos+up, red);
+  }
+
+  UpdateMarkerSelection ();
+}
+
+void CurveMode::UpdateMarkerSelection ()
+{
+  for (size_t i = 0 ; i < markers.GetSize () ; i++)
+    markers[i]->SetSelectionLevel (SELECTION_NONE);
+  for (size_t i = 0 ; i < selectedPoints.GetSize () ; i++)
+    markers[selectedPoints[i]]->SetSelectionLevel (SELECTION_SELECTED);
+}
+
 void CurveMode::Start ()
 {
   csString name = aresed->GetSelection ()->GetFirst ()->GetFactory ()->GetName ();
@@ -65,6 +104,15 @@ void CurveMode::Start ()
   selectedPoints.Empty ();
   do_dragging = false;
   dragPoints.Empty ();
+
+  UpdateMarkers ();
+}
+
+void CurveMode::Stop ()
+{
+  for (size_t i = 0 ; i < markers.GetSize () ; i++)
+    aresed->GetMarkerManager ()->DestroyMarker (markers[i]);
+  markers.Empty ();
 }
 
 void CurveMode::SetCurrentPoint (size_t idx)
@@ -72,6 +120,7 @@ void CurveMode::SetCurrentPoint (size_t idx)
   if (selectedPoints.Find (idx) != csArrayItemNotFound) return;
   selectedPoints.DeleteAll ();
   selectedPoints.Push (idx);
+  UpdateMarkerSelection ();
 }
 
 void CurveMode::AddCurrentPoint (size_t idx)
@@ -84,6 +133,7 @@ void CurveMode::AddCurrentPoint (size_t idx)
   {
     selectedPoints.Push (idx);
   }
+  UpdateMarkerSelection ();
 }
 
 void CurveMode::StopDrag ()
@@ -138,6 +188,7 @@ void CurveMode::FramePre()
 	  rp,
 	  editingCurveFactory->GetFront (idx),
 	  editingCurveFactory->GetUp (idx));
+      UpdateMarkers ();
     }
     if (autoSmooth) DoAutoSmooth ();
     ggen->GenerateGeometry (mesh);
@@ -151,47 +202,6 @@ void CurveMode::Frame3D()
 
 void CurveMode::Frame2D()
 {
-  iGraphics2D* g2d = aresed->GetG2D ();
-
-  float sy = g2d->GetHeight ();
-  iCamera* camera = aresed->GetCsCamera ();
-  const csOrthoTransform& camtrans = camera->GetTransform ();
-  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
-  const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
-  for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
-  {
-    bool sel = selectedPoints.Find (i) != csArrayItemNotFound;
-    const csVector3& pos = editingCurveFactory->GetPosition (i);
-    const csVector3& front = editingCurveFactory->GetFront (i);
-    const csVector3& up = editingCurveFactory->GetUp (i);
-    csVector3 campos = camtrans.Other2This (meshtrans.This2Other (pos));
-    if (campos.z > .1)
-    {
-      csVector2 scrpos = camera->Perspective (campos);
-      csVector3 camfront = camtrans.Other2This (meshtrans.This2Other (pos+front));
-      if (camfront.z > .1)
-      {
-	csVector2 scrfront = camera->Perspective (camfront);
-	g2d->DrawLine (scrpos.x, sy-scrpos.y, scrfront.x, sy-scrfront.y, g2d->FindRGB (0, 255, 0));
-	if (sel)
-	{
-	  g2d->DrawLine (scrpos.x+1, sy-scrpos.y, scrfront.x+1, sy-scrfront.y, g2d->FindRGB (0, 255, 0));
-	  g2d->DrawLine (scrpos.x, sy-scrpos.y+1, scrfront.x, sy-scrfront.y+1, g2d->FindRGB (0, 255, 0));
-	}
-      }
-      csVector3 camup = camtrans.Other2This (meshtrans.This2Other (pos+up));
-      if (camup.z > .1)
-      {
-	csVector2 scrup = camera->Perspective (camup);
-	g2d->DrawLine (scrpos.x, sy-scrpos.y, scrup.x, sy-scrup.y, g2d->FindRGB (255, 0, 0));
-	if (sel)
-	{
-	  g2d->DrawLine (scrpos.x+1, sy-scrpos.y, scrup.x+1, sy-scrup.y, g2d->FindRGB (255, 0, 0));
-	  g2d->DrawLine (scrpos.x, sy-scrpos.y+1, scrup.x, sy-scrup.y+1, g2d->FindRGB (255, 0, 0));
-	}
-      }
-    }
-  }
 }
 
 void CurveMode::DoAutoSmooth ()
@@ -216,6 +226,7 @@ void CurveMode::SmoothPoint (size_t idx, bool regen)
   //csVector3 right = fr % up;
   //up = - (fr % right).Unit ();
   editingCurveFactory->ChangePoint (idx, pos, fr, up);
+  UpdateMarkers ();
   if (regen)
   {
     iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
@@ -285,6 +296,7 @@ void CurveMode::RotateCurrent (float baseAngle)
     csReversibleTransform tr (m, pos);
     tr.RotateOther (u, angle);
     editingCurveFactory->ChangePoint (id, pos, tr.GetFront (), u);
+    UpdateMarkers ();
   }
   iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
   ggen->GenerateGeometry (mesh);
@@ -314,6 +326,7 @@ void CurveMode::FlatPoint (size_t idx)
     pos.y += sideHeight / 2.0;
     pos = meshtrans.Other2This (pos);
     editingCurveFactory->ChangePoint (idx, pos, f, u);
+    UpdateMarkers ();
     if (autoSmooth)
       DoAutoSmooth ();
     else
@@ -385,6 +398,7 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
     iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
     ggen->GenerateGeometry (mesh);
     aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
+    UpdateMarkers ();
   }
   return false;
 }
