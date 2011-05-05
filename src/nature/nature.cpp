@@ -42,13 +42,13 @@ Nature::Nature (iBase *iParent)
   : scfImplementationType (this, iParent)
 {  
   object_reg = 0;
+  sun_alfa = 3.21f;
+  sun_theta = 0.206f;
+  min_light = 0.0f;
 }
 
 Nature::~Nature ()
 {
-  sun_alfa = 3.21f;
-  sun_theta = 0.206f;
-  min_light = 0.0f;
 }
 
 bool Nature::Initialize (iObjectRegistry *object_reg)
