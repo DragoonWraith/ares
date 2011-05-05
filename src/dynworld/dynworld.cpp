@@ -537,6 +537,11 @@ iDynamicObject* DynamicWorld::AddObject (const char* factory,
   return obj;
 }
 
+void DynamicWorld::ForceVisible (iDynamicObject* dynobj)
+{
+  static_cast<DynamicObject*> (dynobj)->PrepareMesh (this);
+}
+
 void DynamicWorld::DeleteObjects ()
 {
   while (objects.GetSize () > 0)

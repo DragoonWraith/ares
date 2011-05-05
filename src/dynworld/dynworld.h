@@ -412,6 +412,7 @@ public:
 
   virtual iDynamicObject* AddObject (const char* factory,
       const csReversibleTransform& trans);
+  virtual void ForceVisible (iDynamicObject* dynobj);
   virtual void DeleteObject (iDynamicObject* dynobj);
   virtual void DeleteObjects ();
   virtual void Setup (iSector* sector, iDynamicSystem* dynSys);

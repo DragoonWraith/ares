@@ -242,6 +242,12 @@ struct iDynamicWorld : public virtual iBase
       const csReversibleTransform& trans) = 0;
 
   /**
+   * Force a dynamic object to be visible. This will force the
+   * creation of the mesh.
+   */
+  virtual void ForceVisible (iDynamicObject* dynobj) = 0;
+
+  /**
    * Remove an object.
    */
   virtual void DeleteObject (iDynamicObject* dynobj) = 0;
