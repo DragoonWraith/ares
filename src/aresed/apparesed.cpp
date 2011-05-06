@@ -96,27 +96,11 @@ void AppAresEdit::DoStuffOncePerFrame ()
 
 void AppAresEdit::Frame ()
 {
-  /*
-    Note: if you use CEL, you probably don't want to call DoStuffOncePerFrame()
-          nor g3d->BeginDraw() and use the entity/propclass system.
-          This part (similar to simpmap tutorial) is just there as a kickstart.
-  */
-
   DoStuffOncePerFrame ();
 
-  if (g3d->BeginDraw(CSDRAW_3DGRAPHICS))
-  {
-    // Draw frame.
-#ifdef USE_CEL
-    // When using CEL, the entity system takes care of drawing,
-    // so there's no need to call iView::Draw() here.
-    // That template doesn't setup any CEL entity, so we have to call it now.
-    // Once you have your entities set, remove it.
-    view->Draw ();
-#else
-    view->Draw ();
-#endif
-  }
+  if (!g3d->BeginDraw(CSDRAW_3DGRAPHICS)) return;
+
+  view->Draw ();
 
   editMode->Frame3D ();
   markerMgr->Frame3D ();
@@ -422,7 +406,6 @@ bool AppAresEdit::InitWindowSystem ()
   mainMode = new MainMode (this);
   curveMode = new CurveMode (this);
   editMode = mainMode;
-  editMode->Start ();
   mainTabButton->setSelected(true);
 
   return true;
@@ -719,16 +702,23 @@ bool AppAresEdit::Application()
   red->SetRGBColor (SELECTION_NONE, .5, 0, 0, 1);
   red->SetRGBColor (SELECTION_SELECTED, 1, 0, 0, 1);
   red->SetRGBColor (SELECTION_ACTIVE, 1, 0, 0, 1);
-  red->SetPenWidth (SELECTION_NONE, 1.0f);
+  red->SetPenWidth (SELECTION_NONE, 1.2f);
   red->SetPenWidth (SELECTION_SELECTED, 2.0f);
   red->SetPenWidth (SELECTION_ACTIVE, 2.0f);
   iMarkerColor* green = markerMgr->CreateMarkerColor ("green");
   green->SetRGBColor (SELECTION_NONE, 0, .5, 0, 1);
   green->SetRGBColor (SELECTION_SELECTED, 0, 1, 0, 1);
   green->SetRGBColor (SELECTION_ACTIVE, 0, 1, 0, 1);
-  green->SetPenWidth (SELECTION_NONE, 1.0f);
+  green->SetPenWidth (SELECTION_NONE, 1.2f);
   green->SetPenWidth (SELECTION_SELECTED, 2.0f);
   green->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+  iMarkerColor* blue = markerMgr->CreateMarkerColor ("blue");
+  blue->SetRGBColor (SELECTION_NONE, 0, 0, .5, 1);
+  blue->SetRGBColor (SELECTION_SELECTED, 0, 0, 1, 1);
+  blue->SetRGBColor (SELECTION_ACTIVE, 0, 0, 1, 1);
+  blue->SetPenWidth (SELECTION_NONE, 1.2f);
+  blue->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  blue->SetPenWidth (SELECTION_ACTIVE, 2.0f);
 
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
@@ -765,6 +755,8 @@ bool AppAresEdit::Application()
   if (!SetupDecal ())
     return false;
 #endif
+
+  editMode->Start ();
 
   // Start the default run/event loop.  This will return only when some code,
   // such as OnKeyboard(), has asked the run loop to terminate.

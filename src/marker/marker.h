@@ -74,6 +74,7 @@ struct MarkerLine
   MarkerSpace space;
   csVector3 v1, v2;
   MarkerColor* color;
+  bool arrow;
 };
 
 struct MarkerHitArea
@@ -95,13 +96,18 @@ private:
   csArray<MarkerLine> lines;
   csArray<MarkerHitArea> hitAreas;
 
+  bool visible;
+
 public:
   Marker (MarkerManager* mgr) :
-    scfImplementationType (this), mgr (mgr), attachedMesh (0), selectionLevel (0) { }
+    scfImplementationType (this), mgr (mgr), attachedMesh (0), selectionLevel (0),
+    visible (true)
+  { }
   virtual ~Marker () { }
 
-  virtual void AddMarkerCallback (iMarkerCallback* cb) { }
-  virtual void RemoveMarkerCallback (iMarkerCallback* cb) { }
+  virtual void SetVisible (bool v) { visible = v; }
+  virtual bool IsVisible () const { return visible; }
+
   virtual void SetSelectionLevel (int level) { selectionLevel = level; }
   virtual int GetSelectionLevel () const { return selectionLevel; }
   virtual void AttachMesh (iMeshWrapper* mesh) { attachedMesh = mesh; }
@@ -112,7 +118,8 @@ public:
   }
   virtual const csReversibleTransform& GetTransform () const;
   virtual void Line (MarkerSpace space,
-      const csVector3& v1, const csVector3& v2, iMarkerColor* color);
+      const csVector3& v1, const csVector3& v2, iMarkerColor* color,
+      bool arrow = false);
   virtual void Poly2D (MarkerSpace space,
       const csVector3& v1, const csVector3& v2,
       const csVector3& v3, iMarkerColor* color) { }

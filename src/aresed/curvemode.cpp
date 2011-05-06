@@ -81,8 +81,8 @@ void CurveMode::UpdateMarkers ()
     csVector3 up = editingCurveFactory->GetUp (i);
     iMarker* marker = markers[i];
     marker->Clear ();
-    marker->Line (MARKER_OBJECT, pos, pos+front, green);
-    marker->Line (MARKER_OBJECT, pos, pos+up, red);
+    marker->Line (MARKER_OBJECT, pos, pos+front, green, true);
+    marker->Line (MARKER_OBJECT, pos, pos+up, red, true);
     marker->ClearHitAreas ();
     marker->HitArea (MARKER_OBJECT, pos, 10.0f, 0);
   }

@@ -69,16 +69,6 @@ struct iMarkerColor : public virtual iBase
 };
 
 /**
- * When a marker is clicked you can get a callback.
- */
-struct iMarkerCallback : public virtual iBase
-{
-  SCF_INTERFACE(iMarkerCallback,0,0,1);
-
-  virtual void MarkerSelect (iMarker* marker) = 0;
-};
-
-/**
  * Where should a drawing primitive be rendered?
  */
 enum MarkerSpace
@@ -117,14 +107,14 @@ struct iMarker : public virtual iBase
   SCF_INTERFACE(iMarker,0,0,1);
 
   /**
-   * Add a marker selection callback.
+   * Set visibility of this marker.
    */
-  virtual void AddMarkerCallback (iMarkerCallback* cb) = 0;
+  virtual void SetVisible (bool v) = 0;
 
   /**
-   * Remove a marker selection callback.
+   * Get visibility status of this marker.
    */
-  virtual void RemoveMarkerCallback (iMarkerCallback* cb) = 0;
+  virtual bool IsVisible () const = 0;
 
   /**
    * Set the selection level. The usage of this level is up to the
@@ -162,7 +152,8 @@ struct iMarker : public virtual iBase
    * Draw a line.
    */
   virtual void Line (MarkerSpace space,
-      const csVector3& v1, const csVector3& v2, iMarkerColor* color) = 0;
+      const csVector3& v1, const csVector3& v2, iMarkerColor* color,
+      bool arrow = false) = 0;
 
   /**
    * Draw a 2D 4-sided polygon.

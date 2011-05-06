@@ -34,6 +34,8 @@ MainMode::MainMode (AppAresEdit* aresed) :
   do_dragging = false;
   do_kinematic_dragging = false;
 
+  transformationMarker = 0;
+
   CEGUI::WindowManager* winMgr = aresed->GetCEGUI ()->GetWindowManagerPtr ();
   CEGUI::Window* btn;
 
@@ -80,6 +82,31 @@ MainMode::MainMode (AppAresEdit* aresed) :
 
 void MainMode::Start ()
 {
+  if (!transformationMarker)
+  {
+    transformationMarker = aresed->GetMarkerManager ()->CreateMarker ();
+    iMarkerColor* red = aresed->GetMarkerManager ()->FindMarkerColor ("red");
+    iMarkerColor* green = aresed->GetMarkerManager ()->FindMarkerColor ("green");
+    iMarkerColor* blue = aresed->GetMarkerManager ()->FindMarkerColor ("blue");
+    transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
+    transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
+    transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
+    transformationMarker->HitArea (MARKER_OBJECT, csVector3 (0), 10.0f, 0);
+  }
+
+  if (aresed->GetSelection ()->GetSize () >= 1)
+  {
+    transformationMarker->SetVisible (true);
+    transformationMarker->AttachMesh (aresed->GetSelection ()->GetFirst ()->GetMesh ());
+  }
+  else
+    transformationMarker->SetVisible (false);
+}
+
+void MainMode::Stop ()
+{
+  transformationMarker->SetVisible (false);
+  transformationMarker->AttachMesh (0);
 }
 
 void MainMode::AddCategory (const char* category)
@@ -106,6 +133,14 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
     staticCheck->enable ();
     staticCheck->setSelected (false);
   }
+
+  if (current.GetSize () >= 1)
+  {
+    transformationMarker->SetVisible (true);
+    transformationMarker->AttachMesh (current[0]->GetMesh ());
+  }
+  else
+    transformationMarker->SetVisible (false);
 }
 
 void MainMode::UpdateItemList ()
@@ -219,55 +254,68 @@ void MainMode::StopDrag ()
     {
       iDynamicObject* dynobj = it.Next ();
       dynobj->UndoKinematic ();
+      if (kinematicFirstOnly) break;
     }
   }
 }
 
-void MainMode::FramePre()
+void MainMode::HandleKinematicDragging ()
 {
-  iCamera* camera = aresed->GetCsCamera ();
-  if (do_dragging)
+  csSegment3 beam = aresed->GetMouseBeam (1000.0f);
+  csVector3 newPosition;
+  if (doDragRestrictY)
   {
-    // Keep the drag joint at the same distance to the camera
-    csSegment3 beam = aresed->GetMouseBeam ();
-    csVector3 newPosition = beam.End () - beam.Start ();
+    if (fabs (beam.Start ().y-beam.End ().y) < 0.1f) return;
+    if (beam.End ().y < beam.Start ().y && dragRestrictY > beam.Start ().y) return;
+    if (beam.End ().y > beam.Start ().y && dragRestrictY < beam.Start ().y) return;
+    float dist = csIntersect3::SegmentYPlane (beam, dragRestrictY, newPosition);
+    if (dist > 0.08f)
+    {
+      newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
+      newPosition.y = dragRestrictY;
+    }
+  }
+  else
+  {
+    iCamera* camera = aresed->GetCsCamera ();
+    newPosition = beam.End () - beam.Start ();
     newPosition.Normalize ();
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
-    dragJoint->SetPosition (newPosition);
+  }
+  for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
+  {
+    csVector3 np = newPosition - dragObjects[i].kineOffset;
+    iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
+    if (mesh)
+    {
+      iMovable* mov = mesh->GetMovable ();
+      mov->GetTransform ().SetOrigin (np);
+      mov->UpdateMove ();
+    }
+    if (kinematicFirstOnly) break;
+  }
+}
+
+void MainMode::HandlePhysicalDragging ()
+{
+  // Keep the drag joint at the same distance to the camera
+  iCamera* camera = aresed->GetCsCamera ();
+  csSegment3 beam = aresed->GetMouseBeam ();
+  csVector3 newPosition = beam.End () - beam.Start ();
+  newPosition.Normalize ();
+  newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
+  dragJoint->SetPosition (newPosition);
+}
+
+void MainMode::FramePre()
+{
+  if (do_dragging)
+  {
+    HandlePhysicalDragging ();
   }
   else if (do_kinematic_dragging)
   {
-    csSegment3 beam = aresed->GetMouseBeam (1000.0f);
-    csVector3 newPosition;
-    if (doDragRestrictY)
-    {
-      if (fabs (beam.Start ().y-beam.End ().y) < 0.1f) return;
-      if (beam.End ().y < beam.Start ().y && dragRestrictY > beam.Start ().y) return;
-      if (beam.End ().y > beam.Start ().y && dragRestrictY < beam.Start ().y) return;
-      float dist = csIntersect3::SegmentYPlane (beam, dragRestrictY, newPosition);
-      if (dist > 0.08f)
-      {
-	newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
-	newPosition.y = dragRestrictY;
-      }
-    }
-    else
-    {
-      newPosition = beam.End () - beam.Start ();
-      newPosition.Normalize ();
-      newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
-    }
-    for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
-    {
-      csVector3 np = newPosition - dragObjects[i].kineOffset;
-      iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
-      if (mesh)
-      {
-        iMovable* mov = mesh->GetMovable ();
-        mov->GetTransform ().SetOrigin (np);
-        mov->UpdateMove ();
-      }
-    }
+    HandleKinematicDragging ();
   }
 }
 
@@ -351,6 +399,66 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   return false;
 }
 
+void MainMode::StartKinematicDragging (bool restrictY,
+    const csSegment3& beam, const csVector3& isect, bool firstOnly)
+{
+  do_kinematic_dragging = true;
+  kinematicFirstOnly = firstOnly;
+
+  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicObject* dynobj = it.Next ();
+    dynobj->MakeKinematic ();
+    iMeshWrapper* mesh = dynobj->GetMesh ();
+    csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
+    DragObject dob;
+    dob.kineOffset = isect - meshpos;
+    dob.dynobj = dynobj;
+    dragObjects.Push (dob);
+    if (kinematicFirstOnly) break;
+  }
+
+  dragDistance = (isect - beam.Start ()).Norm ();
+  doDragRestrictY = restrictY;
+  if (doDragRestrictY)
+  {
+    dragRestrictY = isect.y;
+  }
+}
+
+void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
+    const csSegment3& beam, const csVector3& isect)
+{
+  // Create a pivot joint at the point clicked
+  dragJoint = aresed->GetBulletSystem ()->CreatePivotJoint ();
+  dragJoint->Attach (hitBody, isect);
+
+  do_dragging = true;
+  dragDistance = (isect - beam.Start ()).Norm ();
+
+  // Set some dampening on the rigid body to have a more stable dragging
+  csRef<CS::Physics::Bullet::iRigidBody> csBody =
+        scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
+  linearDampening = csBody->GetLinearDampener ();
+  angularDampening = csBody->GetRollingDampener ();
+  csBody->SetLinearDampener (0.9f);
+  csBody->SetRollingDampener (0.9f);
+}
+
+void MainMode::AddForce (iRigidBody* hitBody, bool pull,
+      const csSegment3& beam, const csVector3& isect)
+{
+  // Add a force at the point clicked
+  csVector3 force = beam.End () - beam.Start ();
+  force.Normalize ();
+  if (pull)
+    force *= -hitBody->GetMass ();
+  else
+    force *= hitBody->GetMass ();
+  hitBody->AddForceAtPos (force, isect);
+}
+
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (!(but == 0 || but == 1)) return false;
@@ -362,6 +470,19 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   bool shift = (mod & CSMASK_SHIFT) != 0;
   bool ctrl = (mod & CSMASK_CTRL) != 0;
   bool alt = (mod & CSMASK_ALT) != 0;
+
+  int data;
+  iMarker* hitMarker = aresed->GetMarkerManager ()
+    ->FindHitMarker (mouseX, mouseY, data);
+  if (hitMarker == transformationMarker)
+  {
+    iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
+    iCamera* camera = aresed->GetCsCamera ();
+    csVector3 isect = mesh->GetMovable ()->GetTransform ().GetOrigin ();
+    StartKinematicDragging (alt, csSegment3 (camera->GetTransform ().GetOrigin (),
+	  isect), isect, true);
+    return true;
+  }
 
   // Compute the end beam points
   csVector3 isect;
@@ -384,46 +505,10 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     StopDrag ();
 
     if (ctrl || alt)
-    {
-      do_kinematic_dragging = true;
-
-      SelectionIterator it = aresed->GetSelection ()->GetIterator ();
-      while (it.HasNext ())
-      {
-	iDynamicObject* dynobj = it.Next ();
-	dynobj->MakeKinematic ();
-        iMeshWrapper* mesh = dynobj->GetMesh ();
-        csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
-	DragObject dob;
-	dob.kineOffset = isect - meshpos;
-	dob.dynobj = dynobj;
-	dragObjects.Push (dob);
-      }
-
-      dragDistance = (isect - beam.Start ()).Norm ();
-      doDragRestrictY = alt;
-      if (doDragRestrictY)
-      {
-        dragRestrictY = isect.y;
-      }
-    }
+      StartKinematicDragging (alt, beam, isect, false);
     else if (!newobj->IsStatic ())
-    {
-      // Create a pivot joint at the point clicked
-      dragJoint = aresed->GetBulletSystem ()->CreatePivotJoint ();
-      dragJoint->Attach (hitBody, isect);
+      StartPhysicalDragging (hitBody, beam, isect);
 
-      do_dragging = true;
-      dragDistance = (isect - beam.Start ()).Norm ();
-
-      // Set some dampening on the rigid body to have a more stable dragging
-      csRef<CS::Physics::Bullet::iRigidBody> csBody =
-        scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
-      linearDampening = csBody->GetLinearDampener ();
-      angularDampening = csBody->GetRollingDampener ();
-      csBody->SetLinearDampener (0.9f);
-      csBody->SetRollingDampener (0.9f);
-    }
     return true;
   }
   else if (but == 1)
@@ -433,14 +518,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     }
     else
     {
-      // Add a force at the point clicked
-      csVector3 force = beam.End () - beam.Start ();
-      force.Normalize ();
-      if (shift)
-        force *= -hitBody->GetMass ();
-      else
-        force *= hitBody->GetMass ();
-      hitBody->AddForceAtPos (force, isect);
+      AddForce (hitBody, shift, beam, isect);
     }
     return true;
   }

@@ -38,6 +38,12 @@ THE SOFTWARE.
 CS_PLUGIN_NAMESPACE_BEGIN(MarkerManager)
 {
 
+static float SqDistance2d (const csVector2& p1, const csVector2& p2)
+{
+  csVector2 d = p1 - p2;
+  return d*d;
+}
+
 //---------------------------------------------------------------------------------------
 
 csPen* MarkerColor::GetOrCreatePen (int level)
@@ -99,6 +105,8 @@ static csVector3 TransPoint (
 
 void Marker::Render3D ()
 {
+  if (!visible) return;
+
   const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
   const csReversibleTransform& meshtrans = GetTransform ();
   for (size_t i = 0 ; i < lines.GetSize () ; i++)
@@ -109,13 +117,27 @@ void Marker::Render3D ()
     // @@@ Do proper clipping?
     if (v1.z > .1 && v2.z > .1)
     {
-      //mgr->g3d->DrawLine (v1, v2, mgr->g3d->GetPerspectiveAspect (),
-	//line.color->GetColor (selectionLevel));
       csPen* pen = line.color->GetPen (selectionLevel);
       csVector2 s1 = mgr->camera->Perspective (v1);
       csVector2 s2 = mgr->camera->Perspective (v2);
-      pen->DrawLine (int (s1.x), mgr->g2d->GetHeight () - int (s1.y),
-	  int (s2.x), mgr->g2d->GetHeight () - int (s2.y));
+ 
+      int x1 = int (s1.x);
+      int y1 = mgr->g2d->GetHeight () - int (s1.y);
+      int x2 = int (s2.x);
+      int y2 = mgr->g2d->GetHeight () - int (s2.y);
+
+      pen->DrawLine (x1, y1, x2, y2);
+
+      if (line.arrow)
+      {
+        //float d = sqrt (SqDistance2d (s1, s2));
+	int dx = (x2-x1) / 4;
+	int dy = (y2-y1) / 4;
+	int dxr = -(y2-y1) / 4;
+	int dyr = (x2-x1) / 4;
+        pen->DrawLine (x2, y2, x2-dx+dxr, y2-dy+dyr);
+        pen->DrawLine (x2, y2, x2-dx-dxr, y2-dy-dyr);
+      }
     }
   }
 }
@@ -125,13 +147,15 @@ void Marker::Render2D ()
 }
 
 void Marker::Line (MarkerSpace space,
-      const csVector3& v1, const csVector3& v2, iMarkerColor* color)
+      const csVector3& v1, const csVector3& v2, iMarkerColor* color,
+      bool arrow)
 {
   MarkerLine line;
   line.space = space;
   line.v1 = v1;
   line.v2 = v2;
   line.color = static_cast<MarkerColor*> (color);
+  line.arrow = arrow;
   lines.Push (line);
 }
 
@@ -154,12 +178,6 @@ void Marker::HitArea (MarkerSpace space, const csVector3& center,
 void Marker::ClearHitAreas ()
 {
   hitAreas.Empty ();
-}
-
-static float SqDistance2d (const csVector2& p1, const csVector2& p2)
-{
-  csVector2 d = p1 - p2;
-  return d*d;
 }
 
 float Marker::CheckHitAreas (int x, int y, int& data)
@@ -233,16 +251,17 @@ iMarker* MarkerManager::FindHitMarker (int x, int y, int& data)
   iMarker* bestMarker = 0;
   float bestSqRadius = 10000000.0f;
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
-  {
-    int d;
-    float sqd = markers[i]->CheckHitAreas (x, y, d);
-    if (sqd >= 0.0f && sqd < bestSqRadius)
+    if (markers[i]->IsVisible ())
     {
-      bestSqRadius = sqd;
-      bestMarker = markers[i];
-      data = d;
+      int d;
+      float sqd = markers[i]->CheckHitAreas (x, y, d);
+      if (sqd >= 0.0f && sqd < bestSqRadius)
+      {
+        bestSqRadius = sqd;
+        bestMarker = markers[i];
+        data = d;
+      }
     }
-  }
   return bestMarker;
 }
 

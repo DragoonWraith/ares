@@ -45,11 +45,24 @@ private:
 
   bool do_static_dragging;
   bool do_kinematic_dragging;
+  bool kinematicFirstOnly;
   csArray<DragObject> dragObjects;
   bool doDragRestrictY;	// Only drag on the y-plane.
   float dragRestrictY;
 
+  /// The 'transformation' marker.
+  iMarker* transformationMarker;
+
+  void StartKinematicDragging (bool restrictY,
+      const csSegment3& beam, const csVector3& isect, bool firstOnly);
+  void StartPhysicalDragging (iRigidBody* hitBody,
+      const csSegment3& beam, const csVector3& isect);
   void StopDrag ();
+  void HandleKinematicDragging ();
+  void HandlePhysicalDragging ();
+
+  void AddForce (iRigidBody* hitBody, bool pull,
+      const csSegment3& beam, const csVector3& isect);
 
   bool OnItemListSelection (const CEGUI::EventArgs&);
   bool OnCategoryListSelection (const CEGUI::EventArgs&);
@@ -75,6 +88,7 @@ public:
   virtual ~MainMode () { }
 
   virtual void Start ();
+  virtual void Stop ();
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 
