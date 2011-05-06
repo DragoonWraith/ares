@@ -274,50 +274,9 @@ public:
   void DeleteSelectedObjects ();
 
   /**
-   * Align all selected objects based on the first selected object.
-   */
-  void AlignSelectedObjects ();
-
-  /**
-   * Stack all selected objects on top of each other.
-   */
-  void StackSelectedObjects ();
-
-  /**
-   * Move all selected objects to the same heigh.
-   */
-  void SameYSelectedObjects ();
-
-  /**
-   * Set the position of the selected objects so that the
-   * are adjacent to each other along the best matching axis.
-   */
-  void SetPosSelectedObjects ();
-
-  /**
-   * Reset the rotation of all selected objects.
-   */
-  void RotResetSelectedObjects ();
-
-  /**
-   * Rotate the current object with the given base angle.
-   */
-  void RotateCurrent (float baseAngle);
-
-  /**
-   * Move the current object with the given base vector.
-   */
-  void MoveCurrent (const csVector3& baseVector);
-
-  /**
    * Set the static state of the current selected objects.
    */
   void SetStaticSelectedObjects (bool st);
-
-  /**
-   * Return the center of all selected objects.
-   */
-  csVector3 GetCenterSelected ();
 
   /**
    * Calculate a segment representing a beam that starts from camera

@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "camerawin.h"
+#include "transformtools.h"
 
 bool CameraWindow::OnNorthButtonClicked (const CEGUI::EventArgs& e)
 {
@@ -167,7 +168,7 @@ bool CameraWindow::OnLookAtButtonClicked (const CEGUI::EventArgs& e)
 {
   if (aresed->GetSelection ()->HasSelection ())
   {
-    csVector3 center = aresed->GetCenterSelected ();
+    csVector3 center = TransformTools::GetCenterSelected (aresed->GetSelection ());
     aresed->GetCamera ().CamLookAtPosition (center);
   }
   return true;
@@ -205,7 +206,7 @@ bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
   {
     if (aresed->GetSelection ()->HasSelection ())
     {
-      csVector3 center = aresed->GetCenterSelected ();
+      csVector3 center = TransformTools::GetCenterSelected (aresed->GetSelection ());
       aresed->GetCamera ().EnablePanning (center);
     }
   }

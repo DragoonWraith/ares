@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "apparesed.h"
 #include "mainmode.h"
+#include "transformtools.h"
 
 //---------------------------------------------------------------------------
 
@@ -132,43 +133,47 @@ bool MainMode::OnDelButtonClicked (const CEGUI::EventArgs&)
 
 bool MainMode::OnRotLeftButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->RotateCurrent (PI);
+  bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
+  bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  TransformTools::Rotate (aresed->GetSelection (), PI, slow, fast);
   return true;
 }
 
 bool MainMode::OnRotRightButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->RotateCurrent (-PI);
+  bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
+  bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  TransformTools::Rotate (aresed->GetSelection (), -PI, slow, fast);
   return true;
 }
 
 bool MainMode::OnRotResetButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->RotResetSelectedObjects ();
+  TransformTools::RotResetSelectedObjects (aresed->GetSelection ());
   return true;
 }
 
 bool MainMode::OnAlignRButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->AlignSelectedObjects ();
+  TransformTools::AlignSelectedObjects (aresed->GetSelection ());
   return true;
 }
 
 bool MainMode::OnStackButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->StackSelectedObjects ();
+  TransformTools::StackSelectedObjects (aresed->GetSelection ());
   return true;
 }
 
 bool MainMode::OnSameYButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->SameYSelectedObjects ();
+  TransformTools::SameYSelectedObjects (aresed->GetSelection ());
   return true;
 }
 
 bool MainMode::OnSetPosButtonClicked (const CEGUI::EventArgs&)
 {
-  aresed->SetPosSelectedObjects ();
+  TransformTools::SetPosSelectedObjects (aresed->GetSelection ());
   return true;
 }
 
@@ -276,6 +281,8 @@ void MainMode::Frame2D()
 
 bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
+  bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
+  bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
   if (code == '2')
   {
     SelectionIterator it = aresed->GetSelection ()->GetIterator ();
@@ -318,27 +325,27 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   }
   else if (code == CSKEY_UP)
   {
-    aresed->MoveCurrent (csVector3 (0, 0, 1));
+    TransformTools::Move (aresed->GetSelection (), csVector3 (0, 0, 1), slow, fast);
   }
   else if (code == CSKEY_DOWN)
   {
-    aresed->MoveCurrent (csVector3 (0, 0, -1));
+    TransformTools::Move (aresed->GetSelection (), csVector3 (0, 0, -1), slow, fast);
   }
   else if (code == CSKEY_LEFT)
   {
-    aresed->MoveCurrent (csVector3 (-1, 0, 0));
+    TransformTools::Move (aresed->GetSelection (), csVector3 (-1, 0, 0), slow, fast);
   }
   else if (code == CSKEY_RIGHT)
   {
-    aresed->MoveCurrent (csVector3 (1, 0, 0));
+    TransformTools::Move (aresed->GetSelection (), csVector3 (1, 0, 0), slow, fast);
   }
   else if (code == '<' || code == ',')
   {
-    aresed->MoveCurrent (csVector3 (0, -1, 0));
+    TransformTools::Move (aresed->GetSelection (), csVector3 (0, -1, 0), slow, fast);
   }
   else if (code == '>' || code == '.')
   {
-    aresed->MoveCurrent (csVector3 (0, 1, 0));
+    TransformTools::Move (aresed->GetSelection (), csVector3 (0, 1, 0), slow, fast);
   }
 
   return false;
