@@ -83,6 +83,8 @@ void CurveMode::UpdateMarkers ()
     marker->Clear ();
     marker->Line (MARKER_OBJECT, pos, pos+front, green);
     marker->Line (MARKER_OBJECT, pos, pos+up, red);
+    marker->ClearHitAreas ();
+    marker->HitArea (MARKER_OBJECT, pos, 10.0f, 0);
   }
 
   UpdateMarkerSelection ();
@@ -245,33 +247,14 @@ csVector3 CurveMode::GetWorldPosPoint (size_t idx)
 
 size_t CurveMode::FindCurvePoint (int mouseX, int mouseY)
 {
-  iGraphics2D* g2d = aresed->GetG2D ();
-
-  float sy = g2d->GetHeight ();
-  iCamera* camera = aresed->GetCsCamera ();
-  const csOrthoTransform& camtrans = camera->GetTransform ();
-  float bestSqDist = 1000000000.0;
-  size_t bestIdx = csArrayItemNotFound;
-  for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
-  {
-    csVector3 campos = camtrans.Other2This (GetWorldPosPoint (i));
-    if (campos.z > .1)
-    {
-      csVector2 scrpos = camera->Perspective (campos);
-      scrpos.y = sy-scrpos.y;
-      float sqDist = (scrpos.x-mouseX) * (scrpos.x-mouseX)
-	+ (scrpos.y-mouseY) * (scrpos.y-mouseY);
-      if (sqDist < bestSqDist)
-      {
-	bestSqDist = sqDist;
-	bestIdx = i;
-      }
-    }
-  }
-  if (bestSqDist < 100)
-    return bestIdx;
-  else
-    return csArrayItemNotFound;
+  int data;
+  iMarker* marker = aresed->GetMarkerManager ()->FindHitMarker (mouseX, mouseY, data);
+  if (!marker) return csArrayItemNotFound;
+  size_t idx = 0;
+  while (idx < markers.GetSize ())
+    if (markers[idx] == marker) return idx;
+    else idx++;
+  return csArrayItemNotFound;
 }
 
 void CurveMode::RotateCurrent (float baseAngle)

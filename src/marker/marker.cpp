@@ -140,6 +140,56 @@ void Marker::Clear ()
   lines.Empty ();
 }
 
+void Marker::HitArea (MarkerSpace space, const csVector3& center,
+      float radius, int data)
+{
+  MarkerHitArea hitArea;
+  hitArea.space = space;
+  hitArea.center = center;
+  hitArea.sqRadius = radius * radius;
+  hitArea.data = data;
+  hitAreas.Push (hitArea);
+}
+
+void Marker::ClearHitAreas ()
+{
+  hitAreas.Empty ();
+}
+
+static float SqDistance2d (const csVector2& p1, const csVector2& p2)
+{
+  csVector2 d = p1 - p2;
+  return d*d;
+}
+
+float Marker::CheckHitAreas (int x, int y, int& data)
+{
+  const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
+  const csReversibleTransform& meshtrans = GetTransform ();
+  csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
+  data = 0;
+  float bestSqRadius = 10000000.0f;
+  bool hit = false;
+  for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
+  {
+    MarkerHitArea& hitArea = hitAreas[i];
+    csVector3 c = TransPoint (camtrans, meshtrans, hitArea.space, hitArea.center);
+    if (c.z > .1)
+    {
+      csVector2 s = mgr->camera->Perspective (c);
+      float sqd = SqDistance2d (s, f);
+      if (sqd <= hitArea.sqRadius && sqd <= bestSqRadius)
+      {
+	bestSqRadius = sqd;
+	data = hitArea.data;
+	hit = true;
+      }
+    }
+  }
+  if (hit) return bestSqRadius;
+  else return -1.0f;
+}
+
 //---------------------------------------------------------------------------------------
 
 SCF_IMPLEMENT_FACTORY (MarkerManager)
@@ -176,6 +226,24 @@ void MarkerManager::Frame3D ()
 {
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render3D ();
+}
+
+iMarker* MarkerManager::FindHitMarker (int x, int y, int& data)
+{
+  iMarker* bestMarker = 0;
+  float bestSqRadius = 10000000.0f;
+  for (size_t i = 0 ; i < markers.GetSize () ; i++)
+  {
+    int d;
+    float sqd = markers[i]->CheckHitAreas (x, y, d);
+    if (sqd >= 0.0f && sqd < bestSqRadius)
+    {
+      bestSqRadius = sqd;
+      bestMarker = markers[i];
+      data = d;
+    }
+  }
+  return bestMarker;
 }
 
 void MarkerManager::SetSelectionLevel (int level)

@@ -76,6 +76,14 @@ struct MarkerLine
   MarkerColor* color;
 };
 
+struct MarkerHitArea
+{
+  MarkerSpace space;
+  csVector3 center;
+  float sqRadius;
+  int data;
+};
+
 class Marker : public scfImplementation1<Marker, iMarker>
 {
 private:
@@ -85,6 +93,7 @@ private:
   int selectionLevel;
 
   csArray<MarkerLine> lines;
+  csArray<MarkerHitArea> hitAreas;
 
 public:
   Marker (MarkerManager* mgr) :
@@ -110,9 +119,18 @@ public:
   virtual void Box3D (MarkerSpace space,
       const csBox3& box, iMarkerColor* color) { }
   virtual void Clear ();
+  virtual void HitArea (MarkerSpace space, const csVector3& center,
+      float radius, int data);
+  virtual void ClearHitAreas ();
 
   void Render2D ();
   void Render3D ();
+
+  /**
+   * Check if a hit area was hit and return the squared distance.
+   * Returns negative number if there was no hit.
+   */
+  float CheckHitAreas (int x, int y, int& data);
 };
 
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>
@@ -157,6 +175,7 @@ public:
   {
     markers.Delete (static_cast<Marker*> (marker));
   }
+  virtual iMarker* FindHitMarker (int x, int y, int& data);
 };
 
 }

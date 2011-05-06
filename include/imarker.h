@@ -181,6 +181,17 @@ struct iMarker : public virtual iBase
    * Clear all geometry.
    */
   virtual void Clear () = 0;
+
+  /**
+   * Define a hit area on this marker.
+   */
+  virtual void HitArea (MarkerSpace space, const csVector3& center,
+      float radius, int data) = 0;
+
+  /**
+   * Clear all hit areas.
+   */
+  virtual void ClearHitAreas () = 0;
 };
 
 /**
@@ -202,6 +213,11 @@ struct iMarkerManager : public virtual iBase
    * Set the selection level for all markers.
    */
   virtual void SetSelectionLevel (int level) = 0;
+
+  /**
+   * Check if a given marker is at this screen location.
+   */
+  virtual iMarker* FindHitMarker (int x, int y, int& data) = 0;
 
   /**
    * Create a marker color.
