@@ -91,7 +91,9 @@ void MainMode::Start ()
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
-    transformationMarker->HitArea (MARKER_OBJECT, csVector3 (0), 10.0f, 0);
+    iMarkerHitArea* hitArea = transformationMarker->HitArea (
+	MARKER_OBJECT, csVector3 (0), 10.0f, 0);
+    hitArea->DefineDrag (0, false, false, false, MARKER_WORLD, false, false, false, 0);
   }
 
   if (aresed->GetSelection ()->GetSize () >= 1)

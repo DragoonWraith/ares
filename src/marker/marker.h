@@ -77,12 +77,46 @@ struct MarkerLine
   bool arrow;
 };
 
-struct MarkerHitArea
+struct MarkerDraggingMode
 {
+  csRef<iMarkerCallback> cb;
+  uint button;
+  bool shift, ctrl, alt;
+  MarkerSpace constrainSpace;
+  bool constrainXplane, constrainYplane, constrainZplane;
+};
+
+class MarkerHitArea : public scfImplementation1<MarkerHitArea, iMarkerHitArea>
+{
+private:
   MarkerSpace space;
   csVector3 center;
   float sqRadius;
   int data;
+  csPDelArray<MarkerDraggingMode> draggingModes;
+
+public:
+  MarkerHitArea () : scfImplementationType (this) { }
+  virtual ~MarkerHitArea () { }
+
+  virtual void DefineDrag (uint button, bool shift, bool ctrl, bool alt,
+      MarkerSpace constrainSpace,
+      bool constrainXplane, bool constrainYplane, bool constrainZplane,
+      iMarkerCallback* cb);
+
+  MarkerDraggingMode* FindDraggingMode (uint button, bool shift, bool ctrl, bool alt) const;
+
+  void SetSpace (MarkerSpace space) { MarkerHitArea::space = space; }
+  MarkerSpace GetSpace () const { return space; }
+
+  void SetCenter (const csVector3& center) { MarkerHitArea::center = center; }
+  const csVector3& GetCenter () const { return center; }
+
+  void SetSqRadius (float sqRadius) { MarkerHitArea::sqRadius = sqRadius; }
+  float GetSqRadius () const { return sqRadius; }
+
+  void SetData (int data) { MarkerHitArea::data = data; }
+  int GetData () const { return data; }
 };
 
 class Marker : public scfImplementation1<Marker, iMarker>
@@ -94,7 +128,7 @@ private:
   int selectionLevel;
 
   csArray<MarkerLine> lines;
-  csArray<MarkerHitArea> hitAreas;
+  csRefArray<MarkerHitArea> hitAreas;
 
   bool visible;
 
@@ -126,7 +160,7 @@ public:
   virtual void Box3D (MarkerSpace space,
       const csBox3& box, iMarkerColor* color) { }
   virtual void Clear ();
-  virtual void HitArea (MarkerSpace space, const csVector3& center,
+  virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data);
   virtual void ClearHitAreas ();
 
@@ -137,7 +171,7 @@ public:
    * Check if a hit area was hit and return the squared distance.
    * Returns negative number if there was no hit.
    */
-  float CheckHitAreas (int x, int y, int& data);
+  float CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea);
 };
 
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>
@@ -160,6 +194,9 @@ public:
 
   virtual void Frame2D ();
   virtual void Frame3D ();
+  virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
+  virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
+  virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
 
   virtual void SetCamera (iCamera* camera) { MarkerManager::camera = camera; }
   virtual void SetSelectionLevel (int level);
@@ -183,6 +220,8 @@ public:
     markers.Delete (static_cast<Marker*> (marker));
   }
   virtual iMarker* FindHitMarker (int x, int y, int& data);
+
+  MarkerHitArea* FindHitArea (int x, int y);
 };
 
 }

@@ -34,7 +34,80 @@ class csReversibleTransform;
 class csVector3;
 class csBox3;
 
+struct iEvent;
 struct iMarker;
+struct iMarkerHitArea;
+
+/**
+ * Where should a drawing primitive be rendered?
+ */
+enum MarkerSpace
+{
+  /**
+   * The drawing primitive is rendered in camera space and this will
+   * stay on the same position on screen even if the camera moves.
+   */
+  MARKER_CAMERA = 0,
+
+  /**
+   * The drawing primitive is rendered in object space and so will move
+   * exactly with the attached object. This only works in combination
+   * with iMarker->AttachMesh().
+   */
+  MARKER_OBJECT,
+
+  /**
+   * The drawing primitive is rendered in world space and will not
+   * follow the attached object (if any).
+   */
+  MARKER_WORLD,
+
+  /**
+   * The drawing primitive is rendered in camera space but the
+   * position if relative to the attached mesh.
+   */
+  MARKER_CAMERA_AT_MESH
+};
+
+/**
+ * A callback that is fired whenever a hit area in a marker is hit.
+ */
+struct iMarkerCallback : public virtual iBase
+{
+  SCF_INTERFACE(iMarkerCallback,0,0,1);
+
+  virtual void MarkerHit (iMarker* marker, iMarkerHitArea* area) = 0;
+};
+
+/**
+ * A marker hit area (place on a marker that a user can select).
+ */
+struct iMarkerHitArea : public virtual iBase
+{
+  SCF_INTERFACE(iMarkerHitArea,0,0,1);
+
+  /**
+   * Define a way to drag this hit area. Using the constrain?plane parameters you
+   * can control how the dragging should be restricted. If you don't constrain then
+   * the position of the hit area will be equivalent to the position where the beam
+   * hits the world. You can constrain at most two planes. In that case it will
+   * be a line.
+   * @param button is the mouse button that can initiate this dragging behaviour.
+   * @param shift modifier
+   * @param ctrl modifier
+   * @param alt modifier
+   * @param constrainSpace this indicates in which space the dragging constraints should
+   * occur. MARKER_CAMERA_AT_MESH is illegal in this context.
+   * @param constrainXplane true if you want to constrain dragging on the X plane.
+   * @param constrainYplane true if you want to constrain dragging on the Y plane.
+   * @param constrainZplane true if you want to constrain dragging on the Z plane.
+   * @param cb is the callback to call when this kind of dragging is initiated.
+   */
+  virtual void DefineDrag (uint button, bool shift, bool ctrl, bool alt,
+      MarkerSpace constrainSpace,
+      bool constrainXplane, bool constrainYplane, bool constrainZplane,
+      iMarkerCallback* cb) = 0;
+};
 
 #define SELECTION_NONE 0
 #define SELECTION_ACTIVE 1
@@ -66,37 +139,6 @@ struct iMarkerColor : public virtual iBase
    * Set the pen width.
    */
   virtual void SetPenWidth (int selectionLevel, float width) = 0;
-};
-
-/**
- * Where should a drawing primitive be rendered?
- */
-enum MarkerSpace
-{
-  /**
-   * The drawing primitive is rendered in camera space and this will
-   * stay on the same position on screen even if the camera moves.
-   */
-  MARKER_CAMERA = 0,
-
-  /**
-   * The drawing primitive is rendered in object space and so will move
-   * exactly with the attached object. This only works in combination
-   * with iMarker->AttachMesh().
-   */
-  MARKER_OBJECT,
-
-  /**
-   * The drawing primitive is rendered in world space and will not
-   * follow the attached object (if any).
-   */
-  MARKER_WORLD,
-
-  /**
-   * The drawing primitive is rendered in camera space but the
-   * position if relative to the attached mesh.
-   */
-  MARKER_CAMERA_AT_MESH
 };
 
 /**
@@ -176,7 +218,7 @@ struct iMarker : public virtual iBase
   /**
    * Define a hit area on this marker.
    */
-  virtual void HitArea (MarkerSpace space, const csVector3& center,
+  virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data) = 0;
 
   /**
@@ -194,6 +236,9 @@ struct iMarkerManager : public virtual iBase
 
   virtual void Frame2D () = 0;
   virtual void Frame3D () = 0;
+  virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY) = 0;
+  virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY) = 0;
+  virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY) = 0;
 
   /**
    * Set the camera.

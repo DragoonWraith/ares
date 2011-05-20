@@ -25,6 +25,7 @@ THE SOFTWARE.
 
 #include "marker.h"
 
+#include "csutil/event.h"
 #include "iutil/objreg.h"
 #include "ivideo/graph2d.h"
 #include "ivideo/graph3d.h"
@@ -71,6 +72,40 @@ void MarkerColor::SetPenWidth (int selectionLevel, float width)
 {
   csPen* pen = GetOrCreatePen (selectionLevel);
   pen->SetPenWidth (width);
+}
+
+//---------------------------------------------------------------------------------------
+
+void MarkerHitArea::DefineDrag (uint button, bool shift, bool ctrl, bool alt,
+      MarkerSpace constrainSpace,
+      bool constrainXplane, bool constrainYplane, bool constrainZplane,
+      iMarkerCallback* cb)
+{
+  MarkerDraggingMode* dm = new MarkerDraggingMode ();
+  dm->cb = cb;
+  dm->button = button;
+  dm->shift = shift;
+  dm->ctrl = ctrl;
+  dm->alt = alt;
+  dm->constrainSpace = constrainSpace;
+  dm->constrainXplane = constrainXplane;
+  dm->constrainYplane = constrainYplane;
+  dm->constrainZplane = constrainZplane;
+  draggingModes.Push (dm);
+}
+
+MarkerDraggingMode* MarkerHitArea::FindDraggingMode (uint button,
+    bool shift, bool ctrl, bool alt) const
+{
+  for (size_t i = 0 ; i < draggingModes.GetSize () ; i++)
+  {
+    MarkerDraggingMode* dm = draggingModes[i];
+    if (dm->button == button && dm->shift == shift && dm->ctrl == ctrl && dm->alt == alt)
+    {
+      return dm;
+    }
+  }
+  return 0;
 }
 
 //---------------------------------------------------------------------------------------
@@ -164,15 +199,17 @@ void Marker::Clear ()
   lines.Empty ();
 }
 
-void Marker::HitArea (MarkerSpace space, const csVector3& center,
+iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data)
 {
-  MarkerHitArea hitArea;
-  hitArea.space = space;
-  hitArea.center = center;
-  hitArea.sqRadius = radius * radius;
-  hitArea.data = data;
+  csRef<MarkerHitArea> hitArea;
+  hitArea.AttachNew (new MarkerHitArea ());
+  hitArea->SetSpace (space);
+  hitArea->SetCenter (center);
+  hitArea->SetSqRadius (radius * radius);
+  hitArea->SetData (data);
   hitAreas.Push (hitArea);
+  return hitArea;
 }
 
 void Marker::ClearHitAreas ()
@@ -180,26 +217,26 @@ void Marker::ClearHitAreas ()
   hitAreas.Empty ();
 }
 
-float Marker::CheckHitAreas (int x, int y, int& data)
+float Marker::CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea)
 {
   const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
   const csReversibleTransform& meshtrans = GetTransform ();
   csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
-  data = 0;
+  bestHitArea = 0;
   float bestSqRadius = 10000000.0f;
   bool hit = false;
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
-    MarkerHitArea& hitArea = hitAreas[i];
-    csVector3 c = TransPoint (camtrans, meshtrans, hitArea.space, hitArea.center);
+    MarkerHitArea* hitArea = hitAreas[i];
+    csVector3 c = TransPoint (camtrans, meshtrans, hitArea->GetSpace (), hitArea->GetCenter ());
     if (c.z > .1)
     {
       csVector2 s = mgr->camera->Perspective (c);
       float sqd = SqDistance2d (s, f);
-      if (sqd <= hitArea.sqRadius && sqd <= bestSqRadius)
+      if (sqd <= hitArea->GetSqRadius () && sqd <= bestSqRadius)
       {
 	bestSqRadius = sqd;
-	data = hitArea.data;
+	bestHitArea = hitArea;
 	hit = true;
       }
     }
@@ -246,6 +283,55 @@ void MarkerManager::Frame3D ()
     markers[i]->Render3D ();
 }
 
+bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
+{
+  MarkerHitArea* hitArea = FindHitArea (mouseX, mouseY);
+  if (hitArea)
+  {
+    uint32 mod = csMouseEventHelper::GetModifiers (&ev);
+    bool shift = (mod & CSMASK_SHIFT) != 0;
+    bool ctrl = (mod & CSMASK_CTRL) != 0;
+    bool alt = (mod & CSMASK_ALT) != 0;
+    MarkerDraggingMode* dm = hitArea->FindDraggingMode (but, shift, ctrl, alt);
+    if (dm)
+    {
+      printf ("Start dragging mode!\n");
+      fflush (stdout);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool MarkerManager::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
+{
+  return false;
+}
+
+bool MarkerManager::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
+{
+  return false;
+}
+
+MarkerHitArea* MarkerManager::FindHitArea (int x, int y)
+{
+  MarkerHitArea* bestHitArea = 0;
+  float bestSqRadius = 10000000.0f;
+  for (size_t i = 0 ; i < markers.GetSize () ; i++)
+    if (markers[i]->IsVisible ())
+    {
+      MarkerHitArea* hitArea;
+      float sqd = markers[i]->CheckHitAreas (x, y, hitArea);
+      if (sqd >= 0.0f && sqd < bestSqRadius)
+      {
+        bestSqRadius = sqd;
+        bestHitArea = hitArea;
+      }
+    }
+  return bestHitArea;
+}
+
 iMarker* MarkerManager::FindHitMarker (int x, int y, int& data)
 {
   iMarker* bestMarker = 0;
@@ -253,13 +339,13 @@ iMarker* MarkerManager::FindHitMarker (int x, int y, int& data)
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     if (markers[i]->IsVisible ())
     {
-      int d;
-      float sqd = markers[i]->CheckHitAreas (x, y, d);
+      MarkerHitArea* hitArea;
+      float sqd = markers[i]->CheckHitAreas (x, y, hitArea);
       if (sqd >= 0.0f && sqd < bestSqRadius)
       {
         bestSqRadius = sqd;
         bestMarker = markers[i];
-        data = d;
+        data = hitArea->GetData ();
       }
     }
   return bestMarker;

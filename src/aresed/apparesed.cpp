@@ -154,6 +154,9 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
 
 #endif
 
+  if (markerMgr->OnMouseMove (ev, mouseX, mouseY))
+    return true;
+
   if (camera.OnMouseMove (ev, mouseX, mouseY))
     return true;
 
@@ -274,6 +277,9 @@ bool AppAresEdit::OnMouseDown (iEvent& ev)
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
 
+  if (markerMgr->OnMouseDown (ev, but, mouseX, mouseY))
+    return true;
+
   if (camera.OnMouseDown (ev, but, mouseX, mouseY))
     return true;
 
@@ -285,6 +291,9 @@ bool AppAresEdit::OnMouseUp (iEvent& ev)
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
+
+  if (markerMgr->OnMouseUp (ev, but, mouseX, mouseY))
+    return true;
 
   if (camera.OnMouseUp (ev, but, mouseX, mouseY))
     return true;
