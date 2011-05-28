@@ -165,18 +165,20 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
   iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
 
+  float kspeed = 20.0f * float (elapsed_time) / 1000.0f;
+
   float rot_speed_y = 0.0f;
   float rot_speed_x = 0.0f;
 
   if (do_panning)
   {
     float distance = 0.0f;
-    if (kbd->GetKeyState ('d')) rot_speed_y += 0.08f;
-    if (kbd->GetKeyState ('a')) rot_speed_y -= 0.08f;
-    if (kbd->GetKeyState ('w')) distance -= 0.5f;
-    if (kbd->GetKeyState ('s')) distance += 0.5f;
-    if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x -= 0.08f;
-    if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x += 0.08f;
+    if (kbd->GetKeyState ('d')) rot_speed_y += 0.08f * kspeed;
+    if (kbd->GetKeyState ('a')) rot_speed_y -= 0.08f * kspeed;
+    if (kbd->GetKeyState ('w')) distance -= 0.5f * kspeed;
+    if (kbd->GetKeyState ('s')) distance += 0.5f * kspeed;
+    if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x -= 0.08f * kspeed;
+    if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x += 0.08f * kspeed;
     float speed = slow ? 0.1f : 1.0f;
     Pan (rot_speed_x * speed, rot_speed_y * speed, distance * speed);
     return;
@@ -188,10 +190,10 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     // If the user is holding down shift, the arrow keys will cause
     // the camera to strafe up, down, left or right from it's
     // current position.
-    if (kbd->GetKeyState ('d')) obj_move += CS_VEC_RIGHT * 2.0f;
-    if (kbd->GetKeyState ('a')) obj_move += CS_VEC_LEFT * 2.0f;
-    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_UP * 2.0f;
-    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_DOWN * 2.0f;
+    if (kbd->GetKeyState ('d')) obj_move += CS_VEC_RIGHT * 2.0f * kspeed;
+    if (kbd->GetKeyState ('a')) obj_move += CS_VEC_LEFT * 2.0f * kspeed;
+    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_UP * 2.0f * kspeed;
+    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_DOWN * 2.0f * kspeed;
   }
   else
   {
@@ -199,20 +201,19 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
     // axis; page up and page down cause the camera to rotate on the
     // _camera's_ X axis (more on this in a second) and up and down
     // arrows cause the camera to go forwards and backwards.
-    if (kbd->GetKeyState ('d')) rot_speed_y -= 0.1f;
-    if (kbd->GetKeyState ('a')) rot_speed_y += 0.1f;
-    if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x += 0.1f;
-    if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x -= 0.1f;
-    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_FORWARD * 2.0f;
-    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_BACKWARD * 2.0f;
+    if (kbd->GetKeyState ('d')) rot_speed_y -= 0.1f * kspeed;
+    if (kbd->GetKeyState ('a')) rot_speed_y += 0.1f * kspeed;
+    if (kbd->GetKeyState (CSKEY_PGUP)) rot_speed_x += 0.1f * kspeed;
+    if (kbd->GetKeyState (CSKEY_PGDN)) rot_speed_x -= 0.1f * kspeed;
+    if (kbd->GetKeyState ('w')) obj_move += CS_VEC_FORWARD * 2.0f * kspeed;
+    if (kbd->GetKeyState ('s')) obj_move += CS_VEC_BACKWARD * 2.0f * kspeed;
   }
 
   if (do_gravity)
   {
-    const float speed = elapsed_time / 1000.0;
     csVector3 obj_rotate = rot_speed_x * csVector3 (1, 0, 0) +
       rot_speed_y * csVector3 (0, -1, 0);
-    collider_actor.Move (speed, slow ? 0.5f : 2.0f, obj_move, obj_rotate * 10.0f);
+    collider_actor.Move (kspeed / 20.0f, slow ? 0.5f : 2.0f, obj_move, obj_rotate * 10.0f);
   }
   else
   {
