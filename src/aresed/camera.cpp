@@ -85,14 +85,14 @@ void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos)
   collider_actor.InitializeColliders (camera, legs, body, shift);
 }
 
-void Camera::InterpolateCamera (csTicks elapsed_time)
+void Camera::InterpolateCamera (float elapsed_time)
 {
   float sqdist = csSquaredDist::PointPoint (current.pos, desired.pos);
   bool rotEqual = (current.rot.v - desired.rot.v).IsZero ()
     && fabs (current.rot.w - desired.rot.w) < 0.00001f;
   if (sqdist < 0.02f && rotEqual) return;
 
-  float damping = 10.0f * float (elapsed_time) / 1000.0f;
+  float damping = 10.0f * elapsed_time;
   if (damping >= 1.0f) damping = 1.0f;
   current.pos += (desired.pos - current.pos) * damping;
   current.rot = current.rot.SLerp (desired.rot, damping);
@@ -154,7 +154,7 @@ void Camera::Pan (float rot_speed_x, float rot_speed_y, float distance)
   CamLookAtPosition (panningCenter);
 }
 
-void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
+void Camera::Frame (float elapsed_time, int mouseX, int mouseY)
 {
   if (!do_gravity)
     InterpolateCamera (elapsed_time);
@@ -165,7 +165,7 @@ void Camera::Frame (csTicks elapsed_time, int mouseX, int mouseY)
   iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
 
-  float kspeed = 20.0f * float (elapsed_time) / 1000.0f;
+  float kspeed = 20.0f * elapsed_time;
 
   float rot_speed_y = 0.0f;
   float rot_speed_x = 0.0f;

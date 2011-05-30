@@ -418,7 +418,7 @@ public:
   virtual void Setup (iSector* sector, iDynamicSystem* dynSys);
   virtual void SetRadius (float radius);
   virtual float GetRadius () const { return radius; }
-  virtual void PrepareView (iCamera* camera, csTicks elapsed_ticks);
+  virtual void PrepareView (iCamera* camera, float elapsed_time);
   virtual iDynamicObject* FindObject (iRigidBody* body);
   virtual iDynamicObject* FindObject (iMeshWrapper* mesh);
   virtual void Save (iDocumentNode* node);

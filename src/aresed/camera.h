@@ -58,7 +58,7 @@ protected:
   CamLocation current;
   CamLocation desired;
 
-  void InterpolateCamera (csTicks elapsed_time);
+  void InterpolateCamera (float elapsed_time);
   void SetCameraTransform (const CamLocation& loc);
   float CalculatePanningHorizontalAngle ();
   float CalculatePanningVerticalAngle ();
@@ -78,7 +78,7 @@ public:
   void EnablePanning (const csVector3& center);
   void DisablePanning ();
 
-  void Frame (csTicks elapsed, int mouseX, int mouseY);
+  void Frame (float elapsed, int mouseX, int mouseY);
   bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
   bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
   bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);

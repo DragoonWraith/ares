@@ -566,9 +566,9 @@ void DynamicWorld::DeleteObject (iDynamicObject* dynobj)
   }
 }
 
-void DynamicWorld::PrepareView (iCamera* camera, csTicks elapsed_ticks)
+void DynamicWorld::PrepareView (iCamera* camera, float elapsed_time)
 {
-  float fade_speed = float (elapsed_ticks) / 3000.0;
+  float fade_speed = elapsed_time / 3.0;
 
   {
     csSet<csPtrKey<DynamicObject> > newset;

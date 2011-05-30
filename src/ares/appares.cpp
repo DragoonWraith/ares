@@ -84,15 +84,14 @@ void AppAres::OnExit ()
 void AppAres::Frame ()
 {
   // We let the entity system do this so there is nothing here.
-  csTicks elapsed_time = vc->GetElapsedTicks ();
+  float elapsed_time = vc->GetElapsedSeconds ();
   nature->UpdateTime (currentTime, camera);
-  currentTime += elapsed_time;
+  currentTime += csTicks (elapsed_time * 1000);
 
   //if (do_simulation)
   {
     float dynamicSpeed = 1.0f;
-    const float speed = elapsed_time / 1000.0;
-    dyn->Step (speed / dynamicSpeed);
+    dyn->Step (elapsed_time / dynamicSpeed);
   }
 
   dynworld->PrepareView (camera, elapsed_time);

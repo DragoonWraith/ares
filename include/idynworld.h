@@ -275,7 +275,7 @@ struct iDynamicWorld : public virtual iBase
   /**
    * Prepare the sector for viewing at a certain location.
    */
-  virtual void PrepareView (iCamera* camera, csTicks elapsed_ticks) = 0;
+  virtual void PrepareView (iCamera* camera, float elapsed_time) = 0;
 
   /**
    * Find an object given its rigid body.

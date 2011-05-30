@@ -69,10 +69,10 @@ AppAresEdit::~AppAresEdit()
 void AppAresEdit::DoStuffOncePerFrame ()
 {
   // First get elapsed time from the virtual clock.
-  csTicks elapsed_time = vc->GetElapsedTicks ();
+  float elapsed_time = vc->GetElapsedSeconds ();
   nature->UpdateTime (currentTime, GetCsCamera ());
   if (do_auto_time)
-    currentTime += elapsed_time;
+    currentTime += csTicks (elapsed_time * 1000);
 
   camera.Frame (elapsed_time, mouseX, mouseY);
 
@@ -87,8 +87,7 @@ void AppAresEdit::DoStuffOncePerFrame ()
   if (do_simulation)
   {
     float dynamicSpeed = 1.0f;
-    const float speed = elapsed_time / 1000.0;
-    dyn->Step (speed / dynamicSpeed);
+    dyn->Step (elapsed_time / dynamicSpeed);
   }
 
   dynworld->PrepareView (GetCsCamera (), elapsed_time);
@@ -780,7 +779,7 @@ bool AppAresEdit::SetupDynWorld ()
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
-    printf ("%d %s\n", i, fact->GetName ()); fflush (stdout);
+    printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
     csBox3 bbox = fact->GetPhysicsBBox ();
     factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
     const char* st = fact->GetAttribute ("defaultstatic");
