@@ -39,6 +39,7 @@ class csPen;
 CS_PLUGIN_NAMESPACE_BEGIN(MarkerManager)
 {
 
+class Marker;
 class MarkerManager;
 
 class MarkerColor : public scfImplementation1<MarkerColor, iMarkerColor>
@@ -89,6 +90,7 @@ struct MarkerDraggingMode
 class MarkerHitArea : public scfImplementation1<MarkerHitArea, iMarkerHitArea>
 {
 private:
+  Marker* marker;
   MarkerSpace space;
   csVector3 center;
   float sqRadius;
@@ -96,8 +98,12 @@ private:
   csPDelArray<MarkerDraggingMode> draggingModes;
 
 public:
-  MarkerHitArea () : scfImplementationType (this) { }
+  MarkerHitArea (Marker* marker) : scfImplementationType (this), marker (marker) { }
   virtual ~MarkerHitArea () { }
+
+  Marker* GetMarker () const { return marker; }
+
+  csVector3 GetWorldCenter () const;
 
   virtual void DefineDrag (uint button, bool shift, bool ctrl, bool alt,
       MarkerSpace constrainSpace,
@@ -138,6 +144,8 @@ public:
     visible (true)
   { }
   virtual ~Marker () { }
+
+  MarkerManager* GetMarkerManager () const { return mgr; }
 
   virtual void SetVisible (bool v) { visible = v; }
   virtual bool IsVisible () const { return visible; }
@@ -184,8 +192,17 @@ public:
   csRef<iGraphics2D> g2d;
   iCamera* camera;
 
+  int mouseX, mouseY;
+
   csRefArray<Marker> markers;
   csRefArray<MarkerColor> markerColors;
+
+  MarkerHitArea* currentDraggingHitArea;
+  MarkerDraggingMode* currentDraggingMode;
+  float dragDistance;
+  csVector3 dragRestrict;
+
+  void StopDrag ();
 
 public:
   MarkerManager (iBase *iParent);

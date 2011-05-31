@@ -70,13 +70,31 @@ enum MarkerSpace
 };
 
 /**
- * A callback that is fired whenever a hit area in a marker is hit.
+ * A callback that is fired whenever a hit area in a marker wants to be moved.
  */
 struct iMarkerCallback : public virtual iBase
 {
   SCF_INTERFACE(iMarkerCallback,0,0,1);
 
-  virtual void MarkerHit (iMarker* marker, iMarkerHitArea* area) = 0;
+  /**
+   * Dragging has started.
+   * The given position is the position in world space where the marker was hit.
+   */
+  virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos) = 0;
+
+  /**
+   * The marker wants to move. The given position is the location in world
+   * space coordinates where the marker wants to be. It is up to the implementation
+   * of this callback to make sure the marker actually does end up there.
+   */
+  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos) = 0;
+
+  /**
+   * Dragging has stopped.
+   */
+  virtual void StopDragging (iMarker* marker, iMarkerHitArea* area) = 0;
 };
 
 /**

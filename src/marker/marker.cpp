@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "marker.h"
 
 #include "csutil/event.h"
+#include "csgeom/math3d.h"
 #include "iutil/objreg.h"
 #include "ivideo/graph2d.h"
 #include "ivideo/graph3d.h"
@@ -76,6 +77,52 @@ void MarkerColor::SetPenWidth (int selectionLevel, float width)
 
 //---------------------------------------------------------------------------------------
 
+static csVector3 TransPointWorld (
+    const csOrthoTransform& camtrans,
+    const csReversibleTransform& meshtrans,
+    MarkerSpace space,
+    const csVector3& point)
+{
+  if (space == MARKER_CAMERA)
+    return camtrans.This2Other (point);
+  else if (space == MARKER_OBJECT)
+    return meshtrans.This2Other (point);
+  else if (space == MARKER_WORLD)
+    return meshtrans.This2Other (point);
+  else
+    return point;
+}
+
+static csVector3 TransPointCam (
+    const csOrthoTransform& camtrans,
+    const csReversibleTransform& meshtrans,
+    MarkerSpace space,
+    const csVector3& point)
+{
+  if (space == MARKER_CAMERA)
+    return point;
+  else if (space == MARKER_OBJECT)
+    return camtrans.Other2This (meshtrans.This2Other (point));
+  else if (space == MARKER_WORLD)
+    return camtrans.Other2This (meshtrans.This2Other (point));
+  else if (space == MARKER_CAMERA_AT_MESH)
+  {
+    csReversibleTransform tr;
+    tr.SetOrigin (meshtrans.GetOrigin ());
+    return camtrans.Other2This (tr.This2Other (point));
+  }
+  else
+    return point;
+}
+
+csVector3 MarkerHitArea::GetWorldCenter () const
+{
+  MarkerManager* mgr = marker->GetMarkerManager ();
+  const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
+  const csReversibleTransform& meshtrans = marker->GetTransform ();
+  return TransPointWorld (camtrans, meshtrans, GetSpace (), GetCenter ());
+}
+
 void MarkerHitArea::DefineDrag (uint button, bool shift, bool ctrl, bool alt,
       MarkerSpace constrainSpace,
       bool constrainXplane, bool constrainYplane, bool constrainZplane,
@@ -116,28 +163,6 @@ const csReversibleTransform& Marker::GetTransform () const
   else return trans;
 }
 
-static csVector3 TransPoint (
-    const csOrthoTransform& camtrans,
-    const csReversibleTransform& meshtrans,
-    MarkerSpace space,
-    const csVector3& point)
-{
-  if (space == MARKER_CAMERA)
-    return point;
-  else if (space == MARKER_OBJECT)
-    return camtrans.Other2This (meshtrans.This2Other (point));
-  else if (space == MARKER_WORLD)
-    return camtrans.Other2This (meshtrans.This2Other (point));
-  else if (space == MARKER_CAMERA_AT_MESH)
-  {
-    csReversibleTransform tr;
-    tr.SetOrigin (meshtrans.GetOrigin ());
-    return camtrans.Other2This (tr.This2Other (point));
-  }
-  else
-    return point;
-}
-
 void Marker::Render3D ()
 {
   if (!visible) return;
@@ -147,8 +172,8 @@ void Marker::Render3D ()
   for (size_t i = 0 ; i < lines.GetSize () ; i++)
   {
     MarkerLine& line = lines[i];
-    csVector3 v1 = TransPoint (camtrans, meshtrans, line.space, line.v1);
-    csVector3 v2 = TransPoint (camtrans, meshtrans, line.space, line.v2);
+    csVector3 v1 = TransPointCam (camtrans, meshtrans, line.space, line.v1);
+    csVector3 v2 = TransPointCam (camtrans, meshtrans, line.space, line.v2);
     // @@@ Do proper clipping?
     if (v1.z > .1 && v2.z > .1)
     {
@@ -203,7 +228,7 @@ iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data)
 {
   csRef<MarkerHitArea> hitArea;
-  hitArea.AttachNew (new MarkerHitArea ());
+  hitArea.AttachNew (new MarkerHitArea (this));
   hitArea->SetSpace (space);
   hitArea->SetCenter (center);
   hitArea->SetSqRadius (radius * radius);
@@ -228,7 +253,7 @@ float Marker::CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea)
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
     MarkerHitArea* hitArea = hitAreas[i];
-    csVector3 c = TransPoint (camtrans, meshtrans, hitArea->GetSpace (), hitArea->GetCenter ());
+    csVector3 c = TransPointCam (camtrans, meshtrans, hitArea->GetSpace (), hitArea->GetCenter ());
     if (c.z > .1)
     {
       csVector2 s = mgr->camera->Perspective (c);
@@ -254,6 +279,8 @@ MarkerManager::MarkerManager (iBase *iParent)
 {  
   object_reg = 0;
   camera = 0;
+  currentDraggingHitArea = 0;
+  currentDraggingMode = 0;
 }
 
 MarkerManager::~MarkerManager ()
@@ -271,8 +298,75 @@ bool MarkerManager::Initialize (iObjectRegistry *object_reg)
   return true;
 }
 
+static bool CheckConstrain (bool constrain, float start, float end, float restr)
+{
+  if (!constrain) return true;
+  if (fabs (start - end) < 0.1f) return false;
+  if (end < start && restr > start) return false;
+  if (end > start && restr < start) return false;
+  return true;
+}
+
 void MarkerManager::Frame2D ()
 {
+  if (currentDraggingMode)
+  {
+    csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
+    csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
+    csVector3 start = camera->GetTransform ().GetOrigin ();
+    csVector3 end = camera->GetTransform ().This2Other (v3d);
+    csVector3 newpos;
+    bool cpx = currentDraggingMode->constrainXplane;
+    bool cpy = currentDraggingMode->constrainYplane;
+    bool cpz = currentDraggingMode->constrainZplane;
+    if ((!cpx) && (!cpy) && (!cpz))
+    {
+      newpos = end - start;
+      newpos.Normalize ();
+      newpos = camera->GetTransform ().GetOrigin () + newpos * dragDistance;
+    }
+    else
+    {
+      // @@@ TODO! Other camera modes!
+      if (currentDraggingMode->constrainSpace == MARKER_CAMERA)
+      {
+	if (!CheckConstrain (cpx, start.x, end.x, dragRestrict.x)) return;
+	if (!CheckConstrain (cpy, start.y, end.y, dragRestrict.y)) return;
+	if (!CheckConstrain (cpz, start.z, end.z, dragRestrict.z)) return;
+	if (cpx)
+	{
+	  float dist = csIntersect3::SegmentXPlane (start, end, dragRestrict.x, newpos);
+	  if (dist > 0.08f)
+	  {
+	    newpos = start + (end-start).Unit () * 80.0f;
+	    newpos.x = dragRestrict.x;
+	  }
+	}
+	if (cpy)
+	{
+	  float dist = csIntersect3::SegmentYPlane (start, end, dragRestrict.y, newpos);
+	  if (dist > 0.08f)
+	  {
+	    newpos = start + (end-start).Unit () * 80.0f;
+	    newpos.y = dragRestrict.y;
+	  }
+	}
+	if (cpz)
+	{
+	  float dist = csIntersect3::SegmentZPlane (start, end, dragRestrict.z, newpos);
+	  if (dist > 0.08f)
+	  {
+	    newpos = start + (end-start).Unit () * 80.0f;
+	    newpos.z = dragRestrict.z;
+	  }
+	}
+      }
+    }
+    if (currentDraggingMode->cb)
+      currentDraggingMode->cb->MarkerWantsMove (currentDraggingHitArea->GetMarker (),
+	  currentDraggingHitArea, newpos);
+  }
+
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render2D ();
 }
@@ -281,6 +375,18 @@ void MarkerManager::Frame3D ()
 {
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render3D ();
+}
+
+void MarkerManager::StopDrag ()
+{
+  if (currentDraggingMode)
+  {
+    if (currentDraggingMode->cb)
+      currentDraggingMode->cb->StopDragging (currentDraggingHitArea->GetMarker (),
+	  currentDraggingHitArea);
+    currentDraggingMode = 0;
+    currentDraggingHitArea = 0;
+  }
 }
 
 bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
@@ -297,6 +403,13 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     {
       printf ("Start dragging mode!\n");
       fflush (stdout);
+      currentDraggingHitArea = hitArea;
+      currentDraggingMode = dm;
+      const csOrthoTransform& camtrans = camera->GetTransform ();
+      dragRestrict = hitArea->GetWorldCenter ();
+      dragDistance = (dragRestrict - camtrans.GetOrigin ()).Norm ();
+      if (dm->cb)
+        dm->cb->StartDragging (hitArea->GetMarker (), hitArea, dragRestrict);
       return true;
     }
   }
@@ -306,11 +419,14 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool MarkerManager::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  StopDrag ();
   return false;
 }
 
 bool MarkerManager::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
+  MarkerManager::mouseX = mouseX;
+  MarkerManager::mouseY = mouseY;
   return false;
 }
 

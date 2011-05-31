@@ -28,6 +28,25 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
+void MarkerCallback::StartDragging (iMarker* marker, iMarkerHitArea* area,
+    const csVector3& pos)
+{
+  mainmode->MarkerStartDragging (marker, area, pos);
+}
+
+void MarkerCallback::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos)
+{
+  mainmode->MarkerWantsMove (marker, area, pos);
+}
+
+void MarkerCallback::StopDragging (iMarker* marker, iMarkerHitArea* area)
+{
+  mainmode->MarkerStopDragging (marker, area);
+}
+
+//---------------------------------------------------------------------------
+
 MainMode::MainMode (AppAresEdit* aresed) :
   EditingMode (aresed, "Main")
 {
@@ -93,7 +112,10 @@ void MainMode::Start ()
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
     iMarkerHitArea* hitArea = transformationMarker->HitArea (
 	MARKER_OBJECT, csVector3 (0), 10.0f, 0);
-    hitArea->DefineDrag (0, false, false, false, MARKER_WORLD, false, false, false, 0);
+    csRef<MarkerCallback> cb;
+    cb.AttachNew (new MarkerCallback (this));
+    hitArea->DefineDrag (0, false, false, false, MARKER_CAMERA, false, false, false, cb);
+    hitArea->DefineDrag (0, false, false, true, MARKER_CAMERA, false, true, false, cb);
   }
 
   if (aresed->GetSelection ()->GetSize () >= 1)
@@ -229,6 +251,53 @@ bool MainMode::OnCategoryListSelection (const CEGUI::EventArgs&)
 bool MainMode::OnItemListSelection (const CEGUI::EventArgs&)
 {
   return true;
+}
+
+void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
+    const csVector3& pos)
+{
+  //printf ("START: %g,%g,%g\n", pos.x, pos.y, pos.z); fflush (stdout);
+  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicObject* dynobj = it.Next ();
+    dynobj->MakeKinematic ();
+    iMeshWrapper* mesh = dynobj->GetMesh ();
+    csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
+    DragObject dob;
+    dob.kineOffset = pos - meshpos;
+    dob.dynobj = dynobj;
+    dragObjects.Push (dob);
+  }
+}
+
+void MainMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos)
+{
+  //printf ("MOVE: %g,%g,%g\n", pos.x, pos.y, pos.z); fflush (stdout);
+  for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
+  {
+    csVector3 np = pos - dragObjects[i].kineOffset;
+    iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
+    if (mesh)
+    {
+      iMovable* mov = mesh->GetMovable ();
+      mov->GetTransform ().SetOrigin (np);
+      mov->UpdateMove ();
+    }
+  }
+}
+
+void MainMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
+{
+  dragObjects.DeleteAll ();
+  do_kinematic_dragging = false;
+  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicObject* dynobj = it.Next ();
+    dynobj->UndoKinematic ();
+  }
 }
 
 void MainMode::StopDrag ()

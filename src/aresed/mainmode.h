@@ -27,10 +27,28 @@ THE SOFTWARE.
 
 #include "editmodes.h"
 
+class MainMode;
+
 struct DragObject
 {
   iDynamicObject* dynobj;
   csVector3 kineOffset;
+};
+
+class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
+{
+private:
+  MainMode* mainmode;
+
+public:
+  MarkerCallback (MainMode* mainmode) : scfImplementationType (this),
+    mainmode (mainmode) { }
+  virtual ~MarkerCallback () { }
+  virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
 class MainMode : public EditingMode
@@ -99,6 +117,12 @@ public:
   virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
+
+  void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 
   void AddCategory (const char* category);
 };
