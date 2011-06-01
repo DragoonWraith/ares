@@ -93,17 +93,19 @@ private:
   Marker* marker;
   MarkerSpace space;
   csVector3 center;
-  float sqRadius;
+  float radius;
   int data;
   csPDelArray<MarkerDraggingMode> draggingModes;
+  MarkerColor* color;
 
 public:
   MarkerHitArea (Marker* marker) : scfImplementationType (this), marker (marker) { }
   virtual ~MarkerHitArea () { }
 
   Marker* GetMarker () const { return marker; }
-
   csVector3 GetWorldCenter () const;
+  void SetColor (MarkerColor* color) { MarkerHitArea::color = color; }
+  MarkerColor* GetColor () const { return color; }
 
   virtual void DefineDrag (uint button, bool shift, bool ctrl, bool alt,
       MarkerSpace constrainSpace,
@@ -118,8 +120,9 @@ public:
   void SetCenter (const csVector3& center) { MarkerHitArea::center = center; }
   const csVector3& GetCenter () const { return center; }
 
-  void SetSqRadius (float sqRadius) { MarkerHitArea::sqRadius = sqRadius; }
-  float GetSqRadius () const { return sqRadius; }
+  void SetRadius (float radius) { MarkerHitArea::radius = radius; }
+  float GetRadius () const { return radius; }
+  csVector2 GetPerspectiveRadius (iCamera* camera, float z) const;
 
   void SetData (int data) { MarkerHitArea::data = data; }
   int GetData () const { return data; }
@@ -169,14 +172,14 @@ public:
       const csBox3& box, iMarkerColor* color) { }
   virtual void Clear ();
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
-      float radius, int data);
+      float radius, int data, iMarkerColor* color);
   virtual void ClearHitAreas ();
 
   void Render2D ();
   void Render3D ();
 
   /**
-   * Check if a hit area was hit and return the squared distance.
+   * Check if a hit area was hit and return the distance.
    * Returns negative number if there was no hit.
    */
   float CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea);
@@ -208,6 +211,9 @@ public:
   MarkerManager (iBase *iParent);
   virtual ~MarkerManager ();
   virtual bool Initialize (iObjectRegistry *object_reg);
+
+  int GetMouseX () const { return mouseX; }
+  int GetMouseY () const { return mouseY; }
 
   virtual void Frame2D ();
   virtual void Frame3D ();

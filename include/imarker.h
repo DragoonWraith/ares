@@ -237,7 +237,7 @@ struct iMarker : public virtual iBase
    * Define a hit area on this marker.
    */
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
-      float radius, int data) = 0;
+      float radius, int data, iMarkerColor* color) = 0;
 
   /**
    * Clear all hit areas.

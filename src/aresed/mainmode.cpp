@@ -107,15 +107,16 @@ void MainMode::Start ()
     iMarkerColor* red = aresed->GetMarkerManager ()->FindMarkerColor ("red");
     iMarkerColor* green = aresed->GetMarkerManager ()->FindMarkerColor ("green");
     iMarkerColor* blue = aresed->GetMarkerManager ()->FindMarkerColor ("blue");
+    iMarkerColor* yellow = aresed->GetMarkerManager ()->FindMarkerColor ("yellow");
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
     iMarkerHitArea* hitArea = transformationMarker->HitArea (
-	MARKER_OBJECT, csVector3 (0), 10.0f, 0);
+	MARKER_OBJECT, csVector3 (0), .1f, 0, yellow);
     csRef<MarkerCallback> cb;
     cb.AttachNew (new MarkerCallback (this));
-    hitArea->DefineDrag (0, false, false, false, MARKER_CAMERA, false, false, false, cb);
-    hitArea->DefineDrag (0, false, false, true, MARKER_CAMERA, false, true, false, cb);
+    hitArea->DefineDrag (0, false, false, false, MARKER_WORLD, false, false, false, cb);
+    hitArea->DefineDrag (0, false, false, true, MARKER_WORLD, false, true, false, cb);
   }
 
   if (aresed->GetSelection ()->GetSize () >= 1)

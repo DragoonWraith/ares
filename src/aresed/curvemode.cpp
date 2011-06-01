@@ -73,6 +73,7 @@ void CurveMode::UpdateMarkers ()
 
   iMarkerColor* red = aresed->GetMarkerManager ()->FindMarkerColor ("red");
   iMarkerColor* green = aresed->GetMarkerManager ()->FindMarkerColor ("green");
+  iMarkerColor* yellow = aresed->GetMarkerManager ()->FindMarkerColor ("yellow");
 
   for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
   {
@@ -84,7 +85,7 @@ void CurveMode::UpdateMarkers ()
     marker->Line (MARKER_OBJECT, pos, pos+front, green, true);
     marker->Line (MARKER_OBJECT, pos, pos+up, red, true);
     marker->ClearHitAreas ();
-    marker->HitArea (MARKER_OBJECT, pos, 10.0f, 0);
+    marker->HitArea (MARKER_OBJECT, pos, .1f, 0, yellow);
   }
 
   UpdateMarkerSelection ();

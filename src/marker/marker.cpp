@@ -123,6 +123,15 @@ csVector3 MarkerHitArea::GetWorldCenter () const
   return TransPointWorld (camtrans, meshtrans, GetSpace (), GetCenter ());
 }
 
+csVector2 MarkerHitArea::GetPerspectiveRadius (iCamera* camera, float z) const
+{
+  csVector3 r3 (radius, radius, z);
+  csVector2 r = camera->Perspective (r3);
+  r.x -= camera->GetShiftX ();
+  r.y -= camera->GetShiftY ();
+  return r;
+}
+
 void MarkerHitArea::DefineDrag (uint button, bool shift, bool ctrl, bool alt,
       MarkerSpace constrainSpace,
       bool constrainXplane, bool constrainYplane, bool constrainZplane,
@@ -200,6 +209,29 @@ void Marker::Render3D ()
       }
     }
   }
+  for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
+  {
+    MarkerHitArea* ha = hitAreas[i];
+    if (ha->GetColor ())
+    {
+      const csVector3& center = ha->GetCenter ();
+      csVector3 c = TransPointCam (camtrans, meshtrans, ha->GetSpace (), center);
+      if (c.z > .1)
+      {
+        csVector2 s = mgr->camera->Perspective (c);
+	int x = int (s.x);
+	int y = mgr->g2d->GetHeight () - int (s.y);
+	int mouseX = mgr->GetMouseX ();
+	int mouseY = mgr->GetMouseY ();
+	csVector2 r = ha->GetPerspectiveRadius (mgr->camera, c.z);
+	bool selected = mouseX >= (x-r.x) && mouseX <= (x+r.x) &&
+	  mouseY >= (y-r.y) && mouseY <= (y+r.y);
+        csPen* pen = ha->GetColor ()->GetPen (
+	    selected ? SELECTION_SELECTED : SELECTION_NONE);
+	pen->DrawArc (x-r.x, y-r.y, x+r.x, y+r.y);
+      }
+    }
+  }
 }
 
 void Marker::Render2D ()
@@ -225,14 +257,15 @@ void Marker::Clear ()
 }
 
 iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
-      float radius, int data)
+      float radius, int data, iMarkerColor* color)
 {
   csRef<MarkerHitArea> hitArea;
   hitArea.AttachNew (new MarkerHitArea (this));
   hitArea->SetSpace (space);
   hitArea->SetCenter (center);
-  hitArea->SetSqRadius (radius * radius);
+  hitArea->SetRadius (radius);
   hitArea->SetData (data);
+  hitArea->SetColor (static_cast<MarkerColor*> (color));
   hitAreas.Push (hitArea);
   return hitArea;
 }
@@ -248,25 +281,28 @@ float Marker::CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea)
   const csReversibleTransform& meshtrans = GetTransform ();
   csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
   bestHitArea = 0;
-  float bestSqRadius = 10000000.0f;
+  float bestRadius = 10000000.0f;
   bool hit = false;
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
     MarkerHitArea* hitArea = hitAreas[i];
-    csVector3 c = TransPointCam (camtrans, meshtrans, hitArea->GetSpace (), hitArea->GetCenter ());
+    csVector3 c = TransPointCam (camtrans, meshtrans, hitArea->GetSpace (),
+	hitArea->GetCenter ());
     if (c.z > .1)
     {
       csVector2 s = mgr->camera->Perspective (c);
-      float sqd = SqDistance2d (s, f);
-      if (sqd <= hitArea->GetSqRadius () && sqd <= bestSqRadius)
+      float d = sqrt (SqDistance2d (s, f));
+      csVector2 r = hitArea->GetPerspectiveRadius (mgr->camera, c.z);
+      float radius = (r.x+r.y) / 2.0f;
+      if (d <= radius && d <= bestRadius)
       {
-	bestSqRadius = sqd;
+	bestRadius = d;
 	bestHitArea = hitArea;
 	hit = true;
       }
     }
   }
-  if (hit) return bestSqRadius;
+  if (hit) return bestRadius;
   else return -1.0f;
 }
 
@@ -328,7 +364,7 @@ void MarkerManager::Frame2D ()
     else
     {
       // @@@ TODO! Other camera modes!
-      if (currentDraggingMode->constrainSpace == MARKER_CAMERA)
+      if (currentDraggingMode->constrainSpace == MARKER_WORLD)
       {
 	if (!CheckConstrain (cpx, start.x, end.x, dragRestrict.x)) return;
 	if (!CheckConstrain (cpy, start.y, end.y, dragRestrict.y)) return;
@@ -433,15 +469,15 @@ bool MarkerManager::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 MarkerHitArea* MarkerManager::FindHitArea (int x, int y)
 {
   MarkerHitArea* bestHitArea = 0;
-  float bestSqRadius = 10000000.0f;
+  float bestRadius = 10000000.0f;
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     if (markers[i]->IsVisible ())
     {
       MarkerHitArea* hitArea;
-      float sqd = markers[i]->CheckHitAreas (x, y, hitArea);
-      if (sqd >= 0.0f && sqd < bestSqRadius)
+      float d = markers[i]->CheckHitAreas (x, y, hitArea);
+      if (d >= 0.0f && d < bestRadius)
       {
-        bestSqRadius = sqd;
+        bestRadius = d;
         bestHitArea = hitArea;
       }
     }
@@ -451,15 +487,15 @@ MarkerHitArea* MarkerManager::FindHitArea (int x, int y)
 iMarker* MarkerManager::FindHitMarker (int x, int y, int& data)
 {
   iMarker* bestMarker = 0;
-  float bestSqRadius = 10000000.0f;
+  float bestRadius = 10000000.0f;
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     if (markers[i]->IsVisible ())
     {
       MarkerHitArea* hitArea;
-      float sqd = markers[i]->CheckHitAreas (x, y, hitArea);
-      if (sqd >= 0.0f && sqd < bestSqRadius)
+      float d = markers[i]->CheckHitAreas (x, y, hitArea);
+      if (d >= 0.0f && d < bestRadius)
       {
-        bestSqRadius = sqd;
+        bestRadius = d;
         bestMarker = markers[i];
         data = hitArea->GetData ();
       }
