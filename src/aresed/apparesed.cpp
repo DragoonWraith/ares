@@ -728,9 +728,9 @@ bool AppAresEdit::Application()
   blue->SetPenWidth (SELECTION_SELECTED, 2.0f);
   blue->SetPenWidth (SELECTION_ACTIVE, 2.0f);
   iMarkerColor* yellow = markerMgr->CreateMarkerColor ("yellow");
-  yellow->SetRGBColor (SELECTION_NONE, .5, .5, 0, 1);
-  yellow->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, 1);
-  yellow->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, 1);
+  yellow->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
+  yellow->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
+  yellow->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
   yellow->SetPenWidth (SELECTION_NONE, 1.2f);
   yellow->SetPenWidth (SELECTION_SELECTED, 2.0f);
   yellow->SetPenWidth (SELECTION_ACTIVE, 2.0f);
