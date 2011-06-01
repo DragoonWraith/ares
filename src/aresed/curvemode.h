@@ -104,6 +104,12 @@ public:
   virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
+
+  virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
 #endif // __aresed_curvemodes_h

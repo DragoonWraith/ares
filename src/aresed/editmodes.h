@@ -26,8 +26,27 @@ THE SOFTWARE.
 #define __aresed_editmodes_h
 
 #include "csutil/csstring.h"
+#include "imarker.h"
 
 class AppAresEdit;
+
+class EditingMode;
+
+class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
+{
+private:
+  EditingMode* editmode;
+
+public:
+  MarkerCallback (EditingMode* editmode) : scfImplementationType (this),
+    editmode (editmode) { }
+  virtual ~MarkerCallback () { }
+  virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos);
+  virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
+};
 
 class EditingMode
 {
@@ -54,6 +73,12 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)  { return false; }
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY)  { return false; }
   virtual void OnFocusLost () { }
+
+  virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos) { }
+  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos) { }
+  virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area) { }
 };
 
 #endif // __aresed_editmodes_h

@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 struct iCamera;
 struct iMeshWrapper;
-struct iMaterial;
+struct iMaterialWrapper;
 class csReversibleTransform;
 class csVector3;
 class csBox3;

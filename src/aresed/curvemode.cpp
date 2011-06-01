@@ -118,6 +118,20 @@ void CurveMode::Stop ()
   markers.Empty ();
 }
 
+void CurveMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
+    const csVector3& pos)
+{
+}
+
+void CurveMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos)
+{
+}
+
+void CurveMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
+{
+}
+
 void CurveMode::SetCurrentPoint (size_t idx)
 {
   if (selectedPoints.Find (idx) != csArrayItemNotFound) return;

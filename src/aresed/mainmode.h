@@ -35,22 +35,6 @@ struct DragObject
   csVector3 kineOffset;
 };
 
-class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
-{
-private:
-  MainMode* mainmode;
-
-public:
-  MarkerCallback (MainMode* mainmode) : scfImplementationType (this),
-    mainmode (mainmode) { }
-  virtual ~MarkerCallback () { }
-  virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos);
-  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos);
-  virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
-};
-
 class MainMode : public EditingMode
 {
 private:

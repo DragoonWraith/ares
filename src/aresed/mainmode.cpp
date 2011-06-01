@@ -28,25 +28,6 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-void MarkerCallback::StartDragging (iMarker* marker, iMarkerHitArea* area,
-    const csVector3& pos)
-{
-  mainmode->MarkerStartDragging (marker, area, pos);
-}
-
-void MarkerCallback::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos)
-{
-  mainmode->MarkerWantsMove (marker, area, pos);
-}
-
-void MarkerCallback::StopDragging (iMarker* marker, iMarkerHitArea* area)
-{
-  mainmode->MarkerStopDragging (marker, area);
-}
-
-//---------------------------------------------------------------------------
-
 MainMode::MainMode (AppAresEdit* aresed) :
   EditingMode (aresed, "Main")
 {
