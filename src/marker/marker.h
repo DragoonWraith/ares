@@ -42,6 +42,8 @@ CS_PLUGIN_NAMESPACE_BEGIN(MarkerManager)
 class Marker;
 class MarkerManager;
 
+#define CSMASK_MODIFIERS (CSMASK_SHIFT + CSMASK_CTRL + CSMASK_ALT)
+
 class MarkerColor : public scfImplementation1<MarkerColor, iMarkerColor>
 {
 private:
@@ -82,9 +84,9 @@ struct MarkerDraggingMode
 {
   csRef<iMarkerCallback> cb;
   uint button;
-  bool shift, ctrl, alt;
+  uint32 modifiers;
   MarkerSpace constrainSpace;
-  bool constrainXplane, constrainYplane, constrainZplane;
+  uint32 constrainPlane;
 };
 
 class MarkerHitArea : public scfImplementation1<MarkerHitArea, iMarkerHitArea>
@@ -107,12 +109,11 @@ public:
   void SetColor (MarkerColor* color) { MarkerHitArea::color = color; }
   MarkerColor* GetColor () const { return color; }
 
-  virtual void DefineDrag (uint button, bool shift, bool ctrl, bool alt,
-      MarkerSpace constrainSpace,
-      bool constrainXplane, bool constrainYplane, bool constrainZplane,
+  virtual void DefineDrag (uint button, uint32 modifiers,
+      MarkerSpace constrainSpace, uint32 constrainPlane,
       iMarkerCallback* cb);
 
-  MarkerDraggingMode* FindDraggingMode (uint button, bool shift, bool ctrl, bool alt) const;
+  MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const;
 
   void SetSpace (MarkerSpace space) { MarkerHitArea::space = space; }
   MarkerSpace GetSpace () const { return space; }
@@ -125,7 +126,7 @@ public:
   csVector2 GetPerspectiveRadius (iCamera* camera, float z) const;
 
   void SetData (int data) { MarkerHitArea::data = data; }
-  int GetData () const { return data; }
+  virtual int GetData () const { return data; }
 };
 
 class Marker : public scfImplementation1<Marker, iMarker>

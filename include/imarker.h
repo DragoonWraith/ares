@@ -81,7 +81,7 @@ struct iMarkerCallback : public virtual iBase
    * The given position is the position in world space where the marker was hit.
    */
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos) = 0;
+      const csVector3& pos, uint button, uint32 modifiers) = 0;
 
   /**
    * The marker wants to move. The given position is the location in world
@@ -97,6 +97,12 @@ struct iMarkerCallback : public virtual iBase
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area) = 0;
 };
 
+#define CONSTRAIN_NONE 0
+#define CONSTRAIN_XPLANE 1
+#define CONSTRAIN_YPLANE 2
+#define CONSTRAIN_ZPLANE 4
+#define CONSTRAIN_MESH 8
+
 /**
  * A marker hit area (place on a marker that a user can select).
  */
@@ -111,20 +117,18 @@ struct iMarkerHitArea : public virtual iBase
    * hits the world. You can constrain at most two planes. In that case it will
    * be a line.
    * @param button is the mouse button that can initiate this dragging behaviour.
-   * @param shift modifier
-   * @param ctrl modifier
-   * @param alt modifier
+   * @param modifiers
    * @param constrainSpace this indicates in which space the dragging constraints should
    * occur. MARKER_CAMERA_AT_MESH is illegal in this context.
-   * @param constrainXplane true if you want to constrain dragging on the X plane.
-   * @param constrainYplane true if you want to constrain dragging on the Y plane.
-   * @param constrainZplane true if you want to constrain dragging on the Z plane.
+   * @param constainPlane is a mask with CONSTRAIN_xxx values. In case of CONSTRAIN_MESH
+   *        a hitbeam is used to find out where to drag.
    * @param cb is the callback to call when this kind of dragging is initiated.
    */
-  virtual void DefineDrag (uint button, bool shift, bool ctrl, bool alt,
-      MarkerSpace constrainSpace,
-      bool constrainXplane, bool constrainYplane, bool constrainZplane,
+  virtual void DefineDrag (uint button, uint32 modifiers,
+      MarkerSpace constrainSpace, uint32 constrainPlane,
       iMarkerCallback* cb) = 0;
+
+  virtual int GetData () const = 0;
 };
 
 #define SELECTION_NONE 0

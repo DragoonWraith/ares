@@ -42,7 +42,7 @@ public:
     editmode (editmode) { }
   virtual ~MarkerCallback () { }
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos);
+      const csVector3& pos, uint button, uint32 modifiers);
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
@@ -75,7 +75,7 @@ public:
   virtual void OnFocusLost () { }
 
   virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos) { }
+      const csVector3& pos, uint button, uint32 modifiers) { }
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos) { }
   virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area) { }

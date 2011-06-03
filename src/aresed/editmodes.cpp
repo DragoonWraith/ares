@@ -28,9 +28,9 @@ THE SOFTWARE.
 //---------------------------------------------------------------------------
 
 void MarkerCallback::StartDragging (iMarker* marker, iMarkerHitArea* area,
-    const csVector3& pos)
+    const csVector3& pos, uint button, uint32 modifiers)
 {
-  editmode->MarkerStartDragging (marker, area, pos);
+  editmode->MarkerStartDragging (marker, area, pos, button, modifiers);
 }
 
 void MarkerCallback::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,

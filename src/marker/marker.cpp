@@ -132,31 +132,26 @@ csVector2 MarkerHitArea::GetPerspectiveRadius (iCamera* camera, float z) const
   return r;
 }
 
-void MarkerHitArea::DefineDrag (uint button, bool shift, bool ctrl, bool alt,
-      MarkerSpace constrainSpace,
-      bool constrainXplane, bool constrainYplane, bool constrainZplane,
+void MarkerHitArea::DefineDrag (uint button, uint32 modifiers,
+      MarkerSpace constrainSpace, uint32 constrainPlane,
       iMarkerCallback* cb)
 {
   MarkerDraggingMode* dm = new MarkerDraggingMode ();
   dm->cb = cb;
   dm->button = button;
-  dm->shift = shift;
-  dm->ctrl = ctrl;
-  dm->alt = alt;
+  dm->modifiers = modifiers;
   dm->constrainSpace = constrainSpace;
-  dm->constrainXplane = constrainXplane;
-  dm->constrainYplane = constrainYplane;
-  dm->constrainZplane = constrainZplane;
+  dm->constrainPlane = constrainPlane;
   draggingModes.Push (dm);
 }
 
-MarkerDraggingMode* MarkerHitArea::FindDraggingMode (uint button,
-    bool shift, bool ctrl, bool alt) const
+MarkerDraggingMode* MarkerHitArea::FindDraggingMode (uint button, uint32 modifiers) const
 {
   for (size_t i = 0 ; i < draggingModes.GetSize () ; i++)
   {
     MarkerDraggingMode* dm = draggingModes[i];
-    if (dm->button == button && dm->shift == shift && dm->ctrl == ctrl && dm->alt == alt)
+    if (dm->button == button &&
+	(dm->modifiers & CSMASK_MODIFIERS) == (modifiers & CSMASK_MODIFIERS))
     {
       return dm;
     }
@@ -347,15 +342,28 @@ void MarkerManager::Frame2D ()
 {
   if (currentDraggingMode)
   {
+    bool do_drag = true;
     csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
     csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
     csVector3 start = camera->GetTransform ().GetOrigin ();
     csVector3 end = camera->GetTransform ().This2Other (v3d);
     csVector3 newpos;
-    bool cpx = currentDraggingMode->constrainXplane;
-    bool cpy = currentDraggingMode->constrainYplane;
-    bool cpz = currentDraggingMode->constrainZplane;
-    if ((!cpx) && (!cpy) && (!cpz))
+    bool cpmesh = currentDraggingMode->constrainPlane & CONSTRAIN_MESH;
+    bool cpx = currentDraggingMode->constrainPlane & CONSTRAIN_XPLANE;
+    bool cpy = currentDraggingMode->constrainPlane & CONSTRAIN_YPLANE;
+    bool cpz = currentDraggingMode->constrainPlane & CONSTRAIN_ZPLANE;
+    if (cpmesh)
+    {
+      iMeshWrapper* mesh = currentDraggingHitArea->GetMarker ()->GetAttachedMesh ();
+      csFlags oldFlags = mesh->GetFlags ();
+      mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
+      csSectorHitBeamResult result = camera->GetSector ()->HitBeamPortals (
+	  start, end);
+      mesh->GetFlags ().SetAll (oldFlags.Get ());
+      if (!result.mesh) do_drag = false;	// Safety
+      newpos = result.isect;
+    }
+    else if ((!cpx) && (!cpy) && (!cpz))
     {
       newpos = end - start;
       newpos.Normalize ();
@@ -398,7 +406,7 @@ void MarkerManager::Frame2D ()
 	}
       }
     }
-    if (currentDraggingMode->cb)
+    if (do_drag && currentDraggingMode->cb)
       currentDraggingMode->cb->MarkerWantsMove (currentDraggingHitArea->GetMarker (),
 	  currentDraggingHitArea, newpos);
   }
@@ -431,10 +439,7 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   if (hitArea)
   {
     uint32 mod = csMouseEventHelper::GetModifiers (&ev);
-    bool shift = (mod & CSMASK_SHIFT) != 0;
-    bool ctrl = (mod & CSMASK_CTRL) != 0;
-    bool alt = (mod & CSMASK_ALT) != 0;
-    MarkerDraggingMode* dm = hitArea->FindDraggingMode (but, shift, ctrl, alt);
+    MarkerDraggingMode* dm = hitArea->FindDraggingMode (but, mod);
     if (dm)
     {
       printf ("Start dragging mode!\n");
@@ -445,7 +450,7 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       dragRestrict = hitArea->GetWorldCenter ();
       dragDistance = (dragRestrict - camtrans.GetOrigin ()).Norm ();
       if (dm->cb)
-        dm->cb->StartDragging (hitArea->GetMarker (), hitArea, dragRestrict);
+        dm->cb->StartDragging (hitArea->GetMarker (), hitArea, dragRestrict, but, mod);
       return true;
     }
   }

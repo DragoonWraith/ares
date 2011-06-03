@@ -54,12 +54,7 @@ private:
   void SetCurrentPoint (size_t idx);
   void AddCurrentPoint (size_t idx);
 
-  bool do_dragging;
   csArray<DragPoint> dragPoints;
-  float dragDistance;
-  bool doDragRestrictY;	// Only drag on the y-plane.
-  bool doDragMesh;	// Drag on the mesh.
-  float dragRestrictY;
   void StopDrag ();
 
   /// Get the world position of a given point on the curve.
@@ -106,7 +101,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos);
+      const csVector3& pos, uint button, uint32 modifiers);
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
   virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);

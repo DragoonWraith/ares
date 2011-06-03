@@ -31,7 +31,6 @@ CurveMode::CurveMode (AppAresEdit* aresed)
   : EditingMode (aresed, "Curve")
 {
   editingCurveFactory = 0;
-  do_dragging = false;
   autoSmooth = true;
 
   CEGUI::WindowManager* winMgr = aresed->GetCEGUI ()->GetWindowManagerPtr ();
@@ -85,7 +84,15 @@ void CurveMode::UpdateMarkers ()
     marker->Line (MARKER_OBJECT, pos, pos+front, green, true);
     marker->Line (MARKER_OBJECT, pos, pos+up, red, true);
     marker->ClearHitAreas ();
-    marker->HitArea (MARKER_OBJECT, pos, .1f, 0, yellow);
+    iMarkerHitArea* hitArea = marker->HitArea (MARKER_OBJECT, pos, .1f, i, yellow);
+    csRef<MarkerCallback> cb;
+    cb.AttachNew (new MarkerCallback (this));
+    hitArea->DefineDrag (0, 0, MARKER_WORLD, CONSTRAIN_MESH, cb);
+    hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_WORLD, CONSTRAIN_MESH, cb);
+    hitArea->DefineDrag (0, CSMASK_ALT, MARKER_WORLD, CONSTRAIN_YPLANE, cb);
+    hitArea->DefineDrag (0, CSMASK_SHIFT + CSMASK_ALT, MARKER_WORLD, CONSTRAIN_YPLANE, cb);
+    hitArea->DefineDrag (0, CSMASK_CTRL, MARKER_WORLD, CONSTRAIN_NONE, cb);
+    hitArea->DefineDrag (0, CSMASK_SHIFT + CSMASK_CTRL, MARKER_WORLD, CONSTRAIN_NONE, cb);
   }
 
   UpdateMarkerSelection ();
@@ -105,7 +112,6 @@ void CurveMode::Start ()
   editingCurveFactory = aresed->GetCurvedMeshCreator ()->GetCurvedFactory (name);
   ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
   selectedPoints.Empty ();
-  do_dragging = false;
   dragPoints.Empty ();
 
   UpdateMarkers ();
@@ -119,17 +125,52 @@ void CurveMode::Stop ()
 }
 
 void CurveMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
-    const csVector3& pos)
+    const csVector3& pos, uint button, uint32 modifiers)
 {
+  size_t idx = size_t (area->GetData ());
+
+  if (modifiers & CSMASK_SHIFT)
+    AddCurrentPoint (idx);
+  else
+    SetCurrentPoint (idx);
+
+  csArray<size_t>::Iterator it = selectedPoints.GetIterator ();
+  while (it.HasNext ())
+  {
+    size_t id = it.Next ();
+    csVector3 wpos = GetWorldPosPoint (id);
+    DragPoint dob;
+
+    dob.kineOffset = pos - wpos;
+    dob.idx = id;
+    dragPoints.Push (dob);
+  }
 }
 
 void CurveMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos)
 {
+  iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
+  const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
+  for (size_t i = 0 ; i < dragPoints.GetSize () ; i++)
+  {
+    csVector3 np = pos - dragPoints[i].kineOffset;
+    size_t idx = dragPoints[i].idx;
+    csVector3 rp = meshtrans.Other2This (np);
+    editingCurveFactory->ChangePoint (idx,
+	  rp,
+	  editingCurveFactory->GetFront (idx),
+	  editingCurveFactory->GetUp (idx));
+    UpdateMarkers ();
+  }
+  if (autoSmooth) DoAutoSmooth ();
+  ggen->GenerateGeometry (mesh);
+  aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
 void CurveMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
 {
+  StopDrag ();
 }
 
 void CurveMode::SetCurrentPoint (size_t idx)
@@ -156,61 +197,10 @@ void CurveMode::AddCurrentPoint (size_t idx)
 void CurveMode::StopDrag ()
 {
   dragPoints.DeleteAll ();
-  do_dragging = false;
 }
 
 void CurveMode::FramePre()
 {
-  iCamera* camera = aresed->GetCsCamera ();
-  iGraphics2D* g2d = aresed->GetG2D ();
-  if (do_dragging)
-  {
-    csVector2 v2d (aresed->GetMouseX (), g2d->GetHeight () - aresed->GetMouseY ());
-    csVector3 v3d = camera->InvPerspective (v2d, 10000);
-    csVector3 startBeam = camera->GetTransform ().GetOrigin ();
-    csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
-
-    iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
-    csVector3 newPosition;
-    if (doDragRestrictY)
-    {
-      csIntersect3::SegmentYPlane (startBeam, endBeam, dragRestrictY, newPosition);
-    }
-    else if (doDragMesh)
-    {
-      csVector3 pos = endBeam - startBeam;
-      pos.Normalize ();
-      pos = camera->GetTransform ().GetOrigin () + pos * 1000.0f;
-      csFlags oldFlags = mesh->GetFlags ();
-      mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
-      csSectorHitBeamResult result = camera->GetSector ()->HitBeamPortals (
-	  camera->GetTransform ().GetOrigin (), pos);
-      mesh->GetFlags ().SetAll (oldFlags.Get ());
-      if (!result.mesh) return;	// Safety, we hit no mesh so better don't do anything.
-      newPosition = result.isect;
-    }
-    else
-    {
-      newPosition = endBeam - startBeam;
-      newPosition.Normalize ();
-      newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
-    }
-    const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
-    for (size_t i = 0 ; i < dragPoints.GetSize () ; i++)
-    {
-      csVector3 np = newPosition - dragPoints[i].kineOffset;
-      size_t idx = dragPoints[i].idx;
-      csVector3 rp = meshtrans.Other2This (np);
-      editingCurveFactory->ChangePoint (idx,
-	  rp,
-	  editingCurveFactory->GetFront (idx),
-	  editingCurveFactory->GetUp (idx));
-      UpdateMarkers ();
-    }
-    if (autoSmooth) DoAutoSmooth ();
-    ggen->GenerateGeometry (mesh);
-    aresed->GetSelection ()->GetFirst ()->RefreshColliders ();
-  }
 }
 
 void CurveMode::Frame3D()
@@ -401,74 +391,13 @@ bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
   return false;
 }
 
-bool CurveMode::OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)
+bool CurveMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (but != 0) return false;
-
-  if (mouseX > aresed->GetViewWidth ()) return false;
-  if (mouseY > aresed->GetViewHeight ()) return false;
-
-  csVector3 startBeam = aresed->GetCsCamera ()->GetTransform ().GetOrigin ();
-
-  uint32 mod = csMouseEventHelper::GetModifiers (&ev);
-  bool shift = (mod & CSMASK_SHIFT) != 0;
-  bool ctrl = (mod & CSMASK_CTRL) != 0;
-  bool alt = (mod & CSMASK_ALT) != 0;
-
-  size_t idx = FindCurvePoint (mouseX, mouseY);
-  if (idx == csArrayItemNotFound)
-    return false;
-
-  csVector3 isect = GetWorldPosPoint (idx);
-
-  if (shift)
-    AddCurrentPoint (idx);
-  else
-    SetCurrentPoint (idx);
-
-  StopDrag ();
-
-  //if (ctrl || alt)
-  {
-    do_dragging = true;
-
-    csArray<size_t>::Iterator it = selectedPoints.GetIterator ();
-    while (it.HasNext ())
-    {
-      size_t id = it.Next ();
-      csVector3 pos = GetWorldPosPoint (id);
-      DragPoint dob;
-
-      dob.kineOffset = isect - pos;
-      dob.idx = id;
-      dragPoints.Push (dob);
-    }
-
-    dragDistance = (isect - startBeam).Norm ();
-    if (alt)
-    {
-      doDragRestrictY = true;
-      doDragMesh = false;
-      dragRestrictY = isect.y;
-    }
-    else if (!ctrl)
-    {
-      doDragRestrictY = false;
-      doDragMesh = true;
-    }
-  }
-
-  return true;
+  return false;
 }
 
 bool CurveMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (do_dragging)
-  {
-    StopDrag ();
-    return true;
-  }
-
   return false;
 }
 

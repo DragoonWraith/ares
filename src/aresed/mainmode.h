@@ -103,7 +103,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos);
+      const csVector3& pos, uint button, uint32 modifiers);
   void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
   void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);

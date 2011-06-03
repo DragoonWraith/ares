@@ -96,8 +96,8 @@ void MainMode::Start ()
 	MARKER_OBJECT, csVector3 (0), .1f, 0, yellow);
     csRef<MarkerCallback> cb;
     cb.AttachNew (new MarkerCallback (this));
-    hitArea->DefineDrag (0, false, false, false, MARKER_WORLD, false, false, false, cb);
-    hitArea->DefineDrag (0, false, false, true, MARKER_WORLD, false, true, false, cb);
+    hitArea->DefineDrag (0, 0, MARKER_WORLD, CONSTRAIN_NONE, cb);
+    hitArea->DefineDrag (0, CSMASK_ALT, MARKER_WORLD, CONSTRAIN_YPLANE, cb);
   }
 
   if (aresed->GetSelection ()->GetSize () >= 1)
@@ -236,7 +236,7 @@ bool MainMode::OnItemListSelection (const CEGUI::EventArgs&)
 }
 
 void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
-    const csVector3& pos)
+    const csVector3& pos, uint button, uint32 modifiers)
 {
   //printf ("START: %g,%g,%g\n", pos.x, pos.y, pos.z); fflush (stdout);
   SelectionIterator it = aresed->GetSelection ()->GetIterator ();
