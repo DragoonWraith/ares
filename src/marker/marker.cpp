@@ -123,13 +123,13 @@ csVector3 MarkerHitArea::GetWorldCenter () const
   return TransPointWorld (camtrans, meshtrans, GetSpace (), GetCenter ());
 }
 
-csVector2 MarkerHitArea::GetPerspectiveRadius (iCamera* camera, float z) const
+csVector2 MarkerHitArea::GetPerspectiveRadius (iView* view, float z) const
 {
-  csVector3 r3 (radius, radius, z);
-  csVector2 r = camera->Perspective (r3);
-  r.x -= camera->GetShiftX ();
-  r.y -= camera->GetShiftY ();
-  return r;
+  iCamera* camera = view->GetCamera ();
+  csVector4 r4 (radius, radius, z, 1.0f);
+  csVector4 t = camera->GetProjectionMatrix () * r4;
+  csVector2 r (t.x / t.w - 1.0f, t.y / t.w - 1.0f);
+  return view->NormalizedToScreen (r);
 }
 
 void MarkerHitArea::DefineDrag (uint button, uint32 modifiers,
@@ -218,7 +218,7 @@ void Marker::Render3D ()
 	int y = mgr->g2d->GetHeight () - int (s.y);
 	int mouseX = mgr->GetMouseX ();
 	int mouseY = mgr->GetMouseY ();
-	csVector2 r = ha->GetPerspectiveRadius (mgr->camera, c.z);
+	csVector2 r = ha->GetPerspectiveRadius (mgr->view, c.z);
 	bool selected = mouseX >= (x-r.x) && mouseX <= (x+r.x) &&
 	  mouseY >= (y-r.y) && mouseY <= (y+r.y);
         csPen* pen = ha->GetColor ()->GetPen (
@@ -287,7 +287,7 @@ float Marker::CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea)
     {
       csVector2 s = mgr->camera->Perspective (c);
       float d = sqrt (SqDistance2d (s, f));
-      csVector2 r = hitArea->GetPerspectiveRadius (mgr->camera, c.z);
+      csVector2 r = hitArea->GetPerspectiveRadius (mgr->view, c.z);
       float radius = (r.x+r.y) / 2.0f;
       if (d <= radius && d <= bestRadius)
       {
@@ -327,6 +327,12 @@ bool MarkerManager::Initialize (iObjectRegistry *object_reg)
   g2d = g3d->GetDriver2D ();
 
   return true;
+}
+
+void MarkerManager::SetView (iView* view)
+{
+  MarkerManager::view = view;
+  MarkerManager::camera = view->GetCamera ();
 }
 
 static bool CheckConstrain (bool constrain, float start, float end, float restr)

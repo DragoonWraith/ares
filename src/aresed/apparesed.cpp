@@ -746,7 +746,7 @@ bool AppAresEdit::Application()
   view_height = g2d->GetHeight ();
   view->SetRectangle (0, 0, view_width, view_height);
 
-  markerMgr->SetCamera (GetCsCamera ());
+  markerMgr->SetView (view);
 
   // Set the window title.
   iNativeWindow* nw = g2d->GetNativeWindow ();

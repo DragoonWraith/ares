@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "iengine/engine.h"
 #include "iutil/virtclk.h"
 #include "iutil/comp.h"
+#include "ivaria/view.h"
 
 #include "include/imarker.h"
 
@@ -123,7 +124,7 @@ public:
 
   void SetRadius (float radius) { MarkerHitArea::radius = radius; }
   float GetRadius () const { return radius; }
-  csVector2 GetPerspectiveRadius (iCamera* camera, float z) const;
+  csVector2 GetPerspectiveRadius (iView* view, float z) const;
 
   void SetData (int data) { MarkerHitArea::data = data; }
   virtual int GetData () const { return data; }
@@ -194,6 +195,7 @@ public:
   csRef<iVirtualClock> vc;
   csRef<iGraphics3D> g3d;
   csRef<iGraphics2D> g2d;
+  iView* view;
   iCamera* camera;
 
   int mouseX, mouseY;
@@ -222,7 +224,7 @@ public:
   virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
 
-  virtual void SetCamera (iCamera* camera) { MarkerManager::camera = camera; }
+  virtual void SetView (iView* view);
   virtual void SetSelectionLevel (int level);
   virtual iMarkerColor* CreateMarkerColor (const char* name)
   {

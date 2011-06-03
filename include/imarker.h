@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include "csutil/scf.h"
 
-struct iCamera;
+struct iView;
 struct iMeshWrapper;
 struct iMaterialWrapper;
 class csReversibleTransform;
@@ -263,9 +263,9 @@ struct iMarkerManager : public virtual iBase
   virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY) = 0;
 
   /**
-   * Set the camera.
+   * Set the viewport.
    */
-  virtual void SetCamera (iCamera* camera) = 0;
+  virtual void SetView (iView* view) = 0;
 
   /**
    * Set the selection level for all markers.
