@@ -45,6 +45,8 @@ public:
       const csVector3& pos, uint button, uint32 modifiers);
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
+  virtual void MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
+      const csReversibleTransform& transform);
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
@@ -78,6 +80,8 @@ public:
       const csVector3& pos, uint button, uint32 modifiers) { }
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos) { }
+  virtual void MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
+      const csReversibleTransform& transform) { }
   virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area) { }
 };
 

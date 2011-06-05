@@ -39,6 +39,12 @@ void MarkerCallback::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
   editmode->MarkerWantsMove (marker, area, pos);
 }
 
+void MarkerCallback::MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
+      const csReversibleTransform& transform)
+{
+  editmode->MarkerWantsRotate (marker, area, transform);
+}
+
 void MarkerCallback::StopDragging (iMarker* marker, iMarkerHitArea* area)
 {
   editmode->MarkerStopDragging (marker, area);
