@@ -106,6 +106,8 @@ public:
       const csVector3& pos, uint button, uint32 modifiers);
   void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
+  void MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
+      const csReversibleTransform& transform);
   void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 
   void AddCategory (const char* category);

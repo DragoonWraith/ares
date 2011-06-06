@@ -348,12 +348,14 @@ void MarkerManager::Frame2D ()
 {
   if (currentDraggingMode)
   {
+    iMarker* marker = currentDraggingHitArea->GetMarker ();
     bool do_drag = true;
     csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
     csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
     csVector3 start = camera->GetTransform ().GetOrigin ();
     csVector3 end = camera->GetTransform ().This2Other (v3d);
     csVector3 newpos;
+    bool cprot = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATE;
     bool cpmesh = currentDraggingMode->constrainPlane & CONSTRAIN_MESH;
     bool cpx = currentDraggingMode->constrainPlane & CONSTRAIN_XPLANE;
     bool cpy = currentDraggingMode->constrainPlane & CONSTRAIN_YPLANE;
@@ -377,12 +379,13 @@ void MarkerManager::Frame2D ()
     }
     else
     {
+      if (!CheckConstrain (cpx, start.x, end.x, dragRestrict.x)) return;
+      if (!CheckConstrain (cpy, start.y, end.y, dragRestrict.y)) return;
+      if (!CheckConstrain (cpz, start.z, end.z, dragRestrict.z)) return;
+
       // @@@ TODO! Other camera modes!
       if (currentDraggingMode->constrainSpace == MARKER_WORLD)
       {
-	if (!CheckConstrain (cpx, start.x, end.x, dragRestrict.x)) return;
-	if (!CheckConstrain (cpy, start.y, end.y, dragRestrict.y)) return;
-	if (!CheckConstrain (cpz, start.z, end.z, dragRestrict.z)) return;
 	if (cpx)
 	{
 	  float dist = csIntersect3::SegmentXPlane (start, end, dragRestrict.x, newpos);
@@ -411,10 +414,57 @@ void MarkerManager::Frame2D ()
 	  }
 	}
       }
+      else if (currentDraggingMode->constrainSpace == MARKER_OBJECT)
+      {
+	csVector3 dr = marker->GetTransform ().Other2This (dragRestrict);
+	start = marker->GetTransform ().Other2This (start);
+	end = marker->GetTransform ().Other2This (end);
+	if (cpx)
+	{
+	  float dist = csIntersect3::SegmentXPlane (start, end, dr.x, newpos);
+	  if (dist > 0.08f)
+	  {
+	    newpos = start + (end-start).Unit () * 80.0f;
+	    newpos.x = dr.x;
+	  }
+	}
+	if (cpy)
+	{
+	  float dist = csIntersect3::SegmentYPlane (start, end, dr.y, newpos);
+	  if (dist > 0.08f)
+	  {
+	    newpos = start + (end-start).Unit () * 80.0f;
+	    newpos.y = dr.y;
+	  }
+	}
+	if (cpz)
+	{
+	  float dist = csIntersect3::SegmentZPlane (start, end, dr.z, newpos);
+	  if (dist > 0.08f)
+	  {
+	    newpos = start + (end-start).Unit () * 80.0f;
+	    newpos.z = dr.z;
+	  }
+	}
+	newpos = marker->GetTransform ().This2Other (newpos);
+      }
     }
     if (do_drag && currentDraggingMode->cb)
-      currentDraggingMode->cb->MarkerWantsMove (currentDraggingHitArea->GetMarker (),
-	  currentDraggingHitArea, newpos);
+    {
+      if (cprot)
+      {
+	csReversibleTransform newrot = marker->GetTransform ();
+	if (cpy)
+	{
+	  newrot.LookAt (newpos - newrot.GetOrigin (), csVector3 (0, 1, 0));
+	}
+	currentDraggingMode->cb->MarkerWantsRotate (marker, currentDraggingHitArea, newrot);
+      }
+      else
+      {
+	currentDraggingMode->cb->MarkerWantsMove (marker, currentDraggingHitArea, newpos);
+      }
+    }
   }
 
   for (size_t i = 0 ; i < markers.GetSize () ; i++)

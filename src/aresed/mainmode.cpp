@@ -92,12 +92,17 @@ void MainMode::Start ()
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
+
     iMarkerHitArea* hitArea = transformationMarker->HitArea (
 	MARKER_OBJECT, csVector3 (0), .1f, 0, yellow);
     csRef<MarkerCallback> cb;
     cb.AttachNew (new MarkerCallback (this));
     hitArea->DefineDrag (0, 0, MARKER_WORLD, CONSTRAIN_NONE, cb);
     hitArea->DefineDrag (0, CSMASK_ALT, MARKER_WORLD, CONSTRAIN_YPLANE, cb);
+
+    hitArea = transformationMarker->HitArea (
+	MARKER_OBJECT, csVector3 (0,0,1), .07, 0, yellow);
+    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_YPLANE+CONSTRAIN_ROTATE, cb);
   }
 
   if (aresed->GetSelection ()->GetSize () >= 1)
@@ -265,6 +270,21 @@ void MainMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
     {
       iMovable* mov = mesh->GetMovable ();
       mov->GetTransform ().SetOrigin (np);
+      mov->UpdateMove ();
+    }
+  }
+}
+
+void MainMode::MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
+      const csReversibleTransform& transform)
+{
+  for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
+  {
+    iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
+    if (mesh)
+    {
+      iMovable* mov = mesh->GetMovable ();
+      mov->SetTransform (transform);
       mov->UpdateMove ();
     }
   }
