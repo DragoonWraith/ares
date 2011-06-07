@@ -101,6 +101,14 @@ void MainMode::Start ()
     hitArea->DefineDrag (0, CSMASK_ALT, MARKER_WORLD, CONSTRAIN_YPLANE, cb);
 
     hitArea = transformationMarker->HitArea (
+	MARKER_OBJECT, csVector3 (1,0,0), .07, 0, yellow);
+    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_ZPLANE+CONSTRAIN_ROTATE, cb);
+
+    hitArea = transformationMarker->HitArea (
+	MARKER_OBJECT, csVector3 (0,1,0), .07, 0, yellow);
+    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATE, cb);
+
+    hitArea = transformationMarker->HitArea (
 	MARKER_OBJECT, csVector3 (0,0,1), .07, 0, yellow);
     hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_YPLANE+CONSTRAIN_ROTATE, cb);
   }

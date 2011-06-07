@@ -344,6 +344,102 @@ static bool CheckConstrain (bool constrain, float start, float end, float restr)
   return true;
 }
 
+static void TransLookAtUp (
+  csReversibleTransform& trans,
+  const csVector3 &v,		// Points to where 'y' will point.
+  const csVector3 &upNeg)	// Points upwards to where 'x' will point.
+{
+  csMatrix3 m;  /* initialized to be the identity matrix */
+  csVector3 w1, w2 = v, w3;
+  csVector3 up = -upNeg;
+
+  float sqr;
+  sqr = v * v;
+  if (sqr > SMALL_EPSILON)
+  {
+    w2 *= csQisqrt (sqr);
+    w3 = w2 % up;
+    sqr = w3 * w3;
+    if (sqr < SMALL_EPSILON)
+    {
+      w3 = w2 % csVector3 (0, -1, 0);
+      sqr = w3 * w3;
+      if (sqr < SMALL_EPSILON)
+      {
+        w3 = w2 % csVector3 (-1, 0, 0);
+        sqr = w3 * w3;
+      }
+    }
+
+    w3 *= csQisqrt (sqr);
+    w1 = w2 % w3;
+
+    m.m11 = w1.x;
+    m.m12 = w2.x;
+    m.m13 = w3.x;
+    m.m21 = w1.y;
+    m.m22 = w2.y;
+    m.m23 = w3.y;
+    m.m31 = w1.z;
+    m.m32 = w2.z;
+    m.m33 = w3.z;
+  }
+  else
+  {
+    printf ("BAD!\n"); fflush (stdout);
+  }
+
+  trans.SetT2O (m);
+}
+
+static void TransLookAtRight (
+  csReversibleTransform& trans,
+  const csVector3 &v,		// Points to where 'x' will point.
+  const csVector3 &upNeg)	// Points upwards to where 'z' will point.
+{
+  csMatrix3 m;  /* initialized to be the identity matrix */
+  csVector3 w1 = v, w2, w3;
+  csVector3 up = -upNeg;
+
+  float sqr;
+  sqr = v * v;
+  if (sqr > SMALL_EPSILON)
+  {
+    w1 *= csQisqrt (sqr);
+    w2 = w1 % up;
+    sqr = w2 * w2;
+    if (sqr < SMALL_EPSILON)
+    {
+      w2 = w1 % csVector3 (0, 0, -1);
+      sqr = w2 * w2;
+      if (sqr < SMALL_EPSILON)
+      {
+        w2 = w1 % csVector3 (-1, 0, 0);
+        sqr = w2 * w2;
+      }
+    }
+
+    w2 *= csQisqrt (sqr);
+    w3 = w1 % w2;
+
+    m.m11 = w1.x;
+    m.m12 = w2.x;
+    m.m13 = w3.x;
+    m.m21 = w1.y;
+    m.m22 = w2.y;
+    m.m23 = w3.y;
+    m.m31 = w1.z;
+    m.m32 = w2.z;
+    m.m33 = w3.z;
+  }
+  else
+  {
+    printf ("BAD!\n"); fflush (stdout);
+  }
+
+  trans.SetT2O (m);
+}
+
 void MarkerManager::Frame2D ()
 {
   if (currentDraggingMode)
@@ -454,9 +550,21 @@ void MarkerManager::Frame2D ()
       if (cprot)
       {
 	csReversibleTransform newrot = marker->GetTransform ();
-	if (cpy)
+	csVector3 rel = newpos - newrot.GetOrigin ();
+	if (cpx)
 	{
-	  newrot.LookAt (newpos - newrot.GetOrigin (), csVector3 (0, 1, 0));
+	  csVector3 up = newrot.GetUp () % newrot.GetFront ();
+	  TransLookAtUp (newrot, rel, up);
+	}
+	else if (cpy)
+	{
+	  csVector3 up = newrot.GetFront () % newrot.GetRight ();
+	  newrot.LookAt (rel, up);
+	}
+	else if (cpz)
+	{
+	  csVector3 up = newrot.GetRight () % newrot.GetUp ();
+	  TransLookAtRight (newrot, rel, up);
 	}
 	currentDraggingMode->cb->MarkerWantsRotate (marker, currentDraggingHitArea, newrot);
       }
