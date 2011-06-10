@@ -344,7 +344,117 @@ static bool CheckConstrain (bool constrain, float start, float end, float restr)
   return true;
 }
 
-void MarkerManager::Frame2D ()
+bool MarkerManager::FindPlanarIntersection (const csVector3& start, const csVector3& end,
+    csVector3& newpos)
+{
+  uint32 cp = currentDraggingMode->constrainPlane;
+  bool cpx = cp & CONSTRAIN_XPLANE;
+  bool cpy = cp & CONSTRAIN_YPLANE;
+  bool cpz = cp & CONSTRAIN_ZPLANE;
+
+  if (!CheckConstrain (cpx, start.x, end.x, dragRestrict.x)) return false;
+  if (!CheckConstrain (cpy, start.y, end.y, dragRestrict.y)) return false;
+  if (!CheckConstrain (cpz, start.z, end.z, dragRestrict.z)) return false;
+
+  iMarker* marker = currentDraggingHitArea->GetMarker ();
+
+  // @@@ TODO! Only WORLD and OBJECT supported here!
+  csVector3 st, en, dr;
+  if (currentDraggingMode->constrainSpace == MARKER_OBJECT)
+  {
+    dr = marker->GetTransform ().Other2This (dragRestrict);
+    st = marker->GetTransform ().Other2This (start);
+    en = marker->GetTransform ().Other2This (end);
+  }
+  else if (currentDraggingMode->constrainSpace == MARKER_WORLD)
+  {
+    dr = dragRestrict;
+    st = start;
+    en = end;
+  }
+  else
+  {
+    printf ("Unsupported dragging mode %d!\n", currentDraggingMode->constrainSpace);
+    fflush (stdout);
+    return false;
+  }
+
+  if (cpx)
+  {
+    float dist = csIntersect3::SegmentXPlane (st, en, dr.x, newpos);
+    if (dist > 0.8f)
+    {
+      newpos = st + (en-st).Unit () * 80.0f;
+      newpos.x = dr.x;
+    }
+  }
+  if (cpy)
+  {
+    float dist = csIntersect3::SegmentYPlane (st, en, dr.y, newpos);
+    if (dist > 0.8f)
+    {
+      newpos = st + (en-st).Unit () * 80.0f;
+      newpos.y = dr.y;
+    }
+  }
+  if (cpz)
+  {
+    float dist = csIntersect3::SegmentZPlane (st, en, dr.z, newpos);
+    if (dist > 0.8f)
+    {
+      newpos = st + (en-st).Unit () * 80.0f;
+      newpos.z = dr.z;
+    }
+  }
+
+  if (currentDraggingMode->constrainSpace == MARKER_OBJECT)
+  {
+    newpos = marker->GetTransform ().This2Other (newpos);
+  }
+  return true;
+}
+
+bool MarkerManager::HandlePlanarRotation (const csVector3& newpos, csMatrix3& m)
+{
+  uint32 cp = currentDraggingMode->constrainPlane;
+  bool cprotx = cp & CONSTRAIN_ROTATEX;
+  bool cproty = cp & CONSTRAIN_ROTATEY;
+  bool cprotz = cp & CONSTRAIN_ROTATEZ;
+  bool cpx = cp & CONSTRAIN_XPLANE;
+  bool cpy = cp & CONSTRAIN_YPLANE;
+  bool cpz = cp & CONSTRAIN_ZPLANE;
+
+  iMarker* marker = currentDraggingHitArea->GetMarker ();
+  csReversibleTransform newrot = marker->GetTransform ();
+  csVector3 rel = newpos - newrot.GetOrigin ();
+  csVector3 front = newrot.GetFront (), up = newrot.GetUp (), right = newrot.GetRight ();
+  if (cproty)
+  {
+    up = rel.Unit ();
+    if (cpx) front = right % up;
+    else if (cpz) right = up % front;
+    else return false;
+  }
+  else if (cprotz)
+  {
+    front = rel.Unit ();
+    if (cpy) right = up % front;
+    else if (cpx) up = front % right;
+    else return false;
+  }
+  else if (cprotx)
+  {
+    right = rel.Unit ();
+    if (cpz) up = front % right;
+    else if (cpy) front = right % up;
+    else return false;
+  }
+  else return false;
+  m.Set (right.x, right.y, right.z, up.x, up.y, up.z, front.x, front.y, front.z);
+  return true;
+}
+
+void MarkerManager::HandleDrag ()
 {
   if (currentDraggingMode)
   {
@@ -355,14 +465,8 @@ void MarkerManager::Frame2D ()
     csVector3 start = camera->GetTransform ().GetOrigin ();
     csVector3 end = camera->GetTransform ().This2Other (v3d);
     csVector3 newpos;
-    bool cprotx = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATEX;
-    bool cproty = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATEY;
-    bool cprotz = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATEZ;
-    bool cpmesh = currentDraggingMode->constrainPlane & CONSTRAIN_MESH;
-    bool cpx = currentDraggingMode->constrainPlane & CONSTRAIN_XPLANE;
-    bool cpy = currentDraggingMode->constrainPlane & CONSTRAIN_YPLANE;
-    bool cpz = currentDraggingMode->constrainPlane & CONSTRAIN_ZPLANE;
-    if (cpmesh)
+    uint32 cp = currentDraggingMode->constrainPlane;
+    if (cp & CONSTRAIN_MESH)
     {
       iMeshWrapper* mesh = currentDraggingHitArea->GetMarker ()->GetAttachedMesh ();
       csFlags oldFlags = mesh->GetFlags ();
@@ -373,105 +477,26 @@ void MarkerManager::Frame2D ()
       if (!result.mesh) do_drag = false;	// Safety
       newpos = result.isect;
     }
-    else if ((!cpx) && (!cpy) && (!cpz))
+    else if (cp & CONSTRAIN_PLANE)
+    {
+      if (!FindPlanarIntersection (start, end, newpos))
+	return;
+    }
+    else
     {
       newpos = end - start;
       newpos.Normalize ();
       newpos = camera->GetTransform ().GetOrigin () + newpos * dragDistance;
     }
-    else
-    {
-      if (!CheckConstrain (cpx, start.x, end.x, dragRestrict.x)) return;
-      if (!CheckConstrain (cpy, start.y, end.y, dragRestrict.y)) return;
-      if (!CheckConstrain (cpz, start.z, end.z, dragRestrict.z)) return;
-
-      // @@@ TODO! Only WORLD and OBJECT supported here!
-      csVector3 dr;
-      if (currentDraggingMode->constrainSpace == MARKER_OBJECT)
-      {
-	dr = marker->GetTransform ().Other2This (dragRestrict);
-	start = marker->GetTransform ().Other2This (start);
-	end = marker->GetTransform ().Other2This (end);
-      }
-      else if (currentDraggingMode->constrainSpace == MARKER_WORLD)
-      {
-	dr = dragRestrict;
-      }
-      else
-      {
-	printf ("Unsupported dragging mode %d!\n", currentDraggingMode->constrainSpace);
-	fflush (stdout);
-	return;
-      }
-
-      if (cpx)
-      {
-	float dist = csIntersect3::SegmentXPlane (start, end, dr.x, newpos);
-	if (dist > 0.8f)
-	{
-	  newpos = start + (end-start).Unit () * 80.0f;
-	  newpos.x = dr.x;
-	}
-      }
-      if (cpy)
-      {
-	float dist = csIntersect3::SegmentYPlane (start, end, dr.y, newpos);
-	if (dist > 0.8f)
-	{
-	  newpos = start + (end-start).Unit () * 80.0f;
-	  newpos.y = dr.y;
-	}
-      }
-      if (cpz)
-      {
-	float dist = csIntersect3::SegmentZPlane (start, end, dr.z, newpos);
-	if (dist > 0.8f)
-	{
-	  newpos = start + (end-start).Unit () * 80.0f;
-	  newpos.z = dr.z;
-	}
-      }
-
-      if (currentDraggingMode->constrainSpace == MARKER_OBJECT)
-      {
-	newpos = marker->GetTransform ().This2Other (newpos);
-      }
-    }
 
     if (do_drag && currentDraggingMode->cb)
     {
-      if (cprotx || cproty || cprotz)
+      if (cp & CONSTRAIN_ROTATE)
       {
-	do_drag = true;
-	csReversibleTransform newrot = marker->GetTransform ();
-	csVector3 rel = newpos - newrot.GetOrigin ();
-	csVector3 front = newrot.GetFront (), up = newrot.GetUp (), right = newrot.GetRight ();
-	if (cproty)
+	csMatrix3 m;
+	if (HandlePlanarRotation (newpos, m))
 	{
-	  up = rel.Unit ();
-	  if (cpx) front = right % up;
-	  else if (cpz) right = up % front;
-	  else do_drag = false;
-	}
-	else if (cprotz)
-	{
-	  front = rel.Unit ();
-	  if (cpy) right = up % front;
-	  else if (cpx) up = front % right;
-	  else do_drag = false;
-	}
-	else if (cprotx)
-	{
-	  right = rel.Unit ();
-	  if (cpz) up = front % right;
-	  else if (cpy) front = right % up;
-	  else do_drag = false;
-	}
-	else do_drag = false;
-	if (do_drag)
-	{
-	  csMatrix3 m;
-	  m.Set (right.x, right.y, right.z, up.x, up.y, up.z, front.x, front.y, front.z);
+	  csReversibleTransform newrot = marker->GetTransform ();
 	  newrot.SetO2T (m);
 	  currentDraggingMode->cb->MarkerWantsRotate (marker, currentDraggingHitArea, newrot);
 	}
@@ -482,7 +507,11 @@ void MarkerManager::Frame2D ()
       }
     }
   }
+}
 
+void MarkerManager::Frame2D ()
+{
+  HandleDrag ();
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render2D ();
 }

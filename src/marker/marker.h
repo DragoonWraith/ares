@@ -209,6 +209,23 @@ public:
   csVector3 dragRestrict;
 
   void StopDrag ();
+  void HandleDrag ();
+
+  /**
+   * Calculate the planar intersection of a beam given the current
+   * dragging mode. The intersection point is returned in 'newpos'.
+   * This function returns false if there was some kind of error.
+   */
+  bool FindPlanarIntersection (const csVector3& start, const csVector3& end,
+      csVector3& newpos);
+
+  /**
+   * Handle planar rotation to be used in dragging mode.
+   * Returns false if rotation cannot occur due to some error.
+   * The new rotation matrix is returned in 'm'.
+   * @param newpos is the position where we want the rotation to look at.
+   */
+  bool HandlePlanarRotation (const csVector3& newpos, csMatrix3& m);
 
 public:
   MarkerManager (iBase *iParent);
