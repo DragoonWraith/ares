@@ -351,7 +351,7 @@ void MarkerManager::Frame2D ()
     iMarker* marker = currentDraggingHitArea->GetMarker ();
     bool do_drag = true;
     csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
-    csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
+    csVector3 v3d = camera->InvPerspective (v2d, 100.0f);
     csVector3 start = camera->GetTransform ().GetOrigin ();
     csVector3 end = camera->GetTransform ().This2Other (v3d);
     csVector3 newpos;
@@ -405,7 +405,7 @@ void MarkerManager::Frame2D ()
       if (cpx)
       {
 	float dist = csIntersect3::SegmentXPlane (start, end, dr.x, newpos);
-	if (dist > 0.08f)
+	if (dist > 0.8f)
 	{
 	  newpos = start + (end-start).Unit () * 80.0f;
 	  newpos.x = dr.x;
@@ -414,7 +414,7 @@ void MarkerManager::Frame2D ()
       if (cpy)
       {
 	float dist = csIntersect3::SegmentYPlane (start, end, dr.y, newpos);
-	if (dist > 0.08f)
+	if (dist > 0.8f)
 	{
 	  newpos = start + (end-start).Unit () * 80.0f;
 	  newpos.y = dr.y;
@@ -423,7 +423,7 @@ void MarkerManager::Frame2D ()
       if (cpz)
       {
 	float dist = csIntersect3::SegmentZPlane (start, end, dr.z, newpos);
-	if (dist > 0.08f)
+	if (dist > 0.8f)
 	{
 	  newpos = start + (end-start).Unit () * 80.0f;
 	  newpos.z = dr.z;
@@ -443,23 +443,35 @@ void MarkerManager::Frame2D ()
 	do_drag = false;
 	csReversibleTransform newrot = marker->GetTransform ();
 	csVector3 rel = newpos - newrot.GetOrigin ();
+	csVector3 front, up, right;
 	if (cpx)
 	{
-	  csVector3 up = newrot.GetUp () % newrot.GetFront ();
-	  do_drag = newrot.LookAtYUpX (rel, up);
+	  right = newrot.GetRight ();
+	  up = rel.Unit ();
+	  front = right % up;
+	  do_drag = true;
 	}
 	else if (cpy)
 	{
-	  csVector3 up = newrot.GetFront () % newrot.GetRight ();
-	  do_drag = newrot.LookAtZUpY (rel, up);
+	  up = newrot.GetUp ();
+	  front = rel.Unit ();
+	  right = up % front;
+	  do_drag = true;
 	}
 	else if (cpz)
 	{
-	  csVector3 up = newrot.GetRight () % newrot.GetUp ();
-	  do_drag = newrot.LookAtXUpZ (rel, up);
+	  front = newrot.GetFront ();
+	  right = rel.Unit ();
+	  up = front % right;
+	  do_drag = true;
 	}
 	if (do_drag)
+	{
+	  csMatrix3 m;
+	  m.Set (right.x, right.y, right.z, up.x, up.y, up.z, front.x, front.y, front.z);
+	  newrot.SetO2T (m);
 	  currentDraggingMode->cb->MarkerWantsRotate (marker, currentDraggingHitArea, newrot);
+	}
       }
       else
       {
