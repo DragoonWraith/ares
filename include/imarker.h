@@ -109,7 +109,9 @@ struct iMarkerCallback : public virtual iBase
 #define CONSTRAIN_YPLANE 2
 #define CONSTRAIN_ZPLANE 4
 #define CONSTRAIN_MESH 8
-#define CONSTRAIN_ROTATE 16
+#define CONSTRAIN_ROTATEX 16
+#define CONSTRAIN_ROTATEY 32
+#define CONSTRAIN_ROTATEZ 64
 
 /**
  * A marker hit area (place on a marker that a user can select).
@@ -129,8 +131,8 @@ struct iMarkerHitArea : public virtual iBase
    * @param constrainSpace this indicates in which space the dragging constraints should
    * occur. MARKER_CAMERA_AT_MESH is illegal in this context.
    * @param constainPlane is a mask with CONSTRAIN_xxx values. In case of CONSTRAIN_MESH
-   *        a hitbeam is used to find out where to drag. With CONSTRAIN_ROTATE the
-   *        marker is rotated instead of moved.
+   *        a hitbeam is used to find out where to drag. With one of
+   *        the CONSTRAIN_ROTATE modes the marker is rotated instead of moved.
    * @param cb is the callback to call when this kind of dragging is initiated.
    */
   virtual void DefineDrag (uint button, uint32 modifiers,

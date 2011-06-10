@@ -355,7 +355,9 @@ void MarkerManager::Frame2D ()
     csVector3 start = camera->GetTransform ().GetOrigin ();
     csVector3 end = camera->GetTransform ().This2Other (v3d);
     csVector3 newpos;
-    bool cprot = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATE;
+    bool cprotx = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATEX;
+    bool cproty = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATEY;
+    bool cprotz = currentDraggingMode->constrainPlane & CONSTRAIN_ROTATEZ;
     bool cpmesh = currentDraggingMode->constrainPlane & CONSTRAIN_MESH;
     bool cpx = currentDraggingMode->constrainPlane & CONSTRAIN_XPLANE;
     bool cpy = currentDraggingMode->constrainPlane & CONSTRAIN_YPLANE;
@@ -438,33 +440,34 @@ void MarkerManager::Frame2D ()
 
     if (do_drag && currentDraggingMode->cb)
     {
-      if (cprot)
+      if (cprotx || cproty || cprotz)
       {
-	do_drag = false;
+	do_drag = true;
 	csReversibleTransform newrot = marker->GetTransform ();
 	csVector3 rel = newpos - newrot.GetOrigin ();
-	csVector3 front, up, right;
-	if (cpx)
+	csVector3 front = newrot.GetFront (), up = newrot.GetUp (), right = newrot.GetRight ();
+	if (cproty)
 	{
-	  right = newrot.GetRight ();
 	  up = rel.Unit ();
-	  front = right % up;
-	  do_drag = true;
+	  if (cpx) front = right % up;
+	  else if (cpz) right = up % front;
+	  else do_drag = false;
 	}
-	else if (cpy)
+	else if (cprotz)
 	{
-	  up = newrot.GetUp ();
 	  front = rel.Unit ();
-	  right = up % front;
-	  do_drag = true;
+	  if (cpy) right = up % front;
+	  else if (cpx) up = front % right;
+	  else do_drag = false;
 	}
-	else if (cpz)
+	else if (cprotx)
 	{
-	  front = newrot.GetFront ();
 	  right = rel.Unit ();
-	  up = front % right;
-	  do_drag = true;
+	  if (cpz) up = front % right;
+	  else if (cpy) front = right % up;
+	  else do_drag = false;
 	}
+	else do_drag = false;
 	if (do_drag)
 	{
 	  csMatrix3 m;

@@ -102,15 +102,18 @@ void MainMode::Start ()
 
     hitArea = transformationMarker->HitArea (
 	MARKER_OBJECT, csVector3 (1,0,0), .07, 0, yellow);
-    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_ZPLANE+CONSTRAIN_ROTATE, cb);
+    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_ZPLANE+CONSTRAIN_ROTATEX, cb);
+    hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_OBJECT, CONSTRAIN_YPLANE+CONSTRAIN_ROTATEX, cb);
 
     hitArea = transformationMarker->HitArea (
 	MARKER_OBJECT, csVector3 (0,1,0), .07, 0, yellow);
-    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATE, cb);
+    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATEY, cb);
+    hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_OBJECT, CONSTRAIN_ZPLANE+CONSTRAIN_ROTATEY, cb);
 
     hitArea = transformationMarker->HitArea (
 	MARKER_OBJECT, csVector3 (0,0,1), .07, 0, yellow);
-    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_YPLANE+CONSTRAIN_ROTATE, cb);
+    hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_YPLANE+CONSTRAIN_ROTATEZ, cb);
+    hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATEZ, cb);
   }
 
   if (aresed->GetSelection ()->GetSize () >= 1)
