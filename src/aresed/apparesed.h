@@ -38,7 +38,7 @@ THE SOFTWARE.
 #include "filereq.h"
 #include "mainmode.h"
 #include "curvemode.h"
-//#include "roommode.h"
+#include "roommode.h"
 #include "camera.h"
 #include "selection.h"
 
@@ -96,7 +96,7 @@ private:
 
   MainMode* mainMode;
   CurveMode* curveMode;
-  //RoomMode* roomMode;
+  RoomMode* roomMode;
   EditingMode* editMode;
 
   WorldLoader* worldLoader;
@@ -239,7 +239,7 @@ private:
   //bool OnRoomTabButtonClicked (const CEGUI::EventArgs&);
 
   bool SwitchToCurveMode ();
-  //bool SwitchToRoomMode ();
+  bool SwitchToRoomMode ();
 
   CEGUI::Checkbox* simulationCheck;
   CEGUI::PushButton* undoButton;

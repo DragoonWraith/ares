@@ -51,7 +51,7 @@ AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
   editMode = 0;
   mainMode = 0;
   curveMode = 0;
-  //roomMode = 0;
+  roomMode = 0;
   curvedFactoryCounter = 0;
   roomFactoryCounter = 0;
   worldLoader = 0;
@@ -64,7 +64,7 @@ AppAresEdit::~AppAresEdit()
   delete camwin;
   delete mainMode;
   delete curveMode;
-  //delete roomMode;
+  delete roomMode;
   delete worldLoader;
   delete selection;
 }
@@ -432,7 +432,7 @@ bool AppAresEdit::InitWindowSystem ()
 
   mainMode = new MainMode (this);
   curveMode = new CurveMode (this);
-  //roomMode = new RoomMode (this);
+  roomMode = new RoomMode (this);
   editMode = mainMode;
   mainTabButton->setSelected(true);
 
@@ -501,7 +501,6 @@ bool AppAresEdit::SwitchToCurveMode ()
   return true;
 }
 
-#if 0
 bool AppAresEdit::SwitchToRoomMode ()
 {
   if (selection->GetSize () != 1) return true;
@@ -511,16 +510,15 @@ bool AppAresEdit::SwitchToRoomMode ()
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   curveTabButton->setSelected(false);
-  rroomabButton->setSelected(true);
+  //roomTabButton->setSelected(true);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
-  winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
+  //winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
   if (editMode) editMode->Stop ();
   editMode = roomMode;
   editMode->Start ();
   return true;
 }
-#endif
 
 void AppAresEdit::CleanupWorld ()
 {
@@ -1090,8 +1088,8 @@ void AppAresEdit::SpawnItem (const csString& name)
 
   if (curvedFactory)
     SwitchToCurveMode ();
-  //else if (roomFactory)
-    //SwitchToRoomMode ();
+  else if (roomFactory)
+    SwitchToRoomMode ();
 }
 
 bool AppAresEdit::InitPhysics ()
