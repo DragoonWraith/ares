@@ -51,7 +51,9 @@ AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
   editMode = 0;
   mainMode = 0;
   curveMode = 0;
+  //roomMode = 0;
   curvedFactoryCounter = 0;
+  roomFactoryCounter = 0;
   worldLoader = 0;
   selection = 0;
 }
@@ -62,6 +64,7 @@ AppAresEdit::~AppAresEdit()
   delete camwin;
   delete mainMode;
   delete curveMode;
+  //delete roomMode;
   delete worldLoader;
   delete selection;
 }
@@ -207,6 +210,18 @@ void AppAresEdit::SetButtonState ()
     curveTabButton->enable ();
   else
     curveTabButton->disable ();
+
+  bool roomTabEnable = false;
+  if (selection->GetSize () == 1)
+  {
+    csString name = selection->GetFirst ()->GetFactory ()->GetName ();
+    if (!roomMeshCreator->GetRoomFactory (name))
+      roomTabEnable = true;
+  }
+  //if (roomTabEnable)
+    //roomTabButton->enable ();
+  //else
+    //roomTabButton->disable ();
 }
 
 void AppAresEdit::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
@@ -403,6 +418,10 @@ bool AppAresEdit::InitWindowSystem ()
   curveTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
     CEGUI::Event::Subscriber(&AppAresEdit::OnCurveTabButtonClicked, this));
   curveTabButton->setTargetWindow(winMgr->getWindow("Ares/CurveWindow"));
+  //roomTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/RoomTab"));
+  //roomTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
+    //CEGUI::Event::Subscriber(&AppAresEdit::OnRoomTabButtonClicked, this));
+  //roomTabButton->setTargetWindow(winMgr->getWindow("Ares/RoomWindow"));
 
   simulationCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("Ares/StateWindow/Simulation"));
   simulationCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
@@ -413,6 +432,7 @@ bool AppAresEdit::InitWindowSystem ()
 
   mainMode = new MainMode (this);
   curveMode = new CurveMode (this);
+  //roomMode = new RoomMode (this);
   editMode = mainMode;
   mainTabButton->setSelected(true);
 
@@ -442,8 +462,10 @@ bool AppAresEdit::OnMainTabButtonClicked (const CEGUI::EventArgs&)
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(true);
   curveTabButton->setSelected(false);
+  //roomTabButton->setSelected(false);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(true);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
+  //winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
   if (editMode) editMode->Stop ();
   editMode = mainMode;
   editMode->Start ();
@@ -455,6 +477,11 @@ bool AppAresEdit::OnCurveTabButtonClicked (const CEGUI::EventArgs&)
   return SwitchToCurveMode ();
 }
 
+//bool AppAresEdit::OnRoomTabButtonClicked (const CEGUI::EventArgs&)
+//{
+  //return SwitchToRoomMode ();
+//}
+
 bool AppAresEdit::SwitchToCurveMode ()
 {
   if (selection->GetSize () != 1) return true;
@@ -463,8 +490,10 @@ bool AppAresEdit::SwitchToCurveMode ()
 
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
+  //roomTabButton->setSelected(false);
   curveTabButton->setSelected(true);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
+  //winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(true);
   if (editMode) editMode->Stop ();
   editMode = curveMode;
@@ -472,13 +501,36 @@ bool AppAresEdit::SwitchToCurveMode ()
   return true;
 }
 
+#if 0
+bool AppAresEdit::SwitchToRoomMode ()
+{
+  if (selection->GetSize () != 1) return true;
+  csString name = selection->GetFirst ()->GetFactory ()->GetName ();
+  if (!roomMeshCreator->GetRoomFactory (name)) return true;
+
+  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
+  mainTabButton->setSelected(false);
+  curveTabButton->setSelected(false);
+  rroomabButton->setSelected(true);
+  winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
+  winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
+  winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
+  if (editMode) editMode->Stop ();
+  editMode = roomMode;
+  editMode->Start ();
+  return true;
+}
+#endif
+
 void AppAresEdit::CleanupWorld ()
 {
   selection->SetCurrentObject (0);
 
   curvedFactories.DeleteAll ();
+  roomFactories.DeleteAll ();
   factory_to_origin_offset.DeleteAll ();
   curvedFactoryCreators.DeleteAll ();
+  roomFactoryCreators.DeleteAll ();
   static_factories.DeleteAll ();
 
   camlight = 0;
@@ -529,6 +581,13 @@ void AppAresEdit::LoadFile (const char* filename)
     static_factories.Add (cfact->GetName ());
   }
   curvedFactories = worldLoader->GetCurvedFactories ();
+
+  for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryCount () ; i++)
+  {
+    iRoomFactory* cfact = roomMeshCreator->GetRoomFactory (i);
+    static_factories.Add (cfact->GetName ());
+  }
+  roomFactories = worldLoader->GetRoomFactories ();
 
   // @@@ Error handling.
   SetupDynWorld ();
@@ -588,6 +647,7 @@ bool AppAresEdit::OnInitialize(int argc, char* argv[])
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.marker", iMarkerManager),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
+	CS_REQUEST_PLUGIN("utility.rooms", iRoomMeshCreator),
 	CS_REQUEST_END))
     return ReportError("Failed to initialize plugins!");
 
@@ -669,6 +729,10 @@ bool AppAresEdit::Application()
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (r);
   if (!curvedMeshCreator)
     return ReportError("Failed to load the curved mesh creator plugin!");
+
+  roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (r);
+  if (!roomMeshCreator)
+    return ReportError("Failed to load the room mesh creator plugin!");
 
   engine = csQueryRegistry<iEngine> (r);
   if (!engine)
@@ -786,6 +850,7 @@ bool AppAresEdit::SetupDynWorld ()
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
+    if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
     csBox3 bbox = fact->GetPhysicsBBox ();
     factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
@@ -815,6 +880,17 @@ bool AppAresEdit::SetupDynWorld ()
     csScanStr (massS, "%f", &creator.mass);
 
     curvedFactoryCreators.Push (creator);
+  }
+  for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryTemplateCount () ; i++)
+  {
+    iRoomFactoryTemplate* cft = roomMeshCreator->GetRoomFactoryTemplate (i);
+    const char* category = cft->GetAttribute ("category");
+    AddItem (category, cft->GetName ());
+
+    RoomFactoryCreator creator;
+    creator.name = cft->GetName ();
+
+    roomFactoryCreators.Push (creator);
   }
   return true;
 }
@@ -886,6 +962,14 @@ CurvedFactoryCreator* AppAresEdit::FindFactoryCreator (const char* name)
   return 0;
 }
 
+RoomFactoryCreator* AppAresEdit::FindRoomFactoryCreator (const char* name)
+{
+  for (size_t i = 0 ; i < roomFactoryCreators.GetSize () ; i++)
+    if (roomFactoryCreators[i].name == name)
+      return &roomFactoryCreators[i];
+  return 0;
+}
+
 static float TestVerticalBeam (const csVector3& start, float distance, iCamera* camera)
 {
   csVector3 end = start;
@@ -903,7 +987,9 @@ void AppAresEdit::SpawnItem (const csString& name)
 {
   csString fname;
   iCurvedFactory* curvedFactory = 0;
+  iRoomFactory* roomFactory = 0;
   CurvedFactoryCreator* cfc = FindFactoryCreator (name);
+  RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
   if (cfc)
   {
     curvedFactoryCounter++;
@@ -918,6 +1004,21 @@ void AppAresEdit::SpawnItem (const csString& name)
     fact->AddRigidMesh (csVector3 (0), cfc->mass);
     static_factories.Add (fname);
     curvedFactories.Push (fact);
+  }
+  else if (rfc)
+  {
+    roomFactoryCounter++;
+    fname.Format("%s%d", name.GetData (), roomFactoryCounter);
+    roomFactory = roomMeshCreator->AddRoomFactory (fname, name);
+
+    iDynamicFactory* fact = dynworld->AddFactory (fname, 1.0f, -1.0f);
+    csRef<iGeometryGenerator> ggen = scfQueryInterface<iGeometryGenerator> (roomFactory);
+    if (ggen)
+      fact->SetGeometryGenerator (ggen);
+
+    fact->AddRigidMesh (csVector3 (0), cfc->mass);
+    static_factories.Add (fname);
+    roomFactories.Push (fact);
   }
   else
   {
@@ -989,6 +1090,8 @@ void AppAresEdit::SpawnItem (const csString& name)
 
   if (curvedFactory)
     SwitchToCurveMode ();
+  //else if (roomFactory)
+    //SwitchToRoomMode ();
 }
 
 bool AppAresEdit::InitPhysics ()

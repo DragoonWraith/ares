@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
+#include "include/irooms.h"
 #include "worldload.h"
 
 WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
@@ -33,6 +34,7 @@ WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
   vfs = csQueryRegistry<iVFS> (object_reg);
   engine = csQueryRegistry<iEngine> (object_reg);
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
+  roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (object_reg);
   dynworld = csQueryRegistry<iDynamicWorld> (object_reg);
 }
 
@@ -95,6 +97,28 @@ bool WorldLoader::LoadDoc (iDocument* doc)
     curvedFactories.Push (fact);
   }
 
+  csRef<iDocumentNode> roomNode = dynlevelNode->GetNode ("rooms");
+  if (roomNode)
+  {
+    csRef<iString> error = roomMeshCreator->Load (roomNode);
+    if (error)
+    {
+      printf ("Error loading rooms '%s'!", error->GetData ());
+      return false;
+    }
+  }
+
+  for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryCount () ; i++)
+  {
+    iRoomFactory* cfact = roomMeshCreator->GetRoomFactory (i);
+    iDynamicFactory* fact = dynworld->AddFactory (cfact->GetName (), 1.0, -1);
+    csRef<iGeometryGenerator> ggen = scfQueryInterface<iGeometryGenerator> (cfact);
+    if (ggen)
+      fact->SetGeometryGenerator (ggen);
+    fact->AddRigidMesh (csVector3 (0), 10.0);
+    roomFactories.Push (fact);
+  }
+
   csRef<iDocumentNode> dynworldNode = dynlevelNode->GetNode ("dynworld");
   if (dynworldNode)
   {
@@ -113,10 +137,14 @@ bool WorldLoader::LoadFile (const char* filename)
   assets.DeleteAll ();
   dynworld->DeleteObjects ();
   dynworld->DeleteFactories ();
+
   curvedMeshCreator->DeleteFactories ();
   curvedMeshCreator->DeleteCurvedFactoryTemplates ();
-
   curvedFactories.DeleteAll ();
+
+  roomMeshCreator->DeleteFactories ();
+  roomMeshCreator->DeleteRoomFactoryTemplates ();
+  roomFactories.DeleteAll ();
 
   csRef<iDocumentSystem> docsys;
   docsys = csQueryRegistry<iDocumentSystem> (object_reg);
@@ -161,6 +189,10 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   csRef<iDocumentNode> curveNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
   curveNode->SetValue ("curves");
   curvedMeshCreator->Save (curveNode);
+
+  csRef<iDocumentNode> roomNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+  roomNode->SetValue ("rooms");
+  roomMeshCreator->Save (roomNode);
   return doc;
 }
 

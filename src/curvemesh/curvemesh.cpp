@@ -462,7 +462,7 @@ void CurvedFactory::GenerateGeometry (iMeshWrapper* thisMesh)
 # endif
   clingyPath.GeneratePath (path);
   printf ("Path has %d control points\n",
-      clingyPath.GetWorkingPointCount ());
+      int (clingyPath.GetWorkingPointCount ()));
   fflush (stdout);
   float totalDistance = clingyPath.GetTotalDistance ();
 

@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <ivaria/icegui.h>
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
+#include "include/irooms.h"
 #include "include/inature.h"
 #include "include/imarker.h"
 
@@ -37,6 +38,7 @@ THE SOFTWARE.
 #include "filereq.h"
 #include "mainmode.h"
 #include "curvemode.h"
+//#include "roommode.h"
 #include "camera.h"
 #include "selection.h"
 
@@ -51,6 +53,12 @@ class CurvedFactoryCreator
 public:
   csString name;
   float maxradius, imposterradius, mass;
+};
+
+class RoomFactoryCreator
+{
+public:
+  csString name;
 };
 
 class AresEditSelectionListener : public SelectionListener
@@ -69,6 +77,7 @@ class AppAresEdit :
 private:
   csRef<iDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
+  csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;
   csRef<iMarkerManager> markerMgr;
 
@@ -87,6 +96,7 @@ private:
 
   MainMode* mainMode;
   CurveMode* curveMode;
+  //RoomMode* roomMode;
   EditingMode* editMode;
 
   WorldLoader* worldLoader;
@@ -137,13 +147,23 @@ private:
    */
   csArray<iDynamicFactory*> curvedFactories;
 
+  /**
+   * A list with all curved factories which are generated indirectly through
+   * the room mesh generator.
+   */
+  csArray<iDynamicFactory*> roomFactories;
+
   /// A map to offset and size for every factory.
   csHash<float,csString> factory_to_origin_offset;
   /// A set indicating all curved factory creators.
   csArray<CurvedFactoryCreator> curvedFactoryCreators;
   int curvedFactoryCounter;
+  /// A set indicating all room factory creators.
+  csArray<RoomFactoryCreator> roomFactoryCreators;
+  int roomFactoryCounter;
 
   CurvedFactoryCreator* FindFactoryCreator (const char* name);
+  RoomFactoryCreator* FindRoomFactoryCreator (const char* name);
 
   /// If the factory is in this set then objects of this factory are created
   /// static by default.
@@ -216,14 +236,17 @@ private:
   bool OnSimulationSelected (const CEGUI::EventArgs&);
   bool OnMainTabButtonClicked (const CEGUI::EventArgs&);
   bool OnCurveTabButtonClicked (const CEGUI::EventArgs&);
+  //bool OnRoomTabButtonClicked (const CEGUI::EventArgs&);
 
   bool SwitchToCurveMode ();
+  //bool SwitchToRoomMode ();
 
   CEGUI::Checkbox* simulationCheck;
   CEGUI::PushButton* undoButton;
   CEGUI::Window* filenameLabel;
   CEGUI::TabButton* mainTabButton;
   CEGUI::TabButton* curveTabButton;
+  //CEGUI::TabButton* roomTabButton;
 
   FileReq* filereq;
   CameraWindow* camwin;
@@ -246,6 +269,7 @@ public:
   iCamera* GetCsCamera () const { return view->GetCamera (); }
   iCollideSystem* GetCollisionSystem () const { return cdsys; }
   iCurvedMeshCreator* GetCurvedMeshCreator () const { return curvedMeshCreator; }
+  iRoomMeshCreator* GetRoomMeshCreator () const { return roomMeshCreator; }
   iCEGUI* GetCEGUI () const { return cegui; }
   iDynamicWorld* GetDynamicWorld () const { return dynworld; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }

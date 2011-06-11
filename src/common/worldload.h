@@ -46,11 +46,13 @@ private:
   csRef<iVFS> vfs;
   csRef<iEngine> engine;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
+  csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iDynamicWorld> dynworld;
 
   csArray<Asset> assets;
 
   csArray<iDynamicFactory*> curvedFactories;
+  csArray<iDynamicFactory*> roomFactories;
 
   csRef<iDocument> SaveDoc ();
   bool LoadDoc (iDocument* doc);
@@ -70,6 +72,7 @@ public:
   bool SaveFile (const char* filename);
 
   const csArray<iDynamicFactory*> GetCurvedFactories () const { return curvedFactories; }
+  const csArray<iDynamicFactory*> GetRoomFactories () const { return roomFactories; }
 };
 
 #endif // __aresed_worldload_h

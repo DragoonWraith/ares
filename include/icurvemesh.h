@@ -159,7 +159,7 @@ struct iCurvedMeshCreator : public virtual iBase
   virtual iCurvedFactoryTemplate* AddCurvedFactoryTemplate (const char* name) = 0;
 
   /**
-   * Get the number of factory templaets.
+   * Get the number of factory templates.
    */
   virtual size_t GetCurvedFactoryTemplateCount () const = 0;
   /**

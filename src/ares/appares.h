@@ -33,6 +33,7 @@ THE SOFTWARE.
 
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
+#include "include/irooms.h"
 #include "include/inature.h"
 
 struct iEngine;

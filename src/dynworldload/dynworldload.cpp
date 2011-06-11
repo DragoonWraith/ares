@@ -43,6 +43,7 @@ enum
 {
   XMLTOKEN_FACTORY,
   XMLTOKEN_CURVE,
+  XMLTOKEN_ROOM,
   XMLTOKEN_ATTR,
   XMLTOKEN_BOX,
   XMLTOKEN_CYLINDER,
@@ -72,6 +73,12 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
     printf ("No dynamic world plugin!\n");
     return false;
   }
+  roomMeshCreator = csLoadPluginCheck<iRoomMeshCreator> (object_reg, "utility.rooms");
+  if (!roomMeshCreator)
+  {
+    printf ("No room mesh creator plugin!\n");
+    return false;
+  }
   curvedMeshCreator = csLoadPluginCheck<iCurvedMeshCreator> (object_reg, "utility.curvemesh");
   if (!curvedMeshCreator)
   {
@@ -87,6 +94,7 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
 
   xmltokens.Register ("factory", XMLTOKEN_FACTORY);
   xmltokens.Register ("curve", XMLTOKEN_CURVE);
+  xmltokens.Register ("room", XMLTOKEN_ROOM);
   xmltokens.Register ("attr", XMLTOKEN_ATTR);
   xmltokens.Register ("box", XMLTOKEN_BOX);
   xmltokens.Register ("cylinder", XMLTOKEN_CYLINDER);
@@ -96,6 +104,53 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
   xmltokens.Register ("material", XMLTOKEN_MATERIAL);
   xmltokens.Register ("point", XMLTOKEN_POINT);
 
+  return true;
+}
+
+bool DynamicWorldLoader::ParseRoom (iDocumentNode* node)
+{
+  csString name = node->GetAttributeValue ("name");
+
+  iRoomFactoryTemplate* cft = roomMeshCreator->AddRoomFactoryTemplate (name);
+  if (!cft)
+  {
+    synldr->ReportError ("dynworld.loader", node,
+	"Could not add room factory template '%s'!", name.GetData ());
+    return false;
+  }
+
+  csRef<iDocumentNodeIterator> it = node->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csStringID id = xmltokens.Request (child->GetValue ());
+    switch (id)
+    {
+      case XMLTOKEN_ATTR:
+	cft->SetAttribute (child->GetAttributeValue ("name"),
+	    child->GetAttributeValue ("value"));
+	break;
+      case XMLTOKEN_MATERIAL:
+	cft->SetMaterial (child->GetAttributeValue ("name"));
+	break;
+      case XMLTOKEN_ROOM:
+	{
+	  csVector3 tl, br;
+	  csString vector = child->GetAttributeValue ("tl");
+	  if (vector.Length () > 0)
+	    csScanStr ((const char*)vector, "%f %f %f", &tl.x, &tl.y, &tl.z);
+	  vector = child->GetAttributeValue ("br");
+	  if (vector.Length () > 0)
+	    csScanStr ((const char*)vector, "%f %f %f", &br.x, &br.y, &br.z);
+	  cft->AddRoom (tl, br);
+	}
+	break;
+      default:
+        synldr->ReportBadToken (child);
+	return false;
+    }
+  }
   return true;
 }
 
@@ -346,6 +401,9 @@ csPtr<iBase> DynamicWorldLoader::Parse (iDocumentNode* node,
 	break;
       case XMLTOKEN_CURVE:
 	if (!ParseCurve (child)) return 0;
+	break;
+      case XMLTOKEN_ROOM:
+	if (!ParseRoom (child)) return 0;
 	break;
       default:
         synldr->ReportBadToken (child);

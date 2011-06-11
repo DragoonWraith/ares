@@ -34,6 +34,7 @@ THE SOFTWARE.
 
 #include "include/idynworld.h"
 #include "include/icurvemesh.h"
+#include "include/irooms.h"
 
 CS_PLUGIN_NAMESPACE_BEGIN(DynWorldLoader)
 {
@@ -44,12 +45,14 @@ class DynamicWorldLoader : public scfImplementation2<DynamicWorldLoader,
 private:
   csRef<iDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
+  csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iSyntaxService> synldr;
   csRef<iEngine> engine;
   csStringHash xmltokens;
 
   bool ParseFactory (iDocumentNode* node);
   bool ParseCurve (iDocumentNode* node);
+  bool ParseRoom (iDocumentNode* node);
 
 public:
   DynamicWorldLoader (iBase *iParent);

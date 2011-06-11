@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- rooms.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>utility.rooms</name>
+        <implementation>RoomMeshCreator</implementation>
+        <description>Rooms Mesh Plugin</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>
