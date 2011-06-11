@@ -52,6 +52,11 @@
                 <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
                 <Property Name="UnifiedAreaRect" Value="{{0.44,0},{.1,0},{.47,0},{.9,0}}" />
             </Window>
+            <Window Type="ice/TabButton" Name="Ares/StateWindow/RoomTab" >
+                <Property Name="Text" Value="R" />
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.48,0},{.1,0},{.51,0},{.9,0}}" />
+            </Window>
 
             <Window Type="ice/Checkbox" Name="Ares/StateWindow/Simulation" >
                 <Property Name="Text" Value="Simu" />
@@ -178,6 +183,20 @@
                 <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
                 <Property Name="UnifiedAreaRect" Value="{{0,0},{0.1,0},{0.49,0},{0.14,0}}" />
             </Window>
+        </Window>
+
+	<!-- =============================================================================== -->
+
+        <Window Type="ice/FrameWindow" Name="Ares/RoomWindow" >
+            <Property Name="Text" Value="R" />
+            <Property Name="UnifiedMaxSize" Value="{{0.14,0},{.96,0}}" />
+            <Property Name="UnifiedMinSize" Value="{{0.14,0},{.96,0}}" />
+            <Property Name="UnifiedAreaRect" Value="{{0.86,0},{.041,0},{1,0},{.96,0}}" />
+            <Property Name="CloseButtonEnabled" Value="False" />
+            <Property Name="SizingEnabled" Value="False" />
+	    <!--<Property Name="FrameEnabled" Value="False" />-->
+            <Property Name="TitlebarEnabled" Value="False" />
+            <Property Name='Visible' Value='False'/>
         </Window>
 
 	<!-- =============================================================================== -->

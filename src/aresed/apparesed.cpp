@@ -218,10 +218,10 @@ void AppAresEdit::SetButtonState ()
     if (!roomMeshCreator->GetRoomFactory (name))
       roomTabEnable = true;
   }
-  //if (roomTabEnable)
-    //roomTabButton->enable ();
-  //else
-    //roomTabButton->disable ();
+  if (roomTabEnable)
+    roomTabButton->enable ();
+  else
+    roomTabButton->disable ();
 }
 
 void AppAresEdit::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
@@ -418,10 +418,10 @@ bool AppAresEdit::InitWindowSystem ()
   curveTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
     CEGUI::Event::Subscriber(&AppAresEdit::OnCurveTabButtonClicked, this));
   curveTabButton->setTargetWindow(winMgr->getWindow("Ares/CurveWindow"));
-  //roomTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/RoomTab"));
-  //roomTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
-    //CEGUI::Event::Subscriber(&AppAresEdit::OnRoomTabButtonClicked, this));
-  //roomTabButton->setTargetWindow(winMgr->getWindow("Ares/RoomWindow"));
+  roomTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/RoomTab"));
+  roomTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
+    CEGUI::Event::Subscriber(&AppAresEdit::OnRoomTabButtonClicked, this));
+  roomTabButton->setTargetWindow(winMgr->getWindow("Ares/RoomWindow"));
 
   simulationCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("Ares/StateWindow/Simulation"));
   simulationCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
@@ -462,10 +462,10 @@ bool AppAresEdit::OnMainTabButtonClicked (const CEGUI::EventArgs&)
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(true);
   curveTabButton->setSelected(false);
-  //roomTabButton->setSelected(false);
+  roomTabButton->setSelected(false);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(true);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
-  //winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
+  winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
   if (editMode) editMode->Stop ();
   editMode = mainMode;
   editMode->Start ();
@@ -477,10 +477,10 @@ bool AppAresEdit::OnCurveTabButtonClicked (const CEGUI::EventArgs&)
   return SwitchToCurveMode ();
 }
 
-//bool AppAresEdit::OnRoomTabButtonClicked (const CEGUI::EventArgs&)
-//{
-  //return SwitchToRoomMode ();
-//}
+bool AppAresEdit::OnRoomTabButtonClicked (const CEGUI::EventArgs&)
+{
+  return SwitchToRoomMode ();
+}
 
 bool AppAresEdit::SwitchToCurveMode ()
 {
@@ -490,10 +490,10 @@ bool AppAresEdit::SwitchToCurveMode ()
 
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
-  //roomTabButton->setSelected(false);
+  roomTabButton->setSelected(false);
   curveTabButton->setSelected(true);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
-  //winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
+  winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(true);
   if (editMode) editMode->Stop ();
   editMode = curveMode;
@@ -510,10 +510,10 @@ bool AppAresEdit::SwitchToRoomMode ()
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   curveTabButton->setSelected(false);
-  //roomTabButton->setSelected(true);
+  roomTabButton->setSelected(true);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
-  //winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
+  winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
   if (editMode) editMode->Stop ();
   editMode = roomMode;
   editMode->Start ();

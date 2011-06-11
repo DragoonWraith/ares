@@ -236,7 +236,7 @@ private:
   bool OnSimulationSelected (const CEGUI::EventArgs&);
   bool OnMainTabButtonClicked (const CEGUI::EventArgs&);
   bool OnCurveTabButtonClicked (const CEGUI::EventArgs&);
-  //bool OnRoomTabButtonClicked (const CEGUI::EventArgs&);
+  bool OnRoomTabButtonClicked (const CEGUI::EventArgs&);
 
   bool SwitchToCurveMode ();
   bool SwitchToRoomMode ();
@@ -246,7 +246,7 @@ private:
   CEGUI::Window* filenameLabel;
   CEGUI::TabButton* mainTabButton;
   CEGUI::TabButton* curveTabButton;
-  //CEGUI::TabButton* roomTabButton;
+  CEGUI::TabButton* roomTabButton;
 
   FileReq* filereq;
   CameraWindow* camwin;
