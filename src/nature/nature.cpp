@@ -58,6 +58,7 @@ bool Nature::Initialize (iObjectRegistry *object_reg)
   vc = csQueryRegistry<iVirtualClock> (object_reg);
   strings = csQueryRegistryTagInterface<iShaderVarStringSet> (object_reg, "crystalspace.shader.variablenameset");
   string_sunDirection = strings->Request ("sun direction");
+  string_sunTime = strings->Request("timeOfDay");
 
   return true;
 }
@@ -69,18 +70,8 @@ void Nature::InitSector (iSector* sector)
   lightList->Add (sun);
 }
 
-void Nature::UpdateTime (csTicks ticks, iCamera* camera)
+void Nature::MoveSun (float step, iCamera* cam)
 {
-  iCamera* cam = camera;
-  if (!cam->GetSector ()) return;
-
-  static float lastStep = -1000.0f;
-  float step = float (ticks % 100000) / 100000.0;
-
-  // Don't update if the time has not changed much.
-  if ((step - lastStep) < 0.0001f && (step - lastStep) > -0.0001f) return;
-  lastStep = step;
-
   //=[ Sun position ]===================================
   //TODO: Make the sun stay longer at its highest point at noon.
   float temp = step * 2.0f;
@@ -128,9 +119,25 @@ void Nature::UpdateTime (csTicks ticks, iCamera* camera)
   //=[ Clouds ]========================================
   //<shadervar type="vector3" name="cloudcol">0.98,0.59,0.46</shadervar>
   float brightnessc = (amb * 0.6f) + 0.4f;
-  CS::ShaderVarStringID time = strings->Request("timeOfDay");
-  csRef<csShaderVariable> sv = shaderMgr->GetVariableAdd(time);
+  csRef<csShaderVariable> sv = shaderMgr->GetVariableAdd(string_sunTime);
   sv->SetValue(brightnessc);
+}
+
+void Nature::UpdateTime (csTicks ticks, iCamera* cam)
+{
+  if (!cam->GetSector ()) return;
+
+  static float lastStep = -1000.0f;
+  float step = float (ticks % 100000) / 100000.0;
+
+  // Don't update if the time has not changed much.
+  if ((step - lastStep) < 0.0001f && (step - lastStep) > -0.0001f) return;
+  lastStep = step;
+
+  MoveSun (step, cam);
+
+  //csRef<csShaderVariable> sv = shaderMgr->GetVariableAdd(string_standardTime);
+  //sv->SetValue(step);
 }
 
 }

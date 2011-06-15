@@ -46,14 +46,16 @@ private:
   csRef<iShaderVarStringSet> strings;
 
   CS::ShaderVarStringID string_sunDirection;
+  CS::ShaderVarStringID string_sunTime;
   float sun_alfa;
   float sun_theta;
   float min_light;
   csTicks currentTime;
-  bool do_auto_time;
 
   /// The sun.
   csRef<iLight> sun;
+
+  void MoveSun (float step, iCamera* camera);
 
 public:
   Nature (iBase *iParent);

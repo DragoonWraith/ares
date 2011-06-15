@@ -4,6 +4,7 @@
     <plugin name='genmeshfact'>crystalspace.mesh.loader.factory.genmesh</plugin>
   </plugins>
   <shaders>
+    <shader> <file>/shader/foliage/grass.xml</file> </shader>
     <shader> <file>/shader/lighting/lighting_default_binalpha.xml</file> </shader>
     <shader> <file>/shader/lighting/lighting_default_instance.xml</file> </shader>
     <shader> <file>/shader/lighting/lighting_default_instance_binalpha.xml</file> </shader>
@@ -12,8 +13,8 @@
     <material name='grass_004_i'>
       <texture>grass_004.png</texture>
       <shader type='depthwrite'>*null</shader>
-      <shader type='base'>lighting_default_instance_binalpha</shader>
-      <shader type='diffuse'>lighting_default_instance_binalpha</shader>
+      <shader type='base'>foliage_grass</shader>
+      <shader type='diffuse'>foliage_grass</shader>
     </material>
     <material name='grass_006_i'>
       <texture>grass_006.png</texture>
