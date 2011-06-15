@@ -296,6 +296,7 @@
             </geometry>
             <!--<densityscale mindist="26" maxdist="30" maxfactor="0" />-->
             <alphascale mindist="22" maxdist="30" />
+	    <defaultdensity>1</defaultdensity>
             <samplebox>
                 <min x="-256" y="-200" z="-256" />
                 <max x="256" y="200" z="256" />

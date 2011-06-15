@@ -346,6 +346,14 @@ bool AppAresEdit::OnKeyboard(iEvent& ev)
     {
       do_auto_time = !do_auto_time;
     }
+    else if (code == CSKEY_F4)
+    {
+      nature->SetFoliageDensityFactor (nature->GetFoliageDensityFactor ()-.05);
+    }
+    else if (code == CSKEY_F5)
+    {
+      nature->SetFoliageDensityFactor (nature->GetFoliageDensityFactor ()+.05);
+    }
     else if (code == '.')
     {
       if (GetCamera ().IsPanningEnabled ())

@@ -68,6 +68,8 @@ void Nature::InitSector (iSector* sector)
   iLightList* lightList = sector->GetLights ();
   sun = engine->CreateLight("Sun", csVector3 (10.0f), 9000, csColor (0.3f, 0.2f, 0.1f));
   lightList->Add (sun);
+  // @@@ HARDCODED!
+  meshgen = sector->GetMeshGeneratorByName ("grass");
 }
 
 void Nature::MoveSun (float step, iCamera* cam)
@@ -135,9 +137,16 @@ void Nature::UpdateTime (csTicks ticks, iCamera* cam)
   lastStep = step;
 
   MoveSun (step, cam);
+}
 
-  //csRef<csShaderVariable> sv = shaderMgr->GetVariableAdd(string_standardTime);
-  //sv->SetValue(step);
+void Nature::SetFoliageDensityFactor (float factor)
+{
+  meshgen->SetDefaultDensityFactor (factor);
+}
+
+float Nature::GetFoliageDensityFactor () const
+{
+  return meshgen->GetDefaultDensityFactor ();
 }
 
 }

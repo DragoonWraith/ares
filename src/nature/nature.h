@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 #include "csutil/scf_implementation.h"
 #include "iengine/engine.h"
+#include "iengine/meshgen.h"
 #include "iutil/virtclk.h"
 #include "iutil/comp.h"
 
@@ -44,6 +45,8 @@ private:
   csRef<iVirtualClock> vc;
   csRef<iShaderManager> shaderMgr;
   csRef<iShaderVarStringSet> strings;
+
+  iMeshGenerator* meshgen;
 
   CS::ShaderVarStringID string_sunDirection;
   CS::ShaderVarStringID string_sunTime;
@@ -64,6 +67,9 @@ public:
 
   virtual void UpdateTime (csTicks ticks, iCamera* camera);
   virtual void InitSector (iSector* sector);
+
+  virtual void SetFoliageDensityFactor (float factor);
+  virtual float GetFoliageDensityFactor () const;
 };
 
 }

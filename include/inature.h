@@ -41,6 +41,10 @@ struct iNature : public virtual iBase
   virtual void UpdateTime (csTicks ticks, iCamera* camera) = 0;
 
   virtual void InitSector (iSector* sector) = 0;
+
+  /// Set the basic foliage density factor. Default is 1.
+  virtual void SetFoliageDensityFactor (float factor) = 0;
+  virtual float GetFoliageDensityFactor () const = 0;
 };
 
 #endif // __ARES_NATURE_H__
