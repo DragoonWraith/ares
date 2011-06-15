@@ -239,9 +239,57 @@
 		<scale w="256" h="256" />
 	    </densityfactormap>
             <geometry>
+                <factory maxdist="30" name="Wheat03_i" />
+                <radius>0.1</radius>
+		<densityfactormap factor=".02">grass</densityfactormap>
+	        <windbias>0.1</windbias>
+	        <winddirection x=".1" y=".1" />
+	        <windspeed>0.3</windspeed>
+            </geometry>
+            <geometry>
+                <factory maxdist="30" name="Cortaderia_i" />
+                <radius>0.1</radius>
+		<densityfactormap factor=".1">grass</densityfactormap>
+	        <windbias>0.1</windbias>
+	        <winddirection x=".1" y=".1" />
+	        <windspeed>0.3</windspeed>
+            </geometry>
+            <geometry>
+                <factory maxdist="30" name="PurpleGrass_i" />
+                <radius>0.1</radius>
+		<densityfactormap factor=".2">grass</densityfactormap>
+	        <windbias>0.1</windbias>
+	        <winddirection x=".1" y=".1" />
+	        <windspeed>0.3</windspeed>
+            </geometry>
+            <geometry>
                 <factory maxdist="30" name="Grass02_i" />
                 <radius>0.1</radius>
-		<densityfactormap factor="5">grass</densityfactormap>
+		<densityfactormap factor=".2">grass</densityfactormap>
+	        <windbias>0.1</windbias>
+	        <winddirection x=".1" y=".1" />
+	        <windspeed>0.3</windspeed>
+            </geometry>
+            <geometry>
+                <factory maxdist="20" name="Grass03_i" />
+                <radius>0.01</radius>
+		<densityfactormap factor=".5">grass</densityfactormap>
+	        <windbias>0.1</windbias>
+	        <winddirection x=".1" y=".1" />
+	        <windspeed>0.3</windspeed>
+            </geometry>
+            <geometry>
+                <factory maxdist="20" name="Grass04_i" />
+                <radius>0.01</radius>
+		<densityfactormap factor=".5">grass</densityfactormap>
+	        <windbias>0.1</windbias>
+	        <winddirection x=".1" y=".1" />
+	        <windspeed>0.3</windspeed>
+            </geometry>
+            <geometry>
+                <factory maxdist="20" name="Grass05_i" />
+                <radius>0.01</radius>
+		<densityfactormap factor=".5">grass</densityfactormap>
 	        <windbias>0.1</windbias>
 	        <winddirection x=".1" y=".1" />
 	        <windspeed>0.3</windspeed>

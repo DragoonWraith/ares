@@ -9,7 +9,29 @@
     <shader> <file>/shader/lighting/lighting_default_instance.xml</file> </shader>
     <shader> <file>/shader/lighting/lighting_default_instance_binalpha.xml</file> </shader>
   </shaders>
+  <textures>
+    <texture name="cortaderia.png">
+      <file>textures/cortaderia.png</file>
+      <alpha> <binary/> </alpha>
+    </texture>
+    <texture name="purple_grass.png">
+      <file>textures/purple_grass.png</file>
+      <alpha> <binary/> </alpha>
+    </texture>
+  </textures>
   <materials>
+    <material name='purple_grass_i'>
+      <texture>purple_grass.png</texture>
+      <shader type='depthwrite'>*null</shader>
+      <shader type='base'>foliage_grass</shader>
+      <shader type='diffuse'>foliage_grass</shader>
+    </material>
+    <material name='cortaderia_i'>
+      <texture>cortaderia.png</texture>
+      <shader type='depthwrite'>*null</shader>
+      <shader type='base'>foliage_grass</shader>
+      <shader type='diffuse'>foliage_grass</shader>
+    </material>
     <material name='grass_004_i'>
       <texture>grass_004.png</texture>
       <shader type='depthwrite'>*null</shader>
@@ -19,23 +41,25 @@
     <material name='grass_006_i'>
       <texture>grass_006.png</texture>
       <shader type='depthwrite'>*null</shader>
-      <shader type='base'>lighting_default_instance_binalpha</shader>
-      <shader type='diffuse'>lighting_default_instance_binalpha</shader>
+      <shader type='base'>foliage_grass</shader>
+      <shader type='diffuse'>foliage_grass</shader>
     </material>
     <material name='plants1_i'>
       <texture>prop_plants.png</texture>
       <shader type='depthwrite'>*null</shader>
-      <shader type='base'>lighting_default_instance_binalpha</shader>
-      <shader type='diffuse'>lighting_default_instance_binalpha</shader>
+      <shader type='base'>foliage_grass</shader>
+      <shader type='diffuse'>foliage_grass</shader>
     </material>
     <material name='wheat_i'>
       <texture>wheatskin.png</texture>
       <shader type='depthwrite'>*null</shader>
-      <shader type='base'>lighting_default_instance_binalpha</shader>
-      <shader type='diffuse'>lighting_default_instance_binalpha</shader>
+      <shader type='base'>foliage_grass</shader>
+      <shader type='diffuse'>foliage_grass</shader>
     </material>
   </materials>
   <sounds/>
+  <library>factories/Cortaderia_i</library>
+  <library>factories/PurpleGrass_i</library>
   <library>factories/Grass02_i</library>
   <library>factories/Grass03_i</library>
   <library>factories/Grass04_i</library>
