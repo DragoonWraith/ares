@@ -40,22 +40,28 @@
                 <Property Name="BackgroundEnabled" Value="False" />
                 <Property Name="FrameEnabled" Value="False" />
                 <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
-                <Property Name="UnifiedAreaRect" Value="{{.17,0},{.1,0},{.39,0},{.9,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{.17,0},{.1,0},{.29,0},{.9,0}}" />
             </Window>
+
             <Window Type="ice/TabButton" Name="Ares/StateWindow/MainTab" >
-                <Property Name="Text" Value="M" />
+                <Property Name="Text" Value="Main" />
                 <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
-                <Property Name="UnifiedAreaRect" Value="{{0.40,0},{.1,0},{.43,0},{.9,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.30,0},{.1,0},{.35,0},{.9,0}}" />
             </Window>
             <Window Type="ice/TabButton" Name="Ares/StateWindow/CurveTab" >
-                <Property Name="Text" Value="C" />
+                <Property Name="Text" Value="Curve" />
                 <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
-                <Property Name="UnifiedAreaRect" Value="{{0.44,0},{.1,0},{.47,0},{.9,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.36,0},{.1,0},{.41,0},{.9,0}}" />
             </Window>
             <Window Type="ice/TabButton" Name="Ares/StateWindow/RoomTab" >
-                <Property Name="Text" Value="R" />
+                <Property Name="Text" Value="Room" />
                 <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
-                <Property Name="UnifiedAreaRect" Value="{{0.48,0},{.1,0},{.51,0},{.9,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.42,0},{.1,0},{.47,0},{.9,0}}" />
+            </Window>
+            <Window Type="ice/TabButton" Name="Ares/StateWindow/FoliageTab" >
+                <Property Name="Text" Value="Foliage" />
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0.48,0},{.1,0},{.53,0},{.9,0}}" />
             </Window>
 
             <Window Type="ice/Checkbox" Name="Ares/StateWindow/Simulation" >
@@ -74,7 +80,7 @@
 	<!-- =============================================================================== -->
 
         <Window Type="ice/FrameWindow" Name="Ares/ItemWindow" >
-            <Property Name="Text" Value="M" />
+            <Property Name="Text" Value="Main" />
             <Property Name="UnifiedMaxSize" Value="{{0.14,0},{.96,0}}" />
             <Property Name="UnifiedMinSize" Value="{{0.14,0},{.96,0}}" />
             <Property Name="UnifiedAreaRect" Value="{{0.86,0},{.041,0},{1,0},{.96,0}}" />
@@ -147,7 +153,7 @@
 	<!-- =============================================================================== -->
 
         <Window Type="ice/FrameWindow" Name="Ares/CurveWindow" >
-            <Property Name="Text" Value="C" />
+            <Property Name="Text" Value="Curve" />
             <Property Name="UnifiedMaxSize" Value="{{0.14,0},{.96,0}}" />
             <Property Name="UnifiedMinSize" Value="{{0.14,0},{.96,0}}" />
             <Property Name="UnifiedAreaRect" Value="{{0.86,0},{.041,0},{1,0},{.96,0}}" />
@@ -188,7 +194,7 @@
 	<!-- =============================================================================== -->
 
         <Window Type="ice/FrameWindow" Name="Ares/RoomWindow" >
-            <Property Name="Text" Value="R" />
+            <Property Name="Text" Value="Room" />
             <Property Name="UnifiedMaxSize" Value="{{0.14,0},{.96,0}}" />
             <Property Name="UnifiedMinSize" Value="{{0.14,0},{.96,0}}" />
             <Property Name="UnifiedAreaRect" Value="{{0.86,0},{.041,0},{1,0},{.96,0}}" />
@@ -197,6 +203,25 @@
 	    <!--<Property Name="FrameEnabled" Value="False" />-->
             <Property Name="TitlebarEnabled" Value="False" />
             <Property Name='Visible' Value='False'/>
+        </Window>
+
+	<!-- =============================================================================== -->
+
+        <Window Type="ice/FrameWindow" Name="Ares/FoliageWindow" >
+            <Property Name="Text" Value="Foliage" />
+            <Property Name="UnifiedMaxSize" Value="{{0.14,0},{.96,0}}" />
+            <Property Name="UnifiedMinSize" Value="{{0.14,0},{.96,0}}" />
+            <Property Name="UnifiedAreaRect" Value="{{0.86,0},{.041,0},{1,0},{.96,0}}" />
+            <Property Name="CloseButtonEnabled" Value="False" />
+            <Property Name="SizingEnabled" Value="False" />
+	    <!--<Property Name="FrameEnabled" Value="False" />-->
+            <Property Name="TitlebarEnabled" Value="False" />
+            <Property Name='Visible' Value='False'/>
+            <Window Type="ice/MultiColumnList" Name="Ares/FoliageWindow/Types" >
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+                <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{0.5,0}}" />
+                <Property Name="ColumnHeader" Value="text:Type width:{1,0} id:0" />
+            </Window>
         </Window>
 
 	<!-- =============================================================================== -->
