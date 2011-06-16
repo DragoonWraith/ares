@@ -30,7 +30,7 @@ THE SOFTWARE.
 RoomMode::RoomMode (AppAresEdit* aresed)
   : EditingMode (aresed, "Room")
 {
-  editingRoomeFactory = 0;
+  editingRoomFactory = 0;
 
   CEGUI::WindowManager* winMgr = aresed->GetCEGUI ()->GetWindowManagerPtr ();
   CEGUI::Window* btn;

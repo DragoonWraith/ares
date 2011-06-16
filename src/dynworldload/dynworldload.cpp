@@ -51,7 +51,8 @@ enum
   XMLTOKEN_MESH,
   XMLTOKEN_CONVEXMESH,
   XMLTOKEN_MATERIAL,
-  XMLTOKEN_POINT
+  XMLTOKEN_POINT,
+  XMLTOKEN_FOLIAGEDENSITY
 };
 
 //---------------------------------------------------------------------------------------
@@ -71,6 +72,12 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
   if (!dynworld)
   {
     printf ("No dynamic world plugin!\n");
+    return false;
+  }
+  nature = csLoadPluginCheck<iNature> (object_reg, "utility.nature");
+  if (!nature)
+  {
+    printf ("No nature plugin!\n");
     return false;
   }
   roomMeshCreator = csLoadPluginCheck<iRoomMeshCreator> (object_reg, "utility.rooms");
@@ -103,7 +110,16 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
   xmltokens.Register ("convexmesh", XMLTOKEN_CONVEXMESH);
   xmltokens.Register ("material", XMLTOKEN_MATERIAL);
   xmltokens.Register ("point", XMLTOKEN_POINT);
+  xmltokens.Register ("foliagedensity", XMLTOKEN_FOLIAGEDENSITY);
 
+  return true;
+}
+
+bool DynamicWorldLoader::ParseFoliageDensity (iDocumentNode* node)
+{
+  csString name = node->GetAttributeValue ("name");
+  csString image = node->GetAttributeValue ("image");
+  nature->RegisterFoliageDensityMap (name, image);
   return true;
 }
 
@@ -404,6 +420,9 @@ csPtr<iBase> DynamicWorldLoader::Parse (iDocumentNode* node,
 	break;
       case XMLTOKEN_ROOM:
 	if (!ParseRoom (child)) return 0;
+	break;
+      case XMLTOKEN_FOLIAGEDENSITY:
+	if (!ParseFoliageDensity (child)) return 0;
 	break;
       default:
         synldr->ReportBadToken (child);

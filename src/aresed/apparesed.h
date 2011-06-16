@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "mainmode.h"
 #include "curvemode.h"
 #include "roommode.h"
+#include "foliagemode.h"
 #include "camera.h"
 #include "selection.h"
 
@@ -97,6 +98,7 @@ private:
   MainMode* mainMode;
   CurveMode* curveMode;
   RoomMode* roomMode;
+  FoliageMode* foliageMode;
   EditingMode* editMode;
 
   WorldLoader* worldLoader;
@@ -237,9 +239,11 @@ private:
   bool OnMainTabButtonClicked (const CEGUI::EventArgs&);
   bool OnCurveTabButtonClicked (const CEGUI::EventArgs&);
   bool OnRoomTabButtonClicked (const CEGUI::EventArgs&);
+  bool OnFoliageTabButtonClicked (const CEGUI::EventArgs&);
 
   bool SwitchToCurveMode ();
   bool SwitchToRoomMode ();
+  bool SwitchToFoliageMode ();
 
   CEGUI::Checkbox* simulationCheck;
   CEGUI::PushButton* undoButton;
@@ -247,6 +251,7 @@ private:
   CEGUI::TabButton* mainTabButton;
   CEGUI::TabButton* curveTabButton;
   CEGUI::TabButton* roomTabButton;
+  CEGUI::TabButton* foliageTabButton;
 
   FileReq* filereq;
   CameraWindow* camwin;
@@ -274,6 +279,7 @@ public:
   iDynamicWorld* GetDynamicWorld () const { return dynworld; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
+  iNature* GetNature () const { return nature; }
 
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }

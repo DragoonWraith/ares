@@ -22,23 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_roommode_h
-#define __aresed_roommode_h
+#ifndef __aresed_foliagemode_h
+#define __aresed_foliagemode_h
 
 #include "csutil/csstring.h"
 #include "editmodes.h"
 
 struct iGeometryGenerator;
 
-class RoomMode : public EditingMode
+class FoliageMode : public EditingMode
 {
 private:
-  iRoomFactory* editingRoomFactory;
-  csRef<iGeometryGenerator> ggen;
+  CEGUI::MultiColumnList* typeList;
+
+  /// Update the list of types.
+  void UpdateTypeList ();
+
+  bool OnTypeListSelection (const CEGUI::EventArgs&);
 
 public:
-  RoomMode (AppAresEdit* aresed);
-  virtual ~RoomMode () { }
+  FoliageMode (AppAresEdit* aresed);
+  virtual ~FoliageMode () { }
 
   virtual void Start ();
   virtual void Stop ();
@@ -58,5 +62,5 @@ public:
   virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
-#endif // __aresed_roommode_h
+#endif // __aresed_foliagemode_h
 

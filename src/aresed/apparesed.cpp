@@ -52,6 +52,7 @@ AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
   mainMode = 0;
   curveMode = 0;
   roomMode = 0;
+  foliageMode = 0;
   curvedFactoryCounter = 0;
   roomFactoryCounter = 0;
   worldLoader = 0;
@@ -65,6 +66,7 @@ AppAresEdit::~AppAresEdit()
   delete mainMode;
   delete curveMode;
   delete roomMode;
+  delete foliageMode;
   delete worldLoader;
   delete selection;
 }
@@ -430,6 +432,10 @@ bool AppAresEdit::InitWindowSystem ()
   roomTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
     CEGUI::Event::Subscriber(&AppAresEdit::OnRoomTabButtonClicked, this));
   roomTabButton->setTargetWindow(winMgr->getWindow("Ares/RoomWindow"));
+  foliageTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/FoliageTab"));
+  foliageTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
+    CEGUI::Event::Subscriber(&AppAresEdit::OnFoliageTabButtonClicked, this));
+  foliageTabButton->setTargetWindow(winMgr->getWindow("Ares/FoliageWindow"));
 
   simulationCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("Ares/StateWindow/Simulation"));
   simulationCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
@@ -441,6 +447,7 @@ bool AppAresEdit::InitWindowSystem ()
   mainMode = new MainMode (this);
   curveMode = new CurveMode (this);
   roomMode = new RoomMode (this);
+  foliageMode = new FoliageMode (this);
   editMode = mainMode;
   mainTabButton->setSelected(true);
 
@@ -471,9 +478,11 @@ bool AppAresEdit::OnMainTabButtonClicked (const CEGUI::EventArgs&)
   mainTabButton->setSelected(true);
   curveTabButton->setSelected(false);
   roomTabButton->setSelected(false);
+  foliageTabButton->setSelected(false);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(true);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
   winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
+  winMgr->getWindow("Ares/FoliageWindow")->setVisible(false);
   if (editMode) editMode->Stop ();
   editMode = mainMode;
   editMode->Start ();
@@ -490,6 +499,11 @@ bool AppAresEdit::OnRoomTabButtonClicked (const CEGUI::EventArgs&)
   return SwitchToRoomMode ();
 }
 
+bool AppAresEdit::OnFoliageTabButtonClicked (const CEGUI::EventArgs&)
+{
+  return SwitchToFoliageMode ();
+}
+
 bool AppAresEdit::SwitchToCurveMode ()
 {
   if (selection->GetSize () != 1) return true;
@@ -499,9 +513,11 @@ bool AppAresEdit::SwitchToCurveMode ()
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   roomTabButton->setSelected(false);
+  foliageTabButton->setSelected(false);
   curveTabButton->setSelected(true);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
   winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
+  winMgr->getWindow("Ares/FoliageWindow")->setVisible(false);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(true);
   if (editMode) editMode->Stop ();
   editMode = curveMode;
@@ -518,9 +534,11 @@ bool AppAresEdit::SwitchToRoomMode ()
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   curveTabButton->setSelected(false);
+  foliageTabButton->setSelected(false);
   roomTabButton->setSelected(true);
   winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
   winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
+  winMgr->getWindow("Ares/FoliageWindow")->setVisible(false);
   winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
   if (editMode) editMode->Stop ();
   editMode = roomMode;
@@ -528,9 +546,28 @@ bool AppAresEdit::SwitchToRoomMode ()
   return true;
 }
 
+bool AppAresEdit::SwitchToFoliageMode ()
+{
+  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
+  mainTabButton->setSelected(false);
+  curveTabButton->setSelected(false);
+  roomTabButton->setSelected(false);
+  foliageTabButton->setSelected(true);
+  winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
+  winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
+  winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
+  winMgr->getWindow("Ares/FoliageWindow")->setVisible(true);
+  if (editMode) editMode->Stop ();
+  editMode = foliageMode;
+  editMode->Start ();
+  return true;
+}
+
 void AppAresEdit::CleanupWorld ()
 {
   selection->SetCurrentObject (0);
+
+  nature->CleanUp ();
 
   curvedFactories.DeleteAll ();
   roomFactories.DeleteAll ();

@@ -42,9 +42,24 @@ struct iNature : public virtual iBase
 
   virtual void InitSector (iSector* sector) = 0;
 
+  /// Clean up the nature plugin.
+  virtual void CleanUp () = 0;
+
   /// Set the basic foliage density factor. Default is 1.
   virtual void SetFoliageDensityFactor (float factor) = 0;
   virtual float GetFoliageDensityFactor () const = 0;
+
+  /// Register the name of a foliage density map.
+  virtual void RegisterFoliageDensityMap (const char* name, const char* image) = 0;
+
+  /// Get the number of foliage density maps.
+  virtual size_t GetFoliageDensityMapCount () const = 0;
+
+  /// Get a specific foliage density map name.
+  virtual const char* GetFoliageDensityMapName (size_t idx) const = 0;
+
+  /// Get a specific foliage density map image.
+  virtual iImage* GetFoliageDensityMapImage (size_t idx) = 0;
 };
 
 #endif // __ARES_NATURE_H__

@@ -31,20 +31,30 @@ THE SOFTWARE.
 #include "iengine/meshgen.h"
 #include "iutil/virtclk.h"
 #include "iutil/comp.h"
+#include "igraphic/image.h"
 
 #include "include/inature.h"
 
 CS_PLUGIN_NAMESPACE_BEGIN(Nature)
 {
 
+struct FoliageDensityMap
+{
+  csString name;
+  csString image_name;
+  csRef<iImage> image;
+};
+
 class Nature : public scfImplementation2<Nature, iNature, iComponent>
 {
 private:
-  iObjectRegistry *object_reg;
+  iObjectRegistry* object_reg;
   csRef<iEngine> engine;
   csRef<iVirtualClock> vc;
   csRef<iShaderManager> shaderMgr;
   csRef<iShaderVarStringSet> strings;
+
+  csArray<FoliageDensityMap> foliage_density_maps;
 
   iMeshGenerator* meshgen;
 
@@ -65,11 +75,30 @@ public:
   virtual ~Nature ();
   virtual bool Initialize (iObjectRegistry *object_reg);
 
+  virtual void CleanUp ();
+
   virtual void UpdateTime (csTicks ticks, iCamera* camera);
   virtual void InitSector (iSector* sector);
 
   virtual void SetFoliageDensityFactor (float factor);
   virtual float GetFoliageDensityFactor () const;
+
+  virtual void RegisterFoliageDensityMap (const char* name, const char* image)
+  {
+    FoliageDensityMap fdm;
+    fdm.name = name;
+    fdm.image_name = image;
+    foliage_density_maps.Push (fdm);
+  }
+  virtual size_t GetFoliageDensityMapCount () const
+  {
+    return foliage_density_maps.GetSize ();
+  }
+  virtual const char* GetFoliageDensityMapName (size_t idx) const
+  {
+    return foliage_density_maps[idx].name;
+  }
+  virtual iImage* GetFoliageDensityMapImage (size_t idx);
 };
 
 }

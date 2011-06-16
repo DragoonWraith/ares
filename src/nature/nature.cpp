@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "iengine/sector.h"
 #include "iengine/camera.h"
 #include "iengine/movable.h"
+#include "iutil/vfs.h"
+#include "imap/loader.h"
+#include "csgfx/imagememory.h"
 
 
 CS_PLUGIN_NAMESPACE_BEGIN(Nature)
@@ -63,6 +66,15 @@ bool Nature::Initialize (iObjectRegistry *object_reg)
   return true;
 }
 
+void Nature::CleanUp ()
+{
+  sun_alfa = 3.21f;
+  sun_theta = 0.206f;
+  min_light = 0.0f;
+  foliage_density_maps.Empty ();
+  sun = 0;
+}
+
 void Nature::InitSector (iSector* sector)
 {
   iLightList* lightList = sector->GetLights ();
@@ -70,6 +82,21 @@ void Nature::InitSector (iSector* sector)
   lightList->Add (sun);
   // @@@ HARDCODED!
   meshgen = sector->GetMeshGeneratorByName ("grass");
+}
+
+iImage* Nature::GetFoliageDensityMapImage (size_t idx)
+{
+  iImage* image = foliage_density_maps[idx].image;
+  if (!image)
+  {
+    csString image_name = foliage_density_maps[idx].image_name;
+    csRef<iLoader> loader = csQueryRegistry<iLoader> (object_reg);
+    csRef<iImage> source = loader->LoadImage (image_name);
+    // @@@ Error checking.
+    image = new csImageMemory (source);
+    foliage_density_maps[idx].image.AttachNew (image);
+  }
+  return image;
 }
 
 void Nature::MoveSun (float step, iCamera* cam)
