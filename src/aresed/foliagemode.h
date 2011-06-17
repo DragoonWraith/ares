@@ -28,12 +28,13 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "editmodes.h"
 
-struct iGeometryGenerator;
+struct iMeshGenerator;
 
 class FoliageMode : public EditingMode
 {
 private:
   CEGUI::MultiColumnList* typeList;
+  iMeshGenerator* meshgen;
 
   /// Update the list of types.
   void UpdateTypeList ();

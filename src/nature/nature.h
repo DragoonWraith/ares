@@ -98,7 +98,9 @@ public:
   {
     return foliage_density_maps[idx].name;
   }
+  virtual size_t GetFoliageDensityMapIndex (const char* name) const;
   virtual iImage* GetFoliageDensityMapImage (size_t idx);
+  virtual iImage* GetFoliageDensityMapImage (const char* name);
 };
 
 }

@@ -99,6 +99,21 @@ iImage* Nature::GetFoliageDensityMapImage (size_t idx)
   return image;
 }
 
+size_t Nature::GetFoliageDensityMapIndex (const char* name) const
+{
+  for (size_t i = 0 ; i < foliage_density_maps.GetSize () ; i++)
+    if (foliage_density_maps[i].name == name)
+      return i;
+  return csArrayItemNotFound;
+}
+
+iImage* Nature::GetFoliageDensityMapImage (const char* name)
+{
+  size_t idx = GetFoliageDensityMapIndex (name);
+  if (idx == csArrayItemNotFound) return 0;
+  return GetFoliageDensityMapImage (idx);
+}
+
 void Nature::MoveSun (float step, iCamera* cam)
 {
   //=[ Sun position ]===================================

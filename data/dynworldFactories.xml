@@ -511,7 +511,7 @@
     </factory>
 
     <foliagedensity name="grass" image="/this/data/landscape/densitymap.png" />
-    <foliagedensity name="purplegrass" image="/this/data/landscape/densitymap_purple" />
+    <foliagedensity name="purplegrass" image="/this/data/landscape/densitymap_purple.png" />
 
     <curve name="CurvedStreet" width="6" sideheight=".9">
       <attr name="category" value="Street" />

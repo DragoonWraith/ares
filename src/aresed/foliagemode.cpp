@@ -24,6 +24,8 @@ THE SOFTWARE.
 
 #include "apparesed.h"
 #include "foliagemode.h"
+#include "iengine/sector.h"
+#include "iengine/meshgen.h"
 
 //---------------------------------------------------------------------------
 
@@ -62,6 +64,9 @@ bool FoliageMode::OnTypeListSelection (const CEGUI::EventArgs&)
 void FoliageMode::Start ()
 {
   UpdateTypeList ();
+  // @@@ Hardcoded!
+  iSector* sector = aresed->GetCsCamera ()->GetSector ();
+  meshgen = sector->GetMeshGeneratorByName ("grass");
 }
 
 void FoliageMode::Stop ()
@@ -101,6 +106,37 @@ bool FoliageMode::OnKeyboard(iEvent& ev, utf32_char code)
 
 bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  csSegment3 seg = aresed->GetMouseBeam ();
+  csVector3 isect;
+  if (aresed->TraceBeamTerrain (seg.Start (), seg.End (), isect))
+  {
+    CEGUI::ListboxItem* item = typeList->getFirstSelectedItem ();
+    if (!item) return false;
+    csString factorMapID = item->getText ().c_str ();
+    const CS::Math::Matrix4& world2map = meshgen->GetWorldToMapTransform (factorMapID);
+    int width = meshgen->GetDensityFactorMapWidth (factorMapID);
+    int height = meshgen->GetDensityFactorMapHeight (factorMapID);
+    isect.y = 0;
+    csVector4 mapCoord (world2map * isect);
+    iNature* nature = aresed->GetNature ();
+    iImage* image = nature->GetFoliageDensityMapImage (factorMapID);
+    csRef<iDataBuffer> buf = image->GetRawData ();
+    char* mapPtr = buf->GetData ();
+
+    int mapX = int (mapCoord.x * width);
+    printf ("mapX=%d width=%d\n", mapX, width); fflush (stdout);
+    if ((mapX < 0) || (mapX >= width)) return false;
+    int mapY = int (mapCoord.y * height);
+    printf ("mapY=%d height=%d\n", mapY, height); fflush (stdout);
+    if ((mapY < 0) || (mapY >= height)) return false;
+    uint8 val = mapPtr[mapY * width + mapX];
+    float density = val * (1.0f/255.0f);
+    printf ("density=%g\n", density); fflush (stdout);
+    if (val <= 250) val += 5;
+    mapPtr[mapY * width + mapX] = val;
+    meshgen->UpdateDensityFactorMap (factorMapID, image);
+    return true;
+  }
   return false;
 }
 

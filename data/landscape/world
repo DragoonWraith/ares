@@ -261,7 +261,7 @@
             <geometry>
                 <factory maxdist="30" name="PurpleGrass_i" />
                 <radius>0.1</radius>
-		<densityfactormap factor=".2">purplegrass</densityfactormap>
+		<densityfactormap factor="1">purplegrass</densityfactormap>
 	        <windbias>0.1</windbias>
 	        <winddirection x=".1" y=".1" />
 	        <windspeed>0.3</windspeed>

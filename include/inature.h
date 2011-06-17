@@ -57,9 +57,12 @@ struct iNature : public virtual iBase
 
   /// Get a specific foliage density map name.
   virtual const char* GetFoliageDensityMapName (size_t idx) const = 0;
+  /// Find the index of a foliage density map.
+  virtual size_t GetFoliageDensityMapIndex (const char* name) const = 0;
 
   /// Get a specific foliage density map image.
   virtual iImage* GetFoliageDensityMapImage (size_t idx) = 0;
+  virtual iImage* GetFoliageDensityMapImage (const char* name) = 0;
 };
 
 #endif // __ARES_NATURE_H__
