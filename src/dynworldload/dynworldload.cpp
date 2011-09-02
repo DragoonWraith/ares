@@ -44,8 +44,6 @@ SCF_IMPLEMENT_FACTORY (DynamicWorldLoader)
 
 enum
 {
-  XMLTOKEN_DYNWORLD,
-  XMLTOKEN_FACTORY,
   XMLTOKEN_CURVE,
   XMLTOKEN_ROOM,
   XMLTOKEN_ATTR,
@@ -103,8 +101,6 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
     return false;
   }
 
-  xmltokens.Register ("dynworld", XMLTOKEN_DYNWORLD);
-  xmltokens.Register ("factory", XMLTOKEN_FACTORY);
   xmltokens.Register ("curve", XMLTOKEN_CURVE);
   xmltokens.Register ("room", XMLTOKEN_ROOM);
   xmltokens.Register ("attr", XMLTOKEN_ATTR);
@@ -120,7 +116,8 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
   return true;
 }
 
-bool DynamicWorldLoader::ParseFoliageDensity (iDocumentNode* node)
+bool DynamicWorldLoader::ParseFoliageDensity (iDocumentNode* node,
+    iPcDynamicWorld* dynworld)
 {
   csString name = node->GetAttributeValue ("name");
   csString image = node->GetAttributeValue ("image");
@@ -128,7 +125,7 @@ bool DynamicWorldLoader::ParseFoliageDensity (iDocumentNode* node)
   return true;
 }
 
-bool DynamicWorldLoader::ParseRoom (iDocumentNode* node)
+bool DynamicWorldLoader::ParseRoom (iDocumentNode* node, iPcDynamicWorld* dynworld)
 {
   csString name = node->GetAttributeValue ("name");
 
@@ -175,7 +172,7 @@ bool DynamicWorldLoader::ParseRoom (iDocumentNode* node)
   return true;
 }
 
-bool DynamicWorldLoader::ParseCurve (iDocumentNode* node)
+bool DynamicWorldLoader::ParseCurve (iDocumentNode* node, iPcDynamicWorld* dynworld)
 {
   csString name = node->GetAttributeValue ("name");
   float width = 1.0f;
@@ -232,231 +229,24 @@ bool DynamicWorldLoader::ParseCurve (iDocumentNode* node)
   return true;
 }
 
-bool DynamicWorldLoader::ParseFactory (iDocumentNode* node)
+bool DynamicWorldLoader::Parse (iDocumentNode* child, iPcDynamicWorld* dynworld)
 {
-  csString name = node->GetAttributeValue ("name");
-  float maxradius = 1.0f;
-  if (node->GetAttribute ("maxradius"))
-    maxradius = node->GetAttributeValueAsFloat ("maxradius");
-  float imposterradius = -1.0f;
-  if (node->GetAttribute ("imposterradius"))
-    imposterradius = node->GetAttributeValueAsFloat ("imposterradius");
-  float mass = 1.0f;
-  if (node->GetAttribute ("mass"))
-    mass = node->GetAttributeValueAsFloat ("mass");
-  iDynamicFactory* fact = dynworld->AddFactory (name, maxradius, imposterradius);
-  if (!fact)
+  csStringID id = xmltokens.Request (child->GetValue ());
+  switch (id)
   {
-    synldr->ReportError ("dynworld.loader", node,
-	"Could not add factory '%s'!", name.GetData ());
-    return false;
-  }
-
-  csRef<iDocumentNodeIterator> it = node->GetNodes ();
-  while (it->HasNext ())
-  {
-    csRef<iDocumentNode> child = it->Next ();
-    if (child->GetType () != CS_NODE_ELEMENT) continue;
-    csStringID id = xmltokens.Request (child->GetValue ());
-    switch (id)
-    {
-      case XMLTOKEN_ATTR:
-	fact->SetAttribute (child->GetAttributeValue ("name"),
-	    child->GetAttributeValue ("value"));
-	break;
-      case XMLTOKEN_BOX:
-	{
-	  csRef<iDocumentNode> offsetNode = child->GetNode ("offset");
-	  csRef<iDocumentNode> sizeNode = child->GetNode ("size");
-	  if (!offsetNode && !sizeNode)
-	  {
-	    const csBox3& bbox = fact->GetBBox ();
-	    fact->AddRigidBox (bbox.GetCenter (), bbox.GetSize (), mass);
-	  }
-	  else
-	  {
-	    csVector3 offset (0), size;
-	    if (offsetNode && !synldr->ParseVector (offsetNode, offset))
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		  "Error loading 'offset' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-
-	    if (!sizeNode || !synldr->ParseVector (sizeNode, size))
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		"Error loading 'size' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-	    fact->AddRigidBox (offset, size, mass);
-	  }
-	}
-	break;
-      case XMLTOKEN_CYLINDER:
-	{
-	  float radius = -1, length = -1;
-	  csRef<iDocumentNode> offsetNode = child->GetNode ("offset");
-	  if (!child->GetAttribute ("radius") && !child->GetAttribute ("length") &&
-	      !offsetNode)
-	  {
-	    const csBox3& bbox = fact->GetBBox ();
-	    csVector3 size = bbox.GetSize ();
-	    radius = size.x;
-	    if (size.z > radius) radius = size.z;
-	    radius /= 2.0;
-	    length = size.y;
-	    fact->AddRigidCylinder (radius, length, bbox.GetCenter (), mass);
-	  }
-	  else
-	  {
-	    radius = child->GetAttributeValueAsFloat ("radius");
-	    length = child->GetAttributeValueAsFloat ("length");
-	    csVector3 offset (0);
-	    if (offsetNode && !synldr->ParseVector (offsetNode, offset))
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		  "Error loading 'offset' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-
-	    if (radius < 0)
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		"Error loading 'radius' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-	    if (length < 0)
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		"Error loading 'length' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-	    fact->AddRigidCylinder (radius, length, offset, mass);
-	  }
-	}
-	break;
-      case XMLTOKEN_SPHERE:
-	{
-	  float radius = -1;
-	  csRef<iDocumentNode> offsetNode = child->GetNode ("offset");
-	  if (!child->GetAttribute ("radius") && !offsetNode)
-	  {
-	    const csBox3& bbox = fact->GetBBox ();
-	    csVector3 size = bbox.GetSize ();
-	    radius = size.x;
-	    if (size.y > radius) radius = size.y;
-	    if (size.z > radius) radius = size.z;
-	    radius /= 2.0;
-	    fact->AddRigidSphere (radius, bbox.GetCenter (), mass);
-	  }
-	  else
-	  {
-	    radius = child->GetAttributeValueAsFloat ("radius");
-	    csVector3 offset (0);
-	    if (offsetNode && !synldr->ParseVector (offsetNode, offset))
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		  "Error loading 'offset' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-
-	    if (radius < 0)
-	    {
-	      synldr->ReportError ("dynworld.loader", child,
-		"Error loading 'radius' for factory '%s'!", name.GetData ());
-	      return false;
-	    }
-	    fact->AddRigidSphere (radius, offset, mass);
-	  }
-	}
-	break;
-      case XMLTOKEN_MESH:
-	{
-	  csVector3 offset (0);
-	  csRef<iDocumentNode> offsetNode = child->GetNode ("offset");
-	  if (offsetNode && !synldr->ParseVector (offsetNode, offset))
-	  {
-	    synldr->ReportError ("dynworld.loader", child,
-		  "Error loading 'offset' for factory '%s'!", name.GetData ());
-	    return false;
-	  }
-	  fact->AddRigidMesh (offset, mass);
-	}
-	break;
-      case XMLTOKEN_CONVEXMESH:
-	{
-	  csVector3 offset (0);
-	  csRef<iDocumentNode> offsetNode = child->GetNode ("offset");
-	  if (offsetNode && !synldr->ParseVector (offsetNode, offset))
-	  {
-	    synldr->ReportError ("dynworld.loader", child,
-		  "Error loading 'offset' for factory '%s'!", name.GetData ());
-	    return false;
-	  }
-	  fact->AddRigidConvexMesh (offset, mass);
-	}
-	break;
-      default:
-        synldr->ReportBadToken (child);
-	return false;
-    }
+    case XMLTOKEN_CURVE:
+      if (!ParseCurve (child, dynworld)) return false;
+      break;
+    case XMLTOKEN_ROOM:
+      if (!ParseRoom (child, dynworld)) return false;
+      break;
+    case XMLTOKEN_FOLIAGEDENSITY:
+      if (!ParseFoliageDensity (child, dynworld)) return false;
+      break;
+    default:
+      return false;
   }
   return true;
-}
-
-csPtr<iBase> DynamicWorldLoader::Parse (iDocumentNode* node,
-  	iStreamSource* ssource, iLoaderContext* ldr_context,
-  	iBase* context)
-{
-  csRef<iDocumentNodeIterator> it = node->GetNodes ();
-  while (it->HasNext ())
-  {
-    csRef<iDocumentNode> child = it->Next ();
-    if (child->GetType () != CS_NODE_ELEMENT) continue;
-    csStringID id = xmltokens.Request (child->GetValue ());
-    switch (id)
-    {
-      case XMLTOKEN_DYNWORLD:
-	{
-	  csString name = child->GetAttributeValue ("name");
-	  csRef<iCelEntity> dynworldEntity = pl->FindEntity (name);
-	  if (!dynworldEntity)
-	  {
-	    synldr->ReportError ("dynworld.loader", child,
-		"Could not find entity '%s'!", name.GetData ());
-	    return 0;
-	  }
-	  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (dynworldEntity);
-	  if (!dynworld)
-	  {
-	    synldr->ReportError ("dynworld.loader", child,
-		"Entity '%s' does not have a dynamic world property class!",
-		name.GetData ());
-	    return 0;
-	  }
-	}
-	break;
-      case XMLTOKEN_FACTORY:
-	if (!ParseFactory (child)) return 0;
-	break;
-      case XMLTOKEN_CURVE:
-	if (!ParseCurve (child)) return 0;
-	break;
-      case XMLTOKEN_ROOM:
-	if (!ParseRoom (child)) return 0;
-	break;
-      case XMLTOKEN_FOLIAGEDENSITY:
-	if (!ParseFoliageDensity (child)) return 0;
-	break;
-      default:
-        synldr->ReportBadToken (child);
-	return 0;
-    }
-  }
-
-  IncRef ();
-  return this;
 }
 
 }

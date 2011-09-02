@@ -38,16 +38,16 @@ THE SOFTWARE.
 
 #include "physicallayer/pl.h"
 #include "propclass/dynworld.h"
+#include "tools/dynworldload.h"
 
 CS_PLUGIN_NAMESPACE_BEGIN(DynWorldLoader)
 {
 
 class DynamicWorldLoader : public scfImplementation2<DynamicWorldLoader,
-  iLoaderPlugin, iComponent>
+  iComponent, iDynamicWorldLoaderExtension>
 {
 private:
   csRef<iCelPlLayer> pl;
-  csRef<iPcDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;
@@ -55,21 +55,16 @@ private:
   csRef<iEngine> engine;
   csStringHash xmltokens;
 
-  bool ParseFactory (iDocumentNode* node);
-  bool ParseCurve (iDocumentNode* node);
-  bool ParseRoom (iDocumentNode* node);
-  bool ParseFoliageDensity (iDocumentNode* node);
+  bool ParseCurve (iDocumentNode* node, iPcDynamicWorld* dynworld);
+  bool ParseRoom (iDocumentNode* node, iPcDynamicWorld* dynworld);
+  bool ParseFoliageDensity (iDocumentNode* node, iPcDynamicWorld* dynworld);
 
 public:
   DynamicWorldLoader (iBase *iParent);
   virtual ~DynamicWorldLoader ();
   virtual bool Initialize (iObjectRegistry *object_reg);
 
-  virtual csPtr<iBase> Parse (iDocumentNode* node,
-  	iStreamSource* ssource, iLoaderContext* ldr_context,
-  	iBase* context);
-
-  virtual bool IsThreadSafe() { return false; }
+  virtual bool Parse (iDocumentNode* node, iPcDynamicWorld* dynworld);
 };
 
 }

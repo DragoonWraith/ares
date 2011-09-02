@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <library>
-  <addon plugin="ares.dynworld.loader.factories">
+  <addon plugin="cel.addons.dynamicworld.loader">
+    <extension plugin="ares.dynworld.loader.factories"/>
     <dynworld name="zone" />
     <factory name="krystal" maxradius="0.6" imposterradius="0.4" mass="50">
       <attr name="defaultstatic" value="true" />
