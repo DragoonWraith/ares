@@ -354,7 +354,6 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.renderer.software",
 		iSndSysRenderer),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
-	CS_REQUEST_PLUGIN("utility.dynamicworld", iDynamicWorld),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_END))
@@ -445,13 +444,16 @@ bool AppAres::Application ()
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
   if (!curvedMeshCreator) return ReportError("Failed to load the curved mesh creator plugin!");
 
-  dynworld = csQueryRegistry<iDynamicWorld> (object_reg);
-  if (!dynworld) return ReportError("Failed to locate dynamic world plugin!");
+  zoneEntity = pl->CreateEntity ("zone", 0, 0,
+      "pcworld.dynamic", CEL_PROPCLASS_END);
+  if (!zoneEntity) return ReportError ("Failed to create zone entity!");
+  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (entity_cam);
 
   nature = csQueryRegistry<iNature> (object_reg);
   if (!nature) return ReportError("Failed to locate nature plugin!");
 
   worldLoader = new WorldLoader (object_reg);
+  worldLoader->SetZone (dynworld);
 
   if (!InitPhysics ())
     return false;

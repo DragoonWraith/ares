@@ -4,4 +4,5 @@ Description rooms : "Rooms Mesh Plugin" ;
 Plugin rooms :
   [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
 ExternalLibs rooms : CRYSTAL ;
+ExternalLibs rooms : CEL ;
 

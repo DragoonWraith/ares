@@ -45,8 +45,9 @@ THE SOFTWARE.
 #include "iengine/engine.h"
 #include "iengine/mesh.h"
 
-#include "include/igeometrygen.h"
 #include "include/icurvemesh.h"
+
+#include "propclass/dynworld.h"
 
 CS_PLUGIN_NAMESPACE_BEGIN(CurvedMesh)
 {

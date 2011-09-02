@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "csutil/csstring.h"
 #include "imarker.h"
+#include "propclass/dynworld.h"
 
 class AppAresEdit;
 

@@ -31,10 +31,11 @@ THE SOFTWARE.
 #include "physicallayer/messaging.h"
 #include "actorsettings.h"
 
-#include "include/idynworld.h"
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
 #include "include/inature.h"
+
+#include "propclass/dynworld.h"
 
 struct iEngine;
 struct iLoader;
@@ -73,15 +74,15 @@ private:
   csRef<iVFS> vfs;
   csRef<iCollideSystem> cdsys;
 
-  csRef<iDynamicWorld> dynworld;
+  csRef<iPcDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
 
   csRef<iNature> nature;
   csTicks currentTime;
 
   csRef<iCelPlLayer> pl;
-  csRef<iCelEntity> game;
   csRef<iCelEntity> entity_cam;
+  csRef<iCelEntity> zoneEntity;
 
   WorldLoader* worldLoader;
 

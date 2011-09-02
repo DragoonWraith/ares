@@ -25,6 +25,8 @@ THE SOFTWARE.
 #ifndef __aresed_worldload_h
 #define __aresed_worldload_h
 
+#include "propclass/dynworld.h"
+
 class Asset
 {
 private:
@@ -47,7 +49,7 @@ private:
   csRef<iEngine> engine;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
-  csRef<iDynamicWorld> dynworld;
+  csRef<iPcDynamicWorld> dynworld;
 
   csArray<Asset> assets;
 
@@ -60,6 +62,14 @@ private:
 
 public:
   WorldLoader (iObjectRegistry* object_reg);
+
+  /**
+   * Set the zone on which to operate.
+   */
+  void SetZone (iPcDynamicWorld* dynworld)
+  {
+    WorldLoader::dynworld = dynworld;
+  }
 
   /**
    * Load the world from a file.

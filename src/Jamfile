@@ -4,7 +4,6 @@ SubInclude TOP src ares ;
 SubInclude TOP src aresed ;
 SubInclude TOP src curvemesh ;
 SubInclude TOP src rooms ;
-SubInclude TOP src dynworld ;
 SubInclude TOP src dynworldload ;
 SubInclude TOP src nature ;
 SubInclude TOP src marker ;

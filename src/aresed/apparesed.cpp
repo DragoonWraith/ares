@@ -23,15 +23,16 @@ THE SOFTWARE.
  */
 
 #include "apparesed.h"
-#ifdef USE_CEL
 #include <celtool/initapp.h>
-#endif
 #include <cstool/simplestaticlighter.h>
 #include <csgeom/math3d.h>
 #include "camerawin.h"
 #include "selection.h"
 #include "common/worldload.h"
 #include "transformtools.h"
+
+#include "celtool/persisthelper.h"
+#include "physicallayer/pl.h"
 
 void AresEditSelectionListener::SelectionChanged (
     const csArray<iDynamicObject*>& current_objects)
@@ -655,25 +656,15 @@ bool AppAresEdit::OnLoadButtonClicked (const CEGUI::EventArgs&)
   return true;
 }
 
-bool AppAresEdit::OnInitialize(int argc, char* argv[])
+bool AppAresEdit::OnInitialize (int argc, char* argv[])
 {
   iObjectRegistry* r = GetObjectRegistry();
 
-  // Load application-specific configuration file.
-  if (!csInitializer::SetupConfigManager(r,
+  if (!celInitializer::SetupConfigManager(r,
       "/ares/AppAres.cfg", GetApplicationName()))
     return ReportError("Failed to initialize configuration manager!");
 
-#ifdef USE_CEL
-  celInitializer::SetupCelPluginDirs(r);
-#endif
-
-  // RequestPlugins() will load all plugins we specify.  In addition it will
-  // also check if there are plugins that need to be loaded from the
-  // configuration system (both the application configuration and CS or global
-  // configurations).  It also supports specifying plugins on the command line
-  // via the --plugin= option.
-  if (!csInitializer::RequestPlugins(r,
+  if (!celInitializer::RequestPlugins(r,
 	CS_REQUEST_VFS,
 	CS_REQUEST_OPENGL3D,
 	CS_REQUEST_ENGINE,
@@ -682,11 +673,12 @@ bool AppAresEdit::OnInitialize(int argc, char* argv[])
 	CS_REQUEST_LEVELLOADER,
 	CS_REQUEST_REPORTER,
 	CS_REQUEST_REPORTERLISTENER,
+	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
+	CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
 	CS_REQUEST_PLUGIN("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("crystalspace.cegui.wrapper", iCEGUI),
 	CS_REQUEST_PLUGIN("crystalspace.decal.manager", iDecalManager),
-	CS_REQUEST_PLUGIN("utility.dynamicworld", iDynamicWorld),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.marker", iMarkerManager),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
@@ -760,9 +752,6 @@ bool AppAresEdit::Application()
   if (!g3d)
     return ReportError("Failed to locate 3D renderer!");
 
-  dynworld = csQueryRegistry<iDynamicWorld> (r);
-  if (!dynworld) return ReportError("Failed to locate dynamic world plugin!");
-
   nature = csQueryRegistry<iNature> (r);
   if (!nature) return ReportError("Failed to locate nature plugin!");
 
@@ -770,44 +759,44 @@ bool AppAresEdit::Application()
   if (!markerMgr) return ReportError("Failed to locate marker manager plugin!");
 
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (r);
-  if (!curvedMeshCreator)
-    return ReportError("Failed to load the curved mesh creator plugin!");
+  if (!curvedMeshCreator) return ReportError("Failed to load the curved mesh creator plugin!");
 
   roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (r);
-  if (!roomMeshCreator)
-    return ReportError("Failed to load the room mesh creator plugin!");
+  if (!roomMeshCreator) return ReportError("Failed to load the room mesh creator plugin!");
 
   engine = csQueryRegistry<iEngine> (r);
-  if (!engine)
-    return ReportError("Failed to locate 3D engine!");
+  if (!engine) return ReportError("Failed to locate 3D engine!");
 
   decalMgr = csQueryRegistry<iDecalManager> (r);
-  if (!decalMgr)
-    return ReportError("Failed to load decal manager!");
+  if (!decalMgr) return ReportError("Failed to load decal manager!");
 
   printer.AttachNew(new FramePrinter(GetObjectRegistry()));
 
   vc = csQueryRegistry<iVirtualClock> (r);
-  if (!vc)
-    return ReportError ("Failed to locate Virtual Clock!");
+  if (!vc) return ReportError ("Failed to locate Virtual Clock!");
 
   kbd = csQueryRegistry<iKeyboardDriver> (r);
-  if (!kbd)
-    return ReportError ("Failed to locate Keyboard Driver!");
+  if (!kbd) return ReportError ("Failed to locate Keyboard Driver!");
+
+  pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  if (!pl) return ReportError ("CEL physical layer missing!");
 
   loader = csQueryRegistry<iLoader> (r);
-  if (!loader)
-    return ReportError("Failed to locate map loader plugin!");
+  if (!loader) return ReportError("Failed to locate map loader plugin!");
 
   cdsys = csQueryRegistry<iCollideSystem> (r);
-  if (!cdsys)
-    return ReportError ("Failed to locate CD system!");
+  if (!cdsys) return ReportError ("Failed to locate CD system!");
 
   cfgmgr = csQueryRegistry<iConfigManager> (r);
-  if (!cfgmgr)
-    return ReportError ("Failed to locate the configuration manager plugin!");
+  if (!cfgmgr) return ReportError ("Failed to locate the configuration manager plugin!");
+
+  zoneEntity = pl->CreateEntity ("zone", 0, 0,
+      "pcworld.dynamic", CEL_PROPCLASS_END);
+  if (!zoneEntity) return ReportError ("Failed to create zone entity!");
+  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
 
   worldLoader = new WorldLoader (r);
+  worldLoader->SetZone (dynworld);
   selection = new Selection (this);
   SelectionListener* listener = new AresEditSelectionListener (this);
   selection->AddSelectionListener (listener);

@@ -135,6 +135,8 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     if (val <= 250) val += 5;
     mapPtr[mapY * width + mapX] = val;
     meshgen->UpdateDensityFactorMap (factorMapID, image);
+    //meshgen->ClearPosition (isect);
+    meshgen->SetDefaultDensityFactor (meshgen->GetDefaultDensityFactor ());
     return true;
   }
   return false;

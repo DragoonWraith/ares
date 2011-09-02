@@ -33,6 +33,9 @@ THE SOFTWARE.
 
 #include "dynworldload.h"
 
+#include "physicallayer/pl.h"
+#include "physicallayer/propclas.h"
+
 
 CS_PLUGIN_NAMESPACE_BEGIN(DynWorldLoader)
 {
@@ -41,6 +44,7 @@ SCF_IMPLEMENT_FACTORY (DynamicWorldLoader)
 
 enum
 {
+  XMLTOKEN_DYNWORLD,
   XMLTOKEN_FACTORY,
   XMLTOKEN_CURVE,
   XMLTOKEN_ROOM,
@@ -68,10 +72,10 @@ DynamicWorldLoader::~DynamicWorldLoader ()
 
 bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
 {
-  dynworld = csLoadPluginCheck<iDynamicWorld> (object_reg, "utility.dynamicworld");
-  if (!dynworld)
+  pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  if (!pl)
   {
-    printf ("No dynamic world plugin!\n");
+    printf ("Can't find CEL physical layer!\n");
     return false;
   }
   nature = csLoadPluginCheck<iNature> (object_reg, "utility.nature");
@@ -99,6 +103,7 @@ bool DynamicWorldLoader::Initialize (iObjectRegistry *object_reg)
     return false;
   }
 
+  xmltokens.Register ("dynworld", XMLTOKEN_DYNWORLD);
   xmltokens.Register ("factory", XMLTOKEN_FACTORY);
   xmltokens.Register ("curve", XMLTOKEN_CURVE);
   xmltokens.Register ("room", XMLTOKEN_ROOM);
@@ -412,6 +417,26 @@ csPtr<iBase> DynamicWorldLoader::Parse (iDocumentNode* node,
     csStringID id = xmltokens.Request (child->GetValue ());
     switch (id)
     {
+      case XMLTOKEN_DYNWORLD:
+	{
+	  csString name = child->GetAttributeValue ("name");
+	  csRef<iCelEntity> dynworldEntity = pl->FindEntity (name);
+	  if (!dynworldEntity)
+	  {
+	    synldr->ReportError ("dynworld.loader", child,
+		"Could not find entity '%s'!", name.GetData ());
+	    return 0;
+	  }
+	  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (dynworldEntity);
+	  if (!dynworld)
+	  {
+	    synldr->ReportError ("dynworld.loader", child,
+		"Entity '%s' does not have a dynamic world property class!",
+		name.GetData ());
+	    return 0;
+	  }
+	}
+	break;
       case XMLTOKEN_FACTORY:
 	if (!ParseFactory (child)) return 0;
 	break;

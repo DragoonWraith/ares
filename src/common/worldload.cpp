@@ -23,10 +23,11 @@ THE SOFTWARE.
  */
 
 #include <crystalspace.h>
-#include "include/idynworld.h"
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
 #include "worldload.h"
+
+#include "propclass/dynworld.h"
 
 WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
 {
@@ -35,7 +36,6 @@ WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
   engine = csQueryRegistry<iEngine> (object_reg);
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
   roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (object_reg);
-  dynworld = csQueryRegistry<iDynamicWorld> (object_reg);
 }
 
 bool WorldLoader::LoadLibrary (const char* path, const char* file)

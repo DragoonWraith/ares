@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <library>
   <addon plugin="ares.dynworld.loader.factories">
+    <dynworld name="zone" />
     <factory name="krystal" maxradius="0.6" imposterradius="0.4" mass="50">
       <attr name="defaultstatic" value="true" />
       <box> <offset x="0" y=".85" z="0" /> <size x=".3" y="1.7" z=".3" /> </box>

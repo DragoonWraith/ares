@@ -4,4 +4,5 @@ Description curvemesh : "Curved Mesh Plugin" ;
 Plugin curvemesh :
   [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
 ExternalLibs curvemesh : CRYSTAL ;
+ExternalLibs curvemesh : CEL ;
 

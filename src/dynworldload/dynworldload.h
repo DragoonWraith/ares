@@ -32,10 +32,12 @@ THE SOFTWARE.
 #include "imap/reader.h"
 #include "csutil/strhash.h"
 
-#include "include/idynworld.h"
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
 #include "include/inature.h"
+
+#include "physicallayer/pl.h"
+#include "propclass/dynworld.h"
 
 CS_PLUGIN_NAMESPACE_BEGIN(DynWorldLoader)
 {
@@ -44,7 +46,8 @@ class DynamicWorldLoader : public scfImplementation2<DynamicWorldLoader,
   iLoaderPlugin, iComponent>
 {
 private:
-  csRef<iDynamicWorld> dynworld;
+  csRef<iCelPlLayer> pl;
+  csRef<iPcDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;

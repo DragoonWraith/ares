@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include <CEGUI.h>
 #include <crystalspace.h>
 #include <ivaria/icegui.h>
-#include "include/idynworld.h"
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
 #include "include/inature.h"
@@ -43,11 +42,16 @@ THE SOFTWARE.
 #include "camera.h"
 #include "selection.h"
 
+#include "propclass/dynworld.h"
+
 #define USE_DECAL 0
 
 class CameraWindow;
 class WorldLoader;
 class AppAresEdit;
+
+struct iCelPlLayer;
+struct iCelEntity;
 
 class CurvedFactoryCreator
 {
@@ -76,7 +80,7 @@ class AppAresEdit :
   public csApplicationFramework, public csBaseEventHandler
 {
 private:
-  csRef<iDynamicWorld> dynworld;
+  csRef<iPcDynamicWorld> dynworld;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;
@@ -89,6 +93,9 @@ private:
   csRef<iVirtualClock> vc;
   csRef<iVFS> vfs;
   csRef<iDecalManager> decalMgr;
+
+  csRef<iCelPlLayer> pl;
+  csRef<iCelEntity> zoneEntity;
 
 #if USE_DECAL
   csRef<iDecalTemplate> cursorDecalTemplate;
@@ -276,7 +283,7 @@ public:
   iCurvedMeshCreator* GetCurvedMeshCreator () const { return curvedMeshCreator; }
   iRoomMeshCreator* GetRoomMeshCreator () const { return roomMeshCreator; }
   iCEGUI* GetCEGUI () const { return cegui; }
-  iDynamicWorld* GetDynamicWorld () const { return dynworld; }
+  iPcDynamicWorld* GetDynamicWorld () const { return dynworld; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }

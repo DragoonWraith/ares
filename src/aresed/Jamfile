@@ -6,9 +6,5 @@ Application aresed :
   [ Wildcard [ ConcatDirs ../common ] : *.cpp *.h ] ;
 ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEGUI ;
-
-if $(CEL.DESIRED) = yes && $(CEL.AVAILABLE) = yes
-{
-  ExternalLibs aresed : CEL ;
-}
+ExternalLibs aresed : CEL ;
 
