@@ -1090,6 +1090,7 @@ void AppAresEdit::SpawnItem (const csString& name)
     // For a dynamic object we make sure the object is above the ground on
     // all four corners too. This is to ensure that the object doesn't jump
     // up suddenly because it was embedded in the ground partially.
+#if 0
     const csBox3& box = dynobj->GetBBox ();
     float dist = (box.MaxY () - box.MinY ()) * 2.0;
     float y1 = TestVerticalBeam (box.GetCorner (CS_BOX_CORNER_xYz), dist, GetCsCamera ());
@@ -1114,6 +1115,7 @@ void AppAresEdit::SpawnItem (const csString& name)
       dynobj->SetTransform (trans);
       dynobj->UndoKinematic ();
     }
+#endif
   }
 
   if (static_factories.In (fname))
