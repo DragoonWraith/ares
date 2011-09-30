@@ -6,6 +6,7 @@
     </plugins>
 
     <library path="/river" file="library" />
+    <library path="/lib/sky" file="library" />
 
     <textures>
         <texture name="grass-texture-2.jpg">
@@ -17,69 +18,14 @@
 	<texture name="cliff34ug6.jpg">
 	    <file>/data/terrained/cliff34ug6.jpg</file>
 	</texture>
-
-	<texture name="perlin0.png">
-	  <file>/this/data/textures/perlin0.png</file>
-	</texture>
-	<texture name="perlin3.png">
-	  <file>/this/data/textures/perlin3.png</file>
-	</texture>
-	<texture name="perlin1.png">
-	  <file>/this/data/textures/perlin1.png</file>
-	</texture>
-	<texture name="perlin2.png">
-	  <file>/this/data/textures/perlin2.png</file>
-	</texture>
-
-    	<texture name="nightsky">
-	  <file>/this/data/textures/stars.png</file>
-	    <class>nocompress</class>
-	</texture>
-
     </textures>
 
     <shaders>
         <shader> <file>/shader/terrain/terrain.xml</file> </shader>
-        <shader> <file>/shader/sky/basic_cubemap.xml</file> </shader>
         <shader> <file>/shader/lighting/fullbright.xml</file> </shader>
-	<shader> <file>/this/data/shader/sky.xml</file> </shader>
-	<shader> <file>/this/data/shader/clouds2.xml</file> </shader>
     </shaders>
 
     <materials>
-	<material name="sky">
-	  <shader type="depthwrite">*null</shader>
-	    <shader type="standard">sky</shader>
-	    <shadervar type="texture" name="tex night">nightsky</shadervar>
-
-	    <!--<shadervar name="sun direction" type="vector3">0.994484, 0.033993, 0.099223</shadervar>-->
-	</material>
-	<material name="clouds">
-	    <texture>perlin0.png</texture>
-	    <shader type="depthwrite">*null</shader>
-	    <shader type="standard">clouds2</shader>
-	    <shadervar type="texture" name="noise2">perlin2.png</shadervar>
-	    <shadervar type="texture" name="noise3">perlin3.png</shadervar>
-	    <shadervar type="texture" name="noise1">perlin1.png</shadervar>
-	    <shadervar type="vector3" name="cloudcol">0.79,0.79,0.79</shadervar>
-	    <shadervar type="vector2" name="mnvars">1.79999995232,0.20000000298</shadervar>
-	    <shadervar type="vector2" name="specular">0.0,0.3800000011921</shadervar>
-	    <shadervar type="vector2" name="control2">0.20000000298,0.699999988079</shadervar>
-	    <shadervar type="vector2" name="control3">0.20000000298,0.20000000298</shadervar>
-	    <shadervar type="vector2" name="control1">0.20000000298,0.20000000298</shadervar>
-	    <shadervar type="vector3" name="skycol">0.85,0.85,0.85</shadervar>
-	    <shadervar type="vector2" name="windvec">0.20000000298,0.300000011921</shadervar>
-	    <!--<shadervar type="float" name="timeOfDay">0</shadervar>-->
-</material>
-
-	<!--
-        <material name="sky">
-            <shader type="base">sky_basic_cubemap</shader>
-            <shader type="diffuse">sky_basic_cubemap</shader>
-            <shadervar type="texture" name="tex sky">sky</shadervar>
-        </material>
-	-->
-
         <material name="terrain">
 	      <texture>no</texture>
 	      <shader type="diffuse">terrain</shader>
@@ -124,53 +70,6 @@
                 </cell>
             </cells>
         </params>
-    </meshfact>
-
-    <!--
-    <meshfact name="sky">
-        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
-        <nolighting />
-        <params>
-            <sphere rimvertices="6" reversed="true">
-                <radius x="1000" y="1000" z="1000" />
-            </sphere>
-	    <material>sky</material>
-        </params>
-    </meshfact>
-    -->
-
-    <meshfact name="skydome">
-        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
-	<params>
-	    <material>sky</material>
-	    <lighting>no</lighting>
-	    <sphere rimvertices='16' reversed="true">
-		<radius y='2500' x='2500' z='2500'/>
-		<center y='0' x='0' z='0'/>
-	    </sphere>
-	    <color red="1" green="1" blue="1" />
-	</params>
-	<trimesh> <id>shadows</id> </trimesh>
-	<zuse />
-	<noshadows />
-	<nolighting />
-    </meshfact>
-
-    <meshfact name="clouddome">
-        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
-	<params>
-	    <material>clouds</material>
-	    <lighting>no</lighting>
-	    <sphere rimvertices='16' reversed="true" toponly="true">
-		<radius y='200' x='2000' z='2000'/>
-		<center y='5' x='0' z='0'/>
-	    </sphere>
-	    <color red="1" green="1" blue="1" />
-	</params>
-	<trimesh> <id>shadows</id> </trimesh>
-	<zuse />
-	<noshadows />
-	<nolighting />
     </meshfact>
 
     <!--
