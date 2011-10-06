@@ -75,6 +75,7 @@ private:
   csRef<iCollideSystem> cdsys;
 
   csRef<iPcDynamicWorld> dynworld;
+  iDynamicCell* dyncell;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
 
   csRef<iNature> nature;

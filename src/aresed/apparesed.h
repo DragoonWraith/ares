@@ -81,6 +81,7 @@ class AppAresEdit :
 {
 private:
   csRef<iPcDynamicWorld> dynworld;
+  iDynamicCell* dyncell;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;
@@ -284,6 +285,7 @@ public:
   iRoomMeshCreator* GetRoomMeshCreator () const { return roomMeshCreator; }
   iCEGUI* GetCEGUI () const { return cegui; }
   iPcDynamicWorld* GetDynamicWorld () const { return dynworld; }
+  iDynamicCell* GetDynamicCell () const { return dyncell; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }

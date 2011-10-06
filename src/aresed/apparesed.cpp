@@ -277,7 +277,7 @@ iRigidBody* AppAresEdit::TraceBeam (const csSegment3& beam, csVector3& isect)
 	beam.Start (), beam.End ());
     if (result2.mesh)
     {
-      iDynamicObject* dynobj = GetDynamicWorld ()->FindObject (result2.mesh);
+      iDynamicObject* dynobj = dyncell->FindObject (result2.mesh);
       if (dynobj)
       {
         hitBody = dynobj->GetBody ();
@@ -469,7 +469,7 @@ void AppAresEdit::DeleteSelectedObjects ()
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
-    dynworld->DeleteObject (dynobj);
+    dyncell->DeleteObject (dynobj);
   }
 }
 
@@ -929,7 +929,8 @@ bool AppAresEdit::SetupDynWorld ()
 
 bool AppAresEdit::PostLoadMap ()
 {
-  dynworld->Setup (sector, dynSys);
+  dyncell = dynworld->AddCell ("outside", sector, dynSys);
+  dynworld->SetCurrentCell (dyncell);
 
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
@@ -1082,7 +1083,7 @@ void AppAresEdit::SpawnItem (const csString& name)
   front.y = 0;
   tc.LookAt (front, csVector3 (0, 1, 0));
   tc.SetOrigin (newPosition);
-  iDynamicObject* dynobj = dynworld->AddObject (fname, tc);
+  iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
   dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))

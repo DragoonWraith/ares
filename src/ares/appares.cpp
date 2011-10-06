@@ -374,7 +374,8 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 
 bool AppAres::PostLoadMap ()
 {
-  dynworld->Setup (sector, dynSys);
+  dyncell = dynworld->AddCell ("outside", sector, dynSys);
+  dynworld->SetCurrentCell (dyncell);
 
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
