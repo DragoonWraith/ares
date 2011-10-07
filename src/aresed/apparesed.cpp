@@ -578,6 +578,8 @@ void AppAresEdit::CleanupWorld ()
   static_factories.DeleteAll ();
 
   camlight = 0;
+  dynworld->DeleteAll ();
+  dynworld->DeleteFactories ();
   engine->DeleteAll ();
 }
 
@@ -929,9 +931,6 @@ bool AppAresEdit::SetupDynWorld ()
 
 bool AppAresEdit::PostLoadMap ()
 {
-  dyncell = dynworld->AddCell ("outside", sector, dynSys);
-  dynworld->SetCurrentCell (dyncell);
-
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
@@ -983,6 +982,9 @@ bool AppAresEdit::SetupWorld ()
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
   sector = engine->CreateSector ("room");
+
+  dyncell = dynworld->AddCell ("outside", sector, dynSys);
+  dynworld->SetCurrentCell (dyncell);
 
   return true;
 }

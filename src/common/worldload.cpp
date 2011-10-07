@@ -135,8 +135,6 @@ bool WorldLoader::LoadDoc (iDocument* doc)
 bool WorldLoader::LoadFile (const char* filename)
 {
   assets.DeleteAll ();
-  dynworld->DeleteAll ();
-  dynworld->DeleteFactories ();
 
   curvedMeshCreator->DeleteFactories ();
   curvedMeshCreator->DeleteCurvedFactoryTemplates ();
