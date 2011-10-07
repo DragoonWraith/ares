@@ -117,7 +117,7 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     int width = meshgen->GetDensityFactorMapWidth (factorMapID);
     int height = meshgen->GetDensityFactorMapHeight (factorMapID);
     isect.y = 0;
-    csVector4 mapCoord (world2map * isect);
+    csVector4 mapCoord (world2map * csVector4 (isect));
     iNature* nature = aresed->GetNature ();
     iImage* image = nature->GetFoliageDensityMapImage (factorMapID);
     csRef<iDataBuffer> buf = image->GetRawData ();

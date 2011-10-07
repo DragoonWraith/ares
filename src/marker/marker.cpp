@@ -427,7 +427,7 @@ bool MarkerManager::HandlePlanarRotation (const csVector3& newpos, csMatrix3& m)
   iMarker* marker = currentDraggingHitArea->GetMarker ();
   csReversibleTransform newrot = marker->GetTransform ();
   csVector3 rel = newpos - newrot.GetOrigin ();
-  if (rel < .01) return false;
+  if (rel < 0.01f) return false;
   csVector3 front = newrot.GetFront (), up = newrot.GetUp (), right = newrot.GetRight ();
   if (cproty)
   {
