@@ -277,7 +277,7 @@ iRigidBody* AppAresEdit::TraceBeam (const csSegment3& beam, csVector3& isect)
 	beam.Start (), beam.End ());
     if (result2.mesh)
     {
-      iDynamicObject* dynobj = dyncell->FindObject (result2.mesh);
+      iDynamicObject* dynobj = dynworld->FindObject (result2.mesh);
       if (dynobj)
       {
         hitBody = dynobj->GetBody ();

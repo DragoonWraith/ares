@@ -578,7 +578,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     return false;
   }
 
-  iDynamicObject* newobj = aresed->GetDynamicCell ()->FindObject (hitBody);
+  iDynamicObject* newobj = aresed->GetDynamicWorld ()->FindObject (hitBody);
   if (but == 0)
   {
     if (shift)
