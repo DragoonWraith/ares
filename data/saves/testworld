@@ -5,6 +5,7 @@
     <asset path="/this/data/" file="dynworldFactories.xml" />
     <asset path="/this/data/landscape" file="world" />
     <dynworld>
+      <cell name="outside">
         <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.65085e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="-6.42182 -3.68983 17.6079" />
         <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.65085e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="1.57818 -3.68983 17.6079" />
         <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.20725e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="9.57817 -3.68983 17.6079" />
@@ -43,6 +44,7 @@
         <obj fact="PoolDown" static="true" m="0.99664 0 -0.08191 5.63535e-017 1 -1.27601e-015 0.08191 0 0.99664" v="-2.26396 6.86514 -55.1133" />
         <obj fact="Pool" static="true" m="0.99664 0 -0.08191 -1.26047e-017 1 -1.26407e-015 0.08191 0 0.99664" v="-2.26396 7.01515 -55.1133" />
         <obj fact="franky_frankie" static="true" m="0.614291 0 -0.789079 0 1 0 0.789079 0 0.614291" v="-8.97528 9.81017 13.5718" />
+      </cell>
     </dynworld>
     <!--
     <curves>
