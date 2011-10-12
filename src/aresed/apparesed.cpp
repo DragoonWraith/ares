@@ -676,6 +676,7 @@ bool AppAresEdit::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_REPORTER,
 	CS_REQUEST_REPORTERLISTENER,
 	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
+	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
 	CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
 	CS_REQUEST_PLUGIN("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
@@ -796,6 +797,9 @@ bool AppAresEdit::Application()
       "pcworld.dynamic", CEL_PROPCLASS_END);
   if (!zoneEntity) return ReportError ("Failed to create zone entity!");
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
+
+  elcm = csQueryRegistry<iELCM> (r);
+  dynworld->SetELCM (elcm);
 
   worldLoader = new WorldLoader (r);
   worldLoader->SetZone (dynworld);
@@ -1086,6 +1090,7 @@ void AppAresEdit::SpawnItem (const csString& name)
   tc.LookAt (front, csVector3 (0, 1, 0));
   tc.SetOrigin (newPosition);
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
+  dynobj->SetEntity (0, 0);
   dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))

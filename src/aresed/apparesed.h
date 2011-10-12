@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include "selection.h"
 
 #include "propclass/dynworld.h"
+#include "tools/elcm.h"
 
 #define USE_DECAL 0
 
@@ -81,6 +82,7 @@ class AppAresEdit :
 {
 private:
   csRef<iPcDynamicWorld> dynworld;
+  csRef<iELCM> elcm;
   iDynamicCell* dyncell;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
