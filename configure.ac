@@ -178,6 +178,119 @@ AS_IF([test $cs_cv_libCEGUI = yes],
 	[$cs_cv_libCEGUI_lflags],
 	[$cs_cv_libCEGUI_libs])])
 
+
+#------------------------------------------------------------------------------
+# Check for wxWidgets. Also check if it was built with OpenGL support since it
+# is required by the Crystal Space wxWidgets canvas.
+#------------------------------------------------------------------------------
+CS_CHECK_LIB_WITH([wx],
+    [AC_LANG_PROGRAM(
+	[[#include "wx/wxprec.h"
+	#ifdef __BORLANDC__
+	#pragma hdrstop
+	#endif
+	#ifndef WX_PRECOMP
+	#include "wx/wx.h"
+	#endif
+	]],
+	[[wxWindow* p = 0; int w,h; p->GetClientSize(&w,&h);]])],
+    [], [C++])
+    
+AS_IF([test $cs_cv_libwx = yes],
+    [AS_IF([test $cs_host_family = windows],
+	[AC_CACHE_CHECK([if defining UNICODE is needed for WX],
+	    [cs_cv_libwx_needs_UNICODE],
+	    [CS_BUILD_IFELSE(
+		[AC_LANG_PROGRAM(
+		    [[#include <windows.h>
+		    #include "wx/wxprec.h"
+		    #ifdef __BORLANDC__
+		    #pragma hdrstop
+		    #endif
+		    #ifndef WX_PRECOMP
+		    #include "wx/wx.h"
+		    #endif
+		    ]],
+		    [wxString s])],
+		[CS_CREATE_TUPLE(
+		    [$cs_cv_libwx_cflags],
+		    [$cs_cv_libwx_lflags],
+		    [$cs_cv_libwx_libs   $cs_cv_libwx_gllibs]) \
+		CS_CREATE_TUPLE(
+		    [$cs_cv_libwx_cflags $cs_cv_libglu_cflags],
+		    [$cs_cv_libwx_lflags $cs_cv_libglu_lflags],
+		    [$cs_cv_libwx_libs   $cs_cv_libglu_libs])  \
+		CS_CREATE_TUPLE(
+		    [$cs_cv_libwx_cflags $cs_cv_libglu_cflags],
+		    [$cs_cv_libwx_lflags $cs_cv_libglu_lflags],
+		    [$cs_cv_libwx_libs   $cs_cv_libwx_gllibs $cs_cv_libglu_libs])],
+		[C++],
+		[cs_cv_libwx_needs_UNICODE=no],
+		[cs_cv_libwx_cflags="$cs_cv_libwx_cflags -DUNICODE -D_UNICODE"
+		cs_cv_libwx_needs_UNICODE=yes])])])
+    AS_IF([test -z "$cs_cv_libwx_opengl"],
+	[AS_IF([test -n "$CONFIG_WX"],
+	    [cs_cv_libwx_gllibs=CS_RUN_PATH_NORMALIZE([$CONFIG_WX --gl-libs])],
+	    [cs_cv_libwx_gllibs=''])])
+    CS_CHECK_BUILD([if wxWidgets is built with OpenGL support],
+	[cs_cv_libwx_opengl],
+	[AC_LANG_PROGRAM(
+	    [[#include "wx/wxprec.h"
+	    #ifdef __BORLANDC__
+	    #pragma hdrstop
+	    #endif
+	    #ifndef WX_PRECOMP
+	    #include "wx/wx.h"
+	    #endif
+	    #include "wx/glcanvas.h"
+	    ]],
+	    [wxGLCanvas* f = new wxGLCanvas(0, wxID_ANY, wxPoint());
+	    glVertex3f(0,0,0)])],
+	[CS_CREATE_TUPLE(
+	    [$cs_cv_libwx_cflags],
+	    [$cs_cv_libwx_lflags],
+	    [$cs_cv_libwx_libs   $cs_cv_libwx_gllibs]) \
+	CS_CREATE_TUPLE(
+	    [$cs_cv_libwx_cflags $cs_cv_libglu_cflags],
+	    [$cs_cv_libwx_lflags $cs_cv_libglu_lflags],
+	    [$cs_cv_libwx_libs   $cs_cv_libglu_libs])  \
+	CS_CREATE_TUPLE(
+	    [$cs_cv_libwx_cflags $cs_cv_libglu_cflags],
+	    [$cs_cv_libwx_lflags $cs_cv_libglu_lflags],
+	    [$cs_cv_libwx_libs   $cs_cv_libwx_gllibs $cs_cv_libglu_libs])],
+	[C++])],
+    [cs_cv_libwx_opengl=no])
+    
+AS_IF([test $cs_cv_libwx_opengl = yes],
+    [CS_EMIT_BUILD_RESULT([cs_cv_libwx_opengl], [WX])])
+
+AS_IF([test $cs_cv_libwx = yes],
+    [CS_CHECK_BUILD([if wxWidgets is built with wxAUI support],
+	[cs_cv_libwx_aui],
+	[AC_LANG_PROGRAM(
+	    [[#include "wx/wxprec.h"
+	    #ifdef __BORLANDC__
+	    #pragma hdrstop
+	    #endif
+	    #ifndef WX_PRECOMP
+	    #include "wx/wx.h"
+	    #endif
+	    #include "wx/aui/aui.h"
+	    ]],
+	    [wxAuiManager mgr; wxWindow* w;
+	     mgr.SetManagedWindow(w);
+	     mgr.AddPane(w, wxAuiPaneInfo());])],
+	[CS_CREATE_TUPLE(
+	    [$cs_cv_libwx_cflags],
+	    [$cs_cv_libwx_lflags],
+	    [$cs_cv_libwx_libs])],
+	[C++])],
+    [cs_cv_libwx_aui=no])
+
+AS_IF([test $cs_cv_libwx_aui = yes],
+    [CS_EMIT_BUILD_RESULT([cs_cv_libwx_aui], [WX.AUI])])
+
+
 #------------------------------------------------------------------------------
 # Determine if plugin meta-information should be embedded directly into plugin
 # modules or if it should exist in stand-alone .csplugin files.  On Unix,
