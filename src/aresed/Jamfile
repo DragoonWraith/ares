@@ -7,4 +7,5 @@ Application aresed :
 ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEGUI ;
 ExternalLibs aresed : CEL ;
+ExternalLibs aresed : WX ;
 

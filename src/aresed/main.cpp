@@ -22,12 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
+#define CS_IMPLEMENT_PLATFORM_APPLICATION
+
 #include "aresed.h"
 #include "apparesed.h"
 #include <csutil/sysfunc.h> // Provides csPrintf()
 
+#include "csutil/event.h"
+
+/* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
+ * missing csMouseEventHelper symbols. */
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/treectrl.h>
+#include <wx/xrc/xmlres.h>
+
 CS_IMPLEMENT_APPLICATION
 
+#if 1
 int main(int argc, char** argv)
 {
   csPrintf ("ares version 0.1 by Jorrit Tyberghein.\n");
@@ -45,3 +57,81 @@ int main(int argc, char** argv)
    */
   return csApplicationRunner<AppAresEdit>::Run (argc, argv);
 }
+
+#else
+
+#if defined(CS_PLATFORM_WIN32)
+
+#ifndef SW_SHOWNORMAL
+#define SW_SHOWNORMAL 1
+#endif
+
+/*
+  WX provides WinMain(), but not main(), which is required for console apps.
+ */
+int main (int argc, const char* const argv[])
+{
+  return WinMain (GetModuleHandle (0), 0, GetCommandLineA (), SW_SHOWNORMAL);
+}
+
+#endif
+
+
+class AppPump : public wxTimer
+{
+public:
+  AppAresEdit* s;
+  AppPump() { };
+  virtual void Notify()
+  {
+    s->PushFrame ();
+  }
+};
+
+// Define a new application type
+class MyApp: public wxApp
+{
+public:
+  iObjectRegistry* object_reg;
+
+  virtual bool OnInit (void);
+  virtual int OnExit (void);
+};
+
+IMPLEMENT_APP(MyApp)
+
+bool MyApp::OnInit (void)
+{
+  wxInitAllImageHandlers ();
+
+  AppAresEdit* app = new AppAresEdit ();
+
+#if defined(wxUSE_UNICODE) && wxUSE_UNICODE
+  char** csargv;
+  csargv = (char**)cs_malloc(sizeof(char*) * argc);
+  for(int i = 0; i < argc; i++) 
+  {
+    csargv[i] = strdup (wxString(argv[i]).mb_str().data());
+  }
+  if (!app->AresInitialize (argc, csargv)) return false;
+#else
+  app->object_reg = csInitializer::CreateEnvironment (argc, argv);
+  if (!app->AresInitialize (argc, argv)) return false;
+#endif
+  if (!app->Application ()) return false;
+
+  AppPump* p = new AppPump ();
+  p->s = app;
+  p->Start (20);
+
+  return true;
+}
+
+int MyApp::OnExit ()
+{
+  csInitializer::DestroyApplication (object_reg);
+  return 0;
+}
+
+#endif
+

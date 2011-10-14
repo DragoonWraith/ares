@@ -94,6 +94,7 @@ private:
   csRef<iEngine> engine;
   csRef<iLoader> loader;
   csRef<iVirtualClock> vc;
+  csRef<iEventQueue> eventQueue;
   csRef<iVFS> vfs;
   csRef<iDecalManager> decalMgr;
 
@@ -277,6 +278,8 @@ public:
    */
   virtual ~AppAresEdit();
 
+  void PushFrame ();
+
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   iEngine* GetEngine () const { return engine; }
@@ -361,6 +364,8 @@ public:
    * Load the world from a file.
    */
   void LoadFile (const char* filename);
+
+  bool AresInitialize (int argc, char* argv[]);
 
   /**
    * Main initialization routine.  This routine should set up basic facilities

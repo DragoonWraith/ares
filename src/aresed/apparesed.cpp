@@ -99,6 +99,14 @@ void AppAresEdit::DoStuffOncePerFrame ()
   dynworld->PrepareView (GetCsCamera (), elapsed_time);
 }
 
+void AppAresEdit::PushFrame ()
+{
+  if (vc)
+    vc->Advance();
+  eventQueue->Process();
+}
+
+
 void AppAresEdit::Frame ()
 {
   DoStuffOncePerFrame ();
@@ -331,10 +339,7 @@ bool AppAresEdit::OnKeyboard(iEvent& ev)
       // csevQuit event.  That will cause the main run loop to stop.  To do
       // so we retrieve the event queue from the object registry and then post
       // the event.
-      csRef<iEventQueue> q =
-        csQueryRegistry<iEventQueue> (GetObjectRegistry());
-      if (q.IsValid())
-        q->GetEventOutlet()->Broadcast(csevQuit(GetObjectRegistry()));
+      eventQueue->GetEventOutlet()->Broadcast(csevQuit(GetObjectRegistry()));
       return true;
     }
     else if (code == '1')
@@ -658,6 +663,12 @@ bool AppAresEdit::OnLoadButtonClicked (const CEGUI::EventArgs&)
   return true;
 }
 
+bool AppAresEdit::AresInitialize (int argc, char* argv[])
+{
+  object_reg = csInitializer::CreateEnvironment (argc, argv);
+  return OnInitialize (argc, argv);
+}
+
 bool AppAresEdit::OnInitialize (int argc, char* argv[])
 {
   iObjectRegistry* r = GetObjectRegistry();
@@ -677,7 +688,6 @@ bool AppAresEdit::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_REPORTERLISTENER,
 	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
 	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
-	CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
 	CS_REQUEST_PLUGIN("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("crystalspace.cegui.wrapper", iCEGUI),
@@ -774,6 +784,9 @@ bool AppAresEdit::Application()
   if (!decalMgr) return ReportError("Failed to load decal manager!");
 
   printer.AttachNew(new FramePrinter(GetObjectRegistry()));
+
+  eventQueue = csQueryRegistry<iEventQueue> (r);
+  if (!eventQueue) return ReportError ("Failed to locate Event Queue!");
 
   vc = csQueryRegistry<iVirtualClock> (r);
   if (!vc) return ReportError ("Failed to locate Virtual Clock!");
