@@ -261,8 +261,7 @@ AS_IF([test $cs_cv_libwx = yes],
 	[C++])],
     [cs_cv_libwx_opengl=no])
     
-AS_IF([test $cs_cv_libwx_opengl = yes],
-    [CS_EMIT_BUILD_RESULT([cs_cv_libwx_opengl], [WX])])
+CS_EMIT_BUILD_RESULT([cs_cv_libwx], [WX])
 
 AS_IF([test $cs_cv_libwx = yes],
     [CS_CHECK_BUILD([if wxWidgets is built with wxAUI support],
