@@ -39,7 +39,7 @@ THE SOFTWARE.
 
 CS_IMPLEMENT_APPLICATION
 
-#if 1
+#if 0
 int main(int argc, char** argv)
 {
   csPrintf ("ares version 0.1 by Jorrit Tyberghein.\n");
@@ -82,6 +82,7 @@ class AppPump : public wxTimer
 public:
   AppAresEdit* s;
   AppPump() { };
+  virtual ~AppPump () { }
   virtual void Notify()
   {
     s->PushFrame ();
@@ -115,7 +116,6 @@ bool MyApp::OnInit (void)
   }
   if (!app->AresInitialize (argc, csargv)) return false;
 #else
-  app->object_reg = csInitializer::CreateEnvironment (argc, argv);
   if (!app->AresInitialize (argc, argv)) return false;
 #endif
   if (!app->Application ()) return false;

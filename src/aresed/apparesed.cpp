@@ -101,9 +101,15 @@ void AppAresEdit::DoStuffOncePerFrame ()
 
 void AppAresEdit::PushFrame ()
 {
-  if (vc)
-    vc->Advance();
-  eventQueue->Process();
+  static int level = 0;
+  if (level == 0)
+  {
+    level++;
+    if (vc)
+      vc->Advance();
+    eventQueue->Process();
+    level--;
+  }
 }
 
 
@@ -890,7 +896,7 @@ bool AppAresEdit::Application()
 
   // Start the default run/event loop.  This will return only when some code,
   // such as OnKeyboard(), has asked the run loop to terminate.
-  Run();
+  //Run();
 
   return true;
 }
