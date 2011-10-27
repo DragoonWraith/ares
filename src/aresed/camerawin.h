@@ -31,13 +31,13 @@ THE SOFTWARE.
 
 #include "apparesed.h"
 
-class AppAresEdit;
+class AresEdit3DView;
 struct iDynamicObject;
 
 class CameraWindow
 {
 private:
-  AppAresEdit* aresed;
+  AresEdit3DView* aresed3d;
   csRef<iCEGUI> cegui;
   CEGUI::Window* camwin;
 
@@ -79,7 +79,7 @@ private:
   csBox3 GetBoxSelected ();
 
 public:
-  CameraWindow (AppAresEdit* aresed, iCEGUI* cegui);
+  CameraWindow (AresEdit3DView* aresed3d, iCEGUI* cegui);
   ~CameraWindow();
 
   void Show ();

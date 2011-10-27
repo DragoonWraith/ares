@@ -27,13 +27,15 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-RoomMode::RoomMode (AppAresEdit* aresed)
-  : EditingMode (aresed, "Room")
+RoomMode::RoomMode (AppAresEdit* aresed, AresEdit3DView* aresed3d)
+  : EditingMode (aresed, aresed3d, "Room")
 {
   editingRoomFactory = 0;
 
+#if 0
   CEGUI::WindowManager* winMgr = aresed->GetCEGUI ()->GetWindowManagerPtr ();
   CEGUI::Window* btn;
+#endif
 
   //btn = winMgr->getWindow("Ares/CurveWindow/RotLeft");
   //btn->subscribeEvent(CEGUI::PushButton::EventClicked,

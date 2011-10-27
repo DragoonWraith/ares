@@ -24,6 +24,60 @@ THE SOFTWARE.
 
 #include "filereq.h"
 
+BEGIN_EVENT_TABLE(FileReq, wxDialog)
+  EVT_BUTTON (XRCID("okButton"), FileReq :: OnOkButton)
+  EVT_BUTTON (XRCID("cancelButton"), FileReq :: OnCancelButton)
+  EVT_LIST_ITEM_SELECTED (XRCID("fileListBox"), FileReq :: OnFileViewSelChange)
+  EVT_LIST_ITEM_ACTIVATED (XRCID("fileListBox"), FileReq :: OnFileViewActivated)
+  EVT_LIST_ITEM_SELECTED (XRCID("dirListBox"), FileReq :: OnDirViewSelChange)
+  EVT_LIST_ITEM_ACTIVATED (XRCID("dirListBox"), FileReq :: OnDirViewActivated)
+END_EVENT_TABLE()
+
+void FileReq::DoOk ()
+{
+  printf ("Ok\n");
+  wxTextCtrl* text = XRCCTRL (*this, "fileNameText", wxTextCtrl);
+  csString file = (const char*)text->GetValue ().mb_str (wxConvUTF8);
+  callback->OkPressed (file);
+  EndModal (TRUE);
+}
+
+void FileReq::OnOkButton (wxCommandEvent& event)
+{
+  DoOk ();
+}
+
+void FileReq::OnCancelButton (wxCommandEvent& event)
+{
+  printf ("Cancel\n");
+  EndModal (TRUE);
+}
+
+void FileReq::OnFileViewSelChange (wxListEvent& event)
+{
+  csString filename = (const char*)event.GetText().mb_str(wxConvUTF8);
+  wxTextCtrl* text = XRCCTRL (*this, "fileNameText", wxTextCtrl);
+  //wxString path (currentPath, wxConvUTF8);
+  //path.Append (wxString (filename, wxConvUTF8));
+  wxString path (filename, wxConvUTF8);
+  text->SetValue (path);
+}
+
+void FileReq::OnFileViewActivated (wxListEvent& event)
+{
+  OnFileViewSelChange (event);
+  DoOk ();
+}
+
+void FileReq::OnDirViewSelChange (wxListEvent& event)
+{
+}
+
+void FileReq::OnDirViewActivated (wxListEvent& event)
+{
+}
+
+#if 0
 bool FileReq::StdDlgOkButton (const CEGUI::EventArgs& e)
 {
   stddlg->hide();
@@ -122,31 +176,26 @@ bool FileReq::StdDlgDirChange (const CEGUI::EventArgs& e)
   StdDlgUpdateLists(path.c_str());
   return true;
 }
+#endif
 
-void FileReq::StdDlgUpdateLists(const char* filename)
+void FileReq::StdDlgUpdateLists (const char* filename)
 {
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
+  wxListCtrl* dirlist = XRCCTRL (*this, "dirListBox", wxListCtrl);
+  dirlist->DeleteAllItems ();
+  wxListCtrl* filelist = XRCCTRL (*this, "fileListBox", wxListCtrl);
+  filelist->DeleteAllItems ();
 
-  CEGUI::Listbox* dirlist = (CEGUI::Listbox*)winMgr->getWindow("StdDlg/DirSelect");
-  CEGUI::Listbox* filelist = (CEGUI::Listbox*)winMgr->getWindow("StdDlg/FileSelect");
+  dirlist->InsertItem (0, wxT (".."));
+  //item->setTextColours(CEGUI::colour(0,0,0));
 
-  dirlist->resetList();
-  filelist->resetList();
-
-  CEGUI::ListboxTextItem* item = new CEGUI::ListboxTextItem("..");
-  item->setTextColours(CEGUI::colour(0,0,0));
-  //item->setSelectionBrushImage("ice", "TextSelectionBrush");
-  //item->setSelectionColours(CEGUI::colour(0.5f,0.5f,1));
-  dirlist->addItem(item);
-
-  csRef<iStringArray> files = vfs->FindFiles(filename);
+  csRef<iStringArray> files = vfs->FindFiles (filename);
   
   for (size_t i = 0; i < files->GetSize(); i++)
   {
     char* file = (char*)files->Get(i);
     if (!file) continue;
 
-    size_t dirlen = strlen(file);
+    size_t dirlen = strlen (file);
     if (dirlen)
       dirlen--;
     while (dirlen && file[dirlen-1]!= '/')
@@ -155,20 +204,16 @@ void FileReq::StdDlgUpdateLists(const char* filename)
 
     if (file[strlen(file)-1] == '/')
     {
-      file[strlen(file)-1]='\0';
-      CEGUI::ListboxTextItem* item = new CEGUI::ListboxTextItem(file);
-      item->setTextColours(CEGUI::colour(0,0,0));
-      //item->setSelectionBrushImage("ice", "TextSelectionBrush");
-      //item->setSelectionColours(CEGUI::colour(0.5f,0.5f,1));
-      dirlist->addItem(item);
+      file[strlen(file)-1] = '\0';
+      wxString name = wxString (file, wxConvUTF8);
+      dirlist->InsertItem (0, name);
+      //item->setTextColours(CEGUI::colour(0,0,0));
     }
     else
     {
-      CEGUI::ListboxTextItem* item = new CEGUI::ListboxTextItem(file);
-      item->setTextColours(CEGUI::colour(0,0,0));
-      //item->setSelectionBrushImage("ice", "TextSelectionBrush");
-      //item->setSelectionColours(CEGUI::colour(0.5f,0.5f,1));
-      filelist->addItem(item);
+      wxString name = wxString (file, wxConvUTF8);
+      filelist->InsertItem (0, name);
+      //item->setTextColours(CEGUI::colour(0,0,0));
     }
   }
 }
@@ -176,40 +221,18 @@ void FileReq::StdDlgUpdateLists(const char* filename)
 void FileReq::Show (OKCallback* callback)
 {
   this->callback = callback;
-  stddlg->show ();
+  ShowModal ();
 }
 
-FileReq::FileReq (iCEGUI* cegui, iVFS* vfs, const char* path) : cegui (cegui), vfs (vfs)
+FileReq::FileReq (wxWindow* parent, iVFS* vfs, const char* path) : vfs (vfs)
 {
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  stddlg = winMgr->getWindow ("StdDlg");
-
-  CEGUI::Window* btn;
-
-  btn = winMgr->getWindow("StdDlg/OkButton");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&FileReq::StdDlgOkButton, this));
-
-  btn = winMgr->getWindow("StdDlg/CancleButton");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&FileReq::StdDlgCancleButton, this));
-
-  btn = winMgr->getWindow("StdDlg/FileSelect");
-  btn->subscribeEvent(CEGUI::Listbox::EventSelectionChanged,
-    CEGUI::Event::Subscriber(&FileReq::StdDlgFileSelect, this));
-
-  btn = winMgr->getWindow("StdDlg/DirSelect");
-  btn->subscribeEvent(CEGUI::Listbox::EventSelectionChanged,
-    CEGUI::Event::Subscriber(&FileReq::StdDlgDirSelect, this));
-
-  btn = winMgr->getWindow("StdDlg/Path");
-  btn->subscribeEvent(CEGUI::Editbox::EventTextAccepted,
-    CEGUI::Event::Subscriber(&FileReq::StdDlgDirChange, this));
+  currentPath = path;
+  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("FileRequesterDialog"));
 
   vfs->ChDir (path);
-  btn = winMgr->getWindow("StdDlg/Path");
-  btn->setProperty("Text", vfs->GetCwd());
-  StdDlgUpdateLists(vfs->GetCwd());
+  //btn = winMgr->getWindow("StdDlg/Path");
+  //btn->setProperty("Text", vfs->GetCwd());
+  StdDlgUpdateLists (vfs->GetCwd());
 }
 
 FileReq::~FileReq ()

@@ -27,7 +27,8 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-Camera::Camera (AppAresEdit* aresed) : aresed (aresed)
+Camera::Camera (AppAresEdit* aresed, AresEdit3DView* aresed3d) :
+  aresed (aresed), aresed3d (aresed3d)
 {
   do_panning = false;
   do_mouse_panning = false;
@@ -71,12 +72,12 @@ void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos)
   desired = current;
 
   // Initialize our collider actor.
-  collider_actor.SetCollideSystem (aresed->GetCollisionSystem ());
-  collider_actor.SetEngine (aresed->GetEngine ());
+  collider_actor.SetCollideSystem (aresed3d->GetCollisionSystem ());
+  collider_actor.SetEngine (aresed3d->GetEngine ());
   collider_actor.SetGravity (0);
 
   // Creates an accessor for configuration settings.
-  csConfigAccess cfgAcc (aresed->GetObjectRegistry ());
+  csConfigAccess cfgAcc (aresed3d->GetObjectRegistry ());
 
   // Read the values from config files, and use default values if not set.
   csVector3 legs (GetConfigVector (cfgAcc, "Actor.Legs", "0.2,0.5,0.2"));
@@ -132,7 +133,7 @@ csVector3 Camera::CalculatePanningPosition (float angleX, float angleY)
 void Camera::ClampDesiredLocation ()
 {
   csVector3 isect;
-  if (aresed->TraceBeamTerrain (desired.pos + csVector3 (0, 100, 0),
+  if (aresed3d->TraceBeamTerrain (desired.pos + csVector3 (0, 100, 0),
       desired.pos - csVector3 (0, 100, 0), isect))
   {
     if (desired.pos.y < isect.y+0.5f) desired.pos.y = isect.y+0.5f;
@@ -162,7 +163,7 @@ void Camera::Frame (float elapsed_time, int mouseX, int mouseY)
   if (do_mouse_panning) return;
   if (do_mouse_dragging) return;
 
-  iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
+  iKeyboardDriver* kbd = aresed3d->GetKeyboardDriver ();
   bool slow = kbd->GetKeyState (CSKEY_CTRL);
 
   float kspeed = 20.0f * elapsed_time;
@@ -244,13 +245,13 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
   else if (but == 2)	// Middle mouse
   {
-    iKeyboardDriver* kbd = aresed->GetKeyboardDriver ();
+    iKeyboardDriver* kbd = aresed3d->GetKeyboardDriver ();
     if (kbd->GetKeyState (CSKEY_SHIFT))
     {
       do_mouse_panning = false;
       if (!do_mouse_dragging)
       {
-        aresed->TraceBeam (aresed->GetBeam (mouseX, mouseY), panningCenter);
+        aresed3d->TraceBeam (aresed3d->GetBeam (mouseX, mouseY), panningCenter);
         do_mouse_dragging = true;
       }
     }
@@ -263,16 +264,16 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       do_mouse_dragging = false;
       if (!do_mouse_panning)
       {
-        aresed->TraceBeam (aresed->GetBeam (mouseX, mouseY), panningCenter);
+        aresed3d->TraceBeam (aresed3d->GetBeam (mouseX, mouseY), panningCenter);
         CamLookAtPosition (panningCenter);
         panningDistance = sqrt (csSquaredDist::PointPoint (
 	      panningCenter, desired.pos));
         if (panningDistance < 200.0f)
         {
 	  do_mouse_panning = true;
-	  int w = aresed->GetG2D ()->GetWidth ();
-	  int h = aresed->GetG2D ()->GetHeight ();
-	  aresed->GetG2D ()->SetMousePosition (w / 2, h / 2);
+	  int w = aresed3d->GetG2D ()->GetWidth ();
+	  int h = aresed3d->GetG2D ()->GetHeight ();
+	  aresed3d->GetG2D ()->SetMousePosition (w / 2, h / 2);
         }
       }
     }
@@ -300,15 +301,15 @@ bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
   if (do_mouse_panning)
   {
-    int w = aresed->GetG2D ()->GetWidth () / 2;
-    int h = aresed->GetG2D ()->GetHeight () / 2;
-    aresed->GetG2D ()->SetMousePosition (w, h);
+    int w = aresed3d->GetG2D ()->GetWidth () / 2;
+    int h = aresed3d->GetG2D ()->GetHeight () / 2;
+    aresed3d->GetG2D ()->SetMousePosition (w, h);
     Pan (float (mouseY-h) / 50.0f, float (w-mouseX) / 50.0f, 0.0f);
     return true;
   }
   else if (do_mouse_dragging)
   {
-    csVector2 v2d (mouseX, aresed->GetG2D ()->GetHeight () - mouseY);
+    csVector2 v2d (mouseX, aresed3d->GetG2D ()->GetHeight () - mouseY);
     csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
     csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
@@ -459,13 +460,13 @@ void Camera::CamBlendLookAtPosition (const csVector3& center, float weight)
 
 void Camera::CamZoom (int x, int y, bool forward)
 {
-  csVector2 v2d (x, aresed->GetG2D ()->GetHeight () - y);
+  csVector2 v2d (x, aresed3d->GetG2D ()->GetHeight () - y);
   csVector3 v3d = camera->InvPerspective (v2d, 10.0f);
   csVector3 endBeamMove = camera->GetTransform ().This2Other (forward ? v3d : -v3d);
   csVector3 endBeamLookAt = camera->GetTransform ().This2Other (v3d);
 
-  int halfw = aresed->GetG2D ()->GetWidth () / 2;
-  int halfh = aresed->GetG2D ()->GetHeight () / 2;
+  int halfw = aresed3d->GetG2D ()->GetWidth () / 2;
+  int halfh = aresed3d->GetG2D ()->GetHeight () / 2;
   int dx = x - halfw;
   int dy = y - halfh;
 

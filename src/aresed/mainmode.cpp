@@ -26,69 +26,48 @@ THE SOFTWARE.
 #include "mainmode.h"
 #include "transformtools.h"
 
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/listctrl.h>
+#include <wx/xrc/xmlres.h>
+
 //---------------------------------------------------------------------------
 
-MainMode::MainMode (AppAresEdit* aresed) :
-  EditingMode (aresed, "Main")
+BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
+  EVT_BUTTON (XRCID("rotLeftButton"), MainMode::Panel::OnRotLeft)
+  EVT_BUTTON (XRCID("rotRightButton"), MainMode::Panel::OnRotRight)
+  EVT_BUTTON (XRCID("rotResetButton"), MainMode::Panel::OnRotReset)
+  EVT_BUTTON (XRCID("alignRotButton"), MainMode::Panel::OnAlignR)
+  EVT_BUTTON (XRCID("setPosButton"), MainMode::Panel::OnSetPos)
+  EVT_BUTTON (XRCID("stackButton"), MainMode::Panel::OnStack)
+  EVT_BUTTON (XRCID("sameYButton"), MainMode::Panel::OnSameY)
+  EVT_CHECKBOX (XRCID("staticCheckBox"), MainMode::Panel::OnStaticSelected)
+  EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), MainMode::Panel::OnTreeSelChanged)
+END_EVENT_TABLE()
+
+//---------------------------------------------------------------------------
+
+MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
+  EditingMode (0, aresed3d, "Main")
 {
+  panel = new Panel (parent, this);
+  parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
+  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));
   do_dragging = false;
   do_kinematic_dragging = false;
 
   transformationMarker = 0;
-
-  CEGUI::WindowManager* winMgr = aresed->GetCEGUI ()->GetWindowManagerPtr ();
-  CEGUI::Window* btn;
-
-  btn = winMgr->getWindow("Ares/ItemWindow/Del");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnDelButtonClicked, this));
-
-  btn = winMgr->getWindow("Ares/ItemWindow/RotLeft");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnRotLeftButtonClicked, this));
-  btn = winMgr->getWindow("Ares/ItemWindow/RotRight");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnRotRightButtonClicked, this));
-  btn = winMgr->getWindow("Ares/ItemWindow/RotReset");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnRotResetButtonClicked, this));
-
-  btn = winMgr->getWindow("Ares/ItemWindow/AlignR");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnAlignRButtonClicked, this));
-  btn = winMgr->getWindow("Ares/ItemWindow/SetPos");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnSetPosButtonClicked, this));
-
-  btn = winMgr->getWindow("Ares/ItemWindow/Stack");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnStackButtonClicked, this));
-  btn = winMgr->getWindow("Ares/ItemWindow/SameY");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&MainMode::OnSameYButtonClicked, this));
-
-  itemList = static_cast<CEGUI::MultiColumnList*>(winMgr->getWindow("Ares/ItemWindow/List"));
-  itemList->subscribeEvent(CEGUI::MultiColumnList::EventSelectionChanged,
-    CEGUI::Event::Subscriber(&MainMode::OnItemListSelection, this));
-
-  categoryList = static_cast<CEGUI::MultiColumnList*>(winMgr->getWindow("Ares/ItemWindow/Category"));
-  categoryList->subscribeEvent(CEGUI::MultiColumnList::EventSelectionChanged,
-    CEGUI::Event::Subscriber(&MainMode::OnCategoryListSelection, this));
-
-  staticCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("Ares/ItemWindow/Static"));
-  staticCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
-    CEGUI::Event::Subscriber(&MainMode::OnStaticSelected, this));
 }
 
 void MainMode::Start ()
 {
   if (!transformationMarker)
   {
-    transformationMarker = aresed->GetMarkerManager ()->CreateMarker ();
-    iMarkerColor* red = aresed->GetMarkerManager ()->FindMarkerColor ("red");
-    iMarkerColor* green = aresed->GetMarkerManager ()->FindMarkerColor ("green");
-    iMarkerColor* blue = aresed->GetMarkerManager ()->FindMarkerColor ("blue");
-    iMarkerColor* yellow = aresed->GetMarkerManager ()->FindMarkerColor ("yellow");
+    transformationMarker = aresed3d->GetMarkerManager ()->CreateMarker ();
+    iMarkerColor* red = aresed3d->GetMarkerManager ()->FindMarkerColor ("red");
+    iMarkerColor* green = aresed3d->GetMarkerManager ()->FindMarkerColor ("green");
+    iMarkerColor* blue = aresed3d->GetMarkerManager ()->FindMarkerColor ("blue");
+    iMarkerColor* yellow = aresed3d->GetMarkerManager ()->FindMarkerColor ("yellow");
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
@@ -116,10 +95,10 @@ void MainMode::Start ()
     hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATEZ, cb);
   }
 
-  if (aresed->GetSelection ()->GetSize () >= 1)
+  if (aresed3d->GetSelection ()->GetSize () >= 1)
   {
     transformationMarker->SetVisible (true);
-    transformationMarker->AttachMesh (aresed->GetSelection ()->GetFirst ()->GetMesh ());
+    transformationMarker->AttachMesh (aresed3d->GetSelection ()->GetFirst ()->GetMesh ());
   }
   else
     transformationMarker->SetVisible (false);
@@ -131,18 +110,31 @@ void MainMode::Stop ()
   transformationMarker->AttachMesh (0);
 }
 
-void MainMode::AddCategory (const char* category)
+void MainMode::SetupItems (const csHash<csStringArray,csString>& items)
 {
-  CEGUI::ListboxTextItem* item = new CEGUI::ListboxTextItem (CEGUI::String (category));
-  item->setTextColours (CEGUI::colour(0,0,0));
-  item->setSelectionBrushImage ("ice", "TextSelectionBrush");
-  item->setSelectionColours (CEGUI::colour(0.5f,0.5f,1));
-  uint colid = categoryList->getColumnID (0);
-  categoryList->addRow (item, colid);
+  wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
+  tree->DeleteAllItems ();
+  wxTreeItemId rootId = tree->AddRoot (wxT ("Categories"));
+
+  csHash<csStringArray,csString>::ConstGlobalIterator it = items.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString category;
+    csStringArray items = it.Next (category);
+    wxTreeItemId categoryId = tree->AppendItem (rootId, wxString (category, wxConvUTF8));
+    for (size_t i = 0 ; i < items.GetSize () ; i++)
+    {
+      wxTreeItemId itemId = tree->AppendItem (categoryId, wxString (items[i], wxConvUTF8));
+    }
+  }
+
+  tree->SelectItem (rootId);
+  tree->Expand (rootId);
 }
 
 void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 {
+#if 0
   if (current.GetSize () > 1)
     staticCheck->disable ();
   else if (current.GetSize () == 1)
@@ -163,106 +155,69 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
   }
   else
     transformationMarker->SetVisible (false);
+#endif
 }
 
-void MainMode::UpdateItemList ()
+void MainMode::OnRotLeft ()
 {
-  itemList->resetList ();
-  CEGUI::ListboxItem* item = categoryList->getFirstSelectedItem ();
-  if (!item) return;
-  const csStringArray& items = aresed->GetCategories ().Get (item->getText ().c_str (), csStringArray ());
-  for (size_t i = 0 ; i < items.GetSize () ; i++)
-  {
-    CEGUI::ListboxTextItem* item = new CEGUI::ListboxTextItem (CEGUI::String (items[i]));
-    item->setTextColours (CEGUI::colour(0,0,0));
-    item->setSelectionBrushImage ("ice", "TextSelectionBrush");
-    item->setSelectionColours (CEGUI::colour(0.5f,0.5f,1));
-    uint colid = itemList->getColumnID (0);
-    itemList->addRow (item, colid);
-  }
+  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
+  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  TransformTools::Rotate (aresed3d->GetSelection (), PI, slow, fast);
 }
 
-bool MainMode::OnDelButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnRotRight ()
 {
-  aresed->DeleteSelectedObjects ();
-  return true;
+  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
+  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  TransformTools::Rotate (aresed3d->GetSelection (), -PI, slow, fast);
 }
 
-bool MainMode::OnRotLeftButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnRotReset ()
 {
-  bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
-  TransformTools::Rotate (aresed->GetSelection (), PI, slow, fast);
-  return true;
+  TransformTools::RotResetSelectedObjects (aresed3d->GetSelection ());
 }
 
-bool MainMode::OnRotRightButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnAlignR ()
 {
-  bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
-  TransformTools::Rotate (aresed->GetSelection (), -PI, slow, fast);
-  return true;
+  TransformTools::AlignSelectedObjects (aresed3d->GetSelection ());
 }
 
-bool MainMode::OnRotResetButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnStack ()
 {
-  TransformTools::RotResetSelectedObjects (aresed->GetSelection ());
-  return true;
+  TransformTools::StackSelectedObjects (aresed3d->GetSelection ());
 }
 
-bool MainMode::OnAlignRButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnSameY ()
 {
-  TransformTools::AlignSelectedObjects (aresed->GetSelection ());
-  return true;
+  TransformTools::SameYSelectedObjects (aresed3d->GetSelection ());
 }
 
-bool MainMode::OnStackButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnSetPos ()
 {
-  TransformTools::StackSelectedObjects (aresed->GetSelection ());
-  return true;
+  TransformTools::SetPosSelectedObjects (aresed3d->GetSelection ());
 }
 
-bool MainMode::OnSameYButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnStaticSelected ()
 {
-  TransformTools::SameYSelectedObjects (aresed->GetSelection ());
-  return true;
+  //aresed3d->SetStaticSelectedObjects (staticCheck->isSelected ());
 }
 
-bool MainMode::OnSetPosButtonClicked (const CEGUI::EventArgs&)
+void MainMode::OnTreeSelChanged (wxTreeEvent& event)
 {
-  TransformTools::SetPosSelectedObjects (aresed->GetSelection ());
-  return true;
-}
-
-bool MainMode::OnStaticSelected (const CEGUI::EventArgs&)
-{
-  aresed->SetStaticSelectedObjects (staticCheck->isSelected ());
-  return true;
-}
-
-bool MainMode::OnCategoryListSelection (const CEGUI::EventArgs&)
-{
-  UpdateItemList ();
-  return true;
-}
-
-bool MainMode::OnItemListSelection (const CEGUI::EventArgs&)
-{
-  return true;
 }
 
 void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
     const csVector3& pos, uint button, uint32 modifiers)
 {
   //printf ("START: %g,%g,%g\n", pos.x, pos.y, pos.z); fflush (stdout);
-  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
     dynobj->MakeKinematic ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
-    DragObject dob;
+    AresDragObject dob;
     dob.kineOffset = pos - meshpos;
     dob.dynobj = dynobj;
     dragObjects.Push (dob);
@@ -305,7 +260,7 @@ void MainMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
 {
   dragObjects.DeleteAll ();
   do_kinematic_dragging = false;
-  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -327,13 +282,13 @@ void MainMode::StopDrag ()
     csBody->SetRollingDampener (angularDampening);
 
     // Remove the drag joint
-    aresed->GetBulletSystem ()->RemovePivotJoint (dragJoint);
+    aresed3d->GetBulletSystem ()->RemovePivotJoint (dragJoint);
     dragJoint = 0;
   }
   if (do_kinematic_dragging)
   {
     do_kinematic_dragging = false;
-    SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+    SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
     while (it.HasNext ())
     {
       iDynamicObject* dynobj = it.Next ();
@@ -345,7 +300,7 @@ void MainMode::StopDrag ()
 
 void MainMode::HandleKinematicDragging ()
 {
-  csSegment3 beam = aresed->GetMouseBeam (1000.0f);
+  csSegment3 beam = aresed3d->GetMouseBeam (1000.0f);
   csVector3 newPosition;
   if (doDragRestrictY)
   {
@@ -361,7 +316,7 @@ void MainMode::HandleKinematicDragging ()
   }
   else
   {
-    iCamera* camera = aresed->GetCsCamera ();
+    iCamera* camera = aresed3d->GetCsCamera ();
     newPosition = beam.End () - beam.Start ();
     newPosition.Normalize ();
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
@@ -383,8 +338,8 @@ void MainMode::HandleKinematicDragging ()
 void MainMode::HandlePhysicalDragging ()
 {
   // Keep the drag joint at the same distance to the camera
-  iCamera* camera = aresed->GetCsCamera ();
-  csSegment3 beam = aresed->GetMouseBeam ();
+  iCamera* camera = aresed3d->GetCsCamera ();
+  csSegment3 beam = aresed3d->GetMouseBeam ();
   csVector3 newPosition = beam.End () - beam.Start ();
   newPosition.Normalize ();
   newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
@@ -411,13 +366,21 @@ void MainMode::Frame2D()
 {
 }
 
+csString MainMode::GetSelectedItem ()
+{
+  wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
+  wxTreeItemId id = tree->GetSelection ();
+  if (!id.IsOk ()) return csString ();
+  return csString ((const char*)tree->GetItemText (id).mb_str (wxConvUTF8));
+}
+
 bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
-  bool slow = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
+  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
   if (code == '2')
   {
-    SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+    SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
     while (it.HasNext ())
     {
       iDynamicObject* dynobj = it.Next ();
@@ -426,13 +389,13 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
       else
 	dynobj->MakeStatic ();
     }
-    CurrentObjectsChanged (aresed->GetSelection ()->GetObjects ());
+    CurrentObjectsChanged (aresed3d->GetSelection ()->GetObjects ());
   }
   else if (code == 'h')
   {
     if (holdJoint)
     {
-      aresed->GetBulletSystem ()->RemovePivotJoint (holdJoint);
+      aresed3d->GetBulletSystem ()->RemovePivotJoint (holdJoint);
       holdJoint = 0;
     }
     if (do_dragging)
@@ -448,36 +411,35 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   }
   else if (code == 'e')
   {
-    CEGUI::ListboxItem* item = itemList->getFirstSelectedItem ();
-    if (item)
+    csString itemName = GetSelectedItem ();
+    if (!itemName.IsEmpty ())
     {
-      csString itemName = item->getText().c_str();
-      aresed->SpawnItem (itemName);
+      aresed3d->SpawnItem (itemName);
     }
   }
   else if (code == CSKEY_UP)
   {
-    TransformTools::Move (aresed->GetSelection (), csVector3 (0, 0, 1), slow, fast);
+    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, 0, 1), slow, fast);
   }
   else if (code == CSKEY_DOWN)
   {
-    TransformTools::Move (aresed->GetSelection (), csVector3 (0, 0, -1), slow, fast);
+    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, 0, -1), slow, fast);
   }
   else if (code == CSKEY_LEFT)
   {
-    TransformTools::Move (aresed->GetSelection (), csVector3 (-1, 0, 0), slow, fast);
+    TransformTools::Move (aresed3d->GetSelection (), csVector3 (-1, 0, 0), slow, fast);
   }
   else if (code == CSKEY_RIGHT)
   {
-    TransformTools::Move (aresed->GetSelection (), csVector3 (1, 0, 0), slow, fast);
+    TransformTools::Move (aresed3d->GetSelection (), csVector3 (1, 0, 0), slow, fast);
   }
   else if (code == '<' || code == ',')
   {
-    TransformTools::Move (aresed->GetSelection (), csVector3 (0, -1, 0), slow, fast);
+    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, -1, 0), slow, fast);
   }
   else if (code == '>' || code == '.')
   {
-    TransformTools::Move (aresed->GetSelection (), csVector3 (0, 1, 0), slow, fast);
+    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, 1, 0), slow, fast);
   }
 
   return false;
@@ -489,14 +451,14 @@ void MainMode::StartKinematicDragging (bool restrictY,
   do_kinematic_dragging = true;
   kinematicFirstOnly = firstOnly;
 
-  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
     dynobj->MakeKinematic ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
-    DragObject dob;
+    AresDragObject dob;
     dob.kineOffset = isect - meshpos;
     dob.dynobj = dynobj;
     dragObjects.Push (dob);
@@ -515,7 +477,7 @@ void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
     const csSegment3& beam, const csVector3& isect)
 {
   // Create a pivot joint at the point clicked
-  dragJoint = aresed->GetBulletSystem ()->CreatePivotJoint ();
+  dragJoint = aresed3d->GetBulletSystem ()->CreatePivotJoint ();
   dragJoint->Attach (hitBody, isect);
 
   do_dragging = true;
@@ -547,8 +509,8 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (!(but == 0 || but == 1)) return false;
 
-  if (mouseX > aresed->GetViewWidth ()) return false;
-  if (mouseY > aresed->GetViewHeight ()) return false;
+  if (mouseX > aresed3d->GetViewWidth ()) return false;
+  if (mouseY > aresed3d->GetViewHeight ()) return false;
 
   uint32 mod = csMouseEventHelper::GetModifiers (&ev);
   bool shift = (mod & CSMASK_SHIFT) != 0;
@@ -556,12 +518,12 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   bool alt = (mod & CSMASK_ALT) != 0;
 
   int data;
-  iMarker* hitMarker = aresed->GetMarkerManager ()
+  iMarker* hitMarker = aresed3d->GetMarkerManager ()
     ->FindHitMarker (mouseX, mouseY, data);
   if (hitMarker == transformationMarker)
   {
-    iMeshWrapper* mesh = aresed->GetSelection ()->GetFirst ()->GetMesh ();
-    iCamera* camera = aresed->GetCsCamera ();
+    iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+    iCamera* camera = aresed3d->GetCsCamera ();
     csVector3 isect = mesh->GetMovable ()->GetTransform ().GetOrigin ();
     StartKinematicDragging (alt, csSegment3 (camera->GetTransform ().GetOrigin (),
 	  isect), isect, true);
@@ -570,21 +532,21 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   // Compute the end beam points
   csVector3 isect;
-  csSegment3 beam = aresed->GetBeam (mouseX, mouseY);
-  iRigidBody* hitBody = aresed->TraceBeam (beam, isect);
+  csSegment3 beam = aresed3d->GetBeam (mouseX, mouseY);
+  iRigidBody* hitBody = aresed3d->TraceBeam (beam, isect);
   if (!hitBody)
   {
-    if (but == 0) aresed->GetSelection ()->SetCurrentObject (0);
+    if (but == 0) aresed3d->GetSelection ()->SetCurrentObject (0);
     return false;
   }
 
-  iDynamicObject* newobj = aresed->GetDynamicWorld ()->FindObject (hitBody);
+  iDynamicObject* newobj = aresed3d->GetDynamicWorld ()->FindObject (hitBody);
   if (but == 0)
   {
     if (shift)
-      aresed->GetSelection ()->AddCurrentObject (newobj);
+      aresed3d->GetSelection ()->AddCurrentObject (newobj);
     else
-      aresed->GetSelection ()->SetCurrentObject (newobj);
+      aresed3d->GetSelection ()->SetCurrentObject (newobj);
 
     StopDrag ();
 
@@ -610,7 +572,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   return false;
 }
 
-bool MainMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
+bool MainMode::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (do_dragging || do_kinematic_dragging)
   {

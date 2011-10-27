@@ -86,7 +86,7 @@ private:
   void UpdateMarkerSelection ();
 
 public:
-  CurveMode (AppAresEdit* aresed);
+  CurveMode (AppAresEdit* aresed, AresEdit3DView* aresed3d);
   virtual ~CurveMode () { }
 
   virtual void Start ();

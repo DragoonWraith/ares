@@ -39,27 +39,6 @@ THE SOFTWARE.
 
 CS_IMPLEMENT_APPLICATION
 
-#if 0
-int main(int argc, char** argv)
-{
-  csPrintf ("ares version 0.1 by Jorrit Tyberghein.\n");
-
-  /* Runs the application.  
-   *
-   * csApplicationRunner<> cares about creating an application instance 
-   * which will perform initialization and event handling for the entire game. 
-   *
-   * The underlying csApplicationFramework also performs some core 
-   * initialization.  It will set up the configuration manager, event queue, 
-   * object registry, and much more.  The object registry is very important, 
-   * and it is stored in your main application class (again, by 
-   * csApplicationFramework). 
-   */
-  return csApplicationRunner<AppAresEdit>::Run (argc, argv);
-}
-
-#else
-
 #if defined(CS_PLATFORM_WIN32)
 
 #ifndef SW_SHOWNORMAL
@@ -80,7 +59,7 @@ int main (int argc, const char* const argv[])
 class AppPump : public wxTimer
 {
 public:
-  AppAresEdit* s;
+  AppAresEditWX* s;
   AppPump() { };
   virtual ~AppPump () { }
   virtual void Notify()
@@ -101,11 +80,13 @@ public:
 
 IMPLEMENT_APP(MyApp)
 
+extern AppAresEditWX* aresed;
+
 bool MyApp::OnInit (void)
 {
   wxInitAllImageHandlers ();
 
-  AppAresEdit* app = new AppAresEdit ();
+  //AppAresEditWX* app = new AppAresEditWX ();
 
 #if defined(wxUSE_UNICODE) && wxUSE_UNICODE
   char** csargv;
@@ -114,14 +95,18 @@ bool MyApp::OnInit (void)
   {
     csargv[i] = strdup (wxString(argv[i]).mb_str().data());
   }
-  if (!app->AresInitialize (argc, csargv)) return false;
+  //if (!aresed->AresInitialize (argc, csargv)) return false;
+  object_reg = csInitializer::CreateEnvironment (argc, csargv);
 #else
-  if (!app->AresInitialize (argc, argv)) return false;
+  //if (!aresed->AresInitialize (argc, argv)) return false;
+  object_reg = csInitializer::CreateEnvironment (argc, argv);
 #endif
-  if (!app->Application ()) return false;
+  //if (!aresed->Application ()) return false;
+  aresed = new AppAresEditWX (object_reg);
+  aresed->Initialize ();
 
   AppPump* p = new AppPump ();
-  p->s = app;
+  p->s = aresed;
   p->Start (20);
 
   return true;
@@ -132,6 +117,4 @@ int MyApp::OnExit ()
   csInitializer::DestroyApplication (object_reg);
   return 0;
 }
-
-#endif
 

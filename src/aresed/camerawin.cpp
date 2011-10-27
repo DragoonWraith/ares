@@ -27,44 +27,44 @@ THE SOFTWARE.
 
 bool CameraWindow::OnNorthButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, 0, 0));
+  aresed3d->GetCamera ().CamLookAt (csVector3 (0, 0, 0));
   return true;
 }
 
 bool CameraWindow::OnSouthButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, PI, 0));
+  aresed3d->GetCamera ().CamLookAt (csVector3 (0, PI, 0));
   return true;
 }
 
 bool CameraWindow::OnWestButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, -PI/2, 0));
+  aresed3d->GetCamera ().CamLookAt (csVector3 (0, -PI/2, 0));
   return true;
 }
 
 bool CameraWindow::OnEastButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamLookAt (csVector3 (0, PI/2, 0));
+  aresed3d->GetCamera ().CamLookAt (csVector3 (0, PI/2, 0));
   return true;
 }
 
 bool CameraWindow::OnTopDownButtonClicked (const CEGUI::EventArgs& e)
 {
-  aresed->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
+  aresed3d->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
   return true;
 }
 
 void CameraWindow::StoreTrans (int idx)
 {
   transButton[idx]->enable ();
-  CamLocation loc = aresed->GetCamera ().GetCameraLocation ();
+  CamLocation loc = aresed3d->GetCamera ().GetCameraLocation ();
   trans[idx] = loc;
 }
 
 void CameraWindow::RecallTrans (int idx)
 {
-  aresed->GetCamera ().SetCameraLocation (trans[idx]);
+  aresed3d->GetCamera ().SetCameraLocation (trans[idx]);
 }
 
 bool CameraWindow::OnS1ButtonClicked (const CEGUI::EventArgs& e)
@@ -118,7 +118,7 @@ bool CameraWindow::OnR4ButtonClicked (const CEGUI::EventArgs& e)
 csBox3 CameraWindow::GetBoxSelected ()
 {
   csBox3 totalbox;
-  SelectionIterator it = aresed->GetSelection ()->GetIterator ();
+  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -138,6 +138,7 @@ csBox3 CameraWindow::GetBoxSelected ()
 
 void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 {
+#if 0
   if (current.GetSize () == 0)
   {
     panCheck->disable();
@@ -152,6 +153,7 @@ void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& curren
     moveToButton->enable();
     topDownSelButton->enable();
   }
+#endif
 }
 
 bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
@@ -160,16 +162,16 @@ bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
   float xdim = box.MaxX ()-box.MinX ();
   float zdim = box.MaxZ ()-box.MinZ ();
   csVector3 origin = box.GetCenter () + csVector3 (0, MAX(xdim,zdim), 0);
-  aresed->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
+  aresed3d->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
   return true;
 }
 
 bool CameraWindow::OnLookAtButtonClicked (const CEGUI::EventArgs& e)
 {
-  if (aresed->GetSelection ()->HasSelection ())
+  if (aresed3d->GetSelection ()->HasSelection ())
   {
-    csVector3 center = TransformTools::GetCenterSelected (aresed->GetSelection ());
-    aresed->GetCamera ().CamLookAtPosition (center);
+    csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
+    aresed3d->GetCamera ().CamLookAtPosition (center);
   }
   return true;
 }
@@ -179,14 +181,14 @@ bool CameraWindow::OnMoveToButtonClicked (const CEGUI::EventArgs& e)
   csBox3 box = GetBoxSelected ();
   csVector3 center = box.GetCenter ();
   center.y = box.MaxY () + 2.0;
-  aresed->GetCamera ().CamMove (center);
+  aresed3d->GetCamera ().CamMove (center);
   return true;
 }
 
 void CameraWindow::Show ()
 {
-  gravityCheck->setSelected(aresed->GetCamera ().IsGravityEnabled ());
-  panCheck->setSelected(aresed->GetCamera ().IsPanningEnabled ());
+  gravityCheck->setSelected(aresed3d->GetCamera ().IsGravityEnabled ());
+  panCheck->setSelected(aresed3d->GetCamera ().IsPanningEnabled ());
   camwin->show ();
 }
 
@@ -204,15 +206,15 @@ bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
 {
   if (panCheck->isSelected ())
   {
-    if (aresed->GetSelection ()->HasSelection ())
+    if (aresed3d->GetSelection ()->HasSelection ())
     {
-      csVector3 center = TransformTools::GetCenterSelected (aresed->GetSelection ());
-      aresed->GetCamera ().EnablePanning (center);
+      csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
+      aresed3d->GetCamera ().EnablePanning (center);
     }
   }
   else
   {
-    aresed->GetCamera ().DisablePanning ();
+    aresed3d->GetCamera ().DisablePanning ();
   }
   return true;
 }
@@ -220,14 +222,14 @@ bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
 bool CameraWindow::OnGravitySelected (const CEGUI::EventArgs&)
 {
   if (gravityCheck->isSelected ())
-    aresed->GetCamera ().EnableGravity ();
+    aresed3d->GetCamera ().EnableGravity ();
   else
-    aresed->GetCamera ().DisableGravity ();
+    aresed3d->GetCamera ().DisableGravity ();
   return true;
 }
 
-CameraWindow::CameraWindow (AppAresEdit* aresed, iCEGUI* cegui)
-  : aresed (aresed), cegui (cegui)
+CameraWindow::CameraWindow (AresEdit3DView* aresed3d, iCEGUI* cegui)
+  : aresed3d (aresed3d), cegui (cegui)
 {
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   camwin = winMgr->getWindow ("CameraWindow");

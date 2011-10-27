@@ -45,11 +45,17 @@ THE SOFTWARE.
 #include "propclass/dynworld.h"
 #include "tools/elcm.h"
 
+#include "ivideo/wxwin.h"
+#include "csutil/custom_new_disable.h"
+#include <wx/wx.h>
+#include "csutil/custom_new_enable.h"
+
 #define USE_DECAL 0
 
 class CameraWindow;
 class WorldLoader;
 class AppAresEdit;
+class AresEdit3DView;
 
 struct iCelPlLayer;
 struct iCelEntity;
@@ -70,17 +76,29 @@ public:
 class AresEditSelectionListener : public SelectionListener
 {
 private:
-  AppAresEdit* aresed;
+  AresEdit3DView* aresed3d;
 
 public:
-  AresEditSelectionListener (AppAresEdit* aresed) : aresed (aresed) { }
+  AresEditSelectionListener (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
+  virtual ~AresEditSelectionListener () { }
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 };
 
-class AppAresEdit :
-  public csApplicationFramework, public csBaseEventHandler
+class MainModeSelectionListener : public SelectionListener
 {
 private:
+  MainMode* mainMode;
+
+public:
+  MainModeSelectionListener (MainMode* mainMode) : mainMode (mainMode) { }
+  virtual ~MainModeSelectionListener () { }
+  virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
+};
+
+class AresEdit3DView
+{
+private:
+  iObjectRegistry* object_reg;
   csRef<iPcDynamicWorld> dynworld;
   csRef<iELCM> elcm;
   iDynamicCell* dyncell;
@@ -106,12 +124,6 @@ private:
   iDecal* cursorDecal;
 #endif
 
-  MainMode* mainMode;
-  CurveMode* curveMode;
-  RoomMode* roomMode;
-  FoliageMode* foliageMode;
-  EditingMode* editMode;
-
   WorldLoader* worldLoader;
 
   csTicks currentTime;
@@ -128,16 +140,10 @@ private:
   /// A pointer to the collision detection system.
   csRef<iCollideSystem> cdsys;
 
-  /// Our window system.
-  csRef<iCEGUI> cegui;
-
   /// A pointer to the view which contains the camera.
   csRef<iView> view;
   int view_width;
   int view_height;
-
-  /// A pointer to the frame printer.
-  csRef<FramePrinter> printer;
 
   /// A pointer to the configuration manager.
   csRef<iConfigManager> cfgmgr;
@@ -210,13 +216,6 @@ private:
   /// Load a library file with the given VFS path.
   bool LoadLibrary (const char* path, const char* file);
 
-  virtual void Frame();
-  virtual bool OnKeyboard(iEvent&);
-  virtual bool OnMouseDown(iEvent&);
-  virtual bool OnMouseUp(iEvent&);
-  virtual bool OnMouseMove (iEvent&);
-  virtual bool OnUnhandledEvent (iEvent&);
-
   csEventID FocusLost;
 
   int mouseX, mouseY;
@@ -232,53 +231,61 @@ private:
    */
   bool InitPhysics ();
 
-  /**
-   * Initialize window system.
-   */
-  bool InitWindowSystem ();
-
-  /// Set the state of the tabs buttons based on selected objects.
-  void SetButtonState ();
-
   /// Add an item to a category (create the category if not already present).
   void AddItem (const char* category, const char* itemname);
-
-  bool OnUndoButtonClicked (const CEGUI::EventArgs&);
-  bool OnSaveButtonClicked (const CEGUI::EventArgs&);
-  bool OnLoadButtonClicked (const CEGUI::EventArgs&);
-  bool OnSimulationSelected (const CEGUI::EventArgs&);
-  bool OnMainTabButtonClicked (const CEGUI::EventArgs&);
-  bool OnCurveTabButtonClicked (const CEGUI::EventArgs&);
-  bool OnRoomTabButtonClicked (const CEGUI::EventArgs&);
-  bool OnFoliageTabButtonClicked (const CEGUI::EventArgs&);
 
   bool SwitchToCurveMode ();
   bool SwitchToRoomMode ();
   bool SwitchToFoliageMode ();
 
-  CEGUI::Checkbox* simulationCheck;
-  CEGUI::PushButton* undoButton;
-  CEGUI::Window* filenameLabel;
-  CEGUI::TabButton* mainTabButton;
-  CEGUI::TabButton* curveTabButton;
-  CEGUI::TabButton* roomTabButton;
-  CEGUI::TabButton* foliageTabButton;
-
-  FileReq* filereq;
   CameraWindow* camwin;
 
 public:
   /**
    * Constructor.
    */
-  AppAresEdit();
+  AresEdit3DView (iObjectRegistry* object_reg);
 
   /**
    * Destructor.
    */
-  virtual ~AppAresEdit();
+  ~AresEdit3DView ();
 
-  void PushFrame ();
+  /**
+   * Setup the 3D view.
+   */
+  bool Setup ();
+
+  /**
+   * Resize the view.
+   */
+  void ResizeView (int width, int height);
+
+  /**
+   * Display an error notification.
+   * \remarks
+   * The error displayed with this function will be identified with the
+   * application string name identifier set with SetApplicationName().
+   * \sa \ref FormatterNotes
+   */
+  bool ReportError (const char* description, ...)
+  {
+    va_list args;
+    va_start (args, description);
+    csReportV (object_reg, CS_REPORTER_SEVERITY_ERROR,
+      "ares", description, args);
+    va_end (args);
+    return false;
+  }
+
+  iObjectRegistry* GetObjectRegistry () const { return object_reg; }
+
+  void Frame (EditingMode* editMode);
+  bool OnKeyboard(iEvent&);
+  bool OnMouseDown(iEvent&);
+  bool OnMouseUp(iEvent&);
+  bool OnMouseMove (iEvent&);
+  bool OnUnhandledEvent (iEvent&);
 
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
@@ -288,7 +295,6 @@ public:
   iCollideSystem* GetCollisionSystem () const { return cdsys; }
   iCurvedMeshCreator* GetCurvedMeshCreator () const { return curvedMeshCreator; }
   iRoomMeshCreator* GetRoomMeshCreator () const { return roomMeshCreator; }
-  iCEGUI* GetCEGUI () const { return cegui; }
   iPcDynamicWorld* GetDynamicWorld () const { return dynworld; }
   iDynamicCell* GetDynamicCell () const { return dyncell; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
@@ -299,6 +305,7 @@ public:
   int GetMouseY () const { return mouseY; }
   int GetViewWidth () const { return view_width; }
   int GetViewHeight () const { return view_height; }
+  iView* GetView () const { return view; }
 
   Selection* GetSelection () const { return selection; }
   void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
@@ -348,7 +355,7 @@ public:
   /**
    * Final cleanup.
    */
-  virtual void OnExit();
+  void OnExit();
 
   /**
    * Clean up the current world.
@@ -364,39 +371,81 @@ public:
    * Load the world from a file.
    */
   void LoadFile (const char* filename);
+};
 
-  bool AresInitialize (int argc, char* argv[]);
+enum
+{
+  ID_Quit = wxID_EXIT,
+  ID_Open = wxID_OPEN,
+  ID_Save = wxID_SAVE,
+  ID_Delete = wxID_HIGHEST + 1000,
+};
 
-  /**
-   * Main initialization routine.  This routine should set up basic facilities
-   * (such as loading startup-time plugins, etc.).  In case of failure this
-   * routine will return false.  You can assume that the error message has been
-   * reported to the user.
-   */
-  virtual bool OnInitialize(int argc, char* argv[]);
+class AppAresEditWX : public wxFrame
+{
+private:
+  iObjectRegistry* object_reg;
+  csRef<iGraphics3D> g3d;
+  csRef<iVirtualClock> vc;
+  csRef<iVFS> vfs;
+  csRef<iWxWindow> wxwindow;
+  csRef<FramePrinter> printer;
 
-  /**
-   * Run the application.  Performs additional initialization (if needed), and
-   * then fires up the main run/event loop.  The loop will fire events which
-   * actually causes Crystal Space to "run".  Only when the program exits does
-   * this function return.
-   */
-  virtual bool Application();
-  
-  CS_EVENTHANDLER_NAMES("application.ares")
+  AresEdit3DView* aresed3d;
 
-  /* Declare that we want to receive events *after* the CEGUI plugin. */
-  virtual const csHandlerID * GenericPrec (csRef<iEventHandlerRegistry> &r1, 
-    csRef<iEventNameRegistry> &r2, csEventID event) const 
+  static bool SimpleEventHandler (iEvent& ev);
+  bool HandleEvent (iEvent& ev);
+
+  CS_DECLARE_EVENT_SHORTCUTS;
+  csEventID MouseDown;
+  csEventID MouseUp;
+  csEventID MouseMove;
+  csEventID KeyboardDown;
+  csEventID FocusLost;
+
+  FileReq* filereq;
+  MainMode* mainMode;
+  CurveMode* curveMode;
+  RoomMode* roomMode;
+  FoliageMode* foliageMode;
+  EditingMode* editMode;
+
+  void SetupMenuBar ();
+
+  void OnMenuOpen (wxCommandEvent& event);
+  void OnMenuSave (wxCommandEvent& event);
+  void OnMenuQuit (wxCommandEvent& event);
+  void OnMenuDelete (wxCommandEvent& event);
+
+public:
+  AppAresEditWX (iObjectRegistry* object_reg);
+  ~AppAresEditWX ();
+
+  bool Initialize ();
+  void PushFrame ();
+  void OnClose (wxCloseEvent& event);
+  void OnIconize (wxIconizeEvent& event);
+  void OnShow (wxShowEvent& event);
+  void OnSize (wxSizeEvent& ev);
+  void LoadFile (const char* filename);
+
+  DECLARE_EVENT_TABLE ();
+
+  class Panel : public wxPanel
   {
-    static csHandlerID precConstraint[2];
+  public:
+    Panel(wxWindow* parent, AppAresEditWX* s)
+      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    {}
     
-    precConstraint[0] = r1->GetGenericID("crystalspace.cegui");
-    precConstraint[1] = CS_HANDLERLIST_END;
-    return precConstraint;
-  }
+    virtual void OnSize (wxSizeEvent& ev)
+    { s->OnSize (ev); }
 
-  CS_EVENTHANDLER_DEFAULT_INSTANCE_CONSTRAINTS
+  private:
+    AppAresEditWX* s;
+
+    DECLARE_EVENT_TABLE()
+  };
 };
 
 #endif // __apparesed_h

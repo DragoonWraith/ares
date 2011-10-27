@@ -27,9 +27,14 @@ THE SOFTWARE.
 
 #include "editmodes.h"
 
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/treectrl.h>
+#include <wx/xrc/xmlres.h>
+
 class MainMode;
 
-struct DragObject
+struct AresDragObject
 {
   iDynamicObject* dynobj;
   csVector3 kineOffset;
@@ -48,7 +53,7 @@ private:
   bool do_static_dragging;
   bool do_kinematic_dragging;
   bool kinematicFirstOnly;
-  csArray<DragObject> dragObjects;
+  csArray<AresDragObject> dragObjects;
   bool doDragRestrictY;	// Only drag on the y-plane.
   float dragRestrictY;
 
@@ -66,31 +71,16 @@ private:
   void AddForce (iRigidBody* hitBody, bool pull,
       const csSegment3& beam, const csVector3& isect);
 
-  bool OnItemListSelection (const CEGUI::EventArgs&);
-  bool OnCategoryListSelection (const CEGUI::EventArgs&);
-  bool OnDelButtonClicked (const CEGUI::EventArgs&);
-  bool OnRotLeftButtonClicked (const CEGUI::EventArgs&);
-  bool OnRotRightButtonClicked (const CEGUI::EventArgs&);
-  bool OnRotResetButtonClicked (const CEGUI::EventArgs&);
-  bool OnAlignRButtonClicked (const CEGUI::EventArgs&);
-  bool OnSetPosButtonClicked (const CEGUI::EventArgs&);
-  bool OnStackButtonClicked (const CEGUI::EventArgs&);
-  bool OnSameYButtonClicked (const CEGUI::EventArgs&);
-  bool OnStaticSelected (const CEGUI::EventArgs&);
-
-  CEGUI::Checkbox* staticCheck;
-  CEGUI::MultiColumnList* itemList;
-  CEGUI::MultiColumnList* categoryList;
-
-  /// Update the list of items based on the current category.
-  void UpdateItemList ();
+  csString GetSelectedItem ();
 
 public:
-  MainMode (AppAresEdit* aresed);
+  MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~MainMode () { }
 
   virtual void Start ();
   virtual void Stop ();
+
+  void SetupItems (const csHash<csStringArray,csString>& items);
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 
@@ -102,6 +92,16 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
+  void OnRotLeft ();
+  void OnRotRight ();
+  void OnRotReset ();
+  void OnAlignR ();
+  void OnSetPos ();
+  void OnStack ();
+  void OnSameY ();
+  void OnStaticSelected ();
+  void OnTreeSelChanged (wxTreeEvent& event);
+
   void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers);
   void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
@@ -110,7 +110,29 @@ public:
       const csReversibleTransform& transform);
   void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 
-  void AddCategory (const char* category);
+  class Panel : public wxPanel
+  {
+  public:
+    Panel(wxWindow* parent, MainMode* s)
+      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    {}
+
+    void OnRotLeft (wxCommandEvent& event) { s->OnRotLeft (); }
+    void OnRotRight (wxCommandEvent& event) { s->OnRotRight (); }
+    void OnRotReset (wxCommandEvent& event) { s->OnRotReset (); }
+    void OnAlignR (wxCommandEvent& event) { s->OnAlignR (); }
+    void OnSetPos (wxCommandEvent& event) { s->OnSetPos (); }
+    void OnStack (wxCommandEvent& event) { s->OnStack (); }
+    void OnSameY (wxCommandEvent& event) { s->OnSameY (); }
+    void OnStaticSelected (wxCommandEvent& event) { s->OnStaticSelected (); }
+    void OnTreeSelChanged (wxTreeEvent& event) { s->OnTreeSelChanged (event); }
+
+  private:
+    MainMode* s;
+
+    DECLARE_EVENT_TABLE()
+  };
+  Panel* panel;
 };
 
 #endif // __aresed_mainmodes_h

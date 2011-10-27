@@ -42,7 +42,7 @@ private:
   bool OnTypeListSelection (const CEGUI::EventArgs&);
 
 public:
-  FoliageMode (AppAresEdit* aresed);
+  FoliageMode (AppAresEdit* aresed, AresEdit3DView* aresed3d);
   virtual ~FoliageMode () { }
 
   virtual void Start ();

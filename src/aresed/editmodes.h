@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "propclass/dynworld.h"
 
 class AppAresEdit;
+class AresEdit3DView;
 
 class EditingMode;
 
@@ -55,11 +56,12 @@ class EditingMode
 {
 protected:
   AppAresEdit* aresed;
+  AresEdit3DView* aresed3d;
   csString name;
 
 public:
-  EditingMode (AppAresEdit* aresed, const char* name) :
-    aresed (aresed), name (name) { }
+  EditingMode (AppAresEdit* aresed, AresEdit3DView* aresed3d, const char* name) :
+    aresed (aresed), aresed3d (aresed3d), name (name) { }
   virtual ~EditingMode () { }
 
   virtual void Start () { }

@@ -25,36 +25,43 @@ THE SOFTWARE.
 #ifndef __appares_filereq_h
 #define __appares_filereq_h
 
-#include <CEGUI.h>
 #include <crystalspace.h>
-#include <ivaria/icegui.h>
+
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/listctrl.h>
+#include <wx/xrc/xmlres.h>
 
 struct OKCallback : public csRefCount
 {
   virtual void OkPressed (const char* filename) = 0;
 };
 
-class FileReq
+class FileReq : public wxDialog
 {
 private:
-  csRef<iCEGUI> cegui;
   csRef<iVFS> vfs;
   csRef<OKCallback> callback;
 
-  void StdDlgUpdateLists(const char* filename);
-  bool StdDlgOkButton (const CEGUI::EventArgs& e);
-  bool StdDlgCancleButton (const CEGUI::EventArgs& e);
-  bool StdDlgFileSelect (const CEGUI::EventArgs& e);
-  bool StdDlgDirSelect (const CEGUI::EventArgs& e);
-  bool StdDlgDirChange (const CEGUI::EventArgs& e);
+  void StdDlgUpdateLists (const char* filename);
+  void OnFileViewSelChange (wxListEvent& event);
+  void OnFileViewActivated (wxListEvent& event);
+  void OnDirViewSelChange (wxListEvent& event);
+  void OnDirViewActivated (wxListEvent& event);
+  void OnOkButton (wxCommandEvent& event);
+  void OnCancelButton (wxCommandEvent& event);
 
-  CEGUI::Window* stddlg;
+  csString currentPath;
+
+  void DoOk ();
 
 public:
-  FileReq (iCEGUI* cegui, iVFS* vfs, const char* path);
+  FileReq (wxWindow* parent, iVFS* vfs, const char* path);
   ~FileReq();
 
   void Show (OKCallback* callback);
+
+  DECLARE_EVENT_TABLE ();
 };
 
 #endif // __appares_filereq_h

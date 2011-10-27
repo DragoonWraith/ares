@@ -27,7 +27,8 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-Selection::Selection (AppAresEdit* aresed) : aresed (aresed)
+Selection::Selection (AppAresEdit* aresed, AresEdit3DView* aresed3d) :
+  aresed (aresed), aresed3d (aresed3d)
 {
 }
 

@@ -34,45 +34,60 @@ THE SOFTWARE.
 #include "celtool/persisthelper.h"
 #include "physicallayer/pl.h"
 
+/* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
+ * missing csMouseEventHelper symbols. */
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/treectrl.h>
+#include <wx/xrc/xmlres.h>
+
 void AresEditSelectionListener::SelectionChanged (
     const csArray<iDynamicObject*>& current_objects)
 {
-  aresed->SelectionChanged (current_objects);
+  aresed3d->SelectionChanged (current_objects);
 }
 
-AppAresEdit::AppAresEdit() : csApplicationFramework(), camera (this)
+void MainModeSelectionListener::SelectionChanged (
+    const csArray<iDynamicObject*>& current_objects)
 {
-  SetApplicationName("ares");
+  mainMode->CurrentObjectsChanged (current_objects);
+}
+
+struct LoadCallback : public OKCallback
+{
+  AppAresEditWX* ares;
+  LoadCallback (AppAresEditWX* ares) : ares (ares) { }
+  virtual void OkPressed (const char* filename)
+  {
+    ares->LoadFile (filename);
+  }
+};
+
+// =========================================================================
+
+AresEdit3DView::AresEdit3DView (iObjectRegistry* object_reg) :
+  object_reg (object_reg),camera (0, this)
+{
   do_debug = false;
   do_simulation = true;
-  filereq = 0;
   camwin = 0;
   currentTime = 31000;
   do_auto_time = false;
-  editMode = 0;
-  mainMode = 0;
-  curveMode = 0;
-  roomMode = 0;
-  foliageMode = 0;
   curvedFactoryCounter = 0;
   roomFactoryCounter = 0;
   worldLoader = 0;
   selection = 0;
+  FocusLost = csevFocusLost (object_reg);
 }
 
-AppAresEdit::~AppAresEdit()
+AresEdit3DView::~AresEdit3DView()
 {
-  delete filereq;
   delete camwin;
-  delete mainMode;
-  delete curveMode;
-  delete roomMode;
-  delete foliageMode;
   delete worldLoader;
   delete selection;
 }
 
-void AppAresEdit::DoStuffOncePerFrame ()
+void AresEdit3DView::DoStuffOncePerFrame ()
 {
   // First get elapsed time from the virtual clock.
   float elapsed_time = vc->GetElapsedSeconds ();
@@ -88,8 +103,6 @@ void AppAresEdit::DoStuffOncePerFrame ()
   camlight->GetMovable ()->GetTransform ().SetOrigin (pos);
   camlight->GetMovable ()->UpdateMove ();
 
-  editMode->FramePre ();
-
   if (do_simulation)
   {
     float dynamicSpeed = 1.0f;
@@ -99,21 +112,7 @@ void AppAresEdit::DoStuffOncePerFrame ()
   dynworld->PrepareView (GetCsCamera (), elapsed_time);
 }
 
-void AppAresEdit::PushFrame ()
-{
-  static int level = 0;
-  if (level == 0)
-  {
-    level++;
-    if (vc)
-      vc->Advance();
-    eventQueue->Process();
-    level--;
-  }
-}
-
-
-void AppAresEdit::Frame ()
+void AresEdit3DView::Frame (EditingMode* editMode)
 {
   DoStuffOncePerFrame ();
 
@@ -137,11 +136,9 @@ void AppAresEdit::Frame ()
 
   editMode->Frame2D ();
   markerMgr->Frame2D ();
-
-  cegui->Render ();
 }
 
-bool AppAresEdit::OnMouseMove (iEvent& ev)
+bool AresEdit3DView::OnMouseMove (iEvent& ev)
 {
   // Save the mouse position
   mouseX = csMouseEventHelper::GetX (&ev);
@@ -179,23 +176,20 @@ bool AppAresEdit::OnMouseMove (iEvent& ev)
   if (camera.OnMouseMove (ev, mouseX, mouseY))
     return true;
 
-  return editMode->OnMouseMove(ev, mouseX, mouseY);
-
   return false;
 }
 
-bool AppAresEdit::OnUnhandledEvent (iEvent& event)
+bool AresEdit3DView::OnUnhandledEvent (iEvent& event)
 {
   if (event.Name == FocusLost)
   {
     camera.OnFocusLost ();
-    editMode->OnFocusLost ();
     return true;
   }
   return false;
 }
 
-void AppAresEdit::SetStaticSelectedObjects (bool st)
+void AresEdit3DView::SetStaticSelectedObjects (bool st)
 {
   SelectionIterator it = selection->GetIterator ();
   while (it.HasNext ())
@@ -214,7 +208,8 @@ void AppAresEdit::SetStaticSelectedObjects (bool st)
   }
 }
 
-void AppAresEdit::SetButtonState ()
+#if 0
+void AresEdit3DView::SetButtonState ()
 {
   bool curveTabEnable = false;
   if (selection->GetSize () == 1)
@@ -240,14 +235,14 @@ void AppAresEdit::SetButtonState ()
   else
     roomTabButton->disable ();
 }
+#endif
 
-void AppAresEdit::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
+void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
-  mainMode->CurrentObjectsChanged (current_objects);
   camwin->CurrentObjectsChanged (current_objects);
 }
 
-bool AppAresEdit::TraceBeamTerrain (const csVector3& start,
+bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
     const csVector3& end, csVector3& isect)
 {
   if (!terrainMesh) return false;
@@ -256,7 +251,7 @@ bool AppAresEdit::TraceBeamTerrain (const csVector3& start,
   return result.hit;
 }
 
-csSegment3 AppAresEdit::GetBeam (int x, int y, float maxdist)
+csSegment3 AresEdit3DView::GetBeam (int x, int y, float maxdist)
 {
   iCamera* cam = GetCsCamera ();
   csVector2 v2d (x, GetG2D ()->GetHeight () - y);
@@ -266,12 +261,12 @@ csSegment3 AppAresEdit::GetBeam (int x, int y, float maxdist)
   return csSegment3 (start, end);
 }
 
-csSegment3 AppAresEdit::GetMouseBeam (float maxdist)
+csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
 {
   return GetBeam (mouseX, mouseY, maxdist);
 }
 
-iRigidBody* AppAresEdit::TraceBeam (const csSegment3& beam, csVector3& isect)
+iRigidBody* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 {
   // Trace the physical beam
   iRigidBody* hitBody = 0;
@@ -302,7 +297,7 @@ iRigidBody* AppAresEdit::TraceBeam (const csSegment3& beam, csVector3& isect)
   return hitBody;
 }
 
-bool AppAresEdit::OnMouseDown (iEvent& ev)
+bool AresEdit3DView::OnMouseDown (iEvent& ev)
 {
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
@@ -314,10 +309,10 @@ bool AppAresEdit::OnMouseDown (iEvent& ev)
   if (camera.OnMouseDown (ev, but, mouseX, mouseY))
     return true;
 
-  return editMode->OnMouseDown (ev, but, mouseX, mouseY);
+  return false;
 }
 
-bool AppAresEdit::OnMouseUp (iEvent& ev)
+bool AresEdit3DView::OnMouseUp (iEvent& ev)
 {
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
@@ -329,10 +324,10 @@ bool AppAresEdit::OnMouseUp (iEvent& ev)
   if (camera.OnMouseUp (ev, but, mouseX, mouseY))
     return true;
 
-  return editMode->OnMouseUp (ev, but, mouseX, mouseY);
+  return false;
 }
 
-bool AppAresEdit::OnKeyboard(iEvent& ev)
+bool AresEdit3DView::OnKeyboard(iEvent& ev)
 {
   if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
   {
@@ -387,92 +382,15 @@ bool AppAresEdit::OnKeyboard(iEvent& ev)
       else
 	camwin->Show ();
     }
-    else
-      return editMode->OnKeyboard (ev, code);
+    else return false;
+    return true;
   }
   return false;
 }
 
 //---------------------------------------------------------------------------
 
-bool AppAresEdit::InitWindowSystem ()
-{
-  cegui = csQueryRegistry<iCEGUI> (GetObjectRegistry());
-  if (!cegui) return ReportError("Failed to locate CEGUI plugin");
-
-  cegui->Initialize ();
-
-  vfs->ChDir ("/cegui/");
-
-  // Load the ice skin (which uses Falagard skinning system)
-  cegui->GetSchemeManagerPtr ()->create("ice.scheme");
-
-  cegui->GetSystemPtr ()->setDefaultMouseCursor("ice", "MouseArrow");
-
-  cegui->GetFontManagerPtr ()->createFreeTypeFont("DejaVuSans", 10, true, "/fonts/ttf/DejaVuSans.ttf");
-
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-
-  // Load layout and set as root
-  vfs->ChDir ("/this/data/windows/");
-  cegui->GetSystemPtr ()->setGUISheet(winMgr->loadWindowLayout("ice.layout"));
-
-  CEGUI::Window* btn;
-
-  filenameLabel = winMgr->getWindow("Ares/StateWindow/File");
-
-  btn = winMgr->getWindow("Ares/StateWindow/Save");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnSaveButtonClicked, this));
-  btn = winMgr->getWindow("Ares/StateWindow/Load");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnLoadButtonClicked, this));
-  undoButton = static_cast<CEGUI::PushButton*>(winMgr->getWindow("Ares/StateWindow/Undo"));
-  undoButton->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnUndoButtonClicked, this));
-  undoButton->disable ();
-
-  mainTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/MainTab"));
-  mainTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnMainTabButtonClicked, this));
-  mainTabButton->setTargetWindow(winMgr->getWindow("Ares/ItemWindow"));
-  curveTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/CurveTab"));
-  curveTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnCurveTabButtonClicked, this));
-  curveTabButton->setTargetWindow(winMgr->getWindow("Ares/CurveWindow"));
-  roomTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/RoomTab"));
-  roomTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnRoomTabButtonClicked, this));
-  roomTabButton->setTargetWindow(winMgr->getWindow("Ares/RoomWindow"));
-  foliageTabButton = static_cast<CEGUI::TabButton*>(winMgr->getWindow("Ares/StateWindow/FoliageTab"));
-  foliageTabButton->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnFoliageTabButtonClicked, this));
-  foliageTabButton->setTargetWindow(winMgr->getWindow("Ares/FoliageWindow"));
-
-  simulationCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("Ares/StateWindow/Simulation"));
-  simulationCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
-    CEGUI::Event::Subscriber(&AppAresEdit::OnSimulationSelected, this));
-
-  filereq = new FileReq (cegui, vfs, "/saves");
-  camwin = new CameraWindow (this, cegui);
-
-  mainMode = new MainMode (this);
-  curveMode = new CurveMode (this);
-  roomMode = new RoomMode (this);
-  foliageMode = new FoliageMode (this);
-  editMode = mainMode;
-  mainTabButton->setSelected(true);
-
-  return true;
-}
-
-bool AppAresEdit::OnSimulationSelected (const CEGUI::EventArgs&)
-{
-  do_simulation = simulationCheck->isSelected ();
-  return true;
-}
-
-void AppAresEdit::DeleteSelectedObjects ()
+void AresEdit3DView::DeleteSelectedObjects ()
 {
   csArray<iDynamicObject*> objects = selection->GetObjects ();
   selection->SetCurrentObject (0);
@@ -484,44 +402,13 @@ void AppAresEdit::DeleteSelectedObjects ()
   }
 }
 
-bool AppAresEdit::OnMainTabButtonClicked (const CEGUI::EventArgs&)
-{
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  mainTabButton->setSelected(true);
-  curveTabButton->setSelected(false);
-  roomTabButton->setSelected(false);
-  foliageTabButton->setSelected(false);
-  winMgr->getWindow("Ares/ItemWindow")->setVisible(true);
-  winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
-  winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
-  winMgr->getWindow("Ares/FoliageWindow")->setVisible(false);
-  if (editMode) editMode->Stop ();
-  editMode = mainMode;
-  editMode->Start ();
-  return true;
-}
-
-bool AppAresEdit::OnCurveTabButtonClicked (const CEGUI::EventArgs&)
-{
-  return SwitchToCurveMode ();
-}
-
-bool AppAresEdit::OnRoomTabButtonClicked (const CEGUI::EventArgs&)
-{
-  return SwitchToRoomMode ();
-}
-
-bool AppAresEdit::OnFoliageTabButtonClicked (const CEGUI::EventArgs&)
-{
-  return SwitchToFoliageMode ();
-}
-
-bool AppAresEdit::SwitchToCurveMode ()
+bool AresEdit3DView::SwitchToCurveMode ()
 {
   if (selection->GetSize () != 1) return true;
   csString name = selection->GetFirst ()->GetFactory ()->GetName ();
   if (!curvedMeshCreator->GetCurvedFactory (name)) return true;
 
+#if 0
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   roomTabButton->setSelected(false);
@@ -534,15 +421,17 @@ bool AppAresEdit::SwitchToCurveMode ()
   if (editMode) editMode->Stop ();
   editMode = curveMode;
   editMode->Start ();
+#endif
   return true;
 }
 
-bool AppAresEdit::SwitchToRoomMode ()
+bool AresEdit3DView::SwitchToRoomMode ()
 {
   if (selection->GetSize () != 1) return true;
   csString name = selection->GetFirst ()->GetFactory ()->GetName ();
   if (!roomMeshCreator->GetRoomFactory (name)) return true;
 
+#if 0
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   curveTabButton->setSelected(false);
@@ -555,11 +444,13 @@ bool AppAresEdit::SwitchToRoomMode ()
   if (editMode) editMode->Stop ();
   editMode = roomMode;
   editMode->Start ();
+#endif
   return true;
 }
 
-bool AppAresEdit::SwitchToFoliageMode ()
+bool AresEdit3DView::SwitchToFoliageMode ()
 {
+#if 0
   CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
   mainTabButton->setSelected(false);
   curveTabButton->setSelected(false);
@@ -572,10 +463,11 @@ bool AppAresEdit::SwitchToFoliageMode ()
   if (editMode) editMode->Stop ();
   editMode = foliageMode;
   editMode->Start ();
+#endif
   return true;
 }
 
-void AppAresEdit::CleanupWorld ()
+void AresEdit3DView::CleanupWorld ()
 {
   selection->SetCurrentObject (0);
 
@@ -594,35 +486,14 @@ void AppAresEdit::CleanupWorld ()
   engine->DeleteAll ();
 }
 
-bool AppAresEdit::OnUndoButtonClicked (const CEGUI::EventArgs&)
+void AresEdit3DView::SaveFile (const char* filename)
 {
-  return true;
-}
-
-void AppAresEdit::SaveFile (const char* filename)
-{
-  filenameLabel->setText (CEGUI::String (filename));
+  //filenameLabel->setText (CEGUI::String (filename));
   // @@@ Error handling.
   worldLoader->SaveFile (filename);
 }
 
-struct SaveCallback : public OKCallback
-{
-  AppAresEdit* ares;
-  SaveCallback (AppAresEdit* ares) : ares (ares) { }
-  virtual void OkPressed (const char* filename)
-  {
-    ares->SaveFile (filename);
-  }
-};
-
-bool AppAresEdit::OnSaveButtonClicked (const CEGUI::EventArgs&)
-{
-  filereq->Show (new SaveCallback (this));
-  return true;
-}
-
-void AppAresEdit::LoadFile (const char* filename)
+void AresEdit3DView::LoadFile (const char* filename)
 {
   CleanupWorld ();
   SetupWorld ();
@@ -653,84 +524,20 @@ void AppAresEdit::LoadFile (const char* filename)
   PostLoadMap ();
 }
 
-struct LoadCallback : public OKCallback
+void AresEdit3DView::OnExit()
 {
-  AppAresEdit* ares;
-  LoadCallback (AppAresEdit* ares) : ares (ares) { }
-  virtual void OkPressed (const char* filename)
-  {
-    ares->LoadFile (filename);
-  }
-};
-
-bool AppAresEdit::OnLoadButtonClicked (const CEGUI::EventArgs&)
-{
-  filereq->Show (new LoadCallback (this));
-  return true;
 }
 
-bool AppAresEdit::AresInitialize (int argc, char* argv[])
-{
-  object_reg = csInitializer::CreateEnvironment (argc, argv);
-  return OnInitialize (argc, argv);
-}
-
-bool AppAresEdit::OnInitialize (int argc, char* argv[])
-{
-  iObjectRegistry* r = GetObjectRegistry();
-
-  if (!celInitializer::SetupConfigManager(r,
-      "/ares/AppAres.cfg", GetApplicationName()))
-    return ReportError("Failed to initialize configuration manager!");
-
-  if (!celInitializer::RequestPlugins(r,
-	CS_REQUEST_VFS,
-	CS_REQUEST_OPENGL3D,
-	CS_REQUEST_ENGINE,
-	CS_REQUEST_FONTSERVER,
-	CS_REQUEST_IMAGELOADER,
-	CS_REQUEST_LEVELLOADER,
-	CS_REQUEST_REPORTER,
-	CS_REQUEST_REPORTERLISTENER,
-	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
-	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
-	CS_REQUEST_PLUGIN("crystalspace.collisiondetection.opcode", iCollideSystem),
-	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
-	CS_REQUEST_PLUGIN("crystalspace.cegui.wrapper", iCEGUI),
-	CS_REQUEST_PLUGIN("crystalspace.decal.manager", iDecalManager),
-	CS_REQUEST_PLUGIN("utility.nature", iNature),
-	CS_REQUEST_PLUGIN("utility.marker", iMarkerManager),
-	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
-	CS_REQUEST_PLUGIN("utility.rooms", iRoomMeshCreator),
-	CS_REQUEST_END))
-    return ReportError("Failed to initialize plugins!");
-
-  // "Warm up" the event handler so it can interact with the world
-  csBaseEventHandler::Initialize(GetObjectRegistry());
-
-  FocusLost = csevFocusLost (GetObjectRegistry ());
- 
-  return true;
-}
-
-void AppAresEdit::OnExit()
-{
-  printer.Invalidate();
-}
-
-void AppAresEdit::AddItem (const char* category, const char* itemname)
+void AresEdit3DView::AddItem (const char* category, const char* itemname)
 {
   if (!categories.In (category))
-  {
     categories.Put (category, csStringArray());
-    mainMode->AddCategory (category);
-  }
   csStringArray a;
   categories.Get (category, a).Push (itemname);
 }
 
 #if USE_DECAL
-bool AppAresEdit::SetupDecal ()
+bool AresEdit3DView::SetupDecal ()
 {
   iMaterialWrapper* material = engine->GetMaterialList ()->FindByName ("stone2");
   if (!material)
@@ -741,32 +548,25 @@ bool AppAresEdit::SetupDecal ()
 }
 #endif
 
-bool AppAresEdit::Application()
+void AresEdit3DView::ResizeView (int width, int height)
+{
+  // We use the full window to draw the world.
+  view_width = width;
+  view_height = height;
+  view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
+  view->SetRectangle (0, 0, view_width, view_height);
+}
+
+bool AresEdit3DView::Setup ()
 {
   iObjectRegistry* r = GetObjectRegistry();
-
-  // Open the main system. This will open all the previously loaded plugins
-  // (i.e. all windows will be opened).
-  if (!OpenApplication(r))
-    return ReportError("Error opening system!");
 
   vfs = csQueryRegistry<iVFS> (r);
   if (!vfs)
     return ReportError("Failed to locate vfs!");
 
-  if (!InitWindowSystem ())
-    return false;
+  //camwin = new CameraWindow (this, cegui);
 
-  // Set up an event handler for the application.  Crystal Space is fully
-  // event-driven.  Everything (except for this initialization) happens in
-  // response to an event.
-  if (!RegisterQueue (r, csevAllEvents(GetObjectRegistry())))
-    return ReportError("Failed to set up event handler!");
-
-  // Now get the pointer to various modules we need.  We fetch them from the
-  // object registry.  The RequestPlugins() call we did earlier registered all
-  // loaded plugins with the object registry.  It is also possible to load
-  // plugins manually on-demand.
   g3d = csQueryRegistry<iGraphics3D> (r);
   if (!g3d)
     return ReportError("Failed to locate 3D renderer!");
@@ -788,8 +588,6 @@ bool AppAresEdit::Application()
 
   decalMgr = csQueryRegistry<iDecalManager> (r);
   if (!decalMgr) return ReportError("Failed to load decal manager!");
-
-  printer.AttachNew(new FramePrinter(GetObjectRegistry()));
 
   eventQueue = csQueryRegistry<iEventQueue> (r);
   if (!eventQueue) return ReportError ("Failed to locate Event Queue!");
@@ -822,7 +620,7 @@ bool AppAresEdit::Application()
 
   worldLoader = new WorldLoader (r);
   worldLoader->SetZone (dynworld);
-  selection = new Selection (this);
+  selection = new Selection (0, this);
   SelectionListener* listener = new AresEditSelectionListener (this);
   selection->AddSelectionListener (listener);
   listener->DecRef ();
@@ -861,19 +659,21 @@ bool AppAresEdit::Application()
 
   // We need a View to the virtual world.
   view.AttachNew(new csView (engine, g3d));
+  view->SetAutoResize (false);
   iGraphics2D* g2d = g3d->GetDriver2D ();
   // We use the full window to draw the world.
-  view_width = (int)(g2d->GetWidth () * 0.86);
+  //view_width = (int)(g2d->GetWidth () * 0.86);
+  view_width = g2d->GetWidth ();
   view_height = g2d->GetHeight ();
   view->SetRectangle (0, 0, view_width, view_height);
 
   markerMgr->SetView (view);
 
   // Set the window title.
-  iNativeWindow* nw = g2d->GetNativeWindow ();
-  if (nw)
-    nw->SetTitle (cfgmgr->GetStr ("WindowTitle",
-          "Please set WindowTitle in AppAresEdit.cfg"));
+  //iNativeWindow* nw = g2d->GetNativeWindow ();
+  //if (nw)
+    //nw->SetTitle (cfgmgr->GetStr ("WindowTitle",
+          //"Please set WindowTitle in AppAresEdit.cfg"));
 
   if (!InitPhysics ())
     return false;
@@ -892,8 +692,6 @@ bool AppAresEdit::Application()
     return false;
 #endif
 
-  editMode->Start ();
-
   // Start the default run/event loop.  This will return only when some code,
   // such as OnKeyboard(), has asked the run loop to terminate.
   //Run();
@@ -901,7 +699,7 @@ bool AppAresEdit::Application()
   return true;
 }
 
-bool AppAresEdit::SetupDynWorld ()
+bool AresEdit3DView::SetupDynWorld ()
 {
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
@@ -952,7 +750,7 @@ bool AppAresEdit::SetupDynWorld ()
   return true;
 }
 
-bool AppAresEdit::PostLoadMap ()
+bool AresEdit3DView::PostLoadMap ()
 {
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
@@ -996,7 +794,7 @@ bool AppAresEdit::PostLoadMap ()
   return true;
 }
 
-bool AppAresEdit::SetupWorld ()
+bool AresEdit3DView::SetupWorld ()
 {
   vfs->Mount ("/aresnode", "data$/node.zip");
   if (!LoadLibrary ("/aresnode/", "library"))
@@ -1012,7 +810,7 @@ bool AppAresEdit::SetupWorld ()
   return true;
 }
 
-CurvedFactoryCreator* AppAresEdit::FindFactoryCreator (const char* name)
+CurvedFactoryCreator* AresEdit3DView::FindFactoryCreator (const char* name)
 {
   for (size_t i = 0 ; i < curvedFactoryCreators.GetSize () ; i++)
     if (curvedFactoryCreators[i].name == name)
@@ -1020,7 +818,7 @@ CurvedFactoryCreator* AppAresEdit::FindFactoryCreator (const char* name)
   return 0;
 }
 
-RoomFactoryCreator* AppAresEdit::FindRoomFactoryCreator (const char* name)
+RoomFactoryCreator* AresEdit3DView::FindRoomFactoryCreator (const char* name)
 {
   for (size_t i = 0 ; i < roomFactoryCreators.GetSize () ; i++)
     if (roomFactoryCreators[i].name == name)
@@ -1028,20 +826,7 @@ RoomFactoryCreator* AppAresEdit::FindRoomFactoryCreator (const char* name)
   return 0;
 }
 
-static float TestVerticalBeam (const csVector3& start, float distance, iCamera* camera)
-{
-  csVector3 end = start;
-  end.y -= distance;
-  iSector* sector = camera->GetSector ();
-
-  csSectorHitBeamResult result = sector->HitBeamPortals (start, end);
-  if (result.mesh)
-    return result.isect.y;
-  else
-    return end.y-.1;
-}
-
-void AppAresEdit::SpawnItem (const csString& name)
+void AresEdit3DView::SpawnItem (const csString& name)
 {
   csString fname;
   iCurvedFactory* curvedFactory = 0;
@@ -1155,7 +940,7 @@ void AppAresEdit::SpawnItem (const csString& name)
     SwitchToRoomMode ();
 }
 
-bool AppAresEdit::InitPhysics ()
+bool AresEdit3DView::InitPhysics ()
 {
   dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
   if (!dyn) return ReportError ("Error loading bullet plugin!");
@@ -1173,7 +958,7 @@ bool AppAresEdit::InitPhysics ()
   return true;
 }
 
-bool AppAresEdit::LoadLibrary (const char* path, const char* file)
+bool AresEdit3DView::LoadLibrary (const char* path, const char* file)
 {
   // Set current VFS dir to the level dir, helps with relative paths in maps
   vfs->PushDir (path);
@@ -1187,3 +972,410 @@ bool AppAresEdit::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
+// =========================================================================
+
+BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
+  EVT_SHOW (AppAresEditWX::OnShow)
+  EVT_ICONIZE (AppAresEditWX::OnIconize)
+  EVT_MENU (ID_Open, AppAresEditWX :: OnMenuOpen)
+  EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
+  EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
+  EVT_MENU (ID_Delete, AppAresEditWX :: OnMenuDelete)
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(AppAresEditWX::Panel, wxPanel)
+  EVT_SIZE(AppAresEditWX::Panel::OnSize)
+END_EVENT_TABLE()
+
+// The global pointer to AresEd
+AppAresEditWX* aresed = 0;
+
+AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
+  : wxFrame (0, -1, wxT ("Crystal Space WxWidget Canvas test"), 
+             wxDefaultPosition, wxSize (1000, 600))
+{
+  AppAresEditWX::object_reg = object_reg;
+  aresed3d = 0;
+  editMode = 0;
+  mainMode = 0;
+  curveMode = 0;
+  roomMode = 0;
+  foliageMode = 0;
+  FocusLost = csevFocusLost (object_reg);
+}
+
+AppAresEditWX::~AppAresEditWX ()
+{
+  delete mainMode;
+  delete curveMode;
+  delete roomMode;
+  delete foliageMode;
+  delete aresed3d;
+}
+
+void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
+{
+  aresed3d->DeleteSelectedObjects ();
+}
+
+void AppAresEditWX::LoadFile (const char* filename)
+{
+  aresed3d->LoadFile (filename);
+  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
+  mainMode->SetupItems (categories);
+}
+
+void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
+{
+  filereq->Show (new LoadCallback (this));
+}
+
+void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
+{
+  //filereq->Show (new LoadCallback (this));
+}
+
+void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)
+{
+}
+
+bool AppAresEditWX::HandleEvent (iEvent& ev)
+{
+  if (ev.Name == Frame)
+  {
+    editMode->FramePre ();
+    if (aresed3d) aresed3d->Frame (editMode);
+    return true;
+  }
+  else if (CS_IS_KEYBOARD_EVENT(object_reg, ev))
+  {
+    utf32_char code = csKeyEventHelper::GetCookedCode(&ev);
+    if ((ev.Name == KeyboardDown) && (code == CSKEY_ESC))
+    {
+      /* Close the main window, which will trigger an application exit.
+         CS-specific cleanup happens in OnClose(). */
+      Close();
+      return true;
+    }
+    if (aresed3d)
+    {
+      if (aresed3d->OnKeyboard (ev))
+	return true;
+      else if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
+        return editMode->OnKeyboard (ev, code);
+    }
+  }
+  else if ((ev.Name == MouseMove))
+  {
+    int mouseX = csMouseEventHelper::GetX (&ev);
+    int mouseY = csMouseEventHelper::GetY (&ev);
+    if (aresed3d)
+    {
+      if (aresed3d->OnMouseMove (ev))
+	return true;
+      else
+	return editMode->OnMouseMove (ev, mouseX, mouseY);
+    }
+  }
+  else if ((ev.Name == MouseDown))
+  {
+    uint but = csMouseEventHelper::GetButton (&ev);
+    int mouseX = csMouseEventHelper::GetX (&ev);
+    int mouseY = csMouseEventHelper::GetY (&ev);
+    if (aresed3d)
+    {
+      if (aresed3d->OnMouseDown (ev))
+	return true;
+      else
+	return editMode->OnMouseDown (ev, but, mouseX, mouseY);
+    }
+  }
+  else if ((ev.Name == MouseUp))
+  {
+    uint but = csMouseEventHelper::GetButton (&ev);
+    int mouseX = csMouseEventHelper::GetX (&ev);
+    int mouseY = csMouseEventHelper::GetY (&ev);
+    if (aresed3d)
+    {
+      if (aresed3d->OnMouseUp (ev))
+	return true;
+      else
+	return editMode->OnMouseUp (ev, but, mouseX, mouseY);
+    }
+  }
+  else
+  {
+    if (ev.Name == FocusLost) editMode->OnFocusLost ();
+    if (aresed3d)
+      return aresed3d->OnUnhandledEvent (ev);
+  }
+
+  return false;
+}
+
+bool AppAresEditWX::SimpleEventHandler (iEvent& ev)
+{
+  return aresed ? aresed->HandleEvent (ev) : false;
+}
+
+bool AppAresEditWX::Initialize ()
+{
+  if (!celInitializer::SetupConfigManager (object_reg,
+      "/ares/AppAresEdit.cfg", "ares"))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Failed to setup configmanager!");
+    return false;
+  }
+
+  if (!celInitializer::RequestPlugins (object_reg,
+	CS_REQUEST_VFS,
+	CS_REQUEST_PLUGIN ("crystalspace.graphics2d.wxgl", iGraphics2D),
+	CS_REQUEST_OPENGL3D,
+	CS_REQUEST_ENGINE,
+	CS_REQUEST_FONTSERVER,
+	CS_REQUEST_IMAGELOADER,
+	CS_REQUEST_LEVELLOADER,
+	CS_REQUEST_REPORTER,
+	CS_REQUEST_REPORTERLISTENER,
+	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
+	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
+	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
+	CS_REQUEST_PLUGIN ("crystalspace.dynamics.bullet", iDynamics),
+	CS_REQUEST_PLUGIN ("crystalspace.cegui.wrapper", iCEGUI),
+	CS_REQUEST_PLUGIN ("crystalspace.decal.manager", iDecalManager),
+	CS_REQUEST_PLUGIN ("utility.nature", iNature),
+	CS_REQUEST_PLUGIN ("utility.marker", iMarkerManager),
+	CS_REQUEST_PLUGIN ("utility.curvemesh", iCurvedMeshCreator),
+	CS_REQUEST_PLUGIN ("utility.rooms", iRoomMeshCreator),
+	CS_REQUEST_END))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Can't initialize plugins!");
+    return false;
+  }
+
+  //csEventNameRegistry::Register (object_reg);
+  if (!csInitializer::SetupEventHandler (object_reg, SimpleEventHandler))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Can't initialize event handler!");
+    return false;
+  }
+  CS_INITIALIZE_EVENT_SHORTCUTS (object_reg);
+
+  KeyboardDown = csevKeyboardDown (object_reg);
+  MouseMove = csevMouseMove (object_reg, 0);
+  MouseUp = csevMouseUp (object_reg, 0);
+  MouseDown = csevMouseDown (object_reg, 0);
+
+  // Check for commandline help.
+  if (csCommandLineHelper::CheckHelp (object_reg))
+  {
+    csCommandLineHelper::Help (object_reg);
+    return false;
+  }
+
+  // The virtual clock.
+  vc = csQueryRegistry<iVirtualClock> (object_reg);
+  if (vc == 0)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Can't find the virtual clock!");
+    return false;
+  }
+
+  g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  if (g3d == 0)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "No iGraphics3D plugin!");
+    return false;
+  }
+
+  vfs = csQueryRegistry<iVFS> (object_reg);
+  if (!vfs)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "No iVFS plugin!");
+    return false;
+  }
+
+  // Load the frame from an XRC file
+  wxXmlResource::Get ()->InitAllHandlers ();
+
+  wxString searchPath (wxT ("data/windows"));
+  wxString resourceLocation;
+  wxFileSystem wxfs;
+  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("AresMainFrame.xrc"))
+    || !wxXmlResource::Get ()->Load (resourceLocation))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not load XRC ressource file!");
+    return false;
+  }
+  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("FileRequester.xrc"))
+    || !wxXmlResource::Get ()->Load (resourceLocation))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not load XRC ressource file!");
+    return false;
+  }
+  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("MainModePanel.xrc"))
+    || !wxXmlResource::Get ()->Load (resourceLocation))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not load XRC ressource file!");
+    return false;
+  }
+
+  wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
+  if (!mainPanel)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not find main panel in XRC ressource file!");
+    return false;
+  }
+
+  // Find the panel where to place the wxgl canvas
+  wxPanel* panel = XRCCTRL (*this, "main3DPanel", wxPanel);
+  if (!panel)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not find the panel for the wxgl canvas in XRC ressource file!");
+    return false;
+  }
+
+  // Create the wxgl canvas
+  iGraphics2D* g2d = g3d->GetDriver2D ();
+  g2d->AllowResize (true);
+  wxwindow = scfQueryInterface<iWxWindow> (g2d);
+  if (!wxwindow)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Canvas is no iWxWindow plugin!");
+    return false;
+  }
+
+  wxPanel* panel1 = new AppAresEditWX::Panel (panel, this);
+  panel->GetSizer ()->Add (panel1, 1, wxALL | wxEXPAND);
+  wxwindow->SetParent (panel1);
+
+  Show (true);
+
+  // Open the main system. This will open all the previously loaded plug-ins.
+  if (!csInitializer::OpenApplication (object_reg))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Error opening system!");
+    return false;
+  }
+
+  /* Manually focus the GL canvas.
+     This is so it receives keyboard events (and conveniently translate these
+     into CS keyboard events/update the CS keyboard state).
+   */
+  wxwindow->GetWindow ()->SetFocus ();
+
+  aresed3d = new AresEdit3DView (object_reg);
+  if (!aresed3d->Setup ())
+    return false;
+ 
+  filereq = new FileReq (wxwindow->GetWindow (), vfs, "/saves");
+
+  wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
+  mainMode = new MainMode (mainModeTabPanel, aresed3d);
+  curveMode = new CurveMode (0, aresed3d);
+  roomMode = new RoomMode (0, aresed3d);
+  foliageMode = new FoliageMode (0, aresed3d);
+  editMode = mainMode;
+  editMode->Start ();
+  //mainTabButton->setSelected(true);
+
+  SelectionListener* listener = new MainModeSelectionListener (mainMode);
+  aresed3d->GetSelection ()->AddSelectionListener (listener);
+
+  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
+  mainMode->SetupItems (categories);
+
+  SetupMenuBar ();
+
+  printer.AttachNew (new FramePrinter (object_reg));
+
+  return true;
+}
+
+void AppAresEditWX::SetupMenuBar ()
+{
+  wxMenu* fileMenu = new wxMenu ();
+  fileMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
+  fileMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
+  fileMenu->Append (ID_Quit, wxT ("&Exit..."));
+
+  wxMenu* editMenu = new wxMenu ();
+  editMenu->Append (ID_Delete, wxT ("&Delete"));
+
+  wxMenuBar* menuBar = new wxMenuBar ();
+  menuBar->Append (fileMenu, wxT ("&File"));
+  menuBar->Append (editMenu, wxT ("&Edit"));
+  SetMenuBar (menuBar);
+  menuBar->Reparent (this);
+}
+
+void AppAresEditWX::PushFrame ()
+{
+  csRef<iEventQueue> q (csQueryRegistry<iEventQueue> (object_reg));
+  if (!q)
+    return ;
+  csRef<iVirtualClock> vc (csQueryRegistry<iVirtualClock> (object_reg));
+
+  if (vc)
+    vc->Advance();
+  q->Process();
+}
+
+void AppAresEditWX::OnSize (wxSizeEvent& event)
+{
+  if (!wxwindow->GetWindow ()) return;
+
+  wxSize size = event.GetSize();
+  printf ("OnSize %d,%d\n", size.x, size.y); fflush (stdout);
+  wxwindow->GetWindow ()->SetSize (size); // TODO: csGraphics2DGLCommon::Resize is called here...
+  aresed3d->ResizeView (size.x, size.y);
+  // TODO: ... but here the CanvasResize event has still not been catched by iGraphics3D
+}
+
+void AppAresEditWX::OnClose (wxCloseEvent& event)
+{
+  csPrintf("got close event\n");
+  
+  // Tell CS we're going down
+  csRef<iEventQueue> q (csQueryRegistry<iEventQueue> (object_reg));
+  if (q) q->GetEventOutlet()->Broadcast (csevQuit(object_reg));
+  
+  // WX will destroy the 'AppAresEditWX' instance
+  aresed = 0;
+}
+
+void AppAresEditWX::OnIconize (wxIconizeEvent& event)
+{
+  csPrintf("got iconize %d\n", (int) event.Iconized ());
+}
+
+void AppAresEditWX::OnShow (wxShowEvent& event)
+{
+  csPrintf("got show %d\n", (int) event.GetShow ());
+}
