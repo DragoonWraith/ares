@@ -33,13 +33,13 @@ struct iMeshGenerator;
 class FoliageMode : public EditingMode
 {
 private:
-  CEGUI::MultiColumnList* typeList;
+  //CEGUI::MultiColumnList* typeList;
   iMeshGenerator* meshgen;
 
   /// Update the list of types.
   void UpdateTypeList ();
 
-  bool OnTypeListSelection (const CEGUI::EventArgs&);
+  //bool OnTypeListSelection (const CEGUI::EventArgs&);
 
 public:
   FoliageMode (AppAresEdit* aresed, AresEdit3DView* aresed3d);

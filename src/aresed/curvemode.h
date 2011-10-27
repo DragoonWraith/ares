@@ -72,14 +72,14 @@ private:
   void FlatPoint (size_t idx);
 
   void RotateCurrent (float baseAngle);
-  bool OnRotLeftButtonClicked (const CEGUI::EventArgs&);
-  bool OnRotRightButtonClicked (const CEGUI::EventArgs&);
-  bool OnRotResetButtonClicked (const CEGUI::EventArgs&);
-  bool OnFlattenButtonClicked (const CEGUI::EventArgs&);
-  bool OnAutoSmoothSelected (const CEGUI::EventArgs&);
+  //bool OnRotLeftButtonClicked (const CEGUI::EventArgs&);
+  //bool OnRotRightButtonClicked (const CEGUI::EventArgs&);
+  //bool OnRotResetButtonClicked (const CEGUI::EventArgs&);
+  //bool OnFlattenButtonClicked (const CEGUI::EventArgs&);
+  //bool OnAutoSmoothSelected (const CEGUI::EventArgs&);
 
   bool autoSmooth;
-  CEGUI::Checkbox* autoSmoothCheck;
+  //CEGUI::Checkbox* autoSmoothCheck;
   void DoAutoSmooth ();
 
   void UpdateMarkers ();

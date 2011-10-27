@@ -25,9 +25,7 @@ THE SOFTWARE.
 #ifndef __apparesed_h
 #define __apparesed_h
 
-#include <CEGUI.h>
 #include <crystalspace.h>
-#include <ivaria/icegui.h>
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
 #include "include/inature.h"

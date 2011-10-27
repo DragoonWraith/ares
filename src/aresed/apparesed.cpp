@@ -1143,7 +1143,6 @@ bool AppAresEditWX::Initialize ()
 	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
 	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN ("crystalspace.dynamics.bullet", iDynamics),
-	CS_REQUEST_PLUGIN ("crystalspace.cegui.wrapper", iCEGUI),
 	CS_REQUEST_PLUGIN ("crystalspace.decal.manager", iDecalManager),
 	CS_REQUEST_PLUGIN ("utility.nature", iNature),
 	CS_REQUEST_PLUGIN ("utility.marker", iMarkerManager),

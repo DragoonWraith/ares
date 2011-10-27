@@ -25,9 +25,7 @@ THE SOFTWARE.
 #ifndef __appares_camerawindow_h
 #define __appares_camerawindow_h
 
-#include <CEGUI.h>
 #include <crystalspace.h>
-#include <ivaria/icegui.h>
 
 #include "apparesed.h"
 
@@ -38,15 +36,16 @@ class CameraWindow
 {
 private:
   AresEdit3DView* aresed3d;
-  csRef<iCEGUI> cegui;
-  CEGUI::Window* camwin;
+  //csRef<iCEGUI> cegui;
+  //CEGUI::Window* camwin;
 
   CamLocation trans[4];
   bool transStored[4];
-  CEGUI::Window* transButton[4];
+  //CEGUI::Window* transButton[4];
   void StoreTrans (int idx);
   void RecallTrans (int idx);
 
+#if 0
   bool OnNorthButtonClicked (const CEGUI::EventArgs& e);
   bool OnSouthButtonClicked (const CEGUI::EventArgs& e);
   bool OnWestButtonClicked (const CEGUI::EventArgs& e);
@@ -75,11 +74,12 @@ private:
 
   bool OnPanSelected (const CEGUI::EventArgs&);
   CEGUI::Checkbox* panCheck;
+#endif
 
   csBox3 GetBoxSelected ();
 
 public:
-  CameraWindow (AresEdit3DView* aresed3d, iCEGUI* cegui);
+  CameraWindow (AresEdit3DView* aresed3d);
   ~CameraWindow();
 
   void Show ();

@@ -44,6 +44,7 @@ FoliageMode::FoliageMode (AppAresEdit* aresed, AresEdit3DView* aresed3d)
 
 void FoliageMode::UpdateTypeList ()
 {
+#if 0
   iNature* nature = aresed3d->GetNature ();
   typeList->resetList ();
   for (size_t i = 0 ; i < nature->GetFoliageDensityMapCount () ; i++)
@@ -56,12 +57,15 @@ void FoliageMode::UpdateTypeList ()
     uint colid = typeList->getColumnID (0);
     typeList->addRow (item, colid);
   }
+#endif
 }
 
+#if 0
 bool FoliageMode::OnTypeListSelection (const CEGUI::EventArgs&)
 {
   return true;
 }
+#endif
 
 void FoliageMode::Start ()
 {
@@ -112,6 +116,7 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   csVector3 isect;
   if (aresed3d->TraceBeamTerrain (seg.Start (), seg.End (), isect))
   {
+#if 0
     CEGUI::ListboxItem* item = typeList->getFirstSelectedItem ();
     if (!item) return false;
     csString factorMapID = item->getText ().c_str ();
@@ -140,6 +145,7 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     //meshgen->ClearPosition (isect);
     meshgen->SetDefaultDensityFactor (meshgen->GetDefaultDensityFactor ());
     return true;
+#endif
   }
   return false;
 }

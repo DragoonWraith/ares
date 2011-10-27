@@ -325,6 +325,7 @@ void CurveMode::FlatPoint (size_t idx)
   }
 }
 
+#if 0
 bool CurveMode::OnFlattenButtonClicked (const CEGUI::EventArgs&)
 {
   if (selectedPoints.GetSize () == 0)
@@ -373,6 +374,7 @@ bool CurveMode::OnAutoSmoothSelected (const CEGUI::EventArgs&)
   autoSmooth = autoSmoothCheck->isSelected ();
   return true;
 }
+#endif
 
 bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
 {

@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "transformtools.h"
 
+#if 0
 bool CameraWindow::OnNorthButtonClicked (const CEGUI::EventArgs& e)
 {
   aresed3d->GetCamera ().CamLookAt (csVector3 (0, 0, 0));
@@ -54,10 +55,11 @@ bool CameraWindow::OnTopDownButtonClicked (const CEGUI::EventArgs& e)
   aresed3d->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
   return true;
 }
+#endif
 
 void CameraWindow::StoreTrans (int idx)
 {
-  transButton[idx]->enable ();
+  //transButton[idx]->enable ();
   CamLocation loc = aresed3d->GetCamera ().GetCameraLocation ();
   trans[idx] = loc;
 }
@@ -67,6 +69,7 @@ void CameraWindow::RecallTrans (int idx)
   aresed3d->GetCamera ().SetCameraLocation (trans[idx]);
 }
 
+#if 0
 bool CameraWindow::OnS1ButtonClicked (const CEGUI::EventArgs& e)
 {
   StoreTrans (0);
@@ -114,6 +117,7 @@ bool CameraWindow::OnR4ButtonClicked (const CEGUI::EventArgs& e)
   RecallTrans (3);
   return true;
 }
+#endif
 
 csBox3 CameraWindow::GetBoxSelected ()
 {
@@ -156,6 +160,7 @@ void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& curren
 #endif
 }
 
+#if 0
 bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
 {
   csBox3 box = GetBoxSelected ();
@@ -184,24 +189,27 @@ bool CameraWindow::OnMoveToButtonClicked (const CEGUI::EventArgs& e)
   aresed3d->GetCamera ().CamMove (center);
   return true;
 }
+#endif
 
 void CameraWindow::Show ()
 {
-  gravityCheck->setSelected(aresed3d->GetCamera ().IsGravityEnabled ());
-  panCheck->setSelected(aresed3d->GetCamera ().IsPanningEnabled ());
-  camwin->show ();
+  //gravityCheck->setSelected(aresed3d->GetCamera ().IsGravityEnabled ());
+  //panCheck->setSelected(aresed3d->GetCamera ().IsPanningEnabled ());
+  //camwin->show ();
 }
 
 void CameraWindow::Hide ()
 {
-  camwin->hide();
+  //camwin->hide();
 }
 
 bool CameraWindow::IsVisible () const
 {
-  return camwin->isVisible();
+  //return camwin->isVisible();
+  return false;
 }
 
+#if 0
 bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
 {
   if (panCheck->isSelected ())
@@ -227,18 +235,20 @@ bool CameraWindow::OnGravitySelected (const CEGUI::EventArgs&)
     aresed3d->GetCamera ().DisableGravity ();
   return true;
 }
+#endif
 
-CameraWindow::CameraWindow (AresEdit3DView* aresed3d, iCEGUI* cegui)
-  : aresed3d (aresed3d), cegui (cegui)
+CameraWindow::CameraWindow (AresEdit3DView* aresed3d)
+  : aresed3d (aresed3d)
 {
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  camwin = winMgr->getWindow ("CameraWindow");
+  //CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
+  //camwin = winMgr->getWindow ("CameraWindow");
 
   transStored[0] = false;
   transStored[1] = false;
   transStored[2] = false;
   transStored[3] = false;
 
+#if 0
   CEGUI::Window* btn;
 
   btn = winMgr->getWindow("CameraWindow/North");
@@ -315,6 +325,7 @@ CameraWindow::CameraWindow (AresEdit3DView* aresed3d, iCEGUI* cegui)
   panCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
     CEGUI::Event::Subscriber(&CameraWindow::OnPanSelected, this));
   panCheck->disable();
+#endif
 }
 
 CameraWindow::~CameraWindow ()
