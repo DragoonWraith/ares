@@ -134,18 +134,18 @@ void MainMode::SetupItems (const csHash<csStringArray,csString>& items)
 
 void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 {
-#if 0
+  wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
   if (current.GetSize () > 1)
-    staticCheck->disable ();
+    staticCheck->Disable ();
   else if (current.GetSize () == 1)
   {
-    staticCheck->enable ();
-    staticCheck->setSelected (current[0]->IsStatic ());
+    staticCheck->Enable ();
+    staticCheck->SetValue (current[0]->IsStatic ());
   }
   else
   {
-    staticCheck->enable ();
-    staticCheck->setSelected (false);
+    staticCheck->Enable ();
+    staticCheck->SetValue (false);
   }
 
   if (current.GetSize () >= 1)
@@ -155,7 +155,6 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
   }
   else
     transformationMarker->SetVisible (false);
-#endif
 }
 
 void MainMode::OnRotLeft ()
@@ -199,7 +198,8 @@ void MainMode::OnSetPos ()
 
 void MainMode::OnStaticSelected ()
 {
-  //aresed3d->SetStaticSelectedObjects (staticCheck->isSelected ());
+  wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
+  aresed3d->SetStaticSelectedObjects (staticCheck->IsChecked ());
 }
 
 void MainMode::OnTreeSelChanged (wxTreeEvent& event)
