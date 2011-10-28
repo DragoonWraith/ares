@@ -553,7 +553,7 @@ void AresEdit3DView::ResizeView (int width, int height)
   // We use the full window to draw the world.
   view_width = width;
   view_height = height;
-  view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
+  //view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
   view->SetRectangle (0, 0, view_width, view_height);
 }
 
