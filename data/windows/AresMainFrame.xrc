@@ -32,6 +32,16 @@
 							</object>
 						</object>
 					</object>
+					<object class="notebookpage">
+						<label>Foliage</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="foliageModeTabPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+							</object>
+						</object>
+					</object>
 				</object>
 			</object>
 			<object class="sizeritem">

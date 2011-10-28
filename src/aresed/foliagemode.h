@@ -33,16 +33,13 @@ struct iMeshGenerator;
 class FoliageMode : public EditingMode
 {
 private:
-  //CEGUI::MultiColumnList* typeList;
   iMeshGenerator* meshgen;
 
   /// Update the list of types.
   void UpdateTypeList ();
 
-  //bool OnTypeListSelection (const CEGUI::EventArgs&);
-
 public:
-  FoliageMode (AppAresEdit* aresed, AresEdit3DView* aresed3d);
+  FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~FoliageMode () { }
 
   virtual void Start ();
@@ -61,6 +58,20 @@ public:
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
   virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
+
+  class Panel : public wxPanel
+  {
+  public:
+    Panel(wxWindow* parent, FoliageMode* s)
+      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    {}
+
+  private:
+    FoliageMode* s;
+
+    DECLARE_EVENT_TABLE()
+  };
+  Panel* panel;
 };
 
 #endif // __aresed_foliagemode_h

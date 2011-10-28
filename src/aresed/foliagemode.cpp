@@ -29,35 +29,32 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-FoliageMode::FoliageMode (AppAresEdit* aresed, AresEdit3DView* aresed3d)
-  : EditingMode (aresed, aresed3d, "Foliage")
-{
-#if 0
-  CEGUI::WindowManager* winMgr = aresed->GetCEGUI ()->GetWindowManagerPtr ();
-  //CEGUI::Window* btn;
+BEGIN_EVENT_TABLE(FoliageMode::Panel, wxPanel)
+END_EVENT_TABLE()
 
-  typeList = static_cast<CEGUI::MultiColumnList*>(winMgr->getWindow("Ares/FoliageWindow/Types"));
-  typeList->subscribeEvent(CEGUI::MultiColumnList::EventSelectionChanged,
-    CEGUI::Event::Subscriber(&FoliageMode::OnTypeListSelection, this));
-#endif
+//---------------------------------------------------------------------------
+
+FoliageMode::FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d)
+  : EditingMode (0, aresed3d, "Foliage")
+{
+  panel = new Panel (parent, this);
+  parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
+  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("FoliageModePanel"));
 }
 
 void FoliageMode::UpdateTypeList ()
 {
-#if 0
+  wxListBox* foliageList = XRCCTRL (*panel, "foliageListBox", wxListBox);
+  foliageList->Clear ();
+  wxArrayString foliage;
+
   iNature* nature = aresed3d->GetNature ();
-  typeList->resetList ();
   for (size_t i = 0 ; i < nature->GetFoliageDensityMapCount () ; i++)
   {
-    CEGUI::ListboxTextItem* item = new CEGUI::ListboxTextItem (CEGUI::String (
-	  nature->GetFoliageDensityMapName (i)));
-    item->setTextColours (CEGUI::colour(0,0,0));
-    item->setSelectionBrushImage ("ice", "TextSelectionBrush");
-    item->setSelectionColours (CEGUI::colour(0.5f,0.5f,1));
-    uint colid = typeList->getColumnID (0);
-    typeList->addRow (item, colid);
+    wxString name = wxString (nature->GetFoliageDensityMapName (i), wxConvUTF8);
+    foliage.Add (name);
   }
-#endif
+  foliageList->InsertItems (foliage, 0);
 }
 
 #if 0

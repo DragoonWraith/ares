@@ -1000,6 +1000,7 @@ void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
   EditingMode* newMode = 0;
   if (pageName == wxT ("Main")) newMode = mainMode;
   else if (pageName == wxT ("Curve")) newMode = curveMode;
+  else if (pageName == wxT ("Foliage")) newMode = foliageMode;
   if (editMode != newMode)
   {
     if (editMode) editMode->Stop ();
@@ -1220,6 +1221,14 @@ bool AppAresEditWX::Initialize ()
               "Could not load XRC ressource file!");
     return false;
   }
+  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("FoliageModePanel.xrc"))
+    || !wxXmlResource::Get ()->Load (resourceLocation))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not load XRC ressource file!");
+    return false;
+  }
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel)
@@ -1284,7 +1293,8 @@ bool AppAresEditWX::Initialize ()
   wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
   curveMode = new CurveMode (curveModeTabPanel, aresed3d);
   roomMode = new RoomMode (0, aresed3d);
-  foliageMode = new FoliageMode (0, aresed3d);
+  wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
+  foliageMode = new FoliageMode (foliageModeTabPanel, aresed3d);
 
   editMode = 0;
   SwitchToMainMode ();
@@ -1412,7 +1422,6 @@ void AppAresEditWX::SwitchToFoliageMode ()
 {
   wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
   size_t pageIdx = FindNotebookPage (notebook, "Foliage");
-  if (pageIdx == csArrayItemNotFound) return;
   notebook->ChangeSelection (pageIdx);
   if (editMode) editMode->Stop ();
   editMode = foliageMode;
