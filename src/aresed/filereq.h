@@ -44,10 +44,10 @@ private:
   csRef<OKCallback> callback;
 
   void StdDlgUpdateLists (const char* filename);
-  void OnFileViewSelChange (wxListEvent& event);
-  void OnFileViewActivated (wxListEvent& event);
-  void OnDirViewSelChange (wxListEvent& event);
-  void OnDirViewActivated (wxListEvent& event);
+  void OnFileViewSelChange (wxCommandEvent& event);
+  void OnFileViewActivated (wxCommandEvent& event);
+  void OnDirViewSelChange (wxCommandEvent& event);
+  void OnDirViewActivated (wxCommandEvent& event);
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
 

@@ -27,10 +27,10 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(FileReq, wxDialog)
   EVT_BUTTON (XRCID("okButton"), FileReq :: OnOkButton)
   EVT_BUTTON (XRCID("cancelButton"), FileReq :: OnCancelButton)
-  EVT_LIST_ITEM_SELECTED (XRCID("fileListBox"), FileReq :: OnFileViewSelChange)
-  EVT_LIST_ITEM_ACTIVATED (XRCID("fileListBox"), FileReq :: OnFileViewActivated)
-  EVT_LIST_ITEM_SELECTED (XRCID("dirListBox"), FileReq :: OnDirViewSelChange)
-  EVT_LIST_ITEM_ACTIVATED (XRCID("dirListBox"), FileReq :: OnDirViewActivated)
+  EVT_LISTBOX (XRCID("fileListBox"), FileReq :: OnFileViewSelChange)
+  EVT_LISTBOX_DCLICK (XRCID("fileListBox"), FileReq :: OnFileViewActivated)
+  EVT_LISTBOX (XRCID("dirListBox"), FileReq :: OnDirViewSelChange)
+  EVT_LISTBOX_DCLICK (XRCID("dirListBox"), FileReq :: OnDirViewActivated)
 END_EVENT_TABLE()
 
 void FileReq::DoOk ()
@@ -53,9 +53,10 @@ void FileReq::OnCancelButton (wxCommandEvent& event)
   EndModal (TRUE);
 }
 
-void FileReq::OnFileViewSelChange (wxListEvent& event)
+void FileReq::OnFileViewSelChange (wxCommandEvent& event)
 {
-  csString filename = (const char*)event.GetText().mb_str(wxConvUTF8);
+  wxListBox* filelist = XRCCTRL (*this, "fileListBox", wxListBox);
+  csString filename = (const char*)filelist->GetStringSelection ().mb_str(wxConvUTF8);
   wxTextCtrl* text = XRCCTRL (*this, "fileNameText", wxTextCtrl);
   //wxString path (currentPath, wxConvUTF8);
   //path.Append (wxString (filename, wxConvUTF8));
@@ -63,17 +64,17 @@ void FileReq::OnFileViewSelChange (wxListEvent& event)
   text->SetValue (path);
 }
 
-void FileReq::OnFileViewActivated (wxListEvent& event)
+void FileReq::OnFileViewActivated (wxCommandEvent& event)
 {
   OnFileViewSelChange (event);
   DoOk ();
 }
 
-void FileReq::OnDirViewSelChange (wxListEvent& event)
+void FileReq::OnDirViewSelChange (wxCommandEvent& event)
 {
 }
 
-void FileReq::OnDirViewActivated (wxListEvent& event)
+void FileReq::OnDirViewActivated (wxCommandEvent& event)
 {
 }
 
@@ -180,19 +181,19 @@ bool FileReq::StdDlgDirChange (const CEGUI::EventArgs& e)
 
 void FileReq::StdDlgUpdateLists (const char* filename)
 {
-  wxListCtrl* dirlist = XRCCTRL (*this, "dirListBox", wxListCtrl);
-  dirlist->DeleteAllItems ();
-  wxListCtrl* filelist = XRCCTRL (*this, "fileListBox", wxListCtrl);
-  filelist->DeleteAllItems ();
+  wxListBox* dirlist = XRCCTRL (*this, "dirListBox", wxListBox);
+  dirlist->Clear ();
+  wxListBox* filelist = XRCCTRL (*this, "fileListBox", wxListBox);
+  filelist->Clear ();
 
-  dirlist->InsertItem (0, wxT (".."));
-  //item->setTextColours(CEGUI::colour(0,0,0));
+  wxArrayString dirs, files;
+  dirs.Add (wxT (".."));
 
-  csRef<iStringArray> files = vfs->FindFiles (filename);
+  csRef<iStringArray> vfsFiles = vfs->FindFiles (filename);
   
-  for (size_t i = 0; i < files->GetSize(); i++)
+  for (size_t i = 0; i < vfsFiles->GetSize(); i++)
   {
-    char* file = (char*)files->Get(i);
+    char* file = (char*)vfsFiles->Get(i);
     if (!file) continue;
 
     size_t dirlen = strlen (file);
@@ -200,22 +201,23 @@ void FileReq::StdDlgUpdateLists (const char* filename)
       dirlen--;
     while (dirlen && file[dirlen-1]!= '/')
       dirlen--;
-    file=file+dirlen;
+    file = file+dirlen;
 
     if (file[strlen(file)-1] == '/')
     {
       file[strlen(file)-1] = '\0';
       wxString name = wxString (file, wxConvUTF8);
-      dirlist->InsertItem (0, name);
-      //item->setTextColours(CEGUI::colour(0,0,0));
+      dirs.Add (name);
     }
     else
     {
       wxString name = wxString (file, wxConvUTF8);
-      filelist->InsertItem (0, name);
-      //item->setTextColours(CEGUI::colour(0,0,0));
+      files.Add (name);
     }
   }
+
+  dirlist->InsertItems (dirs, 0);
+  filelist->InsertItems (files, 0);
 }
 
 void FileReq::Show (OKCallback* callback)

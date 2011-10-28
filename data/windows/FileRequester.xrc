@@ -17,16 +17,16 @@
 						<option>1</option>
 						<flag>wxALL|wxEXPAND</flag>
 						<border>5</border>
-						<object class="wxListCtrl" name="dirListBox">
-							<style>wxLC_ICON|wxLC_LIST</style>
+						<object class="wxListBox" name="dirListBox">
+							<content />
 						</object>
 					</object>
 					<object class="sizeritem">
 						<option>1</option>
 						<flag>wxALL|wxEXPAND</flag>
 						<border>5</border>
-						<object class="wxListCtrl" name="fileListBox">
-							<style>wxLC_ICON|wxLC_LIST</style>
+						<object class="wxListBox" name="fileListBox">
+							<content />
 						</object>
 					</object>
 				</object>
