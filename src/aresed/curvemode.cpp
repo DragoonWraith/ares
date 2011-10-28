@@ -102,7 +102,9 @@ void CurveMode::UpdateMarkerSelection ()
 
 void CurveMode::Start ()
 {
-  csString name = aresed3d->GetSelection ()->GetFirst ()->GetFactory ()->GetName ();
+  if (!aresed3d->GetSelection ()->HasSelection ()) return;
+  iDynamicObject* dynobj = aresed3d->GetSelection ()->GetFirst ();
+  csString name = dynobj->GetFactory ()->GetName ();
   editingCurveFactory = aresed3d->GetCurvedMeshCreator ()->GetCurvedFactory (name);
   ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
   selectedPoints.Empty ();
