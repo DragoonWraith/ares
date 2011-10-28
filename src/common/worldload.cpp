@@ -151,10 +151,15 @@ bool WorldLoader::LoadFile (const char* filename)
 
   csRef<iDocument> doc = docsys->CreateDocument ();
   csRef<iDataBuffer> buf = vfs->ReadFile (filename);
+  if (!buf)
+  {
+    printf ("ERROR reading file '%s'\n", filename);
+    return false;
+  }
   const char* error = doc->Parse (buf->GetData ());
   if (error)
   {
-    printf ("ERROR: %s\n", error); fflush (stdout);
+    printf ("ERROR: %s\n", error);
     return false;
   }
 
