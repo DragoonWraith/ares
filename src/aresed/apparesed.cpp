@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/treectrl.h>
+#include <wx/notebook.h>
 #include <wx/xrc/xmlres.h>
 
 void AresEditSelectionListener::SelectionChanged (
@@ -65,8 +66,8 @@ struct LoadCallback : public OKCallback
 
 // =========================================================================
 
-AresEdit3DView::AresEdit3DView (iObjectRegistry* object_reg) :
-  object_reg (object_reg),camera (0, this)
+AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
+  app (app), object_reg (object_reg), camera (0, this)
 {
   do_debug = false;
   do_simulation = true;
@@ -240,6 +241,14 @@ void AresEdit3DView::SetButtonState ()
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
   camwin->CurrentObjectsChanged (current_objects);
+
+  bool curveTabEnable = false;
+  if (selection->GetSize () == 1)
+  {
+    csString name = selection->GetFirst ()->GetFactory ()->GetName ();
+    if (curvedMeshCreator->GetCurvedFactory (name)) curveTabEnable = true;
+  }
+  app->SetCurveModeEnabled (curveTabEnable);
 }
 
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
@@ -400,71 +409,6 @@ void AresEdit3DView::DeleteSelectedObjects ()
     iDynamicObject* dynobj = it.Next ();
     dyncell->DeleteObject (dynobj);
   }
-}
-
-bool AresEdit3DView::SwitchToCurveMode ()
-{
-  if (selection->GetSize () != 1) return true;
-  csString name = selection->GetFirst ()->GetFactory ()->GetName ();
-  if (!curvedMeshCreator->GetCurvedFactory (name)) return true;
-
-#if 0
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  mainTabButton->setSelected(false);
-  roomTabButton->setSelected(false);
-  foliageTabButton->setSelected(false);
-  curveTabButton->setSelected(true);
-  winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
-  winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
-  winMgr->getWindow("Ares/FoliageWindow")->setVisible(false);
-  winMgr->getWindow("Ares/CurveWindow")->setVisible(true);
-  if (editMode) editMode->Stop ();
-  editMode = curveMode;
-  editMode->Start ();
-#endif
-  return true;
-}
-
-bool AresEdit3DView::SwitchToRoomMode ()
-{
-  if (selection->GetSize () != 1) return true;
-  csString name = selection->GetFirst ()->GetFactory ()->GetName ();
-  if (!roomMeshCreator->GetRoomFactory (name)) return true;
-
-#if 0
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  mainTabButton->setSelected(false);
-  curveTabButton->setSelected(false);
-  foliageTabButton->setSelected(false);
-  roomTabButton->setSelected(true);
-  winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
-  winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
-  winMgr->getWindow("Ares/FoliageWindow")->setVisible(false);
-  winMgr->getWindow("Ares/RoomWindow")->setVisible(true);
-  if (editMode) editMode->Stop ();
-  editMode = roomMode;
-  editMode->Start ();
-#endif
-  return true;
-}
-
-bool AresEdit3DView::SwitchToFoliageMode ()
-{
-#if 0
-  CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  mainTabButton->setSelected(false);
-  curveTabButton->setSelected(false);
-  roomTabButton->setSelected(false);
-  foliageTabButton->setSelected(true);
-  winMgr->getWindow("Ares/ItemWindow")->setVisible(false);
-  winMgr->getWindow("Ares/CurveWindow")->setVisible(false);
-  winMgr->getWindow("Ares/RoomWindow")->setVisible(false);
-  winMgr->getWindow("Ares/FoliageWindow")->setVisible(true);
-  if (editMode) editMode->Stop ();
-  editMode = foliageMode;
-  editMode->Start ();
-#endif
-  return true;
 }
 
 void AresEdit3DView::CleanupWorld ()
@@ -935,9 +879,9 @@ void AresEdit3DView::SpawnItem (const csString& name)
   selection->SetCurrentObject (dynobj);
 
   if (curvedFactory)
-    SwitchToCurveMode ();
+    app->SwitchToCurveMode ();
   else if (roomFactory)
-    SwitchToRoomMode ();
+    app->SwitchToRoomMode ();
 }
 
 bool AresEdit3DView::InitPhysics ()
@@ -981,6 +925,8 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
   EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
   EVT_MENU (ID_Delete, AppAresEditWX :: OnMenuDelete)
+  EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
+  EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(AppAresEditWX::Panel, wxPanel)
@@ -1001,6 +947,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   curveMode = 0;
   roomMode = 0;
   foliageMode = 0;
+  //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
 }
 
@@ -1037,6 +984,35 @@ void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)
 {
+}
+
+void AppAresEditWX::OnNotebookChange (wxNotebookEvent& event)
+{
+  //oldPageIdx = event.GetOldSelection ();
+}
+
+void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
+{
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  int pageIdx = event.GetSelection ();
+  wxString pageName = notebook->GetPageText (pageIdx);
+
+  EditingMode* newMode = 0;
+  if (pageName == wxT ("Main")) newMode = mainMode;
+  else if (pageName == wxT ("Curve")) newMode = curveMode;
+  if (editMode != newMode)
+  {
+    if (editMode) editMode->Stop ();
+    editMode = newMode;
+    editMode->Start ();
+  }
+
+  //if (page && !page->IsEnabled () && oldPageIdx != csArrayItemNotFound)
+  //{
+    //printf ("REVERT %d\n", oldPageIdx);
+    //notebook->ChangeSelection (oldPageIdx);
+  //}
+  //oldPageIdx = csArrayItemNotFound;
 }
 
 bool AppAresEditWX::HandleEvent (iEvent& ev)
@@ -1236,6 +1212,14 @@ bool AppAresEditWX::Initialize ()
               "Could not load XRC ressource file!");
     return false;
   }
+  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("CurveModePanel.xrc"))
+    || !wxXmlResource::Get ()->Load (resourceLocation))
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
+              "crystalspace.application.aresedit",
+              "Could not load XRC ressource file!");
+    return false;
+  }
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel)
@@ -1289,7 +1273,7 @@ bool AppAresEditWX::Initialize ()
    */
   wxwindow->GetWindow ()->SetFocus ();
 
-  aresed3d = new AresEdit3DView (object_reg);
+  aresed3d = new AresEdit3DView (this, object_reg);
   if (!aresed3d->Setup ())
     return false;
  
@@ -1297,12 +1281,13 @@ bool AppAresEditWX::Initialize ()
 
   wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
   mainMode = new MainMode (mainModeTabPanel, aresed3d);
-  curveMode = new CurveMode (0, aresed3d);
+  wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
+  curveMode = new CurveMode (curveModeTabPanel, aresed3d);
   roomMode = new RoomMode (0, aresed3d);
   foliageMode = new FoliageMode (0, aresed3d);
-  editMode = mainMode;
-  editMode->Start ();
-  //mainTabButton->setSelected(true);
+
+  editMode = 0;
+  SwitchToMainMode ();
 
   SelectionListener* listener = new MainModeSelectionListener (mainMode);
   aresed3d->GetSelection ()->AddSelectionListener (listener);
@@ -1378,3 +1363,59 @@ void AppAresEditWX::OnShow (wxShowEvent& event)
 {
   csPrintf("got show %d\n", (int) event.GetShow ());
 }
+
+static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
+{
+  wxString iname (name, wxConvUTF8);
+  for (size_t i = 0 ; i < notebook->GetPageCount () ; i++)
+  {
+    wxString pageName = notebook->GetPageText (i);
+    if (pageName == iname) return i;
+  }
+  return csArrayItemNotFound;
+}
+
+void AppAresEditWX::SwitchToMainMode ()
+{
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  size_t pageIdx = FindNotebookPage (notebook, "Main");
+  notebook->ChangeSelection (pageIdx);
+  if (editMode) editMode->Stop ();
+  editMode = mainMode;
+  editMode->Start ();
+}
+
+void AppAresEditWX::SetCurveModeEnabled (bool cm)
+{
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  size_t pageIdx = FindNotebookPage (notebook, "Curve");
+  wxNotebookPage* page = notebook->GetPage (pageIdx);
+  if (cm) page->Enable ();
+  else page->Disable ();
+}
+
+void AppAresEditWX::SwitchToCurveMode ()
+{
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  size_t pageIdx = FindNotebookPage (notebook, "Curve");
+  notebook->ChangeSelection (pageIdx);
+  if (editMode) editMode->Stop ();
+  editMode = curveMode;
+  editMode->Start ();
+}
+
+void AppAresEditWX::SwitchToRoomMode ()
+{
+}
+
+void AppAresEditWX::SwitchToFoliageMode ()
+{
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  size_t pageIdx = FindNotebookPage (notebook, "Foliage");
+  if (pageIdx == csArrayItemNotFound) return;
+  notebook->ChangeSelection (pageIdx);
+  if (editMode) editMode->Stop ();
+  editMode = foliageMode;
+  editMode->Start ();
+}
+

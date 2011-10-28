@@ -27,35 +27,27 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-CurveMode::CurveMode (AppAresEdit* aresed, AresEdit3DView* aresed3d)
-  : EditingMode (aresed, aresed3d, "Curve")
+BEGIN_EVENT_TABLE(CurveMode::Panel, wxPanel)
+  EVT_BUTTON (XRCID("rotLeftButton"), CurveMode::Panel::OnRotLeft)
+  EVT_BUTTON (XRCID("rotRightButton"), CurveMode::Panel::OnRotRight)
+  EVT_BUTTON (XRCID("rotResetButton"), CurveMode::Panel::OnRotReset)
+  EVT_BUTTON (XRCID("flattenButton"), CurveMode::Panel::OnFlatten)
+  EVT_CHECKBOX (XRCID("autoSmoothCheckBox"), CurveMode::Panel::OnAutoSmoothSelected)
+END_EVENT_TABLE()
+
+//---------------------------------------------------------------------------
+
+CurveMode::CurveMode (wxWindow* parent, AresEdit3DView* aresed3d)
+  : EditingMode (0, aresed3d, "Curve")
 {
+  panel = new Panel (parent, this);
+  parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
+  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CurveModePanel"));
+
   editingCurveFactory = 0;
   autoSmooth = true;
-
-#if 0
-  CEGUI::WindowManager* winMgr = aresed3d->GetCEGUI ()->GetWindowManagerPtr ();
-  CEGUI::Window* btn;
-
-  btn = winMgr->getWindow("Ares/CurveWindow/RotLeft");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CurveMode::OnRotLeftButtonClicked, this));
-  btn = winMgr->getWindow("Ares/CurveWindow/RotRight");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CurveMode::OnRotRightButtonClicked, this));
-  btn = winMgr->getWindow("Ares/CurveWindow/RotReset");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CurveMode::OnRotResetButtonClicked, this));
-
-  btn = winMgr->getWindow("Ares/CurveWindow/Flatten");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CurveMode::OnFlattenButtonClicked, this));
-
-  autoSmoothCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("Ares/CurveWindow/AutoSmooth"));
-  autoSmoothCheck->setSelected (autoSmooth);
-  autoSmoothCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
-    CEGUI::Event::Subscriber(&CurveMode::OnAutoSmoothSelected, this));
-#endif
+  wxCheckBox* autoSmoothCheckBox = XRCCTRL (*panel, "autoSmoothCheckBox", wxCheckBox);
+  autoSmoothCheckBox->SetValue (autoSmooth);
 }
 
 void CurveMode::UpdateMarkers ()
@@ -325,8 +317,7 @@ void CurveMode::FlatPoint (size_t idx)
   }
 }
 
-#if 0
-bool CurveMode::OnFlattenButtonClicked (const CEGUI::EventArgs&)
+void CurveMode::OnFlatten ()
 {
   if (selectedPoints.GetSize () == 0)
   {
@@ -342,23 +333,19 @@ bool CurveMode::OnFlattenButtonClicked (const CEGUI::EventArgs&)
       FlatPoint (id);
     }
   }
-
-  return true;
 }
 
-bool CurveMode::OnRotLeftButtonClicked (const CEGUI::EventArgs&)
+void CurveMode::OnRotLeft ()
 {
   RotateCurrent (-PI);
-  return true;
 }
 
-bool CurveMode::OnRotRightButtonClicked (const CEGUI::EventArgs&)
+void CurveMode::OnRotRight ()
 {
   RotateCurrent (PI);
-  return true;
 }
 
-bool CurveMode::OnRotResetButtonClicked (const CEGUI::EventArgs&)
+void CurveMode::OnRotReset ()
 {
   csArray<size_t>::Iterator it = selectedPoints.GetIterator ();
   while (it.HasNext ())
@@ -366,17 +353,15 @@ bool CurveMode::OnRotResetButtonClicked (const CEGUI::EventArgs&)
     size_t id = it.Next ();
     SmoothPoint (id);
   }
-  return true;
 }
 
-bool CurveMode::OnAutoSmoothSelected (const CEGUI::EventArgs&)
+void CurveMode::OnAutoSmoothSelected ()
 {
-  autoSmooth = autoSmoothCheck->isSelected ();
-  return true;
+  wxCheckBox* autoSmoothCheckBox = XRCCTRL (*panel, "autoSmoothCheckBox", wxCheckBox);
+  autoSmooth = autoSmoothCheckBox->IsChecked ();
 }
-#endif
 
-bool CurveMode::OnKeyboard(iEvent& ev, utf32_char code)
+bool CurveMode::OnKeyboard (iEvent& ev, utf32_char code)
 {
   if (code == 'e')
   {

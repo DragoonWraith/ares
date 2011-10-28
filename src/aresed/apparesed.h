@@ -46,13 +46,14 @@ THE SOFTWARE.
 #include "ivideo/wxwin.h"
 #include "csutil/custom_new_disable.h"
 #include <wx/wx.h>
+#include <wx/notebook.h>
 #include "csutil/custom_new_enable.h"
 
 #define USE_DECAL 0
 
 class CameraWindow;
 class WorldLoader;
-class AppAresEdit;
+class AppAresEditWX;
 class AresEdit3DView;
 
 struct iCelPlLayer;
@@ -96,6 +97,7 @@ public:
 class AresEdit3DView
 {
 private:
+  AppAresEditWX* app;
   iObjectRegistry* object_reg;
   csRef<iPcDynamicWorld> dynworld;
   csRef<iELCM> elcm;
@@ -232,17 +234,13 @@ private:
   /// Add an item to a category (create the category if not already present).
   void AddItem (const char* category, const char* itemname);
 
-  bool SwitchToCurveMode ();
-  bool SwitchToRoomMode ();
-  bool SwitchToFoliageMode ();
-
   CameraWindow* camwin;
 
 public:
   /**
    * Constructor.
    */
-  AresEdit3DView (iObjectRegistry* object_reg);
+  AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg);
 
   /**
    * Destructor.
@@ -410,10 +408,14 @@ private:
 
   void SetupMenuBar ();
 
+  //int oldPageIdx;
+
   void OnMenuOpen (wxCommandEvent& event);
   void OnMenuSave (wxCommandEvent& event);
   void OnMenuQuit (wxCommandEvent& event);
   void OnMenuDelete (wxCommandEvent& event);
+  void OnNotebookChange (wxNotebookEvent& event);
+  void OnNotebookChanged (wxNotebookEvent& event);
 
 public:
   AppAresEditWX (iObjectRegistry* object_reg);
@@ -426,6 +428,12 @@ public:
   void OnShow (wxShowEvent& event);
   void OnSize (wxSizeEvent& ev);
   void LoadFile (const char* filename);
+
+  void SwitchToMainMode ();
+  void SwitchToCurveMode ();
+  void SwitchToRoomMode ();
+  void SwitchToFoliageMode ();
+  void SetCurveModeEnabled (bool cm);
 
   DECLARE_EVENT_TABLE ();
 

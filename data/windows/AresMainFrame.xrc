@@ -9,13 +9,24 @@
 				<option>0</option>
 				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxNotebook" name="m_notebook1">
+				<object class="wxNotebook" name="mainNotebook">
 					<size>150,-1</size>
 					<object class="notebookpage">
 						<label>Main</label>
 						<selected>0</selected>
 						<object class="wxPanel" name="mainModeTabPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+							</object>
+						</object>
+					</object>
+					<object class="notebookpage">
+						<label>Curve</label>
+						<selected>1</selected>
+						<object class="wxPanel" name="curveModeTabPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<enabled>0</enabled>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 							</object>

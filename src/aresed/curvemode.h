@@ -72,39 +72,59 @@ private:
   void FlatPoint (size_t idx);
 
   void RotateCurrent (float baseAngle);
-  //bool OnRotLeftButtonClicked (const CEGUI::EventArgs&);
-  //bool OnRotRightButtonClicked (const CEGUI::EventArgs&);
-  //bool OnRotResetButtonClicked (const CEGUI::EventArgs&);
-  //bool OnFlattenButtonClicked (const CEGUI::EventArgs&);
-  //bool OnAutoSmoothSelected (const CEGUI::EventArgs&);
+
+  void OnRotLeft ();
+  void OnRotRight ();
+  void OnRotReset ();
+  void OnFlatten ();
+  void OnAutoSmoothSelected ();
 
   bool autoSmooth;
-  //CEGUI::Checkbox* autoSmoothCheck;
   void DoAutoSmooth ();
 
   void UpdateMarkers ();
   void UpdateMarkerSelection ();
 
 public:
-  CurveMode (AppAresEdit* aresed, AresEdit3DView* aresed3d);
+  CurveMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~CurveMode () { }
 
   virtual void Start ();
   virtual void Stop ();
 
-  virtual void FramePre();
-  virtual void Frame3D();
-  virtual void Frame2D();
-  virtual bool OnKeyboard(iEvent& ev, utf32_char code);
-  virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY);
-  virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
-  virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
+  virtual void FramePre ();
+  virtual void Frame3D ();
+  virtual void Frame2D ();
+  virtual bool OnKeyboard (iEvent& ev, utf32_char code);
+  virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
+  virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
+  virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
 
   virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers);
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos);
   virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
+
+  class Panel : public wxPanel
+  {
+  public:
+    Panel(wxWindow* parent, CurveMode* s)
+      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    {}
+
+    void OnRotLeft (wxCommandEvent& event) { s->OnRotLeft (); }
+    void OnRotRight (wxCommandEvent& event) { s->OnRotRight (); }
+    void OnRotReset (wxCommandEvent& event) { s->OnRotReset (); }
+    void OnFlatten (wxCommandEvent& event) { s->OnFlatten (); }
+    void OnAutoSmoothSelected (wxCommandEvent& event) { s->OnAutoSmoothSelected (); }
+
+  private:
+    CurveMode* s;
+
+    DECLARE_EVENT_TABLE()
+  };
+  Panel* panel;
 };
 
 #endif // __aresed_curvemodes_h
