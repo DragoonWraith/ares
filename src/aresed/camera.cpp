@@ -227,7 +227,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (do_gravity) return false;
 
-  if (but == 3)	// MouseWheelUp
+  if (but == csmbWheelUp)
   {
     if (do_panning) 
       Pan (0.0f, 0.0f, -10.0f);
@@ -235,7 +235,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       CamZoom (mouseX, mouseY, true);
     return true;
   }
-  else if (but == 4)	// MouseWheelDown
+  else if (but == csmbWheelDown)
   {
     if (do_panning) 
       Pan (0.0f, 0.0f, 10.0f);
@@ -243,7 +243,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       CamZoom (mouseX, mouseY, false);
     return true;
   }
-  else if (but == 2)	// Middle mouse
+  else if (but == csmbRight)
   {
     iKeyboardDriver* kbd = aresed3d->GetKeyboardDriver ();
     if (kbd->GetKeyState (CSKEY_SHIFT))
@@ -283,7 +283,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (but == 2)
+  if (but == csmbRight)
   {
     do_mouse_dragging = false;
     do_mouse_panning = false;

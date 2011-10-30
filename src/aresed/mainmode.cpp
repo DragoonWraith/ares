@@ -507,7 +507,7 @@ void MainMode::AddForce (iRigidBody* hitBody, bool pull,
 
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (!(but == 0 || but == 1)) return false;
+  if (!(but == csmbLeft || but == csmbRight)) return false;
 
   if (mouseX > aresed3d->GetViewWidth ()) return false;
   if (mouseY > aresed3d->GetViewHeight ()) return false;
@@ -536,12 +536,12 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   iRigidBody* hitBody = aresed3d->TraceBeam (beam, isect);
   if (!hitBody)
   {
-    if (but == 0) aresed3d->GetSelection ()->SetCurrentObject (0);
+    if (but == csmbLeft) aresed3d->GetSelection ()->SetCurrentObject (0);
     return false;
   }
 
   iDynamicObject* newobj = aresed3d->GetDynamicWorld ()->FindObject (hitBody);
-  if (but == 0)
+  if (but == csmbLeft)
   {
     if (shift)
       aresed3d->GetSelection ()->AddCurrentObject (newobj);
@@ -557,7 +557,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
     return true;
   }
-  else if (but == 1)
+  else if (but == csmbRight)
   {
     if (ctrl)
     {
