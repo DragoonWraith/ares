@@ -243,7 +243,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       CamZoom (mouseX, mouseY, false);
     return true;
   }
-  else if (but == csmbRight)
+  else if (but == csmbMiddle)
   {
     iKeyboardDriver* kbd = aresed3d->GetKeyboardDriver ();
     if (kbd->GetKeyState (CSKEY_SHIFT))
@@ -256,10 +256,6 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       }
     }
     else if (kbd->GetKeyState (CSKEY_CTRL))
-    {
-      // @@@ Implement zoom.
-    }
-    else
     {
       do_mouse_dragging = false;
       if (!do_mouse_panning)
@@ -283,7 +279,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool Camera::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (but == csmbRight)
+  if (but == csmbMiddle)
   {
     do_mouse_dragging = false;
     do_mouse_panning = false;
