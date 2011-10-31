@@ -82,6 +82,9 @@ public:
 
   void SetupItems (const csHash<csStringArray,csString>& items);
 
+  void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
+  void ReleaseContextMenu (wxFrame* frame);
+
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 
   virtual void FramePre();
@@ -101,6 +104,9 @@ public:
   void OnSameY ();
   void OnStaticSelected ();
   void OnTreeSelChanged (wxTreeEvent& event);
+
+  void OnSetStatic ();
+  void OnClearStatic ();
 
   void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers);
@@ -126,6 +132,9 @@ public:
     void OnSameY (wxCommandEvent& event) { s->OnSameY (); }
     void OnStaticSelected (wxCommandEvent& event) { s->OnStaticSelected (); }
     void OnTreeSelChanged (wxTreeEvent& event) { s->OnTreeSelChanged (event); }
+
+    void OnSetStatic (wxCommandEvent& event) { s->OnSetStatic (); }
+    void OnClearStatic (wxCommandEvent& event) { s->OnClearStatic (); }
 
   private:
     MainMode* s;

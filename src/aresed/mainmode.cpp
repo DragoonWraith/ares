@@ -110,6 +110,31 @@ void MainMode::Stop ()
   transformationMarker->AttachMesh (0);
 }
 
+void MainMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id)
+{
+  if (aresed3d->GetSelection ()->HasSelection ())
+  {
+    contextMenu->AppendSeparator ();
+
+    contextMenu->Append (id, wxT ("Set static"));
+    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (MainMode::Panel::OnSetStatic), 0, panel);
+    id++;
+    contextMenu->Append (id, wxT ("Clear static"));
+    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (MainMode::Panel::OnClearStatic), 0, panel);
+    id++;
+  }
+}
+
+void MainMode::ReleaseContextMenu (wxFrame* frame)
+{
+  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (MainMode::Panel::OnSetStatic), 0, panel);
+  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (MainMode::Panel::OnClearStatic), 0, panel);
+}
+
 void MainMode::SetupItems (const csHash<csStringArray,csString>& items)
 {
   wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
@@ -200,6 +225,20 @@ void MainMode::OnStaticSelected ()
 {
   wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
   aresed3d->SetStaticSelectedObjects (staticCheck->IsChecked ());
+}
+
+void MainMode::OnSetStatic ()
+{
+  aresed3d->SetStaticSelectedObjects (true);
+  wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
+  staticCheck->SetValue (true);
+}
+
+void MainMode::OnClearStatic ()
+{
+  aresed3d->SetStaticSelectedObjects (false);
+  wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
+  staticCheck->SetValue (false);
 }
 
 void MainMode::OnTreeSelChanged (wxTreeEvent& event)
