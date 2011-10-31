@@ -5,7 +5,6 @@ Application aresed :
   [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ]
   [ Wildcard [ ConcatDirs ../common ] : *.cpp *.h ] ;
 ExternalLibs aresed : CRYSTAL ;
-ExternalLibs aresed : CEGUI ;
 ExternalLibs aresed : CEL ;
 ExternalLibs aresed : WX ;
 

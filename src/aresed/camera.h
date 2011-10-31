@@ -27,7 +27,6 @@ THE SOFTWARE.
 
 #include "iengine/camera.h"
 
-class AppAresEdit;
 class AresEdit3DView;
 
 struct CamLocation
@@ -40,7 +39,6 @@ struct CamLocation
 class Camera
 {
 protected:
-  AppAresEdit* aresed;
   AresEdit3DView* aresed3d;
 
   iCamera* camera;
@@ -72,7 +70,7 @@ protected:
   void ClampDesiredLocation ();
 
 public:
-  Camera (AppAresEdit* aresed, AresEdit3DView* aresed3d);
+  Camera (AresEdit3DView* aresed3d);
 
   void Init (iCamera* camera, iSector* sector, const csVector3& pos);
 

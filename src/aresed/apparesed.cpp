@@ -77,7 +77,7 @@ struct SaveCallback : public OKCallback
 // =========================================================================
 
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
-  app (app), object_reg (object_reg), camera (0, this)
+  app (app), object_reg (object_reg), camera (this)
 {
   do_debug = false;
   do_simulation = true;
@@ -530,7 +530,7 @@ bool AresEdit3DView::Setup ()
 
   worldLoader = new WorldLoader (r);
   worldLoader->SetZone (dynworld);
-  selection = new Selection (0, this);
+  selection = new Selection (this);
   SelectionListener* listener = new AresEditSelectionListener (this);
   selection->AddSelectionListener (listener);
   listener->DecRef ();
@@ -1031,10 +1031,26 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
     int mouseY = csMouseEventHelper::GetY (&ev);
     if (aresed3d)
     {
-      if (aresed3d->OnMouseDown (ev))
-	return true;
+      if (but == csmbRight)
+      {
+#if 0
+	wxMenu* contextMenu = new wxMenu ();
+	camwin->AddContextMenu (contextMenu);
+	aresed3d->AddContextMenu (contextMenu);
+	editMode->AddContextMenu (contextMenu);
+	//contextMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
+	//contextMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
+	//contextMenu->Append (ID_Quit, wxT ("&Exit..."));
+	PopupMenu (contextMenu);
+#endif
+      }
       else
-	return editMode->OnMouseDown (ev, but, mouseX, mouseY);
+      {
+        if (aresed3d->OnMouseDown (ev))
+	  return true;
+        else
+	  return editMode->OnMouseDown (ev, but, mouseX, mouseY);
+      }
     }
   }
   else if ((ev.Name == MouseUp))
@@ -1193,7 +1209,7 @@ bool AppAresEditWX::InitWX ()
   mainMode = new MainMode (mainModeTabPanel, aresed3d);
   wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
   curveMode = new CurveMode (curveModeTabPanel, aresed3d);
-  roomMode = new RoomMode (0, aresed3d);
+  roomMode = new RoomMode (aresed3d);
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
   foliageMode = new FoliageMode (foliageModeTabPanel, aresed3d);
 

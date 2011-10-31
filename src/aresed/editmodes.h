@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "imarker.h"
 #include "propclass/dynworld.h"
 
-class AppAresEdit;
 class AresEdit3DView;
 
 class EditingMode;
@@ -55,13 +54,12 @@ public:
 class EditingMode
 {
 protected:
-  AppAresEdit* aresed;
   AresEdit3DView* aresed3d;
   csString name;
 
 public:
-  EditingMode (AppAresEdit* aresed, AresEdit3DView* aresed3d, const char* name) :
-    aresed (aresed), aresed3d (aresed3d), name (name) { }
+  EditingMode (AresEdit3DView* aresed3d, const char* name) :
+    aresed3d (aresed3d), name (name) { }
   virtual ~EditingMode () { }
 
   virtual void Start () { }

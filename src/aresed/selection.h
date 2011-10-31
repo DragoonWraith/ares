@@ -37,7 +37,6 @@ public:
 class Selection
 {
 private:
-  AppAresEdit* aresed;
   AresEdit3DView* aresed3d;
 
   csArray<iDynamicObject*> current_objects;
@@ -46,7 +45,7 @@ private:
   void FireSelectionListeners ();
 
 public:
-  Selection (AppAresEdit* aresed, AresEdit3DView* aresed3d);
+  Selection (AresEdit3DView* aresed3d);
 
   SelectionIterator GetIterator () { return current_objects.GetIterator (); }
   csArray<iDynamicObject*>& GetObjects () { return current_objects; }

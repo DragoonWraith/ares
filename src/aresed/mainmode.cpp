@@ -48,7 +48,7 @@ END_EVENT_TABLE()
 //---------------------------------------------------------------------------
 
 MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
-  EditingMode (0, aresed3d, "Main")
+  EditingMode (aresed3d, "Main")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);

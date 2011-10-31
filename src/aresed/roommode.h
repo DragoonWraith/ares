@@ -37,7 +37,7 @@ private:
   csRef<iGeometryGenerator> ggen;
 
 public:
-  RoomMode (AppAresEdit* aresed, AresEdit3DView* aresed3d);
+  RoomMode (AresEdit3DView* aresed3d);
   virtual ~RoomMode () { }
 
   virtual void Start ();

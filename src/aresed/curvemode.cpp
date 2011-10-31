@@ -38,7 +38,7 @@ END_EVENT_TABLE()
 //---------------------------------------------------------------------------
 
 CurveMode::CurveMode (wxWindow* parent, AresEdit3DView* aresed3d)
-  : EditingMode (0, aresed3d, "Curve")
+  : EditingMode (aresed3d, "Curve")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);

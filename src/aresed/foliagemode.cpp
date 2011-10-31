@@ -35,7 +35,7 @@ END_EVENT_TABLE()
 //---------------------------------------------------------------------------
 
 FoliageMode::FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d)
-  : EditingMode (0, aresed3d, "Foliage")
+  : EditingMode (aresed3d, "Foliage")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
