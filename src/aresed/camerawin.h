@@ -38,7 +38,6 @@ private:
   AresEdit3DView* aresed3d;
 
   CamLocation trans[4];
-  bool transStored[4];
   void StoreTrans (int idx);
   void RecallTrans (int idx);
 

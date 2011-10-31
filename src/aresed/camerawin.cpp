@@ -80,7 +80,15 @@ void CameraWindow::OnTopDownButton ()
 
 void CameraWindow::StoreTrans (int idx)
 {
-  //transButton[idx]->enable ();
+  wxButton* recallButton;
+  switch (idx)
+  {
+    case 0: recallButton = XRCCTRL (*panel, "recall1Button", wxButton); break;
+    case 1: recallButton = XRCCTRL (*panel, "recall2Button", wxButton); break;
+    case 2: recallButton = XRCCTRL (*panel, "recall3Button", wxButton); break;
+    case 3: recallButton = XRCCTRL (*panel, "recall4Button", wxButton); break;
+  }
+  recallButton->Enable ();
   CamLocation loc = aresed3d->GetCamera ().GetCameraLocation ();
   trans[idx] = loc;
 }
@@ -232,10 +240,15 @@ CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
   parent->GetSizer ()->Add (panel, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CameraPanel"));
 
-  transStored[0] = false;
-  transStored[1] = false;
-  transStored[2] = false;
-  transStored[3] = false;
+  wxButton* recallButton;
+  recallButton  = XRCCTRL (*panel, "recall1Button", wxButton);
+  recallButton->Disable ();
+  recallButton  = XRCCTRL (*panel, "recall2Button", wxButton);
+  recallButton->Disable ();
+  recallButton  = XRCCTRL (*panel, "recall3Button", wxButton);
+  recallButton->Disable ();
+  recallButton  = XRCCTRL (*panel, "recall4Button", wxButton);
+  recallButton->Disable ();
 }
 
 CameraWindow::~CameraWindow ()
