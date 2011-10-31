@@ -64,6 +64,16 @@ struct LoadCallback : public OKCallback
   }
 };
 
+struct SaveCallback : public OKCallback
+{
+  AppAresEditWX* ares;
+  SaveCallback (AppAresEditWX* ares) : ares (ares) { }
+  virtual void OkPressed (const char* filename)
+  {
+    ares->SaveFile (filename);
+  }
+};
+
 // =========================================================================
 
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
@@ -394,8 +404,6 @@ void AresEdit3DView::CleanupWorld ()
 
 void AresEdit3DView::SaveFile (const char* filename)
 {
-  //filenameLabel->setText (CEGUI::String (filename));
-  // @@@ Error handling.
   worldLoader->SaveFile (filename);
 }
 
@@ -924,10 +932,14 @@ void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
 
 void AppAresEditWX::LoadFile (const char* filename)
 {
-printf  ("LoadFile %s\n", filename);
   aresed3d->LoadFile (filename);
   const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
   mainMode->SetupItems (categories);
+}
+
+void AppAresEditWX::SaveFile (const char* filename)
+{
+  aresed3d->SaveFile (filename);
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
@@ -937,7 +949,7 @@ void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
 {
-  //filereq->Show (new LoadCallback (this));
+  filereq->Show (new SaveCallback (this));
 }
 
 void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)

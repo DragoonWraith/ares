@@ -427,6 +427,7 @@ public:
   void OnIconize (wxIconizeEvent& event);
   void OnShow (wxShowEvent& event);
   void OnSize (wxSizeEvent& ev);
+  void SaveFile (const char* filename);
   void LoadFile (const char* filename);
 
   void SwitchToMainMode ();
