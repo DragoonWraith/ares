@@ -234,8 +234,6 @@ private:
   /// Add an item to a category (create the category if not already present).
   void AddItem (const char* category, const char* itemname);
 
-  CameraWindow* camwin;
-
 public:
   /**
    * Constructor.
@@ -256,23 +254,6 @@ public:
    * Resize the view.
    */
   void ResizeView (int width, int height);
-
-  /**
-   * Display an error notification.
-   * \remarks
-   * The error displayed with this function will be identified with the
-   * application string name identifier set with SetApplicationName().
-   * \sa \ref FormatterNotes
-   */
-  bool ReportError (const char* description, ...)
-  {
-    va_list args;
-    va_start (args, description);
-    csReportV (object_reg, CS_REPORTER_SEVERITY_ERROR,
-      "ares", description, args);
-    va_end (args);
-    return false;
-  }
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
 
@@ -405,6 +386,7 @@ private:
   RoomMode* roomMode;
   FoliageMode* foliageMode;
   EditingMode* editMode;
+  CameraWindow* camwin;
 
   void SetupMenuBar ();
 
@@ -421,7 +403,25 @@ public:
   AppAresEditWX (iObjectRegistry* object_reg);
   ~AppAresEditWX ();
 
+  /**
+   * Display an error notification.
+   * \remarks
+   * The error displayed with this function will be identified with the
+   * application string name identifier set with SetApplicationName().
+   * \sa \ref FormatterNotes
+   */
+  bool ReportError (const char* description, ...)
+  {
+    va_list args;
+    va_start (args, description);
+    csReportV (object_reg, CS_REPORTER_SEVERITY_ERROR,
+      "ares", description, args);
+    va_end (args);
+    return false;
+  }
+
   bool Initialize ();
+  bool InitWX ();
   void PushFrame ();
   void OnClose (wxCloseEvent& event);
   void OnIconize (wxIconizeEvent& event);
@@ -434,6 +434,10 @@ public:
   void SwitchToRoomMode ();
   void SwitchToFoliageMode ();
   void SetCurveModeEnabled (bool cm);
+
+  CameraWindow* GetCameraWindow () const { return camwin; }
+
+  bool LoadResourceFile (const char* filename, wxString& searchPath);
 
   DECLARE_EVENT_TABLE ();
 

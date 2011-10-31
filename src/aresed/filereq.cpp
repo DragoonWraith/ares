@@ -38,8 +38,8 @@ void FileReq::DoOk ()
   printf ("Ok\n");
   wxTextCtrl* text = XRCCTRL (*this, "fileNameText", wxTextCtrl);
   csString file = (const char*)text->GetValue ().mb_str (wxConvUTF8);
-  callback->OkPressed (file);
   EndModal (TRUE);
+  callback->OkPressed (file);
 }
 
 void FileReq::OnOkButton (wxCommandEvent& event)

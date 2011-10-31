@@ -71,7 +71,6 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
 {
   do_debug = false;
   do_simulation = true;
-  camwin = 0;
   currentTime = 31000;
   do_auto_time = false;
   curvedFactoryCounter = 0;
@@ -83,7 +82,6 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
 
 AresEdit3DView::~AresEdit3DView()
 {
-  delete camwin;
   delete worldLoader;
   delete selection;
 }
@@ -209,38 +207,9 @@ void AresEdit3DView::SetStaticSelectedObjects (bool st)
   }
 }
 
-#if 0
-void AresEdit3DView::SetButtonState ()
-{
-  bool curveTabEnable = false;
-  if (selection->GetSize () == 1)
-  {
-    csString name = selection->GetFirst ()->GetFactory ()->GetName ();
-    if (!curvedMeshCreator->GetCurvedFactory (name))
-      curveTabEnable = true;
-  }
-  if (curveTabEnable)
-    curveTabButton->enable ();
-  else
-    curveTabButton->disable ();
-
-  bool roomTabEnable = false;
-  if (selection->GetSize () == 1)
-  {
-    csString name = selection->GetFirst ()->GetFactory ()->GetName ();
-    if (!roomMeshCreator->GetRoomFactory (name))
-      roomTabEnable = true;
-  }
-  if (roomTabEnable)
-    roomTabButton->enable ();
-  else
-    roomTabButton->disable ();
-}
-#endif
-
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
-  camwin->CurrentObjectsChanged (current_objects);
+  app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
 
   bool curveTabEnable = false;
   if (selection->GetSize () == 1)
@@ -384,13 +353,6 @@ bool AresEdit3DView::OnKeyboard(iEvent& ev)
         GetCamera ().EnablePanning (center);
       }
     }
-    else if (code == 'c')
-    {
-      if (camwin->IsVisible ())
-	camwin->Hide ();
-      else
-	camwin->Show ();
-    }
     else return false;
     return true;
   }
@@ -485,7 +447,7 @@ bool AresEdit3DView::SetupDecal ()
 {
   iMaterialWrapper* material = engine->GetMaterialList ()->FindByName ("stone2");
   if (!material)
-    return ReportError("Can't find cursor decal material!");
+    return app->ReportError("Can't find cursor decal material!");
   cursorDecalTemplate = decalMgr->CreateDecalTemplate (material);
   cursorDecal = 0;
   return true;
@@ -506,57 +468,53 @@ bool AresEdit3DView::Setup ()
   iObjectRegistry* r = GetObjectRegistry();
 
   vfs = csQueryRegistry<iVFS> (r);
-  if (!vfs)
-    return ReportError("Failed to locate vfs!");
-
-  //camwin = new CameraWindow (this, cegui);
+  if (!vfs) return app->ReportError("Failed to locate vfs!");
 
   g3d = csQueryRegistry<iGraphics3D> (r);
-  if (!g3d)
-    return ReportError("Failed to locate 3D renderer!");
+  if (!g3d) return app->ReportError("Failed to locate 3D renderer!");
 
   nature = csQueryRegistry<iNature> (r);
-  if (!nature) return ReportError("Failed to locate nature plugin!");
+  if (!nature) return app->ReportError("Failed to locate nature plugin!");
 
   markerMgr = csQueryRegistry<iMarkerManager> (r);
-  if (!markerMgr) return ReportError("Failed to locate marker manager plugin!");
+  if (!markerMgr) return app->ReportError("Failed to locate marker manager plugin!");
 
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (r);
-  if (!curvedMeshCreator) return ReportError("Failed to load the curved mesh creator plugin!");
+  if (!curvedMeshCreator) return app->ReportError("Failed to load the curved mesh creator plugin!");
 
   roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (r);
-  if (!roomMeshCreator) return ReportError("Failed to load the room mesh creator plugin!");
+  if (!roomMeshCreator) return app->ReportError("Failed to load the room mesh creator plugin!");
 
   engine = csQueryRegistry<iEngine> (r);
-  if (!engine) return ReportError("Failed to locate 3D engine!");
+  if (!engine) return app->ReportError("Failed to locate 3D engine!");
 
   decalMgr = csQueryRegistry<iDecalManager> (r);
-  if (!decalMgr) return ReportError("Failed to load decal manager!");
+  if (!decalMgr) return app->ReportError("Failed to load decal manager!");
 
   eventQueue = csQueryRegistry<iEventQueue> (r);
-  if (!eventQueue) return ReportError ("Failed to locate Event Queue!");
+  if (!eventQueue) return app->ReportError ("Failed to locate Event Queue!");
 
   vc = csQueryRegistry<iVirtualClock> (r);
-  if (!vc) return ReportError ("Failed to locate Virtual Clock!");
+  if (!vc) return app->ReportError ("Failed to locate Virtual Clock!");
 
   kbd = csQueryRegistry<iKeyboardDriver> (r);
-  if (!kbd) return ReportError ("Failed to locate Keyboard Driver!");
+  if (!kbd) return app->ReportError ("Failed to locate Keyboard Driver!");
 
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
-  if (!pl) return ReportError ("CEL physical layer missing!");
+  if (!pl) return app->ReportError ("CEL physical layer missing!");
 
   loader = csQueryRegistry<iLoader> (r);
-  if (!loader) return ReportError("Failed to locate map loader plugin!");
+  if (!loader) return app->ReportError("Failed to locate map loader plugin!");
 
   cdsys = csQueryRegistry<iCollideSystem> (r);
-  if (!cdsys) return ReportError ("Failed to locate CD system!");
+  if (!cdsys) return app->ReportError ("Failed to locate CD system!");
 
   cfgmgr = csQueryRegistry<iConfigManager> (r);
-  if (!cfgmgr) return ReportError ("Failed to locate the configuration manager plugin!");
+  if (!cfgmgr) return app->ReportError ("Failed to locate the configuration manager plugin!");
 
   zoneEntity = pl->CreateEntity ("zone", 0, 0,
       "pcworld.dynamic", CEL_PROPCLASS_END);
-  if (!zoneEntity) return ReportError ("Failed to create zone entity!");
+  if (!zoneEntity) return app->ReportError ("Failed to create zone entity!");
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
 
   elcm = csQueryRegistry<iELCM> (r);
@@ -626,7 +584,7 @@ bool AresEdit3DView::Setup ()
     return false;
 
   if (!PostLoadMap ())
-    return ReportError ("Error during PostLoadMap()!");
+    return app->ReportError ("Error during PostLoadMap()!");
 
   if (!SetupDynWorld ())
     return false;
@@ -707,10 +665,7 @@ bool AresEdit3DView::PostLoadMap ()
     csRef<iTerrainSystem> terrain =
       scfQueryInterface<iTerrainSystem> (terrainMesh->GetMeshObject ());
     if (!terrain)
-    {
-      ReportError("Error cannot find the terrain interface!");
-      return false;
-    }
+      return app->ReportError("Error cannot find the terrain interface!");
 
     // Create a terrain collider for each cell of the terrain
     for (size_t i = 0; i < terrain->GetCellCount (); i++)
@@ -742,7 +697,7 @@ bool AresEdit3DView::SetupWorld ()
 {
   vfs->Mount ("/aresnode", "data$/node.zip");
   if (!LoadLibrary ("/aresnode/", "library"))
-    return ReportError ("Error loading library!");
+    return app->ReportError ("Error loading library!");
   vfs->PopDir ();
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
@@ -887,10 +842,10 @@ void AresEdit3DView::SpawnItem (const csString& name)
 bool AresEdit3DView::InitPhysics ()
 {
   dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
-  if (!dyn) return ReportError ("Error loading bullet plugin!");
+  if (!dyn) return app->ReportError ("Error loading bullet plugin!");
 
   dynSys = dyn->CreateSystem ();
-  if (!dynSys) return ReportError ("Error creating dynamic system!");
+  if (!dynSys) return app->ReportError ("Error creating dynamic system!");
   //dynSys->SetLinearDampener(.3f);
   dynSys->SetRollingDampener(.995f);
   dynSys->SetGravity (csVector3 (0.0f, -9.81f, 0.0f));
@@ -910,7 +865,7 @@ bool AresEdit3DView::LoadLibrary (const char* path, const char* file)
   if (!rc.success)
   {
     vfs->PopDir ();
-    return ReportError("Couldn't load library file %s!", path);
+    return app->ReportError("Couldn't load library file %s!", path);
   }
   vfs->PopDir ();
   return true;
@@ -942,6 +897,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
 {
   AppAresEditWX::object_reg = object_reg;
   aresed3d = 0;
+  camwin = 0;
   editMode = 0;
   mainMode = 0;
   curveMode = 0;
@@ -953,6 +909,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
 
 AppAresEditWX::~AppAresEditWX ()
 {
+  delete camwin;
   delete mainMode;
   delete curveMode;
   delete roomMode;
@@ -967,6 +924,7 @@ void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
 
 void AppAresEditWX::LoadFile (const char* filename)
 {
+printf  ("LoadFile %s\n", filename);
   aresed3d->LoadFile (filename);
   const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
   mainMode->SetupItems (categories);
@@ -1095,16 +1053,23 @@ bool AppAresEditWX::SimpleEventHandler (iEvent& ev)
   return aresed ? aresed->HandleEvent (ev) : false;
 }
 
+bool AppAresEditWX::LoadResourceFile (const char* filename, wxString& searchPath)
+{
+  wxString resourceLocation;
+  wxFileSystem wxfs;
+  if (!wxfs.FindFileInPath (&resourceLocation, searchPath,
+	wxString (filename, wxConvUTF8))
+      || !wxXmlResource::Get ()->Load (resourceLocation))
+    return ReportError ("Could not load XRC resource file: %s!", filename);
+  return true;
+}
+
+
 bool AppAresEditWX::Initialize ()
 {
   if (!celInitializer::SetupConfigManager (object_reg,
       "/ares/AppAresEdit.cfg", "ares"))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Failed to setup configmanager!");
-    return false;
-  }
+    return ReportError ("Failed to setup configmanager!");
 
   if (!celInitializer::RequestPlugins (object_reg,
 	CS_REQUEST_VFS,
@@ -1126,21 +1091,12 @@ bool AppAresEditWX::Initialize ()
 	CS_REQUEST_PLUGIN ("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_PLUGIN ("utility.rooms", iRoomMeshCreator),
 	CS_REQUEST_END))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Can't initialize plugins!");
-    return false;
-  }
+    return ReportError ("Can't initialize plugins!");
 
   //csEventNameRegistry::Register (object_reg);
   if (!csInitializer::SetupEventHandler (object_reg, SimpleEventHandler))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Can't initialize event handler!");
-    return false;
-  }
+    return ReportError ("Can't initialize event handler!");
+
   CS_INITIALIZE_EVENT_SHORTCUTS (object_reg);
 
   KeyboardDown = csevKeyboardDown (object_reg);
@@ -1157,109 +1113,47 @@ bool AppAresEditWX::Initialize ()
 
   // The virtual clock.
   vc = csQueryRegistry<iVirtualClock> (object_reg);
-  if (vc == 0)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Can't find the virtual clock!");
-    return false;
-  }
+  if (vc == 0) return ReportError ("Can't find the virtual clock!");
 
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
-  if (g3d == 0)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "No iGraphics3D plugin!");
-    return false;
-  }
+  if (g3d == 0) return ReportError ("Can't find the iGraphics3D plugin!");
 
   vfs = csQueryRegistry<iVFS> (object_reg);
-  if (!vfs)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "No iVFS plugin!");
-    return false;
-  }
+  if (!vfs) return ReportError ("Can't find the iVFS plugin!");
 
+  if (!InitWX ())
+    return false;
+
+  printer.AttachNew (new FramePrinter (object_reg));
+
+  return true;
+}
+
+bool AppAresEditWX::InitWX ()
+{
   // Load the frame from an XRC file
   wxXmlResource::Get ()->InitAllHandlers ();
 
   wxString searchPath (wxT ("data/windows"));
-  wxString resourceLocation;
-  wxFileSystem wxfs;
-  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("AresMainFrame.xrc"))
-    || !wxXmlResource::Get ()->Load (resourceLocation))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not load XRC ressource file!");
-    return false;
-  }
-  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("FileRequester.xrc"))
-    || !wxXmlResource::Get ()->Load (resourceLocation))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not load XRC ressource file!");
-    return false;
-  }
-  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("MainModePanel.xrc"))
-    || !wxXmlResource::Get ()->Load (resourceLocation))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not load XRC ressource file!");
-    return false;
-  }
-  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("CurveModePanel.xrc"))
-    || !wxXmlResource::Get ()->Load (resourceLocation))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not load XRC ressource file!");
-    return false;
-  }
-  if (!wxfs.FindFileInPath (&resourceLocation, searchPath, wxT ("FoliageModePanel.xrc"))
-    || !wxXmlResource::Get ()->Load (resourceLocation))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not load XRC ressource file!");
-    return false;
-  }
+  if (!LoadResourceFile ("AresMainFrame.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("FileRequester.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("MainModePanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("CurveModePanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("FoliageModePanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
-  if (!mainPanel)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not find main panel in XRC ressource file!");
-    return false;
-  }
+  if (!mainPanel) return ReportError ("Can't find main panel!");
 
   // Find the panel where to place the wxgl canvas
   wxPanel* panel = XRCCTRL (*this, "main3DPanel", wxPanel);
-  if (!panel)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Could not find the panel for the wxgl canvas in XRC ressource file!");
-    return false;
-  }
+  if (!panel) return ReportError ("Can't find main3DPanel!");
 
   // Create the wxgl canvas
   iGraphics2D* g2d = g3d->GetDriver2D ();
   g2d->AllowResize (true);
   wxwindow = scfQueryInterface<iWxWindow> (g2d);
-  if (!wxwindow)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Canvas is no iWxWindow plugin!");
-    return false;
-  }
+  if (!wxwindow) return ReportError ("Canvas is no iWxWindow plugin!");
 
   wxPanel* panel1 = new AppAresEditWX::Panel (panel, this);
   panel->GetSizer ()->Add (panel1, 1, wxALL | wxEXPAND);
@@ -1269,12 +1163,7 @@ bool AppAresEditWX::Initialize ()
 
   // Open the main system. This will open all the previously loaded plug-ins.
   if (!csInitializer::OpenApplication (object_reg))
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR,
-              "crystalspace.application.aresedit",
-              "Error opening system!");
-    return false;
-  }
+    return ReportError ("Error opening system!");
 
   /* Manually focus the GL canvas.
      This is so it receives keyboard events (and conveniently translate these
@@ -1299,6 +1188,9 @@ bool AppAresEditWX::Initialize ()
   editMode = 0;
   SwitchToMainMode ();
 
+  wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
+  camwin = new CameraWindow (leftPanePanel, aresed3d);
+
   SelectionListener* listener = new MainModeSelectionListener (mainMode);
   aresed3d->GetSelection ()->AddSelectionListener (listener);
 
@@ -1306,8 +1198,6 @@ bool AppAresEditWX::Initialize ()
   mainMode->SetupItems (categories);
 
   SetupMenuBar ();
-
-  printer.AttachNew (new FramePrinter (object_reg));
 
   return true;
 }
@@ -1347,7 +1237,7 @@ void AppAresEditWX::OnSize (wxSizeEvent& event)
 
   wxSize size = event.GetSize();
   printf ("OnSize %d,%d\n", size.x, size.y); fflush (stdout);
-  wxwindow->GetWindow ()->SetSize (size); // TODO: csGraphics2DGLCommon::Resize is called here...
+  wxwindow->GetWindow ()->SetSize (size);
   aresed3d->ResizeView (size.x, size.y);
   // TODO: ... but here the CanvasResize event has still not been catched by iGraphics3D
 }

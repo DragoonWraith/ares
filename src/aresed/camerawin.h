@@ -36,57 +36,77 @@ class CameraWindow
 {
 private:
   AresEdit3DView* aresed3d;
-  //csRef<iCEGUI> cegui;
-  //CEGUI::Window* camwin;
 
   CamLocation trans[4];
   bool transStored[4];
-  //CEGUI::Window* transButton[4];
   void StoreTrans (int idx);
   void RecallTrans (int idx);
 
-#if 0
-  bool OnNorthButtonClicked (const CEGUI::EventArgs& e);
-  bool OnSouthButtonClicked (const CEGUI::EventArgs& e);
-  bool OnWestButtonClicked (const CEGUI::EventArgs& e);
-  bool OnEastButtonClicked (const CEGUI::EventArgs& e);
+  void OnNorthButton ();
+  void OnSouthButton ();
+  void OnWestButton ();
+  void OnEastButton ();
 
-  bool OnS1ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnR1ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnS2ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnR2ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnS3ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnR3ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnS4ButtonClicked (const CEGUI::EventArgs& e);
-  bool OnR4ButtonClicked (const CEGUI::EventArgs& e);
+  void OnS1Button ();
+  void OnR1Button ();
+  void OnS2Button ();
+  void OnR2Button ();
+  void OnS3Button ();
+  void OnR3Button ();
+  void OnS4Button ();
+  void OnR4Button ();
 
-  bool OnTopDownButtonClicked (const CEGUI::EventArgs& e);
-  bool OnLookAtButtonClicked (const CEGUI::EventArgs& e);
-  bool OnMoveToButtonClicked (const CEGUI::EventArgs& e);
-  bool OnTopDownSelButtonClicked (const CEGUI::EventArgs& e);
+  void OnTopDownButton ();
+  void OnLookAtButton ();
+  void OnMoveToButton ();
+  void OnTopDownSelButton ();
 
-  CEGUI::Window* lookAtButton;
-  CEGUI::Window* moveToButton;
-  CEGUI::Window* topDownSelButton;
-
-  bool OnGravitySelected (const CEGUI::EventArgs&);
-  CEGUI::Checkbox* gravityCheck;
-
-  bool OnPanSelected (const CEGUI::EventArgs&);
-  CEGUI::Checkbox* panCheck;
-#endif
+  void OnGravitySelected ();
+  void OnPanSelected ();
 
   csBox3 GetBoxSelected ();
 
 public:
-  CameraWindow (AresEdit3DView* aresed3d);
+  CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d);
   ~CameraWindow();
 
-  void Show ();
-  void Hide ();
-  bool IsVisible () const;
-
   void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
+
+  class Panel : public wxPanel
+  {
+  public:
+    Panel(wxWindow* parent, CameraWindow* s)
+      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    {}
+
+    void OnNorthButton (wxCommandEvent& event) { s->OnNorthButton (); }
+    void OnSouthButton (wxCommandEvent& event) { s->OnSouthButton (); }
+    void OnWestButton (wxCommandEvent& event) { s->OnWestButton (); }
+    void OnEastButton (wxCommandEvent& event) { s->OnEastButton (); }
+
+    void OnS1Button (wxCommandEvent& event) { s->OnS1Button (); }
+    void OnR1Button (wxCommandEvent& event) { s->OnR1Button (); }
+    void OnS2Button (wxCommandEvent& event) { s->OnS2Button (); }
+    void OnR2Button (wxCommandEvent& event) { s->OnR2Button (); }
+    void OnS3Button (wxCommandEvent& event) { s->OnS3Button (); }
+    void OnR3Button (wxCommandEvent& event) { s->OnR3Button (); }
+    void OnS4Button (wxCommandEvent& event) { s->OnS4Button (); }
+    void OnR4Button (wxCommandEvent& event) { s->OnR4Button (); }
+
+    void OnTopDownButton (wxCommandEvent& event) { s->OnTopDownButton (); }
+    void OnLookAtButton (wxCommandEvent& event) { s->OnLookAtButton (); }
+    void OnMoveToButton (wxCommandEvent& event) { s->OnMoveToButton (); }
+    void OnTopDownSelButton (wxCommandEvent& event) { s->OnTopDownSelButton (); }
+
+    void OnGravitySelected (wxCommandEvent& event) { s->OnGravitySelected (); }
+    void OnPanSelected (wxCommandEvent& event) { s->OnPanSelected (); }
+
+  private:
+    CameraWindow* s;
+
+    DECLARE_EVENT_TABLE()
+  };
+  Panel* panel;
 };
 
 #endif // __appares_camerawindow_h

@@ -25,37 +25,58 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "transformtools.h"
 
-#if 0
-bool CameraWindow::OnNorthButtonClicked (const CEGUI::EventArgs& e)
+//---------------------------------------------------------------------------
+
+BEGIN_EVENT_TABLE(CameraWindow::Panel, wxPanel)
+  EVT_BUTTON (XRCID("northButton"), CameraWindow::Panel::OnNorthButton)
+  EVT_BUTTON (XRCID("southButton"), CameraWindow::Panel::OnSouthButton)
+  EVT_BUTTON (XRCID("westButton"), CameraWindow::Panel::OnWestButton)
+  EVT_BUTTON (XRCID("eastButton"), CameraWindow::Panel::OnEastButton)
+
+  EVT_BUTTON (XRCID("store1Button"), CameraWindow::Panel::OnS1Button)
+  EVT_BUTTON (XRCID("recall1Button"), CameraWindow::Panel::OnR1Button)
+  EVT_BUTTON (XRCID("store2Button"), CameraWindow::Panel::OnS2Button)
+  EVT_BUTTON (XRCID("recall2Button"), CameraWindow::Panel::OnR2Button)
+  EVT_BUTTON (XRCID("store3Button"), CameraWindow::Panel::OnS3Button)
+  EVT_BUTTON (XRCID("recall3Button"), CameraWindow::Panel::OnR3Button)
+  EVT_BUTTON (XRCID("store4Button"), CameraWindow::Panel::OnS4Button)
+  EVT_BUTTON (XRCID("recall4Button"), CameraWindow::Panel::OnR4Button)
+
+  EVT_BUTTON (XRCID("topDownButton"), CameraWindow::Panel::OnTopDownButton)
+  EVT_BUTTON (XRCID("lookButton"), CameraWindow::Panel::OnLookAtButton)
+  EVT_BUTTON (XRCID("moveButton"), CameraWindow::Panel::OnMoveToButton)
+  EVT_BUTTON (XRCID("topButton"), CameraWindow::Panel::OnTopDownSelButton)
+
+  EVT_CHECKBOX (XRCID("gravityCheckBox"), CameraWindow::Panel::OnGravitySelected)
+  EVT_CHECKBOX (XRCID("panCheckBox"), CameraWindow::Panel::OnPanSelected)
+END_EVENT_TABLE()
+
+//---------------------------------------------------------------------------
+
+void CameraWindow::OnNorthButton ()
 {
   aresed3d->GetCamera ().CamLookAt (csVector3 (0, 0, 0));
-  return true;
 }
 
-bool CameraWindow::OnSouthButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnSouthButton ()
 {
   aresed3d->GetCamera ().CamLookAt (csVector3 (0, PI, 0));
-  return true;
 }
 
-bool CameraWindow::OnWestButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnWestButton ()
 {
   aresed3d->GetCamera ().CamLookAt (csVector3 (0, -PI/2, 0));
-  return true;
 }
 
-bool CameraWindow::OnEastButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnEastButton ()
 {
   aresed3d->GetCamera ().CamLookAt (csVector3 (0, PI/2, 0));
-  return true;
 }
 
-bool CameraWindow::OnTopDownButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnTopDownButton ()
 {
   aresed3d->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
-  return true;
 }
-#endif
 
 void CameraWindow::StoreTrans (int idx)
 {
@@ -69,55 +90,45 @@ void CameraWindow::RecallTrans (int idx)
   aresed3d->GetCamera ().SetCameraLocation (trans[idx]);
 }
 
-#if 0
-bool CameraWindow::OnS1ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnS1Button ()
 {
   StoreTrans (0);
-  return true;
 }
 
-bool CameraWindow::OnS2ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnS2Button ()
 {
   StoreTrans (1);
-  return true;
 }
 
-bool CameraWindow::OnS3ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnS3Button ()
 {
   StoreTrans (2);
-  return true;
 }
 
-bool CameraWindow::OnS4ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnS4Button ()
 {
   StoreTrans (3);
-  return true;
 }
 
-bool CameraWindow::OnR1ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnR1Button ()
 {
   RecallTrans (0);
-  return true;
 }
 
-bool CameraWindow::OnR2ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnR2Button ()
 {
   RecallTrans (1);
-  return true;
 }
 
-bool CameraWindow::OnR3ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnR3Button ()
 {
   RecallTrans (2);
-  return true;
 }
 
-bool CameraWindow::OnR4ButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnR4Button ()
 {
   RecallTrans (3);
-  return true;
 }
-#endif
 
 csBox3 CameraWindow::GetBoxSelected ()
 {
@@ -142,77 +153,56 @@ csBox3 CameraWindow::GetBoxSelected ()
 
 void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 {
-#if 0
+  wxCheckBox* panCheck = XRCCTRL (*panel, "panCheckBox", wxCheckBox);
+  wxButton* lookAtButton = XRCCTRL (*panel, "lookButton", wxButton);
+  wxButton* moveToButton = XRCCTRL (*panel, "moveButton", wxButton);
+  wxButton* topDownSelButton = XRCCTRL (*panel, "topButton", wxButton);
   if (current.GetSize () == 0)
   {
-    panCheck->disable();
-    lookAtButton->disable();
-    moveToButton->disable();
-    topDownSelButton->disable();
+    panCheck->Disable();
+    lookAtButton->Disable();
+    moveToButton->Disable();
+    topDownSelButton->Disable();
   }
   else
   {
-    panCheck->enable();
-    lookAtButton->enable();
-    moveToButton->enable();
-    topDownSelButton->enable();
+    panCheck->Enable();
+    lookAtButton->Enable();
+    moveToButton->Enable();
+    topDownSelButton->Enable();
   }
-#endif
 }
 
-#if 0
-bool CameraWindow::OnTopDownSelButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnTopDownSelButton ()
 {
   csBox3 box = GetBoxSelected ();
   float xdim = box.MaxX ()-box.MinX ();
   float zdim = box.MaxZ ()-box.MinZ ();
   csVector3 origin = box.GetCenter () + csVector3 (0, MAX(xdim,zdim), 0);
   aresed3d->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
-  return true;
 }
 
-bool CameraWindow::OnLookAtButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnLookAtButton ()
 {
   if (aresed3d->GetSelection ()->HasSelection ())
   {
     csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
     aresed3d->GetCamera ().CamLookAtPosition (center);
   }
-  return true;
 }
 
-bool CameraWindow::OnMoveToButtonClicked (const CEGUI::EventArgs& e)
+void CameraWindow::OnMoveToButton ()
 {
   csBox3 box = GetBoxSelected ();
   csVector3 center = box.GetCenter ();
   center.y = box.MaxY () + 2.0;
   aresed3d->GetCamera ().CamMove (center);
-  return true;
-}
-#endif
-
-void CameraWindow::Show ()
-{
-  //gravityCheck->setSelected(aresed3d->GetCamera ().IsGravityEnabled ());
-  //panCheck->setSelected(aresed3d->GetCamera ().IsPanningEnabled ());
-  //camwin->show ();
 }
 
-void CameraWindow::Hide ()
+void CameraWindow::OnPanSelected ()
 {
-  //camwin->hide();
-}
-
-bool CameraWindow::IsVisible () const
-{
-  //return camwin->isVisible();
-  return false;
-}
-
-#if 0
-bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
-{
-  if (panCheck->isSelected ())
+  wxCheckBox* panCheck = XRCCTRL (*panel, "panCheckBox", wxCheckBox);
+  if (panCheck->IsChecked ())
   {
     if (aresed3d->GetSelection ()->HasSelection ())
     {
@@ -224,108 +214,28 @@ bool CameraWindow::OnPanSelected (const CEGUI::EventArgs&)
   {
     aresed3d->GetCamera ().DisablePanning ();
   }
-  return true;
 }
 
-bool CameraWindow::OnGravitySelected (const CEGUI::EventArgs&)
+void CameraWindow::OnGravitySelected ()
 {
-  if (gravityCheck->isSelected ())
+  wxCheckBox* gravityCheck = XRCCTRL (*panel, "gravityCheckBox", wxCheckBox);
+  if (gravityCheck->IsChecked ())
     aresed3d->GetCamera ().EnableGravity ();
   else
     aresed3d->GetCamera ().DisableGravity ();
-  return true;
 }
-#endif
 
-CameraWindow::CameraWindow (AresEdit3DView* aresed3d)
+CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
   : aresed3d (aresed3d)
 {
-  //CEGUI::WindowManager* winMgr = cegui->GetWindowManagerPtr ();
-  //camwin = winMgr->getWindow ("CameraWindow");
+  panel = new Panel (parent, this);
+  parent->GetSizer ()->Add (panel, 0, wxALL | wxEXPAND);
+  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CameraPanel"));
 
   transStored[0] = false;
   transStored[1] = false;
   transStored[2] = false;
   transStored[3] = false;
-
-#if 0
-  CEGUI::Window* btn;
-
-  btn = winMgr->getWindow("CameraWindow/North");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnNorthButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/South");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnSouthButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/West");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnWestButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/East");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnEastButtonClicked, this));
-
-  btn = winMgr->getWindow("CameraWindow/StoCP1");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnS1ButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/StoCP2");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnS2ButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/StoCP3");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnS3ButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/StoCP4");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnS4ButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/RecCP1");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnR1ButtonClicked, this));
-  btn->disable();
-  transButton[0] = btn;
-  btn = winMgr->getWindow("CameraWindow/RecCP2");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnR2ButtonClicked, this));
-  btn->disable();
-  transButton[1] = btn;
-  btn = winMgr->getWindow("CameraWindow/RecCP3");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnR3ButtonClicked, this));
-  btn->disable();
-  transButton[2] = btn;
-  btn = winMgr->getWindow("CameraWindow/RecCP4");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnR4ButtonClicked, this));
-  btn->disable();
-  transButton[3] = btn;
-
-  btn = winMgr->getWindow("CameraWindow/TopDown");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnTopDownButtonClicked, this));
-  btn = winMgr->getWindow("CameraWindow/LookAt");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnLookAtButtonClicked, this));
-  lookAtButton = btn;
-  btn->disable();
-  btn = winMgr->getWindow("CameraWindow/MoveTo");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnMoveToButtonClicked, this));
-  moveToButton = btn;
-  btn->disable();
-  btn = winMgr->getWindow("CameraWindow/TopDownSel");
-  btn->subscribeEvent(CEGUI::PushButton::EventClicked,
-    CEGUI::Event::Subscriber(&CameraWindow::OnTopDownSelButtonClicked, this));
-  topDownSelButton = btn;
-  btn->disable();
-
-  gravityCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("CameraWindow/Gravity"));
-  gravityCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
-    CEGUI::Event::Subscriber(&CameraWindow::OnGravitySelected, this));
-  gravityCheck->setSelected(false);
-
-  panCheck = static_cast<CEGUI::Checkbox*>(winMgr->getWindow("CameraWindow/Pan"));
-  panCheck->subscribeEvent(CEGUI::Checkbox::EventCheckStateChanged,
-    CEGUI::Event::Subscriber(&CameraWindow::OnPanSelected, this));
-  panCheck->disable();
-#endif
 }
 
 CameraWindow::~CameraWindow ()
