@@ -1035,7 +1035,8 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
       {
 	wxMenu contextMenu;
 	int id = ID_FirstContextItem;
-	contextMenu.Append (ID_Delete, wxT ("&Delete"));
+	if (aresed3d->GetSelection ()->HasSelection ())
+	  contextMenu.Append (ID_Delete, wxT ("&Delete"));
 	camwin->AddContextMenu (this, &contextMenu, id);
 	editMode->AddContextMenu (this, &contextMenu, id);
 
