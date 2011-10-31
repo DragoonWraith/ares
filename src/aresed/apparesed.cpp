@@ -1033,16 +1033,16 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
     {
       if (but == csmbRight)
       {
-#if 0
-	wxMenu* contextMenu = new wxMenu ();
-	camwin->AddContextMenu (contextMenu);
-	aresed3d->AddContextMenu (contextMenu);
-	editMode->AddContextMenu (contextMenu);
-	//contextMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
-	//contextMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
-	//contextMenu->Append (ID_Quit, wxT ("&Exit..."));
-	PopupMenu (contextMenu);
-#endif
+	wxMenu contextMenu;
+	int id = ID_FirstContextItem;
+	contextMenu.Append (ID_Delete, wxT ("&Delete"));
+	camwin->AddContextMenu (this, &contextMenu, id);
+	editMode->AddContextMenu (this, &contextMenu, id);
+
+	PopupMenu (&contextMenu);
+
+	editMode->ReleaseContextMenu (this);
+	camwin->ReleaseContextMenu (this);
       }
       else
       {

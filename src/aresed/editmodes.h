@@ -62,6 +62,9 @@ public:
     aresed3d (aresed3d), name (name) { }
   virtual ~EditingMode () { }
 
+  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id) { }
+  virtual void ReleaseContextMenu (wxFrame* frame) { }
+
   virtual void Start () { }
   virtual void Stop () { }
 

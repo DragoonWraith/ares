@@ -356,6 +356,7 @@ enum
   ID_Open = wxID_OPEN,
   ID_Save = wxID_SAVE,
   ID_Delete = wxID_HIGHEST + 1000,
+  ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
 class AppAresEditWX : public wxFrame

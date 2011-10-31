@@ -71,6 +71,9 @@ public:
 
   void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 
+  void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
+  void ReleaseContextMenu (wxFrame* frame);
+
   class Panel : public wxPanel
   {
   public:
