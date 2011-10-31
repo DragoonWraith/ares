@@ -189,7 +189,7 @@ void TransformTools::StackSelectedObjects (Selection* selection)
     dynobj->MakeKinematic ();
     const csBox3& bbox = dynobj->GetFactory ()->GetPhysicsBBox ();
     csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
-    csVector3 v = tr.GetOrigin ();
+    csVector3 v = firstTrans.GetOrigin ();
     v.y = firstTrans.GetOrigin ().y + firstBbox.MaxY () - bbox.MinY ();
     tr.SetOrigin (v);
     mesh->GetMovable ()->UpdateMove ();
