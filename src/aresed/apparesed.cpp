@@ -801,7 +801,7 @@ void AresEdit3DView::SpawnItem (const csString& name)
   tc.LookAt (front, csVector3 (0, 1, 0));
   tc.SetOrigin (newPosition);
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
-  dynobj->SetEntity (0, 0);
+  dynobj->SetEntity (0, fname, 0);
   dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))
