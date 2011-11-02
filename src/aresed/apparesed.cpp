@@ -23,6 +23,13 @@ THE SOFTWARE.
  */
 
 #include "apparesed.h"
+#include "ui/filereq.h"
+#include "ui/newproject.h"
+#include "mainmode.h"
+#include "curvemode.h"
+#include "roommode.h"
+#include "foliagemode.h"
+#include "camera.h"
 #include <celtool/initapp.h>
 #include <cstool/simplestaticlighter.h>
 #include <csgeom/math3d.h>
@@ -58,6 +65,7 @@ struct LoadCallback : public OKCallback
 {
   AppAresEditWX* ares;
   LoadCallback (AppAresEditWX* ares) : ares (ares) { }
+  virtual ~LoadCallback () { }
   virtual void OkPressed (const char* filename)
   {
     ares->LoadFile (filename);
@@ -68,6 +76,7 @@ struct SaveCallback : public OKCallback
 {
   AppAresEditWX* ares;
   SaveCallback (AppAresEditWX* ares) : ares (ares) { }
+  virtual ~SaveCallback () { }
   virtual void OkPressed (const char* filename)
   {
     ares->SaveFile (filename);
@@ -884,6 +893,7 @@ bool AresEdit3DView::LoadLibrary (const char* path, const char* file)
 BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_SHOW (AppAresEditWX::OnShow)
   EVT_ICONIZE (AppAresEditWX::OnIconize)
+  EVT_MENU (ID_New, AppAresEditWX :: OnMenuNew)
   EVT_MENU (ID_Open, AppAresEditWX :: OnMenuOpen)
   EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
   EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
@@ -923,6 +933,8 @@ AppAresEditWX::~AppAresEditWX ()
   delete roomMode;
   delete foliageMode;
   delete aresed3d;
+  delete filereqDialog;
+  delete newprojectDialog;
 }
 
 void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
@@ -942,14 +954,19 @@ void AppAresEditWX::SaveFile (const char* filename)
   aresed3d->SaveFile (filename);
 }
 
+void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
+{
+  newprojectDialog->Show ();
+}
+
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
 {
-  filereq->Show (new LoadCallback (this));
+  filereqDialog->Show (new LoadCallback (this));
 }
 
 void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
 {
-  filereq->Show (new SaveCallback (this));
+  filereqDialog->Show (new SaveCallback (this));
 }
 
 void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)
@@ -1170,6 +1187,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CurveModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("FoliageModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -1204,7 +1222,9 @@ bool AppAresEditWX::InitWX ()
   if (!aresed3d->Setup ())
     return false;
  
-  filereq = new FileReq (wxwindow->GetWindow (), vfs, "/saves");
+  filereqDialog = new FileReq (wxwindow->GetWindow (), vfs, "/saves");
+  newprojectDialog = new NewProjectDialog (wxwindow->GetWindow (), filereqDialog,
+      vfs);
 
   wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
   mainMode = new MainMode (mainModeTabPanel, aresed3d);
@@ -1234,6 +1254,7 @@ bool AppAresEditWX::InitWX ()
 void AppAresEditWX::SetupMenuBar ()
 {
   wxMenu* fileMenu = new wxMenu ();
+  fileMenu->Append (ID_New, wxT ("&New project..."));
   fileMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
   fileMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
   fileMenu->Append (ID_Quit, wxT ("&Exit..."));

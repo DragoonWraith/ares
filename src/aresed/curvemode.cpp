@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "apparesed.h"
 #include "curvemode.h"
 
+#include <wx/xrc/xmlres.h>
+
 //---------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(CurveMode::Panel, wxPanel)

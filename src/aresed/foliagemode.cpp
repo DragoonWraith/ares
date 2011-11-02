@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include "iengine/sector.h"
 #include "iengine/meshgen.h"
 
+#include <wx/xrc/xmlres.h>
+
 //---------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(FoliageMode::Panel, wxPanel)

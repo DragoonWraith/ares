@@ -32,11 +32,6 @@ THE SOFTWARE.
 #include "include/imarker.h"
 
 #include "aresed.h"
-#include "filereq.h"
-#include "mainmode.h"
-#include "curvemode.h"
-#include "roommode.h"
-#include "foliagemode.h"
 #include "camera.h"
 #include "selection.h"
 
@@ -55,6 +50,15 @@ class CameraWindow;
 class WorldLoader;
 class AppAresEditWX;
 class AresEdit3DView;
+
+class FileReq;
+class NewProjectDialog;
+
+class EditingMode;
+class MainMode;
+class FoliageMode;
+class CurveMode;
+class RoomMode;
 
 struct iCelPlLayer;
 struct iCelEntity;
@@ -355,6 +359,7 @@ enum
   ID_Quit = wxID_EXIT,
   ID_Open = wxID_OPEN,
   ID_Save = wxID_SAVE,
+  ID_New = wxID_NEW,
   ID_Delete = wxID_HIGHEST + 1000,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
@@ -381,7 +386,8 @@ private:
   csEventID KeyboardDown;
   csEventID FocusLost;
 
-  FileReq* filereq;
+  FileReq* filereqDialog;
+  NewProjectDialog* newprojectDialog;
   MainMode* mainMode;
   CurveMode* curveMode;
   RoomMode* roomMode;
@@ -391,8 +397,7 @@ private:
 
   void SetupMenuBar ();
 
-  //int oldPageIdx;
-
+  void OnMenuNew (wxCommandEvent& event);
   void OnMenuOpen (wxCommandEvent& event);
   void OnMenuSave (wxCommandEvent& event);
   void OnMenuQuit (wxCommandEvent& event);
@@ -437,7 +442,10 @@ public:
   void SwitchToFoliageMode ();
   void SetCurveModeEnabled (bool cm);
 
+  iVFS* GetVFS () const { return vfs; }
+
   CameraWindow* GetCameraWindow () const { return camwin; }
+  FileReq* GetFileReqDialog () const { return filereqDialog; }
 
   bool LoadResourceFile (const char* filename, wxString& searchPath);
 

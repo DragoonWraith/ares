@@ -62,7 +62,6 @@ void FileReq::OnFileViewSelChange (wxCommandEvent& event)
   //path.Append (wxString (filename, wxConvUTF8));
   wxString path (filename, wxConvUTF8);
   text->SetValue (path);
-  StdDlgUpdateLists ();
 }
 
 void FileReq::OnFileViewActivated (wxCommandEvent& event)

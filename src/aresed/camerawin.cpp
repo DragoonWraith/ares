@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "transformtools.h"
 
+#include <wx/xrc/xmlres.h>
+
 //---------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(CameraWindow::Panel, wxPanel)

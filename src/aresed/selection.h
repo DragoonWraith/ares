@@ -25,6 +25,9 @@ THE SOFTWARE.
 #ifndef __aresed_selection_h
 #define __aresed_selection_h
 
+class iDynamicObject;
+class AresEdit3DView;
+
 typedef csArray<iDynamicObject*>::Iterator SelectionIterator;
 
 class SelectionListener : public csRefCount
