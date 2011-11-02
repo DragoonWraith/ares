@@ -83,6 +83,8 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
 
   long idx = assetList->InsertItem (assetList->GetItemCount (), pathText->GetValue ());
   assetList->SetItem (idx, 1, fileText->GetValue ());
+  assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+  assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
 }
 
 void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
@@ -91,6 +93,8 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
   {
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     assetList->DeleteItem (selIndex);
+    assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+    assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
   }
 }
 
