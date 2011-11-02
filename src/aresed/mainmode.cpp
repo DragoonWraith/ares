@@ -484,6 +484,38 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   return false;
 }
 
+void MainMode::CopySelection ()
+{
+  pastebuffer.Empty ();
+  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicObject* dynobj = it.Next ();
+    iDynamicFactory* dynfact = dynobj->GetFactory ();
+    AresPasteContents apc;
+    apc.dynfactName = dynfact->GetName ();
+    apc.trans = dynobj->GetTransform ();
+    apc.isStatic = dynobj->IsStatic ();
+    pastebuffer.Push (apc);
+  }
+}
+
+void MainMode::PasteSelection ()
+{
+  if (pastebuffer.GetSize () <= 0) return;
+  csReversibleTransform trans = pastebuffer[0].trans;
+  for (size_t i = 0 ; i < pastebuffer.GetSize () ; i++)
+  {
+    csReversibleTransform tr = pastebuffer[i].trans;
+    tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
+    iDynamicObject* dynobj = aresed3d->SpawnItem (pastebuffer[i].dynfactName, &tr);
+    if (pastebuffer[i].isStatic)
+      dynobj->MakeStatic ();
+    else
+      dynobj->MakeDynamic ();
+  }
+}
+
 void MainMode::StartKinematicDragging (bool restrictY,
     const csSegment3& beam, const csVector3& isect, bool firstOnly)
 {

@@ -40,6 +40,13 @@ struct AresDragObject
   csVector3 kineOffset;
 };
 
+struct AresPasteContents
+{
+  csString dynfactName;
+  csReversibleTransform trans;
+  bool isStatic;
+};
+
 class MainMode : public EditingMode
 {
 private:
@@ -73,6 +80,8 @@ private:
 
   csString GetSelectedItem ();
 
+  csArray<AresPasteContents> pastebuffer;
+
 public:
   MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~MainMode () { }
@@ -81,6 +90,10 @@ public:
   virtual void Stop ();
 
   void SetupItems (const csHash<csStringArray,csString>& items);
+
+  void CopySelection ();
+  void PasteSelection ();
+  bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
 
   void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
   void ReleaseContextMenu (wxFrame* frame);

@@ -87,14 +87,14 @@ public:
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 };
 
-class MainModeSelectionListener : public SelectionListener
+class AppSelectionListener : public SelectionListener
 {
 private:
-  MainMode* mainMode;
+  AppAresEditWX* app;
 
 public:
-  MainModeSelectionListener (MainMode* mainMode) : mainMode (mainMode) { }
-  virtual ~MainModeSelectionListener () { }
+  AppSelectionListener (AppAresEditWX* app) : app (app) { }
+  virtual ~AppSelectionListener () { }
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 };
 
@@ -294,8 +294,8 @@ public:
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
 
-  /// Spawn an item.
-  void SpawnItem (const csString& name);
+  /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
+  iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
 
   /// Get the camera.
   Camera& GetCamera () { return camera; }
@@ -360,6 +360,8 @@ enum
   ID_Open = wxID_OPEN,
   ID_Save = wxID_SAVE,
   ID_New = wxID_NEW,
+  ID_Copy = wxID_COPY,
+  ID_Paste = wxID_PASTE,
   ID_Delete = wxID_HIGHEST + 1000,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
@@ -402,6 +404,8 @@ private:
   void OnMenuSave (wxCommandEvent& event);
   void OnMenuQuit (wxCommandEvent& event);
   void OnMenuDelete (wxCommandEvent& event);
+  void OnMenuCopy (wxCommandEvent& event);
+  void OnMenuPaste (wxCommandEvent& event);
   void OnNotebookChange (wxNotebookEvent& event);
   void OnNotebookChanged (wxNotebookEvent& event);
 
@@ -441,8 +445,11 @@ public:
   void SwitchToRoomMode ();
   void SwitchToFoliageMode ();
   void SetCurveModeEnabled (bool cm);
+  MainMode* GetMainMode () const { return mainMode; }
 
   iVFS* GetVFS () const { return vfs; }
+
+  void SetMenuState (const csArray<iDynamicObject*>& current_objects);
 
   CameraWindow* GetCameraWindow () const { return camwin; }
   FileReq* GetFileReqDialog () const { return filereqDialog; }

@@ -55,10 +55,11 @@ void AresEditSelectionListener::SelectionChanged (
   aresed3d->SelectionChanged (current_objects);
 }
 
-void MainModeSelectionListener::SelectionChanged (
+void AppSelectionListener::SelectionChanged (
     const csArray<iDynamicObject*>& current_objects)
 {
-  mainMode->CurrentObjectsChanged (current_objects);
+  app->SetMenuState (current_objects);
+  app->GetMainMode ()->CurrentObjectsChanged (current_objects);
 }
 
 struct LoadCallback : public OKCallback
@@ -742,7 +743,8 @@ RoomFactoryCreator* AresEdit3DView::FindRoomFactoryCreator (const char* name)
   return 0;
 }
 
-void AresEdit3DView::SpawnItem (const csString& name)
+iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
+    csReversibleTransform* trans)
 {
   csString fname;
   iCurvedFactory* curvedFactory = 0;
@@ -808,7 +810,8 @@ void AresEdit3DView::SpawnItem (const csString& name)
   csVector3 front = tc.GetFront ();
   front.y = 0;
   tc.LookAt (front, csVector3 (0, 1, 0));
-  tc.SetOrigin (newPosition);
+  if (trans) tc = *trans;
+  tc.SetOrigin (tc.GetOrigin () + newPosition);
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
   dynobj->SetEntity (0, fname, 0);
   dynworld->ForceVisible (dynobj);
@@ -854,6 +857,7 @@ void AresEdit3DView::SpawnItem (const csString& name)
     app->SwitchToCurveMode ();
   else if (roomFactory)
     app->SwitchToRoomMode ();
+  return dynobj;
 }
 
 bool AresEdit3DView::InitPhysics ()
@@ -898,6 +902,8 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
   EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
   EVT_MENU (ID_Delete, AppAresEditWX :: OnMenuDelete)
+  EVT_MENU (ID_Copy, AppAresEditWX :: OnMenuCopy)
+  EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
 END_EVENT_TABLE()
@@ -935,6 +941,16 @@ AppAresEditWX::~AppAresEditWX ()
   delete aresed3d;
   delete filereqDialog;
   delete newprojectDialog;
+}
+
+void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
+{
+  if (editMode == mainMode) mainMode->CopySelection ();
+}
+
+void AppAresEditWX::OnMenuPaste (wxCommandEvent& event)
+{
+  if (editMode == mainMode) mainMode->PasteSelection ();
 }
 
 void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
@@ -1240,7 +1256,7 @@ bool AppAresEditWX::InitWX ()
   wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   camwin = new CameraWindow (leftPanePanel, aresed3d);
 
-  SelectionListener* listener = new MainModeSelectionListener (mainMode);
+  SelectionListener* listener = new AppSelectionListener (this);
   aresed3d->GetSelection ()->AddSelectionListener (listener);
 
   const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
@@ -1260,6 +1276,8 @@ void AppAresEditWX::SetupMenuBar ()
   fileMenu->Append (ID_Quit, wxT ("&Exit..."));
 
   wxMenu* editMenu = new wxMenu ();
+  editMenu->Append (ID_Copy, wxT ("&Copy\tCtrl+C"));
+  editMenu->Append (ID_Paste, wxT ("&Paste\tCtrl+V"));
   editMenu->Append (ID_Delete, wxT ("&Delete"));
 
   wxMenuBar* menuBar = new wxMenuBar ();
@@ -1267,6 +1285,26 @@ void AppAresEditWX::SetupMenuBar ()
   menuBar->Append (editMenu, wxT ("&Edit"));
   SetMenuBar (menuBar);
   menuBar->Reparent (this);
+
+  SetMenuState (csArray<iDynamicObject*> ());
+}
+
+void AppAresEditWX::SetMenuState (const csArray<iDynamicObject*>& current_objects)
+{
+  wxMenuBar* menuBar = GetMenuBar ();
+  if (editMode == mainMode)
+  {
+    bool sel = current_objects.GetSize () > 0;
+    menuBar->Enable (ID_Paste, mainMode->IsPasteBufferFull ());
+    menuBar->Enable (ID_Delete, sel);
+    menuBar->Enable (ID_Copy, sel);
+  }
+  else
+  {
+    menuBar->Enable (ID_Paste, false);
+    menuBar->Enable (ID_Delete, false);
+    menuBar->Enable (ID_Copy, false);
+  }
 }
 
 void AppAresEditWX::PushFrame ()
