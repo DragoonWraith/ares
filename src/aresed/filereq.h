@@ -43,7 +43,7 @@ private:
   csRef<iVFS> vfs;
   csRef<OKCallback> callback;
 
-  void StdDlgUpdateLists (const char* filename);
+  void StdDlgUpdateLists ();
   void OnFileViewSelChange (wxCommandEvent& event);
   void OnFileViewActivated (wxCommandEvent& event);
   void OnDirViewSelChange (wxCommandEvent& event);

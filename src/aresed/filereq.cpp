@@ -62,6 +62,7 @@ void FileReq::OnFileViewSelChange (wxCommandEvent& event)
   //path.Append (wxString (filename, wxConvUTF8));
   wxString path (filename, wxConvUTF8);
   text->SetValue (path);
+  StdDlgUpdateLists ();
 }
 
 void FileReq::OnFileViewActivated (wxCommandEvent& event)
@@ -76,9 +77,14 @@ void FileReq::OnDirViewSelChange (wxCommandEvent& event)
 
 void FileReq::OnDirViewActivated (wxCommandEvent& event)
 {
+  wxListBox* dirlist = XRCCTRL (*this, "dirListBox", wxListBox);
+  csString dir = (const char*)dirlist->GetStringSelection ().mb_str(wxConvUTF8);
+  vfs->ChDir (dir);
+  currentPath = vfs->GetCwd ();
+  StdDlgUpdateLists ();
 }
 
-void FileReq::StdDlgUpdateLists (const char* filename)
+void FileReq::StdDlgUpdateLists ()
 {
   wxListBox* dirlist = XRCCTRL (*this, "dirListBox", wxListBox);
   dirlist->Clear ();
@@ -88,7 +94,7 @@ void FileReq::StdDlgUpdateLists (const char* filename)
   wxArrayString dirs, files;
   dirs.Add (wxT (".."));
 
-  csRef<iStringArray> vfsFiles = vfs->FindFiles (filename);
+  csRef<iStringArray> vfsFiles = vfs->FindFiles (vfs->GetCwd ());
   
   for (size_t i = 0; i < vfsFiles->GetSize(); i++)
   {
@@ -133,7 +139,7 @@ FileReq::FileReq (wxWindow* parent, iVFS* vfs, const char* path) : vfs (vfs)
   vfs->ChDir (path);
   //btn = winMgr->getWindow("StdDlg/Path");
   //btn->setProperty("Text", vfs->GetCwd());
-  StdDlgUpdateLists (vfs->GetCwd());
+  StdDlgUpdateLists ();
 }
 
 FileReq::~FileReq ()
