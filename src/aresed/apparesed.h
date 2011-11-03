@@ -297,6 +297,9 @@ public:
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
 
+  /// Return where an item would be spawned if we were to spawn it now.
+  csReversibleTransform GetSpawnTransformation (const csString& name, csReversibleTransform* trans = 0);
+
   /// Get the camera.
   Camera& GetCamera () { return camera; }
 

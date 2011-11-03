@@ -395,6 +395,13 @@ void MainMode::FramePre()
   {
     HandleKinematicDragging ();
   }
+  if (IsPasteSelectionActive ())
+  {
+    csReversibleTransform tr = todoSpawn[0].trans;
+    tr.SetOrigin (csVector3 (0));
+    tr = aresed3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
+    transformationMarker->SetTransform (tr);
+  }
 }
 
 void MainMode::Frame3D()
@@ -493,6 +500,7 @@ void MainMode::CopySelection ()
     iDynamicObject* dynobj = it.Next ();
     iDynamicFactory* dynfact = dynobj->GetFactory ();
     AresPasteContents apc;
+    apc.useTransform = true;	// Use the transform defined in this paste buffer.
     apc.dynfactName = dynfact->GetName ();
     apc.trans = dynobj->GetTransform ();
     apc.isStatic = dynobj->IsStatic ();
@@ -502,17 +510,31 @@ void MainMode::CopySelection ()
 
 void MainMode::PasteSelection ()
 {
-  if (pastebuffer.GetSize () <= 0) return;
-  csReversibleTransform trans = pastebuffer[0].trans;
-  for (size_t i = 0 ; i < pastebuffer.GetSize () ; i++)
+  if (todoSpawn.GetSize () <= 0) return;
+  csReversibleTransform trans = todoSpawn[0].trans;
+  for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
   {
-    csReversibleTransform tr = pastebuffer[i].trans;
+    csReversibleTransform tr = todoSpawn[i].trans;
     tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
-    iDynamicObject* dynobj = aresed3d->SpawnItem (pastebuffer[i].dynfactName, &tr);
-    if (pastebuffer[i].isStatic)
+    iDynamicObject* dynobj = aresed3d->SpawnItem (todoSpawn[i].dynfactName, &tr);
+    if (todoSpawn[i].isStatic)
       dynobj->MakeStatic ();
     else
       dynobj->MakeDynamic ();
+  }
+}
+
+void MainMode::StartPasteSelection ()
+{
+  todoSpawn = pastebuffer;
+  if (IsPasteSelectionActive ())
+  {
+    transformationMarker->SetVisible (true);
+    transformationMarker->AttachMesh (0);
+    csReversibleTransform tr = todoSpawn[0].trans;
+    tr.SetOrigin (csVector3 (0));
+    tr = aresed3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
+    transformationMarker->SetTransform (tr);
   }
 }
 
@@ -587,6 +609,22 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   bool shift = (mod & CSMASK_SHIFT) != 0;
   bool ctrl = (mod & CSMASK_CTRL) != 0;
   bool alt = (mod & CSMASK_ALT) != 0;
+
+  if (IsPasteSelectionActive ())
+  {
+    if (but == csmbLeft)
+    {
+      PasteSelection ();
+      todoSpawn.Empty ();
+      transformationMarker->SetVisible (false);
+    }
+    else if (but == csmbRight)
+    {
+      todoSpawn.Empty ();
+      transformationMarker->SetVisible (false);
+    }
+    return true;
+  }
 
   int data;
   iMarker* hitMarker = aresed3d->GetMarkerManager ()

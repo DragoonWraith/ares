@@ -573,6 +573,13 @@ bool AresEdit3DView::Setup ()
   yellow->SetPenWidth (SELECTION_NONE, 1.2f);
   yellow->SetPenWidth (SELECTION_SELECTED, 2.0f);
   yellow->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+  iMarkerColor* white = markerMgr->CreateMarkerColor ("white");
+  yellow->SetRGBColor (SELECTION_NONE, .5, .5, .5, .5);
+  yellow->SetRGBColor (SELECTION_SELECTED, 1, 1, 1, .5);
+  yellow->SetRGBColor (SELECTION_ACTIVE, 1, 1, 1, .5);
+  yellow->SetPenWidth (SELECTION_NONE, 1.2f);
+  yellow->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  yellow->SetPenWidth (SELECTION_ACTIVE, 2.0f);
 
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
@@ -741,6 +748,50 @@ RoomFactoryCreator* AresEdit3DView::FindRoomFactoryCreator (const char* name)
     if (roomFactoryCreators[i].name == name)
       return &roomFactoryCreators[i];
   return 0;
+}
+
+csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& name,
+    csReversibleTransform* trans)
+{
+  csString fname;
+  iCurvedFactory* curvedFactory = 0;
+  iRoomFactory* roomFactory = 0;
+  CurvedFactoryCreator* cfc = FindFactoryCreator (name);
+  RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
+  if (cfc)
+    fname.Format("%s%d", name.GetData (), curvedFactoryCounter+1);
+  else if (rfc)
+    fname.Format("%s%d", name.GetData (), roomFactoryCounter+1);
+  else
+    fname = name;
+
+  // Use the camera transform.
+  csSegment3 beam = GetMouseBeam (50.0f);
+  csSectorHitBeamResult result = sector->HitBeamPortals (beam.Start (), beam.End ());
+
+  float yorigin = factory_to_origin_offset.Get (fname, 1000000.0);
+
+  csVector3 newPosition;
+  if (result.mesh)
+  {
+    newPosition = result.isect;
+    if (yorigin < 999999.0)
+      newPosition.y -= yorigin;
+  }
+  else
+  {
+    newPosition = beam.End () - beam.Start ();
+    newPosition.Normalize ();
+    newPosition = GetCsCamera ()->GetTransform ().GetOrigin () + newPosition * 3.0f;
+  }
+
+  csReversibleTransform tc = GetCsCamera ()->GetTransform ();
+  csVector3 front = tc.GetFront ();
+  front.y = 0;
+  tc.LookAt (front, csVector3 (0, 1, 0));
+  if (trans) tc = *trans;
+  tc.SetOrigin (tc.GetOrigin () + newPosition);
+  return tc;
 }
 
 iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
@@ -950,7 +1001,7 @@ void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuPaste (wxCommandEvent& event)
 {
-  if (editMode == mainMode) mainMode->PasteSelection ();
+  if (editMode == mainMode) mainMode->StartPasteSelection ();
 }
 
 void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)

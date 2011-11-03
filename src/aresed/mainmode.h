@@ -43,6 +43,7 @@ struct AresDragObject
 struct AresPasteContents
 {
   csString dynfactName;
+  bool useTransform;
   csReversibleTransform trans;
   bool isStatic;
 };
@@ -80,7 +81,11 @@ private:
 
   csString GetSelectedItem ();
 
+  /// A paste buffer.
   csArray<AresPasteContents> pastebuffer;
+
+  /// When there are items in this array we are waiting to spawn stuff.
+  csArray<AresPasteContents> todoSpawn;
 
 public:
   MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
@@ -91,8 +96,15 @@ public:
 
   void SetupItems (const csHash<csStringArray,csString>& items);
 
+  /// Copy the current selection to the paste buffer.
   void CopySelection ();
+  /// Paste the current paste buffer at the mouse position.
   void PasteSelection ();
+  /// Start paste mode.
+  void StartPasteSelection ();
+  /// Paste mode active.
+  bool IsPasteSelectionActive () { return todoSpawn.GetSize () > 0; }
+  /// Is there something in the paste buffer?
   bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
 
   void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
