@@ -99,6 +99,11 @@ private:
    */
   void PlacePasteMarker ();
 
+  /**
+   * Stop paste mode.
+   */
+  void StopPasteMode ();
+
 public:
   MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~MainMode () { }

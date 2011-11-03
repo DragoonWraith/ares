@@ -435,6 +435,20 @@ public:
     return false;
   }
 
+  void SetStatus (const char* statusmsg, ...)
+  {
+    va_list args;
+    va_start (args, statusmsg);
+    csString str;
+    str.FormatV (statusmsg, args);
+    va_end (args);
+    GetStatusBar ()->SetStatusText (wxString (str, wxConvUTF8), 0);
+  }
+  void ClearStatus ()
+  {
+    GetStatusBar ()->SetStatusText (wxT (""), 0);
+  }
+
   bool Initialize ();
   bool InitWX ();
   void PushFrame ();

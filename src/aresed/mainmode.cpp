@@ -561,6 +561,7 @@ void MainMode::StartPasteSelection ()
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
   aresed3d->GetApp ()->SetMenuState ();
+  aresed3d->GetApp ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
 }
 
 void MainMode::StartPasteSelection (const char* name)
@@ -572,6 +573,7 @@ void MainMode::StartPasteSelection (const char* name)
   todoSpawn.Push (apc);
   PlacePasteMarker ();
   aresed3d->GetApp ()->SetMenuState ();
+  aresed3d->GetApp ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
 }
 
 void MainMode::StartKinematicDragging (bool restrictY,
@@ -634,6 +636,14 @@ void MainMode::AddForce (iRigidBody* hitBody, bool pull,
   hitBody->AddForceAtPos (force, isect);
 }
 
+void MainMode::StopPasteMode ()
+{
+  todoSpawn.Empty ();
+  pasteMarker->SetVisible (false);
+  aresed3d->GetApp ()->SetMenuState ();
+  aresed3d->GetApp ()->ClearStatus ();
+}
+
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (!(but == csmbLeft || but == csmbMiddle)) return false;
@@ -651,13 +661,11 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     if (but == csmbLeft)
     {
       PasteSelection ();
-      todoSpawn.Empty ();
-      pasteMarker->SetVisible (false);
+      StopPasteMode ();
     }
     else if (but == csmbMiddle)
     {
-      todoSpawn.Empty ();
-      pasteMarker->SetVisible (false);
+      StopPasteMode ();
     }
     return true;
   }

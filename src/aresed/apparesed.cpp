@@ -1344,6 +1344,8 @@ void AppAresEditWX::SetupMenuBar ()
   menuBar->Reparent (this);
 
   SetMenuState ();
+
+  CreateStatusBar ();
 }
 
 void AppAresEditWX::SetMenuState ()
