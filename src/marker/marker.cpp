@@ -179,7 +179,7 @@ void Marker::Render3D ()
     csVector3 v1 = TransPointCam (camtrans, meshtrans, line.space, line.v1);
     csVector3 v2 = TransPointCam (camtrans, meshtrans, line.space, line.v2);
     // @@@ Do proper clipping?
-    if (v1.z > .1 && v2.z > .1)
+    if (v1.z > .5 && v2.z > .5)
     {
       csPen* pen = line.color->GetPen (selectionLevel);
       csVector2 s1 = mgr->camera->Perspective (v1);
@@ -211,7 +211,7 @@ void Marker::Render3D ()
     {
       const csVector3& center = ha->GetCenter ();
       csVector3 c = TransPointCam (camtrans, meshtrans, ha->GetSpace (), center);
-      if (c.z > .1)
+      if (c.z > .5)
       {
         csVector2 s = mgr->camera->Perspective (c);
 	int x = int (s.x);

@@ -113,7 +113,7 @@ public:
 
   virtual const char* GetStatusLine ()
   {
-    return "LMB: select objects (shift to add to selection, ctrl to push)";
+    return "LMB: select objects (shift to add to selection)";
   }
 
   void SetupItems (const csHash<csStringArray,csString>& items);
