@@ -57,9 +57,10 @@ MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
   do_kinematic_dragging = false;
 
   transformationMarker = 0;
+  pasteMarker = 0;
 }
 
-void MainMode::Start ()
+void MainMode::CreateMarkers ()
 {
   if (!transformationMarker)
   {
@@ -93,7 +94,22 @@ void MainMode::Start ()
 	MARKER_OBJECT, csVector3 (0,0,1), .07, 0, yellow);
     hitArea->DefineDrag (0, 0, MARKER_OBJECT, CONSTRAIN_YPLANE+CONSTRAIN_ROTATEZ, cb);
     hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATEZ, cb);
+    transformationMarker->SetVisible (false);
   }
+  if (!pasteMarker)
+  {
+    pasteMarker = aresed3d->GetMarkerManager ()->CreateMarker ();
+    iMarkerColor* white = aresed3d->GetMarkerManager ()->FindMarkerColor ("white");
+    pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
+    pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
+    pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
+    pasteMarker->SetVisible (false);
+  }
+}
+
+void MainMode::Start ()
+{
+  CreateMarkers ();
 
   if (aresed3d->GetSelection ()->GetSize () >= 1)
   {
@@ -108,6 +124,7 @@ void MainMode::Stop ()
 {
   transformationMarker->SetVisible (false);
   transformationMarker->AttachMesh (0);
+  pasteMarker->SetVisible (false);
 }
 
 void MainMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id)
@@ -397,10 +414,7 @@ void MainMode::FramePre()
   }
   if (IsPasteSelectionActive ())
   {
-    csReversibleTransform tr = todoSpawn[0].trans;
-    tr.SetOrigin (csVector3 (0));
-    tr = aresed3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
-    transformationMarker->SetTransform (tr);
+    PlacePasteMarker ();
   }
 }
 
@@ -460,7 +474,8 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     csString itemName = GetSelectedItem ();
     if (!itemName.IsEmpty ())
     {
-      aresed3d->SpawnItem (itemName);
+      //aresed3d->SpawnItem (itemName);
+      StartPasteSelection (itemName);
     }
   }
   else if (code == CSKEY_UP)
@@ -515,27 +530,47 @@ void MainMode::PasteSelection ()
   for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
   {
     csReversibleTransform tr = todoSpawn[i].trans;
-    tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
-    iDynamicObject* dynobj = aresed3d->SpawnItem (todoSpawn[i].dynfactName, &tr);
-    if (todoSpawn[i].isStatic)
-      dynobj->MakeStatic ();
-    else
-      dynobj->MakeDynamic ();
+    csReversibleTransform* transPtr = 0;
+    if (todoSpawn[i].useTransform)
+    {
+      tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
+      transPtr = &tr;
+    }
+    iDynamicObject* dynobj = aresed3d->SpawnItem (todoSpawn[i].dynfactName, transPtr);
+    if (todoSpawn[i].useTransform)
+    {
+      if (todoSpawn[i].isStatic)
+        dynobj->MakeStatic ();
+      else
+        dynobj->MakeDynamic ();
+    }
   }
+}
+
+void MainMode::PlacePasteMarker ()
+{
+  pasteMarker->SetVisible (true);
+  csReversibleTransform tr = todoSpawn[0].trans;
+  tr.SetOrigin (csVector3 (0));
+  tr = aresed3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
+  pasteMarker->SetTransform (tr);
 }
 
 void MainMode::StartPasteSelection ()
 {
   todoSpawn = pastebuffer;
   if (IsPasteSelectionActive ())
-  {
-    transformationMarker->SetVisible (true);
-    transformationMarker->AttachMesh (0);
-    csReversibleTransform tr = todoSpawn[0].trans;
-    tr.SetOrigin (csVector3 (0));
-    tr = aresed3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
-    transformationMarker->SetTransform (tr);
-  }
+    PlacePasteMarker ();
+}
+
+void MainMode::StartPasteSelection (const char* name)
+{
+  todoSpawn.Empty ();
+  AresPasteContents apc;
+  apc.useTransform = false;
+  apc.dynfactName = name;
+  todoSpawn.Push (apc);
+  PlacePasteMarker ();
 }
 
 void MainMode::StartKinematicDragging (bool restrictY,
@@ -600,7 +635,7 @@ void MainMode::AddForce (iRigidBody* hitBody, bool pull,
 
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  if (!(but == csmbLeft || but == csmbRight)) return false;
+  if (!(but == csmbLeft || but == csmbMiddle)) return false;
 
   if (mouseX > aresed3d->GetViewWidth ()) return false;
   if (mouseY > aresed3d->GetViewHeight ()) return false;
@@ -616,12 +651,12 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     {
       PasteSelection ();
       todoSpawn.Empty ();
-      transformationMarker->SetVisible (false);
+      pasteMarker->SetVisible (false);
     }
-    else if (but == csmbRight)
+    else if (but == csmbMiddle)
     {
       todoSpawn.Empty ();
-      transformationMarker->SetVisible (false);
+      pasteMarker->SetVisible (false);
     }
     return true;
   }
@@ -666,7 +701,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
     return true;
   }
-  else if (but == csmbRight)
+  else if (but == csmbMiddle)
   {
     if (ctrl)
     {

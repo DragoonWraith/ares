@@ -65,8 +65,9 @@ private:
   bool doDragRestrictY;	// Only drag on the y-plane.
   float dragRestrictY;
 
-  /// The 'transformation' marker.
+  void CreateMarkers ();
   iMarker* transformationMarker;
+  iMarker* pasteMarker;
 
   void StartKinematicDragging (bool restrictY,
       const csSegment3& beam, const csVector3& isect, bool firstOnly);
@@ -87,6 +88,17 @@ private:
   /// When there are items in this array we are waiting to spawn stuff.
   csArray<AresPasteContents> todoSpawn;
 
+  /**
+   * Paste the current paste buffer at the mouse position. Usually you
+   * would not use this but use StartPasteSelection() instead.
+   */
+  void PasteSelection ();
+
+  /**
+   * Make sure the paste marker is at the correct spot and active.
+   */
+  void PlacePasteMarker ();
+
 public:
   MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~MainMode () { }
@@ -98,10 +110,10 @@ public:
 
   /// Copy the current selection to the paste buffer.
   void CopySelection ();
-  /// Paste the current paste buffer at the mouse position.
-  void PasteSelection ();
   /// Start paste mode.
   void StartPasteSelection ();
+  /// Start paste mode for a specific object.
+  void StartPasteSelection (const char* name);
   /// Paste mode active.
   bool IsPasteSelectionActive () { return todoSpawn.GetSize () > 0; }
   /// Is there something in the paste buffer?

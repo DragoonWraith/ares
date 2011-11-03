@@ -574,12 +574,12 @@ bool AresEdit3DView::Setup ()
   yellow->SetPenWidth (SELECTION_SELECTED, 2.0f);
   yellow->SetPenWidth (SELECTION_ACTIVE, 2.0f);
   iMarkerColor* white = markerMgr->CreateMarkerColor ("white");
-  yellow->SetRGBColor (SELECTION_NONE, .5, .5, .5, .5);
-  yellow->SetRGBColor (SELECTION_SELECTED, 1, 1, 1, .5);
-  yellow->SetRGBColor (SELECTION_ACTIVE, 1, 1, 1, .5);
-  yellow->SetPenWidth (SELECTION_NONE, 1.2f);
-  yellow->SetPenWidth (SELECTION_SELECTED, 2.0f);
-  yellow->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+  white->SetRGBColor (SELECTION_NONE, .5, .5, .5, .5);
+  white->SetRGBColor (SELECTION_SELECTED, 1, 1, 1, .5);
+  white->SetRGBColor (SELECTION_ACTIVE, 1, 1, 1, .5);
+  white->SetPenWidth (SELECTION_NONE, 1.2f);
+  white->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  white->SetPenWidth (SELECTION_ACTIVE, 2.0f);
 
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
@@ -754,8 +754,6 @@ csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& na
     csReversibleTransform* trans)
 {
   csString fname;
-  iCurvedFactory* curvedFactory = 0;
-  iRoomFactory* roomFactory = 0;
   CurvedFactoryCreator* cfc = FindFactoryCreator (name);
   RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
   if (cfc)
@@ -861,8 +859,15 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   csVector3 front = tc.GetFront ();
   front.y = 0;
   tc.LookAt (front, csVector3 (0, 1, 0));
-  if (trans) tc = *trans;
-  tc.SetOrigin (tc.GetOrigin () + newPosition);
+  if (trans)
+  {
+    tc = *trans;
+    tc.SetOrigin (tc.GetOrigin () + newPosition);
+  }
+  else
+  {
+    tc.SetOrigin (newPosition);
+  }
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
   //dynobj->SetEntity (0, fname, 0);
   dynworld->ForceVisible (dynobj);
