@@ -254,7 +254,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
         do_mouse_dragging = true;
       }
     }
-    else if (kbd->GetKeyState (CSKEY_CTRL))
+    else
     {
       do_mouse_dragging = false;
       if (!do_mouse_panning)

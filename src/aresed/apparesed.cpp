@@ -813,7 +813,7 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   if (trans) tc = *trans;
   tc.SetOrigin (tc.GetOrigin () + newPosition);
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
-  dynobj->SetEntity (0, fname, 0);
+  //dynobj->SetEntity (0, fname, 0);
   dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))
@@ -1211,6 +1211,7 @@ bool AppAresEditWX::InitWX ()
   // Find the panel where to place the wxgl canvas
   wxPanel* panel = XRCCTRL (*this, "main3DPanel", wxPanel);
   if (!panel) return ReportError ("Can't find main3DPanel!");
+  panel->DragAcceptFiles (false);
 
   // Create the wxgl canvas
   iGraphics2D* g2d = g3d->GetDriver2D ();
