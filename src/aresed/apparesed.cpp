@@ -58,7 +58,7 @@ void AresEditSelectionListener::SelectionChanged (
 void AppSelectionListener::SelectionChanged (
     const csArray<iDynamicObject*>& current_objects)
 {
-  app->SetMenuState (current_objects);
+  app->SetMenuState ();
   app->GetMainMode ()->CurrentObjectsChanged (current_objects);
 }
 
@@ -1343,15 +1343,28 @@ void AppAresEditWX::SetupMenuBar ()
   SetMenuBar (menuBar);
   menuBar->Reparent (this);
 
-  SetMenuState (csArray<iDynamicObject*> ());
+  SetMenuState ();
 }
 
-void AppAresEditWX::SetMenuState (const csArray<iDynamicObject*>& current_objects)
+void AppAresEditWX::SetMenuState ()
 {
   wxMenuBar* menuBar = GetMenuBar ();
+
+  // Should menus be globally disabled?
+  bool dis = mainMode->IsPasteSelectionActive ();
+  if (dis)
+  {
+    menuBar->EnableTop (0, false);
+    return;
+  }
+  menuBar->EnableTop (0, true);
+
+  // Is there a selection?
+  csArray<iDynamicObject*> objects = aresed3d->GetSelection ()->GetObjects ();
+  bool sel = objects.GetSize () > 0;
+
   if (editMode == mainMode)
   {
-    bool sel = current_objects.GetSize () > 0;
     menuBar->Enable (ID_Paste, mainMode->IsPasteBufferFull ());
     menuBar->Enable (ID_Delete, sel);
     menuBar->Enable (ID_Copy, sel);

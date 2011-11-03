@@ -249,6 +249,8 @@ public:
    */
   ~AresEdit3DView ();
 
+  AppAresEditWX* GetApp () const { return app; }
+
   /**
    * Setup the 3D view.
    */
@@ -452,7 +454,7 @@ public:
 
   iVFS* GetVFS () const { return vfs; }
 
-  void SetMenuState (const csArray<iDynamicObject*>& current_objects);
+  void SetMenuState ();
 
   CameraWindow* GetCameraWindow () const { return camwin; }
   FileReq* GetFileReqDialog () const { return filereqDialog; }

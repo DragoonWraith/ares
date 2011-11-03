@@ -474,7 +474,6 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     csString itemName = GetSelectedItem ();
     if (!itemName.IsEmpty ())
     {
-      //aresed3d->SpawnItem (itemName);
       StartPasteSelection (itemName);
     }
   }
@@ -561,6 +560,7 @@ void MainMode::StartPasteSelection ()
   todoSpawn = pastebuffer;
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
+  aresed3d->GetApp ()->SetMenuState ();
 }
 
 void MainMode::StartPasteSelection (const char* name)
@@ -571,6 +571,7 @@ void MainMode::StartPasteSelection (const char* name)
   apc.dynfactName = name;
   todoSpawn.Push (apc);
   PlacePasteMarker ();
+  aresed3d->GetApp ()->SetMenuState ();
 }
 
 void MainMode::StartKinematicDragging (bool restrictY,
