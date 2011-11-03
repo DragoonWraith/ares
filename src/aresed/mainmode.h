@@ -111,6 +111,11 @@ public:
   virtual void Start ();
   virtual void Stop ();
 
+  virtual const char* GetStatusLine ()
+  {
+    return "LMB: select objects (shift to add to selection, ctrl to push)";
+  }
+
   void SetupItems (const csHash<csStringArray,csString>& items);
 
   /// Copy the current selection to the paste buffer.

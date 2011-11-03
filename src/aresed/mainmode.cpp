@@ -696,7 +696,9 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   iDynamicObject* newobj = aresed3d->GetDynamicWorld ()->FindObject (hitBody);
   if (but == csmbLeft)
   {
-    if (shift)
+    if (ctrl)
+      AddForce (hitBody, shift, beam, isect);
+    else if (shift)
       aresed3d->GetSelection ()->AddCurrentObject (newobj);
     else
       aresed3d->GetSelection ()->SetCurrentObject (newobj);
@@ -708,17 +710,6 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     else if (!newobj->IsStatic ())
       StartPhysicalDragging (hitBody, beam, isect);
 
-    return true;
-  }
-  else if (but == csmbMiddle)
-  {
-    if (ctrl)
-    {
-    }
-    else
-    {
-      AddForce (hitBody, shift, beam, isect);
-    }
     return true;
   }
 

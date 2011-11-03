@@ -1308,7 +1308,6 @@ bool AppAresEditWX::InitWX ()
   foliageMode = new FoliageMode (foliageModeTabPanel, aresed3d);
 
   editMode = 0;
-  SwitchToMainMode ();
 
   wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   camwin = new CameraWindow (leftPanePanel, aresed3d);
@@ -1321,7 +1320,28 @@ bool AppAresEditWX::InitWX ()
 
   SetupMenuBar ();
 
+  SwitchToMainMode ();
+
   return true;
+}
+
+void AppAresEditWX::SetStatus (const char* statusmsg, ...)
+{
+  va_list args;
+  va_start (args, statusmsg);
+  csString str;
+  str.FormatV (statusmsg, args);
+  va_end (args);
+  GetStatusBar ()->SetStatusText (wxString (str, wxConvUTF8), 0);
+}
+
+void AppAresEditWX::ClearStatus ()
+{
+  if (editMode && editMode->GetStatusLine ())
+    SetStatus ("MMB: rotate camera, shift-MMB: pan camera, RMB: context menu, %s",
+	editMode->GetStatusLine ());
+  else
+    SetStatus ("MMB: rotate camera, shift-MMB: pan camera, RMB: context menu");
 }
 
 void AppAresEditWX::SetupMenuBar ()
@@ -1343,13 +1363,13 @@ void AppAresEditWX::SetupMenuBar ()
   SetMenuBar (menuBar);
   menuBar->Reparent (this);
 
-  SetMenuState ();
-
   CreateStatusBar ();
+  SetMenuState ();
 }
 
 void AppAresEditWX::SetMenuState ()
 {
+  ClearStatus ();
   wxMenuBar* menuBar = GetMenuBar ();
 
   // Should menus be globally disabled?
@@ -1443,6 +1463,7 @@ void AppAresEditWX::SwitchToMainMode ()
   if (editMode) editMode->Stop ();
   editMode = mainMode;
   editMode->Start ();
+  SetMenuState ();
 }
 
 void AppAresEditWX::SetCurveModeEnabled (bool cm)
@@ -1462,10 +1483,12 @@ void AppAresEditWX::SwitchToCurveMode ()
   if (editMode) editMode->Stop ();
   editMode = curveMode;
   editMode->Start ();
+  SetMenuState ();
 }
 
 void AppAresEditWX::SwitchToRoomMode ()
 {
+  SetMenuState ();
 }
 
 void AppAresEditWX::SwitchToFoliageMode ()
@@ -1476,5 +1499,6 @@ void AppAresEditWX::SwitchToFoliageMode ()
   if (editMode) editMode->Stop ();
   editMode = foliageMode;
   editMode->Start ();
+  SetMenuState ();
 }
 
