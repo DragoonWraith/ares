@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "apparesed.h"
+#include "ui/uimanager.h"
 #include "ui/filereq.h"
 #include "ui/newproject.h"
 #include "mainmode.h"
@@ -414,7 +415,11 @@ void AresEdit3DView::CleanupWorld ()
 
 void AresEdit3DView::SaveFile (const char* filename)
 {
-  worldLoader->SaveFile (filename);
+  if (!worldLoader->SaveFile (filename))
+  {
+    app->GetUIManager ()->Error ("Error saving file '%s'!",filename);
+    return;
+  }
 }
 
 void AresEdit3DView::LoadFile (const char* filename)
@@ -422,8 +427,12 @@ void AresEdit3DView::LoadFile (const char* filename)
   CleanupWorld ();
   SetupWorld ();
 
-  // @@@ Error handling.
-  worldLoader->LoadFile (filename);
+  if (!worldLoader->LoadFile (filename))
+  {
+    PostLoadMap ();
+    app->GetUIManager ()->Error ("Error loading file '%s'!",filename);
+    return;
+  }
 
   sector = engine->FindSector ("room");
 
@@ -983,6 +992,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   curveMode = 0;
   roomMode = 0;
   foliageMode = 0;
+  uiManager = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
 }
@@ -995,8 +1005,7 @@ AppAresEditWX::~AppAresEditWX ()
   delete roomMode;
   delete foliageMode;
   delete aresed3d;
-  delete filereqDialog;
-  delete newprojectDialog;
+  delete uiManager;
 }
 
 void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
@@ -1028,17 +1037,17 @@ void AppAresEditWX::SaveFile (const char* filename)
 
 void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
 {
-  newprojectDialog->Show ();
+  uiManager->GetNewProjectDialog ()->Show ();
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
 {
-  filereqDialog->Show (new LoadCallback (this));
+  uiManager->GetFileReqDialog ()->Show (new LoadCallback (this));
 }
 
 void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
 {
-  filereqDialog->Show (new SaveCallback (this));
+  uiManager->GetFileReqDialog ()->Show (new SaveCallback (this));
 }
 
 void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)
@@ -1295,9 +1304,7 @@ bool AppAresEditWX::InitWX ()
   if (!aresed3d->Setup ())
     return false;
  
-  filereqDialog = new FileReq (wxwindow->GetWindow (), vfs, "/saves");
-  newprojectDialog = new NewProjectDialog (wxwindow->GetWindow (), filereqDialog,
-      vfs);
+  uiManager = new UIManager (this, wxwindow->GetWindow ());
 
   wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
   mainMode = new MainMode (mainModeTabPanel, aresed3d);

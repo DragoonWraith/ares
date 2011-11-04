@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "newproject.h"
+#include "uimanager.h"
 #include "filereq.h"
 
 //--------------------------------------------------------------------------
@@ -64,7 +65,7 @@ void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 
 void NewProjectDialog::OnSearchFileButton (wxCommandEvent& event)
 {
-  filereq->Show (new SetFilenameCallback (this));
+  uiManager->GetFileReqDialog ()->Show (new SetFilenameCallback (this));
 }
 
 void NewProjectDialog::SetFilename (const char* filename)
@@ -121,8 +122,8 @@ void NewProjectDialog::Show ()
   ShowModal ();
 }
 
-NewProjectDialog::NewProjectDialog (wxWindow* parent, FileReq* filereq, iVFS* vfs) :
-  filereq (filereq), vfs (vfs)
+NewProjectDialog::NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs) :
+  uiManager (uiManager), vfs (vfs)
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("NewProjectDialog"));
 

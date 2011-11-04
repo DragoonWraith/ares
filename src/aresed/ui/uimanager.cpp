@@ -22,43 +22,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_newproject_h
-#define __appares_newproject_h
-
 #include <crystalspace.h>
+#include "../apparesed.h"
+#include "uimanager.h"
+#include "filereq.h"
+#include "newproject.h"
 
+/* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
+ * missing csMouseEventHelper symbols. */
 #include <wx/wx.h>
 #include <wx/imaglist.h>
-#include <wx/listctrl.h>
+#include <wx/treectrl.h>
+#include <wx/notebook.h>
 #include <wx/xrc/xmlres.h>
 
-class UIManager;
-
-class NewProjectDialog : public wxDialog
+UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
+  app (app), parent (parent)
 {
-private:
-  UIManager* uiManager;
-  iVFS* vfs;
+  filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
+  newprojectDialog = new NewProjectDialog (parent, this, app->GetVFS ());
+}
 
-  void OnOkButton (wxCommandEvent& event);
-  void OnCancelButton (wxCommandEvent& event);
-  void OnSearchFileButton (wxCommandEvent& event);
-  void OnAddAssetButton (wxCommandEvent& event);
-  void OnDelAssetButton (wxCommandEvent& event);
-  void OnAssetSelected (wxListEvent& event);
-  void OnAssetDeselected (wxListEvent& event);
+UIManager::~UIManager ()
+{
+  delete filereqDialog;
+  delete newprojectDialog;
+}
 
-  long selIndex;
+void UIManager::Message (const char* description, ...)
+{
+  va_list args;
+  va_start (args, description);
+  csString msg;
+  msg.FormatV (description, args);
+  wxMessageBox (wxString (msg, wxConvUTF8), wxT("Message"),
+      wxICON_INFORMATION, parent);
+  va_end (args);
+}
 
-public:
-  NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);
-  ~NewProjectDialog();
-
-  void Show ();
-  void SetFilename (const char* filename);
-
-  DECLARE_EVENT_TABLE ();
-};
-
-#endif // __appares_newproject_h
+void UIManager::Error (const char* description, ...)
+{
+  va_list args;
+  va_start (args, description);
+  csString msg;
+  msg.FormatV (description, args);
+  wxMessageBox (wxString (msg, wxConvUTF8), wxT("Error!"),
+      wxICON_ERROR, parent);
+  va_end (args);
+}
 

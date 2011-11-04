@@ -22,43 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_newproject_h
-#define __appares_newproject_h
+#ifndef __uimanager_h
+#define __uimanager_h
 
-#include <crystalspace.h>
+class AppAresEditWX;
+class FileReq;
+class NewProjectDialog;
 
-#include <wx/wx.h>
-#include <wx/imaglist.h>
-#include <wx/listctrl.h>
-#include <wx/xrc/xmlres.h>
-
-class UIManager;
-
-class NewProjectDialog : public wxDialog
+class UIManager
 {
 private:
-  UIManager* uiManager;
-  iVFS* vfs;
+  AppAresEditWX* app;
+  wxWindow* parent;
 
-  void OnOkButton (wxCommandEvent& event);
-  void OnCancelButton (wxCommandEvent& event);
-  void OnSearchFileButton (wxCommandEvent& event);
-  void OnAddAssetButton (wxCommandEvent& event);
-  void OnDelAssetButton (wxCommandEvent& event);
-  void OnAssetSelected (wxListEvent& event);
-  void OnAssetDeselected (wxListEvent& event);
-
-  long selIndex;
+  FileReq* filereqDialog;
+  NewProjectDialog* newprojectDialog;
 
 public:
-  NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);
-  ~NewProjectDialog();
+  UIManager (AppAresEditWX* app, wxWindow* parent);
+  ~UIManager ();
 
-  void Show ();
-  void SetFilename (const char* filename);
+  void Message (const char* description, ...);
+  void Error (const char* description, ...);
 
-  DECLARE_EVENT_TABLE ();
+  FileReq* GetFileReqDialog () const { return filereqDialog; }
+  NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
 };
 
-#endif // __appares_newproject_h
+#endif // __uimanager_h
 

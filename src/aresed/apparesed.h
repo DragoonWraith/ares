@@ -51,8 +51,8 @@ class WorldLoader;
 class AppAresEditWX;
 class AresEdit3DView;
 
-class FileReq;
 class NewProjectDialog;
+class UIManager;
 
 class EditingMode;
 class MainMode;
@@ -393,7 +393,8 @@ private:
   csEventID KeyboardDown;
   csEventID FocusLost;
 
-  FileReq* filereqDialog;
+  UIManager* uiManager;
+
   NewProjectDialog* newprojectDialog;
   MainMode* mainMode;
   CurveMode* curveMode;
@@ -462,7 +463,7 @@ public:
   void SetMenuState ();
 
   CameraWindow* GetCameraWindow () const { return camwin; }
-  FileReq* GetFileReqDialog () const { return filereqDialog; }
+  UIManager* GetUIManager () const { return uiManager; }
 
   bool LoadResourceFile (const char* filename, wxString& searchPath);
 
