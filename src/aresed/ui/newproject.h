@@ -33,6 +33,12 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 class UIManager;
+class Asset;
+
+struct NewProjectCallback : public csRefCount
+{
+  virtual void OkPressed (const csArray<Asset>& assets) = 0;
+};
 
 class NewProjectDialog : public wxDialog
 {
@@ -49,12 +55,13 @@ private:
   void OnAssetDeselected (wxListEvent& event);
 
   long selIndex;
+  csRef<NewProjectCallback> callback;
 
 public:
   NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);
   ~NewProjectDialog();
 
-  void Show ();
+  void Show (NewProjectCallback* cb);
   void SetFilename (const char* filename);
 
   DECLARE_EVENT_TABLE ();

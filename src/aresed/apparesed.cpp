@@ -63,6 +63,17 @@ void AppSelectionListener::SelectionChanged (
   app->GetMainMode ()->CurrentObjectsChanged (current_objects);
 }
 
+struct NewProjectCallbackImp : public NewProjectCallback
+{
+  AppAresEditWX* ares;
+  NewProjectCallbackImp (AppAresEditWX* ares) : ares (ares) { }
+  virtual ~NewProjectCallbackImp () { }
+  virtual void OkPressed (const csArray<Asset>& assets)
+  {
+    ares->NewProject (assets);
+  }
+};
+
 struct LoadCallback : public OKCallback
 {
   AppAresEditWX* ares;
@@ -422,6 +433,28 @@ void AresEdit3DView::SaveFile (const char* filename)
   }
 }
 
+void AresEdit3DView::NewProject (const csArray<Asset>& assets)
+{
+  CleanupWorld ();
+  SetupWorld ();
+
+  if (!worldLoader->NewProject (assets))
+  {
+    PostLoadMap ();
+    app->GetUIManager ()->Error ("Error creating project!");
+    return;
+  }
+
+  // @@@ Hardcoded sector name!
+  sector = engine->FindSector ("room");
+
+  // @@@ Error handling.
+  SetupDynWorld ();
+
+  // @@@ Error handling.
+  PostLoadMap ();
+}
+
 void AresEdit3DView::LoadFile (const char* filename)
 {
   CleanupWorld ();
@@ -434,6 +467,7 @@ void AresEdit3DView::LoadFile (const char* filename)
     return;
   }
 
+  // @@@ Hardcoded sector name!
   sector = engine->FindSector ("room");
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
@@ -1023,6 +1057,13 @@ void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
   aresed3d->DeleteSelectedObjects ();
 }
 
+void AppAresEditWX::NewProject (const csArray<Asset>& assets)
+{
+  aresed3d->NewProject (assets);
+  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
+  mainMode->SetupItems (categories);
+}
+
 void AppAresEditWX::LoadFile (const char* filename)
 {
   aresed3d->LoadFile (filename);
@@ -1037,16 +1078,19 @@ void AppAresEditWX::SaveFile (const char* filename)
 
 void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
 {
-  uiManager->GetNewProjectDialog ()->Show ();
+  // @@@ leak of callback?
+  uiManager->GetNewProjectDialog ()->Show (new NewProjectCallbackImp (this));
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
 {
+  // @@@ leak of callback?
   uiManager->GetFileReqDialog ()->Show (new LoadCallback (this));
 }
 
 void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
 {
+  // @@@ leak of callback?
   uiManager->GetFileReqDialog ()->Show (new SaveCallback (this));
 }
 

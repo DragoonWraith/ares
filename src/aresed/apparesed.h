@@ -50,6 +50,7 @@ class CameraWindow;
 class WorldLoader;
 class AppAresEditWX;
 class AresEdit3DView;
+class Asset;
 
 class NewProjectDialog;
 class UIManager;
@@ -357,6 +358,11 @@ public:
    * Load the world from a file.
    */
   void LoadFile (const char* filename);
+
+  /**
+   * Create a new project with the given assets.
+   */
+  void NewProject (const csArray<Asset>& assets);
 };
 
 enum
@@ -450,6 +456,7 @@ public:
   void OnSize (wxSizeEvent& ev);
   void SaveFile (const char* filename);
   void LoadFile (const char* filename);
+  void NewProject (const csArray<Asset>& assets);
 
   void SwitchToMainMode ();
   void SwitchToCurveMode ();

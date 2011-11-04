@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "uimanager.h"
 #include "filereq.h"
+#include "../../common/worldload.h"
 
 //--------------------------------------------------------------------------
 
@@ -55,6 +56,27 @@ END_EVENT_TABLE()
 
 void NewProjectDialog::OnOkButton (wxCommandEvent& event)
 {
+  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  csArray<Asset> assets;
+
+  for (int i = 0 ; i < assetList->GetItemCount () ; i++)
+  {
+     wxListItem rowInfo;
+     wxString path, file;
+
+     rowInfo.m_itemId = i;
+     rowInfo.m_mask = wxLIST_MASK_TEXT;
+     rowInfo.m_col = 0;
+     assetList->GetItem (rowInfo);
+     path = rowInfo.m_text; 
+     rowInfo.m_col = 1;
+     assetList->GetItem (rowInfo);
+     file = rowInfo.m_text; 
+ 
+     assets.Push (Asset (path.mb_str (wxConvUTF8), file.mb_str (wxConvUTF8)));
+  }
+  callback->OkPressed (assets);
+
   EndModal (TRUE);
 }
 
@@ -112,8 +134,9 @@ void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
   delButton->Disable ();
 }
 
-void NewProjectDialog::Show ()
+void NewProjectDialog::Show (NewProjectCallback* cb)
 {
+  this->callback = cb;
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
   delButton->Disable ();
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);

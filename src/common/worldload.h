@@ -27,6 +27,9 @@ THE SOFTWARE.
 
 #include "propclass/dynworld.h"
 
+struct iCurvedMeshCreator;
+struct iRoomMeshCreator;
+
 class Asset
 {
 private:
@@ -80,6 +83,11 @@ public:
    * Save the world to a file.
    */
   bool SaveFile (const char* filename);
+
+  /**
+   * Create a new project with the given assets.
+   */
+  bool NewProject (const csArray<Asset>& newassets);
 
   const csArray<iDynamicFactory*> GetCurvedFactories () const { return curvedFactories; }
   const csArray<iDynamicFactory*> GetRoomFactories () const { return roomFactories; }

@@ -166,6 +166,19 @@ bool WorldLoader::LoadFile (const char* filename)
   return LoadDoc (doc);
 }
 
+bool WorldLoader::NewProject (const csArray<Asset>& newassets)
+{
+  assets = newassets;
+  for (size_t i = 0 ; i < newassets.GetSize () ; i++)
+  {
+    csString path = newassets[i].GetPath ();
+    csString file = newassets[i].GetFile ();
+    if (!LoadLibrary (path, file))
+      return false;
+  }
+  return true;
+}
+
 csRef<iDocument> WorldLoader::SaveDoc ()
 {
   csRef<iDocumentSystem> docsys;
