@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "uimanager.h"
 #include "filereq.h"
+#include "listctrltools.h"
+#include "../apparesed.h"
 #include "../../common/worldload.h"
 
 //--------------------------------------------------------------------------
@@ -56,24 +58,13 @@ END_EVENT_TABLE()
 
 void NewProjectDialog::OnOkButton (wxCommandEvent& event)
 {
-  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   csArray<Asset> assets;
 
+  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   for (int i = 0 ; i < assetList->GetItemCount () ; i++)
   {
-     wxListItem rowInfo;
-     wxString path, file;
-
-     rowInfo.m_itemId = i;
-     rowInfo.m_mask = wxLIST_MASK_TEXT;
-     rowInfo.m_col = 0;
-     assetList->GetItem (rowInfo);
-     path = rowInfo.m_text; 
-     rowInfo.m_col = 1;
-     assetList->GetItem (rowInfo);
-     file = rowInfo.m_text; 
- 
-     assets.Push (Asset (path.mb_str (wxConvUTF8), file.mb_str (wxConvUTF8)));
+    csStringArray row = ListCtrlTools::ReadRow (assetList, i);
+    assets.Push (Asset (row[0], row[1]));
   }
   callback->OkPressed (assets);
 
@@ -90,12 +81,114 @@ void NewProjectDialog::OnSearchFileButton (wxCommandEvent& event)
   uiManager->GetFileReqDialog ()->Show (new SetFilenameCallback (this));
 }
 
-void NewProjectDialog::SetFilename (const char* filename)
+void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
+{
+  bool hasTexturesMaterials = false;
+  bool hasSounds = false;
+  bool hasDynFacts = false;
+  bool hasQuests = false;
+  bool hasLootPackages = false;
+  int cntLibraries = 0;
+  int cntMeshFacts = 0;
+  int cntSectors = 0;
+  int cntEntityTpl = 0;
+  int cntUnkownAddons = 0;
+
+  csRef<iDocumentNodeIterator> it = node->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "textures" || value == "materials") hasTexturesMaterials = true;
+    else if (value == "sounds") hasSounds = true;
+    else if (value == "library") cntLibraries++;
+    else if (value == "meshfact") cntMeshFacts++;
+    else if (value == "sector") cntSectors++;
+    else if (value == "addon")
+    {
+      csString plugin = child->GetAttributeValue ("plugin");
+      if (plugin == "cel.addons.dynamicworld.loader") hasDynFacts = true;
+      else if (plugin == "cel.addons.questdef") hasQuests = true;
+      else if (plugin == "cel.addons.celentitytpl") cntEntityTpl++;
+      else if (plugin == "cel.addons.lootloader") hasLootPackages = true;
+      else cntUnkownAddons++;
+    }
+  }
+  if (hasTexturesMaterials) msg += ", textures";
+  if (hasSounds) msg += ", sounds";
+  if (hasDynFacts) msg += ", dynfacts";
+  if (hasQuests) msg += ", quests";
+  if (hasLootPackages) msg += ", loot";
+  if (cntLibraries) msg.AppendFmt (", %d libraries", cntLibraries);
+  if (cntMeshFacts) msg.AppendFmt (", %d factories", cntMeshFacts);
+  if (cntSectors) msg.AppendFmt (", %d sectors", cntSectors);
+  if (cntEntityTpl) msg.AppendFmt (", %d templates", cntEntityTpl);
+  if (cntUnkownAddons) msg.AppendFmt (", %d unknown", cntUnkownAddons);
+}
+
+void NewProjectDialog::SetPathFile (const char* path, const char* file)
 {
   wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
-  pathText->SetValue (wxString (vfs->GetCwd (), wxConvUTF8));
-  fileText->SetValue (wxString (filename, wxConvUTF8));
+  pathText->SetValue (wxString (path, wxConvUTF8));
+  fileText->SetValue (wxString (file, wxConvUTF8));
+
+  wxStaticText* contents = XRCCTRL (*this, "contentsStaticText", wxStaticText);
+
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  csRef<iDocument> doc = docsys->CreateDocument ();
+  vfs->PushDir (path);
+  csRef<iDataBuffer> buf = vfs->ReadFile (file);
+  csString msg;
+  if (buf)
+  {
+    const char* error = doc->Parse (buf->GetData ());
+    if (error)
+    {
+      msg.Format ("Can't parse XML: %s", error);
+    }
+    else
+    {
+      msg = "Empty XML";
+      csRef<iDocumentNode> root = doc->GetRoot ();
+      csRef<iDocumentNodeIterator> it = root->GetNodes ();
+      while (it->HasNext ())
+      {
+        csRef<iDocumentNode> child = it->Next ();
+	if (child->GetType () != CS_NODE_ELEMENT) continue;
+        csString value = child->GetValue ();
+	if (value == "dynlevel") msg = "Dynamic level";
+	else if (value == "library")
+	{
+	  msg = "Library";
+	  ScanCSNode (msg, child);
+	}
+	else if (value == "world")
+	{
+	  msg = "World file";
+	  ScanCSNode (msg, child);
+	}
+	else msg = "Unknown XML";
+	break;
+      }
+    }
+  }
+  else
+  {
+    msg = "File can't load...";
+  }
+  contents->SetLabel (wxString (msg.GetData (), wxConvUTF8));
+  vfs->PopDir ();
+}
+
+void NewProjectDialog::SetFilename (const char* filename)
+{
+  SetPathFile (vfs->GetCwd (), filename);
 }
 
 void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
@@ -108,6 +201,7 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   assetList->SetItem (idx, 1, fileText->GetValue ());
   assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
   assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+  SetPathFile ("", "");
 }
 
 void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
@@ -118,6 +212,7 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
     assetList->DeleteItem (selIndex);
     assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
     assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+    SetPathFile ("", "");
   }
 }
 
@@ -126,6 +221,9 @@ void NewProjectDialog::OnAssetSelected (wxListEvent& event)
   selIndex = event.GetIndex ();
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
   delButton->Enable ();
+  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
+  SetPathFile (row[0], row[1]);
 }
 
 void NewProjectDialog::OnAssetDeselected (wxListEvent& event)

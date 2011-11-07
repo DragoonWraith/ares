@@ -22,53 +22,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_newproject_h
-#define __appares_newproject_h
+#ifndef __appares_celldialog_h
+#define __appares_celldialog_h
 
 #include <crystalspace.h>
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
-#include <wx/listctrl.h>
+#include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
 class UIManager;
-class Asset;
 
-struct NewProjectCallback : public csRefCount
-{
-  virtual void OkPressed (const csArray<Asset>& assets) = 0;
-};
-
-class NewProjectDialog : public wxDialog
+class CellDialog : public wxDialog
 {
 private:
   UIManager* uiManager;
-  iVFS* vfs;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
-  void OnSearchFileButton (wxCommandEvent& event);
-  void OnAddAssetButton (wxCommandEvent& event);
-  void OnDelAssetButton (wxCommandEvent& event);
-  void OnAssetSelected (wxListEvent& event);
-  void OnAssetDeselected (wxListEvent& event);
-
-  long selIndex;
-  csRef<NewProjectCallback> callback;
-
-  void SetPathFile (const char* path, const char* file);
-  void ScanCSNode (csString& msg, iDocumentNode* node);
+  void OnAddCellButton (wxCommandEvent& event);
+  void OnDelCellButton (wxCommandEvent& event);
+  void OnCellSelected (wxCommandEvent& event);
 
 public:
-  NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);
-  ~NewProjectDialog();
+  CellDialog (wxWindow* parent, UIManager* uiManager);
+  ~CellDialog ();
 
-  void Show (NewProjectCallback* cb);
-  void SetFilename (const char* filename);
+  void Show ();
 
   DECLARE_EVENT_TABLE ();
 };
 
-#endif // __appares_newproject_h
+#endif // __appares_celldialog_h
 

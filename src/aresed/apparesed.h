@@ -374,6 +374,7 @@ enum
   ID_Copy = wxID_COPY,
   ID_Paste = wxID_PASTE,
   ID_Delete = wxID_HIGHEST + 1000,
+  ID_Cells,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
@@ -412,6 +413,7 @@ private:
   void SetupMenuBar ();
 
   void OnMenuNew (wxCommandEvent& event);
+  void OnMenuCells (wxCommandEvent& event);
   void OnMenuOpen (wxCommandEvent& event);
   void OnMenuSave (wxCommandEvent& event);
   void OnMenuQuit (wxCommandEvent& event);
@@ -466,6 +468,7 @@ public:
   MainMode* GetMainMode () const { return mainMode; }
 
   iVFS* GetVFS () const { return vfs; }
+  iObjectRegistry* GetObjectRegistry () const { return object_reg; }
 
   void SetMenuState ();
 

@@ -22,37 +22,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __uimanager_h
-#define __uimanager_h
+#include <crystalspace.h>
 
-class AppAresEditWX;
-class FileReq;
-class NewProjectDialog;
-class CellDialog;
+#include "listctrltools.h"
 
-class UIManager
+csStringArray ListCtrlTools::ReadRow (wxListCtrl* list, int row)
 {
-private:
-  AppAresEditWX* app;
-  wxWindow* parent;
+  wxListItem rowInfo;
+  csStringArray rc;
 
-  FileReq* filereqDialog;
-  NewProjectDialog* newprojectDialog;
-  CellDialog* cellDialog;
+  rowInfo.m_itemId = row;
+  rowInfo.m_mask = wxLIST_MASK_TEXT;
+  for (int i = 0 ; i < list->GetColumnCount () ; i++)
+  {
+    rowInfo.m_col = i;
+    list->GetItem (rowInfo);
+    csString col = (const char*)(rowInfo.m_text.mb_str (wxConvUTF8)); 
+    rc.Push (col);
+  }
+  return rc;
+}
 
-public:
-  UIManager (AppAresEditWX* app, wxWindow* parent);
-  ~UIManager ();
-
-  AppAresEditWX* GetApp () const { return app; }
-
-  void Message (const char* description, ...);
-  void Error (const char* description, ...);
-
-  FileReq* GetFileReqDialog () const { return filereqDialog; }
-  NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
-  CellDialog* GetCellDialog () const { return cellDialog; }
-};
-
-#endif // __uimanager_h
 

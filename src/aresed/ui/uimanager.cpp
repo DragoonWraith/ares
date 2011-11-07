@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "uimanager.h"
 #include "filereq.h"
 #include "newproject.h"
+#include "celldialog.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
  * missing csMouseEventHelper symbols. */
@@ -41,12 +42,14 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
 {
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
   newprojectDialog = new NewProjectDialog (parent, this, app->GetVFS ());
+  cellDialog = new CellDialog (parent, this);
 }
 
 UIManager::~UIManager ()
 {
   delete filereqDialog;
   delete newprojectDialog;
+  delete cellDialog;
 }
 
 void UIManager::Message (const char* description, ...)

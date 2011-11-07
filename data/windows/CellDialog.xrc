@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
-	<object class="wxDialog" name="NewProjectDialog">
+	<object class="wxDialog" name="CellDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>396,345</size>
-		<title>New Project</title>
+		<size>472,353</size>
+		<title></title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>
@@ -11,8 +11,8 @@
 				<option>0</option>
 				<flag>wxALL</flag>
 				<border>5</border>
-				<object class="wxStaticText" name="m_staticText6">
-					<label>Assets:</label>
+				<object class="wxStaticText" name="m_staticText8">
+					<label>Cells:</label>
 					<wrap>-1</wrap>
 				</object>
 			</object>
@@ -20,18 +20,8 @@
 				<option>1</option>
 				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxListCtrl" name="assetListCtrl">
-					<style>wxLC_REPORT</style>
-				</object>
-			</object>
-			<object class="sizeritem">
-				<option>0</option>
-				<flag>wxALL|wxEXPAND</flag>
-				<border>5</border>
-				<object class="wxStaticText" name="contentsStaticText">
-					<style>wxSUNKEN_BORDER</style>
-					<label>...</label>
-					<wrap>-1</wrap>
+				<object class="wxListBox" name="cellListBox">
+					<content />
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -44,8 +34,8 @@
 						<option>0</option>
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
-						<object class="wxStaticText" name="m_staticText7">
-							<label>File:</label>
+						<object class="wxStaticText" name="m_staticText9">
+							<label>Name:</label>
 							<wrap>-1</wrap>
 						</object>
 					</object>
@@ -53,16 +43,7 @@
 						<option>1</option>
 						<flag>wxALL</flag>
 						<border>5</border>
-						<object class="wxTextCtrl" name="pathTextCtrl">
-							<value></value>
-							<maxlength>0</maxlength>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>1</option>
-						<flag>wxALL</flag>
-						<border>5</border>
-						<object class="wxTextCtrl" name="fileTextCtrl">
+						<object class="wxTextCtrl" name="cellNameTextCtrl">
 							<value></value>
 							<maxlength>0</maxlength>
 						</object>
@@ -71,23 +52,7 @@
 						<option>0</option>
 						<flag>wxALL</flag>
 						<border>5</border>
-						<object class="wxButton" name="searchFileButton">
-							<size>40,-1</size>
-							<label>...</label>
-							<default>0</default>
-						</object>
-					</object>
-					<object class="spacer">
-						<option>0</option>
-						<flag>wxEXPAND</flag>
-						<border>5</border>
-						<size>20,0</size>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL</flag>
-						<border>5</border>
-						<object class="wxButton" name="addAssetButton">
+						<object class="wxButton" name="addCellButton">
 							<size>30,-1</size>
 							<label>+</label>
 							<default>0</default>
@@ -97,7 +62,7 @@
 						<option>0</option>
 						<flag>wxALL</flag>
 						<border>5</border>
-						<object class="wxButton" name="delAssetButton">
+						<object class="wxButton" name="delCellButton">
 							<size>30,-1</size>
 							<label>-</label>
 							<default>0</default>

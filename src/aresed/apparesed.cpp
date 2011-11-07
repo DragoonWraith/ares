@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "ui/uimanager.h"
 #include "ui/filereq.h"
 #include "ui/newproject.h"
+#include "ui/celldialog.h"
 #include "mainmode.h"
 #include "curvemode.h"
 #include "roommode.h"
@@ -997,6 +998,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_SHOW (AppAresEditWX::OnShow)
   EVT_ICONIZE (AppAresEditWX::OnIconize)
   EVT_MENU (ID_New, AppAresEditWX :: OnMenuNew)
+  EVT_MENU (ID_Cells, AppAresEditWX :: OnMenuCells)
   EVT_MENU (ID_Open, AppAresEditWX :: OnMenuOpen)
   EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
   EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
@@ -1080,6 +1082,11 @@ void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
 {
   // @@@ leak of callback?
   uiManager->GetNewProjectDialog ()->Show (new NewProjectCallbackImp (this));
+}
+
+void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
+{
+  uiManager->GetCellDialog ()->Show ();
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
@@ -1313,6 +1320,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("FoliageModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -1399,6 +1407,8 @@ void AppAresEditWX::SetupMenuBar ()
 {
   wxMenu* fileMenu = new wxMenu ();
   fileMenu->Append (ID_New, wxT ("&New project..."));
+  fileMenu->Append (ID_Cells, wxT ("&Manage Cells..."));
+  fileMenu->AppendSeparator ();
   fileMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
   fileMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
   fileMenu->Append (ID_Quit, wxT ("&Exit..."));
