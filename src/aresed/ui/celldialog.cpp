@@ -53,7 +53,7 @@ void CellDialog::OnSetDefaultButton (wxCommandEvent& event)
   iDynamicCell* cell = dynworld->FindCell (name);
   if (cell)
   {
-    dynworld->SetCurrentCell (cell);
+    uiManager->GetApp ()->GetAresView ()->WarpCell (cell);
     UpdateList ();
   }
   else

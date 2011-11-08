@@ -762,6 +762,14 @@ bool AresEdit3DView::PostLoadMap ()
   return true;
 }
 
+void AresEdit3DView::WarpCell (iDynamicCell* cell)
+{
+  if (cell == dynworld->GetCurrentCell ()) return; 
+  dynworld->SetCurrentCell (cell);
+  iSector* sector = engine->FindSector (cell->GetName ());
+  camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
+}
+
 bool AresEdit3DView::SetupWorld ()
 {
   vfs->Mount ("/aresnode", "data$/node.zip");

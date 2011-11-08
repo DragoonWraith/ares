@@ -300,6 +300,9 @@ public:
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
 
+  /// Warp the camera to another cell.
+  void WarpCell (iDynamicCell* cell);
+
   /// Return where an item would be spawned if we were to spawn it now.
   csReversibleTransform GetSpawnTransformation (const csString& name, csReversibleTransform* trans = 0);
 
