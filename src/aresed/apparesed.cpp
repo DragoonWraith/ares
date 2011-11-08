@@ -447,7 +447,7 @@ void AresEdit3DView::NewProject (const csArray<Asset>& assets)
   }
 
   // @@@ Hardcoded sector name!
-  sector = engine->FindSector ("room");
+  sector = engine->FindSector ("outside");
 
   // @@@ Error handling.
   SetupDynWorld ();
@@ -469,7 +469,7 @@ void AresEdit3DView::LoadFile (const char* filename)
   }
 
   // @@@ Hardcoded sector name!
-  sector = engine->FindSector ("room");
+  sector = engine->FindSector ("outside");
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
   {
@@ -765,8 +765,16 @@ bool AresEdit3DView::PostLoadMap ()
 void AresEdit3DView::WarpCell (iDynamicCell* cell)
 {
   if (cell == dynworld->GetCurrentCell ()) return; 
+  dyncell = cell;
+  if (sector && camlight) sector->GetLights ()->Remove (camlight);
+  camlight = 0;
   dynworld->SetCurrentCell (cell);
-  iSector* sector = engine->FindSector (cell->GetName ());
+  sector = engine->FindSector (cell->GetName ());
+  nature->InitSector (sector);
+  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
+  iLightList* lightList = sector->GetLights ();
+  lightList->Add (camlight);
+
   camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
 }
 
@@ -778,7 +786,7 @@ bool AresEdit3DView::SetupWorld ()
   vfs->PopDir ();
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
-  sector = engine->CreateSector ("room");
+  sector = engine->CreateSector ("outside");
 
   dyncell = dynworld->AddCell ("outside", sector, dynSys);
   dynworld->SetCurrentCell (dyncell);

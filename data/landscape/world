@@ -89,7 +89,7 @@
     </meshfact>
     -->
 
-    <sector name="room">
+    <sector name="outside">
       <cullerp plugin="crystalspace.culling.frustvis" />
         <meshobj name="clouds">
             <plugin>crystalspace.mesh.loader.genmesh</plugin>
