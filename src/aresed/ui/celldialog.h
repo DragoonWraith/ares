@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
-#include <wx/listbox.h>
+#include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
 class UIManager;
@@ -38,12 +38,16 @@ class CellDialog : public wxDialog
 {
 private:
   UIManager* uiManager;
+  long selIndex;
 
   void OnOkButton (wxCommandEvent& event);
-  void OnCancelButton (wxCommandEvent& event);
+  void OnSetDefaultButton (wxCommandEvent& event);
   void OnAddCellButton (wxCommandEvent& event);
   void OnDelCellButton (wxCommandEvent& event);
-  void OnCellSelected (wxCommandEvent& event);
+  void OnCellSelected (wxListEvent& event);
+  void OnCellDeselected (wxListEvent& event);
+
+  void UpdateList ();
 
 public:
   CellDialog (wxWindow* parent, UIManager* uiManager);

@@ -43,4 +43,61 @@ csStringArray ListCtrlTools::ReadRow (wxListCtrl* list, int row)
   return rc;
 }
 
+long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
+{
+  long idx = list->InsertItem (list->GetItemCount (), wxString (value, wxConvUTF8));
+  int col = 1;
+  va_list args;
+  va_start (args, value);
+  const char* value2 = va_arg (args, char*);
+  while (value2 != 0)
+  {
+    list->SetItem (idx, col++, wxString (value2, wxConvUTF8));
+    value2 = va_arg (args, char*);
+  }
+  for (int i = 0 ; i < col ; i++)
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+  return idx;
+}
+
+void ListCtrlTools::ColorRow (wxListCtrl* list, int idx,
+    unsigned char red, unsigned char green, unsigned char blue)
+{
+  wxListItem rowInfo;
+
+  rowInfo.m_itemId = idx;
+  rowInfo.m_mask = wxLIST_MASK_TEXT;
+  for (int i = 0 ; i < list->GetColumnCount () ; i++)
+  {
+    rowInfo.m_col = i;
+    list->GetItem (rowInfo);
+    rowInfo.SetTextColour (wxColour (red, green, blue));
+    list->SetItem (rowInfo);
+  }
+}
+
+void ListCtrlTools::BackgroundColorRow (wxListCtrl* list, int idx,
+    unsigned char red, unsigned char green, unsigned char blue)
+{
+  wxListItem rowInfo;
+
+  rowInfo.m_itemId = idx;
+  rowInfo.m_mask = wxLIST_MASK_TEXT;
+  for (int i = 0 ; i < list->GetColumnCount () ; i++)
+  {
+    rowInfo.m_col = i;
+    list->GetItem (rowInfo);
+    rowInfo.SetBackgroundColour (wxColour (red, green, blue));
+    list->SetItem (rowInfo);
+  }
+}
+
+void ListCtrlTools::SetColumn (wxListCtrl* list, int idx, const char* name, int width)
+{
+  wxListItem colPath;
+  colPath.SetId (idx);
+  colPath.SetText (wxString (name, wxConvUTF8));
+  colPath.SetWidth (width);
+  list->InsertColumn (idx, colPath);
+}
 

@@ -196,11 +196,10 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
-
-  long idx = assetList->InsertItem (assetList->GetItemCount (), pathText->GetValue ());
-  assetList->SetItem (idx, 1, fileText->GetValue ());
-  assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
-  assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+  ListCtrlTools::AddRow (assetList,
+      (const char*)(pathText->GetValue ().mb_str (wxConvUTF8)),
+      (const char*)(fileText->GetValue ().mb_str (wxConvUTF8)),
+      0);
   SetPathFile ("", "");
 }
 
@@ -213,15 +212,16 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
     assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
     assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
     SetPathFile ("", "");
+    selIndex = -1;
   }
 }
 
 void NewProjectDialog::OnAssetSelected (wxListEvent& event)
 {
-  selIndex = event.GetIndex ();
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
   delButton->Enable ();
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  selIndex = event.GetIndex ();
   csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
   SetPathFile (row[0], row[1]);
 }
@@ -249,18 +249,8 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("NewProjectDialog"));
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-
-  wxListItem colPath;
-  colPath.SetId (0);
-  colPath.SetText (wxT ("Path"));
-  colPath.SetWidth (200);
-  assetList->InsertColumn (0, colPath);
-
-  wxListItem colFile;
-  colFile.SetId (1);
-  colFile.SetText (wxT ("File"));
-  colFile.SetWidth (200);
-  assetList->InsertColumn (1, colFile);
+  ListCtrlTools::SetColumn (assetList, 0, "Path", 200);
+  ListCtrlTools::SetColumn (assetList, 1, "File", 200);
 }
 
 NewProjectDialog::~NewProjectDialog ()

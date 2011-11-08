@@ -39,6 +39,28 @@ public:
    * Read a row from the list control.
    */
   static csStringArray ReadRow (wxListCtrl* list, int row);
+
+  /**
+   * Add a row to the list control (at the end).
+   */
+  static long AddRow (wxListCtrl* list, const char* value, ...);
+
+  /**
+   * Set the color of some row.
+   */
+  static void ColorRow (wxListCtrl* list, int idx,
+    unsigned char red, unsigned char green, unsigned char blue);
+
+  /**
+   * Set the background color of some row.
+   */
+  static void BackgroundColorRow (wxListCtrl* list, int idx,
+    unsigned char red, unsigned char green, unsigned char blue);
+
+  /**
+   * Add a column.
+   */
+  static void SetColumn (wxListCtrl* list, int idx, const char* name, int width);
 };
 
 #endif // __appares_listctrltools_h
