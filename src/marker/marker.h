@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "include/imarker.h"
 
 class csPen;
+struct iFont;
 
 CS_PLUGIN_NAMESPACE_BEGIN(MarkerManager)
 {
@@ -79,6 +80,23 @@ struct MarkerLine
   csVector3 v1, v2;
   MarkerColor* color;
   bool arrow;
+};
+
+struct MarkerRoundedBox
+{
+  MarkerSpace space;
+  csVector3 v1, v2;
+  int roundness;
+  MarkerColor* color;
+};
+
+struct MarkerText
+{
+  MarkerSpace space;
+  csVector3 pos;
+  csString text;
+  MarkerColor* color;
+  bool centered;
 };
 
 struct MarkerDraggingMode
@@ -136,17 +154,20 @@ private:
   MarkerManager* mgr;
   iMeshWrapper* attachedMesh;
   csReversibleTransform trans;
+  csVector2 pos;
   int selectionLevel;
 
   csArray<MarkerLine> lines;
+  csArray<MarkerRoundedBox> roundedBoxes;
+  csArray<MarkerText> texts;
   csRefArray<MarkerHitArea> hitAreas;
 
   bool visible;
 
 public:
   Marker (MarkerManager* mgr) :
-    scfImplementationType (this), mgr (mgr), attachedMesh (0), selectionLevel (0),
-    visible (true)
+    scfImplementationType (this), mgr (mgr), attachedMesh (0), pos (0, 0),
+    selectionLevel (0), visible (true)
   { }
   virtual ~Marker () { }
 
@@ -164,6 +185,11 @@ public:
     Marker::trans = trans;
   }
   virtual const csReversibleTransform& GetTransform () const;
+  virtual void SetPosition (const csVector2& pos)
+  {
+    Marker::pos = pos;
+  }
+  virtual const csVector2& GetPosition () const { return pos; }
   virtual void Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
       bool arrow = false);
@@ -172,6 +198,11 @@ public:
       const csVector3& v3, iMarkerColor* color) { }
   virtual void Box3D (MarkerSpace space,
       const csBox3& box, iMarkerColor* color) { }
+  virtual void RoundedBox2D (MarkerSpace space,
+      const csVector3& corner1, const csVector3& corner2,
+      int roundness, iMarkerColor* color);
+  virtual void Text (MarkerSpace space, const csVector3& pos,
+      const char* text, iMarkerColor* color, bool centered = false);
   virtual void Clear ();
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data, iMarkerColor* color);
@@ -195,6 +226,7 @@ public:
   csRef<iVirtualClock> vc;
   csRef<iGraphics3D> g3d;
   csRef<iGraphics2D> g2d;
+  csRef<iFont> font;
   iView* view;
   iCamera* camera;
 
@@ -234,6 +266,8 @@ public:
 
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }
+
+  iFont* GetFont () const { return font; }
 
   virtual void Frame2D ();
   virtual void Frame3D ();

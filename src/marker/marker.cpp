@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "iutil/objreg.h"
 #include "ivideo/graph2d.h"
 #include "ivideo/graph3d.h"
+#include "ivideo/fontserv.h"
 #include "iengine/sector.h"
 #include "iengine/camera.h"
 #include "iengine/movable.h"
@@ -179,31 +180,74 @@ void Marker::Render3D ()
     csVector3 v1 = TransPointCam (camtrans, meshtrans, line.space, line.v1);
     csVector3 v2 = TransPointCam (camtrans, meshtrans, line.space, line.v2);
     // @@@ Do proper clipping?
-    if (v1.z > .5 && v2.z > .5)
+    if (line.space == MARKER_2D || (v1.z > .5 && v2.z > .5))
     {
+      int h = mgr->g2d->GetHeight ();
       csPen* pen = line.color->GetPen (selectionLevel);
-      csVector2 s1 = mgr->camera->Perspective (v1);
-      csVector2 s2 = mgr->camera->Perspective (v2);
+      csVector2 s1, s2;
+      if (line.space != MARKER_2D)
+      {
+        s1 = mgr->camera->Perspective (v1);
+        s2 = mgr->camera->Perspective (v2);
+      }
+      else
+      {
+	s1.Set (v1.x, h-v1.y);
+	s2.Set (v2.x, h-v2.y);
+      }
  
       int x1 = int (s1.x);
-      int y1 = mgr->g2d->GetHeight () - int (s1.y);
+      int y1 = h - int (s1.y);
       int x2 = int (s2.x);
-      int y2 = mgr->g2d->GetHeight () - int (s2.y);
+      int y2 = h - int (s2.y);
 
-      pen->DrawLine (x1, y1, x2, y2);
+      pen->DrawLine (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2);
 
       if (line.arrow)
       {
         //float d = sqrt (SqDistance2d (s1, s2));
-	int dx = (x2-x1) / 4;
-	int dy = (y2-y1) / 4;
-	int dxr = -(y2-y1) / 4;
-	int dyr = (x2-x1) / 4;
-        pen->DrawLine (x2, y2, x2-dx+dxr, y2-dy+dyr);
-        pen->DrawLine (x2, y2, x2-dx-dxr, y2-dy-dyr);
+        int dx = (x2-x1) / 4;
+        int dy = (y2-y1) / 4;
+        int dxr = -(y2-y1) / 4;
+        int dyr = (x2-x1) / 4;
+        pen->DrawLine (pos.x + x2, pos.y + y2, pos.x + x2-dx+dxr, pos.y + y2-dy+dyr);
+        pen->DrawLine (pos.x + x2, pos.y + y2, pos.x + x2-dx-dxr, pos.y + y2-dy-dyr);
       }
     }
   }
+
+  for (size_t i = 0 ; i < roundedBoxes.GetSize () ; i++)
+  {
+    MarkerRoundedBox& box = roundedBoxes[i];
+    csVector3 v1 = TransPointCam (camtrans, meshtrans, box.space, box.v1);
+    csVector3 v2 = TransPointCam (camtrans, meshtrans, box.space, box.v2);
+    // @@@ Do proper clipping?
+    if (box.space == MARKER_2D || (v1.z > .5 && v2.z > .5))
+    {
+      int h = mgr->g2d->GetHeight ();
+      csPen* pen = box.color->GetPen (selectionLevel);
+      csVector2 s1, s2;
+      if (box.space != MARKER_2D)
+      {
+        s1 = mgr->camera->Perspective (v1);
+        s2 = mgr->camera->Perspective (v2);
+      }
+      else
+      {
+	s1.Set (v1.x, h-v1.y);
+	s2.Set (v2.x, h-v2.y);
+      }
+ 
+      int x1 = int (s1.x);
+      int y1 = h - int (s1.y);
+      int x2 = int (s2.x);
+      int y2 = h - int (s2.y);
+
+      pen->DrawRoundedRect (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2,
+	  box.roundness);
+    }
+  }
+
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
     MarkerHitArea* ha = hitAreas[i];
@@ -211,11 +255,16 @@ void Marker::Render3D ()
     {
       const csVector3& center = ha->GetCenter ();
       csVector3 c = TransPointCam (camtrans, meshtrans, ha->GetSpace (), center);
-      if (c.z > .5)
+      if (ha->GetSpace () == MARKER_2D || c.z > .5)
       {
-        csVector2 s = mgr->camera->Perspective (c);
+        int h = mgr->g2d->GetHeight ();
+	csVector2 s;
+	if (ha->GetSpace () != MARKER_2D)
+          s = mgr->camera->Perspective (c);
+	else
+	  s.Set (c.x, h-c.y);
 	int x = int (s.x);
-	int y = mgr->g2d->GetHeight () - int (s.y);
+	int y = h - int (s.y);
 	int mouseX = mgr->GetMouseX ();
 	int mouseY = mgr->GetMouseY ();
 	csVector2 r = ha->GetPerspectiveRadius (mgr->view, c.z);
@@ -223,7 +272,7 @@ void Marker::Render3D ()
 	  mouseY >= (y-r.y) && mouseY <= (y+r.y);
         csPen* pen = ha->GetColor ()->GetPen (
 	    selected ? SELECTION_SELECTED : SELECTION_NONE);
-	pen->DrawArc (x-r.x, y-r.y, x+r.x, y+r.y);
+	pen->DrawArc (pos.x+x-r.x, pos.y+y-r.y, pos.x+x+r.x, pos.y+y+r.y);
       }
     }
   }
@@ -231,6 +280,37 @@ void Marker::Render3D ()
 
 void Marker::Render2D ()
 {
+  if (!visible) return;
+
+  const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
+  const csReversibleTransform& meshtrans = GetTransform ();
+
+  for (size_t i = 0 ; i < texts.GetSize () ; i++)
+  {
+    MarkerText& text = texts[i];
+    csVector3 v = TransPointCam (camtrans, meshtrans, text.space, text.pos);
+    // @@@ Do proper clipping?
+    if (text.space == MARKER_2D || v.z > .5)
+    {
+      int h = mgr->g2d->GetHeight ();
+      csPen* pen = text.color->GetPen (selectionLevel);
+      csVector2 s;
+      if (text.space != MARKER_2D)
+        s = mgr->camera->Perspective (v);
+      else
+	s.Set (v.x, h-v.y);
+ 
+      int x1 = int (s.x);
+      int y1 = h - int (s.y);
+
+      char* t = const_cast<char*>((const char*)text.text);
+      if (text.centered)
+        pen->WriteBoxed (mgr->GetFont (), pos.x + x1, pos.y + y1,
+	  pos.x + x1, pos.y + y1, CS_PEN_TA_CENTER, CS_PEN_TA_CENTER, t);
+      else
+        pen->Write (mgr->GetFont (), pos.x + x1, pos.y + y1, t);
+    }
+  }
 }
 
 void Marker::Line (MarkerSpace space,
@@ -246,9 +326,36 @@ void Marker::Line (MarkerSpace space,
   lines.Push (line);
 }
 
+void Marker::RoundedBox2D (MarkerSpace space,
+      const csVector3& corner1, const csVector3& corner2, int roundness,
+      iMarkerColor* color)
+{
+  MarkerRoundedBox box;
+  box.space = space;
+  box.v1 = corner1;
+  box.v2 = corner2;
+  box.color = static_cast<MarkerColor*> (color);
+  box.roundness = roundness;
+  roundedBoxes.Push (box);
+}
+
+void Marker::Text (MarkerSpace space, const csVector3& pos,
+      const char* text, iMarkerColor* color, bool centered)
+{
+  MarkerText txt;
+  txt.space = space;
+  txt.pos = pos;
+  txt.color = static_cast<MarkerColor*> (color);
+  txt.text = text;
+  txt.centered = centered;
+  texts.Push (txt);
+}
+
 void Marker::Clear ()
 {
   lines.Empty ();
+  roundedBoxes.Empty ();
+  texts.Empty ();
 }
 
 iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
@@ -325,6 +432,8 @@ bool MarkerManager::Initialize (iObjectRegistry *object_reg)
   vc = csQueryRegistry<iVirtualClock> (object_reg);
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
   g2d = g3d->GetDriver2D ();
+
+  font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_LARGE);
 
   return true;
 }

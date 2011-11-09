@@ -9,8 +9,8 @@
 				<option>1</option>
 				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxTreeCtrl" name="templateTree">
-					<style>wxTR_DEFAULT_STYLE</style>
+				<object class="wxListBox" name="templateList">
+					<content />
 				</object>
 			</object>
 		</object>

@@ -26,7 +26,11 @@ THE SOFTWARE.
 #include "../camerawin.h"
 #include "entitymode.h"
 
+#include "physicallayer/pl.h"
+#include "physicallayer/entitytpl.h"
+
 #include <wx/xrc/xmlres.h>
+#include <wx/listbox.h>
 
 //---------------------------------------------------------------------------
 
@@ -41,15 +45,45 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
+
+  testMarker = aresed3d->GetMarkerManager ()->CreateMarker ();
+  iMarkerColor* white = aresed3d->GetMarkerManager ()->FindMarkerColor ("white");
+  testMarker->RoundedBox2D (MARKER_2D, csVector3 (50, 50, 0),
+      csVector3 (150, 75, 0), 10, white);
+  testMarker->Text (MARKER_2D, csVector3 (100, 62, 0), "Hello!", white, true);
+  testMarker->SetSelectionLevel (1);
+  testMarker->SetVisible (false);
+}
+
+EntityMode::~EntityMode ()
+{
+}
+
+void EntityMode::SetupItems ()
+{
+  wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
+  list->Clear ();
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  wxArrayString names;
+  for (size_t i = 0 ; i < pl->GetEntityTemplateCount () ; i++)
+  {
+    iCelEntityTemplate* tpl = pl->GetEntityTemplate (i);
+    wxString name = wxString (tpl->GetName (), wxConvUTF8);
+    names.Add (name);
+  }
+  list->InsertItems (names, 0);
 }
 
 void EntityMode::Start ()
 {
   aresed3d->GetApp ()->GetCameraWindow ()->Hide ();
+  SetupItems ();
+  testMarker->SetVisible (true);
 }
 
 void EntityMode::Stop ()
 {
+  testMarker->SetVisible (false);
 }
 
 void EntityMode::FramePre()
@@ -58,6 +92,7 @@ void EntityMode::FramePre()
 
 void EntityMode::Frame3D()
 {
+  aresed3d->GetG2D ()->Clear (aresed3d->GetG2D ()->FindRGB (100, 110, 120));
 }
 
 void EntityMode::Frame2D()

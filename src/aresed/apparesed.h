@@ -297,6 +297,7 @@ public:
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }
+  iCelPlLayer* GetPlLayer () const { return pl; }
 
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }

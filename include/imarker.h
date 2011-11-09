@@ -66,7 +66,12 @@ enum MarkerSpace
    * The drawing primitive is rendered in camera space but the
    * position if relative to the attached mesh.
    */
-  MARKER_CAMERA_AT_MESH
+  MARKER_CAMERA_AT_MESH,
+
+  /**
+   * The marker is in 2D space.
+   */
+  MARKER_2D,
 };
 
 /**
@@ -216,17 +221,31 @@ struct iMarker : public virtual iBase
 
   /**
    * Set this marker at a specific transformation.
+   * This function is not useful for primitives that are in MARKER_2D mode.
    */
   virtual void SetTransform (const csReversibleTransform& trans) = 0;
 
   /**
    * Get the current transform for this marker. This will be the
    * transform of the mesh it is following or else its own transform.
+   * This function is not useful for primitives that are in MARKER_2D mode.
    */
   virtual const csReversibleTransform& GetTransform () const = 0;
 
   /**
+   * Set the position of this marker. This also affects the primites
+   * in MARKER_2D mode.
+   */
+  virtual void SetPosition (const csVector2& pos) = 0;
+
+  /**
+   * Get the position of this marker.
+   */
+  virtual const csVector2& GetPosition () const = 0;
+
+  /**
    * Draw a line.
+   * In MARKER_2D space the 'z' component is not used.
    */
   virtual void Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
@@ -234,6 +253,7 @@ struct iMarker : public virtual iBase
 
   /**
    * Draw a 2D 4-sided polygon.
+   * In MARKER_2D space the 'z' component is not used.
    */
   virtual void Poly2D (MarkerSpace space,
       const csVector3& v1, const csVector3& v2,
@@ -241,9 +261,26 @@ struct iMarker : public virtual iBase
 
   /**
    * Draw a 3D box.
+   * In MARKER_2D space the 'z' component is not used.
    */
   virtual void Box3D (MarkerSpace space,
       const csBox3& box, iMarkerColor* color) = 0;
+
+  /**
+   * Draw a rounded 2D box.
+   * In MARKER_2D space the 'z' component is not used.
+   */
+  virtual void RoundedBox2D (MarkerSpace space,
+      const csVector3& corner1, const csVector3& corner2,
+      int roundness, iMarkerColor* color) = 0;
+
+  /**
+   * Draw text.
+   * In MARKER_2D space the 'z' component is not used.
+   * If centered is true the text is centered around the given position.
+   */
+  virtual void Text (MarkerSpace space, const csVector3& pos,
+      const char* text, iMarkerColor* color, bool centered = false) = 0;
 
   /**
    * Clear all geometry.

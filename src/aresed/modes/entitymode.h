@@ -33,10 +33,13 @@ struct iGeometryGenerator;
 class EntityMode : public EditingMode
 {
 private:
+  void SetupItems ();
+
+  iMarker* testMarker;
 
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
-  virtual ~EntityMode () { }
+  virtual ~EntityMode ();
 
   virtual void Start ();
   virtual void Stop ();
