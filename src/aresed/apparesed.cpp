@@ -119,7 +119,7 @@ AresEdit3DView::~AresEdit3DView()
   delete selection;
 }
 
-void AresEdit3DView::DoStuffOncePerFrame ()
+void AresEdit3DView::Do3DPreFrameStuff ()
 {
   // First get elapsed time from the virtual clock.
   float elapsed_time = vc->GetElapsedSeconds ();
@@ -146,26 +146,11 @@ void AresEdit3DView::DoStuffOncePerFrame ()
 
 void AresEdit3DView::Frame (EditingMode* editMode)
 {
-  DoStuffOncePerFrame ();
-
-  if (!g3d->BeginDraw(CSDRAW_3DGRAPHICS)) return;
-
-  view->Draw ();
-
+  g3d->BeginDraw( CSDRAW_3DGRAPHICS);
   editMode->Frame3D ();
   markerMgr->Frame3D ();
 
-  if (do_debug)
-    bullet_dynSys->DebugDraw (view);
-
   g3d->BeginDraw (CSDRAW_2DGRAPHICS);
-  csString buf;
-  const csOrthoTransform& trans = view->GetCamera ()->GetTransform ();
-  const csVector3& origin = trans.GetOrigin ();
-  buf.Format ("%g,%g,%g", origin.x, origin.y, origin.z);
-  iGraphics2D* g2d = g3d->GetDriver2D ();
-  g2d->Write (font, 200, g2d->GetHeight ()-20, colorWhite, -1, buf);
-
   editMode->Frame2D ();
   markerMgr->Frame2D ();
 }
@@ -205,19 +190,6 @@ bool AresEdit3DView::OnMouseMove (iEvent& ev)
   if (markerMgr->OnMouseMove (ev, mouseX, mouseY))
     return true;
 
-  if (camera.OnMouseMove (ev, mouseX, mouseY))
-    return true;
-
-  return false;
-}
-
-bool AresEdit3DView::OnUnhandledEvent (iEvent& event)
-{
-  if (event.Name == FocusLost)
-  {
-    camera.OnFocusLost ();
-    return true;
-  }
   return false;
 }
 
@@ -317,9 +289,6 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
   if (markerMgr->OnMouseDown (ev, but, mouseX, mouseY))
     return true;
 
-  if (camera.OnMouseDown (ev, but, mouseX, mouseY))
-    return true;
-
   return false;
 }
 
@@ -330,9 +299,6 @@ bool AresEdit3DView::OnMouseUp (iEvent& ev)
   mouseY = csMouseEventHelper::GetY (&ev);
 
   if (markerMgr->OnMouseUp (ev, but, mouseX, mouseY))
-    return true;
-
-  if (camera.OnMouseUp (ev, but, mouseX, mouseY))
     return true;
 
   return false;
@@ -354,40 +320,6 @@ bool AresEdit3DView::OnKeyboard(iEvent& ev)
       eventQueue->GetEventOutlet()->Broadcast(csevQuit(GetObjectRegistry()));
       return true;
     }
-    else if (code == '1')
-    {
-      do_debug = !do_debug;
-    }
-    else if (code == CSKEY_F2)
-    {
-      currentTime += 500;
-    }
-    else if (code == CSKEY_F3)
-    {
-      do_auto_time = !do_auto_time;
-    }
-    else if (code == CSKEY_F4)
-    {
-      nature->SetFoliageDensityFactor (nature->GetFoliageDensityFactor ()-.05);
-    }
-    else if (code == CSKEY_F5)
-    {
-      nature->SetFoliageDensityFactor (nature->GetFoliageDensityFactor ()+.05);
-    }
-    else if (code == '.')
-    {
-      if (GetCamera ().IsPanningEnabled ())
-      {
-	GetCamera ().DisablePanning ();
-      }
-      else if (selection->HasSelection ())
-      {
-        csVector3 center = TransformTools::GetCenterSelected (selection);
-        GetCamera ().EnablePanning (center);
-      }
-    }
-    else return false;
-    return true;
   }
   return false;
 }
@@ -1235,8 +1167,6 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
   else
   {
     if (ev.Name == FocusLost) editMode->OnFocusLost ();
-    if (aresed3d)
-      return aresed3d->OnUnhandledEvent (ev);
   }
 
   return false;
@@ -1412,11 +1342,10 @@ void AppAresEditWX::SetStatus (const char* statusmsg, ...)
 
 void AppAresEditWX::ClearStatus ()
 {
-  if (editMode && editMode->GetStatusLine ())
-    SetStatus ("MMB: rotate camera, shift-MMB: pan camera, RMB: context menu, %s",
-	editMode->GetStatusLine ());
+  if (editMode)
+    SetStatus ("%s", editMode->GetStatusLine ().GetData ());
   else
-    SetStatus ("MMB: rotate camera, shift-MMB: pan camera, RMB: context menu");
+    SetStatus ("");
 }
 
 void AppAresEditWX::SetupMenuBar ()

@@ -22,25 +22,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_foliagemode_h
-#define __aresed_foliagemode_h
+#ifndef __aresed_viewmode_h
+#define __aresed_viewmode_h
 
 #include "csutil/csstring.h"
-#include "viewmode.h"
+#include "editmodes.h"
 
-struct iMeshGenerator;
+struct iGeometryGenerator;
 
-class FoliageMode : public ViewMode
+/**
+ * Superclass for all modes that require the general 3D view.
+ */
+class ViewMode : public EditingMode
 {
-private:
-  iMeshGenerator* meshgen;
-
-  /// Update the list of types.
-  void UpdateTypeList ();
-
 public:
-  FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d);
-  virtual ~FoliageMode () { }
+  ViewMode (AresEdit3DView* aresed3d, const char* name);
+  virtual ~ViewMode () { }
 
   virtual void Start ();
   virtual void Stop ();
@@ -52,27 +49,13 @@ public:
   virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
+  virtual void OnFocusLost ();
 
-  virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos, uint button, uint32 modifiers);
-  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
-      const csVector3& pos);
-  virtual void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
-
-  class Panel : public wxPanel
+  virtual csString GetStatusLine ()
   {
-  public:
-    Panel(wxWindow* parent, FoliageMode* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
-    {}
-
-  private:
-    FoliageMode* s;
-
-    DECLARE_EVENT_TABLE()
-  };
-  Panel* panel;
+    return csString ("MMB: rotate camera, shift-MMB: pan camera, RMB: context menu");
+  }
 };
 
-#endif // __aresed_foliagemode_h
+#endif // __aresed_viewmode_h
 

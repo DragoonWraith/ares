@@ -23,8 +23,8 @@ THE SOFTWARE.
  */
 
 #include "../apparesed.h"
-#include "mainmode.h"
 #include "../transformtools.h"
+#include "mainmode.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -48,7 +48,7 @@ END_EVENT_TABLE()
 //---------------------------------------------------------------------------
 
 MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
-  EditingMode (aresed3d, "Main")
+  ViewMode (aresed3d, "Main")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
@@ -109,6 +109,7 @@ void MainMode::CreateMarkers ()
 
 void MainMode::Start ()
 {
+  ViewMode::Start ();
   CreateMarkers ();
 
   if (aresed3d->GetSelection ()->GetSize () >= 1)
@@ -122,6 +123,7 @@ void MainMode::Start ()
 
 void MainMode::Stop ()
 {
+  ViewMode::Stop ();
   transformationMarker->SetVisible (false);
   transformationMarker->AttachMesh (0);
   pasteMarker->SetVisible (false);
@@ -404,6 +406,7 @@ void MainMode::HandlePhysicalDragging ()
 
 void MainMode::FramePre()
 {
+  ViewMode::FramePre ();
   if (do_dragging)
   {
     HandlePhysicalDragging ();
@@ -420,10 +423,12 @@ void MainMode::FramePre()
 
 void MainMode::Frame3D()
 {
+  ViewMode::Frame3D ();
 }
 
 void MainMode::Frame2D()
 {
+  ViewMode::Frame2D ();
 }
 
 csString MainMode::GetSelectedItem ()
@@ -436,6 +441,9 @@ csString MainMode::GetSelectedItem ()
 
 bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
+  if (ViewMode::OnKeyboard (ev, code))
+    return true;
+
   bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
   bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
   if (code == '2')
@@ -646,6 +654,9 @@ void MainMode::StopPasteMode ()
 
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  if (ViewMode::OnMouseDown (ev, but, mouseX, mouseY))
+    return true;
+
   if (!(but == csmbLeft || but == csmbMiddle)) return false;
 
   if (mouseX > aresed3d->GetViewWidth ()) return false;
@@ -716,6 +727,9 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool MainMode::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  if (ViewMode::OnMouseUp (ev, but, mouseX, mouseY))
+    return true;
+
   if (do_dragging || do_kinematic_dragging)
   {
     StopDrag ();
@@ -727,7 +741,7 @@ bool MainMode::OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool MainMode::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
-  return false;
+  return ViewMode::OnMouseMove (ev, mouseX, mouseY);
 }
 
 

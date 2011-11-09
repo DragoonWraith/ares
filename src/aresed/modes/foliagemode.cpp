@@ -37,7 +37,7 @@ END_EVENT_TABLE()
 //---------------------------------------------------------------------------
 
 FoliageMode::FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d)
-  : EditingMode (aresed3d, "Foliage")
+  : ViewMode (aresed3d, "Foliage")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
@@ -68,6 +68,7 @@ bool FoliageMode::OnTypeListSelection (const CEGUI::EventArgs&)
 
 void FoliageMode::Start ()
 {
+  ViewMode::Start ();
   UpdateTypeList ();
   // @@@ Hardcoded!
   iSector* sector = aresed3d->GetCsCamera ()->GetSector ();
@@ -76,6 +77,7 @@ void FoliageMode::Start ()
 
 void FoliageMode::Stop ()
 {
+  ViewMode::Stop ();
 }
 
 void FoliageMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
@@ -94,23 +96,29 @@ void FoliageMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
 
 void FoliageMode::FramePre()
 {
+  ViewMode::FramePre ();
 }
 
 void FoliageMode::Frame3D()
 {
+  ViewMode::Frame3D ();
 }
 
 void FoliageMode::Frame2D()
 {
+  ViewMode::Frame2D ();
 }
 
 bool FoliageMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
-  return false;
+  return ViewMode::OnKeyboard (ev, code);
 }
 
 bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  if (ViewMode::OnMouseDown (ev, but, mouseX, mouseY))
+    return true;
+
   csSegment3 seg = aresed3d->GetMouseBeam ();
   csVector3 isect;
   if (aresed3d->TraceBeamTerrain (seg.Start (), seg.End (), isect))
@@ -151,11 +159,11 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool FoliageMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  return false;
+  return ViewMode::OnMouseUp (ev, but, mouseX, mouseY);
 }
 
 bool FoliageMode::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
-  return false;
+  return ViewMode::OnMouseMove (ev, mouseX, mouseY);
 }
 

@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __aresed_curvemodes_h
 
 #include "csutil/csstring.h"
-#include "editmodes.h"
+#include "viewmode.h"
 
 struct iGeometryGenerator;
 
@@ -36,7 +36,7 @@ struct DragPoint
   csVector3 kineOffset;
 };
 
-class CurveMode : public EditingMode
+class CurveMode : public ViewMode
 {
 private:
   iCurvedFactory* editingCurveFactory;

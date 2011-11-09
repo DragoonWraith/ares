@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __aresed_mainmodes_h
 #define __aresed_mainmodes_h
 
-#include "editmodes.h"
+#include "viewmode.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -48,7 +48,7 @@ struct AresPasteContents
   bool isStatic;
 };
 
-class MainMode : public EditingMode
+class MainMode : public ViewMode
 {
 private:
   // Dragging related
@@ -111,9 +111,11 @@ public:
   virtual void Start ();
   virtual void Stop ();
 
-  virtual const char* GetStatusLine ()
+  virtual csString GetStatusLine ()
   {
-    return "LMB: select objects (shift to add to selection)";
+    csString v = ViewMode::GetStatusLine ();
+    v += ", LMB: select objects (shift to add to selection)";
+    return v;
   }
 
   void SetupItems (const csHash<csStringArray,csString>& items);

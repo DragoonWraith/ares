@@ -226,12 +226,6 @@ private:
   int mouseX, mouseY;
 
   /**
-   * This method is called by Frame ().
-   * It was separated so it's easy to remove or customize it.
-   */
-  void DoStuffOncePerFrame ();
-
-  /**
    * Initialize physics.
    */
   bool InitPhysics ();
@@ -264,12 +258,30 @@ public:
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
 
+  /**
+   * Handle all the 3D related stuff like nature, camera, camera light,
+   * physics simulation, ...
+   */
+  void Do3DPreFrameStuff ();
+
+  void WriteText (const char* buf)
+  {
+    iGraphics2D* g2d = g3d->GetDriver2D ();
+    g2d->Write (font, 200, g2d->GetHeight ()-20, colorWhite, -1, buf);
+  }
+
   void Frame (EditingMode* editMode);
   bool OnKeyboard(iEvent&);
   bool OnMouseDown(iEvent&);
   bool OnMouseUp(iEvent&);
   bool OnMouseMove (iEvent&);
-  bool OnUnhandledEvent (iEvent&);
+
+  bool IsDebugMode () const { return do_debug; }
+  void SetDebugMode (bool b) { do_debug = b; }
+
+  bool IsAutoTime () const { return do_auto_time; }
+  void SetAutoTime (bool a) { do_auto_time = a; }
+  void ModifyCurrentTime (csTicks t) { currentTime += t; }
 
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }

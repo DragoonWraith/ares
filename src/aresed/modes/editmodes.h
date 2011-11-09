@@ -68,7 +68,7 @@ public:
   virtual void Start () { }
   virtual void Stop () { }
 
-  virtual const char* GetStatusLine () { return 0; }
+  virtual csString GetStatusLine () { return csString (""); }
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current) { }
 

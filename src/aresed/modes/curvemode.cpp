@@ -40,7 +40,7 @@ END_EVENT_TABLE()
 //---------------------------------------------------------------------------
 
 CurveMode::CurveMode (wxWindow* parent, AresEdit3DView* aresed3d)
-  : EditingMode (aresed3d, "Curve")
+  : ViewMode (aresed3d, "Curve")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
@@ -104,6 +104,7 @@ void CurveMode::UpdateMarkerSelection ()
 
 void CurveMode::Start ()
 {
+  ViewMode::Start ();
   if (!aresed3d->GetSelection ()->HasSelection ()) return;
   iDynamicObject* dynobj = aresed3d->GetSelection ()->GetFirst ();
   csString name = dynobj->GetFactory ()->GetName ();
@@ -117,6 +118,7 @@ void CurveMode::Start ()
 
 void CurveMode::Stop ()
 {
+  ViewMode::Stop ();
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     aresed3d->GetMarkerManager ()->DestroyMarker (markers[i]);
   markers.Empty ();
@@ -199,14 +201,17 @@ void CurveMode::StopDrag ()
 
 void CurveMode::FramePre()
 {
+  ViewMode::FramePre ();
 }
 
 void CurveMode::Frame3D()
 {
+  ViewMode::Frame3D ();
 }
 
 void CurveMode::Frame2D()
 {
+  ViewMode::Frame2D ();
 }
 
 void CurveMode::DoAutoSmooth ()
@@ -367,6 +372,9 @@ void CurveMode::OnAutoSmoothSelected ()
 
 bool CurveMode::OnKeyboard (iEvent& ev, utf32_char code)
 {
+  if (ViewMode::OnKeyboard (ev, code))
+    return true;
+
   if (code == 'e')
   {
     size_t id = editingCurveFactory->GetPointCount ()-1;
@@ -386,16 +394,16 @@ bool CurveMode::OnKeyboard (iEvent& ev, utf32_char code)
 
 bool CurveMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  return false;
+  return ViewMode::OnMouseDown (ev, but, mouseX, mouseY);
 }
 
 bool CurveMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  return false;
+  return ViewMode::OnMouseUp (ev, but, mouseX, mouseY);
 }
 
 bool CurveMode::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
-  return false;
+  return ViewMode::OnMouseMove (ev, mouseX, mouseY);
 }
 
