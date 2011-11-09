@@ -239,7 +239,8 @@ CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
   : aresed3d (aresed3d)
 {
   panel = new Panel (parent, this);
-  parent->GetSizer ()->Add (panel, 0, wxALL | wxEXPAND);
+  parentSizer = parent->GetSizer (); 
+  parentSizer->Add (panel, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CameraPanel"));
 
   wxButton* recallButton;

@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "../apparesed.h"
+#include "../camerawin.h"
 #include "entitymode.h"
 
 #include <wx/xrc/xmlres.h>
@@ -44,6 +45,7 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
 
 void EntityMode::Start ()
 {
+  aresed3d->GetApp ()->GetCameraWindow ()->Hide ();
 }
 
 void EntityMode::Stop ()

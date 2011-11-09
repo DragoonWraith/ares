@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "../apparesed.h"
+#include "../camerawin.h"
 #include "../transformtools.h"
 #include "viewmode.h"
 
@@ -35,6 +36,7 @@ ViewMode::ViewMode (AresEdit3DView* aresed3d, const char* name)
 
 void ViewMode::Start ()
 {
+  aresed3d->GetApp ()->GetCameraWindow ()->Show ();
 }
 
 void ViewMode::Stop ()

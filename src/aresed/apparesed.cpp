@@ -1078,6 +1078,7 @@ void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
     editMode = newMode;
     editMode->Start ();
   }
+  SetMenuState ();
 
   //if (page && !page->IsEnabled () && oldPageIdx != csArrayItemNotFound)
   //{
@@ -1344,7 +1345,8 @@ void AppAresEditWX::SetStatus (const char* statusmsg, ...)
   csString str;
   str.FormatV (statusmsg, args);
   va_end (args);
-  GetStatusBar ()->SetStatusText (wxString (str, wxConvUTF8), 0);
+  if (GetStatusBar ())
+    GetStatusBar ()->SetStatusText (wxString (str, wxConvUTF8), 0);
 }
 
 void AppAresEditWX::ClearStatus ()
@@ -1384,9 +1386,10 @@ void AppAresEditWX::SetMenuState ()
 {
   ClearStatus ();
   wxMenuBar* menuBar = GetMenuBar ();
+  if (!menuBar) return;
 
   // Should menus be globally disabled?
-  bool dis = mainMode->IsPasteSelectionActive ();
+  bool dis = mainMode ? mainMode->IsPasteSelectionActive () : TRUE;
   if (dis)
   {
     menuBar->EnableTop (0, false);

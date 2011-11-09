@@ -36,6 +36,7 @@ class CameraWindow
 {
 private:
   AresEdit3DView* aresed3d;
+  wxSizer* parentSizer;
 
   CamLocation trans[4];
   void StoreTrans (int idx);
@@ -73,6 +74,9 @@ public:
 
   void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
   void ReleaseContextMenu (wxFrame* frame);
+
+  void Show () { panel->Show (); parentSizer->Layout (); }
+  void Hide () { panel->Hide (); parentSizer->Layout (); }
 
   class Panel : public wxPanel
   {
