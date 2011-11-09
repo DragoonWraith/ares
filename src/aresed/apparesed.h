@@ -60,6 +60,7 @@ class MainMode;
 class FoliageMode;
 class CurveMode;
 class RoomMode;
+class EntityMode;
 
 struct iCelPlLayer;
 struct iCelEntity;
@@ -422,6 +423,7 @@ private:
   CurveMode* curveMode;
   RoomMode* roomMode;
   FoliageMode* foliageMode;
+  EntityMode* entityMode;
   EditingMode* editMode;
   CameraWindow* camwin;
 
@@ -479,6 +481,7 @@ public:
   void SwitchToCurveMode ();
   void SwitchToRoomMode ();
   void SwitchToFoliageMode ();
+  void SwitchToEntityMode ();
   void SetCurveModeEnabled (bool cm);
   MainMode* GetMainMode () const { return mainMode; }
 

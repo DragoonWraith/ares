@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "modes/curvemode.h"
 #include "modes/roommode.h"
 #include "modes/foliagemode.h"
+#include "modes/entitymode.h"
 #include "camera.h"
 #include <celtool/initapp.h>
 #include <cstool/simplestaticlighter.h>
@@ -976,6 +977,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   curveMode = 0;
   roomMode = 0;
   foliageMode = 0;
+  entityMode = 0;
   uiManager = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
@@ -988,6 +990,7 @@ AppAresEditWX::~AppAresEditWX ()
   delete curveMode;
   delete roomMode;
   delete foliageMode;
+  delete entityMode;
   delete aresed3d;
   delete uiManager;
 }
@@ -1068,6 +1071,7 @@ void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
   if (pageName == wxT ("Main")) newMode = mainMode;
   else if (pageName == wxT ("Curve")) newMode = curveMode;
   else if (pageName == wxT ("Foliage")) newMode = foliageMode;
+  else if (pageName == wxT ("Entity")) newMode = entityMode;
   if (editMode != newMode)
   {
     if (editMode) editMode->Stop ();
@@ -1264,6 +1268,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("MainModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CurveModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("FoliageModePanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("EntityModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
@@ -1311,6 +1316,8 @@ bool AppAresEditWX::InitWX ()
   roomMode = new RoomMode (aresed3d);
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
   foliageMode = new FoliageMode (foliageModeTabPanel, aresed3d);
+  wxPanel* entityModeTabPanel = XRCCTRL (*this, "entityModeTabPanel", wxPanel);
+  entityMode = new EntityMode (entityModeTabPanel, aresed3d);
 
   editMode = 0;
 
@@ -1504,6 +1511,17 @@ void AppAresEditWX::SwitchToFoliageMode ()
   notebook->ChangeSelection (pageIdx);
   if (editMode) editMode->Stop ();
   editMode = foliageMode;
+  editMode->Start ();
+  SetMenuState ();
+}
+
+void AppAresEditWX::SwitchToEntityMode ()
+{
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  size_t pageIdx = FindNotebookPage (notebook, "Entity");
+  notebook->ChangeSelection (pageIdx);
+  if (editMode) editMode->Stop ();
+  editMode = entityMode;
   editMode->Start ();
   SetMenuState ();
 }

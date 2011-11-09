@@ -24,6 +24,18 @@
 									<selected>1</selected>
 									<object class="wxPanel" name="mainModeTabPanel">
 										<style>wxTAB_TRAVERSAL</style>
+										<tooltip>Main mode, create, delete and move around objects</tooltip>
+										<object class="wxBoxSizer">
+											<orient>wxVERTICAL</orient>
+										</object>
+									</object>
+								</object>
+								<object class="notebookpage">
+									<label>Entity</label>
+									<selected>0</selected>
+									<object class="wxPanel" name="entityModeTabPanel">
+										<style>wxTAB_TRAVERSAL</style>
+										<tooltip>Create, edit, and delete entity templates here</tooltip>
 										<object class="wxBoxSizer">
 											<orient>wxVERTICAL</orient>
 										</object>
@@ -35,6 +47,7 @@
 									<object class="wxPanel" name="curveModeTabPanel">
 										<style>wxTAB_TRAVERSAL</style>
 										<enabled>0</enabled>
+										<tooltip>Curved mesh editor, currently not working very nicely</tooltip>
 										<object class="wxBoxSizer">
 											<orient>wxVERTICAL</orient>
 										</object>
@@ -45,6 +58,7 @@
 									<selected>0</selected>
 									<object class="wxPanel" name="foliageModeTabPanel">
 										<style>wxTAB_TRAVERSAL</style>
+										<tooltip>Edit foliage, currently not operational</tooltip>
 										<object class="wxBoxSizer">
 											<orient>wxVERTICAL</orient>
 										</object>
