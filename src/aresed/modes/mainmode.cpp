@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "apparesed.h"
+#include "../apparesed.h"
 #include "mainmode.h"
-#include "transformtools.h"
+#include "../transformtools.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

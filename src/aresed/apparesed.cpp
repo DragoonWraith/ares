@@ -27,10 +27,10 @@ THE SOFTWARE.
 #include "ui/filereq.h"
 #include "ui/newproject.h"
 #include "ui/celldialog.h"
-#include "mainmode.h"
-#include "curvemode.h"
-#include "roommode.h"
-#include "foliagemode.h"
+#include "modes/mainmode.h"
+#include "modes/curvemode.h"
+#include "modes/roommode.h"
+#include "modes/foliagemode.h"
 #include "camera.h"
 #include <celtool/initapp.h>
 #include <cstool/simplestaticlighter.h>
