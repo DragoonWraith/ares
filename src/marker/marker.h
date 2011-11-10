@@ -273,7 +273,8 @@ public:
       if ((l.node1 == node1 && l.node2 == node2)
 	  || (l.node1 == node2 && l.node2 == node1))
         links.DeleteElement (it);
-      it.Next ();
+      else
+        it.Next ();
     }
   }
 };
