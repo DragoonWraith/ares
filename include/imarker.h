@@ -300,6 +300,44 @@ struct iMarker : public virtual iBase
 };
 
 /**
+ * A graph view based on markers.
+ */
+struct iGraphView : public virtual iBase
+{
+  SCF_INTERFACE(iGraphView,0,0,1);
+
+  /**
+   * Clear the entire graph.
+   */
+  virtual void Clear () = 0;
+
+  /**
+   * Create a node.
+   */
+  virtual void CreateNode (const char* name) = 0;
+
+  /**
+   * Remove a node.
+   */
+  virtual void RemoveNode (const char* name) = 0;
+
+  /**
+   * Link two nodes.
+   */
+  virtual void LinkNode (const char* name, const char* node1, const char* node2) = 0;
+
+  /**
+   * Remove a link by name.
+   */
+  virtual void RemoveLink (const char* name) = 0;
+
+  /**
+   * Remove all links between two nodes.
+   */
+  virtual void RemoveLinks (const char* node1, const char* node2) = 0;
+};
+
+/**
  * Interface to the marker manager.
  */
 struct iMarkerManager : public virtual iBase
@@ -346,6 +384,21 @@ struct iMarkerManager : public virtual iBase
    * Destroy a marker.
    */
   virtual void DestroyMarker (iMarker* marker) = 0;
+
+  /**
+   * Create a new graph view.
+   */
+  virtual iGraphView* CreateGraphView () = 0;
+
+  /**
+   * Destroy a graph view.
+   */
+  virtual void DestroyGraphView (iGraphView* view) = 0;
+
+  /**
+   * Make a graph view visible or invisible.
+   */
+  virtual void SetGraphViewVisibility (iGraphView* view, bool visible) = 0;
 };
 
 #endif // __ARES_MARKER_H__

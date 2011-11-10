@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 #include "csutil/scf_implementation.h"
 #include "csutil/parray.h"
+#include "csutil/hash.h"
 #include "iengine/engine.h"
 #include "iutil/virtclk.h"
 #include "iutil/comp.h"
@@ -218,6 +219,65 @@ public:
   float CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea);
 };
 
+struct GraphLink
+{
+  csString node1;
+  csString node2;
+};
+
+class GraphView : public scfImplementation1<GraphView, iGraphView>
+{
+private:
+  MarkerManager* mgr;
+
+  csSet<csString> nodes;
+  csHash<GraphLink,csString> links;
+
+public:
+  GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr) { }
+  virtual ~GraphView () { }
+
+  void UpdateFrame ();
+
+  virtual void Clear ()
+  {
+    nodes.DeleteAll ();
+    links.DeleteAll ();
+  }
+
+  virtual void CreateNode (const char* name)
+  {
+    nodes.Add (name);
+  }
+  virtual void RemoveNode (const char* name)
+  {
+    nodes.Delete (name);
+  }
+  virtual void LinkNode (const char* name, const char* node1, const char* node2)
+  {
+    GraphLink l;
+    l.node1 = node1;
+    l.node2 = node2;
+    links.Put (name, l);
+  }
+  virtual void RemoveLink (const char* name)
+  {
+    links.DeleteAll (name);
+  }
+  virtual void RemoveLinks (const char* node1, const char* node2)
+  {
+    csHash<GraphLink,csString>::GlobalIterator it = links.GetIterator ();
+    while (it.HasNext ())
+    {
+      GraphLink l = it.NextNoAdvance ();
+      if ((l.node1 == node1 && l.node2 == node2)
+	  || (l.node1 == node2 && l.node2 == node1))
+        links.DeleteElement (it);
+      it.Next ();
+    }
+  }
+};
+
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>
 {
 public:
@@ -234,6 +294,7 @@ public:
 
   csRefArray<Marker> markers;
   csRefArray<MarkerColor> markerColors;
+  csRefArray<GraphView> graphViews;
 
   MarkerHitArea* currentDraggingHitArea;
   MarkerDraggingMode* currentDraggingMode;
@@ -297,6 +358,10 @@ public:
     markers.Delete (static_cast<Marker*> (marker));
   }
   virtual iMarker* FindHitMarker (int x, int y, int& data);
+
+  virtual iGraphView* CreateGraphView ();
+  virtual void DestroyGraphView (iGraphView* view);
+  virtual void SetGraphViewVisibility (iGraphView* view, bool visible);
 
   MarkerHitArea* FindHitArea (int x, int y);
 };

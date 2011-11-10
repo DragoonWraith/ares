@@ -47,7 +47,14 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
   return d*d;
 }
 
-//---------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+
+
+void GraphView::UpdateFrame ()
+{
+}
+
+//--------------------------------------------------------------------------------
 
 csPen* MarkerColor::GetOrCreatePen (int level)
 {
@@ -731,6 +738,23 @@ iMarkerColor* MarkerManager::FindMarkerColor (const char* name)
     if (markerColors[i]->GetNameString () == name)
       return markerColors[i];
   return 0;
+}
+
+iGraphView* MarkerManager::CreateGraphView ()
+{
+  csRef<GraphView> gv;
+  gv.AttachNew (new GraphView (this));
+  graphViews.Push (gv);
+  return gv;
+}
+
+void MarkerManager::DestroyGraphView (iGraphView* view)
+{
+  graphViews.Delete (static_cast<GraphView*> (view));
+}
+
+void MarkerManager::SetGraphViewVisibility (iGraphView* view, bool visible)
+{
 }
 
 }
