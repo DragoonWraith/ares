@@ -49,42 +49,189 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
 
 //--------------------------------------------------------------------------------
 
+//#define PUSH_FACTOR 2.5f
+#define PUSH_FACTOR 0.1f
+#define PULL_FACTOR 0.1f
+#define STRING_LENGTH 200.0f
+
+// Always return 1 or -1.
+static int PosSign (float a, bool sgnNeg)
+{
+  if (a < 0) return -1;
+  else if (a > 0) return 1;
+  else return sgnNeg ? -1 : 1;
+}
+
+GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false)
+{
+  draggingMarker = 0;
+}
+
+#if 0
+csVector2 GraphView::CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh)
+{
+  csVector2 push;
+  //push.x = PUSH_FACTOR / (self.x - other.x + PosSign (self.x - other.x, self.x > fw/2.0f));
+  //push.y = PUSH_FACTOR / (self.y - other.y + PosSign (self.y - other.y, self.y > fh/2.0f));
+  bool r = rand () % 2;
+  push.x = PUSH_FACTOR / (self.x - other.x + PosSign (self.x - other.x, r));
+  r = rand () % 2;
+  push.y = PUSH_FACTOR / (self.y - other.y + PosSign (self.y - other.y, r));
+  return push;
+}
+#else
+csVector2 GraphView::CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh)
+{
+  csVector2 push;
+  //push.x = PUSH_FACTOR / (self.x - other.x + PosSign (self.x - other.x, self.x > fw/2.0f));
+  //push.y = PUSH_FACTOR / (self.y - other.y + PosSign (self.y - other.y, self.y > fh/2.0f));
+  float dist = sqrt (SqDistance2d (self, other));
+  if (dist < 0.00001f)
+    return csVector2 (float (rand () % 10) / 10.0f, float (rand () % 10) / 10.0f);	//@@@
+  push = PUSH_FACTOR * (self-other) / dist;
+  return push;
+}
+#endif
+
+bool GraphView::IsLinked (const char* n1, const char* n2)
+{
+  csHash<GraphLink,csString>::GlobalIterator it = links.GetIterator ();
+  while (it.HasNext ())
+  {
+    GraphLink& l = it.Next ();
+    if (l.node1 == n1 && l.node2 == n2) return true;
+    if (l.node2 == n1 && l.node1 == n2) return true;
+  }
+  return false;
+}
 
 void GraphView::UpdateFrame ()
 {
-  csHash<iMarker*,csString>::GlobalIterator it = nodes.GetIterator ();
+  int fw = mgr->GetG2D ()->GetWidth ();
+  int fh = mgr->GetG2D ()->GetHeight ();
+  float seconds = mgr->GetVC ()->GetElapsedSeconds ();
+
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    iMarker* marker = it.Next ();
-    marker->SetPosition (csVector2 (300, 300));
+    csString key;
+    GraphNode& node = it.Next (key);
+    if (node.marker == draggingMarker) continue;
+    csVector2 pos = node.marker->GetPosition ();
+
+    csVector2 push (0, 0);
+    push += CalculatePush (pos, csVector2 (-5, pos.y), fw, fh);
+    push += CalculatePush (pos, csVector2 (fw+5, pos.y), fw, fh);
+    push += CalculatePush (pos, csVector2 (pos.x, -5), fw, fh);
+    push += CalculatePush (pos, csVector2 (pos.x, fh+5), fw, fh);
+    int cnt = 4;
+
+    csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
+    while (it2.HasNext ())
+    {
+      csString key2;
+      GraphNode& node2 = it2.Next (key2);
+      if (node.marker != node2.marker)
+      {
+	csVector2 pos2 = node2.marker->GetPosition ();
+	csVector2 p = CalculatePush (pos, pos2, fw, fh);
+	//printf ("p=%g,%g\n", p.x, p.y);
+	if (IsLinked (key, key2))
+	{
+	  float dist = sqrt (SqDistance2d (pos, pos2));
+	  if (dist > STRING_LENGTH)
+	  {
+	    csVector2 up = p.Unit ();
+	    float pull = PULL_FACTOR * (((dist-STRING_LENGTH) / STRING_LENGTH) + 1.0f);
+	    //printf ("pull=%f\n", pull);
+	    p -= up * pull;
+	  }
+	}
+	push += p;
+	cnt++;
+      }
+    }
+    node.push = push / float (cnt);
+    pos += node.push * (seconds * 5000.0f);
+    if (pos.x > fw-76) pos.x = fw-76;
+    else if (pos.x < 76) pos.x = 76;
+    if (pos.y > fh-14) pos.y = fh-14;
+    else if (pos.y < 14) pos.y = 14;
+    node.marker->SetPosition (pos);
+  }
+}
+
+void GraphView::Render3D ()
+{
+  MarkerColor* white = static_cast<MarkerColor*> (mgr->FindMarkerColor ("white"));
+  GraphNode n;
+  csHash<GraphLink,csString>::GlobalIterator it = links.GetIterator ();
+  while (it.HasNext ())
+  {
+    GraphLink& l = it.Next ();
+    GraphNode& node1 = nodes.Get (l.node1, n);
+    GraphNode& node2 = nodes.Get (l.node2, n);
+    csVector2 pos1 = node1.marker->GetPosition ();
+    csVector2 pos2 = node2.marker->GetPosition ();
+    csPen* pen = white->GetPen (1);
+    pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
   }
 }
 
 void GraphView::SetVisible (bool v)
 {
   visible = v;
-  csHash<iMarker*,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    iMarker* marker = it.Next ();
+    iMarker* marker = it.Next ().marker;
     marker->SetVisible (v);
   }
 }
 
 void GraphView::Clear ()
 {
-  csHash<iMarker*,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    iMarker* marker = it.Next ();
+    iMarker* marker = it.Next ().marker;
     mgr->DestroyMarker (marker);
   }
   nodes.DeleteAll ();
   links.DeleteAll ();
 }
 
+class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
+{
+private:
+  GraphView* view;
+
+public:
+  MarkerCallback (GraphView* view) : scfImplementationType (this),
+    view (view) { }
+  virtual ~MarkerCallback () { }
+  virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos, uint button, uint32 modifiers)
+  {
+    view->SetDraggingMarker (marker);
+  }
+  virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+      const csVector3& pos)
+  {
+    marker->SetPosition (csVector2 (pos.x, pos.y));
+  }
+  virtual void MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
+      const csReversibleTransform& transform) { }
+  virtual void StopDragging (iMarker* marker, iMarkerHitArea* area)
+  {
+    view->SetDraggingMarker (0);
+  }
+};
+
 void GraphView::CreateNode (const char* name)
 {
+  int fw = mgr->GetG2D ()->GetWidth ();
+  int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
   // @@@ Color should come from outside.
   iMarkerColor* white = mgr->FindMarkerColor ("white");
@@ -93,16 +240,27 @@ void GraphView::CreateNode (const char* name)
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), name, white, true);
   marker->SetSelectionLevel (1);
   marker->SetVisible (false);
-  nodes.Put (name, marker);
+  marker->SetPosition (csVector2 (fw / 2, fh / 2));
+
+  iMarkerColor* yellow = mgr->FindMarkerColor ("yellow");
+  iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csVector3 (0, 0), 13, 0, yellow);
+  csRef<MarkerCallback> cb;
+  cb.AttachNew (new MarkerCallback (this));
+  hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
+
+  GraphNode node;
+  node.marker = marker;
+  node.push.Set (0, 0);
+  nodes.Put (name, node);
 }
 
 void GraphView::RemoveNode (const char* name)
 {
-  iMarker* marker = nodes.Get (name, (iMarker*)0);
-  if (marker)
+  GraphNode node = nodes.Get (name, GraphNode ());
+  if (node.marker)
   {
     nodes.DeleteAll (name);
-    mgr->DestroyMarker (marker);
+    mgr->DestroyMarker (node.marker);
   }
 }
 
@@ -319,19 +477,23 @@ void Marker::Render3D ()
         int h = mgr->g2d->GetHeight ();
 	csVector2 s;
 	if (ha->GetSpace () != MARKER_2D)
-          s = mgr->camera->Perspective (c);
+          s = mgr->camera->Perspective (c) + pos;
 	else
-	  s.Set (c.x, h-c.y);
+          s.Set (pos.x + c.x, h - (pos.y + c.y));
 	int x = int (s.x);
 	int y = h - int (s.y);
 	int mouseX = mgr->GetMouseX ();
 	int mouseY = mgr->GetMouseY ();
-	csVector2 r = ha->GetPerspectiveRadius (mgr->view, c.z);
+	csVector2 r;
+	if (ha->GetSpace () != MARKER_2D)
+          r = ha->GetPerspectiveRadius (mgr->view, c.z);
+	else
+	  r.Set (ha->GetRadius (), ha->GetRadius ());
 	bool selected = mouseX >= (x-r.x) && mouseX <= (x+r.x) &&
 	  mouseY >= (y-r.y) && mouseY <= (y+r.y);
         csPen* pen = ha->GetColor ()->GetPen (
 	    selected ? SELECTION_SELECTED : SELECTION_NONE);
-	pen->DrawArc (pos.x+x-r.x, pos.y+y-r.y, pos.x+x+r.x, pos.y+y+r.y);
+	pen->DrawArc (x-r.x, y-r.y, x+r.x, y+r.y);
       }
     }
   }
@@ -449,11 +611,19 @@ float Marker::CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea)
     MarkerHitArea* hitArea = hitAreas[i];
     csVector3 c = TransPointCam (camtrans, meshtrans, hitArea->GetSpace (),
 	hitArea->GetCenter ());
-    if (c.z > .1)
+    if (hitArea->GetSpace () == MARKER_2D || c.z > .5)
     {
-      csVector2 s = mgr->camera->Perspective (c);
+      csVector2 s;
+      if (hitArea->GetSpace () != MARKER_2D)
+        s = mgr->camera->Perspective (c) + pos;
+      else
+        s.Set (pos.x + c.x, mgr->g2d->GetHeight () - (pos.y + c.y));
       float d = sqrt (SqDistance2d (s, f));
-      csVector2 r = hitArea->GetPerspectiveRadius (mgr->view, c.z);
+      csVector2 r;
+      if (hitArea->GetSpace () != MARKER_2D)
+        r = hitArea->GetPerspectiveRadius (mgr->view, c.z);
+      else
+	r.Set (hitArea->GetRadius (), hitArea->GetRadius ());
       float radius = (r.x+r.y) / 2.0f;
       if (d <= radius && d <= bestRadius)
       {
@@ -632,34 +802,43 @@ void MarkerManager::HandleDrag ()
   if (currentDraggingMode)
   {
     iMarker* marker = currentDraggingHitArea->GetMarker ();
-    bool do_drag = true;
-    csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
-    csVector3 v3d = camera->InvPerspective (v2d, 100.0f);
-    csVector3 start = camera->GetTransform ().GetOrigin ();
-    csVector3 end = camera->GetTransform ().This2Other (v3d);
     csVector3 newpos;
+    bool do_drag = true;
     uint32 cp = currentDraggingMode->constrainPlane;
-    if (cp & CONSTRAIN_MESH)
+    if (currentDraggingMode->constrainSpace == MARKER_2D)
     {
-      iMeshWrapper* mesh = currentDraggingHitArea->GetMarker ()->GetAttachedMesh ();
-      csFlags oldFlags = mesh->GetFlags ();
-      mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
-      csSectorHitBeamResult result = camera->GetSector ()->HitBeamPortals (
-	  start, end);
-      mesh->GetFlags ().SetAll (oldFlags.Get ());
-      if (!result.mesh) do_drag = false;	// Safety
-      newpos = result.isect;
-    }
-    else if (cp & CONSTRAIN_PLANE)
-    {
-      if (!FindPlanarIntersection (start, end, newpos))
-	return;
+      newpos.x = mouseX;
+      newpos.y = mouseY;
+      newpos.z = 0;
     }
     else
     {
-      newpos = end - start;
-      newpos.Normalize ();
-      newpos = camera->GetTransform ().GetOrigin () + newpos * dragDistance;
+      csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
+      csVector3 v3d = camera->InvPerspective (v2d, 100.0f);
+      csVector3 start = camera->GetTransform ().GetOrigin ();
+      csVector3 end = camera->GetTransform ().This2Other (v3d);
+      if (cp & CONSTRAIN_MESH)
+      {
+        iMeshWrapper* mesh = currentDraggingHitArea->GetMarker ()->GetAttachedMesh ();
+        csFlags oldFlags = mesh->GetFlags ();
+        mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
+        csSectorHitBeamResult result = camera->GetSector ()->HitBeamPortals (
+	    start, end);
+        mesh->GetFlags ().SetAll (oldFlags.Get ());
+        if (!result.mesh) do_drag = false;	// Safety
+        newpos = result.isect;
+      }
+      else if (cp & CONSTRAIN_PLANE)
+      {
+        if (!FindPlanarIntersection (start, end, newpos))
+	  return;
+      }
+      else
+      {
+        newpos = end - start;
+        newpos.Normalize ();
+        newpos = camera->GetTransform ().GetOrigin () + newpos * dragDistance;
+      }
     }
 
     if (do_drag && currentDraggingMode->cb)
@@ -695,6 +874,10 @@ void MarkerManager::Frame2D ()
 
 void MarkerManager::Frame3D ()
 {
+  for (size_t i = 0 ; i < graphViews.GetSize () ; i++)
+    if (graphViews[i]->IsVisible ())
+      graphViews[i]->Render3D ();
+
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render3D ();
 }
@@ -720,8 +903,6 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     MarkerDraggingMode* dm = hitArea->FindDraggingMode (but, mod);
     if (dm)
     {
-      printf ("Start dragging mode!\n");
-      fflush (stdout);
       currentDraggingHitArea = hitArea;
       currentDraggingMode = dm;
       const csOrthoTransform& camtrans = camera->GetTransform ();

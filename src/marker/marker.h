@@ -219,6 +219,13 @@ public:
   float CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea);
 };
 
+struct GraphNode
+{
+  iMarker* marker;
+  csVector2 push;
+  GraphNode () : marker (0) { }
+};
+
 struct GraphLink
 {
   csString node1;
@@ -231,14 +238,21 @@ private:
   MarkerManager* mgr;
   bool visible;
 
-  csHash<iMarker*,csString> nodes;
+  csHash<GraphNode,csString> nodes;
   csHash<GraphLink,csString> links;
+  iMarker* draggingMarker;
+
+  csVector2 CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh);
+  bool IsLinked (const char* n1, const char* n2);
 
 public:
-  GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false) { }
+  GraphView (MarkerManager* mgr);
   virtual ~GraphView () { Clear(); }
 
   void UpdateFrame ();
+  void Render3D ();
+
+  void SetDraggingMarker (iMarker* marker) { draggingMarker = marker; }
 
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }
@@ -322,6 +336,8 @@ public:
   int GetMouseY () const { return mouseY; }
 
   iFont* GetFont () const { return font; }
+  iGraphics2D* GetG2D () const { return g2d; }
+  iVirtualClock* GetVC () const { return vc; }
 
   virtual void Frame2D ();
   virtual void Frame3D ();

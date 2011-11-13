@@ -46,17 +46,28 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
 
-  testMarker = aresed3d->GetMarkerManager ()->CreateMarker ();
-  iMarkerColor* white = aresed3d->GetMarkerManager ()->FindMarkerColor ("white");
-  testMarker->RoundedBox2D (MARKER_2D, csVector3 (50, 50, 0),
-      csVector3 (150, 75, 0), 10, white);
-  testMarker->Text (MARKER_2D, csVector3 (100, 62, 0), "Hello!", white, true);
-  testMarker->SetSelectionLevel (1);
-  testMarker->SetVisible (false);
+  //iMarkerColor* white = aresed3d->GetMarkerManager ()->FindMarkerColor ("white");
+
+  view = aresed3d->GetMarkerManager ()->CreateGraphView ();
+  view->CreateNode ("Node 1");
+  view->CreateNode ("Node 2");
+  view->CreateNode ("Node 3");
+  view->CreateNode ("Node 4");
+  view->CreateNode ("Node 5");
+  view->CreateNode ("Node 6");
+  view->CreateNode ("Node 7");
+  view->LinkNode ("Link 1", "Node 1", "Node 2");
+  view->LinkNode ("Link 2", "Node 1", "Node 3");
+  view->LinkNode ("Link 3", "Node 1", "Node 4");
+  view->LinkNode ("Link 4", "Node 1", "Node 6");
+  view->LinkNode ("SLink 1", "Node 5", "Node 6");
+  view->LinkNode ("SLink 2", "Node 7", "Node 6");
+  view->SetVisible (false);
 }
 
 EntityMode::~EntityMode ()
 {
+  aresed3d->GetMarkerManager ()->DestroyGraphView (view);
 }
 
 void EntityMode::SetupItems ()
@@ -78,12 +89,12 @@ void EntityMode::Start ()
 {
   aresed3d->GetApp ()->GetCameraWindow ()->Hide ();
   SetupItems ();
-  testMarker->SetVisible (true);
+  view->SetVisible (true);
 }
 
 void EntityMode::Stop ()
 {
-  testMarker->SetVisible (false);
+  view->SetVisible (false);
 }
 
 void EntityMode::FramePre()

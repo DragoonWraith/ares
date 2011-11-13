@@ -35,7 +35,7 @@ class EntityMode : public EditingMode
 private:
   void SetupItems ();
 
-  iMarker* testMarker;
+  iGraphView* view;
 
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
