@@ -229,30 +229,22 @@ class GraphView : public scfImplementation1<GraphView, iGraphView>
 {
 private:
   MarkerManager* mgr;
+  bool visible;
 
-  csSet<csString> nodes;
+  csHash<iMarker*,csString> nodes;
   csHash<GraphLink,csString> links;
 
 public:
-  GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr) { }
-  virtual ~GraphView () { }
+  GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false) { }
+  virtual ~GraphView () { Clear(); }
 
   void UpdateFrame ();
 
-  virtual void Clear ()
-  {
-    nodes.DeleteAll ();
-    links.DeleteAll ();
-  }
-
-  virtual void CreateNode (const char* name)
-  {
-    nodes.Add (name);
-  }
-  virtual void RemoveNode (const char* name)
-  {
-    nodes.Delete (name);
-  }
+  virtual void SetVisible (bool v);
+  virtual bool IsVisible () const { return visible; }
+  virtual void Clear ();
+  virtual void CreateNode (const char* name);
+  virtual void RemoveNode (const char* name);
   virtual void LinkNode (const char* name, const char* node1, const char* node2)
   {
     GraphLink l;
@@ -362,7 +354,6 @@ public:
 
   virtual iGraphView* CreateGraphView ();
   virtual void DestroyGraphView (iGraphView* view);
-  virtual void SetGraphViewVisibility (iGraphView* view, bool visible);
 
   MarkerHitArea* FindHitArea (int x, int y);
 };

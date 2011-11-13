@@ -52,6 +52,58 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
 
 void GraphView::UpdateFrame ()
 {
+  csHash<iMarker*,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    iMarker* marker = it.Next ();
+    marker->SetPosition (csVector2 (300, 300));
+  }
+}
+
+void GraphView::SetVisible (bool v)
+{
+  visible = v;
+  csHash<iMarker*,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    iMarker* marker = it.Next ();
+    marker->SetVisible (v);
+  }
+}
+
+void GraphView::Clear ()
+{
+  csHash<iMarker*,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    iMarker* marker = it.Next ();
+    mgr->DestroyMarker (marker);
+  }
+  nodes.DeleteAll ();
+  links.DeleteAll ();
+}
+
+void GraphView::CreateNode (const char* name)
+{
+  iMarker* marker = mgr->CreateMarker ();
+  // @@@ Color should come from outside.
+  iMarkerColor* white = mgr->FindMarkerColor ("white");
+  marker->RoundedBox2D (MARKER_2D, csVector3 (-75, -13, 0),
+    csVector3 (75, 13, 0), 10, white);
+  marker->Text (MARKER_2D, csVector3 (0, 0, 0), name, white, true);
+  marker->SetSelectionLevel (1);
+  marker->SetVisible (false);
+  nodes.Put (name, marker);
+}
+
+void GraphView::RemoveNode (const char* name)
+{
+  iMarker* marker = nodes.Get (name, (iMarker*)0);
+  if (marker)
+  {
+    nodes.DeleteAll (name);
+    mgr->DestroyMarker (marker);
+  }
 }
 
 //--------------------------------------------------------------------------------
@@ -430,6 +482,10 @@ MarkerManager::MarkerManager (iBase *iParent)
 
 MarkerManager::~MarkerManager ()
 {
+  // First remove the views before the markers because destroying the
+  // views also causes markers to be deleted.
+  graphViews.DeleteAll ();
+  markers.DeleteAll ();
 }
 
 bool MarkerManager::Initialize (iObjectRegistry *object_reg)
@@ -628,6 +684,10 @@ void MarkerManager::HandleDrag ()
 
 void MarkerManager::Frame2D ()
 {
+  for (size_t i = 0 ; i < graphViews.GetSize () ; i++)
+    if (graphViews[i]->IsVisible ())
+      graphViews[i]->UpdateFrame ();
+
   HandleDrag ();
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render2D ();
@@ -751,10 +811,6 @@ iGraphView* MarkerManager::CreateGraphView ()
 void MarkerManager::DestroyGraphView (iGraphView* view)
 {
   graphViews.Delete (static_cast<GraphView*> (view));
-}
-
-void MarkerManager::SetGraphViewVisibility (iGraphView* view, bool visible)
-{
 }
 
 }

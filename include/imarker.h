@@ -312,6 +312,17 @@ struct iGraphView : public virtual iBase
   virtual void Clear () = 0;
 
   /**
+   * Make the graph visible/invisible.
+   * By default graphs are created invisible.
+   */
+  virtual void SetVisible (bool v) = 0;
+
+  /**
+   * Returns true if this view is visible.
+   */
+  virtual bool IsVisible () const = 0;
+
+  /**
    * Create a node.
    */
   virtual void CreateNode (const char* name) = 0;
@@ -394,11 +405,6 @@ struct iMarkerManager : public virtual iBase
    * Destroy a graph view.
    */
   virtual void DestroyGraphView (iGraphView* view) = 0;
-
-  /**
-   * Make a graph view visible or invisible.
-   */
-  virtual void SetGraphViewVisibility (iGraphView* view, bool visible) = 0;
 };
 
 #endif // __ARES_MARKER_H__
