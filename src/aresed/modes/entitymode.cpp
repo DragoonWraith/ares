@@ -35,6 +35,7 @@ THE SOFTWARE.
 //---------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
+  EVT_LISTBOX (XRCID("templateList"), EntityMode::Panel :: OnTemplateSelect)
 END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
@@ -45,23 +46,22 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
-
-  //iMarkerColor* white = aresed3d->GetMarkerManager ()->FindMarkerColor ("white");
-
   view = aresed3d->GetMarkerManager ()->CreateGraphView ();
-  view->CreateNode ("Node 1");
-  view->CreateNode ("Node 2");
-  view->CreateNode ("Node 3");
-  view->CreateNode ("Node 4");
-  view->CreateNode ("Node 5");
-  view->CreateNode ("Node 6");
-  view->CreateNode ("Node 7");
-  view->LinkNode ("Link 1", "Node 1", "Node 2");
-  view->LinkNode ("Link 2", "Node 1", "Node 3");
-  view->LinkNode ("Link 3", "Node 1", "Node 4");
-  view->LinkNode ("Link 4", "Node 1", "Node 6");
-  view->LinkNode ("SLink 1", "Node 5", "Node 6");
-  view->LinkNode ("SLink 2", "Node 7", "Node 6");
+  view->Clear ();
+ view->CreateNode ("Node 1");
+ view->CreateNode ("Node 2");
+ view->CreateNode ("Node 3");
+ view->CreateNode ("Node 4");
+ view->CreateNode ("Node 5");
+ view->CreateNode ("Node 6");
+ view->CreateNode ("Node 7");
+ view->LinkNode ("Node 1", "Node 2");
+ view->LinkNode ("Node 1", "Node 3");
+ view->LinkNode ("Node 1", "Node 4");
+ view->LinkNode ("Node 1", "Node 6");
+ view->LinkNode ("Node 5", "Node 6");
+ view->LinkNode ("Node 7", "Node 6");
+
   view->SetVisible (false);
 }
 
@@ -95,6 +95,34 @@ void EntityMode::Start ()
 void EntityMode::Stop ()
 {
   view->SetVisible (false);
+}
+
+void EntityMode::ShowTemplate (const char* templateName)
+{
+  view->Clear ();
+
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
+  if (!tpl) return;
+
+  view->CreateNode (templateName);
+  view->ForcePosition (templateName,
+      csVector2 (aresed3d->GetG2D ()->GetWidth ()/2,
+	aresed3d->GetG2D ()->GetHeight ()/2));
+
+  for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+  {
+    iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+    view->CreateNode (pctpl->GetName ());
+    view->LinkNode (templateName, pctpl->GetName ());
+  }
+}
+
+void EntityMode::OnTemplateSelect ()
+{
+  wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
+  csString templateName = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
+  ShowTemplate (templateName);
 }
 
 void EntityMode::FramePre()

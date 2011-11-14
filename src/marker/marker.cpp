@@ -50,9 +50,9 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
 //--------------------------------------------------------------------------------
 
 //#define PUSH_FACTOR 2.5f
-#define PUSH_FACTOR 0.1f
+#define PUSH_FACTOR 0.5f
 #define PULL_FACTOR 0.1f
-#define STRING_LENGTH 200.0f
+#define STRING_LENGTH 300.0f
 
 // Always return 1 or -1.
 static int PosSign (float a, bool sgnNeg)
@@ -65,6 +65,15 @@ static int PosSign (float a, bool sgnNeg)
 GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false)
 {
   draggingMarker = 0;
+}
+
+void GraphView::ForcePosition (const char* name, const csVector2& pos)
+{
+  GraphNode n;
+  GraphNode& node = nodes.Get (name, n);
+  node.frozen = true;
+  if (node.marker)
+    node.marker->SetPosition (pos);
 }
 
 #if 0
@@ -82,23 +91,18 @@ csVector2 GraphView::CalculatePush (const csVector2& self, const csVector2& othe
 #else
 csVector2 GraphView::CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh)
 {
-  csVector2 push;
-  //push.x = PUSH_FACTOR / (self.x - other.x + PosSign (self.x - other.x, self.x > fw/2.0f));
-  //push.y = PUSH_FACTOR / (self.y - other.y + PosSign (self.y - other.y, self.y > fh/2.0f));
   float dist = sqrt (SqDistance2d (self, other));
   if (dist < 0.00001f)
-    return csVector2 (float (rand () % 10) / 10.0f, float (rand () % 10) / 10.0f);	//@@@
-  push = PUSH_FACTOR * (self-other) / dist;
-  return push;
+    return csVector2 (float (rand () % 10) / 200.0f, float (rand () % 10) / 200.0f);	//@@@
+  return PUSH_FACTOR * (self-other) / (dist*dist);
 }
 #endif
 
 bool GraphView::IsLinked (const char* n1, const char* n2)
 {
-  csHash<GraphLink,csString>::GlobalIterator it = links.GetIterator ();
-  while (it.HasNext ())
+  for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
-    GraphLink& l = it.Next ();
+    GraphLink& l = links[i];
     if (l.node1 == n1 && l.node2 == n2) return true;
     if (l.node2 == n1 && l.node1 == n2) return true;
   }
@@ -116,42 +120,66 @@ void GraphView::UpdateFrame ()
   {
     csString key;
     GraphNode& node = it.Next (key);
-    if (node.marker == draggingMarker) continue;
+    if (node.marker == draggingMarker || node.frozen) continue;
+
     csVector2 pos = node.marker->GetPosition ();
 
-    csVector2 push (0, 0);
-    push += CalculatePush (pos, csVector2 (-5, pos.y), fw, fh);
-    push += CalculatePush (pos, csVector2 (fw+5, pos.y), fw, fh);
-    push += CalculatePush (pos, csVector2 (pos.x, -5), fw, fh);
-    push += CalculatePush (pos, csVector2 (pos.x, fh+5), fw, fh);
-    int cnt = 4;
-
-    csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
-    while (it2.HasNext ())
+    if (node.updateCounter <= 0.0f)
     {
-      csString key2;
-      GraphNode& node2 = it2.Next (key2);
-      if (node.marker != node2.marker)
+      node.updateCounter = 1.0f;
+      csVector2 push (0, 0);
+      int cnt = 0;
+#if 1
+      if (pos.x < fw/4)
       {
-	csVector2 pos2 = node2.marker->GetPosition ();
-	csVector2 p = CalculatePush (pos, pos2, fw, fh);
-	//printf ("p=%g,%g\n", p.x, p.y);
-	if (IsLinked (key, key2))
-	{
-	  float dist = sqrt (SqDistance2d (pos, pos2));
-	  if (dist > STRING_LENGTH)
-	  {
-	    csVector2 up = p.Unit ();
-	    float pull = PULL_FACTOR * (((dist-STRING_LENGTH) / STRING_LENGTH) + 1.0f);
-	    //printf ("pull=%f\n", pull);
-	    p -= up * pull;
-	  }
-	}
-	push += p;
-	cnt++;
+        push += CalculatePush (pos, csVector2 (-5, pos.y), fw, fh) * 3.0f;
+        cnt++;
       }
+      else if (pos.x > 3*fw/4)
+      {
+        push += CalculatePush (pos, csVector2 (fw+5, pos.y), fw, fh) * 3.0f;
+        cnt++;
+      }
+      if (pos.y < fh/4)
+      {
+        push += CalculatePush (pos, csVector2 (pos.x, -5), fw, fh) * 3.0f;
+        cnt++;
+      }
+      else if (pos.y > 3*fh/4)
+      {
+        push += CalculatePush (pos, csVector2 (pos.x, fh+5), fw, fh) * 3.0f;
+        cnt++;
+      }
+#endif
+
+      csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
+      while (it2.HasNext ())
+      {
+        csString key2;
+        GraphNode& node2 = it2.Next (key2);
+        if (node.marker != node2.marker)
+        {
+	  csVector2 pos2 = node2.marker->GetPosition ();
+	  csVector2 p = CalculatePush (pos, pos2, fw, fh);
+	  //printf ("p=%g,%g\n", p.x, p.y);
+	  if (IsLinked (key, key2))
+	  {
+	    float dist = sqrt (SqDistance2d (pos, pos2));
+	    if (dist > STRING_LENGTH)
+	    {
+	      csVector2 up = p.Unit ();
+	      float pull = PULL_FACTOR * (((dist-STRING_LENGTH) / STRING_LENGTH) + 1.0f);
+	      //printf ("pull=%f\n", pull);
+	      p -= up * pull;
+	    }
+	  }
+	  push += p;
+	  cnt++;
+        }
+      }
+      node.push = push / float (cnt);
     }
-    node.push = push / float (cnt);
+    else node.updateCounter -= seconds;
     pos += node.push * (seconds * 5000.0f);
     if (pos.x > fw-76) pos.x = fw-76;
     else if (pos.x < 76) pos.x = 76;
@@ -165,10 +193,9 @@ void GraphView::Render3D ()
 {
   MarkerColor* white = static_cast<MarkerColor*> (mgr->FindMarkerColor ("white"));
   GraphNode n;
-  csHash<GraphLink,csString>::GlobalIterator it = links.GetIterator ();
-  while (it.HasNext ())
+  for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
-    GraphLink& l = it.Next ();
+    GraphLink& l = links[i];
     GraphNode& node1 = nodes.Get (l.node1, n);
     GraphNode& node2 = nodes.Get (l.node2, n);
     csVector2 pos1 = node1.marker->GetPosition ();
@@ -239,7 +266,7 @@ void GraphView::CreateNode (const char* name)
     csVector3 (75, 13, 0), 10, white);
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), name, white, true);
   marker->SetSelectionLevel (1);
-  marker->SetVisible (false);
+  marker->SetVisible (visible);
   marker->SetPosition (csVector2 (fw / 2, fh / 2));
 
   iMarkerColor* yellow = mgr->FindMarkerColor ("yellow");

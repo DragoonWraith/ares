@@ -34,6 +34,7 @@ class EntityMode : public EditingMode
 {
 private:
   void SetupItems ();
+  void ShowTemplate (const char* templateName);
 
   iGraphView* view;
 
@@ -52,12 +53,19 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
+  void OnTemplateSelect ();
+
   class Panel : public wxPanel
   {
   public:
     Panel(wxWindow* parent, EntityMode* s)
       : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
     {}
+
+    void OnTemplateSelect (wxCommandEvent& event)
+    {
+      s->OnTemplateSelect ();
+    }
 
   private:
     EntityMode* s;

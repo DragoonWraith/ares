@@ -335,17 +335,17 @@ struct iGraphView : public virtual iBase
   /**
    * Link two nodes.
    */
-  virtual void LinkNode (const char* name, const char* node1, const char* node2) = 0;
-
-  /**
-   * Remove a link by name.
-   */
-  virtual void RemoveLink (const char* name) = 0;
+  virtual void LinkNode (const char* node1, const char* node2) = 0;
 
   /**
    * Remove all links between two nodes.
    */
-  virtual void RemoveLinks (const char* node1, const char* node2) = 0;
+  virtual void RemoveLink (const char* node1, const char* node2) = 0;
+
+  /**
+   * Force the position of a node.
+   */
+  virtual void ForcePosition (const char* name, const csVector2& pos) = 0;
 };
 
 /**

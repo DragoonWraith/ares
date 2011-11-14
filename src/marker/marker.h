@@ -222,8 +222,10 @@ public:
 struct GraphNode
 {
   iMarker* marker;
+  float updateCounter;
   csVector2 push;
-  GraphNode () : marker (0) { }
+  bool frozen;
+  GraphNode () : marker (0), updateCounter (0.0f), frozen (false) { }
 };
 
 struct GraphLink
@@ -239,7 +241,7 @@ private:
   bool visible;
 
   csHash<GraphNode,csString> nodes;
-  csHash<GraphLink,csString> links;
+  csArray<GraphLink> links;
   iMarker* draggingMarker;
 
   csVector2 CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh);
@@ -259,30 +261,27 @@ public:
   virtual void Clear ();
   virtual void CreateNode (const char* name);
   virtual void RemoveNode (const char* name);
-  virtual void LinkNode (const char* name, const char* node1, const char* node2)
+  virtual void LinkNode (const char* node1, const char* node2)
   {
     GraphLink l;
     l.node1 = node1;
     l.node2 = node2;
-    links.Put (name, l);
+    links.Push (l);
   }
-  virtual void RemoveLink (const char* name)
+  virtual void RemoveLink (const char* node1, const char* node2)
   {
-    links.DeleteAll (name);
-  }
-  virtual void RemoveLinks (const char* node1, const char* node2)
-  {
-    csHash<GraphLink,csString>::GlobalIterator it = links.GetIterator ();
-    while (it.HasNext ())
+    size_t i = 0;
+    while (i < links.GetSize ())
     {
-      GraphLink l = it.NextNoAdvance ();
+      GraphLink& l = links[i];
       if ((l.node1 == node1 && l.node2 == node2)
 	  || (l.node1 == node2 && l.node2 == node1))
-        links.DeleteElement (it);
+        links.DeleteIndex (i);
       else
-        it.Next ();
+        i++;
     }
   }
+  virtual void ForcePosition (const char* name, const csVector2& pos);
 };
 
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>
