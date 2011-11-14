@@ -46,21 +46,11 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
-  view = aresed3d->GetMarkerManager ()->CreateGraphView ();
+  iMarkerManager* mgr = aresed3d->GetMarkerManager ();
+  view = mgr->CreateGraphView ();
+  view->SetColors (mgr->FindMarkerColor ("white"), mgr->FindMarkerColor ("blue"),
+      mgr->FindMarkerColor ("yellow"));
   view->Clear ();
- view->CreateNode ("Node 1");
- view->CreateNode ("Node 2");
- view->CreateNode ("Node 3");
- view->CreateNode ("Node 4");
- view->CreateNode ("Node 5");
- view->CreateNode ("Node 6");
- view->CreateNode ("Node 7");
- view->LinkNode ("Node 1", "Node 2");
- view->LinkNode ("Node 1", "Node 3");
- view->LinkNode ("Node 1", "Node 4");
- view->LinkNode ("Node 1", "Node 6");
- view->LinkNode ("Node 5", "Node 6");
- view->LinkNode ("Node 7", "Node 6");
 
   view->SetVisible (false);
 }

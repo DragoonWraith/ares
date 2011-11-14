@@ -244,6 +244,10 @@ private:
   csArray<GraphLink> links;
   iMarker* draggingMarker;
 
+  iMarkerColor* textColor;
+  iMarkerColor* nodeColor;
+  iMarkerColor* linkColor;
+
   csVector2 CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh);
   bool IsLinked (const char* n1, const char* n2);
 
@@ -255,6 +259,13 @@ public:
   void Render3D ();
 
   void SetDraggingMarker (iMarker* marker) { draggingMarker = marker; }
+
+  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeColor, iMarkerColor* linkColor)
+  {
+    GraphView::textColor = textColor;
+    GraphView::nodeColor = nodeColor;
+    GraphView::linkColor = linkColor;
+  }
 
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }

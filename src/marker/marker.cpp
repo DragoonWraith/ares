@@ -191,7 +191,6 @@ void GraphView::UpdateFrame ()
 
 void GraphView::Render3D ()
 {
-  MarkerColor* white = static_cast<MarkerColor*> (mgr->FindMarkerColor ("white"));
   GraphNode n;
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
@@ -200,7 +199,7 @@ void GraphView::Render3D ()
     GraphNode& node2 = nodes.Get (l.node2, n);
     csVector2 pos1 = node1.marker->GetPosition ();
     csVector2 pos2 = node2.marker->GetPosition ();
-    csPen* pen = white->GetPen (1);
+    csPen* pen = static_cast<MarkerColor*> (linkColor)->GetPen (1);
     pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
   }
 }
@@ -261,10 +260,9 @@ void GraphView::CreateNode (const char* name)
   int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
   // @@@ Color should come from outside.
-  iMarkerColor* white = mgr->FindMarkerColor ("white");
   marker->RoundedBox2D (MARKER_2D, csVector3 (-75, -13, 0),
-    csVector3 (75, 13, 0), 10, white);
-  marker->Text (MARKER_2D, csVector3 (0, 0, 0), name, white, true);
+    csVector3 (75, 13, 0), 10, nodeColor);
+  marker->Text (MARKER_2D, csVector3 (0, 0, 0), name, textColor, true);
   marker->SetSelectionLevel (1);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (fw / 2, fh / 2));

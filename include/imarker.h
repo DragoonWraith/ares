@@ -307,6 +307,11 @@ struct iGraphView : public virtual iBase
   SCF_INTERFACE(iGraphView,0,0,1);
 
   /**
+   * Set the color scheme.
+   */
+  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeColor, iMarkerColor* linkColor) = 0;
+
+  /**
    * Clear the entire graph.
    */
   virtual void Clear () = 0;
