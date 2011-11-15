@@ -103,8 +103,13 @@ void EntityMode::ShowTemplate (const char* templateName)
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-    view->CreateNode (pctpl->GetName ());
-    view->LinkNode (templateName, pctpl->GetName ());
+    csString nodeName;
+    if (pctpl->GetTag () == 0)
+      nodeName = pctpl->GetName ();
+    else
+      nodeName.Format ("%s (%s)", pctpl->GetName (), pctpl->GetTag ());
+    view->CreateNode (nodeName);
+    view->LinkNode (templateName, nodeName);
   }
 }
 
