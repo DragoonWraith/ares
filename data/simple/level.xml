@@ -1,0 +1,47 @@
+<?xml ?>
+<world>
+    <library path="/river" file="library" />
+    <library path="/lib/sky" file="library" />
+
+    <textures>
+        <texture name="andrew_wood.jpg">
+            <file>/lib/stdtex/my_wood.jpg</file>
+        </texture>
+    </textures>
+
+    <materials>
+        <material name="andrew_wood.jpg">
+	      <texture>andrew_wood.jpg</texture>
+	</material>
+    </materials>
+
+    <meshfact name="floor">
+        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
+        <zuse />
+        <params>
+            <material>andrew_wood.jpg</material>
+	    <box>
+	      <min x="-200" y="0" z="-200" />
+	      <max x="200" y="0" z="200" />
+	    </box>
+	</params>
+    </meshfact>
+
+    <sector name="outside">
+      <cullerp plugin="crystalspace.culling.frustvis" />
+        <meshobj name="clouds">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <priority>transp</priority>
+            <params> <factory>clouddome</factory> </params>
+        </meshobj>
+        <meshobj name="sky">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <priority>object</priority>
+            <params> <factory>skydome</factory> </params>
+	</meshobj>
+        <meshobj name="floor">
+            <plugin>crystalspace.mesh.loader.genmesh</plugin>
+            <params> <factory>floor</factory> </params>
+        </meshobj>
+    </sector>
+</world>

@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<library>
+  <addon plugin="cel.addons.celentitytpl" entityname="Crate"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Barrel"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Dustbin"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Box"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="SmallBox"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="TinyBox"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="MicroBox"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Sphere"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="SmallSphere"> <propclass name="pcobject.mesh" /> </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="WoodenBox"> <propclass name="pcobject.mesh" /> </addon>
+
+  <addon plugin="cel.addons.dynamicworld.loader">
+    <extension plugin="ares.dynworld.loader.factories"/>
+    <dynworld name="zone" />
+    <factory name="Crate" maxradius="0.5" imposterradius=".3" mass="6">
+      <box />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Barrel" maxradius="0.5" imposterradius=".3" mass="3">
+      <cylinder />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Dustbin" maxradius="0.5" imposterradius=".3" mass="2">
+      <cylinder />
+      <attr name="category" value="Objects" />
+    </factory>
+    <factory name="Box" maxradius="0.5" imposterradius="-1" mass="4">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="SmallBox" maxradius="0.5" imposterradius="-1" mass="3">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="TinyBox" maxradius="0.5" imposterradius="-1" mass="2">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="MicroBox" maxradius="0.5" imposterradius="-1" mass="1">
+      <box />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="Sphere" maxradius="0.5" imposterradius="-1" mass="6">
+      <sphere />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="SmallSphere" maxradius="0.5" imposterradius="-1" mass="3">
+      <sphere />
+      <attr name="category" value="Varia" />
+    </factory>
+    <factory name="WoodenBox" maxradius="0.5" imposterradius=".4" mass="1">
+      <attr name="category" value="Furniture" />
+      <box> <offset x="0" y="0.015" z="0" /> <size x=".4" y="0.03" z="0.4" /> </box>
+      <box> <offset x="0" y="0.1" z="-.185" /> <size x=".4" y="0.2" z="0.03" /> </box>
+      <box> <offset x="0" y="0.1" z=".185" /> <size x=".4" y="0.2" z="0.03" /> </box>
+      <box> <offset x="-.185" y="0.1" z="0" /> <size x=".03" y="0.2" z="0.4" /> </box>
+      <box> <offset x=".185" y="0.1" z="0" /> <size x=".03" y="0.2" z="0.4" /> </box>
+    </factory>
+  </addon>
+</library>
