@@ -42,6 +42,13 @@
         <meshobj name="floor">
             <plugin>crystalspace.mesh.loader.genmesh</plugin>
             <params> <factory>floor</factory> </params>
+	    <addon plugin="crystalspace.dynamics.loader">
+	      <system name="ares.dynamics.system">
+		<colliderbox x="400" y="10" z="400">
+		  <move y="-5" />
+		</colliderbox>
+	      </system>
+	    </addon>
         </meshobj>
     </sector>
 </world>

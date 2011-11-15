@@ -915,6 +915,8 @@ bool AresEdit3DView::InitPhysics ()
   if (!dyn) return app->ReportError ("Error loading bullet plugin!");
 
   dynSys = dyn->CreateSystem ();
+  // @@@ Every cell has its own system. Not handled here!
+  dynSys->QueryObject ()->SetName ("ares.dynamics.system");
   if (!dynSys) return app->ReportError ("Error creating dynamic system!");
   //dynSys->SetLinearDampener(.3f);
   dynSys->SetRollingDampener(.995f);

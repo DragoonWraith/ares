@@ -1,0 +1,14 @@
+<dynlevel>
+  <asset path="/appdata/simple/" file="assets.xml" />
+  <asset path="/appdata/simple/" file="dynfact.xml" />
+  <asset path="/appdata/simple/" file="level.xml" />
+  <dynworld lastid="1000010000">
+    <cell name="outside">
+      <obj fact="Crate" m="0.951568 2.95699e-009 0.307438 -2.11335e-009 1 -3.07703e-009 -0.307438 2.27827e-009 0.951568" v="-5.69458 -1.78814e-007 13.64" id="1000000000" />
+      <obj fact="Crate" m="-0.0544149 6.19273e-008 -0.998518 -3.73218e-007 1 8.23579e-008 0.998518 3.77146e-007 -0.0544149" v="-9.86201 -2.38419e-007 6.35239" id="1000000001" />
+      <obj fact="Crate" m="-0.0544149 3.21161e-008 -0.998518 -4.74805e-008 1 3.47512e-008 0.998518 4.93011e-008 -0.0544149" v="-13.5724 -2.38419e-007 15.2099" id="1000000002" />
+    </cell>
+  </dynworld>
+  <curves />
+  <rooms />
+</dynlevel>
