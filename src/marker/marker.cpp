@@ -254,15 +254,17 @@ public:
   }
 };
 
-void GraphView::CreateNode (const char* name)
+void GraphView::CreateNode (const char* name, const char* label,
+		iMarkerColor* color)
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
   // @@@ Color should come from outside.
   marker->RoundedBox2D (MARKER_2D, csVector3 (-75, -13, 0),
-    csVector3 (75, 13, 0), 10, nodeColor);
-  marker->Text (MARKER_2D, csVector3 (0, 0, 0), name, textColor, true);
+    csVector3 (75, 13, 0), 10, color ? color : nodeColor);
+  if (!label) label = name;
+  marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
   marker->SetSelectionLevel (1);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (fw / 2, fh / 2));

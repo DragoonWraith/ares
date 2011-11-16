@@ -28,6 +28,7 @@ THE SOFTWARE.
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
+#include "tools/questmanager.h"
 
 #include <wx/xrc/xmlres.h>
 #include <wx/listbox.h>
@@ -96,20 +97,67 @@ void EntityMode::ShowTemplate (const char* templateName)
   if (!tpl) return;
 
   view->CreateNode (templateName);
-  view->ForcePosition (templateName,
-      csVector2 (aresed3d->GetG2D ()->GetWidth ()/2,
-	aresed3d->GetG2D ()->GetHeight ()/2));
+  //view->ForcePosition (templateName,
+      //csVector2 (aresed3d->GetG2D ()->GetWidth ()/2,
+	//aresed3d->GetG2D ()->GetHeight ()/2));
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+    csString pcName = pctpl->GetName ();
     csString nodeName;
     if (pctpl->GetTag () == 0)
-      nodeName = pctpl->GetName ();
+      nodeName = pcName;
     else
-      nodeName.Format ("%s (%s)", pctpl->GetName (), pctpl->GetTag ());
+      nodeName.Format ("%s (%s)", pcName.GetData (), pctpl->GetTag ());
     view->CreateNode (nodeName);
     view->LinkNode (templateName, nodeName);
+    if (pcName == "pclogic.quest")
+    {
+      csStringID newquestID = pl->FetchStringID ("NewQuest");
+      size_t idx = pctpl->FindProperty (newquestID);
+      if (idx != csArrayItemNotFound)
+      {
+	celData data;
+	csRef<iCelParameterIterator> parit = pctpl->GetProperty (idx,
+			newquestID, data);
+	csStringID nameID = pl->FetchStringID ("name");
+	csString questName;
+	while (parit->HasNext ())
+	{
+	  csStringID parid;
+	  iParameter* par = parit->Next (parid);
+	  // @@@ We don't support expression parameters here. 'params'
+	  // for creating entities is missing.
+	  if (parid == nameID)
+	  {
+	    questName = par->Get (0);
+	    break;
+	  }
+	}
+	if (!questName.IsEmpty ())
+	{
+	  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+	    aresed3d->GetObjectRegistry (),
+	    "cel.manager.quests");
+	  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+	  // @@@ Error check
+	  if (questFact)
+	  {
+	    iMarkerManager* mgr = aresed3d->GetMarkerManager ();
+	    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+	    while (it->HasNext ())
+	    {
+	      iQuestStateFactory* stateFact = it->Next ();
+	      csString stateNameKey = nodeName + stateFact->GetName ();
+	      view->CreateNode (stateNameKey, stateFact->GetName (),
+			      mgr->FindMarkerColor ("green"));
+	      view->LinkNode (nodeName, stateNameKey);
+	    }
+	  }
+	}
+      }
+    }
   }
 }
 

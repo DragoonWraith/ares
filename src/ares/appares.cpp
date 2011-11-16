@@ -262,14 +262,14 @@ void AppAres::ConnectWires ()
   // 1: For debugging, print out when we are near an entity.
   wire = scfQueryInterface<iPcWire> (pc);
   wire->AddInput ("cel.trigger.entity.enter");
-  idx = wire->AddOutput ("cel.test.action.Print");
+  idx = wire->AddOutput (pl->FetchStringID ("cel.test.action.Print"));
   wire->MapParameterExpression (idx, "message", "'We found '+@entity");
   // 2: Add the name of the entity to the bag.
-  idx = wire->AddOutput ("cel.bag.action.AddString");
+  idx = wire->AddOutput (pl->FetchStringID ("cel.bag.action.AddString"));
   wire->MapParameterExpression (idx, "value", "entname(@entity)");
   // 3: Set the visibility state of the billboard.
   params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("name"), "visible"));
-  idx = wire->AddOutput ("cel.billboard.action.SetProperty",
+  idx = wire->AddOutput (pl->FetchStringID ("cel.billboard.action.SetProperty"),
       action_icon->QueryMessageChannel (), params);
   // Use > 1 because there is also the 'camera' entity itself.
   wire->MapParameterExpression (idx, "value", "property(pc(pctools.bag),id(size))>1");
@@ -278,14 +278,14 @@ void AppAres::ConnectWires ()
   pc = pl->CreatePropertyClass (entity_cam, "pclogic.wire");
   wire = scfQueryInterface<iPcWire> (pc);
   wire->AddInput ("cel.trigger.entity.leave");
-  idx = wire->AddOutput ("cel.test.action.Print");
+  idx = wire->AddOutput (pl->FetchStringID ("cel.test.action.Print"));
   wire->MapParameterExpression (idx, "message", "'We leave '+@entity");
   // 2: Remove the name of the entity from the bag.
-  idx = wire->AddOutput ("cel.bag.action.RemoveString");
+  idx = wire->AddOutput (pl->FetchStringID ("cel.bag.action.RemoveString"));
   wire->MapParameterExpression (idx, "value", "entname(@entity)");
   // 3: Set the visibility state of the billboard.
   params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("name"), "visible"));
-  idx = wire->AddOutput ("cel.billboard.action.SetProperty",
+  idx = wire->AddOutput (pl->FetchStringID ("cel.billboard.action.SetProperty"),
       action_icon->QueryMessageChannel (), params);
   // Use > 1 because there is also the 'camera' entity itself.
   wire->MapParameterExpression (idx, "value", "property(pc(pctools.bag),id(size))>1");
@@ -295,7 +295,7 @@ void AppAres::ConnectWires ()
   wire = scfQueryInterface<iPcWire> (pc);
   wire->AddInput ("cel.input.action.up");
   params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("msgid"), "cel.game.action"));
-  wire->AddOutput ("cel.bag.action.SendMessage", 0, params);
+  wire->AddOutput (pl->FetchStringID ("cel.bag.action.SendMessage"), 0, params);
 }
 
 bool AppAres::InitPhysics ()

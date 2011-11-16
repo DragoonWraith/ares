@@ -330,7 +330,8 @@ struct iGraphView : public virtual iBase
   /**
    * Create a node.
    */
-  virtual void CreateNode (const char* name) = 0;
+  virtual void CreateNode (const char* name, const char* label = 0,
+		  iMarkerColor* color = 0) = 0;
 
   /**
    * Remove a node.

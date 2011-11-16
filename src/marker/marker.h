@@ -270,7 +270,8 @@ public:
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }
   virtual void Clear ();
-  virtual void CreateNode (const char* name);
+  virtual void CreateNode (const char* name, const char* label = 0,
+		  iMarkerColor* color = 0);
   virtual void RemoveNode (const char* name);
   virtual void LinkNode (const char* node1, const char* node2)
   {
