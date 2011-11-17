@@ -147,6 +147,10 @@ struct iMarkerHitArea : public virtual iBase
       iMarkerCallback* cb) = 0;
 
   virtual int GetData () const = 0;
+
+  virtual iMarker* GetMarker () const = 0;
+  virtual MarkerSpace GetSpace () const  = 0;
+  virtual const csVector3& GetCenter () const = 0;
 };
 
 #define SELECTION_NONE 0
@@ -255,21 +259,6 @@ struct iMarker : public virtual iBase
   virtual void Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
       bool arrow = false) = 0;
-
-  /**
-   * Draw a 2D 4-sided polygon.
-   * In MARKER_2D space the 'z' component is not used.
-   */
-  virtual void Poly2D (MarkerSpace space,
-      const csVector3& v1, const csVector3& v2,
-      const csVector3& v3, iMarkerColor* color) = 0;
-
-  /**
-   * Draw a 3D box.
-   * In MARKER_2D space the 'z' component is not used.
-   */
-  virtual void Box3D (MarkerSpace space,
-      const csBox3& box, iMarkerColor* color) = 0;
 
   /**
    * Draw a rounded 2D box.

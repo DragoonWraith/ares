@@ -60,11 +60,6 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   stateColorFG = 0;
   stateColorBG = 0;
   InitColors ();
-
-  view->SetColors (
-      mgr->FindMarkerColor ("white"),
-      pcColorFG, pcColorBG,
-      mgr->FindMarkerColor ("yellow"));
 }
 
 EntityMode::~EntityMode ()
@@ -93,12 +88,19 @@ void EntityMode::InitColors ()
 {
   if (templateColorFG) return;
 
-  templateColorFG = NewColor ("templateColorFG", .5, .5, .5, 1, 1, 1, false);
-  templateColorBG = NewColor ("templateColorBG", .1, .2, .2, .2, .3, .3, true);
-  pcColorFG = NewColor ("pcColorFG", 0, 0, .5, 0, 0, 1, false);
-  pcColorBG = NewColor ("pcColorBG", .1, .2, .2, .2, .3, .3, true);
-  stateColorFG = NewColor ("stateColorFG", 0, .5, 0, 0, 1, 0, false);
-  stateColorBG = NewColor ("stateColorBG", .1, .2, .2, .2, .3, .3, true);
+  templateColorFG = NewColor ("templateColorFG", .7, .7, .7, 1, 1, 1, false);
+  templateColorBG = NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true);
+  pcColorFG = NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, false);
+  pcColorBG = NewColor ("pcColorBG", .1, .4, .5, .2, .6, .7, true);
+  stateColorFG = NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, false);
+  stateColorBG = NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true);
+  iMarkerColor* textColor = NewColor ("viewWhite", .7, .7, .7, 1, 1, 1, false);
+
+  iMarkerManager* mgr = aresed3d->GetMarkerManager ();
+  view->SetColors (
+      textColor,
+      pcColorFG, pcColorBG,
+      mgr->FindMarkerColor ("yellow"));
 }
 
 void EntityMode::SetupItems ()

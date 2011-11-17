@@ -166,6 +166,7 @@ public:
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers)
   {
+    marker->SetSelectionLevel (SELECTION_ACTIVE);
     view->SetDraggingMarker (marker);
   }
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
@@ -177,6 +178,7 @@ public:
       const csReversibleTransform& transform) { }
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area)
   {
+    marker->SetSelectionLevel (SELECTION_NONE);
     view->SetDraggingMarker (0);
   }
 };
@@ -195,7 +197,7 @@ void GraphView::CreateNode (const char* name, const csVector2& size,
     csVector3 (w2, h2, 0), 10, fgcolor ? fgcolor : nodeFgColor);
   if (!label) label = name;
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
-  marker->SetSelectionLevel (1);
+  marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
 
@@ -300,15 +302,12 @@ static csVector3 TransPointCam (
     return point;
 }
 
-csVector3 MarkerHitArea::GetWorldCenter () const
+iMarker* CircleMarkerHitArea::GetMarker () const
 {
-  MarkerManager* mgr = marker->GetMarkerManager ();
-  const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
-  const csReversibleTransform& meshtrans = marker->GetTransform ();
-  return TransPointWorld (camtrans, meshtrans, GetSpace (), GetCenter ());
+  return static_cast<iMarker*> (marker);
 }
 
-csVector2 MarkerHitArea::GetPerspectiveRadius (iView* view, float z) const
+csVector2 CircleMarkerHitArea::GetPerspectiveRadius (iView* view, float z) const
 {
   iCamera* camera = view->GetCamera ();
   csVector4 r4 (radius, radius, z, 1.0f);
@@ -317,7 +316,7 @@ csVector2 MarkerHitArea::GetPerspectiveRadius (iView* view, float z) const
   return view->NormalizedToScreen (r);
 }
 
-void MarkerHitArea::DefineDrag (uint button, uint32 modifiers,
+void CircleMarkerHitArea::DefineDrag (uint button, uint32 modifiers,
       MarkerSpace constrainSpace, uint32 constrainPlane,
       iMarkerCallback* cb)
 {
@@ -330,7 +329,7 @@ void MarkerHitArea::DefineDrag (uint button, uint32 modifiers,
   draggingModes.Push (dm);
 }
 
-MarkerDraggingMode* MarkerHitArea::FindDraggingMode (uint button, uint32 modifiers) const
+MarkerDraggingMode* CircleMarkerHitArea::FindDraggingMode (uint button, uint32 modifiers) const
 {
   for (size_t i = 0 ; i < draggingModes.GetSize () ; i++)
   {
@@ -342,6 +341,64 @@ MarkerDraggingMode* MarkerHitArea::FindDraggingMode (uint button, uint32 modifie
     }
   }
   return 0;
+}
+
+void CircleMarkerHitArea::Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos)
+{
+  if (GetColor ())
+  {
+    csVector3 c = TransPointCam (camtrans, meshtrans, space, center);
+    if (space == MARKER_2D || c.z > .5)
+    {
+      int h = mgr->g2d->GetHeight ();
+      csVector2 s;
+      if (space != MARKER_2D)
+	s = mgr->camera->Perspective (c) + pos;
+      else
+	s.Set (pos.x + c.x, h - (pos.y + c.y));
+      int x = int (s.x);
+      int y = h - int (s.y);
+      int mouseX = mgr->GetMouseX ();
+      int mouseY = mgr->GetMouseY ();
+      csVector2 r;
+      if (space != MARKER_2D)
+	r = GetPerspectiveRadius (mgr->view, c.z);
+      else
+	r.Set (radius, radius);
+      bool selected = mouseX >= (x-r.x) && mouseX <= (x+r.x) &&
+	mouseY >= (y-r.y) && mouseY <= (y+r.y);
+      csPen* pen = color->GetPen (selected ? SELECTION_SELECTED : SELECTION_NONE);
+      pen->DrawArc (x-r.x, y-r.y, x+r.x, y+r.y);
+    }
+  }
+}
+
+float CircleMarkerHitArea::CheckHit (int x, int y,
+    const csOrthoTransform& camtrans, const csReversibleTransform& meshtrans,
+    MarkerManager* mgr, const csVector2& pos)
+{
+  csVector3 c = TransPointCam (camtrans, meshtrans, space, center);
+  if (space == MARKER_2D || c.z > .5)
+  {
+    csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
+    csVector2 s;
+    if (space != MARKER_2D)
+      s = mgr->camera->Perspective (c) + pos;
+    else
+      s.Set (pos.x + c.x, mgr->g2d->GetHeight () - (pos.y + c.y));
+    float d = sqrt (SqDistance2d (s, f));
+    csVector2 r;
+    if (space != MARKER_2D)
+      r = GetPerspectiveRadius (mgr->view, c.z);
+    else
+      r.Set (radius, radius);
+    float radius = (r.x+r.y) / 2.0f;
+    if (d <= radius)
+      return d;
+  }
+  return -1.0f;
 }
 
 //---------------------------------------------------------------------------------------
@@ -434,35 +491,8 @@ void Marker::Render3D ()
 
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
-    MarkerHitArea* ha = hitAreas[i];
-    if (ha->GetColor ())
-    {
-      const csVector3& center = ha->GetCenter ();
-      csVector3 c = TransPointCam (camtrans, meshtrans, ha->GetSpace (), center);
-      if (ha->GetSpace () == MARKER_2D || c.z > .5)
-      {
-        int h = mgr->g2d->GetHeight ();
-	csVector2 s;
-	if (ha->GetSpace () != MARKER_2D)
-          s = mgr->camera->Perspective (c) + pos;
-	else
-          s.Set (pos.x + c.x, h - (pos.y + c.y));
-	int x = int (s.x);
-	int y = h - int (s.y);
-	int mouseX = mgr->GetMouseX ();
-	int mouseY = mgr->GetMouseY ();
-	csVector2 r;
-	if (ha->GetSpace () != MARKER_2D)
-          r = ha->GetPerspectiveRadius (mgr->view, c.z);
-	else
-	  r.Set (ha->GetRadius (), ha->GetRadius ());
-	bool selected = mouseX >= (x-r.x) && mouseX <= (x+r.x) &&
-	  mouseY >= (y-r.y) && mouseY <= (y+r.y);
-        csPen* pen = ha->GetColor ()->GetPen (
-	    selected ? SELECTION_SELECTED : SELECTION_NONE);
-	pen->DrawArc (x-r.x, y-r.y, x+r.x, y+r.y);
-      }
-    }
+    iInternalMarkerHitArea* ha = static_cast<iInternalMarkerHitArea*> (hitAreas[i]);
+    ha->Render3D (camtrans, meshtrans, mgr, pos);
   }
 }
 
@@ -549,8 +579,8 @@ void Marker::Clear ()
 iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data, iMarkerColor* color)
 {
-  csRef<MarkerHitArea> hitArea;
-  hitArea.AttachNew (new MarkerHitArea (this));
+  csRef<CircleMarkerHitArea> hitArea;
+  hitArea.AttachNew (new CircleMarkerHitArea (this));
   hitArea->SetSpace (space);
   hitArea->SetCenter (center);
   hitArea->SetRadius (radius);
@@ -565,42 +595,24 @@ void Marker::ClearHitAreas ()
   hitAreas.Empty ();
 }
 
-float Marker::CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea)
+float Marker::CheckHitAreas (int x, int y, iMarkerHitArea*& bestHitArea)
 {
   const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
   const csReversibleTransform& meshtrans = GetTransform ();
-  csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
   bestHitArea = 0;
   float bestRadius = 10000000.0f;
-  bool hit = false;
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
-    MarkerHitArea* hitArea = hitAreas[i];
-    csVector3 c = TransPointCam (camtrans, meshtrans, hitArea->GetSpace (),
-	hitArea->GetCenter ());
-    if (hitArea->GetSpace () == MARKER_2D || c.z > .5)
+    iInternalMarkerHitArea* hitArea = static_cast<iInternalMarkerHitArea*> (
+	hitAreas[i]);
+    float r = hitArea->CheckHit (x, y, camtrans, meshtrans, mgr, pos);
+    if (r < bestRadius && r >= 0.0f)
     {
-      csVector2 s;
-      if (hitArea->GetSpace () != MARKER_2D)
-        s = mgr->camera->Perspective (c) + pos;
-      else
-        s.Set (pos.x + c.x, mgr->g2d->GetHeight () - (pos.y + c.y));
-      float d = sqrt (SqDistance2d (s, f));
-      csVector2 r;
-      if (hitArea->GetSpace () != MARKER_2D)
-        r = hitArea->GetPerspectiveRadius (mgr->view, c.z);
-      else
-	r.Set (hitArea->GetRadius (), hitArea->GetRadius ());
-      float radius = (r.x+r.y) / 2.0f;
-      if (d <= radius && d <= bestRadius)
-      {
-	bestRadius = d;
-	bestHitArea = hitArea;
-	hit = true;
-      }
+      bestRadius = r;
+      bestHitArea = hitArea;
     }
   }
-  if (hit) return bestRadius;
+  if (bestHitArea) return bestRadius;
   else return -1.0f;
 }
 
@@ -863,7 +875,8 @@ void MarkerManager::StopDrag ()
 
 bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  MarkerHitArea* hitArea = FindHitArea (mouseX, mouseY);
+  iInternalMarkerHitArea* hitArea = static_cast<iInternalMarkerHitArea*> (
+      FindHitArea (mouseX, mouseY));
   if (hitArea)
   {
     uint32 mod = csMouseEventHelper::GetModifiers (&ev);
@@ -873,10 +886,14 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       currentDraggingHitArea = hitArea;
       currentDraggingMode = dm;
       const csOrthoTransform& camtrans = camera->GetTransform ();
-      dragRestrict = hitArea->GetWorldCenter ();
+      const csReversibleTransform& meshtrans = hitArea->GetMarker ()
+	->GetTransform ();
+      dragRestrict = TransPointWorld (camtrans, meshtrans,
+	  hitArea->GetSpace (), hitArea->GetCenter ());
       dragDistance = (dragRestrict - camtrans.GetOrigin ()).Norm ();
       if (dm->cb)
-        dm->cb->StartDragging (hitArea->GetMarker (), hitArea, dragRestrict, but, mod);
+        dm->cb->StartDragging (hitArea->GetMarker (), hitArea, dragRestrict,
+	    but, mod);
       return true;
     }
   }
@@ -897,14 +914,14 @@ bool MarkerManager::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
   return false;
 }
 
-MarkerHitArea* MarkerManager::FindHitArea (int x, int y)
+iMarkerHitArea* MarkerManager::FindHitArea (int x, int y)
 {
-  MarkerHitArea* bestHitArea = 0;
+  iMarkerHitArea* bestHitArea = 0;
   float bestRadius = 10000000.0f;
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     if (markers[i]->IsVisible ())
     {
-      MarkerHitArea* hitArea;
+      iMarkerHitArea* hitArea;
       float d = markers[i]->CheckHitAreas (x, y, hitArea);
       if (d >= 0.0f && d < bestRadius)
       {
@@ -922,7 +939,7 @@ iMarker* MarkerManager::FindHitMarker (int x, int y, int& data)
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     if (markers[i]->IsVisible ())
     {
-      MarkerHitArea* hitArea;
+      iMarkerHitArea* hitArea;
       float d = markers[i]->CheckHitAreas (x, y, hitArea);
       if (d >= 0.0f && d < bestRadius)
       {

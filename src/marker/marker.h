@@ -111,7 +111,19 @@ struct MarkerDraggingMode
   uint32 constrainPlane;
 };
 
-class MarkerHitArea : public scfImplementation1<MarkerHitArea, iMarkerHitArea>
+struct iInternalMarkerHitArea : public iMarkerHitArea
+{
+  virtual void Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos) = 0;
+  virtual float CheckHit (int x, int y, const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos) = 0;
+  virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const = 0;
+};
+
+class CircleMarkerHitArea : public scfImplementation1<CircleMarkerHitArea,
+  iInternalMarkerHitArea>
 {
 private:
   Marker* marker;
@@ -123,32 +135,39 @@ private:
   MarkerColor* color;
 
 public:
-  MarkerHitArea (Marker* marker) : scfImplementationType (this), marker (marker) { }
-  virtual ~MarkerHitArea () { }
+  CircleMarkerHitArea (Marker* marker)
+    : scfImplementationType (this), marker (marker) { }
+  virtual ~CircleMarkerHitArea () { }
 
-  Marker* GetMarker () const { return marker; }
-  csVector3 GetWorldCenter () const;
-  void SetColor (MarkerColor* color) { MarkerHitArea::color = color; }
+  virtual iMarker* GetMarker () const;
+  void SetColor (MarkerColor* color) { CircleMarkerHitArea::color = color; }
   MarkerColor* GetColor () const { return color; }
 
   virtual void DefineDrag (uint button, uint32 modifiers,
       MarkerSpace constrainSpace, uint32 constrainPlane,
       iMarkerCallback* cb);
 
-  MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const;
+  void SetSpace (MarkerSpace space) { CircleMarkerHitArea::space = space; }
+  virtual MarkerSpace GetSpace () const { return space; }
 
-  void SetSpace (MarkerSpace space) { MarkerHitArea::space = space; }
-  MarkerSpace GetSpace () const { return space; }
+  void SetCenter (const csVector3& center) { CircleMarkerHitArea::center = center; }
+  virtual const csVector3& GetCenter () const { return center; }
 
-  void SetCenter (const csVector3& center) { MarkerHitArea::center = center; }
-  const csVector3& GetCenter () const { return center; }
-
-  void SetRadius (float radius) { MarkerHitArea::radius = radius; }
+  void SetRadius (float radius) { CircleMarkerHitArea::radius = radius; }
   float GetRadius () const { return radius; }
   csVector2 GetPerspectiveRadius (iView* view, float z) const;
 
-  void SetData (int data) { MarkerHitArea::data = data; }
+  void SetData (int data) { CircleMarkerHitArea::data = data; }
   virtual int GetData () const { return data; }
+
+  // For iInternalMarkerHitArea
+  virtual void Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos);
+  virtual float CheckHit (int x, int y, const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos);
+  virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const;
 };
 
 class Marker : public scfImplementation1<Marker, iMarker>
@@ -163,7 +182,7 @@ private:
   csArray<MarkerLine> lines;
   csArray<MarkerRoundedBox> roundedBoxes;
   csArray<MarkerText> texts;
-  csRefArray<MarkerHitArea> hitAreas;
+  csRefArray<iMarkerHitArea> hitAreas;
 
   bool visible;
 
@@ -196,11 +215,6 @@ public:
   virtual void Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
       bool arrow = false);
-  virtual void Poly2D (MarkerSpace space,
-      const csVector3& v1, const csVector3& v2,
-      const csVector3& v3, iMarkerColor* color) { }
-  virtual void Box3D (MarkerSpace space,
-      const csBox3& box, iMarkerColor* color) { }
   virtual void RoundedBox2D (MarkerSpace space,
       const csVector3& corner1, const csVector3& corner2,
       int roundness, iMarkerColor* color);
@@ -218,7 +232,7 @@ public:
    * Check if a hit area was hit and return the distance.
    * Returns negative number if there was no hit.
    */
-  float CheckHitAreas (int x, int y, MarkerHitArea*& bestHitArea);
+  float CheckHitAreas (int x, int y, iMarkerHitArea*& bestHitArea);
 };
 
 struct GraphNode
@@ -321,7 +335,7 @@ public:
   csRefArray<MarkerColor> markerColors;
   csRefArray<GraphView> graphViews;
 
-  MarkerHitArea* currentDraggingHitArea;
+  iMarkerHitArea* currentDraggingHitArea;
   MarkerDraggingMode* currentDraggingMode;
   float dragDistance;
   csVector3 dragRestrict;
@@ -389,7 +403,7 @@ public:
   virtual iGraphView* CreateGraphView ();
   virtual void DestroyGraphView (iGraphView* view);
 
-  MarkerHitArea* FindHitArea (int x, int y);
+  iMarkerHitArea* FindHitArea (int x, int y);
 };
 
 }
