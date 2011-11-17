@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 #include "csutil/scf_implementation.h"
 #include "csutil/parray.h"
+#include "csutil/randomgen.h"
 #include "csutil/hash.h"
 #include "iengine/engine.h"
 #include "iutil/virtclk.h"
@@ -222,10 +223,9 @@ public:
 struct GraphNode
 {
   iMarker* marker;
-  float updateCounter;
-  csVector2 push;
+  csVector2 netForce, velocity;
   bool frozen;
-  GraphNode () : marker (0), updateCounter (0.0f), frozen (false) { }
+  GraphNode () : marker (0), frozen (false) { }
 };
 
 struct GraphLink
@@ -243,6 +243,8 @@ private:
   csHash<GraphNode,csString> nodes;
   csArray<GraphLink> links;
   iMarker* draggingMarker;
+
+  csRandomGen rng;
 
   iMarkerColor* textColor;
   iMarkerColor* nodeColor;

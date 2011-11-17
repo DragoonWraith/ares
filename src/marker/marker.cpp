@@ -76,28 +76,6 @@ void GraphView::ForcePosition (const char* name, const csVector2& pos)
     node.marker->SetPosition (pos);
 }
 
-#if 0
-csVector2 GraphView::CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh)
-{
-  csVector2 push;
-  //push.x = PUSH_FACTOR / (self.x - other.x + PosSign (self.x - other.x, self.x > fw/2.0f));
-  //push.y = PUSH_FACTOR / (self.y - other.y + PosSign (self.y - other.y, self.y > fh/2.0f));
-  bool r = rand () % 2;
-  push.x = PUSH_FACTOR / (self.x - other.x + PosSign (self.x - other.x, r));
-  r = rand () % 2;
-  push.y = PUSH_FACTOR / (self.y - other.y + PosSign (self.y - other.y, r));
-  return push;
-}
-#else
-csVector2 GraphView::CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh)
-{
-  float dist = sqrt (SqDistance2d (self, other));
-  if (dist < 0.00001f)
-    return csVector2 (float (rand () % 10) / 200.0f, float (rand () % 10) / 200.0f);	//@@@
-  return PUSH_FACTOR * (self-other) / (dist*dist);
-}
-#endif
-
 bool GraphView::IsLinked (const char* n1, const char* n2)
 {
   for (size_t i = 0 ; i < links.GetSize () ; i++)
@@ -123,64 +101,25 @@ void GraphView::UpdateFrame ()
     if (node.marker == draggingMarker || node.frozen) continue;
 
     csVector2 pos = node.marker->GetPosition ();
+    node.netForce.Set (0, 0);
 
-    if (node.updateCounter <= 0.0f)
+    csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
+    while (it2.HasNext ())
     {
-      node.updateCounter = 1.0f;
-      csVector2 push (0, 0);
-      int cnt = 0;
-#if 1
-      if (pos.x < fw/4)
+      csString key2;
+      GraphNode& node2 = it2.Next (key2);
+      if (node.marker != node2.marker)
       {
-        push += CalculatePush (pos, csVector2 (-5, pos.y), fw, fh) * 3.0f;
-        cnt++;
-      }
-      else if (pos.x > 3*fw/4)
-      {
-        push += CalculatePush (pos, csVector2 (fw+5, pos.y), fw, fh) * 3.0f;
-        cnt++;
-      }
-      if (pos.y < fh/4)
-      {
-        push += CalculatePush (pos, csVector2 (pos.x, -5), fw, fh) * 3.0f;
-        cnt++;
-      }
-      else if (pos.y > 3*fh/4)
-      {
-        push += CalculatePush (pos, csVector2 (pos.x, fh+5), fw, fh) * 3.0f;
-        cnt++;
-      }
-#endif
+	csVector2 pos2 = node2.marker->GetPosition ();
+	float sqdist = SqDistance2d (pos, pos2);
+	node.netForce += (pos-pos2) * 300.0f / sqdist;
 
-      csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
-      while (it2.HasNext ())
-      {
-        csString key2;
-        GraphNode& node2 = it2.Next (key2);
-        if (node.marker != node2.marker)
-        {
-	  csVector2 pos2 = node2.marker->GetPosition ();
-	  csVector2 p = CalculatePush (pos, pos2, fw, fh);
-	  //printf ("p=%g,%g\n", p.x, p.y);
-	  if (IsLinked (key, key2))
-	  {
-	    float dist = sqrt (SqDistance2d (pos, pos2));
-	    if (dist > STRING_LENGTH)
-	    {
-	      csVector2 up = p.Unit ();
-	      float pull = PULL_FACTOR * (((dist-STRING_LENGTH) / STRING_LENGTH) + 1.0f);
-	      //printf ("pull=%f\n", pull);
-	      p -= up * pull;
-	    }
-	  }
-	  push += p;
-	  cnt++;
-        }
+	if (IsLinked (key, key2))
+	  node.netForce += (pos2-pos) * 0.06f;
       }
-      node.push = push / float (cnt);
     }
-    else node.updateCounter -= seconds;
-    pos += node.push * (seconds * 5000.0f);
+    node.velocity = (node.velocity + node.netForce) * 0.85f;
+    pos += node.velocity * (seconds * 50.0f);
     if (pos.x > fw-76) pos.x = fw-76;
     else if (pos.x < 76) pos.x = 76;
     if (pos.y > fh-14) pos.y = fh-14;
@@ -267,7 +206,7 @@ void GraphView::CreateNode (const char* name, const char* label,
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
   marker->SetSelectionLevel (1);
   marker->SetVisible (visible);
-  marker->SetPosition (csVector2 (fw / 2, fh / 2));
+  marker->SetPosition (csVector2 (75+rng.Get ()*(fw-75-75), 13+rng.Get ()*(fh-13-13)));
 
   iMarkerColor* yellow = mgr->FindMarkerColor ("yellow");
   iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csVector3 (0, 0), 13, 0, yellow);
@@ -277,7 +216,8 @@ void GraphView::CreateNode (const char* name, const char* label,
 
   GraphNode node;
   node.marker = marker;
-  node.push.Set (0, 0);
+  node.netForce.Set (0, 0);
+  node.velocity.Set (0, 0);
   nodes.Put (name, node);
 }
 
