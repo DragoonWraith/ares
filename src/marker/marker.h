@@ -250,7 +250,6 @@ private:
   iMarkerColor* nodeColor;
   iMarkerColor* linkColor;
 
-  csVector2 CalculatePush (const csVector2& self, const csVector2& other, float fw, float fh);
   bool IsLinked (const char* n1, const char* n2);
 
 public:

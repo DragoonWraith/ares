@@ -49,19 +49,6 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
 
 //--------------------------------------------------------------------------------
 
-//#define PUSH_FACTOR 2.5f
-#define PUSH_FACTOR 0.5f
-#define PULL_FACTOR 0.1f
-#define STRING_LENGTH 300.0f
-
-// Always return 1 or -1.
-static int PosSign (float a, bool sgnNeg)
-{
-  if (a < 0) return -1;
-  else if (a > 0) return 1;
-  else return sgnNeg ? -1 : 1;
-}
-
 GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false)
 {
   draggingMarker = 0;
