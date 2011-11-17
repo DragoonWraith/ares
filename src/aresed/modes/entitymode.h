@@ -36,7 +36,14 @@ private:
   void SetupItems ();
   void ShowTemplate (const char* templateName);
 
+  iMarkerColor* templateColorFG, * templateColorBG;
+  iMarkerColor* pcColorFG, * pcColorBG;
+  iMarkerColor* stateColorFG, * stateColorBG;
+
   iGraphView* view;
+  iMarkerColor* NewColor (const char* name,
+    float r0, float g0, float b0, float r1, float g1, float b1, bool fill);
+  void InitColors ();
 
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);

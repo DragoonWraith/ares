@@ -179,6 +179,11 @@ struct iMarkerColor : public virtual iBase
    * Set the pen width.
    */
   virtual void SetPenWidth (int selectionLevel, float width) = 0;
+
+  /**
+   * Enable fill.
+   */
+  virtual void EnableFill (int selectionLevel, bool fill) = 0;
 };
 
 /**
@@ -309,7 +314,8 @@ struct iGraphView : public virtual iBase
   /**
    * Set the color scheme.
    */
-  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeColor, iMarkerColor* linkColor) = 0;
+  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeFgColor,
+      iMarkerColor* nodeBgColor, iMarkerColor* linkColor) = 0;
 
   /**
    * Clear the entire graph.
@@ -330,8 +336,9 @@ struct iGraphView : public virtual iBase
   /**
    * Create a node.
    */
-  virtual void CreateNode (const char* name, const char* label = 0,
-		  iMarkerColor* color = 0) = 0;
+  virtual void CreateNode (const char* name, const csVector2& size,
+      const char* label = 0,
+      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0) = 0;
 
   /**
    * Remove a node.

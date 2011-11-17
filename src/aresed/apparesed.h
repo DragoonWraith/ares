@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
 #include "include/inature.h"
-#include "include/imarker.h"
 
 #include "aresed.h"
 #include "camera.h"
@@ -64,6 +63,7 @@ class EntityMode;
 
 struct iCelPlLayer;
 struct iCelEntity;
+struct iMarkerManager;
 
 class CurvedFactoryCreator
 {

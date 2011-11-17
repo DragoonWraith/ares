@@ -67,6 +67,7 @@ public:
   virtual void SetRGBColor (int selectionLevel, float r, float g, float b, float a);
   virtual void SetMaterial (int selectionLevel, iMaterialWrapper* material) { }
   virtual void SetPenWidth (int selectionLevel, float width);
+  virtual void EnableFill (int selectionLevel, bool fill);
 
   csPen* GetPen (int level) const
   {
@@ -225,6 +226,7 @@ struct GraphNode
   iMarker* marker;
   csVector2 velocity;
   bool frozen;
+  csVector2 size;
   GraphNode () : marker (0), frozen (false) { }
 };
 
@@ -247,7 +249,8 @@ private:
   csRandomGen rng;
 
   iMarkerColor* textColor;
-  iMarkerColor* nodeColor;
+  iMarkerColor* nodeFgColor;
+  iMarkerColor* nodeBgColor;
   iMarkerColor* linkColor;
 
   bool IsLinked (const char* n1, const char* n2);
@@ -261,18 +264,21 @@ public:
 
   void SetDraggingMarker (iMarker* marker) { draggingMarker = marker; }
 
-  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeColor, iMarkerColor* linkColor)
+  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeFgColor,
+      iMarkerColor* nodeBgColor, iMarkerColor* linkColor)
   {
     GraphView::textColor = textColor;
-    GraphView::nodeColor = nodeColor;
+    GraphView::nodeFgColor = nodeFgColor;
+    GraphView::nodeBgColor = nodeBgColor;
     GraphView::linkColor = linkColor;
   }
 
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }
   virtual void Clear ();
-  virtual void CreateNode (const char* name, const char* label = 0,
-		  iMarkerColor* color = 0);
+  virtual void CreateNode (const char* name, const csVector2& size,
+      const char* label = 0,
+      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0);
   virtual void RemoveNode (const char* name);
   virtual void LinkNode (const char* node1, const char* node2)
   {

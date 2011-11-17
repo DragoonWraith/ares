@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "apparesed.h"
+#include "include/imarker.h"
 #include "ui/uimanager.h"
 #include "ui/filereq.h"
 #include "ui/newproject.h"

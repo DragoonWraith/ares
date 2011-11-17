@@ -49,16 +49,56 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
   view = mgr->CreateGraphView ();
-  view->SetColors (mgr->FindMarkerColor ("white"), mgr->FindMarkerColor ("blue"),
-      mgr->FindMarkerColor ("yellow"));
   view->Clear ();
 
   view->SetVisible (false);
+
+  templateColorFG = 0;
+  templateColorBG = 0;
+  pcColorFG = 0;
+  pcColorBG = 0;
+  stateColorFG = 0;
+  stateColorBG = 0;
+  InitColors ();
+
+  view->SetColors (
+      mgr->FindMarkerColor ("white"),
+      pcColorFG, pcColorBG,
+      mgr->FindMarkerColor ("yellow"));
 }
 
 EntityMode::~EntityMode ()
 {
   aresed3d->GetMarkerManager ()->DestroyGraphView (view);
+}
+
+iMarkerColor* EntityMode::NewColor (const char* name,
+    float r0, float g0, float b0, float r1, float g1, float b1, bool fill)
+{
+  iMarkerManager* mgr = aresed3d->GetMarkerManager ();
+  iMarkerColor* col = mgr->CreateMarkerColor (name);
+  col->SetRGBColor (SELECTION_NONE, r0, g0, b0, 1);
+  col->SetRGBColor (SELECTION_SELECTED, r1, g1, b1, 1);
+  col->SetRGBColor (SELECTION_ACTIVE, r1, g1, b1, 1);
+  col->SetPenWidth (SELECTION_NONE, 1.2f);
+  col->SetPenWidth (SELECTION_SELECTED, 1.2f);
+  col->SetPenWidth (SELECTION_ACTIVE, 1.2f);
+  col->EnableFill (SELECTION_NONE, fill);
+  col->EnableFill (SELECTION_SELECTED, fill);
+  col->EnableFill (SELECTION_ACTIVE, fill);
+  return col;
+}
+
+void EntityMode::InitColors ()
+{
+  if (templateColorFG) return;
+
+  templateColorFG = NewColor ("templateColorFG", .5, .5, .5, 1, 1, 1, false);
+  templateColorBG = NewColor ("templateColorBG", .1, .2, .2, .2, .3, .3, true);
+  pcColorFG = NewColor ("pcColorFG", 0, 0, .5, 0, 0, 1, false);
+  pcColorBG = NewColor ("pcColorBG", .1, .2, .2, .2, .3, .3, true);
+  stateColorFG = NewColor ("stateColorFG", 0, .5, 0, 0, 1, 0, false);
+  stateColorBG = NewColor ("stateColorBG", .1, .2, .2, .2, .3, .3, true);
 }
 
 void EntityMode::SetupItems ()
@@ -96,10 +136,8 @@ void EntityMode::ShowTemplate (const char* templateName)
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
   if (!tpl) return;
 
-  view->CreateNode (templateName);
-  //view->ForcePosition (templateName,
-      //csVector2 (aresed3d->GetG2D ()->GetWidth ()/2,
-	//aresed3d->GetG2D ()->GetHeight ()/2));
+  view->CreateNode (templateName, csVector2 (150, 26),
+      0, templateColorFG, templateColorBG);
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
@@ -110,7 +148,7 @@ void EntityMode::ShowTemplate (const char* templateName)
       nodeName = pcName;
     else
       nodeName.Format ("%s (%s)", pcName.GetData (), pctpl->GetTag ());
-    view->CreateNode (nodeName);
+    view->CreateNode (nodeName, csVector2 (150, 26), 0, pcColorFG, pcColorBG);
     view->LinkNode (templateName, nodeName);
     if (pcName == "pclogic.quest")
     {
@@ -144,14 +182,14 @@ void EntityMode::ShowTemplate (const char* templateName)
 	  // @@@ Error check
 	  if (questFact)
 	  {
-	    iMarkerManager* mgr = aresed3d->GetMarkerManager ();
 	    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
 	    while (it->HasNext ())
 	    {
 	      iQuestStateFactory* stateFact = it->Next ();
 	      csString stateNameKey = nodeName + stateFact->GetName ();
-	      view->CreateNode (stateNameKey, stateFact->GetName (),
-			      mgr->FindMarkerColor ("green"));
+	      view->CreateNode (stateNameKey, csVector2 (100, 26),
+		  stateFact->GetName (),
+		  stateColorFG, stateColorBG);
 	      view->LinkNode (nodeName, stateNameKey);
 	    }
 	  }

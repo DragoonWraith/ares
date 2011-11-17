@@ -99,7 +99,8 @@ void GraphView::UpdateFrame ()
       {
 	csVector2 pos2 = node2.marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
-	netForce += (pos-pos2) * 300.0f / sqdist;
+	netForce.x += (pos.x-pos2.x) * 350.0f / sqdist;
+	netForce.y += (pos.y-pos2.y) * 250.0f / sqdist;
 
 	if (IsLinked (key, key2))
 	  netForce += (pos2-pos) * 0.06f;
@@ -107,10 +108,10 @@ void GraphView::UpdateFrame ()
     }
     node.velocity = (node.velocity + netForce) * 0.85f;
     pos += node.velocity * (seconds * 50.0f);
-    if (pos.x > fw-76) pos.x = fw-76;
-    else if (pos.x < 76) pos.x = 76;
-    if (pos.y > fh-14) pos.y = fh-14;
-    else if (pos.y < 14) pos.y = 14;
+    if (pos.x > fw-node.size.x/2-1) pos.x = fw-node.size.x/2-1;
+    else if (pos.x < node.size.x/2+1) pos.x = node.size.x/2+1;
+    if (pos.y > fh-node.size.y/2-1) pos.y = fh-node.size.y/2-1;
+    else if (pos.y < node.size.y/2+1) pos.y = node.size.y/2+1;
     node.marker->SetPosition (pos);
   }
 }
@@ -180,23 +181,26 @@ public:
   }
 };
 
-void GraphView::CreateNode (const char* name, const char* label,
-		iMarkerColor* color)
+void GraphView::CreateNode (const char* name, const csVector2& size,
+    const char* label, iMarkerColor* fgcolor, iMarkerColor* bgcolor)
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
-  // @@@ Color should come from outside.
-  marker->RoundedBox2D (MARKER_2D, csVector3 (-75, -13, 0),
-    csVector3 (75, 13, 0), 10, color ? color : nodeColor);
+  int w2 = size.x / 2;
+  int h2 = size.y / 2;
+  marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
+    csVector3 (w2, h2, 0), 10, bgcolor ? bgcolor : nodeBgColor);
+  marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
+    csVector3 (w2, h2, 0), 10, fgcolor ? fgcolor : nodeFgColor);
   if (!label) label = name;
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
   marker->SetSelectionLevel (1);
   marker->SetVisible (visible);
-  marker->SetPosition (csVector2 (75+rng.Get ()*(fw-75-75), 13+rng.Get ()*(fh-13-13)));
+  marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
 
   iMarkerColor* yellow = mgr->FindMarkerColor ("yellow");
-  iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csVector3 (0, 0), 13, 0, yellow);
+  iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csVector3 (0, 0), h2, 0, yellow);
   csRef<MarkerCallback> cb;
   cb.AttachNew (new MarkerCallback (this));
   hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
@@ -204,6 +208,7 @@ void GraphView::CreateNode (const char* name, const char* label,
   GraphNode node;
   node.marker = marker;
   node.velocity.Set (0, 0);
+  node.size = size;
   nodes.Put (name, node);
 }
 
@@ -244,6 +249,15 @@ void MarkerColor::SetPenWidth (int selectionLevel, float width)
 {
   csPen* pen = GetOrCreatePen (selectionLevel);
   pen->SetPenWidth (width);
+}
+
+void MarkerColor::EnableFill (int selectionLevel, bool fill)
+{
+  csPen* pen = GetOrCreatePen (selectionLevel);
+  if (fill)
+    pen->SetFlag (CS_PEN_FILL);
+  else
+    pen->ClearFlag (CS_PEN_FILL);
 }
 
 //---------------------------------------------------------------------------------------
