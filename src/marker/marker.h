@@ -122,6 +122,51 @@ struct iInternalMarkerHitArea : public iMarkerHitArea
   virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const = 0;
 };
 
+class InvBoxMarkerHitArea : public scfImplementation1<InvBoxMarkerHitArea,
+  iInternalMarkerHitArea>
+{
+private:
+  Marker* marker;
+  MarkerSpace space;
+  csBox3 box;
+  csVector3 center;
+  int data;
+  csPDelArray<MarkerDraggingMode> draggingModes;
+
+public:
+  InvBoxMarkerHitArea (Marker* marker)
+    : scfImplementationType (this), marker (marker) { }
+  virtual ~InvBoxMarkerHitArea () { }
+
+  virtual iMarker* GetMarker () const;
+
+  virtual void DefineDrag (uint button, uint32 modifiers,
+      MarkerSpace constrainSpace, uint32 constrainPlane,
+      iMarkerCallback* cb);
+
+  void SetSpace (MarkerSpace space) { InvBoxMarkerHitArea::space = space; }
+  virtual MarkerSpace GetSpace () const { return space; }
+
+  void SetBox (const csBox3& box)
+  {
+    InvBoxMarkerHitArea::box = box;
+    center = box.GetCenter ();
+  }
+  virtual const csVector3& GetCenter () const { return center; }
+
+  void SetData (int data) { InvBoxMarkerHitArea::data = data; }
+  virtual int GetData () const { return data; }
+
+  // For iInternalMarkerHitArea
+  virtual void Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos);
+  virtual float CheckHit (int x, int y, const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos);
+  virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const;
+};
+
 class CircleMarkerHitArea : public scfImplementation1<CircleMarkerHitArea,
   iInternalMarkerHitArea>
 {

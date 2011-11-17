@@ -302,6 +302,77 @@ static csVector3 TransPointCam (
     return point;
 }
 
+//--------------------------------------------------------------------------
+
+iMarker* InvBoxMarkerHitArea::GetMarker () const
+{
+  return static_cast<iMarker*> (marker);
+}
+
+void InvBoxMarkerHitArea::DefineDrag (uint button, uint32 modifiers,
+      MarkerSpace constrainSpace, uint32 constrainPlane,
+      iMarkerCallback* cb)
+{
+  MarkerDraggingMode* dm = new MarkerDraggingMode ();
+  dm->cb = cb;
+  dm->button = button;
+  dm->modifiers = modifiers;
+  dm->constrainSpace = constrainSpace;
+  dm->constrainPlane = constrainPlane;
+  draggingModes.Push (dm);
+}
+
+MarkerDraggingMode* InvBoxMarkerHitArea::FindDraggingMode (uint button, uint32 modifiers) const
+{
+  for (size_t i = 0 ; i < draggingModes.GetSize () ; i++)
+  {
+    MarkerDraggingMode* dm = draggingModes[i];
+    if (dm->button == button &&
+	(dm->modifiers & CSMASK_MODIFIERS) == (modifiers & CSMASK_MODIFIERS))
+    {
+      return dm;
+    }
+  }
+  return 0;
+}
+
+void InvBoxMarkerHitArea::Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos)
+{
+}
+
+float InvBoxMarkerHitArea::CheckHit (int x, int y,
+    const csOrthoTransform& camtrans, const csReversibleTransform& meshtrans,
+    MarkerManager* mgr, const csVector2& pos)
+{
+  csVector3 c1 = TransPointCam (camtrans, meshtrans, space, box.Min ());
+  csVector3 c2 = TransPointCam (camtrans, meshtrans, space, box.Max ());
+  if (space == MARKER_2D || (c1.z > .5 && c2.z > .5))
+  {
+    csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
+    csVector2 s1, s2;
+    if (space != MARKER_2D)
+    {
+      s1 = mgr->camera->Perspective (c1) + pos;
+      s2 = mgr->camera->Perspective (c2) + pos;
+    }
+    else
+    {
+      s1.Set (pos.x + c1.x, mgr->g2d->GetHeight () - (pos.y + c1.y));
+      s2.Set (pos.x + c2.x, mgr->g2d->GetHeight () - (pos.y + c2.y));
+    }
+    if (f.x >= s1.x && f.x <= s2.x && f.y >= s1.y && f.y <= s2.y)
+    {
+      float d = sqrt (SqDistance2d ((s1+s2)/2.0f, f));
+      return d;
+    }
+  }
+  return -1.0f;
+}
+
+//--------------------------------------------------------------------------
+
 iMarker* CircleMarkerHitArea::GetMarker () const
 {
   return static_cast<iMarker*> (marker);
