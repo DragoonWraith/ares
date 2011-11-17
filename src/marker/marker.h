@@ -223,7 +223,7 @@ public:
 struct GraphNode
 {
   iMarker* marker;
-  csVector2 netForce, velocity;
+  csVector2 velocity;
   bool frozen;
   GraphNode () : marker (0), frozen (false) { }
 };

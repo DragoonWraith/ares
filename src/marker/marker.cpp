@@ -88,7 +88,7 @@ void GraphView::UpdateFrame ()
     if (node.marker == draggingMarker || node.frozen) continue;
 
     csVector2 pos = node.marker->GetPosition ();
-    node.netForce.Set (0, 0);
+    csVector2 netForce (0, 0);
 
     csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
     while (it2.HasNext ())
@@ -99,13 +99,13 @@ void GraphView::UpdateFrame ()
       {
 	csVector2 pos2 = node2.marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
-	node.netForce += (pos-pos2) * 300.0f / sqdist;
+	netForce += (pos-pos2) * 300.0f / sqdist;
 
 	if (IsLinked (key, key2))
-	  node.netForce += (pos2-pos) * 0.06f;
+	  netForce += (pos2-pos) * 0.06f;
       }
     }
-    node.velocity = (node.velocity + node.netForce) * 0.85f;
+    node.velocity = (node.velocity + netForce) * 0.85f;
     pos += node.velocity * (seconds * 50.0f);
     if (pos.x > fw-76) pos.x = fw-76;
     else if (pos.x < 76) pos.x = 76;
@@ -203,7 +203,6 @@ void GraphView::CreateNode (const char* name, const char* label,
 
   GraphNode node;
   node.marker = marker;
-  node.netForce.Set (0, 0);
   node.velocity.Set (0, 0);
   nodes.Put (name, node);
 }
