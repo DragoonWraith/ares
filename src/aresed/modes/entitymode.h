@@ -30,17 +30,25 @@ THE SOFTWARE.
 
 struct iGeometryGenerator;
 struct iCelPropertyClassTemplate;
+struct iQuestStateFactory;
+struct iRewardFactoryArray;
 
 class EntityMode : public EditingMode
 {
 private:
   void SetupItems ();
-  void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* nodeName);
+
+  void BuildNewStateConnections (iRewardFactoryArray* rewards,
+      const char* parentKey, const char* pcNodeName, const char* newKey = 0);
+  void BuildStateGraph (iQuestStateFactory* state, const char* stateNameKey,
+      const char* pcNodeName);
+  void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcNodeName);
   void BuildTemplateGraph (const char* templateName);
 
   iMarkerColor* templateColorFG, * templateColorBG;
   iMarkerColor* pcColorFG, * pcColorBG;
   iMarkerColor* stateColorFG, * stateColorBG;
+  iMarkerColor* thinLinkColor;
 
   iGraphView* view;
   iMarkerColor* NewColor (const char* name,

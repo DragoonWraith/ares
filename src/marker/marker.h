@@ -309,6 +309,8 @@ struct GraphLink
 {
   csString node1;
   csString node2;
+  iMarkerColor* color;
+  GraphLink () : color (0) { }
 };
 
 class GraphView : public scfImplementation1<GraphView, iGraphView>
@@ -353,13 +355,15 @@ public:
   virtual void Clear ();
   virtual void CreateNode (const char* name, const csVector2& size,
       const char* label = 0,
-      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0);
+      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0, int roundness = 10);
   virtual void RemoveNode (const char* name);
-  virtual void LinkNode (const char* node1, const char* node2)
+  virtual void LinkNode (const char* node1, const char* node2,
+      iMarkerColor* color = 0)
   {
     GraphLink l;
     l.node1 = node1;
     l.node2 = node2;
+    l.color = color;
     links.Push (l);
   }
   virtual void RemoveLink (const char* node1, const char* node2)

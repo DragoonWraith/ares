@@ -99,10 +99,10 @@ void GraphView::UpdateFrame ()
       {
 	csVector2 pos2 = node2.marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
-	netForce += (pos-pos2) * 220.0f / sqdist;
+	netForce += (pos-pos2) * 140.0f / sqdist;
 
 	if (IsLinked (key, key2))
-	  netForce += (pos2-pos) * 0.09f;
+	  netForce += (pos2-pos) * 0.08f;
       }
     }
     node.velocity = (node.velocity + netForce) * 0.85f;
@@ -125,7 +125,9 @@ void GraphView::Render3D ()
     GraphNode& node2 = nodes.Get (l.node2, n);
     csVector2 pos1 = node1.marker->GetPosition ();
     csVector2 pos2 = node2.marker->GetPosition ();
-    csPen* pen = static_cast<MarkerColor*> (linkColor)->GetPen (1);
+    iMarkerColor* color = l.color;
+    if (!color) color = linkColor;
+    csPen* pen = static_cast<MarkerColor*> (color)->GetPen (1);
     pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
   }
 }
@@ -183,7 +185,8 @@ public:
 };
 
 void GraphView::CreateNode (const char* name, const csVector2& size,
-    const char* label, iMarkerColor* fgcolor, iMarkerColor* bgcolor)
+    const char* label, iMarkerColor* fgcolor, iMarkerColor* bgcolor,
+    int roundness)
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
@@ -203,9 +206,9 @@ void GraphView::CreateNode (const char* name, const csVector2& size,
   int h2 = h / 2;
 
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
-    csVector3 (w2, h2, 0), 10, bgcolor ? bgcolor : nodeBgColor);
+    csVector3 (w2, h2, 0), roundness, bgcolor ? bgcolor : nodeBgColor);
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
-    csVector3 (w2, h2, 0), 10, fgcolor ? fgcolor : nodeFgColor);
+    csVector3 (w2, h2, 0), roundness, fgcolor ? fgcolor : nodeFgColor);
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
   marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);

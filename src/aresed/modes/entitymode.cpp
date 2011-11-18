@@ -53,12 +53,6 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
 
   view->SetVisible (false);
 
-  templateColorFG = 0;
-  templateColorBG = 0;
-  pcColorFG = 0;
-  pcColorBG = 0;
-  stateColorFG = 0;
-  stateColorBG = 0;
   InitColors ();
 }
 
@@ -86,7 +80,7 @@ iMarkerColor* EntityMode::NewColor (const char* name,
 
 void EntityMode::InitColors ()
 {
-  if (templateColorFG) return;
+  iMarkerManager* mgr = aresed3d->GetMarkerManager ();
 
   templateColorFG = NewColor ("templateColorFG", .7, .7, .7, 1, 1, 1, false);
   templateColorBG = NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true);
@@ -96,11 +90,25 @@ void EntityMode::InitColors ()
   stateColorBG = NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true);
   iMarkerColor* textColor = NewColor ("viewWhite", .7, .7, .7, 1, 1, 1, false);
 
-  iMarkerManager* mgr = aresed3d->GetMarkerManager ();
+  iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
+  thickLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
+  thickLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
+  thickLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
+  thickLinkColor->SetPenWidth (SELECTION_NONE, 1.2f);
+  thickLinkColor->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  thickLinkColor->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+  thinLinkColor = mgr->CreateMarkerColor ("thinLink");
+  thinLinkColor->SetRGBColor (SELECTION_NONE, 0, .5, .5, .5);
+  thinLinkColor->SetRGBColor (SELECTION_SELECTED, 0, 1, 1, .5);
+  thinLinkColor->SetRGBColor (SELECTION_ACTIVE, 0, 1, 1, .5);
+  thinLinkColor->SetPenWidth (SELECTION_NONE, 0.5f);
+  thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
+  thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
+
   view->SetColors (
       textColor,
       pcColorFG, pcColorBG,
-      mgr->FindMarkerColor ("yellow"));
+      thickLinkColor);
 }
 
 void EntityMode::SetupItems ()
@@ -130,8 +138,57 @@ void EntityMode::Stop ()
   view->SetVisible (false);
 }
 
+void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
+    const char* parentKey, const char* pcNodeName, const char* newKey)
+{
+  for (size_t j = 0 ; j < rewards->GetSize () ; j++)
+  {
+    iRewardFactory* reward = rewards->Get (j);
+    csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
+    if (newState)
+    {
+      csString stateNameKey = pcNodeName;
+      // @@@ No support for expressions here!
+      stateNameKey += newState->GetStateParameter ();
+      if (newKey)
+      {
+	csString newKeyKey = pcNodeName;
+	newKeyKey += newKey;
+        view->CreateNode (newKeyKey, csVector2 (0, 0),
+          newKey, stateColorFG, stateColorBG, 1);
+	view->LinkNode (parentKey, newKeyKey);
+	view->LinkNode (newKeyKey, stateNameKey, thinLinkColor);
+      }
+      else
+        view->LinkNode (parentKey, stateNameKey, thinLinkColor);
+    }
+  }
+}
+
+void EntityMode::BuildStateGraph (iQuestStateFactory* state,
+    const char* stateNameKey, const char* pcNodeName)
+{
+  csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
+  for (size_t i = 0 ; i < responses->GetSize () ; i++)
+  {
+    iQuestTriggerResponseFactory* response = responses->Get (i);
+    csString responseKey;
+    responseKey.Format ("R%s %d", stateNameKey, i);
+    view->CreateNode (responseKey, csVector2 (0, 0),
+      "Trig", stateColorFG, stateColorBG, 1);
+    view->LinkNode (stateNameKey, responseKey);
+    csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
+    BuildNewStateConnections (rewards, responseKey, pcNodeName);
+  }
+
+  csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
+  BuildNewStateConnections (initRewards, stateNameKey, pcNodeName, "OnInit");
+  csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
+  BuildNewStateConnections (exitRewards, stateNameKey, pcNodeName, "OnExit");
+}
+
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
-    const char* nodeName)
+    const char* pcNodeName)
 {
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   csStringID newquestID = pl->FetchStringID ("NewQuest");
@@ -168,23 +225,13 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
 	while (it->HasNext ())
 	{
 	  iQuestStateFactory* stateFact = it->Next ();
-	  csString stateNameKey = nodeName;
+	  csString stateNameKey = pcNodeName;
 	  stateNameKey += stateFact->GetName ();
 	  view->CreateNode (stateNameKey, csVector2 (0, 0),
 	      stateFact->GetName (),
 	      stateColorFG, stateColorBG);
-	  view->LinkNode (nodeName, stateNameKey);
-
-	  csRef<iQuestTriggerResponseFactoryArray> responses = stateFact->GetTriggerResponseFactories ();
-	  for (size_t i = 0 ; i < responses->GetSize () ; i++)
-	  {
-	    iQuestTriggerResponseFactory* response = responses->Get (i);
-	    csString responseKey;
-	    responseKey.Format ("R%s %d", stateNameKey.GetData (), i);
-	    view->CreateNode (responseKey, csVector2 (0, 0),
-	      "T", stateColorFG, stateColorBG);
-	    view->LinkNode (stateNameKey, responseKey);
-	  }
+	  view->LinkNode (pcNodeName, stateNameKey);
+	  BuildStateGraph (stateFact, stateNameKey, pcNodeName);
 	}
       }
     }
@@ -206,19 +253,19 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
     csString pcName = pctpl->GetName ();
-    csString nodeName;
+    csString pcNodeName;
     size_t lastDot = pcName.FindLast ('.');
     if (lastDot != csArrayItemNotFound)
-      nodeName = pcName.Slice (lastDot+1);
+      pcNodeName = pcName.Slice (lastDot+1);
     else
-      nodeName = pcName;
+      pcNodeName = pcName;
 
     if (pctpl->GetTag () != 0)
-      nodeName.AppendFmt (" (%s)", pctpl->GetTag ());
-    view->CreateNode (nodeName, csVector2 (0, 0), 0, pcColorFG, pcColorBG);
-    view->LinkNode (templateName, nodeName);
+      pcNodeName.AppendFmt (" (%s)", pctpl->GetTag ());
+    view->CreateNode (pcNodeName, csVector2 (0, 0), 0, pcColorFG, pcColorBG);
+    view->LinkNode (templateName, pcNodeName);
     if (pcName == "pclogic.quest")
-      BuildQuestGraph (pctpl, nodeName);
+      BuildQuestGraph (pctpl, pcNodeName);
   }
 }
 

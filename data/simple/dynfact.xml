@@ -2,6 +2,46 @@
 <library>
     <addon plugin="cel.addons.questdef" >
 
+    <quest name="findTheSecretNote">
+
+        <state name="init">
+          <oninit>
+            <reward type="message" entity="world" id="ares.logentry">
+              <par name="logid" string="SECNOTE_intro" />
+              <par name="message" string="You must go find a secret note. Perhaps look in the basement?" />
+            </reward>
+            <reward type="newstate" state="watchout" />
+          </oninit>
+        </state>
+
+        <state name="watchout">
+          <trigger type="entersector">
+            <fireon entity="player" sector="cellBasement" />
+            <reward type="message" entity="world" id="ares.logentry">
+              <par name="logid" string="SECNOTE_enterbasement" />
+              <par name="message" string="As you enter the basement you get the impression that there was a fight recently. Perhaps you will find a clue here?" />
+            </reward>
+              <reward type="newstate" state="watchout" />
+          </trigger>
+          <trigger type="inventory">
+            <fireon entity="player" child_entity="SecretNote" />
+            <reward type="message" entity="world" id="ares.logentry">
+              <par name="logid" string="SECNOTE_gotnote" />
+              <par name="message" string="You pick up a note. This looks like the secret note you had to find." />
+            </reward>
+            <reward type="newstate" state="finish" />
+          </trigger>
+        </state>
+
+        <state name="finish">
+          <oninit>
+            <reward type="message" entity="world" id="ares.finishquest" />
+          </oninit>
+        </state>
+
+      </quest>
+
+
       <quest name="clickerObject">
 	<state name="init">
 	  <trigger type="message">
@@ -47,6 +87,12 @@
       <propclass name="pcobject.mesh" />
       <propclass name="pctools.properties">
 	<property name="counter" long="1" />
+      </propclass>
+      <propclass name="pclogic.quest" tag="note">
+        <action name="NewQuest" >
+          <par name="name" string="findTheSecretNote" />
+        </action>
+        <property name="state" string="init" />
       </propclass>
       <propclass name="pclogic.quest" tag="glow">
         <action name="NewQuest" >

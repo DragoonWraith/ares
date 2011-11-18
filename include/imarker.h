@@ -334,7 +334,8 @@ struct iGraphView : public virtual iBase
    */
   virtual void CreateNode (const char* name, const csVector2& size,
       const char* label = 0,
-      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0) = 0;
+      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0,
+      int roundness = 10) = 0;
 
   /**
    * Remove a node.
@@ -344,7 +345,8 @@ struct iGraphView : public virtual iBase
   /**
    * Link two nodes.
    */
-  virtual void LinkNode (const char* node1, const char* node2) = 0;
+  virtual void LinkNode (const char* node1, const char* node2,
+      iMarkerColor* color = 0) = 0;
 
   /**
    * Remove all links between two nodes.
