@@ -130,7 +130,57 @@ void EntityMode::Stop ()
   view->SetVisible (false);
 }
 
-void EntityMode::ShowTemplate (const char* templateName)
+void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
+    const char* nodeName)
+{
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  csStringID newquestID = pl->FetchStringID ("NewQuest");
+  size_t idx = pctpl->FindProperty (newquestID);
+  if (idx != csArrayItemNotFound)
+  {
+    celData data;
+    csRef<iCelParameterIterator> parit = pctpl->GetProperty (idx,
+		    newquestID, data);
+    csStringID nameID = pl->FetchStringID ("name");
+    csString questName;
+    while (parit->HasNext ())
+    {
+      csStringID parid;
+      iParameter* par = parit->Next (parid);
+      // @@@ We don't support expression parameters here. 'params'
+      // for creating entities is missing.
+      if (parid == nameID)
+      {
+	questName = par->Get (0);
+	break;
+      }
+    }
+    if (!questName.IsEmpty ())
+    {
+      csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+	aresed3d->GetObjectRegistry (),
+	"cel.manager.quests");
+      iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+      // @@@ Error check
+      if (questFact)
+      {
+	csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+	while (it->HasNext ())
+	{
+	  iQuestStateFactory* stateFact = it->Next ();
+	  csString stateNameKey = nodeName;
+	  stateNameKey += stateFact->GetName ();
+	  view->CreateNode (stateNameKey, csVector2 (100, 26),
+	      stateFact->GetName (),
+	      stateColorFG, stateColorBG);
+	  view->LinkNode (nodeName, stateNameKey);
+	}
+      }
+    }
+  }
+}
+
+void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   view->Clear ();
 
@@ -153,51 +203,7 @@ void EntityMode::ShowTemplate (const char* templateName)
     view->CreateNode (nodeName, csVector2 (150, 26), 0, pcColorFG, pcColorBG);
     view->LinkNode (templateName, nodeName);
     if (pcName == "pclogic.quest")
-    {
-      csStringID newquestID = pl->FetchStringID ("NewQuest");
-      size_t idx = pctpl->FindProperty (newquestID);
-      if (idx != csArrayItemNotFound)
-      {
-	celData data;
-	csRef<iCelParameterIterator> parit = pctpl->GetProperty (idx,
-			newquestID, data);
-	csStringID nameID = pl->FetchStringID ("name");
-	csString questName;
-	while (parit->HasNext ())
-	{
-	  csStringID parid;
-	  iParameter* par = parit->Next (parid);
-	  // @@@ We don't support expression parameters here. 'params'
-	  // for creating entities is missing.
-	  if (parid == nameID)
-	  {
-	    questName = par->Get (0);
-	    break;
-	  }
-	}
-	if (!questName.IsEmpty ())
-	{
-	  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-	    aresed3d->GetObjectRegistry (),
-	    "cel.manager.quests");
-	  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
-	  // @@@ Error check
-	  if (questFact)
-	  {
-	    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
-	    while (it->HasNext ())
-	    {
-	      iQuestStateFactory* stateFact = it->Next ();
-	      csString stateNameKey = nodeName + stateFact->GetName ();
-	      view->CreateNode (stateNameKey, csVector2 (100, 26),
-		  stateFact->GetName (),
-		  stateColorFG, stateColorBG);
-	      view->LinkNode (nodeName, stateNameKey);
-	    }
-	  }
-	}
-      }
-    }
+      BuildQuestGraph (pctpl, nodeName);
   }
 }
 
@@ -205,7 +211,7 @@ void EntityMode::OnTemplateSelect ()
 {
   wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
   csString templateName = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
-  ShowTemplate (templateName);
+  BuildTemplateGraph (templateName);
 }
 
 void EntityMode::FramePre()

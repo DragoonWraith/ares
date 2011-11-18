@@ -29,12 +29,14 @@ THE SOFTWARE.
 #include "editmodes.h"
 
 struct iGeometryGenerator;
+struct iCelPropertyClassTemplate;
 
 class EntityMode : public EditingMode
 {
 private:
   void SetupItems ();
-  void ShowTemplate (const char* templateName);
+  void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* nodeName);
+  void BuildTemplateGraph (const char* templateName);
 
   iMarkerColor* templateColorFG, * templateColorBG;
   iMarkerColor* pcColorFG, * pcColorBG;
