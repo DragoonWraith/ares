@@ -99,11 +99,14 @@ void GraphView::UpdateFrame ()
       {
 	csVector2 pos2 = node2.marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
-	netForce.x += (pos.x-pos2.x) * 350.0f / sqdist;
-	netForce.y += (pos.y-pos2.y) * 250.0f / sqdist;
+	netForce.x += (pos.x-pos2.x) * 330.0f / sqdist;
+	netForce.y += (pos.y-pos2.y) * 270.0f / sqdist;
 
 	if (IsLinked (key, key2))
-	  netForce += (pos2-pos) * 0.06f;
+	{
+	  netForce.x += (pos2.x-pos.x) * 0.04f;
+	  netForce.y += (pos2.y-pos.y) * 0.06f;
+	}
       }
     }
     node.velocity = (node.velocity + netForce) * 0.85f;
@@ -305,25 +308,13 @@ static csVector3 TransPointCam (
 
 //--------------------------------------------------------------------------
 
-iMarker* InvBoxMarkerHitArea::GetMarker () const
+iMarker* InternalMarkerHitArea::GetMarker () const
 {
   return static_cast<iMarker*> (marker);
 }
 
-void InvBoxMarkerHitArea::DefineDrag (uint button, uint32 modifiers,
-      MarkerSpace constrainSpace, uint32 constrainPlane,
-      iMarkerCallback* cb)
-{
-  MarkerDraggingMode* dm = new MarkerDraggingMode ();
-  dm->cb = cb;
-  dm->button = button;
-  dm->modifiers = modifiers;
-  dm->constrainSpace = constrainSpace;
-  dm->constrainPlane = constrainPlane;
-  draggingModes.Push (dm);
-}
-
-MarkerDraggingMode* InvBoxMarkerHitArea::FindDraggingMode (uint button, uint32 modifiers) const
+MarkerDraggingMode* InternalMarkerHitArea::FindDraggingMode (
+    uint button, uint32 modifiers) const
 {
   for (size_t i = 0 ; i < draggingModes.GetSize () ; i++)
   {
@@ -336,6 +327,21 @@ MarkerDraggingMode* InvBoxMarkerHitArea::FindDraggingMode (uint button, uint32 m
   }
   return 0;
 }
+
+void InternalMarkerHitArea::DefineDrag (uint button, uint32 modifiers,
+      MarkerSpace constrainSpace, uint32 constrainPlane,
+      iMarkerCallback* cb)
+{
+  MarkerDraggingMode* dm = new MarkerDraggingMode ();
+  dm->cb = cb;
+  dm->button = button;
+  dm->modifiers = modifiers;
+  dm->constrainSpace = constrainSpace;
+  dm->constrainPlane = constrainPlane;
+  draggingModes.Push (dm);
+}
+
+//--------------------------------------------------------------------------
 
 void InvBoxMarkerHitArea::Render3D (const csOrthoTransform& camtrans,
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
@@ -374,11 +380,6 @@ float InvBoxMarkerHitArea::CheckHit (int x, int y,
 
 //--------------------------------------------------------------------------
 
-iMarker* CircleMarkerHitArea::GetMarker () const
-{
-  return static_cast<iMarker*> (marker);
-}
-
 csVector2 CircleMarkerHitArea::GetPerspectiveRadius (iView* view, float z) const
 {
   iCamera* camera = view->GetCamera ();
@@ -386,33 +387,6 @@ csVector2 CircleMarkerHitArea::GetPerspectiveRadius (iView* view, float z) const
   csVector4 t = camera->GetProjectionMatrix () * r4;
   csVector2 r (t.x / t.w - 1.0f, t.y / t.w - 1.0f);
   return view->NormalizedToScreen (r);
-}
-
-void CircleMarkerHitArea::DefineDrag (uint button, uint32 modifiers,
-      MarkerSpace constrainSpace, uint32 constrainPlane,
-      iMarkerCallback* cb)
-{
-  MarkerDraggingMode* dm = new MarkerDraggingMode ();
-  dm->cb = cb;
-  dm->button = button;
-  dm->modifiers = modifiers;
-  dm->constrainSpace = constrainSpace;
-  dm->constrainPlane = constrainPlane;
-  draggingModes.Push (dm);
-}
-
-MarkerDraggingMode* CircleMarkerHitArea::FindDraggingMode (uint button, uint32 modifiers) const
-{
-  for (size_t i = 0 ; i < draggingModes.GetSize () ; i++)
-  {
-    MarkerDraggingMode* dm = draggingModes[i];
-    if (dm->button == button &&
-	(dm->modifiers & CSMASK_MODIFIERS) == (modifiers & CSMASK_MODIFIERS))
-    {
-      return dm;
-    }
-  }
-  return 0;
 }
 
 void CircleMarkerHitArea::Render3D (const csOrthoTransform& camtrans,
@@ -473,7 +447,113 @@ float CircleMarkerHitArea::CheckHit (int x, int y,
   return -1.0f;
 }
 
-//---------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+void MarkerLine::Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos, int selectionLevel)
+{
+  csVector3 v1 = TransPointCam (camtrans, meshtrans, space, vec1);
+  csVector3 v2 = TransPointCam (camtrans, meshtrans, space, vec2);
+  // @@@ Do proper clipping?
+  if (space == MARKER_2D || (v1.z > .5 && v2.z > .5))
+  {
+    int h = mgr->g2d->GetHeight ();
+    csPen* pen = color->GetPen (selectionLevel);
+    csVector2 s1, s2;
+    if (space != MARKER_2D)
+    {
+      s1 = mgr->camera->Perspective (v1);
+      s2 = mgr->camera->Perspective (v2);
+    }
+    else
+    {
+      s1.Set (v1.x, h-v1.y);
+      s2.Set (v2.x, h-v2.y);
+    }
+
+    int x1 = int (s1.x);
+    int y1 = h - int (s1.y);
+    int x2 = int (s2.x);
+    int y2 = h - int (s2.y);
+
+    pen->DrawLine (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2);
+
+    if (arrow)
+    {
+      //float d = sqrt (SqDistance2d (s1, s2));
+      int dx = (x2-x1) / 4;
+      int dy = (y2-y1) / 4;
+      int dxr = -(y2-y1) / 4;
+      int dyr = (x2-x1) / 4;
+      pen->DrawLine (pos.x + x2, pos.y + y2, pos.x + x2-dx+dxr, pos.y + y2-dy+dyr);
+      pen->DrawLine (pos.x + x2, pos.y + y2, pos.x + x2-dx-dxr, pos.y + y2-dy-dyr);
+    }
+  }
+}
+
+void MarkerRoundedBox::Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos, int selectionLevel)
+{
+  csVector3 v1 = TransPointCam (camtrans, meshtrans, space, vec1);
+  csVector3 v2 = TransPointCam (camtrans, meshtrans, space, vec2);
+  // @@@ Do proper clipping?
+  if (space == MARKER_2D || (v1.z > .5 && v2.z > .5))
+  {
+    int h = mgr->g2d->GetHeight ();
+    csPen* pen = color->GetPen (selectionLevel);
+    csVector2 s1, s2;
+    if (space != MARKER_2D)
+    {
+      s1 = mgr->camera->Perspective (v1);
+      s2 = mgr->camera->Perspective (v2);
+    }
+    else
+    {
+      s1.Set (v1.x, h-v1.y);
+      s2.Set (v2.x, h-v2.y);
+    }
+
+    int x1 = int (s1.x);
+    int y1 = h - int (s1.y);
+    int x2 = int (s2.x);
+    int y2 = h - int (s2.y);
+
+    pen->DrawRoundedRect (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2,
+	roundness);
+  }
+}
+
+void MarkerText::Render2D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos, int selectionLevel)
+{
+  csVector3 v = TransPointCam (camtrans, meshtrans, space, position);
+  // @@@ Do proper clipping?
+  if (space == MARKER_2D || v.z > .5)
+  {
+    int h = mgr->g2d->GetHeight ();
+    csPen* pen = color->GetPen (selectionLevel);
+    csVector2 s;
+    if (space != MARKER_2D)
+      s = mgr->camera->Perspective (v);
+    else
+      s.Set (v.x, h-v.y);
+
+    int x1 = int (s.x);
+    int y1 = h - int (s.y);
+
+    char* t = const_cast<char*>((const char*)text);
+    if (centered)
+      pen->WriteBoxed (mgr->GetFont (), pos.x + x1, pos.y + y1,
+	pos.x + x1, pos.y + y1, CS_PEN_TA_CENTER, CS_PEN_TA_CENTER, t);
+    else
+      pen->Write (mgr->GetFont (), pos.x + x1, pos.y + y1, t);
+  }
+}
+
+//------------------------------------------------------------------------------
 
 const csReversibleTransform& Marker::GetTransform () const
 {
@@ -487,88 +567,21 @@ void Marker::Render3D ()
 
   const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
   const csReversibleTransform& meshtrans = GetTransform ();
-  for (size_t i = 0 ; i < lines.GetSize () ; i++)
+  for (size_t i = 0 ; i < primitives.GetSize () ; i++)
   {
-    MarkerLine& line = lines[i];
-    csVector3 v1 = TransPointCam (camtrans, meshtrans, line.space, line.v1);
-    csVector3 v2 = TransPointCam (camtrans, meshtrans, line.space, line.v2);
-    // @@@ Do proper clipping?
-    if (line.space == MARKER_2D || (v1.z > .5 && v2.z > .5))
-    {
-      int h = mgr->g2d->GetHeight ();
-      csPen* pen = line.color->GetPen (selectionLevel);
-      csVector2 s1, s2;
-      if (line.space != MARKER_2D)
-      {
-        s1 = mgr->camera->Perspective (v1);
-        s2 = mgr->camera->Perspective (v2);
-      }
-      else
-      {
-	s1.Set (v1.x, h-v1.y);
-	s2.Set (v2.x, h-v2.y);
-      }
- 
-      int x1 = int (s1.x);
-      int y1 = h - int (s1.y);
-      int x2 = int (s2.x);
-      int y2 = h - int (s2.y);
-
-      pen->DrawLine (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2);
-
-      if (line.arrow)
-      {
-        //float d = sqrt (SqDistance2d (s1, s2));
-        int dx = (x2-x1) / 4;
-        int dy = (y2-y1) / 4;
-        int dxr = -(y2-y1) / 4;
-        int dyr = (x2-x1) / 4;
-        pen->DrawLine (pos.x + x2, pos.y + y2, pos.x + x2-dx+dxr, pos.y + y2-dy+dyr);
-        pen->DrawLine (pos.x + x2, pos.y + y2, pos.x + x2-dx-dxr, pos.y + y2-dy-dyr);
-      }
-    }
-  }
-
-  for (size_t i = 0 ; i < roundedBoxes.GetSize () ; i++)
-  {
-    MarkerRoundedBox& box = roundedBoxes[i];
-    csVector3 v1 = TransPointCam (camtrans, meshtrans, box.space, box.v1);
-    csVector3 v2 = TransPointCam (camtrans, meshtrans, box.space, box.v2);
-    // @@@ Do proper clipping?
-    if (box.space == MARKER_2D || (v1.z > .5 && v2.z > .5))
-    {
-      int h = mgr->g2d->GetHeight ();
-      csPen* pen = box.color->GetPen (selectionLevel);
-      csVector2 s1, s2;
-      if (box.space != MARKER_2D)
-      {
-        s1 = mgr->camera->Perspective (v1);
-        s2 = mgr->camera->Perspective (v2);
-      }
-      else
-      {
-	s1.Set (v1.x, h-v1.y);
-	s2.Set (v2.x, h-v2.y);
-      }
- 
-      int x1 = int (s1.x);
-      int y1 = h - int (s1.y);
-      int x2 = int (s2.x);
-      int y2 = h - int (s2.y);
-
-      pen->DrawRoundedRect (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2,
-	  box.roundness);
-    }
+    MarkerPrimitive* prim = primitives[i];
+    prim->Render3D (camtrans, meshtrans, mgr, pos, selectionLevel);
   }
 
   bool mouseOverDrag = false;
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
-    iInternalMarkerHitArea* ha = static_cast<iInternalMarkerHitArea*> (hitAreas[i]);
+    InternalMarkerHitArea* ha = static_cast<InternalMarkerHitArea*> (hitAreas[i]);
     ha->Render3D (camtrans, meshtrans, mgr, pos);
     if (ha->HitAreaHiLightsMarker ())
     {
-      float r = ha->CheckHit (mgr->GetMouseX (), mgr->GetMouseY (), camtrans, meshtrans, mgr, pos);
+      float r = ha->CheckHit (mgr->GetMouseX (), mgr->GetMouseY (),
+	  camtrans, meshtrans, mgr, pos);
       if (r >= 0.0f)
         mouseOverDrag = true;
     }
@@ -584,31 +597,10 @@ void Marker::Render2D ()
   const csOrthoTransform& camtrans = mgr->camera->GetTransform ();
   const csReversibleTransform& meshtrans = GetTransform ();
 
-  for (size_t i = 0 ; i < texts.GetSize () ; i++)
+  for (size_t i = 0 ; i < primitives.GetSize () ; i++)
   {
-    MarkerText& text = texts[i];
-    csVector3 v = TransPointCam (camtrans, meshtrans, text.space, text.pos);
-    // @@@ Do proper clipping?
-    if (text.space == MARKER_2D || v.z > .5)
-    {
-      int h = mgr->g2d->GetHeight ();
-      csPen* pen = text.color->GetPen (selectionLevel);
-      csVector2 s;
-      if (text.space != MARKER_2D)
-        s = mgr->camera->Perspective (v);
-      else
-	s.Set (v.x, h-v.y);
- 
-      int x1 = int (s.x);
-      int y1 = h - int (s.y);
-
-      char* t = const_cast<char*>((const char*)text.text);
-      if (text.centered)
-        pen->WriteBoxed (mgr->GetFont (), pos.x + x1, pos.y + y1,
-	  pos.x + x1, pos.y + y1, CS_PEN_TA_CENTER, CS_PEN_TA_CENTER, t);
-      else
-        pen->Write (mgr->GetFont (), pos.x + x1, pos.y + y1, t);
-    }
+    MarkerPrimitive* prim = primitives[i];
+    prim->Render2D (camtrans, meshtrans, mgr, pos, selectionLevel);
   }
 }
 
@@ -616,45 +608,43 @@ void Marker::Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
       bool arrow)
 {
-  MarkerLine line;
-  line.space = space;
-  line.v1 = v1;
-  line.v2 = v2;
-  line.color = static_cast<MarkerColor*> (color);
-  line.arrow = arrow;
-  lines.Push (line);
+  MarkerLine* line = new MarkerLine ();
+  line->space = space;
+  line->vec1 = v1;
+  line->vec2 = v2;
+  line->color = static_cast<MarkerColor*> (color);
+  line->arrow = arrow;
+  primitives.Push (line);
 }
 
 void Marker::RoundedBox2D (MarkerSpace space,
       const csVector3& corner1, const csVector3& corner2, int roundness,
       iMarkerColor* color)
 {
-  MarkerRoundedBox box;
-  box.space = space;
-  box.v1 = corner1;
-  box.v2 = corner2;
-  box.color = static_cast<MarkerColor*> (color);
-  box.roundness = roundness;
-  roundedBoxes.Push (box);
+  MarkerRoundedBox* box = new MarkerRoundedBox ();
+  box->space = space;
+  box->vec1 = corner1;
+  box->vec2 = corner2;
+  box->color = static_cast<MarkerColor*> (color);
+  box->roundness = roundness;
+  primitives.Push (box);
 }
 
 void Marker::Text (MarkerSpace space, const csVector3& pos,
       const char* text, iMarkerColor* color, bool centered)
 {
-  MarkerText txt;
-  txt.space = space;
-  txt.pos = pos;
-  txt.color = static_cast<MarkerColor*> (color);
-  txt.text = text;
-  txt.centered = centered;
-  texts.Push (txt);
+  MarkerText* txt = new MarkerText ();
+  txt->space = space;
+  txt->position = pos;
+  txt->color = static_cast<MarkerColor*> (color);
+  txt->text = text;
+  txt->centered = centered;
+  primitives.Push (txt);
 }
 
 void Marker::Clear ()
 {
-  lines.Empty ();
-  roundedBoxes.Empty ();
-  texts.Empty ();
+  primitives.Empty ();
 }
 
 iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
@@ -696,7 +686,7 @@ float Marker::CheckHitAreas (int x, int y, iMarkerHitArea*& bestHitArea)
   float bestRadius = 10000000.0f;
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
-    iInternalMarkerHitArea* hitArea = static_cast<iInternalMarkerHitArea*> (
+    InternalMarkerHitArea* hitArea = static_cast<InternalMarkerHitArea*> (
 	hitAreas[i]);
     float r = hitArea->CheckHit (x, y, camtrans, meshtrans, mgr, pos);
     if (r < bestRadius && r >= 0.0f)
@@ -968,7 +958,7 @@ void MarkerManager::StopDrag ()
 
 bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
-  iInternalMarkerHitArea* hitArea = static_cast<iInternalMarkerHitArea*> (
+  InternalMarkerHitArea* hitArea = static_cast<InternalMarkerHitArea*> (
       FindHitArea (mouseX, mouseY));
   if (hitArea)
   {
