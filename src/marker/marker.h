@@ -120,6 +120,9 @@ struct iInternalMarkerHitArea : public iMarkerHitArea
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
       const csVector2& pos) = 0;
   virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const = 0;
+
+  /// Return true if mouse-over on this hit area should light the entire marker.
+  virtual bool HitAreaHiLightsMarker () const = 0;
 };
 
 class InvBoxMarkerHitArea : public scfImplementation1<InvBoxMarkerHitArea,
@@ -165,6 +168,7 @@ public:
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
       const csVector2& pos);
   virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const;
+  virtual bool HitAreaHiLightsMarker () const { return true; }
 };
 
 class CircleMarkerHitArea : public scfImplementation1<CircleMarkerHitArea,
@@ -213,6 +217,7 @@ public:
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
       const csVector2& pos);
   virtual MarkerDraggingMode* FindDraggingMode (uint button, uint32 modifiers) const;
+  virtual bool HitAreaHiLightsMarker () const { return false; }
 };
 
 class Marker : public scfImplementation1<Marker, iMarker>
@@ -268,6 +273,8 @@ public:
   virtual void Clear ();
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data, iMarkerColor* color);
+  virtual iMarkerHitArea* HitArea (MarkerSpace space, const csBox3& box,
+      int data);
   virtual void ClearHitAreas ();
 
   void Render2D ();

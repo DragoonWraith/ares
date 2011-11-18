@@ -282,10 +282,17 @@ struct iMarker : public virtual iBase
   virtual void Clear () = 0;
 
   /**
-   * Define a hit area on this marker.
+   * Define a hit area on this marker (this is a circular marker).
    */
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data, iMarkerColor* color) = 0;
+
+  /**
+   * Define a hit area on this marker (this version is invisible and
+   * depends on other geometry in the marker to be visible).
+   */
+  virtual iMarkerHitArea* HitArea (MarkerSpace space, const csBox3& box,
+      int data) = 0;
 
   /**
    * Clear all hit areas.

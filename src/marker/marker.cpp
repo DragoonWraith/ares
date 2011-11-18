@@ -201,8 +201,9 @@ void GraphView::CreateNode (const char* name, const csVector2& size,
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
 
-  iMarkerColor* yellow = mgr->FindMarkerColor ("yellow");
-  iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csVector3 (0, 0), h2, 0, yellow);
+  // Make an invisible hit area.
+  csVector3 size3 (size.x/2.0f, size.y/2.0f, 0);
+  iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csBox3 (-size3, size3), 0);
   csRef<MarkerCallback> cb;
   cb.AttachNew (new MarkerCallback (this));
   hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
@@ -362,7 +363,7 @@ float InvBoxMarkerHitArea::CheckHit (int x, int y,
       s1.Set (pos.x + c1.x, mgr->g2d->GetHeight () - (pos.y + c1.y));
       s2.Set (pos.x + c2.x, mgr->g2d->GetHeight () - (pos.y + c2.y));
     }
-    if (f.x >= s1.x && f.x <= s2.x && f.y >= s1.y && f.y <= s2.y)
+    if (f.x >= s1.x && f.x <= s2.x && f.y >= s2.y && f.y <= s1.y)	// s1.y and s2.y are swapped!
     {
       float d = sqrt (SqDistance2d ((s1+s2)/2.0f, f));
       return d;
@@ -560,11 +561,20 @@ void Marker::Render3D ()
     }
   }
 
+  bool mouseOverDrag = false;
   for (size_t i = 0 ; i < hitAreas.GetSize () ; i++)
   {
     iInternalMarkerHitArea* ha = static_cast<iInternalMarkerHitArea*> (hitAreas[i]);
     ha->Render3D (camtrans, meshtrans, mgr, pos);
+    if (ha->HitAreaHiLightsMarker ())
+    {
+      float r = ha->CheckHit (mgr->GetMouseX (), mgr->GetMouseY (), camtrans, meshtrans, mgr, pos);
+      if (r >= 0.0f)
+        mouseOverDrag = true;
+    }
   }
+  if (mouseOverDrag) SetSelectionLevel (SELECTION_SELECTED);
+  else SetSelectionLevel (SELECTION_NONE);
 }
 
 void Marker::Render2D ()
@@ -657,6 +667,18 @@ iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csVector3& center,
   hitArea->SetRadius (radius);
   hitArea->SetData (data);
   hitArea->SetColor (static_cast<MarkerColor*> (color));
+  hitAreas.Push (hitArea);
+  return hitArea;
+}
+
+iMarkerHitArea* Marker::HitArea (MarkerSpace space, const csBox3& box,
+      int data)
+{
+  csRef<InvBoxMarkerHitArea> hitArea;
+  hitArea.AttachNew (new InvBoxMarkerHitArea (this));
+  hitArea->SetSpace (space);
+  hitArea->SetBox (box);
+  hitArea->SetData (data);
   hitAreas.Push (hitArea);
   return hitArea;
 }
