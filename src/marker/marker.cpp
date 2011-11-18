@@ -99,14 +99,10 @@ void GraphView::UpdateFrame ()
       {
 	csVector2 pos2 = node2.marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
-	netForce.x += (pos.x-pos2.x) * 330.0f / sqdist;
-	netForce.y += (pos.y-pos2.y) * 270.0f / sqdist;
+	netForce += (pos-pos2) * 220.0f / sqdist;
 
 	if (IsLinked (key, key2))
-	{
-	  netForce.x += (pos2.x-pos.x) * 0.04f;
-	  netForce.y += (pos2.y-pos.y) * 0.06f;
-	}
+	  netForce += (pos2-pos) * 0.09f;
       }
     }
     node.velocity = (node.velocity + netForce) * 0.85f;
@@ -192,20 +188,31 @@ void GraphView::CreateNode (const char* name, const csVector2& size,
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
-  int w2 = size.x / 2;
-  int h2 = size.y / 2;
+  int w = size.x;
+  int h = size.x;
+  if (!label) label = name;
+
+  if (w == 0 && h == 0)
+  {
+    mgr->GetFont ()->GetDimensions (label, w, h);
+    w += 10;
+    h += 4;
+  }
+
+  int w2 = w / 2;
+  int h2 = h / 2;
+
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
     csVector3 (w2, h2, 0), 10, bgcolor ? bgcolor : nodeBgColor);
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
     csVector3 (w2, h2, 0), 10, fgcolor ? fgcolor : nodeFgColor);
-  if (!label) label = name;
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
   marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
 
   // Make an invisible hit area.
-  csVector3 size3 (size.x/2.0f, size.y/2.0f, 0);
+  csVector3 size3 (w2, h2, 0);
   iMarkerHitArea* hitArea = marker->HitArea (MARKER_2D, csBox3 (-size3, size3), 0);
   csRef<MarkerCallback> cb;
   cb.AttachNew (new MarkerCallback (this));
@@ -214,7 +221,7 @@ void GraphView::CreateNode (const char* name, const csVector2& size,
   GraphNode node;
   node.marker = marker;
   node.velocity.Set (0, 0);
-  node.size = size;
+  node.size = csVector2 (w, h);
   nodes.Put (name, node);
 }
 

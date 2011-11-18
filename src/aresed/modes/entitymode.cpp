@@ -170,10 +170,21 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
 	  iQuestStateFactory* stateFact = it->Next ();
 	  csString stateNameKey = nodeName;
 	  stateNameKey += stateFact->GetName ();
-	  view->CreateNode (stateNameKey, csVector2 (100, 26),
+	  view->CreateNode (stateNameKey, csVector2 (0, 0),
 	      stateFact->GetName (),
 	      stateColorFG, stateColorBG);
 	  view->LinkNode (nodeName, stateNameKey);
+
+	  csRef<iQuestTriggerResponseFactoryArray> responses = stateFact->GetTriggerResponseFactories ();
+	  for (size_t i = 0 ; i < responses->GetSize () ; i++)
+	  {
+	    iQuestTriggerResponseFactory* response = responses->Get (i);
+	    csString responseKey;
+	    responseKey.Format ("R%s %d", stateNameKey.GetData (), i);
+	    view->CreateNode (responseKey, csVector2 (0, 0),
+	      "T", stateColorFG, stateColorBG);
+	    view->LinkNode (stateNameKey, responseKey);
+	  }
 	}
       }
     }
@@ -188,7 +199,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
   if (!tpl) return;
 
-  view->CreateNode (templateName, csVector2 (150, 26),
+  view->CreateNode (templateName, csVector2 (0, 0),
       0, templateColorFG, templateColorBG);
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
@@ -196,11 +207,15 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
     csString pcName = pctpl->GetName ();
     csString nodeName;
-    if (pctpl->GetTag () == 0)
-      nodeName = pcName;
+    size_t lastDot = pcName.FindLast ('.');
+    if (lastDot != csArrayItemNotFound)
+      nodeName = pcName.Slice (lastDot+1);
     else
-      nodeName.Format ("%s (%s)", pcName.GetData (), pctpl->GetTag ());
-    view->CreateNode (nodeName, csVector2 (150, 26), 0, pcColorFG, pcColorBG);
+      nodeName = pcName;
+
+    if (pctpl->GetTag () != 0)
+      nodeName.AppendFmt (" (%s)", pctpl->GetTag ());
+    view->CreateNode (nodeName, csVector2 (0, 0), 0, pcColorFG, pcColorBG);
     view->LinkNode (templateName, nodeName);
     if (pcName == "pclogic.quest")
       BuildQuestGraph (pctpl, nodeName);
