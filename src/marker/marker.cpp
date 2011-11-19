@@ -154,6 +154,17 @@ void GraphView::Render3D ()
     if (!color) color = linkColor;
     csPen* pen = static_cast<MarkerColor*> (color)->GetPen (1);
     pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
+
+    if (l.arrow)
+    {
+      csVector2 c = (pos1+pos2)/2.0f;
+      int dx = (pos2.x-pos1.x) / 10;
+      int dy = (pos2.y-pos1.y) / 10;
+      int dxr = -(pos2.y-pos1.y) / 10;
+      int dyr = (pos2.x-pos1.x) / 10;
+      pen->DrawLine (c.x, c.y, c.x-dx+dxr, c.y-dy+dyr);
+      pen->DrawLine (c.x, c.y, c.x-dx-dxr, c.y-dy-dyr);
+    }
   }
 }
 

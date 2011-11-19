@@ -170,10 +170,10 @@ void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
 	newKeyKey += newKey;
         view->CreateNode (newKeyKey, newKey, styleResponse);
 	view->LinkNode (parentKey, newKeyKey);
-	view->LinkNode (newKeyKey, stateNameKey, thinLinkColor);
+	view->LinkNode (newKeyKey, stateNameKey, thinLinkColor, true);
       }
       else
-        view->LinkNode (parentKey, stateNameKey, thinLinkColor);
+        view->LinkNode (parentKey, stateNameKey, thinLinkColor, true);
     }
   }
 }

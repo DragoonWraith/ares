@@ -379,7 +379,7 @@ struct iGraphView : public virtual iBase
    * Link two nodes.
    */
   virtual void LinkNode (const char* node1, const char* node2,
-      iMarkerColor* color = 0) = 0;
+      iMarkerColor* color = 0, bool arrow = false) = 0;
 
   /**
    * Remove all links between two nodes.
