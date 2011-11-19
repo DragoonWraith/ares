@@ -157,8 +157,7 @@ void GraphView::UpdateFrame ()
       }
     }
     if (allCool) coolDownPeriod = false;
-    //loop = coolDownPeriod;
-    loop = false;
+    loop = coolDownPeriod;
   }
 }
 
