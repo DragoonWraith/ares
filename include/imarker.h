@@ -301,6 +301,38 @@ struct iMarker : public virtual iBase
 };
 
 /**
+ * A style for a given graph node.
+ */
+struct iGraphNodeStyle : public virtual iBase
+{
+  SCF_INTERFACE(iGraphNodeStyle,0,0,1);
+
+  /**
+   * Set the border color.
+   */
+  virtual void SetBorderColor (iMarkerColor* color) = 0;
+  virtual iMarkerColor* GetBorderColor () const = 0;
+
+  /**
+   * Set the background color.
+   */
+  virtual void SetBackgroundColor (iMarkerColor* color) = 0;
+  virtual iMarkerColor* GetBackgroundColor () const = 0;
+
+  /**
+   * Set the text color.
+   */
+  virtual void SetTextColor (iMarkerColor* color) = 0;
+  virtual iMarkerColor* GetTextColor () const = 0;
+
+  /**
+   * Set the roundness (default 10).
+   */
+  virtual void SetRoundness (int roundness) = 0;
+  virtual int GetRoundness () const = 0;
+};
+
+/**
  * A graph view based on markers.
  */
 struct iGraphView : public virtual iBase
@@ -310,8 +342,12 @@ struct iGraphView : public virtual iBase
   /**
    * Set the color scheme.
    */
-  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeFgColor,
-      iMarkerColor* nodeBgColor, iMarkerColor* linkColor) = 0;
+  virtual void SetLinkColor (iMarkerColor* linkColor) = 0;
+
+  /**
+   * Set the default node style.
+   */
+  virtual void SetDefaultNodeStyle (iGraphNodeStyle* style) = 0;
 
   /**
    * Clear the entire graph.
@@ -332,10 +368,7 @@ struct iGraphView : public virtual iBase
   /**
    * Create a node.
    */
-  virtual void CreateNode (const char* name, const csVector2& size,
-      const char* label = 0,
-      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0,
-      int roundness = 10) = 0;
+  virtual void CreateNode (const char* name, const char* label = 0, iGraphNodeStyle* style = 0) = 0;
 
   /**
    * Remove a node.
@@ -416,6 +449,11 @@ struct iMarkerManager : public virtual iBase
    * Destroy a graph view.
    */
   virtual void DestroyGraphView (iGraphView* view) = 0;
+
+  /**
+   * Create a graph node style.
+   */
+  virtual csPtr<iGraphNodeStyle> CreateGraphNodeStyle () = 0;
 };
 
 #endif // __ARES_MARKER_H__

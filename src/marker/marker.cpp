@@ -49,6 +49,31 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
 
 //--------------------------------------------------------------------------------
 
+class GraphNodeStyle : public scfImplementation1<GraphNodeStyle, iGraphNodeStyle>
+{
+private:
+  iMarkerColor* fgColor;
+  iMarkerColor* bgColor;
+  iMarkerColor* textColor;
+  int roundness;
+
+public:
+  GraphNodeStyle () : scfImplementationType (this),
+    fgColor (0), bgColor (0), textColor (0), roundness (10) { }
+  virtual ~GraphNodeStyle () { }
+
+  virtual void SetBorderColor (iMarkerColor* color) { fgColor = color; }
+  virtual iMarkerColor* GetBorderColor () const { return fgColor; }
+  virtual void SetBackgroundColor (iMarkerColor* color) { bgColor = color; }
+  virtual iMarkerColor* GetBackgroundColor () const { return bgColor; }
+  virtual void SetTextColor (iMarkerColor* color) { textColor = color; }
+  virtual iMarkerColor* GetTextColor () const { return textColor; }
+  virtual void SetRoundness (int roundness) { GraphNodeStyle::roundness = roundness; }
+  virtual int GetRoundness () const { return roundness; }
+};
+
+//--------------------------------------------------------------------------------
+
 GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false)
 {
   draggingMarker = 0;
@@ -184,32 +209,28 @@ public:
   }
 };
 
-void GraphView::CreateNode (const char* name, const csVector2& size,
-    const char* label, iMarkerColor* fgcolor, iMarkerColor* bgcolor,
-    int roundness)
+void GraphView::CreateNode (const char* name, const char* label,
+    iGraphNodeStyle* style)
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
-  int w = size.x;
-  int h = size.x;
   if (!label) label = name;
 
-  if (w == 0 && h == 0)
-  {
-    mgr->GetFont ()->GetDimensions (label, w, h);
-    w += 10;
-    h += 4;
-  }
+  int w, h;
+  mgr->GetFont ()->GetDimensions (label, w, h);
+  w += 10;
+  h += 4;
 
   int w2 = w / 2;
   int h2 = h / 2;
 
+  if (!style) style = defaultStyle;
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
-    csVector3 (w2, h2, 0), roundness, bgcolor ? bgcolor : nodeBgColor);
+    csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBackgroundColor ());
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
-    csVector3 (w2, h2, 0), roundness, fgcolor ? fgcolor : nodeFgColor);
-  marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, textColor, true);
+    csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBorderColor ());
+  marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, style->GetTextColor (), true);
   marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
@@ -1069,6 +1090,12 @@ iGraphView* MarkerManager::CreateGraphView ()
 void MarkerManager::DestroyGraphView (iGraphView* view)
 {
   graphViews.Delete (static_cast<GraphView*> (view));
+}
+
+csPtr<iGraphNodeStyle> MarkerManager::CreateGraphNodeStyle ()
+{
+  GraphNodeStyle* style = new GraphNodeStyle ();
+  return style;
 }
 
 }

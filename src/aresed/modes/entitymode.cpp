@@ -82,13 +82,30 @@ void EntityMode::InitColors ()
 {
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
 
-  templateColorFG = NewColor ("templateColorFG", .7, .7, .7, 1, 1, 1, false);
-  templateColorBG = NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true);
-  pcColorFG = NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, false);
-  pcColorBG = NewColor ("pcColorBG", .1, .4, .5, .2, .6, .7, true);
-  stateColorFG = NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, false);
-  stateColorBG = NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true);
   iMarkerColor* textColor = NewColor ("viewWhite", .7, .7, .7, 1, 1, 1, false);
+
+  styleTemplate = mgr->CreateGraphNodeStyle ();
+  styleTemplate->SetBorderColor (NewColor ("templateColorFG", .7, .7, .7, 1, 1, 1, false));
+  styleTemplate->SetBackgroundColor (NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true));
+  styleTemplate->SetTextColor (textColor);
+
+  stylePC = mgr->CreateGraphNodeStyle ();
+  stylePC->SetBorderColor (NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, false));
+  stylePC->SetBackgroundColor (NewColor ("pcColorBG", .1, .4, .5, .2, .6, .7, true));
+  stylePC->SetTextColor (textColor);
+
+  styleState = mgr->CreateGraphNodeStyle ();
+  styleState->SetBorderColor (NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, false));
+  styleState->SetBackgroundColor (NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true));
+  styleState->SetTextColor (textColor);
+
+  styleResponse = mgr->CreateGraphNodeStyle ();
+  styleResponse->SetBorderColor (NewColor ("respColorFG", 0, .7, .7, 0, 1, 1, false));
+  styleResponse->SetBackgroundColor (NewColor ("respColorBG", .3, .6, .7, .4, .7, .8, true));
+  styleResponse->SetRoundness (1);
+  styleResponse->SetTextColor (NewColor ("respColorTxt", 0, 0, 0, 0, 0, 0, false));
+
+  view->SetDefaultNodeStyle (stylePC);
 
   iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
   thickLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
@@ -105,10 +122,7 @@ void EntityMode::InitColors ()
   thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
   thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
 
-  view->SetColors (
-      textColor,
-      pcColorFG, pcColorBG,
-      thickLinkColor);
+  view->SetLinkColor (thickLinkColor);
 }
 
 void EntityMode::SetupItems ()
@@ -154,8 +168,7 @@ void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
       {
 	csString newKeyKey = pcNodeName;
 	newKeyKey += newKey;
-        view->CreateNode (newKeyKey, csVector2 (0, 0),
-          newKey, stateColorFG, stateColorBG, 1);
+        view->CreateNode (newKeyKey, newKey, styleResponse);
 	view->LinkNode (parentKey, newKeyKey);
 	view->LinkNode (newKeyKey, stateNameKey, thinLinkColor);
       }
@@ -174,17 +187,16 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
     iQuestTriggerResponseFactory* response = responses->Get (i);
     csString responseKey;
     responseKey.Format ("R%s %d", stateNameKey, i);
-    view->CreateNode (responseKey, csVector2 (0, 0),
-      "Trig", stateColorFG, stateColorBG, 1);
+    view->CreateNode (responseKey, "T", styleResponse);
     view->LinkNode (stateNameKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
     BuildNewStateConnections (rewards, responseKey, pcNodeName);
   }
 
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
-  BuildNewStateConnections (initRewards, stateNameKey, pcNodeName, "OnInit");
+  BuildNewStateConnections (initRewards, stateNameKey, pcNodeName, "I");
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
-  BuildNewStateConnections (exitRewards, stateNameKey, pcNodeName, "OnExit");
+  BuildNewStateConnections (exitRewards, stateNameKey, pcNodeName, "E");
 }
 
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
@@ -227,9 +239,7 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
 	  iQuestStateFactory* stateFact = it->Next ();
 	  csString stateNameKey = pcNodeName;
 	  stateNameKey += stateFact->GetName ();
-	  view->CreateNode (stateNameKey, csVector2 (0, 0),
-	      stateFact->GetName (),
-	      stateColorFG, stateColorBG);
+	  view->CreateNode (stateNameKey, stateFact->GetName (), styleState);
 	  view->LinkNode (pcNodeName, stateNameKey);
 	  BuildStateGraph (stateFact, stateNameKey, pcNodeName);
 	}
@@ -246,8 +256,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
   if (!tpl) return;
 
-  view->CreateNode (templateName, csVector2 (0, 0),
-      0, templateColorFG, templateColorBG);
+  view->CreateNode (templateName, 0, styleTemplate);
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
@@ -262,7 +271,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
 
     if (pctpl->GetTag () != 0)
       pcNodeName.AppendFmt (" (%s)", pctpl->GetTag ());
-    view->CreateNode (pcNodeName, csVector2 (0, 0), 0, pcColorFG, pcColorBG);
+    view->CreateNode (pcNodeName, 0, stylePC);
     view->LinkNode (templateName, pcNodeName);
     if (pcName == "pclogic.quest")
       BuildQuestGraph (pctpl, pcNodeName);

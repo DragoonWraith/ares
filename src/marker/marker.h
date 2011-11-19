@@ -325,10 +325,8 @@ private:
 
   csRandomGen rng;
 
-  iMarkerColor* textColor;
-  iMarkerColor* nodeFgColor;
-  iMarkerColor* nodeBgColor;
   iMarkerColor* linkColor;
+  csRef<iGraphNodeStyle> defaultStyle;
 
   bool IsLinked (const char* n1, const char* n2);
 
@@ -341,21 +339,20 @@ public:
 
   void SetDraggingMarker (iMarker* marker) { draggingMarker = marker; }
 
-  virtual void SetColors (iMarkerColor* textColor, iMarkerColor* nodeFgColor,
-      iMarkerColor* nodeBgColor, iMarkerColor* linkColor)
+  virtual void SetLinkColor (iMarkerColor* linkColor)
   {
-    GraphView::textColor = textColor;
-    GraphView::nodeFgColor = nodeFgColor;
-    GraphView::nodeBgColor = nodeBgColor;
     GraphView::linkColor = linkColor;
+  }
+  virtual void SetDefaultNodeStyle (iGraphNodeStyle* style)
+  {
+    defaultStyle = style;
   }
 
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }
   virtual void Clear ();
-  virtual void CreateNode (const char* name, const csVector2& size,
-      const char* label = 0,
-      iMarkerColor* fgcolor = 0, iMarkerColor* bgcolor = 0, int roundness = 10);
+  virtual void CreateNode (const char* name, const char* label = 0,
+      iGraphNodeStyle* style = 0);
   virtual void RemoveNode (const char* name);
   virtual void LinkNode (const char* node1, const char* node2,
       iMarkerColor* color = 0)
@@ -467,6 +464,7 @@ public:
 
   virtual iGraphView* CreateGraphView ();
   virtual void DestroyGraphView (iGraphView* view);
+  virtual csPtr<iGraphNodeStyle> CreateGraphNodeStyle ();
 
   iMarkerHitArea* FindHitArea (int x, int y);
 };

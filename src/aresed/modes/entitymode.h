@@ -45,10 +45,11 @@ private:
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcNodeName);
   void BuildTemplateGraph (const char* templateName);
 
-  iMarkerColor* templateColorFG, * templateColorBG;
-  iMarkerColor* pcColorFG, * pcColorBG;
-  iMarkerColor* stateColorFG, * stateColorBG;
   iMarkerColor* thinLinkColor;
+  csRef<iGraphNodeStyle> styleTemplate;
+  csRef<iGraphNodeStyle> stylePC;
+  csRef<iGraphNodeStyle> styleState;
+  csRef<iGraphNodeStyle> styleResponse;
 
   iGraphView* view;
   iMarkerColor* NewColor (const char* name,
