@@ -120,6 +120,11 @@ void GraphView::UpdateFrame ()
       csVector2 pos = node.marker->GetPosition ();
       csVector2 netForce (0, 0);
 
+      netForce += (pos - csVector2 (0, pos.y)) * 140.0f / (pos.x * pos.x);
+      netForce += (pos - csVector2 (fw, pos.y)) * 140.0f / ((fw-pos.x) * (fw-pos.x));
+      netForce += (pos - csVector2 (pos.x, 0)) * 140.0f / (pos.y * pos.y);
+      netForce += (pos - csVector2 (pos.x, fh)) * 140.0f / ((fh-pos.y) * (fh-pos.y));
+
       csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
       while (it2.HasNext ())
       {
@@ -129,6 +134,7 @@ void GraphView::UpdateFrame ()
 	{
 	  csVector2 pos2 = node2.marker->GetPosition ();
 	  float sqdist = SqDistance2d (pos, pos2);
+	  if (sqdist < .0001) sqdist = .0001;
 	  netForce += (pos-pos2) * 140.0f / sqdist;
 
 	  if (IsLinked (key, key2))
@@ -151,7 +157,8 @@ void GraphView::UpdateFrame ()
       }
     }
     if (allCool) coolDownPeriod = false;
-    loop = coolDownPeriod;
+    //loop = coolDownPeriod;
+    loop = false;
   }
 }
 

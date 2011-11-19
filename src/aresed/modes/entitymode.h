@@ -46,10 +46,12 @@ private:
   void BuildTemplateGraph (const char* templateName);
 
   iMarkerColor* thinLinkColor;
+  iMarkerColor* arrowLinkColor;
   csRef<iGraphNodeStyle> styleTemplate;
   csRef<iGraphNodeStyle> stylePC;
   csRef<iGraphNodeStyle> styleState;
   csRef<iGraphNodeStyle> styleResponse;
+  csRef<iGraphNodeStyle> styleReward;
 
   iGraphView* view;
   iMarkerColor* NewColor (const char* name,

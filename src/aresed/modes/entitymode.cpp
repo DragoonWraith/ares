@@ -105,6 +105,12 @@ void EntityMode::InitColors ()
   styleResponse->SetRoundness (1);
   styleResponse->SetTextColor (NewColor ("respColorTxt", 0, 0, 0, 0, 0, 0, false));
 
+  styleReward = mgr->CreateGraphNodeStyle ();
+  styleReward->SetBorderColor (NewColor ("rewColorFG", 0, .7, .7, 0, 1, 1, false));
+  styleReward->SetBackgroundColor (NewColor ("rewColorBG", .3, .6, .7, .4, .7, .8, true));
+  styleReward->SetRoundness (1);
+  styleReward->SetTextColor (textColor);
+
   view->SetDefaultNodeStyle (stylePC);
 
   iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
@@ -115,12 +121,19 @@ void EntityMode::InitColors ()
   thickLinkColor->SetPenWidth (SELECTION_SELECTED, 2.0f);
   thickLinkColor->SetPenWidth (SELECTION_ACTIVE, 2.0f);
   thinLinkColor = mgr->CreateMarkerColor ("thinLink");
-  thinLinkColor->SetRGBColor (SELECTION_NONE, 0, .5, .5, .5);
-  thinLinkColor->SetRGBColor (SELECTION_SELECTED, 0, 1, 1, .5);
-  thinLinkColor->SetRGBColor (SELECTION_ACTIVE, 0, 1, 1, .5);
-  thinLinkColor->SetPenWidth (SELECTION_NONE, 0.5f);
-  thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
-  thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
+  thinLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
+  thinLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
+  thinLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
+  thinLinkColor->SetPenWidth (SELECTION_NONE, 0.8f);
+  thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.8f);
+  thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.8f);
+  arrowLinkColor = mgr->CreateMarkerColor ("arrowLink");
+  arrowLinkColor->SetRGBColor (SELECTION_NONE, 0, .5, .5, .5);
+  arrowLinkColor->SetRGBColor (SELECTION_SELECTED, 0, 1, 1, .5);
+  arrowLinkColor->SetRGBColor (SELECTION_ACTIVE, 0, 1, 1, .5);
+  arrowLinkColor->SetPenWidth (SELECTION_NONE, 0.5f);
+  arrowLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
+  arrowLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
 
   view->SetLinkColor (thickLinkColor);
 }
@@ -158,22 +171,28 @@ void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
     iRewardFactory* reward = rewards->Get (j);
+    csString rewKey;
+    rewKey.Format ("%s %d", parentKey, j);
+    view->CreateNode (rewKey, "Rew", styleReward);
+    if (newKey)
+    {
+      csString newKeyKey;
+      newKeyKey.Format ("%s %s", parentKey, newKey);
+      view->CreateNode (newKeyKey, newKey, styleResponse);
+      view->LinkNode (parentKey, newKeyKey);
+      view->LinkNode (newKeyKey, rewKey, thinLinkColor);
+      newKey = 0;
+    }
+    else
+      view->LinkNode (parentKey, rewKey, thinLinkColor);
+
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     if (newState)
     {
       csString stateNameKey = pcNodeName;
       // @@@ No support for expressions here!
       stateNameKey += newState->GetStateParameter ();
-      if (newKey)
-      {
-	csString newKeyKey = pcNodeName;
-	newKeyKey += newKey;
-        view->CreateNode (newKeyKey, newKey, styleResponse);
-	view->LinkNode (parentKey, newKeyKey);
-	view->LinkNode (newKeyKey, stateNameKey, thinLinkColor, true);
-      }
-      else
-        view->LinkNode (parentKey, stateNameKey, thinLinkColor, true);
+      view->LinkNode (rewKey, stateNameKey, arrowLinkColor, true);
     }
   }
 }
