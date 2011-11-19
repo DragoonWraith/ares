@@ -77,6 +77,7 @@ public:
 GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false)
 {
   draggingMarker = 0;
+  coolDownPeriod = true;
 }
 
 void GraphView::ForcePosition (const char* name, const csVector2& pos)
@@ -105,38 +106,52 @@ void GraphView::UpdateFrame ()
   int fh = mgr->GetG2D ()->GetHeight ();
   float seconds = mgr->GetVC ()->GetElapsedSeconds ();
 
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
-  while (it.HasNext ())
+  bool loop = true;
+  while (loop)
   {
-    csString key;
-    GraphNode& node = it.Next (key);
-    if (node.marker == draggingMarker || node.frozen) continue;
-
-    csVector2 pos = node.marker->GetPosition ();
-    csVector2 netForce (0, 0);
-
-    csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
-    while (it2.HasNext ())
+    bool allCool = true;
+    csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+    while (it.HasNext ())
     {
-      csString key2;
-      GraphNode& node2 = it2.Next (key2);
-      if (node.marker != node2.marker)
-      {
-	csVector2 pos2 = node2.marker->GetPosition ();
-	float sqdist = SqDistance2d (pos, pos2);
-	netForce += (pos-pos2) * 140.0f / sqdist;
+      csString key;
+      GraphNode& node = it.Next (key);
+      if (node.marker == draggingMarker || node.frozen) continue;
 
-	if (IsLinked (key, key2))
-	  netForce += (pos2-pos) * 0.08f;
+      csVector2 pos = node.marker->GetPosition ();
+      csVector2 netForce (0, 0);
+
+      csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
+      while (it2.HasNext ())
+      {
+	csString key2;
+	GraphNode& node2 = it2.Next (key2);
+	if (node.marker != node2.marker)
+	{
+	  csVector2 pos2 = node2.marker->GetPosition ();
+	  float sqdist = SqDistance2d (pos, pos2);
+	  netForce += (pos-pos2) * 140.0f / sqdist;
+
+	  if (IsLinked (key, key2))
+	    netForce += (pos2-pos) * 0.08f;
+	}
+      }
+      node.velocity = (node.velocity + netForce) * 0.85f;
+      csVector2 oldpos = pos;
+      pos += node.velocity * (seconds * 50.0f);
+#   define NODE_MARGIN 10
+      if (pos.x > fw-node.size.x/2-NODE_MARGIN) pos.x = fw-node.size.x/2-NODE_MARGIN;
+      else if (pos.x < node.size.x/2+NODE_MARGIN) pos.x = node.size.x/2+NODE_MARGIN;
+      if (pos.y > fh-node.size.y/2-NODE_MARGIN) pos.y = fh-node.size.y/2-NODE_MARGIN;
+      else if (pos.y < node.size.y/2+NODE_MARGIN) pos.y = node.size.y/2+NODE_MARGIN;
+      node.marker->SetPosition (pos);
+      if (coolDownPeriod)
+      {
+	float d = SqDistance2d (pos, oldpos);
+	if (d > .0001) allCool = false;
       }
     }
-    node.velocity = (node.velocity + netForce) * 0.85f;
-    pos += node.velocity * (seconds * 50.0f);
-    if (pos.x > fw-node.size.x/2-1) pos.x = fw-node.size.x/2-1;
-    else if (pos.x < node.size.x/2+1) pos.x = node.size.x/2+1;
-    if (pos.y > fh-node.size.y/2-1) pos.y = fh-node.size.y/2-1;
-    else if (pos.y < node.size.y/2+1) pos.y = node.size.y/2+1;
-    node.marker->SetPosition (pos);
+    if (allCool) coolDownPeriod = false;
+    loop = coolDownPeriod;
   }
 }
 
@@ -171,6 +186,10 @@ void GraphView::Render3D ()
 void GraphView::SetVisible (bool v)
 {
   visible = v;
+  if (visible)
+  {
+    coolDownPeriod = true;
+  }
   csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {

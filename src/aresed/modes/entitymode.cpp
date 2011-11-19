@@ -202,6 +202,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
     const char* pcNodeName)
 {
+  view->SetVisible (false);
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   csStringID newquestID = pl->FetchStringID ("NewQuest");
   size_t idx = pctpl->FindProperty (newquestID);
@@ -246,6 +247,7 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
       }
     }
   }
+  view->SetVisible (true);
 }
 
 void EntityMode::BuildTemplateGraph (const char* templateName)

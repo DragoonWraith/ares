@@ -325,6 +325,7 @@ private:
   iMarker* draggingMarker;
 
   csRandomGen rng;
+  bool coolDownPeriod;
 
   iMarkerColor* linkColor;
   csRef<iGraphNodeStyle> defaultStyle;
