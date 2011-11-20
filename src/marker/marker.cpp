@@ -245,6 +245,25 @@ public:
   }
 };
 
+csStringArray GraphView::ConvertTextToMultiLine (const char* text)
+{
+  csString txt = text;
+  csStringArray ar;
+  while (!txt.IsEmpty ())
+  {
+    size_t nl = txt.FindFirst ('\n');
+    if (nl == csArrayItemNotFound)
+    {
+      ar.Push (txt);
+      return ar;
+    }
+    ar.Push (txt.Slice (0, nl));
+    txt = txt.Slice (nl+1);
+  }
+
+  return ar;
+}
+
 void GraphView::CreateNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
@@ -253,10 +272,18 @@ void GraphView::CreateNode (const char* name, const char* label,
   iMarker* marker = mgr->CreateMarker ();
   if (!label) label = name;
 
-  int w, h;
-  mgr->GetFont ()->GetDimensions (label, w, h);
+  csStringArray labelArray = ConvertTextToMultiLine (label);
+
+  int textHeight = mgr->GetFont ()->GetTextHeight ();
+  int h = textHeight * labelArray.GetSize () + 6;
+  int w = 0;
+  for (size_t i = 0 ; i < labelArray.GetSize () ; i++)
+  {
+    int ww, hh;
+    mgr->GetFont ()->GetDimensions (labelArray.Get (i), ww, hh);
+    if (ww > w) w = ww;
+  }
   w += 10;
-  h += 4;
 
   int w2 = w / 2;
   int h2 = h / 2;
@@ -266,7 +293,7 @@ void GraphView::CreateNode (const char* name, const char* label,
     csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBackgroundColor ());
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
     csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBorderColor ());
-  marker->Text (MARKER_2D, csVector3 (0, 0, 0), label, style->GetTextColor (), true);
+  marker->Text (MARKER_2D, csVector3 (0, 0, 0), labelArray, style->GetTextColor (), true);
   marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
@@ -611,12 +638,11 @@ void MarkerText::Render2D (const csOrthoTransform& camtrans,
     int x1 = int (s.x);
     int y1 = h - int (s.y);
 
-    char* t = const_cast<char*>((const char*)text);
     if (centered)
-      pen->WriteBoxed (mgr->GetFont (), pos.x + x1, pos.y + y1,
-	pos.x + x1, pos.y + y1, CS_PEN_TA_CENTER, CS_PEN_TA_CENTER, t);
+      pen->WriteLinesBoxed (mgr->GetFont (), pos.x + x1, pos.y + y1,
+	pos.x + x1, pos.y + y1, CS_PEN_TA_CENTER, CS_PEN_TA_CENTER, text);
     else
-      pen->Write (mgr->GetFont (), pos.x + x1, pos.y + y1, t);
+      pen->WriteLines (mgr->GetFont (), pos.x + x1, pos.y + y1, text);
   }
 }
 
@@ -698,7 +724,7 @@ void Marker::RoundedBox2D (MarkerSpace space,
 }
 
 void Marker::Text (MarkerSpace space, const csVector3& pos,
-      const char* text, iMarkerColor* color, bool centered)
+      const csStringArray& text, iMarkerColor* color, bool centered)
 {
   MarkerText* txt = new MarkerText ();
   txt->space = space;

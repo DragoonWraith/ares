@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "csutil/parray.h"
 #include "csutil/randomgen.h"
 #include "csutil/hash.h"
+#include "csutil/stringarray.h"
 #include "iengine/engine.h"
 #include "iutil/virtclk.h"
 #include "iutil/comp.h"
@@ -117,7 +118,7 @@ struct MarkerText : public MarkerPrimitive
 {
   MarkerSpace space;
   csVector3 position;
-  csString text;
+  csStringArray text;
   MarkerColor* color;
   bool centered;
 
@@ -278,7 +279,7 @@ public:
       const csVector3& corner1, const csVector3& corner2,
       int roundness, iMarkerColor* color);
   virtual void Text (MarkerSpace space, const csVector3& pos,
-      const char* text, iMarkerColor* color, bool centered = false);
+      const csStringArray& text, iMarkerColor* color, bool centered = false);
   virtual void Clear ();
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data, iMarkerColor* color);
@@ -330,6 +331,7 @@ private:
   iMarkerColor* linkColor;
   csRef<iGraphNodeStyle> defaultStyle;
 
+  static csStringArray ConvertTextToMultiLine (const char* text);
   bool IsLinked (const char* n1, const char* n2);
 
 public:

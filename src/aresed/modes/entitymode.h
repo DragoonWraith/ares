@@ -44,6 +44,8 @@ private:
       const char* pcNodeName);
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcNodeName);
   void BuildTemplateGraph (const char* templateName);
+  csString GetQuestName (iCelPropertyClassTemplate* pctpl);
+  csString GetExtraPCInfo (iCelPropertyClassTemplate* pctpl);
 
   iMarkerColor* thinLinkColor;
   iMarkerColor* arrowLinkColor;

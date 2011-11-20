@@ -222,10 +222,8 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   }
 }
 
-void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
-    const char* pcNodeName)
+csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 {
-  view->SetVisible (false);
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   csStringID newquestID = pl->FetchStringID ("NewQuest");
   size_t idx = pctpl->FindProperty (newquestID);
@@ -244,39 +242,55 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
       // for creating entities is missing.
       if (parid == nameID)
       {
-	questName = par->Get (0);
-	break;
-      }
-    }
-    if (!questName.IsEmpty ())
-    {
-      csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-	aresed3d->GetObjectRegistry (),
-	"cel.manager.quests");
-      iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
-      // @@@ Error check
-      if (questFact)
-      {
-	csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
-	while (it->HasNext ())
-	{
-	  iQuestStateFactory* stateFact = it->Next ();
-	  csString stateNameKey = pcNodeName;
-	  stateNameKey += stateFact->GetName ();
-	  view->CreateNode (stateNameKey, stateFact->GetName (), styleState);
-	  view->LinkNode (pcNodeName, stateNameKey);
-	  BuildStateGraph (stateFact, stateNameKey, pcNodeName);
-	}
+	return par->Get (0);
       }
     }
   }
-  view->SetVisible (true);
+  return "";
+}
+
+void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
+    const char* pcNodeName)
+{
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return;
+
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+    aresed3d->GetObjectRegistry (),
+    "cel.manager.quests");
+  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  // @@@ Error check
+  if (questFact)
+  {
+    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+    while (it->HasNext ())
+    {
+      iQuestStateFactory* stateFact = it->Next ();
+      csString stateNameKey = pcNodeName;
+      stateNameKey += stateFact->GetName ();
+      view->CreateNode (stateNameKey, stateFact->GetName (), styleState);
+      view->LinkNode (pcNodeName, stateNameKey);
+      BuildStateGraph (stateFact, stateNameKey, pcNodeName);
+    }
+  }
+}
+
+csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
+{
+  csString pcName = pctpl->GetName ();
+  if (pcName == "pclogic.quest")
+  {
+    return GetQuestName (pctpl);
+  }
+  return "";
 }
 
 void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   view->Clear ();
 
+  view->SetVisible (false);
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
   if (!tpl) return;
@@ -296,11 +310,15 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
 
     if (pctpl->GetTag () != 0)
       pcNodeName.AppendFmt (" (%s)", pctpl->GetTag ());
-    view->CreateNode (pcNodeName, 0, stylePC);
+    csString pcLabel = pcNodeName;
+    csString extraInfo = GetExtraPCInfo (pctpl);
+    if (!extraInfo.IsEmpty ()) { pcLabel += '\n'; pcLabel += extraInfo; }
+    view->CreateNode (pcNodeName, pcLabel, stylePC);
     view->LinkNode (templateName, pcNodeName);
     if (pcName == "pclogic.quest")
       BuildQuestGraph (pctpl, pcNodeName);
   }
+  view->SetVisible (true);
 }
 
 void EntityMode::OnTemplateSelect ()

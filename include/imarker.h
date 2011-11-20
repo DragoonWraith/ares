@@ -33,6 +33,7 @@ struct iMaterialWrapper;
 class csReversibleTransform;
 class csVector3;
 class csBox3;
+class csStringArray;
 
 struct iEvent;
 struct iMarker;
@@ -274,7 +275,7 @@ struct iMarker : public virtual iBase
    * If centered is true the text is centered around the given position.
    */
   virtual void Text (MarkerSpace space, const csVector3& pos,
-      const char* text, iMarkerColor* color, bool centered = false) = 0;
+      const csStringArray& text, iMarkerColor* color, bool centered = false) = 0;
 
   /**
    * Clear all geometry.
