@@ -39,7 +39,7 @@ private:
   void SetupItems ();
 
   void BuildNewStateConnections (iRewardFactoryArray* rewards,
-      const char* parentKey, const char* pcNodeName, const char* newKey = 0);
+      const char* parentKey, const char* pcNodeName);
   void BuildStateGraph (iQuestStateFactory* state, const char* stateNameKey,
       const char* pcNodeName);
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcNodeName);

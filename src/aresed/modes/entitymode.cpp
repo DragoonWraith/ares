@@ -166,7 +166,7 @@ void EntityMode::Stop ()
 }
 
 void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
-    const char* parentKey, const char* pcNodeName, const char* newKey)
+    const char* parentKey, const char* pcNodeName)
 {
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
@@ -174,17 +174,7 @@ void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
     csString rewKey;
     rewKey.Format ("%s %d", parentKey, j);
     view->CreateNode (rewKey, "Rew", styleReward);
-    if (newKey)
-    {
-      csString newKeyKey;
-      newKeyKey.Format ("%s %s", parentKey, newKey);
-      view->CreateNode (newKeyKey, newKey, styleResponse);
-      view->LinkNode (parentKey, newKeyKey);
-      view->LinkNode (newKeyKey, rewKey, thinLinkColor);
-      newKey = 0;
-    }
-    else
-      view->LinkNode (parentKey, rewKey, thinLinkColor);
+    view->LinkNode (parentKey, rewKey, thinLinkColor);
 
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     if (newState)
@@ -213,9 +203,23 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   }
 
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
-  BuildNewStateConnections (initRewards, stateNameKey, pcNodeName, "I");
+  if (initRewards->GetSize () > 0)
+  {
+    csString newKeyKey;
+    newKeyKey.Format ("%s I", stateNameKey);
+    view->CreateNode (newKeyKey, "I", styleResponse);
+    view->LinkNode (stateNameKey, newKeyKey);
+    BuildNewStateConnections (initRewards, newKeyKey, pcNodeName);
+  }
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
-  BuildNewStateConnections (exitRewards, stateNameKey, pcNodeName, "E");
+  if (exitRewards->GetSize () > 0)
+  {
+    csString newKeyKey;
+    newKeyKey.Format ("%s E", stateNameKey);
+    view->CreateNode (newKeyKey, "E", styleResponse);
+    view->LinkNode (stateNameKey, newKeyKey);
+    BuildNewStateConnections (exitRewards, newKeyKey, pcNodeName);
+  }
 }
 
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
