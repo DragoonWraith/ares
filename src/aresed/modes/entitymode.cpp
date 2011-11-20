@@ -165,6 +165,100 @@ void EntityMode::Stop ()
   view->SetVisible (false);
 }
 
+const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
+{
+  {
+    csRef<iTimeoutTriggerFactory> s = scfQueryInterface<iTimeoutTriggerFactory> (trigger);
+    if (s) return "Timeout";
+  }
+  {
+    csRef<iEnterSectorTriggerFactory> s = scfQueryInterface<iEnterSectorTriggerFactory> (trigger);
+    if (s) return "EnterSect";
+  }
+  {
+    csRef<iSequenceFinishTriggerFactory> s = scfQueryInterface<iSequenceFinishTriggerFactory> (trigger);
+    if (s) return "SeqFinish";
+  }
+  {
+    csRef<iPropertyChangeTriggerFactory> s = scfQueryInterface<iPropertyChangeTriggerFactory> (trigger);
+    if (s) return "PropChange";
+  }
+  {
+    csRef<iTriggerTriggerFactory> s = scfQueryInterface<iTriggerTriggerFactory> (trigger);
+    if (s) return "Trigger";
+  }
+  {
+    csRef<iWatchTriggerFactory> s = scfQueryInterface<iWatchTriggerFactory> (trigger);
+    if (s) return "Watch";
+  }
+  {
+    csRef<iOperationTriggerFactory> s = scfQueryInterface<iOperationTriggerFactory> (trigger);
+    if (s) return "Operation";
+  }
+  {
+    csRef<iInventoryTriggerFactory> s = scfQueryInterface<iInventoryTriggerFactory> (trigger);
+    if (s) return "Inventory";
+  }
+  {
+    csRef<iMessageTriggerFactory> s = scfQueryInterface<iMessageTriggerFactory> (trigger);
+    if (s) return "Message";
+  }
+  {
+    csRef<iMeshSelectTriggerFactory> s = scfQueryInterface<iMeshSelectTriggerFactory> (trigger);
+    if (s) return "MeshSel";
+  }
+  return "?";
+}
+
+const char* EntityMode::GetRewardType (iRewardFactory* reward)
+{
+  {
+    csRef<iNewStateQuestRewardFactory> s = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
+    if (s) return "NewState";
+  }
+  {
+    csRef<iDebugPrintRewardFactory> s = scfQueryInterface<iDebugPrintRewardFactory> (reward);
+    if (s) return "DbPrint";
+  }
+  {
+    csRef<iInventoryRewardFactory> s = scfQueryInterface<iInventoryRewardFactory> (reward);
+    if (s) return "Inventory";
+  }
+  {
+    csRef<iSequenceRewardFactory> s = scfQueryInterface<iSequenceRewardFactory> (reward);
+    if (s) return "Sequence";
+  }
+  {
+    csRef<iCsSequenceRewardFactory> s = scfQueryInterface<iCsSequenceRewardFactory> (reward);
+    if (s) return "CsSequence";
+  }
+  {
+    csRef<iSequenceFinishRewardFactory> s = scfQueryInterface<iSequenceFinishRewardFactory> (reward);
+    if (s) return "SeqFinish";
+  }
+  {
+    csRef<iChangePropertyRewardFactory> s = scfQueryInterface<iChangePropertyRewardFactory> (reward);
+    if (s) return "ChangeProp";
+  }
+  {
+    csRef<iCreateEntityRewardFactory> s = scfQueryInterface<iCreateEntityRewardFactory> (reward);
+    if (s) return "CreateEnt";
+  }
+  {
+    csRef<iDestroyEntityRewardFactory> s = scfQueryInterface<iDestroyEntityRewardFactory> (reward);
+    if (s) return "DestroyEnt";
+  }
+  {
+    csRef<iActionRewardFactory> s = scfQueryInterface<iActionRewardFactory> (reward);
+    if (s) return "Action";
+  }
+  {
+    csRef<iMessageRewardFactory> s = scfQueryInterface<iMessageRewardFactory> (reward);
+    if (s) return "Message";
+  }
+  return "?";
+}
+
 void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
     const char* parentKey, const char* pcNodeName)
 {
@@ -173,7 +267,7 @@ void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
     iRewardFactory* reward = rewards->Get (j);
     csString rewKey;
     rewKey.Format ("%s %d", parentKey, j);
-    view->CreateNode (rewKey, "Rew", styleReward);
+    view->CreateNode (rewKey, GetRewardType (reward), styleReward);
     view->LinkNode (parentKey, rewKey, thinLinkColor);
 
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
@@ -196,7 +290,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
     iQuestTriggerResponseFactory* response = responses->Get (i);
     csString responseKey;
     responseKey.Format ("R%s %d", stateNameKey, i);
-    view->CreateNode (responseKey, "T", styleResponse);
+    view->CreateNode (responseKey, GetTriggerType (response->GetTriggerFactory ()), styleResponse);
     view->LinkNode (stateNameKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
     BuildNewStateConnections (rewards, responseKey, pcNodeName);

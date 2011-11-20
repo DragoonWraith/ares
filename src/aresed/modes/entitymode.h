@@ -32,6 +32,8 @@ struct iGeometryGenerator;
 struct iCelPropertyClassTemplate;
 struct iQuestStateFactory;
 struct iRewardFactoryArray;
+struct iRewardFactory;
+struct iTriggerFactory;
 
 class EntityMode : public EditingMode
 {
@@ -46,6 +48,8 @@ private:
   void BuildTemplateGraph (const char* templateName);
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
   csString GetExtraPCInfo (iCelPropertyClassTemplate* pctpl);
+  const char* GetRewardType (iRewardFactory* reward);
+  const char* GetTriggerType (iTriggerFactory* reward);
 
   iMarkerColor* thinLinkColor;
   iMarkerColor* arrowLinkColor;
