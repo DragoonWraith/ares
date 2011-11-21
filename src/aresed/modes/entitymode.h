@@ -41,10 +41,10 @@ private:
   void SetupItems ();
 
   void BuildNewStateConnections (iRewardFactoryArray* rewards,
-      const char* parentKey, const char* pcNodeName);
-  void BuildStateGraph (iQuestStateFactory* state, const char* stateNameKey,
-      const char* pcNodeName);
-  void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcNodeName);
+      const char* parentKey, const char* pcKey);
+  void BuildStateGraph (iQuestStateFactory* state, const char* stateKey,
+      const char* pcKey);
+  void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcKey);
   void BuildTemplateGraph (const char* templateName);
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
   csString GetExtraPCInfo (iCelPropertyClassTemplate* pctpl);

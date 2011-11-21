@@ -260,59 +260,54 @@ const char* EntityMode::GetRewardType (iRewardFactory* reward)
 }
 
 void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
-    const char* parentKey, const char* pcNodeName)
+    const char* parentKey, const char* pcKey)
 {
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
     iRewardFactory* reward = rewards->Get (j);
-    csString rewKey;
-    rewKey.Format ("%s %d", parentKey, j);
+    csString rewKey; rewKey.Format ("r:%d,%s", j, parentKey);
     view->CreateNode (rewKey, GetRewardType (reward), styleReward);
     view->LinkNode (parentKey, rewKey, thinLinkColor);
 
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     if (newState)
     {
-      csString stateNameKey = pcNodeName;
       // @@@ No support for expressions here!
-      stateNameKey += newState->GetStateParameter ();
-      view->LinkNode (rewKey, stateNameKey, arrowLinkColor, true);
+      csString stateKey; stateKey.Format ("S:%s,%s", newState->GetStateParameter (), pcKey);
+      view->LinkNode (rewKey, stateKey, arrowLinkColor, true);
     }
   }
 }
 
 void EntityMode::BuildStateGraph (iQuestStateFactory* state,
-    const char* stateNameKey, const char* pcNodeName)
+    const char* stateKey, const char* pcKey)
 {
   csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
   for (size_t i = 0 ; i < responses->GetSize () ; i++)
   {
     iQuestTriggerResponseFactory* response = responses->Get (i);
-    csString responseKey;
-    responseKey.Format ("R%s %d", stateNameKey, i);
+    csString responseKey; responseKey.Format ("t:%d,%s", i, stateKey);
     view->CreateNode (responseKey, GetTriggerType (response->GetTriggerFactory ()), styleResponse);
-    view->LinkNode (stateNameKey, responseKey);
+    view->LinkNode (stateKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
-    BuildNewStateConnections (rewards, responseKey, pcNodeName);
+    BuildNewStateConnections (rewards, responseKey, pcKey);
   }
 
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
   if (initRewards->GetSize () > 0)
   {
-    csString newKeyKey;
-    newKeyKey.Format ("%s I", stateNameKey);
+    csString newKeyKey; newKeyKey.Format ("i:%s", stateKey);
     view->CreateNode (newKeyKey, "I", styleResponse);
-    view->LinkNode (stateNameKey, newKeyKey);
-    BuildNewStateConnections (initRewards, newKeyKey, pcNodeName);
+    view->LinkNode (stateKey, newKeyKey);
+    BuildNewStateConnections (initRewards, newKeyKey, pcKey);
   }
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
   if (exitRewards->GetSize () > 0)
   {
-    csString newKeyKey;
-    newKeyKey.Format ("%s E", stateNameKey);
+    csString newKeyKey; newKeyKey.Format ("e:%s", stateKey);
     view->CreateNode (newKeyKey, "E", styleResponse);
-    view->LinkNode (stateNameKey, newKeyKey);
-    BuildNewStateConnections (exitRewards, newKeyKey, pcNodeName);
+    view->LinkNode (stateKey, newKeyKey);
+    BuildNewStateConnections (exitRewards, newKeyKey, pcKey);
   }
 }
 
@@ -344,7 +339,7 @@ csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 }
 
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
-    const char* pcNodeName)
+    const char* pcKey)
 {
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
@@ -361,11 +356,10 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
     while (it->HasNext ())
     {
       iQuestStateFactory* stateFact = it->Next ();
-      csString stateNameKey = pcNodeName;
-      stateNameKey += stateFact->GetName ();
-      view->CreateNode (stateNameKey, stateFact->GetName (), styleState);
-      view->LinkNode (pcNodeName, stateNameKey);
-      BuildStateGraph (stateFact, stateNameKey, pcNodeName);
+      csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (), pcKey);
+      view->CreateNode (stateKey, stateFact->GetName (), styleState);
+      view->LinkNode (pcKey, stateKey);
+      BuildStateGraph (stateFact, stateKey, pcKey);
     }
   }
 }
@@ -403,21 +397,21 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
     if (lastDot != csArrayItemNotFound)
       pcShortName = pcName.Slice (lastDot+1);
 
-    csString pcNodeName, pcLabel;
-    pcNodeName.Format ("P:%s", pcName.GetData ());
+    csString pcKey, pcLabel;
+    pcKey.Format ("P:%s", pcName.GetData ());
     pcLabel = pcShortName;
     if (pctpl->GetTag () != 0)
     {
-      pcNodeName.AppendFmt (",%s", pctpl->GetTag ());
+      pcKey.AppendFmt (",%s", pctpl->GetTag ());
       pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
     }
 
     csString extraInfo = GetExtraPCInfo (pctpl);
     if (!extraInfo.IsEmpty ()) { pcLabel += '\n'; pcLabel += extraInfo; }
-    view->CreateNode (pcNodeName, pcLabel, stylePC);
-    view->LinkNode (tplKey, pcNodeName);
+    view->CreateNode (pcKey, pcLabel, stylePC);
+    view->LinkNode (tplKey, pcKey);
     if (pcShortName == "quest")
-      BuildQuestGraph (pctpl, pcNodeName);
+      BuildQuestGraph (pctpl, pcKey);
   }
   view->SetVisible (true);
 }

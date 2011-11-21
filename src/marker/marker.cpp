@@ -123,6 +123,7 @@ void GraphView::UpdateFrame ()
   if (seconds > .1) seconds = .1;
 
   bool loop = true;
+  int maxLoop = 300;
   while (loop)
   {
     bool allCool = true;
@@ -172,7 +173,8 @@ void GraphView::UpdateFrame ()
 	if (d > .0001) allCool = false;
       }
     }
-    if (allCool) coolDownPeriod = false;
+    maxLoop--;
+    if (allCool || maxLoop <= 0) coolDownPeriod = false;
     loop = coolDownPeriod;
   }
 }
@@ -261,25 +263,6 @@ public:
   }
 };
 
-csStringArray GraphView::ConvertTextToMultiLine (const char* text)
-{
-  csString txt = text;
-  csStringArray ar;
-  while (!txt.IsEmpty ())
-  {
-    size_t nl = txt.FindFirst ('\n');
-    if (nl == csArrayItemNotFound)
-    {
-      ar.Push (txt);
-      return ar;
-    }
-    ar.Push (txt.Slice (0, nl));
-    txt = txt.Slice (nl+1);
-  }
-
-  return ar;
-}
-
 void GraphView::CreateNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
@@ -288,7 +271,7 @@ void GraphView::CreateNode (const char* name, const char* label,
   iMarker* marker = mgr->CreateMarker ();
   if (!label) label = name;
 
-  csStringArray labelArray = ConvertTextToMultiLine (label);
+  csStringArray labelArray (label, "\n");
 
   int textHeight = mgr->GetFont ()->GetTextHeight ();
   int h = textHeight * labelArray.GetSize () + 6;

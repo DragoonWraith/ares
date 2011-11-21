@@ -331,7 +331,6 @@ private:
   iMarkerColor* linkColor;
   csRef<iGraphNodeStyle> defaultStyle;
 
-  static csStringArray ConvertTextToMultiLine (const char* text);
   bool IsLinked (const char* n1, const char* n2);
 
   csString currentNode;	// String as returned to the caller in FindHitNode().
