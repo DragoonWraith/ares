@@ -1142,13 +1142,15 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
 	int id = ID_FirstContextItem;
 	if (aresed3d->GetSelection ()->HasSelection ())
 	  contextMenu.Append (ID_Delete, wxT ("&Delete"));
-	camwin->AddContextMenu (this, &contextMenu, id);
-	editMode->AddContextMenu (this, &contextMenu, id);
+	if (camwin->IsVisible ())
+	  camwin->AddContextMenu (this, &contextMenu, id, mouseX, mouseY);
+	editMode->AddContextMenu (this, &contextMenu, id, mouseX, mouseY);
 
 	PopupMenu (&contextMenu);
 
 	editMode->ReleaseContextMenu (this);
-	camwin->ReleaseContextMenu (this);
+	if (camwin->IsVisible ())
+	  camwin->ReleaseContextMenu (this);
       }
       else
       {

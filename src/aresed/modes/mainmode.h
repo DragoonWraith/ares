@@ -131,8 +131,9 @@ public:
   /// Is there something in the paste buffer?
   bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
 
-  void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
-  void ReleaseContextMenu (wxFrame* frame);
+  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
+      int mouseX, int mouseY);
+  virtual void ReleaseContextMenu (wxFrame* frame);
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 

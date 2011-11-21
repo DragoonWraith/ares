@@ -334,6 +334,8 @@ private:
   static csStringArray ConvertTextToMultiLine (const char* text);
   bool IsLinked (const char* n1, const char* n2);
 
+  csString currentNode;	// String as returned to the caller in FindHitNode().
+
 public:
   GraphView (MarkerManager* mgr);
   virtual ~GraphView () { Clear(); }
@@ -382,6 +384,7 @@ public:
     }
   }
   virtual void ForcePosition (const char* name, const csVector2& pos);
+  virtual const char* FindHitNode (int mouseX, int mouseY);
 };
 
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>

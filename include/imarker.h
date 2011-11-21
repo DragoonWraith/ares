@@ -391,6 +391,11 @@ struct iGraphView : public virtual iBase
    * Force the position of a node.
    */
   virtual void ForcePosition (const char* name, const csVector2& pos) = 0;
+
+  /**
+   * Find the node that contains the mouse.
+   */
+  virtual const char* FindHitNode (int mouseX, int mouseY) = 0;
 };
 
 /**

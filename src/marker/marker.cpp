@@ -89,6 +89,19 @@ void GraphView::ForcePosition (const char* name, const csVector2& pos)
     node.marker->SetPosition (pos);
 }
 
+const char* GraphView::FindHitNode (int mouseX, int mouseY)
+{
+  int data;
+  iMarker* marker = mgr->FindHitMarker (mouseX, mouseY, data);
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    GraphNode& node = it.Next (currentNode);
+    if (node.marker == marker) return currentNode;
+  }
+  return 0;
+}
+
 bool GraphView::IsLinked (const char* n1, const char* n2)
 {
   for (size_t i = 0 ; i < links.GetSize () ; i++)
@@ -105,6 +118,9 @@ void GraphView::UpdateFrame ()
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   float seconds = mgr->GetVC ()->GetElapsedSeconds ();
+  // Protection to make sure we don't get an excessive elapsed time.
+  // This is needed because frame updating stops while we're in a context menu.
+  if (seconds > .1) seconds = .1;
 
   bool loop = true;
   while (loop)

@@ -129,7 +129,8 @@ void MainMode::Stop ()
   pasteMarker->SetVisible (false);
 }
 
-void MainMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id)
+void MainMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
+    int mouseX, int mouseY)
 {
   if (aresed3d->GetSelection ()->HasSelection ())
   {

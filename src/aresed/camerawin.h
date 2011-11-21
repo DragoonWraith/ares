@@ -72,11 +72,13 @@ public:
 
   void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 
-  void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id);
-  void ReleaseContextMenu (wxFrame* frame);
+  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
+      int mouseX, int mouseY);
+  virtual void ReleaseContextMenu (wxFrame* frame);
 
   void Show () { panel->Show (); parentSizer->Layout (); }
   void Hide () { panel->Hide (); parentSizer->Layout (); }
+  bool IsVisible () const { return panel->IsShown (); }
 
   class Panel : public wxPanel
   {

@@ -64,12 +64,18 @@ private:
     float r0, float g0, float b0, float r1, float g1, float b1, bool fill);
   void InitColors ();
 
+  csString currentNode;
+
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~EntityMode ();
 
   virtual void Start ();
   virtual void Stop ();
+
+  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
+      int mouseX, int mouseY);
+  virtual void ReleaseContextMenu (wxFrame* frame);
 
   virtual void FramePre();
   virtual void Frame3D();
@@ -80,6 +86,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   void OnTemplateSelect ();
+  void OnDelete ();
 
   class Panel : public wxPanel
   {
@@ -88,10 +95,8 @@ public:
       : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
     {}
 
-    void OnTemplateSelect (wxCommandEvent& event)
-    {
-      s->OnTemplateSelect ();
-    }
+    void OnDelete (wxCommandEvent& event) { s->OnDelete (); }
+    void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
 
   private:
     EntityMode* s;

@@ -258,7 +258,8 @@ CameraWindow::~CameraWindow ()
 {
 }
 
-void CameraWindow::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id)
+void CameraWindow::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
+    int mouseX, int mouseY)
 {
   contextMenu->AppendSeparator ();
 

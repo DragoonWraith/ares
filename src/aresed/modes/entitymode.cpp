@@ -389,27 +389,34 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
   if (!tpl) return;
 
-  view->CreateNode (templateName, 0, styleTemplate);
+  csString tplKey; tplKey.Format ("T:%s", templateName);
+  view->CreateNode (tplKey, templateName, styleTemplate);
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+
+    // Extract the last part of the name (everything after the last '.').
     csString pcName = pctpl->GetName ();
-    csString pcNodeName;
+    csString pcShortName = pcName;
     size_t lastDot = pcName.FindLast ('.');
     if (lastDot != csArrayItemNotFound)
-      pcNodeName = pcName.Slice (lastDot+1);
-    else
-      pcNodeName = pcName;
+      pcShortName = pcName.Slice (lastDot+1);
 
+    csString pcNodeName, pcLabel;
+    pcNodeName.Format ("P:%s", pcName.GetData ());
+    pcLabel = pcShortName;
     if (pctpl->GetTag () != 0)
-      pcNodeName.AppendFmt (" (%s)", pctpl->GetTag ());
-    csString pcLabel = pcNodeName;
+    {
+      pcNodeName.AppendFmt (",%s", pctpl->GetTag ());
+      pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
+    }
+
     csString extraInfo = GetExtraPCInfo (pctpl);
     if (!extraInfo.IsEmpty ()) { pcLabel += '\n'; pcLabel += extraInfo; }
     view->CreateNode (pcNodeName, pcLabel, stylePC);
-    view->LinkNode (templateName, pcNodeName);
-    if (pcName == "pclogic.quest")
+    view->LinkNode (tplKey, pcNodeName);
+    if (pcShortName == "quest")
       BuildQuestGraph (pctpl, pcNodeName);
   }
   view->SetVisible (true);
@@ -420,6 +427,32 @@ void EntityMode::OnTemplateSelect ()
   wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
   csString templateName = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
   BuildTemplateGraph (templateName);
+}
+
+void EntityMode::OnDelete ()
+{
+  printf ("Delete %s\n", currentNode.GetData ());
+}
+
+void EntityMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
+    int mouseX, int mouseY)
+{
+  currentNode = view->FindHitNode (mouseX, mouseY);
+  if (!currentNode.IsEmpty ())
+  {
+    contextMenu->AppendSeparator ();
+
+    contextMenu->Append (id, wxT ("Delete"));
+    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
+    id++;
+  }
+}
+
+void EntityMode::ReleaseContextMenu (wxFrame* frame)
+{
+  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
 }
 
 void EntityMode::FramePre()
