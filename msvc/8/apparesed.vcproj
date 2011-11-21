@@ -55,7 +55,7 @@
 				ProgramDatabaseFile="..\..\out\release8\build\apparesed\Win32\aresed.pdb"
 				SubSystem="2"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
 				TargetMachine="1"/>
@@ -131,7 +131,7 @@
 				ProgramDatabaseFile="..\..\out\release8\build\apparesed\Win32\aresed.pdb"
 				SubSystem="2"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
 				TargetMachine="1"/>
@@ -204,7 +204,7 @@
 				ProgramDatabaseFile="..\..\out\debug8\build\apparesed\Win32\aresed.pdb"
 				SubSystem="1"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
 				TargetMachine="1"/>
@@ -277,7 +277,7 @@
 				ProgramDatabaseFile="..\..\out\debug8\build\apparesed\Win32\aresed.pdb"
 				SubSystem="1"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
 				TargetMachine="1"/>
@@ -353,7 +353,7 @@
 				ProgramDatabaseFile="..\..\out\release8-x64\build\apparesed\x64\aresed.pdb"
 				SubSystem="2"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
 				TargetMachine="17"/>
@@ -429,7 +429,7 @@
 				ProgramDatabaseFile="..\..\out\release8-x64\build\apparesed\x64\aresed.pdb"
 				SubSystem="2"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
 				TargetMachine="17"/>
@@ -502,7 +502,7 @@
 				ProgramDatabaseFile="..\..\out\debug8-x64\build\apparesed\x64\aresed.pdb"
 				SubSystem="1"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
 				TargetMachine="17"/>
@@ -575,7 +575,7 @@
 				ProgramDatabaseFile="..\..\out\debug8-x64\build\apparesed\x64\aresed.pdb"
 				SubSystem="1"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
 				TargetMachine="17"/>
@@ -625,31 +625,49 @@
 				RelativePath="..\..\src\aresed\camerawin.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\curvemode.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\editmodes.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\filereq.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\foliagemode.cpp">
-			</File>
-			<File
 				RelativePath="..\..\src\aresed\main.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\mainmode.cpp">
+				RelativePath="..\..\src\aresed\modes\curvemode.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\roommode.cpp">
+				RelativePath="..\..\src\aresed\modes\editmodes.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\modes\entitymode.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\modes\foliagemode.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\modes\mainmode.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\modes\roommode.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\modes\viewmode.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\transformtools.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\celldialog.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\filereq.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\listctrltools.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\newproject.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\uimanager.cpp">
 			</File>
 		</Filter>
 		<Filter
@@ -671,28 +689,46 @@
 				RelativePath="..\..\src\aresed\camerawin.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\curvemode.h">
+				RelativePath="..\..\src\aresed\modes\curvemode.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\editmodes.h">
+				RelativePath="..\..\src\aresed\modes\editmodes.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\filereq.h">
+				RelativePath="..\..\src\aresed\modes\entitymode.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\foliagemode.h">
+				RelativePath="..\..\src\aresed\modes\foliagemode.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\mainmode.h">
+				RelativePath="..\..\src\aresed\modes\mainmode.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\roommode.h">
+				RelativePath="..\..\src\aresed\modes\roommode.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\modes\viewmode.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\transformtools.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\celldialog.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\filereq.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\listctrltools.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\newproject.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\uimanager.h">
 			</File>
 		</Filter>
 		<Filter
