@@ -448,11 +448,12 @@ void EntityMode::OnZoom ()
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   if (!tpl) return;
 
-  csStringArray tokens (currentNode, ",");
-  csString pcName = tokens[0];
-  pcName = pcName.Slice (2);
+  csStringArray tokens (currentNode, ":");
+  csString pcName = tokens[1];
+  csString tagName;
+  if (tokens.GetSize () >= 3) tagName = tokens[2];
   iCelPropertyClassTemplate* pctpl = tpl->FindPropertyClassTemplate (
-      pcName, tokens[1]);
+      pcName, tagName);
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
