@@ -328,6 +328,11 @@ private:
   csRandomGen rng;
   bool coolDownPeriod;
 
+  // Force with which nodes push each other away.
+  float nodeForceFactor;
+  // Force with which links pull the two nodes together.
+  float linkForceFactor;
+
   iMarkerColor* linkColor;
   csRef<iGraphNodeStyle> defaultStyle;
 
@@ -384,6 +389,10 @@ public:
   }
   virtual void ForcePosition (const char* name, const csVector2& pos);
   virtual const char* FindHitNode (int mouseX, int mouseY);
+  virtual void SetNodeForceFactor (float f) { nodeForceFactor = f; }
+  virtual float GetNodeForceFactor () const { return nodeForceFactor; }
+  virtual void SetLinkForceFactor (float f) { linkForceFactor = f; }
+  virtual float GetLinkForceFactor () const { return linkForceFactor; }
 };
 
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>

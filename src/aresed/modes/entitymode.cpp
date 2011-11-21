@@ -549,6 +549,34 @@ void EntityMode::Frame2D()
 
 bool EntityMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
+  if (code == '1')
+  {
+    float f = view->GetNodeForceFactor ();
+    f -= 5.0f;
+    view->SetNodeForceFactor (f);
+    printf ("Node force factor %g\n", f); fflush (stdout);
+  }
+  if (code == '2')
+  {
+    float f = view->GetNodeForceFactor ();
+    f += 5.0f;
+    view->SetNodeForceFactor (f);
+    printf ("Node force factor %g\n", f); fflush (stdout);
+  }
+  if (code == '3')
+  {
+    float f = view->GetLinkForceFactor ();
+    f -= 0.01f;
+    view->SetLinkForceFactor (f);
+    printf ("Link force factor %g\n", f); fflush (stdout);
+  }
+  if (code == '4')
+  {
+    float f = view->GetLinkForceFactor ();
+    f += 0.01f;
+    view->SetLinkForceFactor (f);
+    printf ("Link force factor %g\n", f); fflush (stdout);
+  }
   return false;
 }
 

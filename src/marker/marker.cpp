@@ -78,6 +78,9 @@ GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (m
 {
   draggingMarker = 0;
   coolDownPeriod = true;
+
+  nodeForceFactor = 170.0f;
+  linkForceFactor = 0.04f;
 }
 
 void GraphView::ForcePosition (const char* name, const csVector2& pos)
@@ -137,10 +140,10 @@ void GraphView::UpdateFrame ()
       csVector2 pos = node.marker->GetPosition ();
       csVector2 netForce (0, 0);
 
-      netForce += (pos - csVector2 (0, pos.y)) * 140.0f / (pos.x * pos.x);
-      netForce += (pos - csVector2 (fw, pos.y)) * 140.0f / ((fw-pos.x) * (fw-pos.x));
-      netForce += (pos - csVector2 (pos.x, 0)) * 140.0f / (pos.y * pos.y);
-      netForce += (pos - csVector2 (pos.x, fh)) * 140.0f / ((fh-pos.y) * (fh-pos.y));
+      netForce += (pos - csVector2 (0, pos.y)) * nodeForceFactor / (pos.x * pos.x);
+      netForce += (pos - csVector2 (fw, pos.y)) * nodeForceFactor / ((fw-pos.x) * (fw-pos.x));
+      netForce += (pos - csVector2 (pos.x, 0)) * nodeForceFactor / (pos.y * pos.y);
+      netForce += (pos - csVector2 (pos.x, fh)) * nodeForceFactor / ((fh-pos.y) * (fh-pos.y));
 
       csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
       while (it2.HasNext ())
@@ -152,10 +155,10 @@ void GraphView::UpdateFrame ()
 	  csVector2 pos2 = node2.marker->GetPosition ();
 	  float sqdist = SqDistance2d (pos, pos2);
 	  if (sqdist < .0001) sqdist = .0001;
-	  netForce += (pos-pos2) * 140.0f / sqdist;
+	  netForce += (pos-pos2) * nodeForceFactor / sqdist;
 
 	  if (IsLinked (key, key2))
-	    netForce += (pos2-pos) * 0.08f;
+	    netForce += (pos2-pos) * linkForceFactor;
 	}
       }
       node.velocity = (node.velocity + netForce) * 0.85f;

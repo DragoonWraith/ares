@@ -396,6 +396,18 @@ struct iGraphView : public virtual iBase
    * Find the node that contains the mouse.
    */
   virtual const char* FindHitNode (int mouseX, int mouseY) = 0;
+
+  /**
+   * Control the force factor with which nodes push each other away.
+   */
+  virtual void SetNodeForceFactor (float f) = 0;
+  virtual float GetNodeForceFactor () const = 0;
+
+  /**
+   * Control the force factor with which links pull nodes to each other.
+   */
+  virtual void SetLinkForceFactor (float f) = 0;
+  virtual float GetLinkForceFactor () const = 0;
 };
 
 /**
