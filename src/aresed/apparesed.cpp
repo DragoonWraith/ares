@@ -1140,10 +1140,12 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
       {
 	wxMenu contextMenu;
 	int id = ID_FirstContextItem;
-	if (aresed3d->GetSelection ()->HasSelection ())
-	  contextMenu.Append (ID_Delete, wxT ("&Delete"));
 	if (camwin->IsVisible ())
+	{
+	  if (aresed3d->GetSelection ()->HasSelection ())
+	    contextMenu.Append (ID_Delete, wxT ("&Delete"));
 	  camwin->AddContextMenu (this, &contextMenu, id, mouseX, mouseY);
+	}
 	editMode->AddContextMenu (this, &contextMenu, id, mouseX, mouseY);
 
 	PopupMenu (&contextMenu);

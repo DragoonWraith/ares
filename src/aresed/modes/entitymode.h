@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 struct iGeometryGenerator;
 struct iCelPropertyClassTemplate;
+struct iQuestFactory;
 struct iQuestStateFactory;
 struct iRewardFactoryArray;
 struct iRewardFactory;
@@ -40,10 +41,11 @@ class EntityMode : public EditingMode
 private:
   void SetupItems ();
 
-  void BuildNewStateConnections (iRewardFactoryArray* rewards,
+  void BuildRewardGraph (iRewardFactoryArray* rewards,
       const char* parentKey, const char* pcKey);
   void BuildStateGraph (iQuestStateFactory* state, const char* stateKey,
       const char* pcKey);
+  void BuildQuestGraph (iQuestFactory* questFact, const char* pcKey);
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcKey);
   void BuildTemplateGraph (const char* templateName);
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
@@ -64,6 +66,7 @@ private:
     float r0, float g0, float b0, float r1, float g1, float b1, bool fill);
   void InitColors ();
 
+  csString currentTemplate;
   csString currentNode;
 
 public:
@@ -87,6 +90,9 @@ public:
 
   void OnTemplateSelect ();
   void OnDelete ();
+  void OnCreatePC ();
+  void OnEdit ();
+  void OnZoom ();
 
   class Panel : public wxPanel
   {
@@ -96,6 +102,9 @@ public:
     {}
 
     void OnDelete (wxCommandEvent& event) { s->OnDelete (); }
+    void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
+    void OnEdit (wxCommandEvent& event) { s->OnEdit (); }
+    void OnZoom (wxCommandEvent& event) { s->OnZoom (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
 
   private:

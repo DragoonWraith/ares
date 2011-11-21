@@ -259,14 +259,15 @@ const char* EntityMode::GetRewardType (iRewardFactory* reward)
   return "?";
 }
 
-void EntityMode::BuildNewStateConnections (iRewardFactoryArray* rewards,
+void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
     const char* parentKey, const char* pcKey)
 {
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
     iRewardFactory* reward = rewards->Get (j);
     csString rewKey; rewKey.Format ("r:%d,%s", j, parentKey);
-    view->CreateNode (rewKey, GetRewardType (reward), styleReward);
+    csString rewLabel; rewLabel.Format ("%d:%s", j+1, GetRewardType (reward));
+    view->CreateNode (rewKey, rewLabel, styleReward);
     view->LinkNode (parentKey, rewKey, thinLinkColor);
 
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
@@ -290,7 +291,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
     view->CreateNode (responseKey, GetTriggerType (response->GetTriggerFactory ()), styleResponse);
     view->LinkNode (stateKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
-    BuildNewStateConnections (rewards, responseKey, pcKey);
+    BuildRewardGraph (rewards, responseKey, pcKey);
   }
 
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
@@ -299,7 +300,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
     csString newKeyKey; newKeyKey.Format ("i:%s", stateKey);
     view->CreateNode (newKeyKey, "I", styleResponse);
     view->LinkNode (stateKey, newKeyKey);
-    BuildNewStateConnections (initRewards, newKeyKey, pcKey);
+    BuildRewardGraph (initRewards, newKeyKey, pcKey);
   }
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
   if (exitRewards->GetSize () > 0)
@@ -307,7 +308,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
     csString newKeyKey; newKeyKey.Format ("e:%s", stateKey);
     view->CreateNode (newKeyKey, "E", styleResponse);
     view->LinkNode (stateKey, newKeyKey);
-    BuildNewStateConnections (exitRewards, newKeyKey, pcKey);
+    BuildRewardGraph (exitRewards, newKeyKey, pcKey);
   }
 }
 
@@ -338,30 +339,31 @@ csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
   return "";
 }
 
+void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey)
+{
+  csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+  while (it->HasNext ())
+  {
+    iQuestStateFactory* stateFact = it->Next ();
+    csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (), pcKey);
+    view->CreateNode (stateKey, stateFact->GetName (), styleState);
+    view->LinkNode (pcKey, stateKey);
+    BuildStateGraph (stateFact, stateKey, pcKey);
+  }
+}
+
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
     const char* pcKey)
 {
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
   csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
     aresed3d->GetObjectRegistry (),
     "cel.manager.quests");
   iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
   // @@@ Error check
-  if (questFact)
-  {
-    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
-    while (it->HasNext ())
-    {
-      iQuestStateFactory* stateFact = it->Next ();
-      csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (), pcKey);
-      view->CreateNode (stateKey, stateFact->GetName (), styleState);
-      view->LinkNode (pcKey, stateKey);
-      BuildStateGraph (stateFact, stateKey, pcKey);
-    }
-  }
+  if (questFact) BuildQuestGraph (questFact, pcKey);
 }
 
 csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
@@ -376,6 +378,8 @@ csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
 
 void EntityMode::BuildTemplateGraph (const char* templateName)
 {
+  currentTemplate = templateName;
+
   view->Clear ();
 
   view->SetVisible (false);
@@ -402,7 +406,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
     pcLabel = pcShortName;
     if (pctpl->GetTag () != 0)
     {
-      pcKey.AppendFmt (",%s", pctpl->GetTag ());
+      pcKey.AppendFmt (":%s", pctpl->GetTag ());
       pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
     }
 
@@ -428,6 +432,44 @@ void EntityMode::OnDelete ()
   printf ("Delete %s\n", currentNode.GetData ());
 }
 
+void EntityMode::OnCreatePC ()
+{
+  printf ("CreatePC %s\n", currentNode.GetData ());
+}
+
+void EntityMode::OnEdit ()
+{
+  printf ("Edit %s\n", currentNode.GetData ());
+}
+
+void EntityMode::OnZoom ()
+{
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return;
+
+  csStringArray tokens (currentNode, ",");
+  csString pcName = tokens[0];
+  pcName = pcName.Slice (2);
+  iCelPropertyClassTemplate* pctpl = tpl->FindPropertyClassTemplate (
+      pcName, tokens[1]);
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return;
+
+  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+    aresed3d->GetObjectRegistry (),
+    "cel.manager.quests");
+  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  // @@@ Error check
+  if (questFact)
+  {
+    view->Clear ();
+    view->SetVisible (false);
+    BuildQuestGraph (questFact, "");
+    view->SetVisible (true);
+  }
+}
+
 void EntityMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
     int mouseX, int mouseY)
 {
@@ -436,10 +478,35 @@ void EntityMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
   {
     contextMenu->AppendSeparator ();
 
-    contextMenu->Append (id, wxT ("Delete"));
-    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
-    id++;
+    const char type = currentNode[0];
+    if (strchr ("TPStier", type))
+    {
+      contextMenu->Append (id, wxT ("Delete"));
+      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
+      id++;
+    }
+    if (type == 'T')
+    {
+      contextMenu->Append (id, wxT ("Create Property Class..."));
+      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnCreatePC), 0, panel);
+      id++;
+    }
+    if (strchr ("TPtr", type))
+    {
+      contextMenu->Append (id, wxT ("Edit..."));
+      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
+      id++;
+    }
+    if (type == 'P' && currentNode.StartsWith ("P:pclogic.quest"))
+    {
+      contextMenu->Append (id, wxT ("Zoom"));
+      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnZoom), 0, panel);
+      id++;
+    }
   }
 }
 
@@ -447,6 +514,12 @@ void EntityMode::ReleaseContextMenu (wxFrame* frame)
 {
   frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
 	wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
+  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::OnCreatePC), 0, panel);
+  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
+  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::OnZoom), 0, panel);
 }
 
 void EntityMode::FramePre()
