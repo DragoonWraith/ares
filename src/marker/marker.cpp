@@ -187,6 +187,12 @@ void GraphView::Render3D ()
     GraphLink& l = links[i];
     GraphNode& node1 = nodes.Get (l.node1, n);
     GraphNode& node2 = nodes.Get (l.node2, n);
+    if ((!node1.marker) || (!node2.marker))
+    {
+      if (!node1.marker) printf ("Link: node '%s' does not exist!\n", l.node1.GetData ());
+      if (!node2.marker) printf ("Link: node '%s' does not exist!\n", l.node2.GetData ());
+      continue;	// Ignore this link.
+    }
     csVector2 pos1 = node1.marker->GetPosition ();
     csVector2 pos2 = node2.marker->GetPosition ();
     iMarkerColor* color = l.color;

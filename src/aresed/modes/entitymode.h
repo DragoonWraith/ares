@@ -50,6 +50,7 @@ private:
   void BuildTemplateGraph (const char* templateName);
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
   csString GetExtraPCInfo (iCelPropertyClassTemplate* pctpl);
+  void GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& key, csString& label);
   const char* GetRewardType (iRewardFactory* reward);
   const char* GetTriggerType (iTriggerFactory* reward);
 

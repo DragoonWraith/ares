@@ -376,6 +376,26 @@ csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
   return "";
 }
 
+void EntityMode::GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& pcKey, csString& pcLabel)
+{
+  csString pcShortName;
+  csString pcName = pctpl->GetName ();
+  size_t lastDot = pcName.FindLast ('.');
+  if (lastDot != csArrayItemNotFound)
+    pcShortName = pcName.Slice (lastDot+1);
+
+  pcKey.Format ("P:%s", pcName.GetData ());
+  pcLabel = pcShortName;
+  if (pctpl->GetTag () != 0)
+  {
+    pcKey.AppendFmt (":%s", pctpl->GetTag ());
+    pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
+  }
+
+  csString extraInfo = GetExtraPCInfo (pctpl);
+  if (!extraInfo.IsEmpty ()) { pcLabel += '\n'; pcLabel += extraInfo; }
+}
+
 void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   currentTemplate = templateName;
@@ -395,26 +415,12 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
 
     // Extract the last part of the name (everything after the last '.').
-    csString pcName = pctpl->GetName ();
-    csString pcShortName = pcName;
-    size_t lastDot = pcName.FindLast ('.');
-    if (lastDot != csArrayItemNotFound)
-      pcShortName = pcName.Slice (lastDot+1);
-
     csString pcKey, pcLabel;
-    pcKey.Format ("P:%s", pcName.GetData ());
-    pcLabel = pcShortName;
-    if (pctpl->GetTag () != 0)
-    {
-      pcKey.AppendFmt (":%s", pctpl->GetTag ());
-      pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
-    }
-
-    csString extraInfo = GetExtraPCInfo (pctpl);
-    if (!extraInfo.IsEmpty ()) { pcLabel += '\n'; pcLabel += extraInfo; }
+    GetPCKeyLabel (pctpl, pcKey, pcLabel);
     view->CreateNode (pcKey, pcLabel, stylePC);
     view->LinkNode (tplKey, pcKey);
-    if (pcShortName == "quest")
+    csString pcName = pctpl->GetName ();
+    if (pcName == "pclogic.quest")
       BuildQuestGraph (pctpl, pcKey);
   }
   view->SetVisible (true);
@@ -466,7 +472,12 @@ void EntityMode::OnZoom ()
   {
     view->Clear ();
     view->SetVisible (false);
-    BuildQuestGraph (questFact, "");
+
+    csString pcKey, pcLabel;
+    GetPCKeyLabel (pctpl, pcKey, pcLabel);
+    view->CreateNode (pcKey, pcLabel, stylePC);
+
+    BuildQuestGraph (questFact, pcKey);
     view->SetVisible (true);
   }
 }
