@@ -428,6 +428,28 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   view->SetVisible (true);
 }
 
+iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
+{
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return 0;
+
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op[0] == 'P')
+    {
+      csStringArray tokens (op, ":");
+      csString pcName = tokens[1];
+      csString tagName;
+      if (tokens.GetSize () >= 3) tagName = tokens[2];
+      return tpl->FindPropertyClassTemplate (pcName, tagName);
+    }
+  }
+  return 0;
+}
+
 void EntityMode::OnTemplateSelect ()
 {
   wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
@@ -443,6 +465,10 @@ void EntityMode::OnDelete ()
 void EntityMode::OnCreatePC ()
 {
   printf ("CreatePC %s\n", currentNode.GetData ());
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return;
+  iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
 }
 
 void EntityMode::OnEdit ()
@@ -451,13 +477,9 @@ void EntityMode::OnEdit ()
   const char type = currentNode[0];
   if (type == 'P')
   {
-    csStringArray tokens (currentNode, ":");
-    csString pcName = tokens[1];
-    csString tagName;
-    if (tokens.GetSize () >= 3) tagName = tokens[2];
-
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (currentNode);
     PropertyClassDialog* pcdialog = aresed3d->GetApp ()->GetUIManager ()->GetPCDialog ();
-    pcdialog->SwitchToPC (pcName, tagName);
+    pcdialog->SwitchToPC (pctpl);
     pcdialog->Show ();
   }
 }

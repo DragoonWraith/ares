@@ -72,6 +72,9 @@ private:
 
   int idDelete, idCreate, idEdit, idZoom;
 
+  // Fetch a property class template from a given graph key.
+  iCelPropertyClassTemplate* GetPCTemplate (const char* key);
+
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~EntityMode ();

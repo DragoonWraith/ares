@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include <wx/choicebk.h>
 #include <wx/xrc/xmlres.h>
 
+struct iCelPropertyClassTemplate;
 class UIManager;
 
 class PropertyClassDialog : public wxDialog
@@ -42,11 +43,13 @@ private:
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
 
+  iCelPropertyClassTemplate* pctpl;
+
 public:
   PropertyClassDialog (wxWindow* parent, UIManager* uiManager);
   ~PropertyClassDialog();
 
-  void SwitchToPC (const char* pcName, const char* tagName);
+  void SwitchToPC (iCelPropertyClassTemplate* pctpl);
 
   void Show ();
 

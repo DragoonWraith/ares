@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "pcdialog.h"
 #include "uimanager.h"
+#include "physicallayer/entitytpl.h"
 #include "../apparesed.h"
 
 //--------------------------------------------------------------------------
@@ -37,11 +38,13 @@ END_EVENT_TABLE()
 
 void PropertyClassDialog::OnOkButton (wxCommandEvent& event)
 {
+  pctpl = 0;
   EndModal (TRUE);
 }
 
 void PropertyClassDialog::OnCancelButton (wxCommandEvent& event)
 {
+  pctpl = 0;
   EndModal (TRUE);
 }
 
@@ -61,8 +64,13 @@ static size_t FindNotebookPage (wxChoicebook* book, const char* name)
   return csArrayItemNotFound;
 }
 
-void PropertyClassDialog::SwitchToPC (const char* pcName, const char* tagName)
+void PropertyClassDialog::SwitchToPC (iCelPropertyClassTemplate* pctpl)
 {
+  PropertyClassDialog::pctpl = pctpl;
+
+  csString pcName = pctpl->GetName ();
+  csString tagName = pctpl->GetTag ();
+
   wxChoicebook* book = XRCCTRL (*this, "pcChoicebook", wxChoicebook);
   size_t pageIdx = FindNotebookPage (book, pcName);
   book->ChangeSelection (pageIdx);
