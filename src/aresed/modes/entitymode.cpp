@@ -25,6 +25,8 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../camerawin.h"
 #include "entitymode.h"
+#include "../ui/uimanager.h"
+#include "../ui/pcdialog.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -445,7 +447,19 @@ void EntityMode::OnCreatePC ()
 
 void EntityMode::OnEdit ()
 {
-  printf ("Edit %s\n", currentNode.GetData ());
+  printf ("Edit %s\n", currentNode.GetData ()); fflush (stdout);
+  const char type = currentNode[0];
+  if (type == 'P')
+  {
+    csStringArray tokens (currentNode, ":");
+    csString pcName = tokens[1];
+    csString tagName;
+    if (tokens.GetSize () >= 3) tagName = tokens[2];
+
+    PropertyClassDialog* pcdialog = aresed3d->GetApp ()->GetUIManager ()->GetPCDialog ();
+    pcdialog->SwitchToPC (pcName, tagName);
+    pcdialog->Show ();
+  }
 }
 
 void EntityMode::OnZoom ()
@@ -482,8 +496,25 @@ void EntityMode::OnZoom ()
   }
 }
 
-void EntityMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
-    int mouseX, int mouseY)
+void EntityMode::AllocContextHandlers (wxFrame* frame)
+{
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+
+  idDelete = ui->AllocContextMenuID ();
+  frame->Connect (idDelete, wxEVT_COMMAND_MENU_SELECTED,
+	      wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
+  idCreate = ui->AllocContextMenuID ();
+  frame->Connect (idCreate, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnCreatePC), 0, panel);
+  idEdit = ui->AllocContextMenuID ();
+  frame->Connect (idEdit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
+  idZoom = ui->AllocContextMenuID ();
+  frame->Connect (idZoom, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnZoom), 0, panel);
+}
+
+void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
   currentNode = view->FindHitNode (mouseX, mouseY);
   if (!currentNode.IsEmpty ())
@@ -492,46 +523,14 @@ void EntityMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
 
     const char type = currentNode[0];
     if (strchr ("TPStier", type))
-    {
-      contextMenu->Append (id, wxT ("Delete"));
-      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
-      id++;
-    }
+      contextMenu->Append (idDelete, wxT ("Delete"));
     if (type == 'T')
-    {
-      contextMenu->Append (id, wxT ("Create Property Class..."));
-      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnCreatePC), 0, panel);
-      id++;
-    }
+      contextMenu->Append (idCreate, wxT ("Create Property Class..."));
     if (strchr ("TPtr", type))
-    {
-      contextMenu->Append (id, wxT ("Edit..."));
-      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
-      id++;
-    }
+      contextMenu->Append (idEdit, wxT ("Edit..."));
     if (type == 'P' && currentNode.StartsWith ("P:pclogic.quest"))
-    {
-      contextMenu->Append (id, wxT ("Zoom"));
-      frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnZoom), 0, panel);
-      id++;
-    }
+      contextMenu->Append (idZoom, wxT ("Zoom"));
   }
-}
-
-void EntityMode::ReleaseContextMenu (wxFrame* frame)
-{
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (EntityMode::Panel::OnDelete), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (EntityMode::Panel::OnCreatePC), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (EntityMode::Panel::OnZoom), 0, panel);
 }
 
 void EntityMode::FramePre()

@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include "camerawin.h"
 #include "transformtools.h"
+#include "ui/uimanager.h"
 
 #include <wx/xrc/xmlres.h>
 
@@ -258,41 +259,34 @@ CameraWindow::~CameraWindow ()
 {
 }
 
-void CameraWindow::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
-    int mouseX, int mouseY)
+void CameraWindow::AllocContextHandlers (wxFrame* frame)
+{
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+
+  idLookAt = ui->AllocContextMenuID ();
+  frame->Connect (idLookAt, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (CameraWindow::Panel::OnLookAtButton), 0, panel);
+  idTopDownSel = ui->AllocContextMenuID ();
+  frame->Connect (idTopDownSel, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (CameraWindow::Panel::OnTopDownSelButton), 0, panel);
+  idMoveTo = ui->AllocContextMenuID ();
+  frame->Connect (idMoveTo, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (CameraWindow::Panel::OnMoveToButton), 0, panel);
+  idTopDown = ui->AllocContextMenuID ();
+  frame->Connect (idTopDown, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (CameraWindow::Panel::OnTopDownButton), 0, panel);
+}
+
+void CameraWindow::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
   contextMenu->AppendSeparator ();
 
   if (aresed3d->GetSelection ()->HasSelection ())
   {
-    contextMenu->Append (id, wxT ("Look at selection"));
-    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnLookAtButton), 0, panel);
-    id++;
-    contextMenu->Append (id, wxT ("Top of selection"));
-    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnTopDownSelButton), 0, panel);
-    id++;
-    contextMenu->Append (id, wxT ("Move to selection"));
-    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnMoveToButton), 0, panel);
-    id++;
+    contextMenu->Append (idLookAt, wxT ("Look at selection"));
+    contextMenu->Append (idTopDownSel, wxT ("Top of selection"));
+    contextMenu->Append (idMoveTo, wxT ("Move to selection"));
   }
-  contextMenu->Append (id, wxT ("Top of the world"));
-  frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnTopDownButton), 0, panel);
-  id++;
-}
-
-void CameraWindow::ReleaseContextMenu (wxFrame* frame)
-{
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnLookAtButton), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnTopDownSelButton), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnMoveToButton), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (CameraWindow::Panel::OnTopDownButton), 0, panel);
+  contextMenu->Append (idTopDown, wxT ("Top of the world"));
 }
 

@@ -70,6 +70,8 @@ private:
   csString currentTemplate;
   csString currentNode;
 
+  int idDelete, idCreate, idEdit, idZoom;
+
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~EntityMode ();
@@ -77,9 +79,8 @@ public:
   virtual void Start ();
   virtual void Stop ();
 
-  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
-      int mouseX, int mouseY);
-  virtual void ReleaseContextMenu (wxFrame* frame);
+  virtual void AllocContextHandlers (wxFrame* frame);
+  virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
 
   virtual void FramePre();
   virtual void Frame3D();

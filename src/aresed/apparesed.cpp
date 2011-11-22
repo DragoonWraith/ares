@@ -1139,20 +1139,16 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
       if (but == csmbRight)
       {
 	wxMenu contextMenu;
-	int id = ID_FirstContextItem;
-	if (camwin->IsVisible ())
+	bool camwinVis = camwin->IsVisible ();
+	if (camwinVis)
 	{
 	  if (aresed3d->GetSelection ()->HasSelection ())
 	    contextMenu.Append (ID_Delete, wxT ("&Delete"));
-	  camwin->AddContextMenu (this, &contextMenu, id, mouseX, mouseY);
+	  camwin->AddContextMenu (&contextMenu, mouseX, mouseY);
 	}
-	editMode->AddContextMenu (this, &contextMenu, id, mouseX, mouseY);
+	editMode->AddContextMenu (&contextMenu, mouseX, mouseY);
 
 	PopupMenu (&contextMenu);
-
-	editMode->ReleaseContextMenu (this);
-	if (camwin->IsVisible ())
-	  camwin->ReleaseContextMenu (this);
       }
       else
       {
@@ -1280,6 +1276,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("PropertyClassDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -1319,18 +1316,27 @@ bool AppAresEditWX::InitWX ()
 
   wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
   mainMode = new MainMode (mainModeTabPanel, aresed3d);
+  mainMode->AllocContextHandlers (this);
+
   wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
   curveMode = new CurveMode (curveModeTabPanel, aresed3d);
+  curveMode->AllocContextHandlers (this);
+
   roomMode = new RoomMode (aresed3d);
+
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
   foliageMode = new FoliageMode (foliageModeTabPanel, aresed3d);
+  foliageMode->AllocContextHandlers (this);
+
   wxPanel* entityModeTabPanel = XRCCTRL (*this, "entityModeTabPanel", wxPanel);
   entityMode = new EntityMode (entityModeTabPanel, aresed3d);
+  entityMode->AllocContextHandlers (this);
 
   editMode = 0;
 
   wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   camwin = new CameraWindow (leftPanePanel, aresed3d);
+  camwin->AllocContextHandlers (this);
 
   SelectionListener* listener = new AppSelectionListener (this);
   aresed3d->GetSelection ()->AddSelectionListener (listener);
@@ -1424,14 +1430,16 @@ void AppAresEditWX::SetMenuState ()
 
 void AppAresEditWX::PushFrame ()
 {
+  static bool lock = false;
+  if (lock) return;
+  lock = true;
   csRef<iEventQueue> q (csQueryRegistry<iEventQueue> (object_reg));
-  if (!q)
-    return ;
   csRef<iVirtualClock> vc (csQueryRegistry<iVirtualClock> (object_reg));
 
   if (vc)
     vc->Advance();
   q->Process();
+  lock = false;
 }
 
 void AppAresEditWX::OnSize (wxSizeEvent& event)

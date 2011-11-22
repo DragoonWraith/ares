@@ -22,44 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __uimanager_h
-#define __uimanager_h
+#ifndef __appares_pcdialog_h
+#define __appares_pcdialog_h
 
-class AppAresEditWX;
-class FileReq;
-class NewProjectDialog;
-class CellDialog;
-class PropertyClassDialog;
+#include <crystalspace.h>
 
-class UIManager
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/choicebk.h>
+#include <wx/xrc/xmlres.h>
+
+class UIManager;
+
+class PropertyClassDialog : public wxDialog
 {
 private:
-  AppAresEditWX* app;
-  wxWindow* parent;
+  UIManager* uiManager;
 
-  FileReq* filereqDialog;
-  NewProjectDialog* newprojectDialog;
-  CellDialog* cellDialog;
-  PropertyClassDialog* pcDialog;
-
-  int contextMenuID;
+  void OnOkButton (wxCommandEvent& event);
+  void OnCancelButton (wxCommandEvent& event);
 
 public:
-  UIManager (AppAresEditWX* app, wxWindow* parent);
-  ~UIManager ();
+  PropertyClassDialog (wxWindow* parent, UIManager* uiManager);
+  ~PropertyClassDialog();
 
-  AppAresEditWX* GetApp () const { return app; }
+  void SwitchToPC (const char* pcName, const char* tagName);
 
-  void Message (const char* description, ...);
-  void Error (const char* description, ...);
+  void Show ();
 
-  FileReq* GetFileReqDialog () const { return filereqDialog; }
-  NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
-  CellDialog* GetCellDialog () const { return cellDialog; }
-  PropertyClassDialog* GetPCDialog () const { return pcDialog; }
-
-  int AllocContextMenuID () { contextMenuID++; return contextMenuID; }
+  DECLARE_EVENT_TABLE ();
 };
 
-#endif // __uimanager_h
+#endif // __appares_pcdialog_h
 

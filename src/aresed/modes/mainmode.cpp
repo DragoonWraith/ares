@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../transformtools.h"
 #include "mainmode.h"
+#include "../ui/uimanager.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -129,30 +130,27 @@ void MainMode::Stop ()
   pasteMarker->SetVisible (false);
 }
 
-void MainMode::AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
-    int mouseX, int mouseY)
+void MainMode::AllocContextHandlers (wxFrame* frame)
+{
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+
+  idSetStatic = ui->AllocContextMenuID ();
+  frame->Connect (idSetStatic, wxEVT_COMMAND_MENU_SELECTED,
+	      wxCommandEventHandler (MainMode::Panel::OnSetStatic), 0, panel);
+  idClearStatic = ui->AllocContextMenuID ();
+  frame->Connect (idClearStatic, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (MainMode::Panel::OnClearStatic), 0, panel);
+}
+
+void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
   if (aresed3d->GetSelection ()->HasSelection ())
   {
     contextMenu->AppendSeparator ();
 
-    contextMenu->Append (id, wxT ("Set static"));
-    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (MainMode::Panel::OnSetStatic), 0, panel);
-    id++;
-    contextMenu->Append (id, wxT ("Clear static"));
-    frame->Connect (id, wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (MainMode::Panel::OnClearStatic), 0, panel);
-    id++;
+    contextMenu->Append (idSetStatic, wxT ("Set static"));
+    contextMenu->Append (idClearStatic, wxT ("Clear static"));
   }
-}
-
-void MainMode::ReleaseContextMenu (wxFrame* frame)
-{
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (MainMode::Panel::OnSetStatic), 0, panel);
-  frame->Disconnect (wxEVT_COMMAND_MENU_SELECTED,
-	wxCommandEventHandler (MainMode::Panel::OnClearStatic), 0, panel);
 }
 
 void MainMode::SetupItems (const csHash<csStringArray,csString>& items)

@@ -65,6 +65,8 @@ private:
   bool doDragRestrictY;	// Only drag on the y-plane.
   float dragRestrictY;
 
+  int idSetStatic, idClearStatic;
+
   void CreateMarkers ();
   iMarker* transformationMarker;
   iMarker* pasteMarker;
@@ -131,9 +133,8 @@ public:
   /// Is there something in the paste buffer?
   bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
 
-  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
-      int mouseX, int mouseY);
-  virtual void ReleaseContextMenu (wxFrame* frame);
+  virtual void AllocContextHandlers (wxFrame* frame);
+  virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 

@@ -38,6 +38,8 @@ private:
   AresEdit3DView* aresed3d;
   wxSizer* parentSizer;
 
+  int idLookAt, idTopDownSel, idMoveTo, idTopDown;
+
   CamLocation trans[4];
   void StoreTrans (int idx);
   void RecallTrans (int idx);
@@ -72,9 +74,8 @@ public:
 
   void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 
-  virtual void AddContextMenu (wxFrame* frame, wxMenu* contextMenu, int& id,
-      int mouseX, int mouseY);
-  virtual void ReleaseContextMenu (wxFrame* frame);
+  virtual void AllocContextHandlers (wxFrame* frame);
+  virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
 
   void Show () { panel->Show (); parentSizer->Layout (); }
   void Hide () { panel->Hide (); parentSizer->Layout (); }
