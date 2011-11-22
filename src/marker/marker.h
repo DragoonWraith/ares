@@ -300,7 +300,7 @@ public:
 struct GraphNode
 {
   iMarker* marker;
-  csVector2 velocity;
+  csVector2 velocity, netForce;
   bool frozen;
   csVector2 size;
   GraphNode () : marker (0), frozen (false) { }
@@ -339,6 +339,15 @@ private:
   bool IsLinked (const char* n1, const char* n2);
 
   csString currentNode;	// String as returned to the caller in FindHitNode().
+
+  void HandlePushingForces ();
+  void HandlePullingLinks ();
+  // Update the velocities of all nodes and move them according to those
+  // velocities. Returns true if the simulation appears cool enough (not
+  // a lot of movement).
+  bool MoveNodes (float seconds);
+
+  float secondsTodo;
 
 public:
   GraphView (MarkerManager* mgr);

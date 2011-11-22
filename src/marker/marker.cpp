@@ -79,8 +79,10 @@ GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (m
   draggingMarker = 0;
   coolDownPeriod = true;
 
-  nodeForceFactor = 170.0f;
-  linkForceFactor = 0.04f;
+  nodeForceFactor = 750.0f;
+  linkForceFactor = 0.3f;
+
+  secondsTodo = 0.0f;
 }
 
 void GraphView::ForcePosition (const char* name, const csVector2& pos)
@@ -116,66 +118,115 @@ bool GraphView::IsLinked (const char* n1, const char* n2)
   return false;
 }
 
-void GraphView::UpdateFrame ()
+void GraphView::HandlePushingForces ()
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
+  // Handle all pushing forces.
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString key;
+    GraphNode& node = it.Next (key);
+    if (node.marker == draggingMarker || node.frozen) continue;
+
+    const csVector2& pos = node.marker->GetPosition ();
+    node.netForce.Set (0, 0);
+
+    // The border pushes too.
+    node.netForce += (pos - csVector2 (0, pos.y)) * nodeForceFactor / (pos.x * pos.x);
+    node.netForce += (pos - csVector2 (fw, pos.y)) * nodeForceFactor / ((fw-pos.x) * (fw-pos.x));
+    node.netForce += (pos - csVector2 (pos.x, 0)) * nodeForceFactor / (pos.y * pos.y);
+    node.netForce += (pos - csVector2 (pos.x, fh)) * nodeForceFactor / ((fh-pos.y) * (fh-pos.y));
+
+    csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
+    while (it2.HasNext ())
+    {
+      csString key2;
+      GraphNode& node2 = it2.Next (key2);
+      if (node.marker != node2.marker)
+      {
+	const csVector2& pos2 = node2.marker->GetPosition ();
+	float sqdist = SqDistance2d (pos, pos2);
+	if (sqdist < .0001) sqdist = .0001;
+	node.netForce += (pos-pos2) * nodeForceFactor / sqdist;
+      }
+    }
+  }
+}
+
+void GraphView::HandlePullingLinks ()
+{
+  // Handle all links.
+  GraphNode n;
+  for (size_t i = 0 ; i < links.GetSize () ; i++)
+  {
+    GraphLink& l = links[i];
+    GraphNode& node1 = nodes.Get (l.node1, n);
+    GraphNode& node2 = nodes.Get (l.node2, n);
+    if (node1.marker && node2.marker)
+    {
+      const csVector2& pos1 = node1.marker->GetPosition ();
+      const csVector2& pos2 = node2.marker->GetPosition ();
+      csVector2 force = (pos2-pos1) * linkForceFactor;
+      node1.netForce += force;
+      node2.netForce -= force;
+    }
+  }
+}
+
+bool GraphView::MoveNodes (float seconds)
+{
+  int fw = mgr->GetG2D ()->GetWidth ();
+  int fh = mgr->GetG2D ()->GetHeight ();
+  bool allCool = true;
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString key;
+    GraphNode& node = it.Next (key);
+    if (node.marker == draggingMarker || node.frozen) continue;
+
+    node.velocity = (node.velocity + node.netForce) * 0.85f;
+    csVector2 pos = node.marker->GetPosition ();
+    csVector2 oldpos = pos;
+    pos += node.velocity * (seconds * 50.0f);
+#   define NODE_MARGIN 10
+    if (pos.x > fw-node.size.x/2-NODE_MARGIN) pos.x = fw-node.size.x/2-NODE_MARGIN;
+    else if (pos.x < node.size.x/2+NODE_MARGIN) pos.x = node.size.x/2+NODE_MARGIN;
+    if (pos.y > fh-node.size.y/2-NODE_MARGIN) pos.y = fh-node.size.y/2-NODE_MARGIN;
+    else if (pos.y < node.size.y/2+NODE_MARGIN) pos.y = node.size.y/2+NODE_MARGIN;
+    node.marker->SetPosition (pos);
+    if (coolDownPeriod)
+    {
+      float d = SqDistance2d (pos, oldpos);
+      if (d > .0001) allCool = false;
+    }
+  }
+  return allCool;
+}
+
+void GraphView::UpdateFrame ()
+{
   float seconds = mgr->GetVC ()->GetElapsedSeconds ();
+  secondsTodo += seconds;
   // Protection to make sure we don't get an excessive elapsed time.
   // This is needed because frame updating stops while we're in a context menu.
-  if (seconds > .1) seconds = .1;
+  if (secondsTodo > .1) secondsTodo = .1;
 
   bool loop = true;
   int maxLoop = 300;
   while (loop)
   {
     bool allCool = true;
-    csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
-    while (it.HasNext ())
+    while (secondsTodo > .01f)
     {
-      csString key;
-      GraphNode& node = it.Next (key);
-      if (node.marker == draggingMarker || node.frozen) continue;
-
-      csVector2 pos = node.marker->GetPosition ();
-      csVector2 netForce (0, 0);
-
-      netForce += (pos - csVector2 (0, pos.y)) * nodeForceFactor / (pos.x * pos.x);
-      netForce += (pos - csVector2 (fw, pos.y)) * nodeForceFactor / ((fw-pos.x) * (fw-pos.x));
-      netForce += (pos - csVector2 (pos.x, 0)) * nodeForceFactor / (pos.y * pos.y);
-      netForce += (pos - csVector2 (pos.x, fh)) * nodeForceFactor / ((fh-pos.y) * (fh-pos.y));
-
-      csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
-      while (it2.HasNext ())
-      {
-	csString key2;
-	GraphNode& node2 = it2.Next (key2);
-	if (node.marker != node2.marker)
-	{
-	  csVector2 pos2 = node2.marker->GetPosition ();
-	  float sqdist = SqDistance2d (pos, pos2);
-	  if (sqdist < .0001) sqdist = .0001;
-	  netForce += (pos-pos2) * nodeForceFactor / sqdist;
-
-	  if (IsLinked (key, key2))
-	    netForce += (pos2-pos) * linkForceFactor;
-	}
-      }
-      node.velocity = (node.velocity + netForce) * 0.85f;
-      csVector2 oldpos = pos;
-      pos += node.velocity * (seconds * 50.0f);
-#   define NODE_MARGIN 10
-      if (pos.x > fw-node.size.x/2-NODE_MARGIN) pos.x = fw-node.size.x/2-NODE_MARGIN;
-      else if (pos.x < node.size.x/2+NODE_MARGIN) pos.x = node.size.x/2+NODE_MARGIN;
-      if (pos.y > fh-node.size.y/2-NODE_MARGIN) pos.y = fh-node.size.y/2-NODE_MARGIN;
-      else if (pos.y < node.size.y/2+NODE_MARGIN) pos.y = node.size.y/2+NODE_MARGIN;
-      node.marker->SetPosition (pos);
-      if (coolDownPeriod)
-      {
-	float d = SqDistance2d (pos, oldpos);
-	if (d > .0001) allCool = false;
-      }
+      HandlePushingForces ();
+      HandlePullingLinks ();
+      if (!MoveNodes (.01f)) allCool = false;
+      secondsTodo -= .01f;
     }
+
     maxLoop--;
     if (allCool || maxLoop <= 0) coolDownPeriod = false;
     loop = coolDownPeriod;
