@@ -200,7 +200,7 @@ bool GraphView::MoveNodes (float seconds)
     if (coolDownPeriod)
     {
       float d = SqDistance2d (pos, oldpos);
-      if (d > .0001) allCool = false;
+      if (d > .00001) allCool = false;
     }
   }
   return allCool;
@@ -215,7 +215,7 @@ void GraphView::UpdateFrame ()
   if (secondsTodo > .1) secondsTodo = .1;
 
   bool loop = true;
-  int maxLoop = 300;
+  int maxLoop = 20;
   while (loop)
   {
     bool allCool = true;
@@ -230,6 +230,7 @@ void GraphView::UpdateFrame ()
     maxLoop--;
     if (allCool || maxLoop <= 0) coolDownPeriod = false;
     loop = coolDownPeriod;
+    secondsTodo = 0.1f;
   }
 }
 
