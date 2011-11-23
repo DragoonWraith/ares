@@ -56,7 +56,7 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
     value2 = va_arg (args, char*);
   }
   for (int i = 0 ; i < col ; i++)
-    list->SetColumnWidth (i, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
   return idx;
 }
 
