@@ -43,6 +43,21 @@ csStringArray ListCtrlTools::ReadRow (wxListCtrl* list, int row)
   return rc;
 }
 
+long ListCtrlTools::FindRow (wxListCtrl* list, int col, const char* value)
+{
+  wxListItem rowInfo;
+  for (int row = 0 ; row < list->GetItemCount () ; row++)
+  {
+    rowInfo.m_itemId = row;
+    rowInfo.m_col = col;
+    rowInfo.m_mask = wxLIST_MASK_TEXT;
+    list->GetItem (rowInfo);
+    csString data = (const char*)(rowInfo.m_text.mb_str (wxConvUTF8)); 
+    if (data == value) return row;
+  }
+  return -1;
+}
+
 long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
 {
   long idx = list->InsertItem (list->GetItemCount (), wxString (value, wxConvUTF8));
@@ -58,6 +73,23 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
   for (int i = 0 ; i < col ; i++)
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
   return idx;
+}
+
+void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const char* value, ...)
+{
+  list->DeleteItem (idx);
+  list->InsertItem (idx, wxString (value, wxConvUTF8));
+  int col = 1;
+  va_list args;
+  va_start (args, value);
+  const char* value2 = va_arg (args, char*);
+  while (value2 != 0)
+  {
+    list->SetItem (idx, col++, wxString (value2, wxConvUTF8));
+    value2 = va_arg (args, char*);
+  }
+  for (int i = 0 ; i < col ; i++)
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
 }
 
 void ListCtrlTools::ColorRow (wxListCtrl* list, int idx,

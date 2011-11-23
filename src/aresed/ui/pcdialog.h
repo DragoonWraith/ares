@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/choicebk.h>
+#include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
 struct iCelPropertyClassTemplate;
@@ -39,13 +40,19 @@ class PropertyClassDialog : public wxDialog
 {
 private:
   UIManager* uiManager;
+  iCelPropertyClassTemplate* pctpl;
+  long selIndex;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
 
-  iCelPropertyClassTemplate* pctpl;
-
+  // Properties
   void UpdateProperties ();
+  void OnPropertyAdd (wxCommandEvent& event);
+  void OnPropertyDel (wxCommandEvent& event);
+  void OnPropertySelected (wxListEvent& event);
+  void OnPropertyDeselected (wxListEvent& event);
+
   void UpdateInventory ();
   void UpdateQuest ();
   void UpdateSpawn ();

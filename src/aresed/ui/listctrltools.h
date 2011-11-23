@@ -46,6 +46,11 @@ public:
   static long AddRow (wxListCtrl* list, const char* value, ...);
 
   /**
+   * Replace a row int the list control.
+   */
+  static void ReplaceRow (wxListCtrl* list, int idx, const char* value, ...);
+
+  /**
    * Set the color of some row.
    */
   static void ColorRow (wxListCtrl* list, int idx,
@@ -61,6 +66,12 @@ public:
    * Add a column.
    */
   static void SetColumn (wxListCtrl* list, int idx, const char* name, int width);
+
+  /**
+   * Find a row index based on a given value in a column.
+   * Returns -1 if not found.
+   */
+  static long FindRow (wxListCtrl* list, int col, const char* value);
 };
 
 #endif // __appares_listctrltools_h

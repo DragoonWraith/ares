@@ -36,6 +36,10 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(PropertyClassDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), PropertyClassDialog :: OnOkButton)
   EVT_BUTTON (XRCID("cancelButton"), PropertyClassDialog :: OnCancelButton)
+  EVT_BUTTON (XRCID("propertyAddButton"), PropertyClassDialog :: OnPropertyAdd)
+  EVT_BUTTON (XRCID("propertyDeleteButton"), PropertyClassDialog :: OnPropertyDel)
+  EVT_LIST_ITEM_SELECTED (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertySelected)
+  EVT_LIST_ITEM_DESELECTED (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertyDeselected)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -271,6 +275,58 @@ void PropertyClassDialog::UpdateInventory ()
   lootText->SetValue (wxString (lootName, wxConvUTF8));
 }
 
+void PropertyClassDialog::OnPropertySelected (wxListEvent& event)
+{
+  wxButton* delButton = XRCCTRL (*this, "propertyDeleteButton", wxButton);
+  delButton->Enable ();
+
+  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
+  wxTextCtrl* nameText = XRCCTRL (*this, "propertyNameText", wxTextCtrl);
+  wxTextCtrl* valueText = XRCCTRL (*this, "propertyValueText", wxTextCtrl);
+  wxChoice* typeChoice = XRCCTRL (*this, "propertyTypeChoice", wxChoice);
+
+  selIndex = event.GetIndex ();
+  csStringArray row = ListCtrlTools::ReadRow (list, selIndex);
+  nameText->SetValue (wxString (row[0], wxConvUTF8));
+  valueText->SetValue (wxString (row[1], wxConvUTF8));
+  typeChoice->SetStringSelection (wxString (row[2], wxConvUTF8));
+}
+
+void PropertyClassDialog::OnPropertyDeselected (wxListEvent& event)
+{
+  wxButton* delButton = XRCCTRL (*this, "propertyDeleteButton", wxButton);
+  delButton->Disable ();
+}
+
+void PropertyClassDialog::OnPropertyAdd (wxCommandEvent& event)
+{
+  wxTextCtrl* nameText = XRCCTRL (*this, "propertyNameText", wxTextCtrl);
+  wxTextCtrl* valueText = XRCCTRL (*this, "propertyValueText", wxTextCtrl);
+  wxChoice* typeChoice = XRCCTRL (*this, "propertyTypeChoice", wxChoice);
+  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
+
+  csString name = (const char*)nameText->GetValue ().mb_str (wxConvUTF8);
+  csString value = (const char*)valueText->GetValue ().mb_str (wxConvUTF8);
+  csString type = (const char*)typeChoice->GetStringSelection ().mb_str (wxConvUTF8);
+
+  long idx = ListCtrlTools::FindRow (list, 0, name.GetData ());
+  if (idx == -1)
+    ListCtrlTools::AddRow (list, name.GetData (), value.GetData (), type.GetData (), 0);
+  else
+    ListCtrlTools::ReplaceRow (list, idx, name.GetData (), value.GetData (), type.GetData (), 0);
+}
+
+void PropertyClassDialog::OnPropertyDel (wxCommandEvent& event)
+{
+  if (selIndex == -1) return;
+  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
+  list->DeleteItem (selIndex);
+  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
+  list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
+  selIndex = -1;
+}
+
 void PropertyClassDialog::UpdateProperties ()
 {
   wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
@@ -362,6 +418,11 @@ PropertyClassDialog::PropertyClassDialog (wxWindow* parent, UIManager* uiManager
   ListCtrlTools::SetColumn (list, 0, "Name", 100);
   ListCtrlTools::SetColumn (list, 1, "Value", 100);
   ListCtrlTools::SetColumn (list, 2, "Type", 100);
+
+  wxButton* delButton = XRCCTRL (*this, "propertyDeleteButton", wxButton);
+  delButton->Disable ();
+
+  selIndex = -1;
 }
 
 PropertyClassDialog::~PropertyClassDialog ()
