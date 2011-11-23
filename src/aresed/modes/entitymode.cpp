@@ -419,7 +419,7 @@ iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
   for (size_t i = 0 ; i < ops.GetSize () ; i++)
   {
     csString op = ops.Get (i);
-    if (op[0] == 'P')
+    if (op.operator[] (0) == 'P')
     {
       csStringArray tokens (op, ":");
       csString pcName = tokens[1];
@@ -449,13 +449,13 @@ void EntityMode::OnCreatePC ()
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   if (!tpl) return;
-  iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
+  //iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
 }
 
 void EntityMode::OnEdit ()
 {
   printf ("Edit %s\n", currentNode.GetData ()); fflush (stdout);
-  const char type = currentNode[0];
+  const char type = currentNode.operator[] (0);
   if (type == 'P')
   {
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (currentNode);
@@ -524,7 +524,7 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
   {
     contextMenu->AppendSeparator ();
 
-    const char type = currentNode[0];
+    const char type = currentNode.operator[] (0);
     if (strchr ("TPStier", type))
       contextMenu->Append (idDelete, wxT ("Delete"));
     if (type == 'T')
