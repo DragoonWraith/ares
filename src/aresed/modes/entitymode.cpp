@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "entitymode.h"
 #include "../ui/uimanager.h"
 #include "../ui/pcdialog.h"
+#include "../inspect.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -317,28 +318,8 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
 csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 {
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
-  csStringID newquestID = pl->FetchStringID ("NewQuest");
-  size_t idx = pctpl->FindProperty (newquestID);
-  if (idx != csArrayItemNotFound)
-  {
-    celData data;
-    csRef<iCelParameterIterator> parit = pctpl->GetProperty (idx,
-		    newquestID, data);
-    csStringID nameID = pl->FetchStringID ("name");
-    csString questName;
-    while (parit->HasNext ())
-    {
-      csStringID parid;
-      iParameter* par = parit->Next (parid);
-      // @@@ We don't support expression parameters here. 'params'
-      // for creating entities is missing.
-      if (parid == nameID)
-      {
-	return par->Get (0);
-      }
-    }
-  }
-  return "";
+  return InspectTools::GetActionParameterValueString (pl, pctpl,
+      "NewQuest", "name");
 }
 
 void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey)

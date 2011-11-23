@@ -2,7 +2,7 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="PropertyClassDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>435,336</size>
+		<size>534,557</size>
 		<title></title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
@@ -272,6 +272,14 @@
 										</object>
 									</object>
 								</object>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListBox" name="questStateBox">
+										<content />
+									</object>
+								</object>
 							</object>
 						</object>
 					</object>
@@ -515,6 +523,14 @@
 									</object>
 								</object>
 								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="wireOutputList">
+										<style>wxLC_REPORT</style>
+									</object>
+								</object>
+								<object class="sizeritem">
 									<option>0</option>
 									<flag>wxEXPAND</flag>
 									<border>5</border>
@@ -524,8 +540,8 @@
 											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
-											<object class="wxStaticText" name="m_staticText23">
-												<label>Output message:</label>
+											<object class="wxStaticText" name="m_staticText231">
+												<label>Message:</label>
 												<wrap>-1</wrap>
 											</object>
 										</object>
@@ -533,9 +549,61 @@
 											<option>1</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
-											<object class="wxTextCtrl" name="wireOutputMessageText">
+											<object class="wxTextCtrl" name="wireMessageText">
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText24">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="wireEntityText">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="wireSearchEntityButton">
+												<size>50,-1</size>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="spacer">
+											<option>1</option>
+											<flag>wxEXPAND</flag>
+											<border>5</border>
+											<size>20,0</size>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="wireAddMessageButton">
+												<label>Add</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="wireDelMessageButton">
+												<label>Del</label>
+												<default>0</default>
 											</object>
 										</object>
 									</object>
@@ -568,6 +636,15 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="wireParameterNameText">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="wireParameterValueText">
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>

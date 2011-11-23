@@ -88,6 +88,51 @@
       <propclass name="pctools.properties">
 	<property name="counter" long="1" />
       </propclass>
+      <propclass name="pclogic.wire">
+	<action name="AddInput">
+	  <par name="mask" string="ares.activate" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.teleport" />
+	  <par name="entity" string="world" />
+	  <par name="cell" string="$cell" />
+	  <par name="pos" vector3="$pos" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.spawn">
+        <action name="AddEntityTemplateType">
+	  <par name="template" string="TinyBox" />
+	</action>
+        <action name="SetTiming">
+	  <par name="repeat" bool="true" />
+	  <par name="random" bool="true" />
+	  <par name="mindelay" long="1000" />
+	  <par name="maxdelay" long="5000" />
+	</action>
+        <action name="AddSpawnPosition">
+	  <par name="sector" string="$sector" />
+	  <par name="position" vector3="$pos" />
+	</action>
+	<action name="Inhibit">
+	  <par name="count" long="5" />
+	</action>
+	<property name="spawnunique" bool="true" />
+	<property name="namecounter" bool="false" />
+      </propclass>
+      <propclass name="pctools.inventory">
+	<action name="AddTemplate">
+	  <par name="name" string="SmallBox" />
+	  <par name="amount" long="100" />
+	</action>
+	<action name="AddTemplate">
+	  <par name="name" string="TinyBox" />
+	  <par name="amount" long="1" />
+	</action>
+	<action name="AddTemplate">
+	  <par name="name" string="MicroBox" />
+	  <par name="amount" long="50" />
+	</action>
+      </propclass>
       <propclass name="pclogic.quest" tag="note">
         <action name="NewQuest" >
           <par name="name" string="findTheSecretNote" />

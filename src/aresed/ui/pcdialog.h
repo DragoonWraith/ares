@@ -45,6 +45,12 @@ private:
 
   iCelPropertyClassTemplate* pctpl;
 
+  void UpdateProperties ();
+  void UpdateInventory ();
+  void UpdateQuest ();
+  void UpdateSpawn ();
+  void UpdateWire ();
+
 public:
   PropertyClassDialog (wxWindow* parent, UIManager* uiManager);
   ~PropertyClassDialog();
