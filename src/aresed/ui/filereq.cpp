@@ -35,11 +35,11 @@ END_EVENT_TABLE()
 
 void FileReq::DoOk ()
 {
-  printf ("Ok\n");
   wxTextCtrl* text = XRCCTRL (*this, "fileNameText", wxTextCtrl);
   csString file = (const char*)text->GetValue ().mb_str (wxConvUTF8);
   EndModal (TRUE);
   callback->OkPressed (file);
+  callback = 0;
 }
 
 void FileReq::OnOkButton (wxCommandEvent& event)
@@ -49,7 +49,7 @@ void FileReq::OnOkButton (wxCommandEvent& event)
 
 void FileReq::OnCancelButton (wxCommandEvent& event)
 {
-  printf ("Cancel\n");
+  callback = 0;
   EndModal (TRUE);
 }
 
@@ -126,7 +126,7 @@ void FileReq::StdDlgUpdateLists ()
 
 void FileReq::Show (OKCallback* callback)
 {
-  this->callback = callback;
+  FileReq::callback = callback;
   ShowModal ();
 }
 

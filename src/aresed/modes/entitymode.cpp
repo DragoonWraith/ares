@@ -38,6 +38,19 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
+struct PCEditCallbackImp : public PCEditCallback
+{
+  EntityMode* entMode;
+  PCEditCallbackImp (EntityMode* entMode) : entMode (entMode) { }
+  virtual ~PCEditCallbackImp () { }
+  virtual void OkPressed (iCelPropertyClassTemplate* pctpl)
+  {
+    entMode->PCWasEdited (pctpl);
+  }
+};
+
+//---------------------------------------------------------------------------
+
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LISTBOX (XRCID("templateList"), EntityMode::Panel :: OnTemplateSelect)
 END_EVENT_TABLE()
@@ -450,7 +463,11 @@ void EntityMode::OnCreatePC ()
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   if (!tpl) return;
-  //iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
+  PropertyClassDialog* pcdialog = aresed3d->GetApp ()->GetUIManager ()->GetPCDialog ();
+  pcdialog->SwitchToPC (tpl, 0);
+  csRef<PCEditCallbackImp> cb;
+  cb.AttachNew (new PCEditCallbackImp (this));
+  pcdialog->Show (cb);
 }
 
 void EntityMode::OnEdit ()
@@ -459,11 +476,20 @@ void EntityMode::OnEdit ()
   const char type = currentNode.operator[] (0);
   if (type == 'P')
   {
+    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (currentNode);
     PropertyClassDialog* pcdialog = aresed3d->GetApp ()->GetUIManager ()->GetPCDialog ();
-    pcdialog->SwitchToPC (pctpl);
-    pcdialog->Show ();
+    pcdialog->SwitchToPC (tpl, pctpl);
+    csRef<PCEditCallbackImp> cb;
+    cb.AttachNew (new PCEditCallbackImp (this));
+    pcdialog->Show (cb);
   }
+}
+
+void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
+{
+  BuildTemplateGraph (currentTemplate);
 }
 
 void EntityMode::OnEditQuest ()

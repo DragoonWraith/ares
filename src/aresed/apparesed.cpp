@@ -1034,8 +1034,9 @@ void AppAresEditWX::SaveFile (const char* filename)
 
 void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
 {
-  // @@@ leak of callback?
-  uiManager->GetNewProjectDialog ()->Show (new NewProjectCallbackImp (this));
+  csRef<NewProjectCallbackImp> cb;
+  cb.AttachNew (new NewProjectCallbackImp (this));
+  uiManager->GetNewProjectDialog ()->Show (cb);
 }
 
 void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
@@ -1045,14 +1046,16 @@ void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
 {
-  // @@@ leak of callback?
-  uiManager->GetFileReqDialog ()->Show (new LoadCallback (this));
+  csRef<LoadCallback> cb;
+  cb.AttachNew (new LoadCallback (this));
+  uiManager->GetFileReqDialog ()->Show (cb);
 }
 
 void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
 {
-  // @@@ leak of callback?
-  uiManager->GetFileReqDialog ()->Show (new SaveCallback (this));
+  csRef<SaveCallback> cb;
+  cb.AttachNew (new SaveCallback (this));
+  uiManager->GetFileReqDialog ()->Show (cb);
 }
 
 void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)

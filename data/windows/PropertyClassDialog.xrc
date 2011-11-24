@@ -94,12 +94,13 @@
 											<object class="wxChoice" name="propertyTypeChoice">
 												<selection>0</selection>
 												<content>
-													<item>integer</item>
 													<item>float</item>
 													<item>string</item>
 													<item>vector2</item>
 													<item>vector3</item>
 													<item>color</item>
+													<item>bool</item>
+													<item>long</item>
 												</content>
 											</object>
 										</object>
@@ -108,6 +109,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="propertyAddButton">
+												<size>50,-1</size>
 												<label>Add</label>
 												<default>0</default>
 											</object>
@@ -117,6 +119,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="propertyDeleteButton">
+												<size>50,-1</size>
 												<label>Del</label>
 												<default>0</default>
 											</object>
@@ -179,6 +182,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="inventoryTemplateAddButton">
+												<size>50,-1</size>
 												<label>Add</label>
 												<default>0</default>
 											</object>
@@ -188,6 +192,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="inventoryTemplateDeleteButton">
+												<size>50,-1</size>
 												<label>Del</label>
 												<default>0</default>
 											</object>
@@ -289,6 +294,85 @@
 										<content />
 									</object>
 								</object>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="questParameterListCtrl">
+										<style>wxLC_REPORT</style>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText1221">
+												<label>Name:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="questParameterNameText">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="questParameterValueText">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxChoice" name="questParameterTypeChoice">
+												<selection>0</selection>
+												<content>
+													<item>integer</item>
+													<item>float</item>
+													<item>string</item>
+													<item>vector2</item>
+													<item>vector3</item>
+													<item>color</item>
+												</content>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="questParameterAddButton">
+												<size>50,-1</size>
+												<label>Add</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="questParameterDeleteButton">
+												<size>50,-1</size>
+												<label>Del</label>
+												<default>0</default>
+											</object>
+										</object>
+									</object>
+								</object>
 							</object>
 						</object>
 					</object>
@@ -336,6 +420,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="spawnTemplateAddButton">
+												<size>50,-1</size>
 												<label>Add</label>
 												<default>0</default>
 											</object>
@@ -345,6 +430,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="spawnTemplateDeleteButton">
+												<size>50,-1</size>
 												<label>Del</label>
 												<default>0</default>
 											</object>
@@ -535,7 +621,7 @@
 									<option>1</option>
 									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
-									<object class="wxListCtrl" name="wireOutputList">
+									<object class="wxListCtrl" name="wireMessageListCtrl">
 										<style>wxLC_REPORT</style>
 									</object>
 								</object>
@@ -550,12 +636,12 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxStaticText" name="m_staticText231">
-												<label>Message:</label>
+												<label>Msg:</label>
 												<wrap>-1</wrap>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>1</option>
+											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="wireMessageText">
@@ -573,7 +659,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>1</option>
+											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="wireEntityText">
@@ -595,13 +681,14 @@
 											<option>1</option>
 											<flag>wxEXPAND</flag>
 											<border>5</border>
-											<size>20,0</size>
+											<size>10,0</size>
 										</object>
 										<object class="sizeritem">
 											<option>0</option>
 											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxButton" name="wireAddMessageButton">
+											<object class="wxButton" name="wireMessageAddButton">
+												<size>50,-1</size>
 												<label>Add</label>
 												<default>0</default>
 											</object>
@@ -610,7 +697,8 @@
 											<option>0</option>
 											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxButton" name="wireDelMessageButton">
+											<object class="wxButton" name="wireMessageDeleteButton">
+												<size>50,-1</size>
 												<label>Del</label>
 												<default>0</default>
 											</object>
@@ -621,7 +709,7 @@
 									<option>1</option>
 									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
-									<object class="wxListCtrl" name="wireParameterList">
+									<object class="wxListCtrl" name="wireParameterListCtrl">
 										<style>wxLC_REPORT</style>
 									</object>
 								</object>
@@ -665,12 +753,13 @@
 											<object class="wxChoice" name="wireParameterTypeChoice">
 												<selection>0</selection>
 												<content>
-													<item>integer</item>
+													<item>long</item>
 													<item>float</item>
 													<item>string</item>
 													<item>vector2</item>
 													<item>vector3</item>
 													<item>color</item>
+													<item>bool</item>
 												</content>
 											</object>
 										</object>
@@ -679,6 +768,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="wireParameterAddButton">
+												<size>50,-1</size>
 												<label>Add</label>
 												<default>0</default>
 											</object>
@@ -688,6 +778,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="wireParameterDeleteButton">
+												<size>50,-1</size>
 												<label>Del</label>
 												<default>0</default>
 											</object>

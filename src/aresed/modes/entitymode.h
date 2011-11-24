@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "editmodes.h"
 
 struct iGeometryGenerator;
+struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iQuestFactory;
 struct iQuestStateFactory;
@@ -98,6 +99,8 @@ public:
   void OnCreatePC ();
   void OnEdit ();
   void OnEditQuest ();
+
+  void PCWasEdited (iCelPropertyClassTemplate* pctpl);
 
   class Panel : public wxPanel
   {

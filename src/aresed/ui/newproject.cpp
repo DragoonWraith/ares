@@ -67,12 +67,14 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
     assets.Push (Asset (row[0], row[1]));
   }
   callback->OkPressed (assets);
+  callback = 0;
 
   EndModal (TRUE);
 }
 
 void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 {
+  callback = 0;
   EndModal (TRUE);
 }
 

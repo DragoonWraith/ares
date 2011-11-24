@@ -33,20 +33,40 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
+struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
+struct iCelParameterIterator;
+struct iParameter;
 class UIManager;
+
+typedef csHash<csRef<iParameter>,csStringID> ParHash;
+
+struct PCEditCallback : public csRefCount
+{
+  virtual void OkPressed (iCelPropertyClassTemplate* pctpl) = 0;
+};
 
 class PropertyClassDialog : public wxDialog
 {
 private:
   UIManager* uiManager;
+  iCelEntityTemplate* tpl;
   iCelPropertyClassTemplate* pctpl;
-  long selIndex;
+
+  csRef<PCEditCallback> callback;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
 
+  void AddRowFromInput (const char* listComp,
+    const char* nameComp, const char* valueComp, const char* typeComp);
+  void FillFieldsFromRow (const char* listComp,
+    const char* nameComp, const char* valueComp, const char* typeComp,
+    const char* delComp,
+    long selIndex);
+
   // Properties
+  long propSelIndex;
   void UpdateProperties ();
   void FillProperties ();
   void OnPropertyAdd (wxCommandEvent& event);
@@ -54,25 +74,60 @@ private:
   void OnPropertySelected (wxListEvent& event);
   void OnPropertyDeselected (wxListEvent& event);
 
+  // Inventory.
+  long invSelIndex;
   void UpdateInventory ();
   void FillInventory ();
+  void OnInventoryTemplateAdd (wxCommandEvent& event);
+  void OnInventoryTemplateDel (wxCommandEvent& event);
+  void OnInvTemplateSelected (wxListEvent& event);
+  void OnInvTemplateDeselected (wxListEvent& event);
 
+  // Quest.
+  long questSelIndex;
   void UpdateQuest ();
   void FillQuest ();
+  void OnQuestParameterAdd (wxCommandEvent& event);
+  void OnQuestParameterDel (wxCommandEvent& event);
+  void OnQuestParameterSelected (wxListEvent& event);
+  void OnQuestParameterDeselected (wxListEvent& event);
 
+  // Spawn.
+  long spawnSelIndex;
   void UpdateSpawn ();
   void FillSpawn ();
+  void OnSpawnTemplateAdd (wxCommandEvent& event);
+  void OnSpawnTemplateDel (wxCommandEvent& event);
+  void OnSpawnTemplateSelected (wxListEvent& event);
+  void OnSpawnTemplateDeselected (wxListEvent& event);
 
+  // Wire.
+  int wireMsgSelIndex;
+  int wireParSelIndex;
+  csHash<ParHash,csString> wireParams;
   void UpdateWire ();
   void FillWire ();
+  void UpdateCurrentWireParams ();
+  void OnWireMessageAdd (wxCommandEvent& event);
+  void OnWireMessageDel (wxCommandEvent& event);
+  void OnWireMessageSelected (wxListEvent& event);
+  void OnWireMessageDeselected (wxListEvent& event);
+  void OnWireParameterAdd (wxCommandEvent& event);
+  void OnWireParameterDel (wxCommandEvent& event);
+  void OnWireParameterSelected (wxListEvent& event);
+  void OnWireParameterDeselected (wxListEvent& event);
+
+  void UpdatePC ();
 
 public:
   PropertyClassDialog (wxWindow* parent, UIManager* uiManager);
   ~PropertyClassDialog();
 
-  void SwitchToPC (iCelPropertyClassTemplate* pctpl);
+  // Switch this dialog to editing of a PC. If the PC is null then we
+  // are going to create a new pctpl.
+  void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
 
-  void Show ();
+  void Show (PCEditCallback* cb);
 
   DECLARE_EVENT_TABLE ();
 };
