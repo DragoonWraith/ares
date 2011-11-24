@@ -48,15 +48,23 @@ private:
 
   // Properties
   void UpdateProperties ();
+  void FillProperties ();
   void OnPropertyAdd (wxCommandEvent& event);
   void OnPropertyDel (wxCommandEvent& event);
   void OnPropertySelected (wxListEvent& event);
   void OnPropertyDeselected (wxListEvent& event);
 
   void UpdateInventory ();
+  void FillInventory ();
+
   void UpdateQuest ();
+  void FillQuest ();
+
   void UpdateSpawn ();
+  void FillSpawn ();
+
   void UpdateWire ();
+  void FillWire ();
 
 public:
   PropertyClassDialog (wxWindow* parent, UIManager* uiManager);

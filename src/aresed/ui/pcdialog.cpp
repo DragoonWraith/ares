@@ -74,6 +74,10 @@ static size_t FindNotebookPage (wxChoicebook* book, const char* name)
 
 void PropertyClassDialog::UpdateWire ()
 {
+}
+
+void PropertyClassDialog::FillWire ()
+{
   wxListCtrl* outputList = XRCCTRL (*this, "wireOutputList", wxListCtrl);
   outputList->DeleteAllItems ();
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterList", wxListCtrl);
@@ -115,6 +119,10 @@ void PropertyClassDialog::UpdateWire ()
 }
 
 void PropertyClassDialog::UpdateSpawn ()
+{
+}
+
+void PropertyClassDialog::FillSpawn ()
 {
   wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
   list->DeleteAllItems ();
@@ -197,6 +205,10 @@ void PropertyClassDialog::UpdateSpawn ()
 
 void PropertyClassDialog::UpdateQuest ()
 {
+}
+
+void PropertyClassDialog::FillQuest ()
+{
   wxListBox* list = XRCCTRL (*this, "questStateBox", wxListBox);
   list->Clear ();
   wxTextCtrl* text = XRCCTRL (*this, "questText", wxTextCtrl);
@@ -236,6 +248,10 @@ void PropertyClassDialog::UpdateQuest ()
 }
 
 void PropertyClassDialog::UpdateInventory ()
+{
+}
+
+void PropertyClassDialog::FillInventory ()
 {
   wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
   list->DeleteAllItems ();
@@ -329,6 +345,10 @@ void PropertyClassDialog::OnPropertyDel (wxCommandEvent& event)
 
 void PropertyClassDialog::UpdateProperties ()
 {
+}
+
+void PropertyClassDialog::FillProperties ()
+{
   wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
   list->DeleteAllItems ();
 
@@ -384,11 +404,11 @@ void PropertyClassDialog::SwitchToPC (iCelPropertyClassTemplate* pctpl)
   wxTextCtrl* text = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
   text->SetValue (wxString (tagName, wxConvUTF8));
 
-  UpdateProperties ();
-  UpdateInventory ();
-  UpdateQuest ();
-  UpdateSpawn ();
-  UpdateWire ();
+  FillProperties ();
+  FillInventory ();
+  FillQuest ();
+  FillSpawn ();
+  FillWire ();
 }
 
 PropertyClassDialog::PropertyClassDialog (wxWindow* parent, UIManager* uiManager) :
