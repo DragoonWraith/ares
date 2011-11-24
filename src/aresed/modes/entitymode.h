@@ -45,7 +45,7 @@ private:
       const char* parentKey, const char* pcKey);
   void BuildStateGraph (iQuestStateFactory* state, const char* stateKey,
       const char* pcKey);
-  void BuildQuestGraph (iQuestFactory* questFact, const char* pcKey);
+  void BuildQuestGraph (iQuestFactory* questFact, const char* pcKey, bool fullquest);
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcKey);
   void BuildTemplateGraph (const char* templateName);
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
@@ -70,7 +70,7 @@ private:
   csString currentTemplate;
   csString currentNode;
 
-  int idDelete, idCreate, idEdit, idZoom;
+  int idDelete, idCreate, idEdit, idEditQuest;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -97,7 +97,7 @@ public:
   void OnDelete ();
   void OnCreatePC ();
   void OnEdit ();
-  void OnZoom ();
+  void OnEditQuest ();
 
   class Panel : public wxPanel
   {
@@ -109,7 +109,7 @@ public:
     void OnDelete (wxCommandEvent& event) { s->OnDelete (); }
     void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
     void OnEdit (wxCommandEvent& event) { s->OnEdit (); }
-    void OnZoom (wxCommandEvent& event) { s->OnZoom (); }
+    void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
 
   private:

@@ -322,7 +322,7 @@ csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
       "NewQuest", "name");
 }
 
-void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey)
+void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey, bool fullquest)
 {
   csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
   while (it->HasNext ())
@@ -331,7 +331,8 @@ void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey)
     csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (), pcKey);
     view->CreateNode (stateKey, stateFact->GetName (), styleState);
     view->LinkNode (pcKey, stateKey);
-    BuildStateGraph (stateFact, stateKey, pcKey);
+    if (fullquest)
+      BuildStateGraph (stateFact, stateKey, pcKey);
   }
 }
 
@@ -346,7 +347,7 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
     "cel.manager.quests");
   iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
   // @@@ Error check
-  if (questFact) BuildQuestGraph (questFact, pcKey);
+  if (questFact) BuildQuestGraph (questFact, pcKey, false);
 }
 
 csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
@@ -465,7 +466,7 @@ void EntityMode::OnEdit ()
   }
 }
 
-void EntityMode::OnZoom ()
+void EntityMode::OnEditQuest ()
 {
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
@@ -494,7 +495,7 @@ void EntityMode::OnZoom ()
     GetPCKeyLabel (pctpl, pcKey, pcLabel);
     view->CreateNode (pcKey, pcLabel, stylePC);
 
-    BuildQuestGraph (questFact, pcKey);
+    BuildQuestGraph (questFact, pcKey, true);
     view->SetVisible (true);
   }
 }
@@ -512,9 +513,9 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idEdit = ui->AllocContextMenuID ();
   frame->Connect (idEdit, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
-  idZoom = ui->AllocContextMenuID ();
-  frame->Connect (idZoom, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnZoom), 0, panel);
+  idEditQuest = ui->AllocContextMenuID ();
+  frame->Connect (idEditQuest, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnEditQuest), 0, panel);
 }
 
 void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
@@ -532,7 +533,7 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
     if (strchr ("TPtr", type))
       contextMenu->Append (idEdit, wxT ("Edit..."));
     if (type == 'P' && currentNode.StartsWith ("P:pclogic.quest"))
-      contextMenu->Append (idZoom, wxT ("Zoom"));
+      contextMenu->Append (idEditQuest, wxT ("Edit quest"));
   }
 }
 

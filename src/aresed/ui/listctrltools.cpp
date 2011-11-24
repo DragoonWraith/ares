@@ -128,7 +128,9 @@ void ListCtrlTools::SetColumn (wxListCtrl* list, int idx, const char* name, int 
 {
   wxListItem colPath;
   colPath.SetId (idx);
-  colPath.SetText (wxString (name, wxConvUTF8));
+  csString name2 = name;
+  name2 += "            ";
+  colPath.SetText (wxString (name2, wxConvUTF8));
   colPath.SetWidth (width);
   list->InsertColumn (idx, colPath);
 }
