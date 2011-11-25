@@ -143,7 +143,7 @@ END_EVENT_TABLE()
 
 void PropertyClassDialog::OnOkButton (wxCommandEvent& event)
 {
-  UpdatePC ();
+  if (!UpdatePC ()) return;
   callback->OkPressed (pctpl);
   pctpl = 0;
   callback = 0;
@@ -941,29 +941,52 @@ void PropertyClassDialog::FillProperties ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::UpdatePC ()
+bool PropertyClassDialog::UpdatePC ()
 {
-  if (!pctpl)
-    pctpl = tpl->CreatePropertyClassTemplate ();
-
   wxTextCtrl* tagText = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
   csString tag = (const char*)tagText->GetValue ().mb_str (wxConvUTF8);
+
+  wxChoicebook* book = XRCCTRL (*this, "pcChoicebook", wxChoicebook);
+  int pageSel = book->GetSelection ();
+  if (pageSel == wxNOT_FOUND)
+  {
+    uiManager->Error ("Internal error! Page not found!");
+    return false;
+  }
+  wxString pageTxt = book->GetPageText (pageSel);
+  csString page = (const char*)pageTxt.mb_str (wxConvUTF8);
+
+  iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (page, tag);
+  if (!pctpl)
+  {
+    if (pc)
+    {
+      uiManager->Error ("Property class with this name and tag already exists!");
+      return false;
+    }
+    pctpl = tpl->CreatePropertyClassTemplate ();
+  }
+  else
+  {
+    if (pc && pc != pctpl)
+    {
+      uiManager->Error ("Property class with this name and tag already exists!");
+      return false;
+    }
+  }
+
   if (tag.IsEmpty ())
     pctpl->SetTag (0);
   else
     pctpl->SetTag (tag);
 
-  wxChoicebook* book = XRCCTRL (*this, "pcChoicebook", wxChoicebook);
-  int pageSel = book->GetSelection ();
-  if (pageSel == wxNOT_FOUND) return;
-  wxString pageTxt = book->GetPageText (pageSel);
-  csString page = (const char*)pageTxt.mb_str (wxConvUTF8);
   if (page == "pctools.properties") UpdateProperties ();
   else if (page == "pctools.inventory") UpdateInventory ();
   else if (page == "pclogic.wire") UpdateWire ();
   else if (page == "pclogic.quest") UpdateQuest ();
   else if (page == "pclogic.spawn") UpdateSpawn ();
   else printf ("Unknown page '%s'\n", page.GetData ());
+  return true;
 }
 
 void PropertyClassDialog::SwitchToPC (iCelEntityTemplate* tpl,

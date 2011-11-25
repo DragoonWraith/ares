@@ -117,7 +117,8 @@ private:
   void OnWireParameterSelected (wxListEvent& event);
   void OnWireParameterDeselected (wxListEvent& event);
 
-  void UpdatePC ();
+  // Update the property class. Returns false on error.
+  bool UpdatePC ();
 
 public:
   PropertyClassDialog (wxWindow* parent, UIManager* uiManager);
