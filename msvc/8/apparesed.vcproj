@@ -625,6 +625,9 @@
 				RelativePath="..\..\src\aresed\camerawin.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\inspect.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\main.cpp">
 			</File>
 			<File
@@ -667,6 +670,9 @@
 				RelativePath="..\..\src\aresed\ui\newproject.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\ui\pcdialog.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.cpp">
 			</File>
 		</Filter>
@@ -687,6 +693,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\camerawin.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\inspect.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\modes\curvemode.h">
@@ -726,6 +735,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\newproject.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\pcdialog.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.h">
