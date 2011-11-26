@@ -130,7 +130,7 @@
 	</action>
 	<action name="AddTemplate">
 	  <par name="name" string="MicroBox" />
-	  <par name="amount" long="50" />
+	  <par name="amount" long="=50*100" />
 	</action>
       </propclass>
       <propclass name="pclogic.quest" tag="note">

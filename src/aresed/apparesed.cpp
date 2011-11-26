@@ -34,16 +34,19 @@ THE SOFTWARE.
 #include "modes/foliagemode.h"
 #include "modes/entitymode.h"
 #include "camera.h"
-#include <celtool/initapp.h>
-#include <cstool/simplestaticlighter.h>
+
+#include "celtool/initapp.h"
+#include "cstool/simplestaticlighter.h"
+#include "celtool/persisthelper.h"
+#include "physicallayer/pl.h"
+#include "tools/parameters.h"
+
 #include <csgeom/math3d.h>
 #include "camerawin.h"
 #include "selection.h"
 #include "common/worldload.h"
 #include "transformtools.h"
 
-#include "celtool/persisthelper.h"
-#include "physicallayer/pl.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
  * missing csMouseEventHelper symbols. */
@@ -507,6 +510,10 @@ bool AresEdit3DView::Setup ()
 
   cfgmgr = csQueryRegistry<iConfigManager> (r);
   if (!cfgmgr) return app->ReportError ("Failed to locate the configuration manager plugin!");
+
+  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      r, "cel.parameters.manager");
+  pm->SetRememberExpression (true);
 
   zoneEntity = pl->CreateEntity ("zone", 0, 0,
       "pcworld.dynamic", CEL_PROPCLASS_END);

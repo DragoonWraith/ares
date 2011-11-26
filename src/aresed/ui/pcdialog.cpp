@@ -325,13 +325,11 @@ void PropertyClassDialog::OnWireMessageSelected (wxListEvent& event)
     csStringID parid;
     csRef<iParameter> par = it.Next (parid);
 
-    // @@@ No support for expressions for now.
     csString name = pl->FetchString (parid);
     if (name == "msgid") continue;	// Ignore this one.
     if (name == "entity") continue;	// Ignore this one.
-    const celData* parData = par->GetData (0);
-    csString val = par->Get (0);
-    csString type = TypeToString (parData->type);
+    csString val = par->GetOriginalExpression ();
+    csString type = TypeToString (par->GetPossibleType ());
     ListCtrlTools::AddRow (parList, name.GetData (), val.GetData (), type.GetData (), 0);
   }
 }
@@ -400,8 +398,6 @@ void PropertyClassDialog::UpdateWire ()
     {
       csStringID parid;
       csRef<iParameter> par = it.Next (parid);
-
-      // @@@ No support for expressions for now.
       params.Put (parid, par);
     }
 
@@ -444,9 +440,8 @@ void PropertyClassDialog::FillWire ()
       {
 	csStringID parid;
 	iParameter* par = params->Next (parid);
-	// @@@ No support for expressions.
-	if (parid == msgID) msgName = par->Get (0);
-	else if (parid == entityID) entName = par->Get (0);
+	if (parid == msgID) msgName = par->GetOriginalExpression ();
+	else if (parid == entityID) entName = par->GetOriginalExpression ();
 	paramsHash.Put (parid, par);
       }
       wireParams.Put (msgName, paramsHash);
@@ -610,8 +605,7 @@ void PropertyClassDialog::FillSpawn ()
       {
 	csStringID parid;
 	iParameter* par = params->Next (parid);
-	// @@@ No support for expressions.
-	if (parid == tplID) tplName = par->Get (0);
+	if (parid == tplID) tplName = par->GetOriginalExpression ();
       }
       if (!tplName.IsEmpty ())
         ListCtrlTools::AddRow (list, tplName.GetData (), 0);
@@ -739,12 +733,10 @@ void PropertyClassDialog::FillQuest ()
     {
       csStringID parid;
       iParameter* par = parit->Next (parid);
-      // @@@ No support for expressions for now.
       csString name = pl->FetchString (parid);
       if (name == "name") continue;	// Ignore this one.
-      const celData* parData = par->GetData (0);
-      csString val = par->Get (0);
-      csString type = TypeToString (parData->type);
+      csString val = par->GetOriginalExpression ();
+      csString type = TypeToString (par->GetPossibleType ());
       ListCtrlTools::AddRow (parList, name.GetData (), val.GetData (), type.GetData (), 0);
     }
   }
@@ -756,7 +748,7 @@ void PropertyClassDialog::OnInvTemplateSelected (wxListEvent& event)
 {
   invSelIndex = event.GetIndex ();
   FillFieldsFromRow ("inventoryTemplateListCtrl", "inventoryTemplateNameText",
-      "inventoryTemplateValueText", 0,
+      "inventoryTemplateAmountText", 0,
       "inventoryTemplateDeleteButton", invSelIndex);
 }
 
@@ -844,9 +836,8 @@ void PropertyClassDialog::FillInventory ()
       {
 	csStringID parid;
 	iParameter* par = params->Next (parid);
-	// @@@ No support for expressions.
-	if (parid == nameID) parName = par->Get (0);
-	else if (parid == amountID) parAmount = par->Get (0);
+	if (parid == nameID) parName = par->GetOriginalExpression ();
+	else if (parid == amountID) parAmount = par->GetOriginalExpression ();
       }
       ListCtrlTools::AddRow (list, parName.GetData (), parAmount.GetData (), 0);
     }
