@@ -282,12 +282,14 @@ void GraphView::Render3D ()
     if (l.arrow)
     {
       csVector2 c = (pos1+pos2)/2.0f;
-      int dx = (pos2.x-pos1.x) / 10;
-      int dy = (pos2.y-pos1.y) / 10;
-      int dxr = -(pos2.y-pos1.y) / 10;
-      int dyr = (pos2.x-pos1.x) / 10;
-      pen->DrawLine (c.x, c.y, c.x-dx+dxr, c.y-dy+dyr);
-      pen->DrawLine (c.x, c.y, c.x-dx-dxr, c.y-dy-dyr);
+      int dx = pos2.x-pos1.x;
+      int dy = pos2.y-pos1.y;
+      int dxr = -(pos2.y-pos1.y);
+      int dyr = pos2.x-pos1.x;
+      csVector2 r1 (-dx+dxr, -dy+dyr); r1.Normalize (); r1 *= 10.0f;
+      csVector2 r2 (-dx-dxr, -dy-dyr); r2.Normalize (); r2 *= 10.0f;
+      pen->DrawLine (c.x, c.y, c.x+r1.x, c.y+r1.y);
+      pen->DrawLine (c.x, c.y, c.x+r2.x, c.y+r2.y);
     }
   }
 }

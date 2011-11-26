@@ -100,6 +100,28 @@ void EntityMode::InitColors ()
 
   iMarkerColor* textColor = NewColor ("viewWhite", .7, .7, .7, 1, 1, 1, false);
 
+  iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
+  thickLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
+  thickLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
+  thickLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
+  thickLinkColor->SetPenWidth (SELECTION_NONE, 1.2f);
+  thickLinkColor->SetPenWidth (SELECTION_SELECTED, 2.0f);
+  thickLinkColor->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+  iMarkerColor* thinLinkColor = mgr->CreateMarkerColor ("thinLink");
+  thinLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
+  thinLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
+  thinLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
+  thinLinkColor->SetPenWidth (SELECTION_NONE, 0.8f);
+  thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.8f);
+  thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.8f);
+  iMarkerColor* arrowLinkColor = mgr->CreateMarkerColor ("arrowLink");
+  arrowLinkColor->SetRGBColor (SELECTION_NONE, 0, .5, .5, .5);
+  arrowLinkColor->SetRGBColor (SELECTION_SELECTED, 0, 1, 1, .5);
+  arrowLinkColor->SetRGBColor (SELECTION_ACTIVE, 0, 1, 1, .5);
+  arrowLinkColor->SetPenWidth (SELECTION_NONE, 0.5f);
+  arrowLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
+  arrowLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
+
   styleTemplate = mgr->CreateGraphNodeStyle ();
   styleTemplate->SetBorderColor (NewColor ("templateColorFG", .7, .7, .7, 1, 1, 1, false));
   styleTemplate->SetBackgroundColor (NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true));
@@ -127,29 +149,14 @@ void EntityMode::InitColors ()
   styleReward->SetRoundness (1);
   styleReward->SetTextColor (textColor);
 
-  view->SetDefaultNodeStyle (stylePC);
+  styleInvisible = mgr->CreateGraphNodeStyle ();
+  styleInvisible->SetBorderColor (arrowLinkColor);
+  styleInvisible->SetBackgroundColor (arrowLinkColor);
+  styleInvisible->SetRoundness (1);
+  styleInvisible->SetTextColor (arrowLinkColor);
+  styleInvisible->SetWeightFactor (0.2f);
 
-  iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
-  thickLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
-  thickLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
-  thickLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
-  thickLinkColor->SetPenWidth (SELECTION_NONE, 1.2f);
-  thickLinkColor->SetPenWidth (SELECTION_SELECTED, 2.0f);
-  thickLinkColor->SetPenWidth (SELECTION_ACTIVE, 2.0f);
-  iMarkerColor* thinLinkColor = mgr->CreateMarkerColor ("thinLink");
-  thinLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
-  thinLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
-  thinLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
-  thinLinkColor->SetPenWidth (SELECTION_NONE, 0.8f);
-  thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.8f);
-  thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.8f);
-  iMarkerColor* arrowLinkColor = mgr->CreateMarkerColor ("arrowLink");
-  arrowLinkColor->SetRGBColor (SELECTION_NONE, 0, .5, .5, .5);
-  arrowLinkColor->SetRGBColor (SELECTION_SELECTED, 0, 1, 1, .5);
-  arrowLinkColor->SetRGBColor (SELECTION_ACTIVE, 0, 1, 1, .5);
-  arrowLinkColor->SetPenWidth (SELECTION_NONE, 0.5f);
-  arrowLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
-  arrowLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
+  view->SetDefaultNodeStyle (stylePC);
 
   styleThickLink = mgr->CreateGraphLinkStyle ();
   styleThickLink->SetColor (thickLinkColor);
@@ -158,6 +165,8 @@ void EntityMode::InitColors ()
   styleArrowLink = mgr->CreateGraphLinkStyle ();
   styleArrowLink->SetColor (arrowLinkColor);
   styleArrowLink->SetArrow (true);
+  styleArrow0Link = mgr->CreateGraphLinkStyle ();
+  styleArrow0Link->SetColor (arrowLinkColor);
 
   view->SetDefaultLinkStyle (styleThickLink);
 }
@@ -299,7 +308,25 @@ void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
     {
       // @@@ No support for expressions here!
       csString stateKey; stateKey.Format ("S:%s,%s", newState->GetStateParameter (), pcKey);
-      view->LinkNode (rewKey, stateKey, styleArrowLink);
+      csString i1; i1.Format (".:%s:%s:1", rewKey.GetData (), stateKey.GetData ());
+      csString i2; i2.Format (".:%s:%s:2", rewKey.GetData (), stateKey.GetData ());
+      csString i3; i3.Format (".:%s:%s:3", rewKey.GetData (), stateKey.GetData ());
+      csString i4; i4.Format (".:%s:%s:4", rewKey.GetData (), stateKey.GetData ());
+      csString i5; i5.Format (".:%s:%s:5", rewKey.GetData (), stateKey.GetData ());
+      csString i6; i6.Format (".:%s:%s:6", rewKey.GetData (), stateKey.GetData ());
+      view->CreateNode (i1, "", styleInvisible);
+      view->CreateNode (i2, "", styleInvisible);
+      view->CreateNode (i3, "", styleInvisible);
+      view->CreateNode (i4, "", styleInvisible);
+      view->CreateNode (i5, "", styleInvisible);
+      view->CreateNode (i6, "", styleInvisible);
+      view->LinkNode (rewKey, i1, styleArrow0Link);
+      view->LinkNode (i1, i2, styleArrow0Link);
+      view->LinkNode (i2, i3, styleArrow0Link);
+      view->LinkNode (i3, i4, styleArrowLink);
+      view->LinkNode (i4, i5, styleArrow0Link);
+      view->LinkNode (i5, i6, styleArrow0Link);
+      view->LinkNode (i6, stateKey, styleArrow0Link);
     }
   }
 }
