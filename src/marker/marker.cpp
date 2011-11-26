@@ -49,6 +49,28 @@ static float SqDistance2d (const csVector2& p1, const csVector2& p2)
 
 //--------------------------------------------------------------------------------
 
+class GraphLinkStyle : public scfImplementation1<GraphLinkStyle, iGraphLinkStyle>
+{
+private:
+  iMarkerColor* color;
+  bool arrow;
+  float strength;
+
+public:
+  GraphLinkStyle () : scfImplementationType (this),
+    color (0), arrow (false), strength (1.0f) { }
+  virtual ~GraphLinkStyle () { }
+
+  virtual void SetColor (iMarkerColor* color) { GraphLinkStyle::color = color; }
+  virtual iMarkerColor* GetColor () const { return color; }
+  virtual void SetArrow (bool a) { arrow = a; }
+  virtual bool IsArrow () const { return arrow; }
+  virtual void SetLinkStrength (float w) { strength = w; }
+  virtual float GetLinkStrength () const { return strength; }
+};
+
+//--------------------------------------------------------------------------------
+
 class GraphNodeStyle : public scfImplementation1<GraphNodeStyle, iGraphNodeStyle>
 {
 private:
@@ -56,10 +78,11 @@ private:
   iMarkerColor* bgColor;
   iMarkerColor* textColor;
   int roundness;
+  float weightFactor;
 
 public:
   GraphNodeStyle () : scfImplementationType (this),
-    fgColor (0), bgColor (0), textColor (0), roundness (10) { }
+    fgColor (0), bgColor (0), textColor (0), roundness (10), weightFactor (1.0f) { }
   virtual ~GraphNodeStyle () { }
 
   virtual void SetBorderColor (iMarkerColor* color) { fgColor = color; }
@@ -70,6 +93,8 @@ public:
   virtual iMarkerColor* GetTextColor () const { return textColor; }
   virtual void SetRoundness (int roundness) { GraphNodeStyle::roundness = roundness; }
   virtual int GetRoundness () const { return roundness; }
+  virtual void SetWeightFactor (float w) { weightFactor = w; }
+  virtual float GetWeightFactor () const { return weightFactor; }
 };
 
 //--------------------------------------------------------------------------------
@@ -149,7 +174,7 @@ void GraphView::HandlePushingForces ()
 	const csVector2& pos2 = node2.marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
 	if (sqdist < .0001) sqdist = .0001;
-	node.netForce += (pos-pos2) * nodeForceFactor / sqdist;
+	node.netForce += (pos-pos2) * node2.weightFactor * nodeForceFactor / sqdist;
       }
     }
   }
@@ -168,7 +193,7 @@ void GraphView::HandlePullingLinks ()
     {
       const csVector2& pos1 = node1.marker->GetPosition ();
       const csVector2& pos2 = node2.marker->GetPosition ();
-      csVector2 force = (pos2-pos1) * linkForceFactor;
+      csVector2 force = (pos2-pos1) * l.strength * linkForceFactor;
       node1.netForce += force;
       node2.netForce -= force;
     }
@@ -251,7 +276,6 @@ void GraphView::Render3D ()
     csVector2 pos1 = node1.marker->GetPosition ();
     csVector2 pos2 = node2.marker->GetPosition ();
     iMarkerColor* color = l.color;
-    if (!color) color = linkColor;
     csPen* pen = static_cast<MarkerColor*> (color)->GetPen (1);
     pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
 
@@ -324,6 +348,19 @@ public:
   }
 };
 
+void GraphView::LinkNode (const char* node1, const char* node2,
+      iGraphLinkStyle* style)
+{
+  if (!style) style = defaultLinkStyle;
+  GraphLink l;
+  l.node1 = node1;
+  l.node2 = node2;
+  l.color = style->GetColor ();
+  l.arrow = style->IsArrow ();
+  l.strength = style->GetLinkStrength ();
+  links.Push (l);
+}
+
 void GraphView::CreateNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
@@ -344,6 +381,7 @@ void GraphView::CreateNode (const char* name, const char* label,
     if (ww > w) w = ww;
   }
   w += 10;
+  if (*label == 0) w = h = 1;
 
   int w2 = w / 2;
   int h2 = h / 2;
@@ -369,6 +407,7 @@ void GraphView::CreateNode (const char* name, const char* label,
   node.marker = marker;
   node.velocity.Set (0, 0);
   node.size = csVector2 (w, h);
+  node.weightFactor = style->GetWeightFactor ();
   nodes.Put (name, node);
 }
 
@@ -1217,6 +1256,12 @@ void MarkerManager::DestroyGraphView (iGraphView* view)
 csPtr<iGraphNodeStyle> MarkerManager::CreateGraphNodeStyle ()
 {
   GraphNodeStyle* style = new GraphNodeStyle ();
+  return style;
+}
+
+csPtr<iGraphLinkStyle> MarkerManager::CreateGraphLinkStyle ()
+{
+  GraphLinkStyle* style = new GraphLinkStyle ();
   return style;
 }
 

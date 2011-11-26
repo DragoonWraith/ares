@@ -62,6 +62,9 @@ private:
   csRef<iGraphNodeStyle> styleState;
   csRef<iGraphNodeStyle> styleResponse;
   csRef<iGraphNodeStyle> styleReward;
+  csRef<iGraphLinkStyle> styleThickLink;
+  csRef<iGraphLinkStyle> styleThinLink;
+  csRef<iGraphLinkStyle> styleArrowLink;
 
   iGraphView* view;
   iMarkerColor* NewColor (const char* name,

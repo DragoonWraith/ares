@@ -136,14 +136,14 @@ void EntityMode::InitColors ()
   thickLinkColor->SetPenWidth (SELECTION_NONE, 1.2f);
   thickLinkColor->SetPenWidth (SELECTION_SELECTED, 2.0f);
   thickLinkColor->SetPenWidth (SELECTION_ACTIVE, 2.0f);
-  thinLinkColor = mgr->CreateMarkerColor ("thinLink");
+  iMarkerColor* thinLinkColor = mgr->CreateMarkerColor ("thinLink");
   thinLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
   thinLinkColor->SetRGBColor (SELECTION_SELECTED, 1, 1, 0, .5);
   thinLinkColor->SetRGBColor (SELECTION_ACTIVE, 1, 1, 0, .5);
   thinLinkColor->SetPenWidth (SELECTION_NONE, 0.8f);
   thinLinkColor->SetPenWidth (SELECTION_SELECTED, 0.8f);
   thinLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.8f);
-  arrowLinkColor = mgr->CreateMarkerColor ("arrowLink");
+  iMarkerColor* arrowLinkColor = mgr->CreateMarkerColor ("arrowLink");
   arrowLinkColor->SetRGBColor (SELECTION_NONE, 0, .5, .5, .5);
   arrowLinkColor->SetRGBColor (SELECTION_SELECTED, 0, 1, 1, .5);
   arrowLinkColor->SetRGBColor (SELECTION_ACTIVE, 0, 1, 1, .5);
@@ -151,7 +151,15 @@ void EntityMode::InitColors ()
   arrowLinkColor->SetPenWidth (SELECTION_SELECTED, 0.5f);
   arrowLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
 
-  view->SetLinkColor (thickLinkColor);
+  styleThickLink = mgr->CreateGraphLinkStyle ();
+  styleThickLink->SetColor (thickLinkColor);
+  styleThinLink = mgr->CreateGraphLinkStyle ();
+  styleThinLink->SetColor (thinLinkColor);
+  styleArrowLink = mgr->CreateGraphLinkStyle ();
+  styleArrowLink->SetColor (arrowLinkColor);
+  styleArrowLink->SetArrow (true);
+
+  view->SetDefaultLinkStyle (styleThickLink);
 }
 
 void EntityMode::SetupItems ()
@@ -284,14 +292,14 @@ void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
     csString rewKey; rewKey.Format ("r:%d,%s", j, parentKey);
     csString rewLabel; rewLabel.Format ("%d:%s", j+1, GetRewardType (reward));
     view->CreateNode (rewKey, rewLabel, styleReward);
-    view->LinkNode (parentKey, rewKey, thinLinkColor);
+    view->LinkNode (parentKey, rewKey, styleThinLink);
 
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     if (newState)
     {
       // @@@ No support for expressions here!
       csString stateKey; stateKey.Format ("S:%s,%s", newState->GetStateParameter (), pcKey);
-      view->LinkNode (rewKey, stateKey, arrowLinkColor, true);
+      view->LinkNode (rewKey, stateKey, styleArrowLink);
     }
   }
 }

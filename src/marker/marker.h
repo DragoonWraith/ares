@@ -303,7 +303,8 @@ struct GraphNode
   csVector2 velocity, netForce;
   bool frozen;
   csVector2 size;
-  GraphNode () : marker (0), frozen (false) { }
+  float weightFactor;
+  GraphNode () : marker (0), frozen (false), weightFactor (1.0f) { }
 };
 
 struct GraphLink
@@ -312,7 +313,8 @@ struct GraphLink
   csString node2;
   iMarkerColor* color;
   bool arrow;
-  GraphLink () : color (0), arrow (false) { }
+  float strength;
+  GraphLink () : color (0), arrow (false), strength (1.0f) { }
 };
 
 class GraphView : public scfImplementation1<GraphView, iGraphView>
@@ -333,8 +335,8 @@ private:
   // Force with which links pull the two nodes together.
   float linkForceFactor;
 
-  iMarkerColor* linkColor;
   csRef<iGraphNodeStyle> defaultStyle;
+  csRef<iGraphLinkStyle> defaultLinkStyle;
 
   bool IsLinked (const char* n1, const char* n2);
 
@@ -358,9 +360,9 @@ public:
 
   void SetDraggingMarker (iMarker* marker) { draggingMarker = marker; }
 
-  virtual void SetLinkColor (iMarkerColor* linkColor)
+  virtual void SetDefaultLinkStyle (iGraphLinkStyle* style)
   {
-    GraphView::linkColor = linkColor;
+    defaultLinkStyle = style;
   }
   virtual void SetDefaultNodeStyle (iGraphNodeStyle* style)
   {
@@ -374,15 +376,7 @@ public:
       iGraphNodeStyle* style = 0);
   virtual void RemoveNode (const char* name);
   virtual void LinkNode (const char* node1, const char* node2,
-      iMarkerColor* color = 0, bool arrow = false)
-  {
-    GraphLink l;
-    l.node1 = node1;
-    l.node2 = node2;
-    l.color = color;
-    l.arrow = arrow;
-    links.Push (l);
-  }
+      iGraphLinkStyle* style = 0);
   virtual void RemoveLink (const char* node1, const char* node2)
   {
     size_t i = 0;
@@ -490,6 +484,7 @@ public:
   virtual iGraphView* CreateGraphView ();
   virtual void DestroyGraphView (iGraphView* view);
   virtual csPtr<iGraphNodeStyle> CreateGraphNodeStyle ();
+  virtual csPtr<iGraphLinkStyle> CreateGraphLinkStyle ();
 
   iMarkerHitArea* FindHitArea (int x, int y);
 };

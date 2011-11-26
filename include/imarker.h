@@ -302,6 +302,34 @@ struct iMarker : public virtual iBase
 };
 
 /**
+ * A style for a given link.
+ */
+struct iGraphLinkStyle : public virtual iBase
+{
+  SCF_INTERFACE(iGraphLinkStyle,0,0,1);
+
+  /**
+   * Set the color.
+   */
+  virtual void SetColor (iMarkerColor* color) = 0;
+  virtual iMarkerColor* GetColor () const = 0;
+
+  /**
+   * Enable an arrow on this link.
+   */
+  virtual void SetArrow (bool a) = 0;
+  virtual bool IsArrow () const = 0;
+
+  /**
+   * Set the factor with which this links pulls the two
+   * nodes to each other. Default is 1.0f. If set to 0.0f
+   * this link will not pull at all.
+   */
+  virtual void SetLinkStrength (float w) = 0;
+  virtual float GetLinkStrength () const = 0;
+};
+
+/**
  * A style for a given graph node.
  */
 struct iGraphNodeStyle : public virtual iBase
@@ -331,6 +359,14 @@ struct iGraphNodeStyle : public virtual iBase
    */
   virtual void SetRoundness (int roundness) = 0;
   virtual int GetRoundness () const = 0;
+
+  /**
+   * Set the factor with which other nodes are affected
+   * by this node. Default is 1.0f. If set to 0.0f other nodes
+   * are not affected by this node at all.
+   */
+  virtual void SetWeightFactor (float w) = 0;
+  virtual float GetWeightFactor () const = 0;
 };
 
 /**
@@ -341,9 +377,9 @@ struct iGraphView : public virtual iBase
   SCF_INTERFACE(iGraphView,0,0,1);
 
   /**
-   * Set the color scheme.
+   * Set the default link style.
    */
-  virtual void SetLinkColor (iMarkerColor* linkColor) = 0;
+  virtual void SetDefaultLinkStyle (iGraphLinkStyle* style) = 0;
 
   /**
    * Set the default node style.
@@ -379,8 +415,7 @@ struct iGraphView : public virtual iBase
   /**
    * Link two nodes.
    */
-  virtual void LinkNode (const char* node1, const char* node2,
-      iMarkerColor* color = 0, bool arrow = false) = 0;
+  virtual void LinkNode (const char* node1, const char* node2, iGraphLinkStyle* style = 0) = 0;
 
   /**
    * Remove all links between two nodes.
@@ -472,6 +507,11 @@ struct iMarkerManager : public virtual iBase
    * Create a graph node style.
    */
   virtual csPtr<iGraphNodeStyle> CreateGraphNodeStyle () = 0;
+
+  /**
+   * Create a graph link style.
+   */
+  virtual csPtr<iGraphLinkStyle> CreateGraphLinkStyle () = 0;
 };
 
 #endif // __ARES_MARKER_H__
