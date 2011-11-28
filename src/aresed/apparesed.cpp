@@ -1200,7 +1200,7 @@ bool AppAresEditWX::LoadResourceFile (const char* filename, wxString& searchPath
   wxString resourceLocation;
   wxFileSystem wxfs;
   if (!wxfs.FindFileInPath (&resourceLocation, searchPath,
-	wxString (filename, wxConvUTF8))
+	wxString::FromUTF8 (filename))
       || !wxXmlResource::Get ()->Load (resourceLocation))
     return ReportError ("Could not load XRC resource file: %s!", filename);
   return true;
@@ -1369,7 +1369,7 @@ void AppAresEditWX::SetStatus (const char* statusmsg, ...)
   str.FormatV (statusmsg, args);
   va_end (args);
   if (GetStatusBar ())
-    GetStatusBar ()->SetStatusText (wxString (str, wxConvUTF8), 0);
+    GetStatusBar ()->SetStatusText (wxString::FromUTF8 (str), 0);
 }
 
 void AppAresEditWX::ClearStatus ()
@@ -1487,7 +1487,7 @@ void AppAresEditWX::OnShow (wxShowEvent& event)
 
 static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
 {
-  wxString iname (name, wxConvUTF8);
+  wxString iname = wxString::FromUTF8 (name);
   for (size_t i = 0 ; i < notebook->GetPageCount () ; i++)
   {
     wxString pageName = notebook->GetPageText (i);

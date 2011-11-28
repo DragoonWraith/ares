@@ -60,14 +60,14 @@ long ListCtrlTools::FindRow (wxListCtrl* list, int col, const char* value)
 
 long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
 {
-  long idx = list->InsertItem (list->GetItemCount (), wxString (value, wxConvUTF8));
+  long idx = list->InsertItem (list->GetItemCount (), wxString::FromUTF8 (value));
   int col = 1;
   va_list args;
   va_start (args, value);
   const char* value2 = va_arg (args, char*);
   while (value2 != 0)
   {
-    list->SetItem (idx, col++, wxString (value2, wxConvUTF8));
+    list->SetItem (idx, col++, wxString::FromUTF8 (value2));
     value2 = va_arg (args, char*);
   }
   for (int i = 0 ; i < col ; i++)
@@ -78,14 +78,14 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
 void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const char* value, ...)
 {
   list->DeleteItem (idx);
-  list->InsertItem (idx, wxString (value, wxConvUTF8));
+  list->InsertItem (idx, wxString::FromUTF8 (value));
   int col = 1;
   va_list args;
   va_start (args, value);
   const char* value2 = va_arg (args, char*);
   while (value2 != 0)
   {
-    list->SetItem (idx, col++, wxString (value2, wxConvUTF8));
+    list->SetItem (idx, col++, wxString::FromUTF8 (value2));
     value2 = va_arg (args, char*);
   }
   for (int i = 0 ; i < col ; i++)
@@ -130,7 +130,7 @@ void ListCtrlTools::SetColumn (wxListCtrl* list, int idx, const char* name, int 
   colPath.SetId (idx);
   csString name2 = name;
   name2 += "            ";
-  colPath.SetText (wxString (name2, wxConvUTF8));
+  colPath.SetText (wxString::FromUTF8 (name2));
   colPath.SetWidth (width);
   list->InsertColumn (idx, colPath);
 }

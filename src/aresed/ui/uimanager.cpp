@@ -62,7 +62,7 @@ void UIManager::Message (const char* description, ...)
   va_start (args, description);
   csString msg;
   msg.FormatV (description, args);
-  wxMessageBox (wxString (msg, wxConvUTF8), wxT("Message"),
+  wxMessageBox (wxString::FromUTF8 (msg), wxT("Message"),
       wxICON_INFORMATION, parent);
   va_end (args);
 }
@@ -73,7 +73,7 @@ void UIManager::Error (const char* description, ...)
   va_start (args, description);
   csString msg;
   msg.FormatV (description, args);
-  wxMessageBox (wxString (msg, wxConvUTF8), wxT("Error!"),
+  wxMessageBox (wxString::FromUTF8 (msg), wxT("Error!"),
       wxICON_ERROR, parent);
   va_end (args);
 }

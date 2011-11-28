@@ -165,7 +165,7 @@ void PropertyClassDialog::Show (PCEditCallback* cb)
 
 static size_t FindNotebookPage (wxChoicebook* book, const char* name)
 {
-  wxString iname (name, wxConvUTF8);
+  wxString iname = wxString::FromUTF8 (name);
   for (size_t i = 0 ; i < book->GetPageCount () ; i++)
   {
     wxString pageName = book->GetPageText (i);
@@ -180,15 +180,15 @@ void PropertyClassDialog::AddRowFromInput (const char* listComp,
     const char* nameComp, const char* valueComp, const char* typeComp)
 {
   wxTextCtrl* nameText = (wxTextCtrl*)FindWindowByName (
-      wxString (nameComp, wxConvUTF8));
+      wxString::FromUTF8 (nameComp));
   wxTextCtrl* valueText = 0;
   if (valueComp) valueText = (wxTextCtrl*)FindWindowByName (
-      wxString (valueComp, wxConvUTF8));
+      wxString::FromUTF8 (valueComp));
   wxChoice* typeChoice = 0;
   if (typeComp) typeChoice = (wxChoice*)FindWindowByName (
-      wxString (typeComp, wxConvUTF8));
+      wxString::FromUTF8 (typeComp));
   wxListCtrl* list = (wxListCtrl*)FindWindowByName (
-      wxString (listComp, wxConvUTF8));
+      wxString::FromUTF8 (listComp));
 
   csString name = (const char*)nameText->GetValue ().mb_str (wxConvUTF8);
   csString value;
@@ -225,26 +225,26 @@ void PropertyClassDialog::FillFieldsFromRow (const char* listComp,
     long selIndex)
 {
   wxButton* delButton = (wxButton*)FindWindowByName (
-      wxString (delComp, wxConvUTF8));
+      wxString::FromUTF8 (delComp));
   delButton->Enable ();
 
   wxTextCtrl* nameText = (wxTextCtrl*)FindWindowByName (
-      wxString (nameComp, wxConvUTF8));
+      wxString::FromUTF8 (nameComp));
   wxTextCtrl* valueText = 0;
   if (valueComp) valueText = (wxTextCtrl*)FindWindowByName (
-      wxString (valueComp, wxConvUTF8));
+      wxString::FromUTF8 (valueComp));
   wxChoice* typeChoice = 0;
   if (typeComp) typeChoice = (wxChoice*)FindWindowByName (
-      wxString (typeComp, wxConvUTF8));
+      wxString::FromUTF8 (typeComp));
   wxListCtrl* list = (wxListCtrl*)FindWindowByName (
-      wxString (listComp, wxConvUTF8));
+      wxString::FromUTF8 (listComp));
 
   csStringArray row = ListCtrlTools::ReadRow (list, selIndex);
-  nameText->SetValue (wxString (row[0], wxConvUTF8));
+  nameText->SetValue (wxString::FromUTF8 (row[0]));
   if (valueComp)
-    valueText->SetValue (wxString (row[1], wxConvUTF8));
+    valueText->SetValue (wxString::FromUTF8 (row[1]));
   if (typeComp)
-    typeChoice->SetStringSelection (wxString (row[2], wxConvUTF8));
+    typeChoice->SetStringSelection (wxString::FromUTF8 (row[2]));
 }
 
 // -----------------------------------------------------------------------
@@ -433,7 +433,7 @@ void PropertyClassDialog::FillWire ()
 
   csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl,
       "AddInput", "mask");
-  inputMaskText->SetValue (wxString (inputMask, wxConvUTF8));
+  inputMaskText->SetValue (wxString::FromUTF8 (inputMask));
 
   for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
   {
@@ -600,14 +600,14 @@ void PropertyClassDialog::FillSpawn ()
   if (valid)
   {
     csString s; s.Format ("%ld", mindelay);
-    minDelayText->SetValue (wxString (s, wxConvUTF8));
+    minDelayText->SetValue (wxString::FromUTF8 (s));
   }
   long maxdelay = InspectTools::GetActionParameterValueLong (pl, pctpl,
       "SetTiming", "maxdelay", &valid);
   if (valid)
   {
     csString s; s.Format ("%ld", maxdelay);
-    maxDelayText->SetValue (wxString (s, wxConvUTF8));
+    maxDelayText->SetValue (wxString::FromUTF8 (s));
   }
 
   bool unique = InspectTools::GetPropertyValueBool (pl, pctpl, "spawnunique");
@@ -620,7 +620,7 @@ void PropertyClassDialog::FillSpawn ()
   if (valid)
   {
     csString s; s.Format ("%ld", inhibit);
-    inhibitText->SetValue (wxString (s, wxConvUTF8));
+    inhibitText->SetValue (wxString::FromUTF8 (s));
   }
 
   for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
@@ -737,7 +737,7 @@ void PropertyClassDialog::FillQuest ()
       "NewQuest", "name");
   if (questName.IsEmpty ()) return;
 
-  text->SetValue (wxString (questName, wxConvUTF8));
+  text->SetValue (wxString::FromUTF8 (questName));
 
   csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
     uiManager->GetApp ()->GetObjectRegistry (),
@@ -755,7 +755,7 @@ void PropertyClassDialog::FillQuest ()
   while (it->HasNext ())
   {
     iQuestStateFactory* stateFact = it->Next ();
-    states.Add (wxString (stateFact->GetName (), wxConvUTF8));
+    states.Add (wxString::FromUTF8 (stateFact->GetName ()));
     if (defaultState == stateFact->GetName ()) selIdx = i;
     i++;
   }
@@ -896,7 +896,7 @@ void PropertyClassDialog::FillInventory ()
 
   csString lootName = InspectTools::GetActionParameterValueString (pl, pctpl,
       "SetLootGenerator", "name");
-  lootText->SetValue (wxString (lootName, wxConvUTF8));
+  lootText->SetValue (wxString::FromUTF8 (lootName));
 }
 
 // -----------------------------------------------------------------------
@@ -1055,7 +1055,7 @@ void PropertyClassDialog::SwitchToPC (iCelEntityTemplate* tpl,
     book->ChangeSelection (pageIdx);
 
     wxTextCtrl* text = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
-    text->SetValue (wxString (tagName, wxConvUTF8));
+    text->SetValue (wxString::FromUTF8 (tagName));
   }
 
   FillProperties ();

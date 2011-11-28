@@ -164,10 +164,10 @@ void MainMode::SetupItems (const csHash<csStringArray,csString>& items)
   {
     csString category;
     csStringArray items = it.Next (category);
-    wxTreeItemId categoryId = tree->AppendItem (rootId, wxString (category, wxConvUTF8));
+    wxTreeItemId categoryId = tree->AppendItem (rootId, wxString::FromUTF8 (category));
     for (size_t i = 0 ; i < items.GetSize () ; i++)
     {
-      wxTreeItemId itemId = tree->AppendItem (categoryId, wxString (items[i], wxConvUTF8));
+      wxTreeItemId itemId = tree->AppendItem (categoryId, wxString::FromUTF8 (items[i]));
     }
   }
 

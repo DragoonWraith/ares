@@ -133,8 +133,8 @@ void NewProjectDialog::SetPathFile (const char* path, const char* file)
 {
   wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
-  pathText->SetValue (wxString (path, wxConvUTF8));
-  fileText->SetValue (wxString (file, wxConvUTF8));
+  pathText->SetValue (wxString::FromUTF8 (path));
+  fileText->SetValue (wxString::FromUTF8 (file));
 
   wxStaticText* contents = XRCCTRL (*this, "contentsStaticText", wxStaticText);
 
@@ -184,7 +184,7 @@ void NewProjectDialog::SetPathFile (const char* path, const char* file)
   {
     msg = "File can't load...";
   }
-  contents->SetLabel (wxString (msg.GetData (), wxConvUTF8));
+  contents->SetLabel (wxString::FromUTF8 (msg.GetData ()));
   vfs->PopDir ();
 }
 

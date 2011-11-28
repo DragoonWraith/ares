@@ -180,7 +180,7 @@ void EntityMode::SetupItems ()
   for (size_t i = 0 ; i < pl->GetEntityTemplateCount () ; i++)
   {
     iCelEntityTemplate* tpl = pl->GetEntityTemplate (i);
-    wxString name = wxString (tpl->GetName (), wxConvUTF8);
+    wxString name = wxString::FromUTF8 (tpl->GetName ());
     names.Add (name);
   }
   list->InsertItems (names, 0);

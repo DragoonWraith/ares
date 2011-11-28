@@ -53,7 +53,7 @@ void FoliageMode::UpdateTypeList ()
   iNature* nature = aresed3d->GetNature ();
   for (size_t i = 0 ; i < nature->GetFoliageDensityMapCount () ; i++)
   {
-    wxString name = wxString (nature->GetFoliageDensityMapName (i), wxConvUTF8);
+    wxString name = wxString::FromUTF8 (nature->GetFoliageDensityMapName (i));
     foliage.Add (name);
   }
   foliageList->InsertItems (foliage, 0);

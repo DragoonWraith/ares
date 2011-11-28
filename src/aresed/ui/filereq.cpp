@@ -58,9 +58,9 @@ void FileReq::OnFileViewSelChange (wxCommandEvent& event)
   wxListBox* filelist = XRCCTRL (*this, "fileListBox", wxListBox);
   csString filename = (const char*)filelist->GetStringSelection ().mb_str(wxConvUTF8);
   wxTextCtrl* text = XRCCTRL (*this, "fileNameText", wxTextCtrl);
-  //wxString path (currentPath, wxConvUTF8);
-  //path.Append (wxString (filename, wxConvUTF8));
-  wxString path (filename, wxConvUTF8);
+  //wxString path = wxString::FromUTF8 (currentPath);
+  //path.Append (wxString::FromUTF8 (filename));
+  wxString path = wxString::FromUTF8 (filename);
   text->SetValue (path);
 }
 
@@ -110,12 +110,12 @@ void FileReq::StdDlgUpdateLists ()
     if (file[strlen(file)-1] == '/')
     {
       file[strlen(file)-1] = '\0';
-      wxString name = wxString (file, wxConvUTF8);
+      wxString name = wxString::FromUTF8 (file);
       dirs.Add (name);
     }
     else
     {
-      wxString name = wxString (file, wxConvUTF8);
+      wxString name = wxString::FromUTF8 (file);
       files.Add (name);
     }
   }

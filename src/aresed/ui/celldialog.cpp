@@ -99,7 +99,7 @@ void CellDialog::OnCellSelected (wxListEvent& event)
   selIndex = event.GetIndex ();
   csStringArray row = ListCtrlTools::ReadRow (list, selIndex);
   wxTextCtrl* nameText = XRCCTRL (*this, "cellNameTextCtrl", wxTextCtrl);
-  nameText->SetValue (wxString (row[0], wxConvUTF8));
+  nameText->SetValue (wxString::FromUTF8 (row[0]));
 }
 
 void CellDialog::OnCellDeselected (wxListEvent& event)
