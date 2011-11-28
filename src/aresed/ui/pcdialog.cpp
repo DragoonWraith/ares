@@ -249,7 +249,7 @@ void PropertyClassDialog::FillFieldsFromRow (const char* listComp,
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::UpdateCurrentWireParams ()
+bool PropertyClassDialog::UpdateCurrentWireParams ()
 {
   iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
@@ -268,8 +268,11 @@ void PropertyClassDialog::UpdateCurrentWireParams ()
     csString name = row[0];
     csString value = row[1];
     csString type = row[2];
-    params.Put (pl->FetchStringID (name), pm->GetParameter (value, StringToType (type)));
+    csRef<iParameter> par = pm->GetParameter (value, StringToType (type));
+    if (!par) return false;
+    params.Put (pl->FetchStringID (name), par);
   }
+  return true;
 }
 
 void PropertyClassDialog::OnWireParameterSelected (wxListEvent& event)
@@ -364,7 +367,7 @@ void PropertyClassDialog::OnWireMessageDel (wxCommandEvent& event)
   parList->DeleteAllItems ();
 }
 
-void PropertyClassDialog::UpdateWire ()
+bool PropertyClassDialog::UpdateWire ()
 {
   pctpl->SetName ("pclogic.wire");
   pctpl->RemoveAllProperties ();
@@ -374,13 +377,15 @@ void PropertyClassDialog::UpdateWire ()
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxListCtrl* outputList = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+  //wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   wxTextCtrl* inputMaskText = XRCCTRL (*this, "wireInputMaskText", wxTextCtrl);
 
   {
     ParHash params;
     csString mask = (const char*)inputMaskText->GetValue ().mb_str (wxConvUTF8);
-    params.Put (pl->FetchStringID ("mask"), pm->GetParameter (mask, CEL_DATA_STRING));
+    csRef<iParameter> par = pm->GetParameter (mask, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("mask"), par);
     pctpl->PerformAction (pl->FetchStringID ("AddInput"), params);
   }
 
@@ -390,8 +395,15 @@ void PropertyClassDialog::UpdateWire ()
     csString message = row[0];
     csString entity = row[1];
     ParHash params;
-    params.Put (pl->FetchStringID ("msgid"), pm->GetParameter (message, CEL_DATA_STRING));
-    params.Put (pl->FetchStringID ("entity"), pm->GetParameter (entity, CEL_DATA_STRING));
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (message, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("msgid"), par);
+    par = pm->GetParameter (entity, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("entity"), par);
+
     const ParHash& wparams = wireParams.Get (message, ParHash ());
     ParHash::ConstGlobalIterator it = wparams.GetIterator ();
     while (it.HasNext ())
@@ -403,7 +415,7 @@ void PropertyClassDialog::UpdateWire ()
 
     pctpl->PerformAction (pl->FetchStringID ("AddOutput"), params);
   }
-
+  return true;
 }
 
 void PropertyClassDialog::FillWire ()
@@ -480,7 +492,7 @@ void PropertyClassDialog::OnSpawnTemplateDel (wxCommandEvent& event)
   spawnSelIndex = -1;
 }
 
-void PropertyClassDialog::UpdateSpawn ()
+bool PropertyClassDialog::UpdateSpawn ()
 {
   pctpl->SetName ("pclogic.spawn");
   pctpl->RemoveAllProperties ();
@@ -505,7 +517,9 @@ void PropertyClassDialog::UpdateSpawn ()
     csStringArray row = ListCtrlTools::ReadRow (list, r);
     csString name = row[0];
     ParHash params;
-    params.Put (nameID, pm->GetParameter (name, CEL_DATA_STRING));
+    csRef<iParameter> par = pm->GetParameter (name, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (nameID, par);
     pctpl->PerformAction (actionID, params);
   }
 
@@ -513,17 +527,34 @@ void PropertyClassDialog::UpdateSpawn ()
     csString mindelay = (const char*)minDelayText->GetValue ().mb_str (wxConvUTF8);
     csString maxdelay = (const char*)maxDelayText->GetValue ().mb_str (wxConvUTF8);
     ParHash params;
-    params.Put (pl->FetchStringID ("repeat"), pm->GetParameter (repeatCB->IsChecked () ? "true" : "false", CEL_DATA_BOOL));
-    params.Put (pl->FetchStringID ("random"), pm->GetParameter (randomCB->IsChecked () ? "true" : "false", CEL_DATA_BOOL));
-    params.Put (pl->FetchStringID ("mindelay"), pm->GetParameter (mindelay, CEL_DATA_LONG));
-    params.Put (pl->FetchStringID ("maxdelay"), pm->GetParameter (maxdelay, CEL_DATA_LONG));
+    csRef<iParameter> par;
+
+    par = pm->GetParameter (repeatCB->IsChecked () ? "true" : "false", CEL_DATA_BOOL);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("repeat"), par);
+
+    par = pm->GetParameter (randomCB->IsChecked () ? "true" : "false", CEL_DATA_BOOL);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("random"), par);
+
+    par = pm->GetParameter (mindelay, CEL_DATA_LONG);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("mindelay"), par);
+
+    par = pm->GetParameter (maxdelay, CEL_DATA_LONG);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("maxdelay"), par);
+
     pctpl->PerformAction (pl->FetchStringID ("SetTiming"), params);
   }
 
   {
     csString inhibit = (const char*)inhibitText->GetValue ().mb_str (wxConvUTF8);
     ParHash params;
-    params.Put (pl->FetchStringID ("count"), pm->GetParameter (inhibit, CEL_DATA_LONG));
+    csRef<iParameter> par = pm->GetParameter (inhibit, CEL_DATA_LONG);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("count"), par);
+
     pctpl->PerformAction (pl->FetchStringID ("Inhibit"), params);
   }
 
@@ -531,6 +562,7 @@ void PropertyClassDialog::UpdateSpawn ()
   pctpl->SetProperty (pl->FetchStringID ("namecounter"), namecounterCB->IsChecked ());
 
   // @@@ TODO AddSpawnPosition
+  return true;
 }
 
 void PropertyClassDialog::FillSpawn ()
@@ -646,7 +678,7 @@ void PropertyClassDialog::OnQuestParameterDel (wxCommandEvent& event)
   questSelIndex = -1;
 }
 
-void PropertyClassDialog::UpdateQuest ()
+bool PropertyClassDialog::UpdateQuest ()
 {
   pctpl->SetName ("pclogic.quest");
   pctpl->RemoveAllProperties ();
@@ -660,10 +692,16 @@ void PropertyClassDialog::UpdateQuest ()
   wxTextCtrl* questText = XRCCTRL (*this, "questText", wxTextCtrl);
 
   csString questName = (const char*)questText->GetValue ().mb_str (wxConvUTF8);
-  if (questName.IsEmpty ()) return;
+  if (questName.IsEmpty ())
+  {
+    uiManager->Error ("Empty quest name is not allowed!");
+    return false;
+  }
 
   ParHash params;
-  params.Put (pl->FetchStringID ("name"), pm->GetParameter (questName, CEL_DATA_STRING));
+  csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
+  if (!par) return false;
+  params.Put (pl->FetchStringID ("name"), par);
   for (int r = 0 ; r < parList->GetItemCount () ; r++)
   {
     csStringArray row = ListCtrlTools::ReadRow (parList, r);
@@ -671,13 +709,16 @@ void PropertyClassDialog::UpdateQuest ()
     csString value = row[1];
     csString type = row[2];
     csStringID nameID = pl->FetchStringID (name);
-    params.Put (nameID, pm->GetParameter (value, StringToType (type)));
+    csRef<iParameter> par = pm->GetParameter (value, StringToType (type));
+    if (!par) return false;
+    params.Put (nameID, par);
   }
   pctpl->PerformAction (pl->FetchStringID ("NewQuest"), params);
 
   csString state = (const char*)stateList->GetStringSelection ().mb_str (wxConvUTF8);
   if (!state.IsEmpty ())
     pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
+  return true;
 }
 
 void PropertyClassDialog::FillQuest ()
@@ -774,7 +815,7 @@ void PropertyClassDialog::OnInventoryTemplateDel (wxCommandEvent& event)
   invSelIndex = -1;
 }
 
-void PropertyClassDialog::UpdateInventory ()
+bool PropertyClassDialog::UpdateInventory ()
 {
   pctpl->SetName ("pctools.inventory");
   pctpl->RemoveAllProperties ();
@@ -793,8 +834,16 @@ void PropertyClassDialog::UpdateInventory ()
     csString name = row[0];
     csString amount = row[1];
     ParHash params;
-    params.Put (nameID, pm->GetParameter (name, CEL_DATA_STRING));
-    params.Put (amountID, pm->GetParameter (amount, CEL_DATA_LONG));
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (name, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (nameID, par);
+
+    par = pm->GetParameter (amount, CEL_DATA_LONG);
+    if (!par) return false;
+    params.Put (amountID, par);
+
     pctpl->PerformAction (actionID, params);
   }
 
@@ -803,10 +852,12 @@ void PropertyClassDialog::UpdateInventory ()
   if (!loot.IsEmpty ())
   {
     ParHash params;
-    params.Put (nameID, pm->GetParameter (loot, CEL_DATA_STRING));
-    pctpl->PerformAction (pl->FetchStringID ("SetLootGenerator"),
-	params);
+    csRef<iParameter> par = pm->GetParameter (loot, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (nameID, par);
+    pctpl->PerformAction (pl->FetchStringID ("SetLootGenerator"), params);
   }
+  return true;
 }
 
 void PropertyClassDialog::FillInventory ()
@@ -881,7 +932,7 @@ void PropertyClassDialog::OnPropertyDel (wxCommandEvent& event)
   propSelIndex = -1;
 }
 
-void PropertyClassDialog::UpdateProperties ()
+bool PropertyClassDialog::UpdateProperties ()
 {
   pctpl->SetName ("pctools.properties");
   pctpl->RemoveAllProperties ();
@@ -903,8 +954,13 @@ void PropertyClassDialog::UpdateProperties ()
     else if (type == "vector2") pctpl->SetProperty (nameID, ToVector2 (value));
     else if (type == "vector3") pctpl->SetProperty (nameID, ToVector3 (value));
     else if (type == "color") pctpl->SetProperty (nameID, ToColor (value));
-    else printf ("Unknown type '%s'\n", type.GetData ());
+    else
+    {
+      uiManager->Error ("Unknown type '%s'\n", type.GetData ());
+      return false;
+    }
   }
+  return true;
 }
 
 void PropertyClassDialog::FillProperties ()
@@ -971,13 +1027,16 @@ bool PropertyClassDialog::UpdatePC ()
   else
     pctpl->SetTag (tag);
 
-  if (page == "pctools.properties") UpdateProperties ();
-  else if (page == "pctools.inventory") UpdateInventory ();
-  else if (page == "pclogic.wire") UpdateWire ();
-  else if (page == "pclogic.quest") UpdateQuest ();
-  else if (page == "pclogic.spawn") UpdateSpawn ();
-  else printf ("Unknown page '%s'\n", page.GetData ());
-  return true;
+  if (page == "pctools.properties") return UpdateProperties ();
+  else if (page == "pctools.inventory") return UpdateInventory ();
+  else if (page == "pclogic.wire") return UpdateWire ();
+  else if (page == "pclogic.quest") return UpdateQuest ();
+  else if (page == "pclogic.spawn") return UpdateSpawn ();
+  else
+  {
+    uiManager->Error ("Unknown property class type!");
+    return false;
+  }
 }
 
 void PropertyClassDialog::SwitchToPC (iCelEntityTemplate* tpl,

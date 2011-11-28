@@ -67,7 +67,7 @@ private:
 
   // Properties
   long propSelIndex;
-  void UpdateProperties ();
+  bool UpdateProperties ();
   void FillProperties ();
   void OnPropertyAdd (wxCommandEvent& event);
   void OnPropertyDel (wxCommandEvent& event);
@@ -76,7 +76,7 @@ private:
 
   // Inventory.
   long invSelIndex;
-  void UpdateInventory ();
+  bool UpdateInventory ();
   void FillInventory ();
   void OnInventoryTemplateAdd (wxCommandEvent& event);
   void OnInventoryTemplateDel (wxCommandEvent& event);
@@ -85,7 +85,7 @@ private:
 
   // Quest.
   long questSelIndex;
-  void UpdateQuest ();
+  bool UpdateQuest ();
   void FillQuest ();
   void OnQuestParameterAdd (wxCommandEvent& event);
   void OnQuestParameterDel (wxCommandEvent& event);
@@ -94,7 +94,7 @@ private:
 
   // Spawn.
   long spawnSelIndex;
-  void UpdateSpawn ();
+  bool UpdateSpawn ();
   void FillSpawn ();
   void OnSpawnTemplateAdd (wxCommandEvent& event);
   void OnSpawnTemplateDel (wxCommandEvent& event);
@@ -105,9 +105,9 @@ private:
   int wireMsgSelIndex;
   int wireParSelIndex;
   csHash<ParHash,csString> wireParams;
-  void UpdateWire ();
+  bool UpdateWire ();
   void FillWire ();
-  void UpdateCurrentWireParams ();
+  bool UpdateCurrentWireParams ();
   void OnWireMessageAdd (wxCommandEvent& event);
   void OnWireMessageDel (wxCommandEvent& event);
   void OnWireMessageSelected (wxListEvent& event);
