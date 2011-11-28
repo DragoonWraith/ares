@@ -112,6 +112,9 @@ BEGIN_EVENT_TABLE(PropertyClassDialog, wxDialog)
   EVT_BUTTON (XRCID("propertyDeleteButton"), PropertyClassDialog :: OnPropertyDel)
   EVT_LIST_ITEM_SELECTED (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertySelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertyDeselected)
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertyRMB)
+  EVT_MENU (ID_Prop_Add, PropertyClassDialog :: OnPropertyPopupAdd)
+  EVT_MENU (ID_Prop_Delete, PropertyClassDialog :: OnPropertyDel)
 
   EVT_BUTTON (XRCID("wireMessageAddButton"), PropertyClassDialog :: OnWireMessageAdd)
   EVT_BUTTON (XRCID("wireMessageDeleteButton"), PropertyClassDialog :: OnWireMessageDel)
@@ -913,6 +916,20 @@ void PropertyClassDialog::OnPropertyDeselected (wxListEvent& event)
 {
   wxButton* delButton = XRCCTRL (*this, "propertyDeleteButton", wxButton);
   delButton->Disable ();
+}
+
+void PropertyClassDialog::OnPropertyRMB (wxListEvent& event)
+{
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Prop_Add, wxT ("&Add"));
+  contextMenu.Append(ID_Prop_Delete, wxT ("&Delete"));
+  PopupMenu (&contextMenu);
+}
+
+void PropertyClassDialog::OnPropertyPopupAdd (wxCommandEvent& event)
+{
+  AddRowFromInput ("propertyListCtrl", "propertyNameText",
+      "propertyValueText", "propertyTypeChoice");
 }
 
 void PropertyClassDialog::OnPropertyAdd (wxCommandEvent& event)

@@ -46,6 +46,13 @@ struct PCEditCallback : public csRefCount
   virtual void OkPressed (iCelPropertyClassTemplate* pctpl) = 0;
 };
 
+enum
+{
+  ID_Prop_Add = wxID_HIGHEST + 10000,
+  ID_Prop_Delete
+};
+
+
 class PropertyClassDialog : public wxDialog
 {
 private:
@@ -71,8 +78,10 @@ private:
   void FillProperties ();
   void OnPropertyAdd (wxCommandEvent& event);
   void OnPropertyDel (wxCommandEvent& event);
+  void OnPropertyPopupAdd (wxCommandEvent& event);
   void OnPropertySelected (wxListEvent& event);
   void OnPropertyDeselected (wxListEvent& event);
+  void OnPropertyRMB (wxListEvent& event);
 
   // Inventory.
   long invSelIndex;
