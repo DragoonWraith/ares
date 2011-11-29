@@ -70,6 +70,7 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
     list->SetItem (idx, col++, wxString::FromUTF8 (value2));
     value2 = va_arg (args, char*);
   }
+  va_end (args);
   for (int i = 0 ; i < col ; i++)
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
   return idx;
@@ -88,6 +89,7 @@ void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const char* value, ..
     list->SetItem (idx, col++, wxString::FromUTF8 (value2));
     value2 = va_arg (args, char*);
   }
+  va_end (args);
   for (int i = 0 ; i < col ; i++)
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
 }
@@ -133,5 +135,10 @@ void ListCtrlTools::SetColumn (wxListCtrl* list, int idx, const char* name, int 
   colPath.SetText (wxString::FromUTF8 (name2));
   colPath.SetWidth (width);
   list->InsertColumn (idx, colPath);
+}
+
+long ListCtrlTools::GetFirstSelectedRow (wxListCtrl* list)
+{
+  return list->GetNextItem (-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 

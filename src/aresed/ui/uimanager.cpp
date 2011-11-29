@@ -38,6 +38,186 @@ THE SOFTWARE.
 #include <wx/notebook.h>
 #include <wx/xrc/xmlres.h>
 
+//------------------------------------------------------------------------------
+
+UIDialog::UIDialog (wxWindow* parent, const char* title) : wxDialog (parent, -1,
+      wxString::FromUTF8 (title))
+{
+  sizer = new wxBoxSizer (wxVERTICAL);
+  SetSizer (sizer);
+  lastRowSizer = 0;
+  okCancelAdded = false;
+}
+
+UIDialog::~UIDialog ()
+{
+  for (size_t i = 0 ; i < buttons.GetSize () ; i++)
+    buttons[i]->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
+	wxCommandEventHandler (UIDialog::OnButtonClicked), 0, this);
+}
+
+void UIDialog::AddOkCancel ()
+{
+  if (okCancelAdded) return;
+  okCancelAdded = true;
+  AddRow ();
+  AddSpace ();
+  AddButton ("Ok");
+  AddButton ("Cancel");
+}
+
+void UIDialog::AddRow ()
+{
+  lastRowSizer = new wxBoxSizer (wxHORIZONTAL);
+  sizer->Add (lastRowSizer, 0, wxEXPAND, 5);
+}
+
+void UIDialog::AddLabel (const char* str)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxStaticText* label = new wxStaticText (this, wxID_ANY, wxString::FromUTF8 (str),
+      wxDefaultPosition, wxDefaultSize, 0);
+  label->Wrap (-1);
+  lastRowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+}
+
+void UIDialog::AddText (const char* name)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxTextCtrl* text = new wxTextCtrl (this, wxID_ANY, wxEmptyString,
+      wxDefaultPosition, wxDefaultSize, 0);
+  lastRowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  textFields.Put (name, text);
+}
+
+void UIDialog::AddMultiText (const char* name)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxTextCtrl* text = new wxTextCtrl (this, wxID_ANY, wxEmptyString,
+      wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+  lastRowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  textFields.Put (name, text);
+}
+
+void UIDialog::AddChoice (const char* name, ...)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  va_list args;
+  va_start (args, name);
+  csDirtyAccessArray<wxString> choices;
+  const char* c = va_arg (args, char*);
+  while (c != 0)
+  {
+    choices.Push (wxString::FromUTF8 (c));
+    c = va_arg (args, char*);
+  }
+  va_end (args);
+  wxChoice* choice = new wxChoice (this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+      choices.GetSize (), choices.GetArray (), 0);
+  choice->SetSelection (0);
+  lastRowSizer->Add (choice, 1, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  choiceFields.Put (name, choice);
+}
+
+void UIDialog::AddButton (const char* str)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxButton* button = new wxButton (this, wxID_ANY, wxString::FromUTF8 (str),
+      wxDefaultPosition, wxDefaultSize, 0);
+  lastRowSizer->Add (button, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
+	UIDialog::OnButtonClicked), 0, this);
+  buttons.Push (button);
+}
+
+void UIDialog::SetText (const char* name, const char* value)
+{
+  wxTextCtrl* text = textFields.Get (name, 0);
+  if (!text) return;
+  text->SetValue (wxString::FromUTF8 (value));
+}
+
+void UIDialog::SetChoice (const char* name, const char* value)
+{
+  wxChoice* choice = choiceFields.Get (name, 0);
+  if (!choice) return;
+  choice->SetStringSelection (wxString::FromUTF8 (value));
+}
+
+void UIDialog::Clear ()
+{
+  csHash<wxTextCtrl*,csString>::GlobalIterator itText = textFields.GetIterator ();
+  while (itText.HasNext ())
+  {
+    csString name;
+    wxTextCtrl* text = itText.Next (name);
+    text->SetValue (wxT (""));
+  }
+  csHash<wxChoice*,csString>::GlobalIterator itCh = choiceFields.GetIterator ();
+  while (itCh.HasNext ())
+  {
+    csString name;
+    wxChoice* choice = itCh.Next (name);
+    choice->SetSelection (0);
+  }
+}
+
+void UIDialog::OnButtonClicked (wxCommandEvent& event)
+{
+  wxButton* button = static_cast<wxButton*> (event.GetEventObject ());
+  csString buttonLabel = (const char*)button->GetLabel ().mb_str (wxConvUTF8);
+
+  fieldContents.DeleteAll ();
+  csHash<wxTextCtrl*,csString>::GlobalIterator itText = textFields.GetIterator ();
+  while (itText.HasNext ())
+  {
+    csString name;
+    wxTextCtrl* text = itText.Next (name);
+    csString value = (const char*)text->GetValue ().mb_str (wxConvUTF8);
+    fieldContents.Put (name, value);
+  }
+  csHash<wxChoice*,csString>::GlobalIterator itCh = choiceFields.GetIterator ();
+  while (itCh.HasNext ())
+  {
+    csString name;
+    wxChoice* choice = itCh.Next (name);
+    csString value = (const char*)choice->GetStringSelection ().mb_str (wxConvUTF8);
+    fieldContents.Put (name, value);
+  }
+
+  if (buttonLabel == "Ok")
+  {
+    EndModal (1);
+    return;
+  }
+  else if (buttonLabel == "Cancel")
+  {
+    EndModal (0);
+    return;
+  }
+
+  if (callback) callback->ButtonPressed (this, buttonLabel);
+}
+
+void UIDialog::AddSpace ()
+{
+  CS_ASSERT (lastRowSizer != 0);
+  lastRowSizer->Add (0, 0, 1, wxEXPAND, 5);
+}
+
+int UIDialog::Show (UIDialogCallback* cb)
+{
+  callback = cb;
+  AddOkCancel ();
+  Layout ();
+  Fit ();
+  Centre (wxBOTH);
+  return ShowModal ();
+}
+
+
+//------------------------------------------------------------------------------
+
 UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   app (app), parent (parent)
 {
@@ -77,4 +257,11 @@ void UIManager::Error (const char* description, ...)
       wxICON_ERROR, parent);
   va_end (args);
 }
+
+UIDialog* UIManager::CreateDialog (const char* title)
+{
+  UIDialog* dialog = new UIDialog (parent, title);
+  return dialog;
+}
+
 

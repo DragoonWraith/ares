@@ -37,6 +37,7 @@ struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iParameter;
+class UIDialog;
 class UIManager;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
@@ -49,7 +50,23 @@ struct PCEditCallback : public csRefCount
 enum
 {
   ID_Prop_Add = wxID_HIGHEST + 10000,
-  ID_Prop_Delete
+  ID_Prop_Edit,
+  ID_Prop_Delete,
+  ID_Inv_Add,
+  ID_Inv_Edit,
+  ID_Inv_Delete,
+  ID_Spawn_Add,
+  ID_Spawn_Edit,
+  ID_Spawn_Delete,
+  ID_Quest_Add,
+  ID_Quest_Edit,
+  ID_Quest_Delete,
+  ID_WirePar_Add,
+  ID_WirePar_Edit,
+  ID_WirePar_Delete,
+  ID_WireMsg_Add,
+  ID_WireMsg_Edit,
+  ID_WireMsg_Delete,
 };
 
 
@@ -73,58 +90,64 @@ private:
     long selIndex);
 
   // Properties
-  long propSelIndex;
+  UIDialog* propDialog;
+  UIDialog* GetPropertyDialog ();
   bool UpdateProperties ();
   void FillProperties ();
+  void OnPropertyRMB (wxListEvent& event);
   void OnPropertyAdd (wxCommandEvent& event);
   void OnPropertyDel (wxCommandEvent& event);
-  void OnPropertyPopupAdd (wxCommandEvent& event);
-  void OnPropertySelected (wxListEvent& event);
-  void OnPropertyDeselected (wxListEvent& event);
-  void OnPropertyRMB (wxListEvent& event);
+  void OnPropertyEdit (wxCommandEvent& event);
 
   // Inventory.
-  long invSelIndex;
+  UIDialog* invTempDialog;
+  UIDialog* GetInventoryTemplateDialog ();
   bool UpdateInventory ();
   void FillInventory ();
+  void OnInventoryTemplateRMB (wxListEvent& event);
   void OnInventoryTemplateAdd (wxCommandEvent& event);
   void OnInventoryTemplateDel (wxCommandEvent& event);
-  void OnInvTemplateSelected (wxListEvent& event);
-  void OnInvTemplateDeselected (wxListEvent& event);
+  void OnInventoryTemplateEdit (wxCommandEvent& event);
 
   // Quest.
-  long questSelIndex;
+  UIDialog* questParDialog;
+  UIDialog* GetQuestDialog ();
   bool UpdateQuest ();
   void FillQuest ();
+  void OnQuestParameterRMB (wxListEvent& event);
   void OnQuestParameterAdd (wxCommandEvent& event);
   void OnQuestParameterDel (wxCommandEvent& event);
-  void OnQuestParameterSelected (wxListEvent& event);
-  void OnQuestParameterDeselected (wxListEvent& event);
+  void OnQuestParameterEdit (wxCommandEvent& event);
 
   // Spawn.
-  long spawnSelIndex;
+  UIDialog* spawnTempDialog;
+  UIDialog* GetSpawnTemplateDialog ();
   bool UpdateSpawn ();
   void FillSpawn ();
+  void OnSpawnTemplateRMB (wxListEvent& event);
   void OnSpawnTemplateAdd (wxCommandEvent& event);
   void OnSpawnTemplateDel (wxCommandEvent& event);
-  void OnSpawnTemplateSelected (wxListEvent& event);
-  void OnSpawnTemplateDeselected (wxListEvent& event);
+  void OnSpawnTemplateEdit (wxCommandEvent& event);
 
   // Wire.
-  int wireMsgSelIndex;
-  int wireParSelIndex;
+  UIDialog* wireParDialog;
+  UIDialog* GetWireParDialog ();
+  UIDialog* wireMsgDialog;
+  UIDialog* GetWireMsgDialog ();
   csHash<ParHash,csString> wireParams;
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
+  void OnWireMessageRMB (wxListEvent& event);
   void OnWireMessageAdd (wxCommandEvent& event);
+  void OnWireMessageEdit (wxCommandEvent& event);
   void OnWireMessageDel (wxCommandEvent& event);
   void OnWireMessageSelected (wxListEvent& event);
   void OnWireMessageDeselected (wxListEvent& event);
+  void OnWireParameterRMB (wxListEvent& event);
   void OnWireParameterAdd (wxCommandEvent& event);
+  void OnWireParameterEdit (wxCommandEvent& event);
   void OnWireParameterDel (wxCommandEvent& event);
-  void OnWireParameterSelected (wxListEvent& event);
-  void OnWireParameterDeselected (wxListEvent& event);
 
   // Update the property class. Returns false on error.
   bool UpdatePC ();

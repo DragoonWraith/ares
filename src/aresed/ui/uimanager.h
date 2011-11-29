@@ -30,6 +30,71 @@ class FileReq;
 class NewProjectDialog;
 class CellDialog;
 class PropertyClassDialog;
+class UIDialog;
+
+struct UIDialogCallback : public csRefCount
+{
+  virtual void ButtonPressed (UIDialog* dialog, const char* button) = 0;
+};
+
+class UIDialog : public wxDialog
+{
+private:
+  wxBoxSizer* sizer;
+  wxBoxSizer* lastRowSizer;
+  csHash<wxTextCtrl*,csString> textFields;
+  csHash<wxChoice*,csString> choiceFields;
+  csArray<wxButton*> buttons;
+  csRef<UIDialogCallback> callback;
+
+  csHash<csString,csString> fieldContents;
+
+  bool okCancelAdded;
+  void AddOkCancel ();
+
+  virtual void OnButtonClicked (wxCommandEvent& event);
+
+public:
+  UIDialog (wxWindow* parent, const char* title);
+  virtual ~UIDialog ();
+
+  /// Add a new row in this dialog.
+  void AddRow ();
+
+  /// Add a label in the current row.
+  void AddLabel (const char* str);
+  /// Add a single line text control in the current row.
+  void AddText (const char* name);
+  /// Add a multi line text control in the current row.
+  void AddMultiText (const char* name);
+  /// Add a button in the current row.
+  void AddButton (const char* str);
+  /// Add a choice control in the current row with the given choices (end with 0).
+  void AddChoice (const char* name, ...);
+  /// Add a horizontal spacer in the current row.
+  void AddSpace ();
+
+  // Clear all input fields to empty or default values.
+  void Clear ();
+
+  /// Set the value of the given text control.
+  void SetText (const char* name, const char* value);
+  /// Set the value of the given choice.
+  void SetChoice (const char* name, const char* value);
+
+  /**
+   * Show the dialog in a modal manner.
+   * Returns 1 if Ok was pressed and 0 otherwise.
+   */
+  int Show (UIDialogCallback* cb);
+
+  /**
+   * When any button is pressed (including Ok and Cancel) this will return
+   * the contents of all text controls and choices.
+   */
+  const csHash<csString,csString>& GetFieldContents () const { return fieldContents; }
+};
+
 
 class UIManager
 {
@@ -57,6 +122,9 @@ public:
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
   PropertyClassDialog* GetPCDialog () const { return pcDialog; }
+
+  /// Create a dynamically buildable dialog.
+  UIDialog* CreateDialog (const char* title);
 
   int AllocContextMenuID () { contextMenuID++; return contextMenuID; }
 };

@@ -108,38 +108,38 @@ BEGIN_EVENT_TABLE(PropertyClassDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), PropertyClassDialog :: OnOkButton)
   EVT_BUTTON (XRCID("cancelButton"), PropertyClassDialog :: OnCancelButton)
 
-  EVT_BUTTON (XRCID("propertyAddButton"), PropertyClassDialog :: OnPropertyAdd)
-  EVT_BUTTON (XRCID("propertyDeleteButton"), PropertyClassDialog :: OnPropertyDel)
-  EVT_LIST_ITEM_SELECTED (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertySelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertyDeselected)
   EVT_LIST_ITEM_RIGHT_CLICK (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertyRMB)
-  EVT_MENU (ID_Prop_Add, PropertyClassDialog :: OnPropertyPopupAdd)
+  EVT_MENU (ID_Prop_Add, PropertyClassDialog :: OnPropertyAdd)
+  EVT_MENU (ID_Prop_Edit, PropertyClassDialog :: OnPropertyEdit)
   EVT_MENU (ID_Prop_Delete, PropertyClassDialog :: OnPropertyDel)
 
-  EVT_BUTTON (XRCID("wireMessageAddButton"), PropertyClassDialog :: OnWireMessageAdd)
-  EVT_BUTTON (XRCID("wireMessageDeleteButton"), PropertyClassDialog :: OnWireMessageDel)
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("wireMessageListCtrl"), PropertyClassDialog :: OnWireMessageRMB)
+  EVT_MENU (ID_WireMsg_Add, PropertyClassDialog :: OnWireMessageAdd)
+  EVT_MENU (ID_WireMsg_Edit, PropertyClassDialog :: OnWireMessageEdit)
+  EVT_MENU (ID_WireMsg_Delete, PropertyClassDialog :: OnWireMessageDel)
   EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassDialog :: OnWireMessageSelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassDialog :: OnWireMessageDeselected)
 
-  EVT_BUTTON (XRCID("wireParameterAddButton"), PropertyClassDialog :: OnWireParameterAdd)
-  EVT_BUTTON (XRCID("wireParameterDeleteButton"), PropertyClassDialog :: OnWireParameterDel)
-  EVT_LIST_ITEM_SELECTED (XRCID("wireParameterListCtrl"), PropertyClassDialog :: OnWireParameterSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("wireParameterListCtrl"), PropertyClassDialog :: OnWireParameterDeselected)
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("wireParameterListCtrl"), PropertyClassDialog :: OnWireParameterRMB)
+  EVT_MENU (ID_WirePar_Add, PropertyClassDialog :: OnWireParameterAdd)
+  EVT_MENU (ID_WirePar_Edit, PropertyClassDialog :: OnWireParameterEdit)
+  EVT_MENU (ID_WirePar_Delete, PropertyClassDialog :: OnWireParameterDel)
 
-  EVT_BUTTON (XRCID("spawnTemplateAddButton"), PropertyClassDialog :: OnSpawnTemplateAdd)
-  EVT_BUTTON (XRCID("spawnTemplateDeleteButton"), PropertyClassDialog :: OnSpawnTemplateDel)
-  EVT_LIST_ITEM_SELECTED (XRCID("spawnTemplateListCtrl"), PropertyClassDialog :: OnSpawnTemplateSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("spawnTemplateListCtrl"), PropertyClassDialog :: OnSpawnTemplateDeselected)
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("spawnTemplateListCtrl"), PropertyClassDialog :: OnSpawnTemplateRMB)
+  EVT_MENU (ID_Spawn_Add, PropertyClassDialog :: OnSpawnTemplateAdd)
+  EVT_MENU (ID_Spawn_Edit, PropertyClassDialog :: OnSpawnTemplateEdit)
+  EVT_MENU (ID_Spawn_Delete, PropertyClassDialog :: OnSpawnTemplateDel)
 
-  EVT_BUTTON (XRCID("questParameterAddButton"), PropertyClassDialog :: OnQuestParameterAdd)
-  EVT_BUTTON (XRCID("questParameterDeleteButton"), PropertyClassDialog :: OnQuestParameterDel)
-  EVT_LIST_ITEM_SELECTED (XRCID("questParameterListCtrl"), PropertyClassDialog :: OnQuestParameterSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("questParameterListCtrl"), PropertyClassDialog :: OnQuestParameterDeselected)
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("questParameterListCtrl"), PropertyClassDialog :: OnQuestParameterRMB)
+  EVT_MENU (ID_Quest_Add, PropertyClassDialog :: OnQuestParameterAdd)
+  EVT_MENU (ID_Quest_Edit, PropertyClassDialog :: OnQuestParameterEdit)
+  EVT_MENU (ID_Quest_Delete, PropertyClassDialog :: OnQuestParameterDel)
 
-  EVT_BUTTON (XRCID("inventoryTemplateAddButton"), PropertyClassDialog :: OnInventoryTemplateAdd)
-  EVT_BUTTON (XRCID("inventoryTemplateDeleteButton"), PropertyClassDialog :: OnInventoryTemplateDel)
-  EVT_LIST_ITEM_SELECTED (XRCID("inventoryTemplateListCtrl"), PropertyClassDialog :: OnInvTemplateSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("inventoryTemplateListCtrl"), PropertyClassDialog :: OnInvTemplateDeselected)
+
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("inventoryTemplateListCtrl"), PropertyClassDialog :: OnInventoryTemplateRMB)
+  EVT_MENU (ID_Inv_Add, PropertyClassDialog :: OnInventoryTemplateAdd)
+  EVT_MENU (ID_Inv_Edit, PropertyClassDialog :: OnInventoryTemplateEdit)
+  EVT_MENU (ID_Inv_Delete, PropertyClassDialog :: OnInventoryTemplateDel)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -278,52 +278,172 @@ bool PropertyClassDialog::UpdateCurrentWireParams ()
   return true;
 }
 
-void PropertyClassDialog::OnWireParameterSelected (wxListEvent& event)
+void PropertyClassDialog::OnWireParameterRMB (wxListEvent& event)
 {
-  wireMsgSelIndex = event.GetIndex ();
-  FillFieldsFromRow ("wireParameterListCtrl", "wireParameterNameText",
-      "wireParameterValueText", "wireParameterTypeChoice",
-      "wireParameterDeleteButton", wireParSelIndex);
+  wxMenu contextMenu;
+  contextMenu.Append(ID_WirePar_Add, wxT ("&Add"));
+  contextMenu.Append(ID_WirePar_Edit, wxT ("&Edit"));
+  contextMenu.Append(ID_WirePar_Delete, wxT ("&Delete"));
+  PopupMenu (&contextMenu);
 }
 
-void PropertyClassDialog::OnWireParameterDeselected (wxListEvent& event)
+UIDialog* PropertyClassDialog::GetWireParDialog ()
 {
-  wxButton* delButton = XRCCTRL (*this, "wireParameterDeleteButton", wxButton);
-  delButton->Disable ();
+  if (!wireParDialog)
+  {
+    wireParDialog = uiManager->CreateDialog ("Edit parameter");
+    wireParDialog->AddRow ();
+    wireParDialog->AddLabel ("Name:");
+    wireParDialog->AddText ("name");
+    wireParDialog->AddChoice ("type", "string", "float", "long", "bool",
+      "vector2", "vector3", "color", 0);
+    wireParDialog->AddRow ();
+    wireParDialog->AddMultiText ("value");
+  }
+  return wireParDialog;
+}
+
+void PropertyClassDialog::OnWireParameterEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetWireParDialog ();
+
+  dialog->Clear ();
+  wxListCtrl* list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+  dialog->SetText ("value", row[1]);
+  dialog->SetChoice ("type", row[2]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (),
+	fields.Get ("type", "").GetData (), 0);
+    UpdateCurrentWireParams ();
+  }
 }
 
 void PropertyClassDialog::OnWireParameterAdd (wxCommandEvent& event)
 {
-  AddRowFromInput ("wireParameterListCtrl", "wireParameterNameText",
-      "wireParameterValueText", "wireParameterTypeChoice");
-  UpdateCurrentWireParams ();
+  UIDialog* dialog = GetWireParDialog ();
+  dialog->Clear ();
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (),
+	fields.Get ("type", "").GetData (), 0);
+    UpdateCurrentWireParams ();
+  }
 }
 
 void PropertyClassDialog::OnWireParameterDel (wxCommandEvent& event)
 {
-  if (wireParSelIndex == -1) return;
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  parList->DeleteItem (wireParSelIndex);
-  parList->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  parList->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  parList->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
-  wireParSelIndex = -1;
+  wxListCtrl* list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
+  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
+  list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
   UpdateCurrentWireParams ();
+}
+
+void PropertyClassDialog::OnWireMessageRMB (wxListEvent& event)
+{
+  wxMenu contextMenu;
+  contextMenu.Append(ID_WireMsg_Add, wxT ("&Add"));
+  contextMenu.Append(ID_WireMsg_Edit, wxT ("&Edit"));
+  contextMenu.Append(ID_WireMsg_Delete, wxT ("&Delete"));
+  PopupMenu (&contextMenu);
+}
+
+UIDialog* PropertyClassDialog::GetWireMsgDialog ()
+{
+  if (!wireMsgDialog)
+  {
+    wireMsgDialog = uiManager->CreateDialog ("Edit message");
+    wireMsgDialog->AddRow ();
+    wireMsgDialog->AddLabel ("Message:");
+    wireMsgDialog->AddText ("name");
+    wireMsgDialog->AddRow ();
+    wireMsgDialog->AddLabel ("Entity:");
+    wireMsgDialog->AddText ("entity");
+    wireMsgDialog->AddButton ("...");	// @@@ Not implemented yet.
+  }
+  return wireMsgDialog;
+}
+
+void PropertyClassDialog::OnWireMessageEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetWireMsgDialog ();
+
+  dialog->Clear ();
+  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+  dialog->SetText ("entity", row[1]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("entity", "").GetData (), 0);
+    wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+    parList->DeleteAllItems ();
+  }
+}
+
+void PropertyClassDialog::OnWireMessageAdd (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetWireMsgDialog ();
+  dialog->Clear ();
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("entity", "").GetData (), 0);
+    wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+    parList->DeleteAllItems ();
+  }
+}
+
+void PropertyClassDialog::OnWireMessageDel (wxCommandEvent& event)
+{
+  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
+  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
+
+  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
+  parList->DeleteAllItems ();
 }
 
 void PropertyClassDialog::OnWireMessageSelected (wxListEvent& event)
 {
-  wireMsgSelIndex = event.GetIndex ();
-  FillFieldsFromRow ("wireMessageListCtrl", "wireMessageText",
-      "wireEntityText", 0,
-      "wireMessageDeleteButton", wireMsgSelIndex);
-
   iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
 
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
-  wxTextCtrl* msgText = XRCCTRL (*this, "wireMessageText", wxTextCtrl);
-  csString msg = (const char*)msgText->GetValue ().mb_str (wxConvUTF8);
+
+  long idx = event.GetIndex ();
+  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  csString msg = row[0];
+
   const ParHash& params = wireParams.Get (msg, ParHash ());
   ParHash::ConstGlobalIterator it = params.GetIterator ();
   while (it.HasNext ())
@@ -342,30 +462,6 @@ void PropertyClassDialog::OnWireMessageSelected (wxListEvent& event)
 
 void PropertyClassDialog::OnWireMessageDeselected (wxListEvent& event)
 {
-  wxButton* delButton = XRCCTRL (*this, "wireMessageDeleteButton", wxButton);
-  delButton->Disable ();
-
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  parList->DeleteAllItems ();
-}
-
-void PropertyClassDialog::OnWireMessageAdd (wxCommandEvent& event)
-{
-  AddRowFromInput ("wireMessageListCtrl", "wireMessageText", "wireEntityText", 0);
-
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  parList->DeleteAllItems ();
-}
-
-void PropertyClassDialog::OnWireMessageDel (wxCommandEvent& event)
-{
-  if (wireMsgSelIndex == -1) return;
-  wxListCtrl* msgList = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  msgList->DeleteItem (wireMsgSelIndex);
-  msgList->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  msgList->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  wireMsgSelIndex = -1;
-
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
 }
@@ -467,32 +563,66 @@ void PropertyClassDialog::FillWire ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnSpawnTemplateSelected (wxListEvent& event)
+void PropertyClassDialog::OnSpawnTemplateRMB (wxListEvent& event)
 {
-  spawnSelIndex = event.GetIndex ();
-  FillFieldsFromRow ("spawnTemplateListCtrl", "spawnTemplateNameText",
-      0, 0,
-      "spawnTemplateDeleteButton", spawnSelIndex);
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Spawn_Add, wxT ("&Add"));
+  contextMenu.Append(ID_Spawn_Edit, wxT ("&Edit"));
+  contextMenu.Append(ID_Spawn_Delete, wxT ("&Delete"));
+  PopupMenu (&contextMenu);
 }
 
-void PropertyClassDialog::OnSpawnTemplateDeselected (wxListEvent& event)
+UIDialog* PropertyClassDialog::GetSpawnTemplateDialog ()
 {
-  wxButton* delButton = XRCCTRL (*this, "spawnTemplateDeleteButton", wxButton);
-  delButton->Disable ();
+  if (!spawnTempDialog)
+  {
+    spawnTempDialog = uiManager->CreateDialog ("Edit template");
+    spawnTempDialog->AddRow ();
+    spawnTempDialog->AddLabel ("Template:");
+    spawnTempDialog->AddText ("name");
+  }
+  return spawnTempDialog;
+}
+
+void PropertyClassDialog::OnSpawnTemplateEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetSpawnTemplateDialog ();
+
+  dialog->Clear ();
+  wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnSpawnTemplateAdd (wxCommandEvent& event)
 {
-  AddRowFromInput ("spawnTemplateListCtrl", "spawnTemplateNameText", 0, 0);
+  UIDialog* dialog = GetSpawnTemplateDialog ();
+  dialog->Clear ();
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnSpawnTemplateDel (wxCommandEvent& event)
 {
-  if (spawnSelIndex == -1) return;
   wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-  list->DeleteItem (spawnSelIndex);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  spawnSelIndex = -1;
 }
 
 bool PropertyClassDialog::UpdateSpawn ()
@@ -650,35 +780,78 @@ void PropertyClassDialog::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnQuestParameterSelected (wxListEvent& event)
+void PropertyClassDialog::OnQuestParameterRMB (wxListEvent& event)
 {
-  questSelIndex = event.GetIndex ();
-  FillFieldsFromRow ("questParameterListCtrl", "questParameterNameText",
-      "questParameterValueText", "questParameterTypeChoice",
-      "questParameterDeleteButton", questSelIndex);
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Quest_Add, wxT ("&Add"));
+  contextMenu.Append(ID_Quest_Edit, wxT ("&Edit"));
+  contextMenu.Append(ID_Quest_Delete, wxT ("&Delete"));
+  PopupMenu (&contextMenu);
 }
 
-void PropertyClassDialog::OnQuestParameterDeselected (wxListEvent& event)
+UIDialog* PropertyClassDialog::GetQuestDialog ()
 {
-  wxButton* delButton = XRCCTRL (*this, "questParameterDeleteButton", wxButton);
-  delButton->Disable ();
+  if (!questParDialog)
+  {
+    questParDialog = uiManager->CreateDialog ("Edit parameter");
+    questParDialog->AddRow ();
+    questParDialog->AddLabel ("Name:");
+    questParDialog->AddText ("name");
+    questParDialog->AddChoice ("type", "string", "float", "long", "bool",
+      "vector2", "vector3", "color", 0);
+    questParDialog->AddRow ();
+    questParDialog->AddMultiText ("value");
+  }
+  return questParDialog;
+}
+
+void PropertyClassDialog::OnQuestParameterEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetQuestDialog ();
+
+  dialog->Clear ();
+  wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+  dialog->SetText ("value", row[1]);
+  dialog->SetChoice ("type", row[2]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (),
+	fields.Get ("type", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnQuestParameterAdd (wxCommandEvent& event)
 {
-  AddRowFromInput ("questParameterListCtrl", "questParameterNameText",
-      "questParameterValueText", "questParameterTypeChoice");
+  UIDialog* dialog = GetQuestDialog ();
+  dialog->Clear ();
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (),
+	fields.Get ("type", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnQuestParameterDel (wxCommandEvent& event)
 {
-  if (questSelIndex == -1) return;
   wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  list->DeleteItem (questSelIndex);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
-  questSelIndex = -1;
 }
 
 bool PropertyClassDialog::UpdateQuest ()
@@ -788,34 +961,71 @@ void PropertyClassDialog::FillQuest ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnInvTemplateSelected (wxListEvent& event)
+void PropertyClassDialog::OnInventoryTemplateRMB (wxListEvent& event)
 {
-  invSelIndex = event.GetIndex ();
-  FillFieldsFromRow ("inventoryTemplateListCtrl", "inventoryTemplateNameText",
-      "inventoryTemplateAmountText", 0,
-      "inventoryTemplateDeleteButton", invSelIndex);
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Inv_Add, wxT ("&Add"));
+  contextMenu.Append(ID_Inv_Edit, wxT ("&Edit"));
+  contextMenu.Append(ID_Inv_Delete, wxT ("&Delete"));
+  PopupMenu (&contextMenu);
 }
 
-void PropertyClassDialog::OnInvTemplateDeselected (wxListEvent& event)
+UIDialog* PropertyClassDialog::GetInventoryTemplateDialog ()
 {
-  wxButton* delButton = XRCCTRL (*this, "inventoryTemplateDeleteButton", wxButton);
-  delButton->Disable ();
+  if (!invTempDialog)
+  {
+    invTempDialog = uiManager->CreateDialog ("Edit template/amount");
+    invTempDialog->AddRow ();
+    invTempDialog->AddLabel ("Template:");
+    invTempDialog->AddText ("name");
+    invTempDialog->AddText ("amount");
+  }
+  return invTempDialog;
+}
+
+void PropertyClassDialog::OnInventoryTemplateEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetInventoryTemplateDialog ();
+
+  dialog->Clear ();
+  wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+  dialog->SetText ("amount", row[1]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("amount", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnInventoryTemplateAdd (wxCommandEvent& event)
 {
-  AddRowFromInput ("inventoryTemplateListCtrl", "inventoryTemplateNameText",
-      "inventoryTemplateAmountText", 0);
+  UIDialog* dialog = GetInventoryTemplateDialog ();
+  dialog->Clear ();
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("amount", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnInventoryTemplateDel (wxCommandEvent& event)
 {
-  if (invSelIndex == -1) return;
   wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  list->DeleteItem (invSelIndex);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  invSelIndex = -1;
 }
 
 bool PropertyClassDialog::UpdateInventory ()
@@ -904,49 +1114,78 @@ void PropertyClassDialog::FillInventory ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnPropertySelected (wxListEvent& event)
-{
-  propSelIndex = event.GetIndex ();
-  FillFieldsFromRow ("propertyListCtrl", "propertyNameText",
-      "propertyValueText", "propertyTypeChoice",
-      "propertyDeleteButton", propSelIndex);
-}
-
-void PropertyClassDialog::OnPropertyDeselected (wxListEvent& event)
-{
-  wxButton* delButton = XRCCTRL (*this, "propertyDeleteButton", wxButton);
-  delButton->Disable ();
-}
-
 void PropertyClassDialog::OnPropertyRMB (wxListEvent& event)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Prop_Add, wxT ("&Add"));
+  contextMenu.Append(ID_Prop_Edit, wxT ("&Edit"));
   contextMenu.Append(ID_Prop_Delete, wxT ("&Delete"));
   PopupMenu (&contextMenu);
 }
 
-void PropertyClassDialog::OnPropertyPopupAdd (wxCommandEvent& event)
+UIDialog* PropertyClassDialog::GetPropertyDialog ()
 {
-  AddRowFromInput ("propertyListCtrl", "propertyNameText",
-      "propertyValueText", "propertyTypeChoice");
+  if (!propDialog)
+  {
+    propDialog = uiManager->CreateDialog ("Edit property");
+    propDialog->AddRow ();
+    propDialog->AddLabel ("Name:");
+    propDialog->AddText ("name");
+    propDialog->AddChoice ("type", "string", "float", "long", "bool",
+      "vector2", "vector3", "color", 0);
+    propDialog->AddRow ();
+    propDialog->AddMultiText ("value");
+  }
+  return propDialog;
+}
+
+void PropertyClassDialog::OnPropertyEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = GetPropertyDialog ();
+
+  dialog->Clear ();
+  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+  dialog->SetText ("value", row[1]);
+  dialog->SetChoice ("type", row[2]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (),
+	fields.Get ("type", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnPropertyAdd (wxCommandEvent& event)
 {
-  AddRowFromInput ("propertyListCtrl", "propertyNameText",
-      "propertyValueText", "propertyTypeChoice");
+  UIDialog* dialog = GetPropertyDialog ();
+  dialog->Clear ();
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (),
+	fields.Get ("type", "").GetData (), 0);
+  }
 }
 
 void PropertyClassDialog::OnPropertyDel (wxCommandEvent& event)
 {
-  if (propSelIndex == -1) return;
   wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  list->DeleteItem (propSelIndex);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
-  propSelIndex = -1;
 }
 
 bool PropertyClassDialog::UpdateProperties ()
@@ -1088,7 +1327,6 @@ PropertyClassDialog::PropertyClassDialog (wxWindow* parent, UIManager* uiManager
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("PropertyClassDialog"));
 
   wxListCtrl* list;
-  wxButton* button;
 
   list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
   ListCtrlTools::SetColumn (list, 0, "Name", 100);
@@ -1116,29 +1354,22 @@ PropertyClassDialog::PropertyClassDialog (wxWindow* parent, UIManager* uiManager
   ListCtrlTools::SetColumn (list, 1, "Value", 100);
   ListCtrlTools::SetColumn (list, 2, "Type", 100);
 
-  button = XRCCTRL (*this, "propertyDeleteButton", wxButton);
-  button->Disable ();
-  button = XRCCTRL (*this, "inventoryTemplateDeleteButton", wxButton);
-  button->Disable ();
-  button = XRCCTRL (*this, "questParameterDeleteButton", wxButton);
-  button->Disable ();
-  button = XRCCTRL (*this, "spawnTemplateDeleteButton", wxButton);
-  button->Disable ();
-  button = XRCCTRL (*this, "wireMessageDeleteButton", wxButton);
-  button->Disable ();
-  button = XRCCTRL (*this, "wireParameterDeleteButton", wxButton);
-  button->Disable ();
-
-  propSelIndex = -1;
-  questSelIndex = -1;
-  invSelIndex = -1;
-  spawnSelIndex = -1;
-  wireMsgSelIndex = -1;
-  wireParSelIndex = -1;
+  propDialog = 0;
+  invTempDialog = 0;
+  spawnTempDialog = 0;
+  questParDialog = 0;
+  wireParDialog = 0;
+  wireMsgDialog = 0;
 }
 
 PropertyClassDialog::~PropertyClassDialog ()
 {
+  delete propDialog;
+  delete invTempDialog;
+  delete spawnTempDialog;
+  delete questParDialog;
+  delete wireParDialog;
+  delete wireMsgDialog;
 }
 
 

@@ -72,6 +72,11 @@ public:
    * Returns -1 if not found.
    */
   static long FindRow (wxListCtrl* list, int col, const char* value);
+
+  /**
+   * Return the index of the first selected row or -1 if nothing is selected.
+   */
+  static long GetFirstSelectedRow (wxListCtrl* list);
 };
 
 #endif // __appares_listctrltools_h
