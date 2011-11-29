@@ -54,6 +54,7 @@ CurveMode::CurveMode (wxWindow* parent, AresEdit3DView* aresed3d)
 
 void CurveMode::UpdateMarkers ()
 {
+  if (!editingCurveFactory) return;
   iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
   if (editingCurveFactory->GetPointCount () != markers.GetSize ())
   {
@@ -109,7 +110,10 @@ void CurveMode::Start ()
   iDynamicObject* dynobj = aresed3d->GetSelection ()->GetFirst ();
   csString name = dynobj->GetFactory ()->GetName ();
   editingCurveFactory = aresed3d->GetCurvedMeshCreator ()->GetCurvedFactory (name);
-  ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
+  if (editingCurveFactory)
+    ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
+  else
+    ggen = 0;
   selectedPoints.Empty ();
   dragPoints.Empty ();
 
@@ -375,7 +379,7 @@ bool CurveMode::OnKeyboard (iEvent& ev, utf32_char code)
   if (ViewMode::OnKeyboard (ev, code))
     return true;
 
-  if (code == 'e')
+  if (editingCurveFactory && code == 'e')
   {
     size_t id = editingCurveFactory->GetPointCount ()-1;
     const csVector3& pos = editingCurveFactory->GetPosition (id);
