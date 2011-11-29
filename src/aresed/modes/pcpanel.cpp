@@ -243,7 +243,7 @@ UIDialog* PropertyClassPanel::GetWireParDialog ()
     wireParDialog->AddLabel ("Name:");
     wireParDialog->AddText ("name");
     wireParDialog->AddChoice ("type", "string", "float", "long", "bool",
-      "vector2", "vector3", "color", 0);
+      "vector2", "vector3", "color", (const char*)0);
     wireParDialog->AddRow ();
     wireParDialog->AddMultiText ("value");
   }
@@ -754,7 +754,7 @@ UIDialog* PropertyClassPanel::GetQuestDialog ()
     questParDialog->AddLabel ("Name:");
     questParDialog->AddText ("name");
     questParDialog->AddChoice ("type", "string", "float", "long", "bool",
-      "vector2", "vector3", "color", 0);
+      "vector2", "vector3", "color", (const char*)0);
     questParDialog->AddRow ();
     questParDialog->AddMultiText ("value");
   }
@@ -1094,7 +1094,7 @@ UIDialog* PropertyClassPanel::GetPropertyDialog ()
     propDialog->AddLabel ("Name:");
     propDialog->AddText ("name");
     propDialog->AddChoice ("type", "string", "float", "long", "bool",
-      "vector2", "vector3", "color", 0);
+      "vector2", "vector3", "color", (const char*)0);
     propDialog->AddRow ();
     propDialog->AddMultiText ("value");
   }

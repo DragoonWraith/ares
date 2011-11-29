@@ -105,7 +105,7 @@ void UIDialog::AddChoice (const char* name, ...)
   va_start (args, name);
   csDirtyAccessArray<wxString> choices;
   const char* c = va_arg (args, char*);
-  while (c != 0)
+  while (c != (const char*)0)
   {
     choices.Push (wxString::FromUTF8 (c));
     c = va_arg (args, char*);

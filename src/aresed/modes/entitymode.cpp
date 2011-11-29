@@ -529,7 +529,7 @@ void EntityMode::OnCreatePC ()
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "pcobject.mesh", "pctools.properties",
       "pctools.inventory", "pclogic.quest", "pclogic.spawn",
-      "pclogic.wire", 0);
+      "pclogic.wire", (const char*)0);
   dialog->AddRow ();
   dialog->AddLabel ("Tag:");
   dialog->AddText ("tag");
