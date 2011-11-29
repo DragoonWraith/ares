@@ -94,6 +94,7 @@ void UIDialog::AddMultiText (const char* name)
   CS_ASSERT (lastRowSizer != 0);
   wxTextCtrl* text = new wxTextCtrl (this, wxID_ANY, wxEmptyString,
       wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
+  text->SetMinSize (wxSize (-1,50));
   lastRowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   textFields.Put (name, text);
 }
