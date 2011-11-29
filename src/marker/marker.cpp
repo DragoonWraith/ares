@@ -108,6 +108,53 @@ GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (m
   linkForceFactor = 0.3f;
 
   secondsTodo = 0.0f;
+
+  draggingMarker = 0;
+  activeMarker = 0;
+}
+
+void GraphView::ActivateNode (const char* name)
+{
+  GraphNode n;
+  const GraphNode& node = nodes.Get (name, n);
+  ActivateMarker (node.marker, name);
+}
+
+const char* GraphView::GetActiveNode () const
+{
+  if (!activeMarker) return 0;
+  csHash<GraphNode,csString>::ConstGlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString key;
+    iMarker* marker = it.Next (key).marker;
+    if (marker == activeMarker) return key;
+  }
+  return 0;
+}
+
+void GraphView::ActivateMarker (iMarker* marker, const char* node)
+{
+  if (activeMarker) activeMarker->SetSelectionLevel (SELECTION_NONE);
+  activeMarker = marker;
+  if (activeMarker) activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
+  if (activeMarker && !node)
+  {
+    csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+    while (it.HasNext ())
+    {
+      csString key;
+      iMarker* m = it.Next (key).marker;
+      if (m == marker) { node = key; break; }
+    }
+  }
+  for (size_t i = 0 ; i < callbacks.GetSize () ; i++)
+    callbacks[i]->ActivateNode (node);
+}
+
+void GraphView::AddNodeActivationCallback (iGraphNodeCallback* cb)
+{
+  callbacks.Push (cb);
 }
 
 void GraphView::ForcePosition (const char* name, const csVector2& pos)
@@ -319,6 +366,7 @@ void GraphView::Clear ()
   }
   nodes.DeleteAll ();
   links.DeleteAll ();
+  activeMarker = 0;
 }
 
 class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
@@ -333,7 +381,7 @@ public:
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers)
   {
-    marker->SetSelectionLevel (SELECTION_ACTIVE);
+    view->ActivateMarker (marker);
     view->SetDraggingMarker (marker);
   }
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
@@ -345,7 +393,6 @@ public:
       const csReversibleTransform& transform) { }
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area)
   {
-    marker->SetSelectionLevel (SELECTION_NONE);
     view->SetDraggingMarker (0);
   }
 };
@@ -419,6 +466,7 @@ void GraphView::RemoveNode (const char* name)
   if (node.marker)
   {
     nodes.DeleteAll (name);
+    if (node.marker == activeMarker) activeMarker = 0;
     mgr->DestroyMarker (node.marker);
   }
 }
@@ -780,8 +828,11 @@ void Marker::Render3D ()
         mouseOverDrag = true;
     }
   }
-  if (mouseOverDrag) SetSelectionLevel (SELECTION_SELECTED);
-  else SetSelectionLevel (SELECTION_NONE);
+  if (GetSelectionLevel () != SELECTION_ACTIVE)
+  {
+    if (mouseOverDrag) SetSelectionLevel (SELECTION_SELECTED);
+    else SetSelectionLevel (SELECTION_NONE);
+  }
 }
 
 void Marker::Render2D ()

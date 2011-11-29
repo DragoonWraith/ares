@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "filereq.h"
 #include "newproject.h"
 #include "celldialog.h"
-#include "pcdialog.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
  * missing csMouseEventHelper symbols. */
@@ -224,7 +223,6 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
   newprojectDialog = new NewProjectDialog (parent, this, app->GetVFS ());
   cellDialog = new CellDialog (parent, this);
-  pcDialog = new PropertyClassDialog (parent, this);
   contextMenuID = ID_FirstContextItem;
 }
 
@@ -233,7 +231,6 @@ UIManager::~UIManager ()
   delete filereqDialog;
   delete newprojectDialog;
   delete cellDialog;
-  delete pcDialog;
 }
 
 void UIManager::Message (const char* description, ...)

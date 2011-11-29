@@ -37,6 +37,8 @@ struct iRewardFactoryArray;
 struct iRewardFactory;
 struct iTriggerFactory;
 
+class PropertyClassPanel;
+
 class EntityMode : public EditingMode
 {
 private:
@@ -73,12 +75,17 @@ private:
   iGraphView* view;
   iMarkerColor* NewColor (const char* name,
     float r0, float g0, float b0, float r1, float g1, float b1, bool fill);
+  iMarkerColor* NewColor (const char* name,
+    float r0, float g0, float b0, float r1, float g1, float b1,
+    float r2, float g2, float b2, bool fill);
   void InitColors ();
 
   csString currentTemplate;
   csString currentNode;
 
-  int idDelete, idCreate, idEdit, idEditQuest;
+  PropertyClassPanel* pcPanel;
+
+  int idDelete, idCreate, idEditQuest;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -104,10 +111,10 @@ public:
   void OnTemplateSelect ();
   void OnDelete ();
   void OnCreatePC ();
-  void OnEdit ();
   void OnEditQuest ();
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
+  void ActivateNode (const char* nodeName);
 
   class Panel : public wxPanel
   {
@@ -118,7 +125,6 @@ public:
 
     void OnDelete (wxCommandEvent& event) { s->OnDelete (); }
     void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
-    void OnEdit (wxCommandEvent& event) { s->OnEdit (); }
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
 

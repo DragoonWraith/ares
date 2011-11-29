@@ -29,7 +29,6 @@ class AppAresEditWX;
 class FileReq;
 class NewProjectDialog;
 class CellDialog;
-class PropertyClassDialog;
 class UIDialog;
 
 struct UIDialogCallback : public csRefCount
@@ -105,7 +104,6 @@ private:
   FileReq* filereqDialog;
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
-  PropertyClassDialog* pcDialog;
 
   int contextMenuID;
 
@@ -121,7 +119,6 @@ public:
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
-  PropertyClassDialog* GetPCDialog () const { return pcDialog; }
 
   /// Create a dynamically buildable dialog.
   UIDialog* CreateDialog (const char* title);

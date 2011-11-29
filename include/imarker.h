@@ -370,6 +370,14 @@ struct iGraphNodeStyle : public virtual iBase
 };
 
 /**
+ * Callback which is called whenever a node is activated.
+ */
+struct iGraphNodeCallback : public csRefCount
+{
+  virtual void ActivateNode (const char* nodeName) = 0;
+};
+
+/**
  * A graph view based on markers.
  */
 struct iGraphView : public virtual iBase
@@ -443,6 +451,21 @@ struct iGraphView : public virtual iBase
    */
   virtual void SetLinkForceFactor (float f) = 0;
   virtual float GetLinkForceFactor () const = 0;
+
+  /**
+   * Activate a node.
+   */
+  virtual void ActivateNode (const char* node) = 0;
+
+  /**
+   * Get the active node (or 0 if none).
+   */
+  virtual const char* GetActiveNode () const = 0;
+
+  /**
+   * Add a node activation callback.
+   */
+  virtual void AddNodeActivationCallback (iGraphNodeCallback* cb) = 0;
 };
 
 /**

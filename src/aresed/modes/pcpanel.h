@@ -39,13 +39,9 @@ struct iCelParameterIterator;
 struct iParameter;
 class UIDialog;
 class UIManager;
+class EntityMode;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
-
-struct PCEditCallback : public csRefCount
-{
-  virtual void OkPressed (iCelPropertyClassTemplate* pctpl) = 0;
-};
 
 enum
 {
@@ -70,31 +66,27 @@ enum
 };
 
 
-class PropertyClassDialog : public wxDialog
+class PropertyClassPanel : public wxPanel
 {
 private:
   UIManager* uiManager;
+  EntityMode* emode;
+  wxSizer* parentSizer;
   iCelEntityTemplate* tpl;
   iCelPropertyClassTemplate* pctpl;
 
-  csRef<PCEditCallback> callback;
+  void OnApplyButton (wxCommandEvent& event);
+  void OnRevertButton (wxCommandEvent& event);
 
-  void OnOkButton (wxCommandEvent& event);
-  void OnCancelButton (wxCommandEvent& event);
-
-  void AddRowFromInput (const char* listComp,
-    const char* nameComp, const char* valueComp, const char* typeComp);
-  void FillFieldsFromRow (const char* listComp,
-    const char* nameComp, const char* valueComp, const char* typeComp,
-    const char* delComp,
-    long selIndex);
+  bool CheckHitList (const char* listname, bool& hasItems, const wxPoint& pos);
+  void OnContextMenu (wxContextMenuEvent& event);
 
   // Properties
   UIDialog* propDialog;
   UIDialog* GetPropertyDialog ();
   bool UpdateProperties ();
   void FillProperties ();
-  void OnPropertyRMB (wxListEvent& event);
+  void OnPropertyRMB (bool hasItems);
   void OnPropertyAdd (wxCommandEvent& event);
   void OnPropertyDel (wxCommandEvent& event);
   void OnPropertyEdit (wxCommandEvent& event);
@@ -104,7 +96,7 @@ private:
   UIDialog* GetInventoryTemplateDialog ();
   bool UpdateInventory ();
   void FillInventory ();
-  void OnInventoryTemplateRMB (wxListEvent& event);
+  void OnInventoryTemplateRMB (bool hasItems);
   void OnInventoryTemplateAdd (wxCommandEvent& event);
   void OnInventoryTemplateDel (wxCommandEvent& event);
   void OnInventoryTemplateEdit (wxCommandEvent& event);
@@ -114,7 +106,7 @@ private:
   UIDialog* GetQuestDialog ();
   bool UpdateQuest ();
   void FillQuest ();
-  void OnQuestParameterRMB (wxListEvent& event);
+  void OnQuestParameterRMB (bool hasItems);
   void OnQuestParameterAdd (wxCommandEvent& event);
   void OnQuestParameterDel (wxCommandEvent& event);
   void OnQuestParameterEdit (wxCommandEvent& event);
@@ -124,7 +116,7 @@ private:
   UIDialog* GetSpawnTemplateDialog ();
   bool UpdateSpawn ();
   void FillSpawn ();
-  void OnSpawnTemplateRMB (wxListEvent& event);
+  void OnSpawnTemplateRMB (bool hasItems);
   void OnSpawnTemplateAdd (wxCommandEvent& event);
   void OnSpawnTemplateDel (wxCommandEvent& event);
   void OnSpawnTemplateEdit (wxCommandEvent& event);
@@ -138,13 +130,13 @@ private:
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
-  void OnWireMessageRMB (wxListEvent& event);
+  void OnWireMessageRMB (bool hasItems);
   void OnWireMessageAdd (wxCommandEvent& event);
   void OnWireMessageEdit (wxCommandEvent& event);
   void OnWireMessageDel (wxCommandEvent& event);
   void OnWireMessageSelected (wxListEvent& event);
   void OnWireMessageDeselected (wxListEvent& event);
-  void OnWireParameterRMB (wxListEvent& event);
+  void OnWireParameterRMB (bool hasItems);
   void OnWireParameterAdd (wxCommandEvent& event);
   void OnWireParameterEdit (wxCommandEvent& event);
   void OnWireParameterDel (wxCommandEvent& event);
@@ -153,14 +145,16 @@ private:
   bool UpdatePC ();
 
 public:
-  PropertyClassDialog (wxWindow* parent, UIManager* uiManager);
-  ~PropertyClassDialog();
+  PropertyClassPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
+  ~PropertyClassPanel();
 
   // Switch this dialog to editing of a PC. If the PC is null then we
   // are going to create a new pctpl.
   void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
 
-  void Show (PCEditCallback* cb);
+  void Show () { wxPanel::Show (); parentSizer->Layout (); }
+  void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
+  bool IsVisible () const { return IsShown (); }
 
   DECLARE_EVENT_TABLE ();
 };

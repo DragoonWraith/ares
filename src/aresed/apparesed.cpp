@@ -1286,7 +1286,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("PropertyClassDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("PropertyClassPanel.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");

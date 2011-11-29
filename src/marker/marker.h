@@ -326,6 +326,8 @@ private:
   csHash<GraphNode,csString> nodes;
   csArray<GraphLink> links;
   iMarker* draggingMarker;
+  iMarker* activeMarker;
+  csRefArray<iGraphNodeCallback> callbacks;
 
   csRandomGen rng;
   bool coolDownPeriod;
@@ -358,6 +360,8 @@ public:
   void UpdateFrame ();
   void Render3D ();
 
+  void ActivateMarker (iMarker* marker, const char* node = 0);
+
   void SetDraggingMarker (iMarker* marker) { draggingMarker = marker; }
 
   virtual void SetDefaultLinkStyle (iGraphLinkStyle* style)
@@ -369,6 +373,8 @@ public:
     defaultStyle = style;
   }
 
+  virtual void ActivateNode (const char* node);
+  virtual const char* GetActiveNode () const;
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }
   virtual void Clear ();
@@ -396,6 +402,7 @@ public:
   virtual float GetNodeForceFactor () const { return nodeForceFactor; }
   virtual void SetLinkForceFactor (float f) { linkForceFactor = f; }
   virtual float GetLinkForceFactor () const { return linkForceFactor; }
+  virtual void AddNodeActivationCallback (iGraphNodeCallback* cb);
 };
 
 class MarkerManager : public scfImplementation2<MarkerManager, iMarkerManager, iComponent>

@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "pcdialog.h"
-#include "uimanager.h"
+#include "pcpanel.h"
+#include "entitymode.h"
+#include "../ui/uimanager.h"
 #include "physicallayer/entitytpl.h"
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
 #include "../apparesed.h"
-#include "listctrltools.h"
+#include "../ui/listctrltools.h"
 #include "../inspect.h"
 
 //--------------------------------------------------------------------------
@@ -104,66 +105,82 @@ static celDataType StringToType (const csString& type)
 
 //--------------------------------------------------------------------------
 
-BEGIN_EVENT_TABLE(PropertyClassDialog, wxDialog)
-  EVT_BUTTON (XRCID("okButton"), PropertyClassDialog :: OnOkButton)
-  EVT_BUTTON (XRCID("cancelButton"), PropertyClassDialog :: OnCancelButton)
+BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
+  EVT_BUTTON (XRCID("applyButton"), PropertyClassPanel :: OnApplyButton)
+  EVT_BUTTON (XRCID("revertButton"), PropertyClassPanel :: OnRevertButton)
 
-  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("propertyListCtrl"), PropertyClassDialog :: OnPropertyRMB)
-  EVT_MENU (ID_Prop_Add, PropertyClassDialog :: OnPropertyAdd)
-  EVT_MENU (ID_Prop_Edit, PropertyClassDialog :: OnPropertyEdit)
-  EVT_MENU (ID_Prop_Delete, PropertyClassDialog :: OnPropertyDel)
+  EVT_CONTEXT_MENU (PropertyClassPanel :: OnContextMenu)
 
-  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("wireMessageListCtrl"), PropertyClassDialog :: OnWireMessageRMB)
-  EVT_MENU (ID_WireMsg_Add, PropertyClassDialog :: OnWireMessageAdd)
-  EVT_MENU (ID_WireMsg_Edit, PropertyClassDialog :: OnWireMessageEdit)
-  EVT_MENU (ID_WireMsg_Delete, PropertyClassDialog :: OnWireMessageDel)
-  EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassDialog :: OnWireMessageSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassDialog :: OnWireMessageDeselected)
+  EVT_MENU (ID_Prop_Add, PropertyClassPanel :: OnPropertyAdd)
+  EVT_MENU (ID_Prop_Edit, PropertyClassPanel :: OnPropertyEdit)
+  EVT_MENU (ID_Prop_Delete, PropertyClassPanel :: OnPropertyDel)
 
-  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("wireParameterListCtrl"), PropertyClassDialog :: OnWireParameterRMB)
-  EVT_MENU (ID_WirePar_Add, PropertyClassDialog :: OnWireParameterAdd)
-  EVT_MENU (ID_WirePar_Edit, PropertyClassDialog :: OnWireParameterEdit)
-  EVT_MENU (ID_WirePar_Delete, PropertyClassDialog :: OnWireParameterDel)
+  EVT_MENU (ID_WireMsg_Add, PropertyClassPanel :: OnWireMessageAdd)
+  EVT_MENU (ID_WireMsg_Edit, PropertyClassPanel :: OnWireMessageEdit)
+  EVT_MENU (ID_WireMsg_Delete, PropertyClassPanel :: OnWireMessageDel)
+  EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageSelected)
+  EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageDeselected)
 
-  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("spawnTemplateListCtrl"), PropertyClassDialog :: OnSpawnTemplateRMB)
-  EVT_MENU (ID_Spawn_Add, PropertyClassDialog :: OnSpawnTemplateAdd)
-  EVT_MENU (ID_Spawn_Edit, PropertyClassDialog :: OnSpawnTemplateEdit)
-  EVT_MENU (ID_Spawn_Delete, PropertyClassDialog :: OnSpawnTemplateDel)
+  EVT_MENU (ID_WirePar_Add, PropertyClassPanel :: OnWireParameterAdd)
+  EVT_MENU (ID_WirePar_Edit, PropertyClassPanel :: OnWireParameterEdit)
+  EVT_MENU (ID_WirePar_Delete, PropertyClassPanel :: OnWireParameterDel)
 
-  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("questParameterListCtrl"), PropertyClassDialog :: OnQuestParameterRMB)
-  EVT_MENU (ID_Quest_Add, PropertyClassDialog :: OnQuestParameterAdd)
-  EVT_MENU (ID_Quest_Edit, PropertyClassDialog :: OnQuestParameterEdit)
-  EVT_MENU (ID_Quest_Delete, PropertyClassDialog :: OnQuestParameterDel)
+  EVT_MENU (ID_Spawn_Add, PropertyClassPanel :: OnSpawnTemplateAdd)
+  EVT_MENU (ID_Spawn_Edit, PropertyClassPanel :: OnSpawnTemplateEdit)
+  EVT_MENU (ID_Spawn_Delete, PropertyClassPanel :: OnSpawnTemplateDel)
+
+  EVT_MENU (ID_Quest_Add, PropertyClassPanel :: OnQuestParameterAdd)
+  EVT_MENU (ID_Quest_Edit, PropertyClassPanel :: OnQuestParameterEdit)
+  EVT_MENU (ID_Quest_Delete, PropertyClassPanel :: OnQuestParameterDel)
 
 
-  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("inventoryTemplateListCtrl"), PropertyClassDialog :: OnInventoryTemplateRMB)
-  EVT_MENU (ID_Inv_Add, PropertyClassDialog :: OnInventoryTemplateAdd)
-  EVT_MENU (ID_Inv_Edit, PropertyClassDialog :: OnInventoryTemplateEdit)
-  EVT_MENU (ID_Inv_Delete, PropertyClassDialog :: OnInventoryTemplateDel)
+  EVT_MENU (ID_Inv_Add, PropertyClassPanel :: OnInventoryTemplateAdd)
+  EVT_MENU (ID_Inv_Edit, PropertyClassPanel :: OnInventoryTemplateEdit)
+  EVT_MENU (ID_Inv_Delete, PropertyClassPanel :: OnInventoryTemplateDel)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
-void PropertyClassDialog::OnOkButton (wxCommandEvent& event)
+bool PropertyClassPanel::CheckHitList (const char* listname, bool& hasItems,
+    const wxPoint& pos)
+{
+  int flags = 0;
+  wxListCtrl* list = wxStaticCast(FindWindow (
+	wxXmlResource::GetXRCID (wxString::FromUTF8 (listname))), wxListCtrl);
+  if (!list->IsShownOnScreen ()) return false;
+  long idx = list->HitTest (list->ScreenToClient (pos), flags, 0);
+  if (idx != wxNOT_FOUND) { hasItems = true; return true; }
+  //else if (list->GetRect ().Contains (list->ScreenToClient (pos)))
+  else if (list->GetScreenRect ().Contains (pos))
+  { hasItems = false; return true; }
+  return false;
+}
+
+void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
+{
+  bool hasItems;
+  if (CheckHitList ("propertyListCtrl", hasItems, event.GetPosition ()))
+    OnPropertyRMB (hasItems);
+  else if (CheckHitList ("wireMessageListCtrl", hasItems, event.GetPosition ()))
+    OnWireMessageRMB (hasItems);
+  else if (CheckHitList ("wireParameterListCtrl", hasItems, event.GetPosition ()))
+    OnWireParameterRMB (hasItems);
+  else if (CheckHitList ("spawnTemplateListCtrl", hasItems, event.GetPosition ()))
+    OnSpawnTemplateRMB (hasItems);
+  else if (CheckHitList ("questParameterListCtrl", hasItems, event.GetPosition ()))
+    OnQuestParameterRMB (hasItems);
+  else if (CheckHitList ("inventoryTemplateListCtrl", hasItems, event.GetPosition ()))
+    OnInventoryTemplateRMB (hasItems);
+}
+
+void PropertyClassPanel::OnApplyButton (wxCommandEvent& event)
 {
   if (!UpdatePC ()) return;
-  callback->OkPressed (pctpl);
-  pctpl = 0;
-  callback = 0;
-  EndModal (TRUE);
+  emode->PCWasEdited (pctpl);
 }
 
-void PropertyClassDialog::OnCancelButton (wxCommandEvent& event)
+void PropertyClassPanel::OnRevertButton (wxCommandEvent& event)
 {
-  pctpl = 0;
-  callback = 0;
-  EndModal (TRUE);
-}
-
-void PropertyClassDialog::Show (PCEditCallback* cb)
-{
-  callback = cb;
-  ShowModal ();
 }
 
 static size_t FindNotebookPage (wxChoicebook* book, const char* name)
@@ -179,80 +196,7 @@ static size_t FindNotebookPage (wxChoicebook* book, const char* name)
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::AddRowFromInput (const char* listComp,
-    const char* nameComp, const char* valueComp, const char* typeComp)
-{
-  wxTextCtrl* nameText = (wxTextCtrl*)FindWindowByName (
-      wxString::FromUTF8 (nameComp));
-  wxTextCtrl* valueText = 0;
-  if (valueComp) valueText = (wxTextCtrl*)FindWindowByName (
-      wxString::FromUTF8 (valueComp));
-  wxChoice* typeChoice = 0;
-  if (typeComp) typeChoice = (wxChoice*)FindWindowByName (
-      wxString::FromUTF8 (typeComp));
-  wxListCtrl* list = (wxListCtrl*)FindWindowByName (
-      wxString::FromUTF8 (listComp));
-
-  csString name = (const char*)nameText->GetValue ().mb_str (wxConvUTF8);
-  csString value;
-  if (valueComp)
-    value = (const char*)valueText->GetValue ().mb_str (wxConvUTF8);
-  csString type;
-  if (typeComp)
-    type = (const char*)typeChoice->GetStringSelection ().mb_str (wxConvUTF8);
-
-  long idx = ListCtrlTools::FindRow (list, 0, name.GetData ());
-  if (idx == -1)
-  {
-    if (typeComp)
-      ListCtrlTools::AddRow (list, name.GetData (), value.GetData (), type.GetData (), 0);
-    else if (valueComp)
-      ListCtrlTools::AddRow (list, name.GetData (), value.GetData (), 0);
-    else
-      ListCtrlTools::AddRow (list, name.GetData (), 0);
-  }
-  else
-  {
-    if (typeComp)
-      ListCtrlTools::ReplaceRow (list, idx, name.GetData (), value.GetData (), type.GetData (), 0);
-    else if (valueComp)
-      ListCtrlTools::ReplaceRow (list, idx, name.GetData (), value.GetData (), 0);
-    else
-      ListCtrlTools::ReplaceRow (list, idx, name.GetData (), 0);
-  }
-}
-
-void PropertyClassDialog::FillFieldsFromRow (const char* listComp,
-    const char* nameComp, const char* valueComp, const char* typeComp,
-    const char* delComp,
-    long selIndex)
-{
-  wxButton* delButton = (wxButton*)FindWindowByName (
-      wxString::FromUTF8 (delComp));
-  delButton->Enable ();
-
-  wxTextCtrl* nameText = (wxTextCtrl*)FindWindowByName (
-      wxString::FromUTF8 (nameComp));
-  wxTextCtrl* valueText = 0;
-  if (valueComp) valueText = (wxTextCtrl*)FindWindowByName (
-      wxString::FromUTF8 (valueComp));
-  wxChoice* typeChoice = 0;
-  if (typeComp) typeChoice = (wxChoice*)FindWindowByName (
-      wxString::FromUTF8 (typeComp));
-  wxListCtrl* list = (wxListCtrl*)FindWindowByName (
-      wxString::FromUTF8 (listComp));
-
-  csStringArray row = ListCtrlTools::ReadRow (list, selIndex);
-  nameText->SetValue (wxString::FromUTF8 (row[0]));
-  if (valueComp)
-    valueText->SetValue (wxString::FromUTF8 (row[1]));
-  if (typeComp)
-    typeChoice->SetStringSelection (wxString::FromUTF8 (row[2]));
-}
-
-// -----------------------------------------------------------------------
-
-bool PropertyClassDialog::UpdateCurrentWireParams ()
+bool PropertyClassPanel::UpdateCurrentWireParams ()
 {
   iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
@@ -278,16 +222,19 @@ bool PropertyClassDialog::UpdateCurrentWireParams ()
   return true;
 }
 
-void PropertyClassDialog::OnWireParameterRMB (wxListEvent& event)
+void PropertyClassPanel::OnWireParameterRMB (bool hasItems)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_WirePar_Add, wxT ("&Add"));
-  contextMenu.Append(ID_WirePar_Edit, wxT ("&Edit"));
-  contextMenu.Append(ID_WirePar_Delete, wxT ("&Delete"));
+  if (hasItems)
+  {
+    contextMenu.Append(ID_WirePar_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_WirePar_Delete, wxT ("&Delete"));
+  }
   PopupMenu (&contextMenu);
 }
 
-UIDialog* PropertyClassDialog::GetWireParDialog ()
+UIDialog* PropertyClassPanel::GetWireParDialog ()
 {
   if (!wireParDialog)
   {
@@ -303,7 +250,7 @@ UIDialog* PropertyClassDialog::GetWireParDialog ()
   return wireParDialog;
 }
 
-void PropertyClassDialog::OnWireParameterEdit (wxCommandEvent& event)
+void PropertyClassPanel::OnWireParameterEdit (wxCommandEvent& event)
 {
   UIDialog* dialog = GetWireParDialog ();
 
@@ -327,7 +274,7 @@ void PropertyClassDialog::OnWireParameterEdit (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnWireParameterAdd (wxCommandEvent& event)
+void PropertyClassPanel::OnWireParameterAdd (wxCommandEvent& event)
 {
   UIDialog* dialog = GetWireParDialog ();
   dialog->Clear ();
@@ -343,7 +290,7 @@ void PropertyClassDialog::OnWireParameterAdd (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnWireParameterDel (wxCommandEvent& event)
+void PropertyClassPanel::OnWireParameterDel (wxCommandEvent& event)
 {
   wxListCtrl* list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
@@ -355,16 +302,19 @@ void PropertyClassDialog::OnWireParameterDel (wxCommandEvent& event)
   UpdateCurrentWireParams ();
 }
 
-void PropertyClassDialog::OnWireMessageRMB (wxListEvent& event)
+void PropertyClassPanel::OnWireMessageRMB (bool hasItems)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_WireMsg_Add, wxT ("&Add"));
-  contextMenu.Append(ID_WireMsg_Edit, wxT ("&Edit"));
-  contextMenu.Append(ID_WireMsg_Delete, wxT ("&Delete"));
+  if (hasItems)
+  {
+    contextMenu.Append(ID_WireMsg_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_WireMsg_Delete, wxT ("&Delete"));
+  }
   PopupMenu (&contextMenu);
 }
 
-UIDialog* PropertyClassDialog::GetWireMsgDialog ()
+UIDialog* PropertyClassPanel::GetWireMsgDialog ()
 {
   if (!wireMsgDialog)
   {
@@ -380,7 +330,7 @@ UIDialog* PropertyClassDialog::GetWireMsgDialog ()
   return wireMsgDialog;
 }
 
-void PropertyClassDialog::OnWireMessageEdit (wxCommandEvent& event)
+void PropertyClassPanel::OnWireMessageEdit (wxCommandEvent& event)
 {
   UIDialog* dialog = GetWireMsgDialog ();
 
@@ -403,7 +353,7 @@ void PropertyClassDialog::OnWireMessageEdit (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnWireMessageAdd (wxCommandEvent& event)
+void PropertyClassPanel::OnWireMessageAdd (wxCommandEvent& event)
 {
   UIDialog* dialog = GetWireMsgDialog ();
   dialog->Clear ();
@@ -419,7 +369,7 @@ void PropertyClassDialog::OnWireMessageAdd (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnWireMessageDel (wxCommandEvent& event)
+void PropertyClassPanel::OnWireMessageDel (wxCommandEvent& event)
 {
   wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
@@ -432,7 +382,7 @@ void PropertyClassDialog::OnWireMessageDel (wxCommandEvent& event)
   parList->DeleteAllItems ();
 }
 
-void PropertyClassDialog::OnWireMessageSelected (wxListEvent& event)
+void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
 {
   iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
 
@@ -460,13 +410,13 @@ void PropertyClassDialog::OnWireMessageSelected (wxListEvent& event)
   }
 }
 
-void PropertyClassDialog::OnWireMessageDeselected (wxListEvent& event)
+void PropertyClassPanel::OnWireMessageDeselected (wxListEvent& event)
 {
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
 }
 
-bool PropertyClassDialog::UpdateWire ()
+bool PropertyClassPanel::UpdateWire ()
 {
   pctpl->SetName ("pclogic.wire");
   pctpl->RemoveAllProperties ();
@@ -517,7 +467,7 @@ bool PropertyClassDialog::UpdateWire ()
   return true;
 }
 
-void PropertyClassDialog::FillWire ()
+void PropertyClassPanel::FillWire ()
 {
   wxListCtrl* outputList = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
   outputList->DeleteAllItems ();
@@ -563,16 +513,19 @@ void PropertyClassDialog::FillWire ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnSpawnTemplateRMB (wxListEvent& event)
+void PropertyClassPanel::OnSpawnTemplateRMB (bool hasItems)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Spawn_Add, wxT ("&Add"));
-  contextMenu.Append(ID_Spawn_Edit, wxT ("&Edit"));
-  contextMenu.Append(ID_Spawn_Delete, wxT ("&Delete"));
+  if (hasItems)
+  {
+    contextMenu.Append(ID_Spawn_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_Spawn_Delete, wxT ("&Delete"));
+  }
   PopupMenu (&contextMenu);
 }
 
-UIDialog* PropertyClassDialog::GetSpawnTemplateDialog ()
+UIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
 {
   if (!spawnTempDialog)
   {
@@ -584,7 +537,7 @@ UIDialog* PropertyClassDialog::GetSpawnTemplateDialog ()
   return spawnTempDialog;
 }
 
-void PropertyClassDialog::OnSpawnTemplateEdit (wxCommandEvent& event)
+void PropertyClassPanel::OnSpawnTemplateEdit (wxCommandEvent& event)
 {
   UIDialog* dialog = GetSpawnTemplateDialog ();
 
@@ -603,7 +556,7 @@ void PropertyClassDialog::OnSpawnTemplateEdit (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnSpawnTemplateAdd (wxCommandEvent& event)
+void PropertyClassPanel::OnSpawnTemplateAdd (wxCommandEvent& event)
 {
   UIDialog* dialog = GetSpawnTemplateDialog ();
   dialog->Clear ();
@@ -616,7 +569,7 @@ void PropertyClassDialog::OnSpawnTemplateAdd (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnSpawnTemplateDel (wxCommandEvent& event)
+void PropertyClassPanel::OnSpawnTemplateDel (wxCommandEvent& event)
 {
   wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
@@ -625,7 +578,7 @@ void PropertyClassDialog::OnSpawnTemplateDel (wxCommandEvent& event)
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
 }
 
-bool PropertyClassDialog::UpdateSpawn ()
+bool PropertyClassPanel::UpdateSpawn ()
 {
   pctpl->SetName ("pclogic.spawn");
   pctpl->RemoveAllProperties ();
@@ -698,7 +651,7 @@ bool PropertyClassDialog::UpdateSpawn ()
   return true;
 }
 
-void PropertyClassDialog::FillSpawn ()
+void PropertyClassPanel::FillSpawn ()
 {
   wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
   list->DeleteAllItems ();
@@ -780,16 +733,19 @@ void PropertyClassDialog::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnQuestParameterRMB (wxListEvent& event)
+void PropertyClassPanel::OnQuestParameterRMB (bool hasItems)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Quest_Add, wxT ("&Add"));
-  contextMenu.Append(ID_Quest_Edit, wxT ("&Edit"));
-  contextMenu.Append(ID_Quest_Delete, wxT ("&Delete"));
+  if (hasItems)
+  {
+    contextMenu.Append(ID_Quest_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_Quest_Delete, wxT ("&Delete"));
+  }
   PopupMenu (&contextMenu);
 }
 
-UIDialog* PropertyClassDialog::GetQuestDialog ()
+UIDialog* PropertyClassPanel::GetQuestDialog ()
 {
   if (!questParDialog)
   {
@@ -805,7 +761,7 @@ UIDialog* PropertyClassDialog::GetQuestDialog ()
   return questParDialog;
 }
 
-void PropertyClassDialog::OnQuestParameterEdit (wxCommandEvent& event)
+void PropertyClassPanel::OnQuestParameterEdit (wxCommandEvent& event)
 {
   UIDialog* dialog = GetQuestDialog ();
 
@@ -828,7 +784,7 @@ void PropertyClassDialog::OnQuestParameterEdit (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnQuestParameterAdd (wxCommandEvent& event)
+void PropertyClassPanel::OnQuestParameterAdd (wxCommandEvent& event)
 {
   UIDialog* dialog = GetQuestDialog ();
   dialog->Clear ();
@@ -843,7 +799,7 @@ void PropertyClassDialog::OnQuestParameterAdd (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnQuestParameterDel (wxCommandEvent& event)
+void PropertyClassPanel::OnQuestParameterDel (wxCommandEvent& event)
 {
   wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
@@ -854,7 +810,7 @@ void PropertyClassDialog::OnQuestParameterDel (wxCommandEvent& event)
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
 }
 
-bool PropertyClassDialog::UpdateQuest ()
+bool PropertyClassPanel::UpdateQuest ()
 {
   pctpl->SetName ("pclogic.quest");
   pctpl->RemoveAllProperties ();
@@ -897,7 +853,7 @@ bool PropertyClassDialog::UpdateQuest ()
   return true;
 }
 
-void PropertyClassDialog::FillQuest ()
+void PropertyClassPanel::FillQuest ()
 {
   wxListBox* stateList = XRCCTRL (*this, "questStateBox", wxListBox);
   stateList->Clear ();
@@ -961,16 +917,19 @@ void PropertyClassDialog::FillQuest ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnInventoryTemplateRMB (wxListEvent& event)
+void PropertyClassPanel::OnInventoryTemplateRMB (bool hasItems)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Inv_Add, wxT ("&Add"));
-  contextMenu.Append(ID_Inv_Edit, wxT ("&Edit"));
-  contextMenu.Append(ID_Inv_Delete, wxT ("&Delete"));
+  if (hasItems)
+  {
+    contextMenu.Append(ID_Inv_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_Inv_Delete, wxT ("&Delete"));
+  }
   PopupMenu (&contextMenu);
 }
 
-UIDialog* PropertyClassDialog::GetInventoryTemplateDialog ()
+UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
 {
   if (!invTempDialog)
   {
@@ -983,7 +942,7 @@ UIDialog* PropertyClassDialog::GetInventoryTemplateDialog ()
   return invTempDialog;
 }
 
-void PropertyClassDialog::OnInventoryTemplateEdit (wxCommandEvent& event)
+void PropertyClassPanel::OnInventoryTemplateEdit (wxCommandEvent& event)
 {
   UIDialog* dialog = GetInventoryTemplateDialog ();
 
@@ -1004,7 +963,7 @@ void PropertyClassDialog::OnInventoryTemplateEdit (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnInventoryTemplateAdd (wxCommandEvent& event)
+void PropertyClassPanel::OnInventoryTemplateAdd (wxCommandEvent& event)
 {
   UIDialog* dialog = GetInventoryTemplateDialog ();
   dialog->Clear ();
@@ -1018,7 +977,7 @@ void PropertyClassDialog::OnInventoryTemplateAdd (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnInventoryTemplateDel (wxCommandEvent& event)
+void PropertyClassPanel::OnInventoryTemplateDel (wxCommandEvent& event)
 {
   wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
@@ -1028,7 +987,7 @@ void PropertyClassDialog::OnInventoryTemplateDel (wxCommandEvent& event)
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
 }
 
-bool PropertyClassDialog::UpdateInventory ()
+bool PropertyClassPanel::UpdateInventory ()
 {
   pctpl->SetName ("pctools.inventory");
   pctpl->RemoveAllProperties ();
@@ -1073,7 +1032,7 @@ bool PropertyClassDialog::UpdateInventory ()
   return true;
 }
 
-void PropertyClassDialog::FillInventory ()
+void PropertyClassPanel::FillInventory ()
 {
   wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
   list->DeleteAllItems ();
@@ -1114,16 +1073,19 @@ void PropertyClassDialog::FillInventory ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassDialog::OnPropertyRMB (wxListEvent& event)
+void PropertyClassPanel::OnPropertyRMB (bool hasItems)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Prop_Add, wxT ("&Add"));
-  contextMenu.Append(ID_Prop_Edit, wxT ("&Edit"));
-  contextMenu.Append(ID_Prop_Delete, wxT ("&Delete"));
+  if (hasItems)
+  {
+    contextMenu.Append(ID_Prop_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_Prop_Delete, wxT ("&Delete"));
+  }
   PopupMenu (&contextMenu);
 }
 
-UIDialog* PropertyClassDialog::GetPropertyDialog ()
+UIDialog* PropertyClassPanel::GetPropertyDialog ()
 {
   if (!propDialog)
   {
@@ -1139,7 +1101,7 @@ UIDialog* PropertyClassDialog::GetPropertyDialog ()
   return propDialog;
 }
 
-void PropertyClassDialog::OnPropertyEdit (wxCommandEvent& event)
+void PropertyClassPanel::OnPropertyEdit (wxCommandEvent& event)
 {
   UIDialog* dialog = GetPropertyDialog ();
 
@@ -1162,7 +1124,7 @@ void PropertyClassDialog::OnPropertyEdit (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnPropertyAdd (wxCommandEvent& event)
+void PropertyClassPanel::OnPropertyAdd (wxCommandEvent& event)
 {
   UIDialog* dialog = GetPropertyDialog ();
   dialog->Clear ();
@@ -1177,7 +1139,7 @@ void PropertyClassDialog::OnPropertyAdd (wxCommandEvent& event)
   }
 }
 
-void PropertyClassDialog::OnPropertyDel (wxCommandEvent& event)
+void PropertyClassPanel::OnPropertyDel (wxCommandEvent& event)
 {
   wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
@@ -1188,7 +1150,7 @@ void PropertyClassDialog::OnPropertyDel (wxCommandEvent& event)
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
 }
 
-bool PropertyClassDialog::UpdateProperties ()
+bool PropertyClassPanel::UpdateProperties ()
 {
   pctpl->SetName ("pctools.properties");
   pctpl->RemoveAllProperties ();
@@ -1219,7 +1181,7 @@ bool PropertyClassDialog::UpdateProperties ()
   return true;
 }
 
-void PropertyClassDialog::FillProperties ()
+void PropertyClassPanel::FillProperties ()
 {
   wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
   list->DeleteAllItems ();
@@ -1244,7 +1206,7 @@ void PropertyClassDialog::FillProperties ()
 
 // -----------------------------------------------------------------------
 
-bool PropertyClassDialog::UpdatePC ()
+bool PropertyClassPanel::UpdatePC ()
 {
   wxTextCtrl* tagText = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
   csString tag = (const char*)tagText->GetValue ().mb_str (wxConvUTF8);
@@ -1260,22 +1222,10 @@ bool PropertyClassDialog::UpdatePC ()
   csString page = (const char*)pageTxt.mb_str (wxConvUTF8);
 
   iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (page, tag);
-  if (!pctpl)
+  if (pc && pc != pctpl)
   {
-    if (pc)
-    {
-      uiManager->Error ("Property class with this name and tag already exists!");
-      return false;
-    }
-    pctpl = tpl->CreatePropertyClassTemplate ();
-  }
-  else
-  {
-    if (pc && pc != pctpl)
-    {
-      uiManager->Error ("Property class with this name and tag already exists!");
-      return false;
-    }
+    uiManager->Error ("Property class with this name and tag already exists!");
+    return false;
   }
 
   if (tag.IsEmpty ())
@@ -1295,11 +1245,11 @@ bool PropertyClassDialog::UpdatePC ()
   }
 }
 
-void PropertyClassDialog::SwitchToPC (iCelEntityTemplate* tpl,
+void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
     iCelPropertyClassTemplate* pctpl)
 {
-  PropertyClassDialog::tpl = tpl;
-  PropertyClassDialog::pctpl = pctpl;
+  PropertyClassPanel::tpl = tpl;
+  PropertyClassPanel::pctpl = pctpl;
 
   if (pctpl)
   {
@@ -1321,10 +1271,13 @@ void PropertyClassDialog::SwitchToPC (iCelEntityTemplate* tpl,
   FillWire ();
 }
 
-PropertyClassDialog::PropertyClassDialog (wxWindow* parent, UIManager* uiManager) :
-  uiManager (uiManager)
+PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
+    EntityMode* emode) :
+  uiManager (uiManager), emode (emode)
 {
-  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("PropertyClassDialog"));
+  parentSizer = parent->GetSizer (); 
+  parentSizer->Add (this, 0, wxALL | wxEXPAND);
+  wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
 
   wxListCtrl* list;
 
@@ -1362,7 +1315,7 @@ PropertyClassDialog::PropertyClassDialog (wxWindow* parent, UIManager* uiManager
   wireMsgDialog = 0;
 }
 
-PropertyClassDialog::~PropertyClassDialog ()
+PropertyClassPanel::~PropertyClassPanel ()
 {
   delete propDialog;
   delete invTempDialog;

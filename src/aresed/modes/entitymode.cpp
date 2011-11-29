@@ -26,8 +26,8 @@ THE SOFTWARE.
 #include "../camerawin.h"
 #include "entitymode.h"
 #include "../ui/uimanager.h"
-#include "../ui/pcdialog.h"
 #include "../inspect.h"
+#include "pcpanel.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -38,22 +38,25 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-struct PCEditCallbackImp : public PCEditCallback
-{
-  EntityMode* entMode;
-  PCEditCallbackImp (EntityMode* entMode) : entMode (entMode) { }
-  virtual ~PCEditCallbackImp () { }
-  virtual void OkPressed (iCelPropertyClassTemplate* pctpl)
-  {
-    entMode->PCWasEdited (pctpl);
-  }
-};
-
-//---------------------------------------------------------------------------
-
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LISTBOX (XRCID("templateList"), EntityMode::Panel :: OnTemplateSelect)
 END_EVENT_TABLE()
+
+//---------------------------------------------------------------------------
+
+class GraphNodeCallback : public iGraphNodeCallback
+{
+private:
+  EntityMode* emode;
+
+public:
+  GraphNodeCallback (EntityMode* emode) : emode (emode) { }
+  virtual ~GraphNodeCallback () { }
+  virtual void ActivateNode (const char* nodeName)
+  {
+    emode->ActivateNode (nodeName);
+  }
+};
 
 //---------------------------------------------------------------------------
 
@@ -63,9 +66,17 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
+
+  pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (),
+      this);
+  pcPanel->Hide ();
+
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
   view = mgr->CreateGraphView ();
   view->Clear ();
+  csRef<GraphNodeCallback> cb;
+  cb.AttachNew (new GraphNodeCallback (this));
+  view->AddNodeActivationCallback (cb);
 
   view->SetVisible (false);
 
@@ -85,6 +96,24 @@ iMarkerColor* EntityMode::NewColor (const char* name,
   col->SetRGBColor (SELECTION_NONE, r0, g0, b0, 1);
   col->SetRGBColor (SELECTION_SELECTED, r1, g1, b1, 1);
   col->SetRGBColor (SELECTION_ACTIVE, r1, g1, b1, 1);
+  col->SetPenWidth (SELECTION_NONE, 1.2f);
+  col->SetPenWidth (SELECTION_SELECTED, 1.2f);
+  col->SetPenWidth (SELECTION_ACTIVE, 1.2f);
+  col->EnableFill (SELECTION_NONE, fill);
+  col->EnableFill (SELECTION_SELECTED, fill);
+  col->EnableFill (SELECTION_ACTIVE, fill);
+  return col;
+}
+
+iMarkerColor* EntityMode::NewColor (const char* name,
+    float r0, float g0, float b0, float r1, float g1, float b1,
+    float r2, float g2, float b2, bool fill)
+{
+  iMarkerManager* mgr = aresed3d->GetMarkerManager ();
+  iMarkerColor* col = mgr->CreateMarkerColor (name);
+  col->SetRGBColor (SELECTION_NONE, r0, g0, b0, 1);
+  col->SetRGBColor (SELECTION_SELECTED, r1, g1, b1, 1);
+  col->SetRGBColor (SELECTION_ACTIVE, r2, g2, b2, 1);
   col->SetPenWidth (SELECTION_NONE, 1.2f);
   col->SetPenWidth (SELECTION_SELECTED, 1.2f);
   col->SetPenWidth (SELECTION_ACTIVE, 1.2f);
@@ -123,28 +152,28 @@ void EntityMode::InitColors ()
   arrowLinkColor->SetPenWidth (SELECTION_ACTIVE, 0.5f);
 
   styleTemplate = mgr->CreateGraphNodeStyle ();
-  styleTemplate->SetBorderColor (NewColor ("templateColorFG", .7, .7, .7, 1, 1, 1, false));
+  styleTemplate->SetBorderColor (NewColor ("templateColorFG", .0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleTemplate->SetBackgroundColor (NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true));
   styleTemplate->SetTextColor (textColor);
 
   stylePC = mgr->CreateGraphNodeStyle ();
-  stylePC->SetBorderColor (NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, false));
+  stylePC->SetBorderColor (NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, 1, 1, 1, false));
   stylePC->SetBackgroundColor (NewColor ("pcColorBG", .1, .4, .5, .2, .6, .7, true));
   stylePC->SetTextColor (textColor);
 
   styleState = mgr->CreateGraphNodeStyle ();
-  styleState->SetBorderColor (NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, false));
+  styleState->SetBorderColor (NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, 1, 1, 1, false));
   styleState->SetBackgroundColor (NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true));
   styleState->SetTextColor (textColor);
 
   styleResponse = mgr->CreateGraphNodeStyle ();
-  styleResponse->SetBorderColor (NewColor ("respColorFG", 0, .7, .7, 0, 1, 1, false));
+  styleResponse->SetBorderColor (NewColor ("respColorFG", 0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleResponse->SetBackgroundColor (NewColor ("respColorBG", .3, .6, .7, .4, .7, .8, true));
   styleResponse->SetRoundness (1);
   styleResponse->SetTextColor (NewColor ("respColorTxt", 0, 0, 0, 0, 0, 0, false));
 
   styleReward = mgr->CreateGraphNodeStyle ();
-  styleReward->SetBorderColor (NewColor ("rewColorFG", 0, .7, .7, 0, 1, 1, false));
+  styleReward->SetBorderColor (NewColor ("rewColorFG", 0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleReward->SetBackgroundColor (NewColor ("rewColorBG", .3, .6, .7, .4, .7, .8, true));
   styleReward->SetRoundness (1);
   styleReward->SetTextColor (textColor);
@@ -494,37 +523,63 @@ void EntityMode::OnDelete ()
 
 void EntityMode::OnCreatePC ()
 {
-  printf ("CreatePC %s\n", currentNode.GetData ());
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (!tpl) return;
-  PropertyClassDialog* pcdialog = aresed3d->GetApp ()->GetUIManager ()->GetPCDialog ();
-  pcdialog->SwitchToPC (tpl, 0);
-  csRef<PCEditCallbackImp> cb;
-  cb.AttachNew (new PCEditCallbackImp (this));
-  pcdialog->Show (cb);
-}
-
-void EntityMode::OnEdit ()
-{
-  printf ("Edit %s\n", currentNode.GetData ()); fflush (stdout);
-  const char type = currentNode.operator[] (0);
-  if (type == 'P')
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  UIDialog* dialog = ui->CreateDialog ("New PropertyClass");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddChoice ("name", "pcobject.mesh", "pctools.properties",
+      "pctools.inventory", "pclogic.quest", "pclogic.spawn",
+      "pclogic.wire", 0);
+  dialog->AddRow ();
+  dialog->AddLabel ("Tag:");
+  dialog->AddText ("tag");
+  dialog->Clear ();
+  if (dialog->Show (0))
   {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("name", "");
+    csString tag = fields.Get ("tag", "");
+    printf ("name=%s tag=%s\n", name.GetData (), tag.GetData ());
     iCelPlLayer* pl = aresed3d->GetPlLayer ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    iCelPropertyClassTemplate* pctpl = GetPCTemplate (currentNode);
-    PropertyClassDialog* pcdialog = aresed3d->GetApp ()->GetUIManager ()->GetPCDialog ();
-    pcdialog->SwitchToPC (tpl, pctpl);
-    csRef<PCEditCallbackImp> cb;
-    cb.AttachNew (new PCEditCallbackImp (this));
-    pcdialog->Show (cb);
+    iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (name, tag);
+    if (pc)
+      ui->Error ("Property class with this name and tag already exists!");
+    else
+    {
+      pc = tpl->CreatePropertyClassTemplate ();
+      pc->SetName (name);
+      if (tag && *tag)
+        pc->SetTag (tag);
+      PCWasEdited (pc);
+    }
+
   }
+  delete dialog;
 }
 
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
   BuildTemplateGraph (currentTemplate);
+}
+
+void EntityMode::ActivateNode (const char* nodeName)
+{
+  if (!nodeName) { pcPanel->Hide (); return; }
+  csString activeNode = nodeName;
+  const char type = activeNode.operator[] (0);
+  if (type == 'P')
+  {
+    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
+    pcPanel->SwitchToPC (tpl, pctpl);
+    pcPanel->Show ();
+  }
+  else
+  {
+    pcPanel->Hide ();
+  }
 }
 
 void EntityMode::OnEditQuest ()
@@ -571,9 +626,6 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idCreate = ui->AllocContextMenuID ();
   frame->Connect (idCreate, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnCreatePC), 0, panel);
-  idEdit = ui->AllocContextMenuID ();
-  frame->Connect (idEdit, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnEdit), 0, panel);
   idEditQuest = ui->AllocContextMenuID ();
   frame->Connect (idEditQuest, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnEditQuest), 0, panel);
@@ -591,8 +643,6 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
       contextMenu->Append (idDelete, wxT ("Delete"));
     if (type == 'T')
       contextMenu->Append (idCreate, wxT ("Create Property Class..."));
-    if (strchr ("TPtr", type))
-      contextMenu->Append (idEdit, wxT ("Edit..."));
     if (type == 'P' && currentNode.StartsWith ("P:pclogic.quest"))
       contextMenu->Append (idEditQuest, wxT ("Edit quest"));
   }
