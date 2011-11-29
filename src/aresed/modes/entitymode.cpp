@@ -220,6 +220,8 @@ void EntityMode::Start ()
   aresed3d->GetApp ()->GetCameraWindow ()->Hide ();
   SetupItems ();
   view->SetVisible (true);
+  pcPanel->Hide ();
+  currentNode = "";
 }
 
 void EntityMode::Stop ()
@@ -460,6 +462,7 @@ void EntityMode::GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& pcKe
 void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   currentTemplate = templateName;
+  pcPanel->Hide ();
 
   view->Clear ();
 
