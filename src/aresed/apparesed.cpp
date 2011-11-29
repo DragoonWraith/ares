@@ -1345,6 +1345,7 @@ bool AppAresEditWX::InitWX ()
   editMode = 0;
 
   wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
+  leftPanePanel->SetMinSize (wxSize (270,-1));
   camwin = new CameraWindow (leftPanePanel, aresed3d);
   camwin->AllocContextHandlers (this);
 
