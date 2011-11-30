@@ -421,6 +421,21 @@ struct iGraphView : public virtual iBase
   virtual void RemoveNode (const char* name) = 0;
 
   /**
+   * Change the label and style of a node.
+   */
+  virtual void ChangeNode (const char* name, const char* label, iGraphNodeStyle* style) = 0;
+
+  /**
+   * Replace a node with another node. This will create a new node and replace
+   * all links that refer to the old node so that they now refer to the new node
+   * and then it will remove the old node.
+   * It is safe to call this method with oldNode == newNode. In that case this
+   * function will directly call ChangeNode().
+   */
+  virtual void ReplaceNode (const char* oldNode, const char* newNode,
+      const char* label = 0, iGraphNodeStyle* style = 0) = 0;
+
+  /**
    * Link two nodes.
    */
   virtual void LinkNode (const char* node1, const char* node2, iGraphLinkStyle* style = 0) = 0;

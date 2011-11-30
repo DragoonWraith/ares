@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "../ui/uimanager.h"
 #include "../inspect.h"
 #include "pcpanel.h"
+#include "../ui/listctrltools.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -40,6 +41,7 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LISTBOX (XRCID("templateList"), EntityMode::Panel :: OnTemplateSelect)
+  EVT_CONTEXT_MENU (EntityMode::Panel :: OnContextMenu)
 END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
@@ -183,7 +185,7 @@ void EntityMode::InitColors ()
   styleInvisible->SetBackgroundColor (arrowLinkColor);
   styleInvisible->SetRoundness (1);
   styleInvisible->SetTextColor (arrowLinkColor);
-  styleInvisible->SetWeightFactor (0.2f);
+  styleInvisible->SetWeightFactor (0.4f);
 
   view->SetDefaultNodeStyle (stylePC);
 
@@ -221,12 +223,28 @@ void EntityMode::Start ()
   SetupItems ();
   view->SetVisible (true);
   pcPanel->Hide ();
-  currentNode = "";
+  contextMenuNode = "";
 }
 
 void EntityMode::Stop ()
 {
   view->SetVisible (false);
+}
+
+void EntityMode::OnContextMenu (wxContextMenuEvent& event)
+{
+  wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
+  bool hasItem;
+  if (ListCtrlTools::CheckHitList (list, hasItem, event.GetPosition ()))
+  {
+    wxMenu contextMenu;
+    contextMenu.Append(ID_Template_Add, wxT ("&Add Template..."));
+    if (hasItem)
+    {
+      contextMenu.Append(ID_Template_Delete, wxT ("&Delete"));
+    }
+    panel->PopupMenu (&contextMenu);
+  }
 }
 
 const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
@@ -521,7 +539,8 @@ void EntityMode::OnTemplateSelect ()
 
 void EntityMode::OnDelete ()
 {
-  printf ("Delete %s\n", currentNode.GetData ());
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  ui->Message ("Not implemented yet!");
 }
 
 void EntityMode::OnCreatePC ()
@@ -554,7 +573,8 @@ void EntityMode::OnCreatePC ()
       pc->SetName (name);
       if (tag && *tag)
         pc->SetTag (tag);
-      PCWasEdited (pc);
+
+      BuildTemplateGraph (currentTemplate);
     }
 
   }
@@ -563,7 +583,11 @@ void EntityMode::OnCreatePC ()
 
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
-  BuildTemplateGraph (currentTemplate);
+  csString activeNode = view->GetActiveNode ();
+
+  csString newKey, newLabel;
+  GetPCKeyLabel (pctpl, newKey, newLabel);
+  view->ReplaceNode (activeNode, newKey, newLabel, stylePC);
 }
 
 void EntityMode::ActivateNode (const char* nodeName)
@@ -591,7 +615,7 @@ void EntityMode::OnEditQuest ()
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   if (!tpl) return;
 
-  csStringArray tokens (currentNode, ":");
+  csStringArray tokens (contextMenuNode, ":");
   csString pcName = tokens[1];
   csString tagName;
   if (tokens.GetSize () >= 3) tagName = tokens[2];
@@ -636,17 +660,17 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
 
 void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
-  currentNode = view->FindHitNode (mouseX, mouseY);
-  if (!currentNode.IsEmpty ())
+  contextMenuNode = view->FindHitNode (mouseX, mouseY);
+  if (!contextMenuNode.IsEmpty ())
   {
     contextMenu->AppendSeparator ();
 
-    const char type = currentNode.operator[] (0);
+    const char type = contextMenuNode.operator[] (0);
     if (strchr ("TPStier", type))
       contextMenu->Append (idDelete, wxT ("Delete"));
     if (type == 'T')
       contextMenu->Append (idCreate, wxT ("Create Property Class..."));
-    if (type == 'P' && currentNode.StartsWith ("P:pclogic.quest"))
+    if (type == 'P' && contextMenuNode.StartsWith ("P:pclogic.quest"))
       contextMenu->Append (idEditQuest, wxT ("Edit quest"));
   }
 }

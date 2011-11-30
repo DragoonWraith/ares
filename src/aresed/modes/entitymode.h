@@ -39,6 +39,12 @@ struct iTriggerFactory;
 
 class PropertyClassPanel;
 
+enum
+{
+  ID_Template_Add = wxID_HIGHEST + 10000,
+  ID_Template_Delete,
+};
+
 class EntityMode : public EditingMode
 {
 private:
@@ -81,7 +87,7 @@ private:
   void InitColors ();
 
   csString currentTemplate;
-  csString currentNode;
+  csString contextMenuNode;	// Node that is being used for the context menu.
 
   PropertyClassPanel* pcPanel;
 
@@ -112,6 +118,7 @@ public:
   void OnDelete ();
   void OnCreatePC ();
   void OnEditQuest ();
+  void OnContextMenu (wxContextMenuEvent& event);
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
   void ActivateNode (const char* nodeName);
@@ -127,6 +134,7 @@ public:
     void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
+    void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
 
   private:
     EntityMode* s;

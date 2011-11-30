@@ -106,10 +106,10 @@ static celDataType StringToType (const csString& type)
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
-  EVT_BUTTON (XRCID("applyButton"), PropertyClassPanel :: OnApplyButton)
-  EVT_BUTTON (XRCID("revertButton"), PropertyClassPanel :: OnRevertButton)
-
   EVT_CONTEXT_MENU (PropertyClassPanel :: OnContextMenu)
+
+  EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
+  EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_MENU (ID_Prop_Add, PropertyClassPanel :: OnPropertyAdd)
   EVT_MENU (ID_Prop_Edit, PropertyClassPanel :: OnPropertyEdit)
@@ -128,11 +128,18 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_MENU (ID_Spawn_Add, PropertyClassPanel :: OnSpawnTemplateAdd)
   EVT_MENU (ID_Spawn_Edit, PropertyClassPanel :: OnSpawnTemplateEdit)
   EVT_MENU (ID_Spawn_Delete, PropertyClassPanel :: OnSpawnTemplateDel)
+  EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_CHECKBOX (XRCID("spawnRandomCheckBox"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_CHECKBOX (XRCID("spawnUniqueCheckBox"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_CHECKBOX (XRCID("spawnNameCounterCheckBox"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("spawnInhibitText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("spawnMinDelayText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_MENU (ID_Quest_Add, PropertyClassPanel :: OnQuestParameterAdd)
   EVT_MENU (ID_Quest_Edit, PropertyClassPanel :: OnQuestParameterEdit)
   EVT_MENU (ID_Quest_Delete, PropertyClassPanel :: OnQuestParameterDel)
-
+  EVT_LISTBOX (XRCID("questStateBox"), PropertyClassPanel :: OnQuestStateSelected)
 
   EVT_MENU (ID_Inv_Add, PropertyClassPanel :: OnInventoryTemplateAdd)
   EVT_MENU (ID_Inv_Edit, PropertyClassPanel :: OnInventoryTemplateEdit)
@@ -141,46 +148,40 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
-bool PropertyClassPanel::CheckHitList (const char* listname, bool& hasItems,
+bool PropertyClassPanel::CheckHitList (const char* listname, bool& hasItem,
     const wxPoint& pos)
 {
-  int flags = 0;
   wxListCtrl* list = wxStaticCast(FindWindow (
 	wxXmlResource::GetXRCID (wxString::FromUTF8 (listname))), wxListCtrl);
-  if (!list->IsShownOnScreen ()) return false;
-  long idx = list->HitTest (list->ScreenToClient (pos), flags, 0);
-  if (idx != wxNOT_FOUND) { hasItems = true; return true; }
-  //else if (list->GetRect ().Contains (list->ScreenToClient (pos)))
-  else if (list->GetScreenRect ().Contains (pos))
-  { hasItems = false; return true; }
-  return false;
+  return ListCtrlTools::CheckHitList (list, hasItem, pos);
 }
 
 void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
 {
-  bool hasItems;
-  if (CheckHitList ("propertyListCtrl", hasItems, event.GetPosition ()))
-    OnPropertyRMB (hasItems);
-  else if (CheckHitList ("wireMessageListCtrl", hasItems, event.GetPosition ()))
-    OnWireMessageRMB (hasItems);
-  else if (CheckHitList ("wireParameterListCtrl", hasItems, event.GetPosition ()))
-    OnWireParameterRMB (hasItems);
-  else if (CheckHitList ("spawnTemplateListCtrl", hasItems, event.GetPosition ()))
-    OnSpawnTemplateRMB (hasItems);
-  else if (CheckHitList ("questParameterListCtrl", hasItems, event.GetPosition ()))
-    OnQuestParameterRMB (hasItems);
-  else if (CheckHitList ("inventoryTemplateListCtrl", hasItems, event.GetPosition ()))
-    OnInventoryTemplateRMB (hasItems);
+  bool hasItem;
+  if (CheckHitList ("propertyListCtrl", hasItem, event.GetPosition ()))
+    OnPropertyRMB (hasItem);
+  else if (CheckHitList ("wireMessageListCtrl", hasItem, event.GetPosition ()))
+    OnWireMessageRMB (hasItem);
+  else if (CheckHitList ("wireParameterListCtrl", hasItem, event.GetPosition ()))
+    OnWireParameterRMB (hasItem);
+  else if (CheckHitList ("spawnTemplateListCtrl", hasItem, event.GetPosition ()))
+    OnSpawnTemplateRMB (hasItem);
+  else if (CheckHitList ("questParameterListCtrl", hasItem, event.GetPosition ()))
+    OnQuestParameterRMB (hasItem);
+  else if (CheckHitList ("inventoryTemplateListCtrl", hasItem, event.GetPosition ()))
+    OnInventoryTemplateRMB (hasItem);
 }
 
-void PropertyClassPanel::OnApplyButton (wxCommandEvent& event)
+void PropertyClassPanel::OnUpdateEvent (wxCommandEvent& event)
 {
-  if (!UpdatePC ()) return;
-  emode->PCWasEdited (pctpl);
+  printf ("Update!\n"); fflush (stdout);
+  UpdatePC ();
 }
 
-void PropertyClassPanel::OnRevertButton (wxCommandEvent& event)
+void PropertyClassPanel::OnChoicebookPageChange (wxChoicebookEvent& event)
 {
+  UpdatePC ();
 }
 
 static size_t FindNotebookPage (wxChoicebook* book, const char* name)
@@ -222,11 +223,11 @@ bool PropertyClassPanel::UpdateCurrentWireParams ()
   return true;
 }
 
-void PropertyClassPanel::OnWireParameterRMB (bool hasItems)
+void PropertyClassPanel::OnWireParameterRMB (bool hasItem)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_WirePar_Add, wxT ("&Add"));
-  if (hasItems)
+  if (hasItem)
   {
     contextMenu.Append(ID_WirePar_Edit, wxT ("&Edit"));
     contextMenu.Append(ID_WirePar_Delete, wxT ("&Delete"));
@@ -271,6 +272,7 @@ void PropertyClassPanel::OnWireParameterEdit (wxCommandEvent& event)
 	fields.Get ("value", "").GetData (),
 	fields.Get ("type", "").GetData (), 0);
     UpdateCurrentWireParams ();
+    UpdatePC ();
   }
 }
 
@@ -287,6 +289,7 @@ void PropertyClassPanel::OnWireParameterAdd (wxCommandEvent& event)
 	fields.Get ("value", "").GetData (),
 	fields.Get ("type", "").GetData (), 0);
     UpdateCurrentWireParams ();
+    UpdatePC ();
   }
 }
 
@@ -300,13 +303,14 @@ void PropertyClassPanel::OnWireParameterDel (wxCommandEvent& event)
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
   UpdateCurrentWireParams ();
+  UpdatePC ();
 }
 
-void PropertyClassPanel::OnWireMessageRMB (bool hasItems)
+void PropertyClassPanel::OnWireMessageRMB (bool hasItem)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_WireMsg_Add, wxT ("&Add"));
-  if (hasItems)
+  if (hasItem)
   {
     contextMenu.Append(ID_WireMsg_Edit, wxT ("&Edit"));
     contextMenu.Append(ID_WireMsg_Delete, wxT ("&Delete"));
@@ -350,6 +354,7 @@ void PropertyClassPanel::OnWireMessageEdit (wxCommandEvent& event)
 	fields.Get ("entity", "").GetData (), 0);
     wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
     parList->DeleteAllItems ();
+    UpdatePC ();
   }
 }
 
@@ -366,6 +371,7 @@ void PropertyClassPanel::OnWireMessageAdd (wxCommandEvent& event)
 	fields.Get ("entity", "").GetData (), 0);
     wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
     parList->DeleteAllItems ();
+    UpdatePC ();
   }
 }
 
@@ -380,6 +386,7 @@ void PropertyClassPanel::OnWireMessageDel (wxCommandEvent& event)
 
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
+  UpdatePC ();
 }
 
 void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
@@ -464,6 +471,7 @@ bool PropertyClassPanel::UpdateWire ()
 
     pctpl->PerformAction (pl->FetchStringID ("AddOutput"), params);
   }
+  emode->PCWasEdited (pctpl);
   return true;
 }
 
@@ -513,11 +521,11 @@ void PropertyClassPanel::FillWire ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnSpawnTemplateRMB (bool hasItems)
+void PropertyClassPanel::OnSpawnTemplateRMB (bool hasItem)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Spawn_Add, wxT ("&Add"));
-  if (hasItems)
+  if (hasItem)
   {
     contextMenu.Append(ID_Spawn_Edit, wxT ("&Edit"));
     contextMenu.Append(ID_Spawn_Delete, wxT ("&Delete"));
@@ -553,6 +561,7 @@ void PropertyClassPanel::OnSpawnTemplateEdit (wxCommandEvent& event)
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     ListCtrlTools::ReplaceRow (list, idx,
 	fields.Get ("name", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -566,6 +575,7 @@ void PropertyClassPanel::OnSpawnTemplateAdd (wxCommandEvent& event)
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     ListCtrlTools::AddRow (list,
 	fields.Get ("name", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -576,6 +586,7 @@ void PropertyClassPanel::OnSpawnTemplateDel (wxCommandEvent& event)
   if (idx == -1) return;
   list->DeleteItem (idx);
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  UpdatePC ();
 }
 
 bool PropertyClassPanel::UpdateSpawn ()
@@ -648,6 +659,7 @@ bool PropertyClassPanel::UpdateSpawn ()
   pctpl->SetProperty (pl->FetchStringID ("namecounter"), namecounterCB->IsChecked ());
 
   // @@@ TODO AddSpawnPosition
+  emode->PCWasEdited (pctpl);
   return true;
 }
 
@@ -733,11 +745,16 @@ void PropertyClassPanel::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnQuestParameterRMB (bool hasItems)
+void PropertyClassPanel::OnQuestStateSelected (wxCommandEvent& event)
+{
+  UpdatePC ();
+}
+
+void PropertyClassPanel::OnQuestParameterRMB (bool hasItem)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Quest_Add, wxT ("&Add"));
-  if (hasItems)
+  if (hasItem)
   {
     contextMenu.Append(ID_Quest_Edit, wxT ("&Edit"));
     contextMenu.Append(ID_Quest_Delete, wxT ("&Delete"));
@@ -781,6 +798,7 @@ void PropertyClassPanel::OnQuestParameterEdit (wxCommandEvent& event)
 	fields.Get ("name", "").GetData (),
 	fields.Get ("value", "").GetData (),
 	fields.Get ("type", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -796,6 +814,7 @@ void PropertyClassPanel::OnQuestParameterAdd (wxCommandEvent& event)
 	fields.Get ("name", "").GetData (),
 	fields.Get ("value", "").GetData (),
 	fields.Get ("type", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -808,6 +827,7 @@ void PropertyClassPanel::OnQuestParameterDel (wxCommandEvent& event)
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
+  UpdatePC ();
 }
 
 bool PropertyClassPanel::UpdateQuest ()
@@ -850,6 +870,8 @@ bool PropertyClassPanel::UpdateQuest ()
   csString state = (const char*)stateList->GetStringSelection ().mb_str (wxConvUTF8);
   if (!state.IsEmpty ())
     pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
+
+  emode->PCWasEdited (pctpl);
   return true;
 }
 
@@ -917,11 +939,11 @@ void PropertyClassPanel::FillQuest ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnInventoryTemplateRMB (bool hasItems)
+void PropertyClassPanel::OnInventoryTemplateRMB (bool hasItem)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Inv_Add, wxT ("&Add"));
-  if (hasItems)
+  if (hasItem)
   {
     contextMenu.Append(ID_Inv_Edit, wxT ("&Edit"));
     contextMenu.Append(ID_Inv_Delete, wxT ("&Delete"));
@@ -960,6 +982,7 @@ void PropertyClassPanel::OnInventoryTemplateEdit (wxCommandEvent& event)
     ListCtrlTools::ReplaceRow (list, idx,
 	fields.Get ("name", "").GetData (),
 	fields.Get ("amount", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -974,6 +997,7 @@ void PropertyClassPanel::OnInventoryTemplateAdd (wxCommandEvent& event)
     ListCtrlTools::AddRow (list,
 	fields.Get ("name", "").GetData (),
 	fields.Get ("amount", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -985,6 +1009,7 @@ void PropertyClassPanel::OnInventoryTemplateDel (wxCommandEvent& event)
   list->DeleteItem (idx);
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
+  UpdatePC ();
 }
 
 bool PropertyClassPanel::UpdateInventory ()
@@ -1029,6 +1054,8 @@ bool PropertyClassPanel::UpdateInventory ()
     params.Put (nameID, par);
     pctpl->PerformAction (pl->FetchStringID ("SetLootGenerator"), params);
   }
+
+  emode->PCWasEdited (pctpl);
   return true;
 }
 
@@ -1073,11 +1100,11 @@ void PropertyClassPanel::FillInventory ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnPropertyRMB (bool hasItems)
+void PropertyClassPanel::OnPropertyRMB (bool hasItem)
 {
   wxMenu contextMenu;
   contextMenu.Append(ID_Prop_Add, wxT ("&Add"));
-  if (hasItems)
+  if (hasItem)
   {
     contextMenu.Append(ID_Prop_Edit, wxT ("&Edit"));
     contextMenu.Append(ID_Prop_Delete, wxT ("&Delete"));
@@ -1121,6 +1148,7 @@ void PropertyClassPanel::OnPropertyEdit (wxCommandEvent& event)
 	fields.Get ("name", "").GetData (),
 	fields.Get ("value", "").GetData (),
 	fields.Get ("type", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -1136,6 +1164,7 @@ void PropertyClassPanel::OnPropertyAdd (wxCommandEvent& event)
 	fields.Get ("name", "").GetData (),
 	fields.Get ("value", "").GetData (),
 	fields.Get ("type", "").GetData (), 0);
+    UpdatePC ();
   }
 }
 
@@ -1148,6 +1177,7 @@ void PropertyClassPanel::OnPropertyDel (wxCommandEvent& event)
   list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
   list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
+  UpdatePC ();
 }
 
 bool PropertyClassPanel::UpdateProperties ()
@@ -1178,6 +1208,8 @@ bool PropertyClassPanel::UpdateProperties ()
       return false;
     }
   }
+
+  emode->PCWasEdited (pctpl);
   return true;
 }
 
@@ -1208,6 +1240,8 @@ void PropertyClassPanel::FillProperties ()
 
 bool PropertyClassPanel::UpdatePC ()
 {
+  if (!tpl || !pctpl) return true;
+
   wxTextCtrl* tagText = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
   csString tag = (const char*)tagText->GetValue ().mb_str (wxConvUTF8);
 
@@ -1273,7 +1307,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
 
 PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
-  uiManager (uiManager), emode (emode)
+  uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
 {
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);

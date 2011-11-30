@@ -142,3 +142,28 @@ long ListCtrlTools::GetFirstSelectedRow (wxListCtrl* list)
   return list->GetNextItem (-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
+bool ListCtrlTools::CheckHitList (wxListCtrl* list, bool& hasItem,
+    const wxPoint& pos)
+{
+  int flags = 0;
+  if (!list->IsShownOnScreen ()) return false;
+  long idx = list->HitTest (list->ScreenToClient (pos), flags, 0);
+  if (idx != wxNOT_FOUND) { hasItem = true; return true; }
+  //else if (list->GetRect ().Contains (list->ScreenToClient (pos)))
+  else if (list->GetScreenRect ().Contains (pos))
+  { hasItem = false; return true; }
+  return false;
+}
+
+bool ListCtrlTools::CheckHitList (wxListBox* list, bool& hasItem,
+    const wxPoint& pos)
+{
+  if (!list->IsShownOnScreen ()) return false;
+  long idx = list->HitTest (list->ScreenToClient (pos));
+  if (idx != wxNOT_FOUND) { hasItem = true; return true; }
+  //else if (list->GetRect ().Contains (list->ScreenToClient (pos)))
+  else if (list->GetScreenRect ().Contains (pos))
+  { hasItem = false; return true; }
+  return false;
+}
+

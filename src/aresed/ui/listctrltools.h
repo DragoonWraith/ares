@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
+#include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
 class ListCtrlTools
@@ -77,6 +78,22 @@ public:
    * Return the index of the first selected row or -1 if nothing is selected.
    */
   static long GetFirstSelectedRow (wxListCtrl* list);
+
+  /**
+   * Check if a list control is hit with the given point (in screen space).
+   * This is mostly used in combination with context menus.
+   * 'hasItem' will be set to true if the point points to an item in the list
+   * control.
+   */
+  static bool CheckHitList (wxListCtrl* list, bool& hasItem, const wxPoint& pos);
+
+  /**
+   * Check if a list box is hit with the given point (in screen space).
+   * This is mostly used in combination with context menus.
+   * 'hasItem' will be set to true if the point points to an item in the list
+   * control.
+   */
+  static bool CheckHitList (wxListBox* list, bool& hasItem, const wxPoint& pos);
 };
 
 #endif // __appares_listctrltools_h

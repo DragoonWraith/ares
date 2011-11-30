@@ -127,8 +127,8 @@ const char* GraphView::GetActiveNode () const
   while (it.HasNext ())
   {
     csString key;
-    iMarker* marker = it.Next (key).marker;
-    if (marker == activeMarker) return key;
+    const GraphNode& node = it.Next (key);
+    if (node.marker == activeMarker) return node.name;
   }
   return 0;
 }
@@ -144,8 +144,8 @@ void GraphView::ActivateMarker (iMarker* marker, const char* node)
     while (it.HasNext ())
     {
       csString key;
-      iMarker* m = it.Next (key).marker;
-      if (m == marker) { node = key; break; }
+      const GraphNode& n = it.Next (key);
+      if (marker == n.marker) { node = n.name; break; }
     }
   }
   for (size_t i = 0 ; i < callbacks.GetSize () ; i++)
@@ -410,19 +410,18 @@ void GraphView::LinkNode (const char* node1, const char* node2,
   links.Push (l);
 }
 
-void GraphView::CreateNode (const char* name, const char* label,
-    iGraphNodeStyle* style)
+iMarker* GraphView::CreateNodeMarker (const char* label, iGraphNodeStyle* style,
+    int& w, int& h)
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   iMarker* marker = mgr->CreateMarker ();
-  if (!label) label = name;
 
   csStringArray labelArray (label, "\n");
 
   int textHeight = mgr->GetFont ()->GetTextHeight ();
-  int h = textHeight * labelArray.GetSize () + 6;
-  int w = 0;
+  h = textHeight * labelArray.GetSize () + 6;
+  w = 0;
   for (size_t i = 0 ; i < labelArray.GetSize () ; i++)
   {
     int ww, hh;
@@ -451,8 +450,18 @@ void GraphView::CreateNode (const char* name, const char* label,
   csRef<MarkerCallback> cb;
   cb.AttachNew (new MarkerCallback (this));
   hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
+  return marker;
+}
+
+void GraphView::CreateNode (const char* name, const char* label,
+    iGraphNodeStyle* style)
+{
+  if (!label) label = name;
+  int w, h;
+  iMarker* marker = CreateNodeMarker (label, style, w, h);
 
   GraphNode node;
+  node.name = name;
   node.marker = marker;
   node.velocity.Set (0, 0);
   node.size = csVector2 (w, h);
@@ -468,6 +477,60 @@ void GraphView::RemoveNode (const char* name)
     nodes.DeleteAll (name);
     if (node.marker == activeMarker) activeMarker = 0;
     mgr->DestroyMarker (node.marker);
+  }
+}
+
+void GraphView::ChangeNode (const char* name, const char* label,
+    iGraphNodeStyle* style)
+{
+  GraphNode n;
+  GraphNode& node = nodes.Get (name, n);
+  bool setActive = false;
+  csVector2 oldPos = node.marker->GetPosition ();
+  if (node.marker == activeMarker) { activeMarker = 0; setActive = true; }
+  mgr->DestroyMarker (node.marker);
+  if (!label) label = name;
+  int w, h;
+  iMarker* marker = CreateNodeMarker (label, style, w, h);
+  marker->SetPosition (oldPos);
+  node.marker = marker;
+  node.size = csVector2 (w, h);
+  if (setActive)
+  {
+    activeMarker = node.marker;
+    activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
+  }
+}
+
+void GraphView::ReplaceNode (const char* oldNode, const char* newNode,
+      const char* label, iGraphNodeStyle* style)
+{
+  printf ("Replacing old '%s' with new '%s'!\n", oldNode, newNode); fflush (stdout);
+  if (!strcmp (oldNode, newNode))
+  {
+    ChangeNode (oldNode, label, style);
+    return;
+  }
+  GraphNode n;
+  const GraphNode& nodeOld = nodes.Get (oldNode, n);
+  CreateNode (newNode, label, style);
+  GraphNode& nodeNew = nodes.Get (newNode, n);
+  nodeNew.velocity = n.velocity;
+  nodeNew.netForce = n.netForce;
+  if (n.marker)
+    nodeNew.marker->SetPosition (n.marker->GetPosition ());
+  if (nodeOld.marker == activeMarker)
+  {
+    activeMarker = nodeNew.marker;
+    activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
+  }
+  RemoveNode (oldNode);
+
+  for (size_t i = 0 ; i < links.GetSize () ; i++)
+  {
+    GraphLink& l = links[i];
+    if (l.node1 == oldNode) l.node1 = newNode;
+    if (l.node2 == oldNode) l.node2 = newNode;
   }
 }
 

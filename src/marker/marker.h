@@ -299,6 +299,7 @@ public:
 
 struct GraphNode
 {
+  csString name;
   iMarker* marker;
   csVector2 velocity, netForce;
   bool frozen;
@@ -353,6 +354,9 @@ private:
 
   float secondsTodo;
 
+  iMarker* CreateNodeMarker (const char* label, iGraphNodeStyle* style,
+      int& w, int& h);
+
 public:
   GraphView (MarkerManager* mgr);
   virtual ~GraphView () { Clear(); }
@@ -381,6 +385,9 @@ public:
   virtual void CreateNode (const char* name, const char* label = 0,
       iGraphNodeStyle* style = 0);
   virtual void RemoveNode (const char* name);
+  virtual void ChangeNode (const char* name, const char* label, iGraphNodeStyle* style);
+  virtual void ReplaceNode (const char* oldNode, const char* newNode,
+      const char* label = 0, iGraphNodeStyle* style = 0);
   virtual void LinkNode (const char* node1, const char* node2,
       iGraphLinkStyle* style = 0);
   virtual void RemoveLink (const char* node1, const char* node2)

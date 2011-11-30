@@ -75,18 +75,17 @@ private:
   iCelEntityTemplate* tpl;
   iCelPropertyClassTemplate* pctpl;
 
-  void OnApplyButton (wxCommandEvent& event);
-  void OnRevertButton (wxCommandEvent& event);
-
-  bool CheckHitList (const char* listname, bool& hasItems, const wxPoint& pos);
+  bool CheckHitList (const char* listname, bool& hasItem, const wxPoint& pos);
   void OnContextMenu (wxContextMenuEvent& event);
+  void OnChoicebookPageChange (wxChoicebookEvent& event);
+  void OnUpdateEvent (wxCommandEvent& event);
 
   // Properties
   UIDialog* propDialog;
   UIDialog* GetPropertyDialog ();
   bool UpdateProperties ();
   void FillProperties ();
-  void OnPropertyRMB (bool hasItems);
+  void OnPropertyRMB (bool hasItem);
   void OnPropertyAdd (wxCommandEvent& event);
   void OnPropertyDel (wxCommandEvent& event);
   void OnPropertyEdit (wxCommandEvent& event);
@@ -96,7 +95,7 @@ private:
   UIDialog* GetInventoryTemplateDialog ();
   bool UpdateInventory ();
   void FillInventory ();
-  void OnInventoryTemplateRMB (bool hasItems);
+  void OnInventoryTemplateRMB (bool hasItem);
   void OnInventoryTemplateAdd (wxCommandEvent& event);
   void OnInventoryTemplateDel (wxCommandEvent& event);
   void OnInventoryTemplateEdit (wxCommandEvent& event);
@@ -106,17 +105,18 @@ private:
   UIDialog* GetQuestDialog ();
   bool UpdateQuest ();
   void FillQuest ();
-  void OnQuestParameterRMB (bool hasItems);
+  void OnQuestParameterRMB (bool hasItem);
   void OnQuestParameterAdd (wxCommandEvent& event);
   void OnQuestParameterDel (wxCommandEvent& event);
   void OnQuestParameterEdit (wxCommandEvent& event);
+  void OnQuestStateSelected (wxCommandEvent& event);
 
   // Spawn.
   UIDialog* spawnTempDialog;
   UIDialog* GetSpawnTemplateDialog ();
   bool UpdateSpawn ();
   void FillSpawn ();
-  void OnSpawnTemplateRMB (bool hasItems);
+  void OnSpawnTemplateRMB (bool hasItem);
   void OnSpawnTemplateAdd (wxCommandEvent& event);
   void OnSpawnTemplateDel (wxCommandEvent& event);
   void OnSpawnTemplateEdit (wxCommandEvent& event);
@@ -130,13 +130,13 @@ private:
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
-  void OnWireMessageRMB (bool hasItems);
+  void OnWireMessageRMB (bool hasItem);
   void OnWireMessageAdd (wxCommandEvent& event);
   void OnWireMessageEdit (wxCommandEvent& event);
   void OnWireMessageDel (wxCommandEvent& event);
   void OnWireMessageSelected (wxListEvent& event);
   void OnWireMessageDeselected (wxListEvent& event);
-  void OnWireParameterRMB (bool hasItems);
+  void OnWireParameterRMB (bool hasItem);
   void OnWireParameterAdd (wxCommandEvent& event);
   void OnWireParameterEdit (wxCommandEvent& event);
   void OnWireParameterDel (wxCommandEvent& event);
