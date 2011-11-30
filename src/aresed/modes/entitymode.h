@@ -119,6 +119,8 @@ public:
   void OnCreatePC ();
   void OnEditQuest ();
   void OnContextMenu (wxContextMenuEvent& event);
+  void OnTemplateAdd ();
+  void OnTemplateDel ();
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
   void ActivateNode (const char* nodeName);
@@ -135,6 +137,8 @@ public:
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
+    void OnTemplateAdd (wxCommandEvent& event) { s->OnTemplateAdd (); }
+    void OnTemplateDel (wxCommandEvent& event) { s->OnTemplateDel (); }
 
   private:
     EntityMode* s;

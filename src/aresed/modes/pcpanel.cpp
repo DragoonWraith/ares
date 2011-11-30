@@ -140,6 +140,7 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_MENU (ID_Quest_Edit, PropertyClassPanel :: OnQuestParameterEdit)
   EVT_MENU (ID_Quest_Delete, PropertyClassPanel :: OnQuestParameterDel)
   EVT_LISTBOX (XRCID("questStateBox"), PropertyClassPanel :: OnQuestStateSelected)
+  EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_MENU (ID_Inv_Add, PropertyClassPanel :: OnInventoryTemplateAdd)
   EVT_MENU (ID_Inv_Edit, PropertyClassPanel :: OnInventoryTemplateEdit)

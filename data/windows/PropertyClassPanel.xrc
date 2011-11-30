@@ -125,6 +125,7 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="questText">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>

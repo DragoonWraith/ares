@@ -42,6 +42,8 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LISTBOX (XRCID("templateList"), EntityMode::Panel :: OnTemplateSelect)
   EVT_CONTEXT_MENU (EntityMode::Panel :: OnContextMenu)
+  EVT_MENU (ID_Template_Add, EntityMode::Panel :: OnTemplateAdd)
+  EVT_MENU (ID_Template_Delete, EntityMode::Panel :: OnTemplateDel)
 END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
@@ -537,6 +539,38 @@ void EntityMode::OnTemplateSelect ()
   BuildTemplateGraph (templateName);
 }
 
+void EntityMode::OnTemplateAdd ()
+{
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  UIDialog* dialog = ui->CreateDialog ("New Template");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("name");
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("name", "");
+    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (name);
+    if (tpl)
+      ui->Error ("A template with this name already exists!");
+    else
+    {
+      tpl = pl->CreateEntityTemplate (name);
+      currentTemplate = name;
+      BuildTemplateGraph (currentTemplate);
+      SetupItems ();
+    }
+  }
+  delete dialog;
+}
+
+void EntityMode::OnTemplateDel ()
+{
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  ui->Message ("Not implemented yet!");
+}
+
 void EntityMode::OnDelete ()
 {
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
@@ -555,7 +589,6 @@ void EntityMode::OnCreatePC ()
   dialog->AddRow ();
   dialog->AddLabel ("Tag:");
   dialog->AddText ("tag");
-  dialog->Clear ();
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
