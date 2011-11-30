@@ -38,6 +38,7 @@ struct iRewardFactory;
 struct iTriggerFactory;
 
 class PropertyClassPanel;
+class EntityTemplatePanel;
 
 enum
 {
@@ -90,6 +91,7 @@ private:
   csString contextMenuNode;	// Node that is being used for the context menu.
 
   PropertyClassPanel* pcPanel;
+  EntityTemplatePanel* tplPanel;
 
   int idDelete, idCreate, idEditQuest;
 

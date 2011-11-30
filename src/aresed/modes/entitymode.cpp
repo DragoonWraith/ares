@@ -24,11 +24,12 @@ THE SOFTWARE.
 
 #include "../apparesed.h"
 #include "../camerawin.h"
-#include "entitymode.h"
 #include "../ui/uimanager.h"
-#include "../inspect.h"
-#include "pcpanel.h"
 #include "../ui/listctrltools.h"
+#include "../inspect.h"
+#include "entitymode.h"
+#include "templatepanel.h"
+#include "pcpanel.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -74,6 +75,10 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (),
       this);
   pcPanel->Hide ();
+
+  tplPanel = new EntityTemplatePanel (panel, aresed3d->GetApp ()->GetUIManager (),
+      this);
+  tplPanel->Hide ();
 
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
   view = mgr->CreateGraphView ();
@@ -225,6 +230,7 @@ void EntityMode::Start ()
   SetupItems ();
   view->SetVisible (true);
   pcPanel->Hide ();
+  tplPanel->Hide ();
   contextMenuNode = "";
 }
 
@@ -483,6 +489,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   currentTemplate = templateName;
   pcPanel->Hide ();
+  tplPanel->Hide ();
 
   view->Clear ();
 
@@ -625,7 +632,9 @@ void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 
 void EntityMode::ActivateNode (const char* nodeName)
 {
-  if (!nodeName) { pcPanel->Hide (); return; }
+  tplPanel->Hide ();
+  pcPanel->Hide ();
+  if (!nodeName) return;
   csString activeNode = nodeName;
   const char type = activeNode.operator[] (0);
   if (type == 'P')
@@ -636,9 +645,12 @@ void EntityMode::ActivateNode (const char* nodeName)
     pcPanel->SwitchToPC (tpl, pctpl);
     pcPanel->Show ();
   }
-  else
+  else if (type == 'T')
   {
-    pcPanel->Hide ();
+    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    tplPanel->SwitchToTpl (tpl);
+    tplPanel->Show ();
   }
 }
 

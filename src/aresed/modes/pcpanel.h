@@ -148,8 +148,7 @@ public:
   PropertyClassPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
   ~PropertyClassPanel();
 
-  // Switch this dialog to editing of a PC. If the PC is null then we
-  // are going to create a new pctpl.
+  // Switch this dialog to editing of a PC.
   void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }

@@ -1334,7 +1334,7 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   ListCtrlTools::SetColumn (list, 2, "Type", 100);
 
   list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Name", 100);
+  ListCtrlTools::SetColumn (list, 0, "Message", 100);
   ListCtrlTools::SetColumn (list, 1, "Entity", 100);
 
   list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);

@@ -1287,6 +1287,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("PropertyClassPanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("EntityTemplatePanel.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
