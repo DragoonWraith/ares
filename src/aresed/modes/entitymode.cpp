@@ -215,9 +215,10 @@ void EntityMode::SetupItems ()
   list->Clear ();
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
   wxArrayString names;
-  for (size_t i = 0 ; i < pl->GetEntityTemplateCount () ; i++)
+  csRef<iCelEntityTemplateIterator> it = pl->GetEntityTemplates ();
+  while (it->HasNext ())
   {
-    iCelEntityTemplate* tpl = pl->GetEntityTemplate (i);
+    iCelEntityTemplate* tpl = it->Next ();
     wxString name = wxString::FromUTF8 (tpl->GetName ());
     names.Add (name);
   }
