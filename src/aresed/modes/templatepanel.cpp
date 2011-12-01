@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
+#include "propclass/chars.h"
 
 //--------------------------------------------------------------------------
 
@@ -76,20 +77,31 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
 
   wxListCtrl* parentsList = XRCCTRL (*this, "templateParentsList", wxListCtrl);
   parentsList->DeleteAllItems ();
-  // @@@ Support for this not present yet. Needs extra changes in CEL.
+  csRef<iCelEntityTemplateIterator> itParents = tpl->GetParents ();
+  while (itParents->HasNext ())
+  {
+    iCelEntityTemplate* parent = itParents->Next ();
+    ListCtrlTools::AddRow (parentsList, parent->GetName (), 0);
+  }
 
   wxListCtrl* charList = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
   charList->DeleteAllItems ();
-  //iTemplateCharacteristics* charact = tpl->GetCharacteristics ();
-  // @@@ Support for this not present yet. Needs extra changes in CEL.
+  csRef<iCharacteristicsIterator> itChars = tpl->GetCharacteristics ()->GetAllCharacteristics ();
+  while (itChars->HasNext ())
+  {
+    float f;
+    csString name = itChars->Next (f);
+    csString value; value.Format ("%g", f);
+    ListCtrlTools::AddRow (charList, name.GetData (), value.GetData (), 0);
+  }
 
   wxListCtrl* classList = XRCCTRL (*this, "templateClassList", wxListCtrl);
   classList->DeleteAllItems ();
   const csSet<csStringID>& classes = tpl->GetClasses ();
-  csSet<csStringID>::GlobalIterator it = classes.GetIterator ();
-  while (it.HasNext ())
+  csSet<csStringID>::GlobalIterator itClass = classes.GetIterator ();
+  while (itClass.HasNext ())
   {
-    csStringID classID = it.Next ();
+    csStringID classID = itClass.Next ();
     csString className = pl->FetchString (classID);
     ListCtrlTools::AddRow (classList, className.GetData (), 0);
   }

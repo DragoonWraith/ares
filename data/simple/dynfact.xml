@@ -82,9 +82,12 @@
 
     </addon>
 
+    <addon plugin="cel.addons.celentitytpl" entityname="Base">
+      <propclass name="pcobject.mesh" />
+    </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="Crate"> <propclass name="pcobject.mesh" /> </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="Box">
-      <propclass name="pcobject.mesh" />
+      <template name="Base" />
       <propclass name="pctools.properties">
 	<property name="counter" long="1" />
       </propclass>
@@ -152,6 +155,8 @@
         </action>
         <property name="state" string="init" />
       </propclass>
+      <characteristic name="weight" value="50" />
+      <characteristic name="size" value="4" />
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="SmallBox"> <propclass name="pcobject.mesh" /> </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="TinyBox"> <propclass name="pcobject.mesh" /> </addon>
