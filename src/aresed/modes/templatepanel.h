@@ -37,6 +37,17 @@ class UIManager;
 class EntityMode;
 struct iCelEntityTemplate;
 
+enum
+{
+  ID_TplPar_Add = wxID_HIGHEST + 10000,
+  ID_TplPar_Delete,
+  ID_Char_Add,
+  ID_Char_Edit,
+  ID_Char_Delete,
+  ID_Class_Add,
+  ID_Class_Delete,
+};
+
 class EntityTemplatePanel : public wxPanel
 {
 private:
@@ -45,7 +56,18 @@ private:
   wxSizer* parentSizer;
   iCelEntityTemplate* tpl;
 
+  bool CheckHitList (const char* listname, bool& hasItem, const wxPoint& pos);
   void OnContextMenu (wxContextMenuEvent& event);
+
+  void OnTemplateParentAdd (wxCommandEvent& event);
+  void OnTemplateParentDelete (wxCommandEvent& event);
+  void OnCharacteristicsAdd (wxCommandEvent& event);
+  void OnCharacteristicsEdit (wxCommandEvent& event);
+  void OnCharacteristicsDelete (wxCommandEvent& event);
+  void OnClassAdd (wxCommandEvent& event);
+  void OnClassDelete (wxCommandEvent& event);
+
+  void UpdateTemplate ();
 
 public:
   EntityTemplatePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
@@ -53,6 +75,10 @@ public:
 
   // Switch this dialog to editing of a template.
   void SwitchToTpl (iCelEntityTemplate* tpl);
+
+  void OnTemplateRMB (bool hasItem);
+  void OnCharacteristicsRMB (bool hasItem);
+  void OnClassesRMB (bool hasItem);
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }

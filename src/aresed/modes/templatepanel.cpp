@@ -36,6 +36,16 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(EntityTemplatePanel, wxPanel)
   EVT_CONTEXT_MENU (EntityTemplatePanel :: OnContextMenu)
+
+  EVT_MENU (ID_TplPar_Add, EntityTemplatePanel :: OnTemplateParentAdd)
+  EVT_MENU (ID_TplPar_Delete, EntityTemplatePanel :: OnTemplateParentDelete)
+
+  EVT_MENU (ID_Char_Add, EntityTemplatePanel :: OnCharacteristicsAdd)
+  EVT_MENU (ID_Char_Edit, EntityTemplatePanel :: OnCharacteristicsEdit)
+  EVT_MENU (ID_Char_Delete, EntityTemplatePanel :: OnCharacteristicsDelete)
+
+  EVT_MENU (ID_Class_Add, EntityTemplatePanel :: OnClassAdd)
+  EVT_MENU (ID_Class_Delete, EntityTemplatePanel :: OnClassDelete)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -65,8 +75,220 @@ EntityTemplatePanel::~EntityTemplatePanel ()
 {
 }
 
+bool EntityTemplatePanel::CheckHitList (const char* listname, bool& hasItem,
+    const wxPoint& pos)
+{
+  wxListCtrl* list = wxStaticCast(FindWindow (
+	wxXmlResource::GetXRCID (wxString::FromUTF8 (listname))), wxListCtrl);
+  return ListCtrlTools::CheckHitList (list, hasItem, pos);
+}
+
 void EntityTemplatePanel::OnContextMenu (wxContextMenuEvent& event)
 {
+  bool hasItem;
+  if (CheckHitList ("templateParentsList", hasItem, event.GetPosition ()))
+    OnTemplateRMB (hasItem);
+  else if (CheckHitList ("templateCharacteristicsList", hasItem, event.GetPosition ()))
+    OnCharacteristicsRMB (hasItem);
+  else if (CheckHitList ("templateClassList", hasItem, event.GetPosition ()))
+    OnClassesRMB (hasItem);
+}
+
+void EntityTemplatePanel::OnTemplateRMB (bool hasItem)
+{
+  wxMenu contextMenu;
+  contextMenu.Append(ID_TplPar_Add, wxT ("&Add"));
+  if (hasItem)
+  {
+    contextMenu.Append(ID_TplPar_Delete, wxT ("&Delete"));
+  }
+  PopupMenu (&contextMenu);
+}
+
+void EntityTemplatePanel::OnCharacteristicsRMB (bool hasItem)
+{
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Char_Add, wxT ("&Add"));
+  if (hasItem)
+  {
+    contextMenu.Append(ID_Char_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_Char_Delete, wxT ("&Delete"));
+  }
+  PopupMenu (&contextMenu);
+}
+
+void EntityTemplatePanel::OnClassesRMB (bool hasItem)
+{
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Class_Add, wxT ("&Add"));
+  if (hasItem)
+  {
+    contextMenu.Append(ID_Class_Delete, wxT ("&Delete"));
+  }
+  PopupMenu (&contextMenu);
+}
+
+void EntityTemplatePanel::OnTemplateParentAdd (wxCommandEvent& event)
+{
+  UIDialog* dialog = uiManager->CreateDialog ("Add template");
+  dialog->AddRow ();
+  dialog->AddLabel ("Template:");
+  dialog->AddText ("name");
+
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("name", "");
+    iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (t)
+    {
+      ListCtrlTools::AddRow (list, name.GetData (), 0);
+      UpdateTemplate ();
+    }
+    else
+      uiManager->Error ("Can't find template with name '%s'!", name.GetData ());
+  }
+  delete dialog;
+}
+
+void EntityTemplatePanel::OnTemplateParentDelete (wxCommandEvent& event)
+{
+  wxListCtrl* list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
+  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  UpdateTemplate ();
+}
+
+void EntityTemplatePanel::OnCharacteristicsAdd (wxCommandEvent& event)
+{
+  UIDialog* dialog = uiManager->CreateDialog ("Add characteristic property");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Value:");
+  dialog->AddText ("value");
+
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (), 0);
+    UpdateTemplate ();
+  }
+  delete dialog;
+}
+
+void EntityTemplatePanel::OnCharacteristicsEdit (wxCommandEvent& event)
+{
+  UIDialog* dialog = uiManager->CreateDialog ("Edit characteristic property");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Value:");
+  dialog->AddText ("value");
+
+  wxListCtrl* list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  dialog->SetText ("name", row[0]);
+  dialog->SetText ("value", row[1]);
+
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::ReplaceRow (list, idx,
+	fields.Get ("name", "").GetData (),
+	fields.Get ("value", "").GetData (), 0);
+    UpdateTemplate ();
+  }
+  delete dialog;
+}
+
+void EntityTemplatePanel::OnCharacteristicsDelete (wxCommandEvent& event)
+{
+  wxListCtrl* list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
+  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
+  UpdateTemplate ();
+}
+
+void EntityTemplatePanel::OnClassAdd (wxCommandEvent& event)
+{
+  UIDialog* dialog = uiManager->CreateDialog ("Add class");
+  dialog->AddRow ();
+  dialog->AddLabel ("Class:");
+  dialog->AddText ("name");
+
+  if (dialog->Show (0))
+  {
+    wxListCtrl* list = XRCCTRL (*this, "templateClassList", wxListCtrl);
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    ListCtrlTools::AddRow (list,
+	fields.Get ("name", "").GetData (), 0);
+    UpdateTemplate ();
+  }
+  delete dialog;
+}
+
+void EntityTemplatePanel::OnClassDelete (wxCommandEvent& event)
+{
+  wxListCtrl* list = XRCCTRL (*this, "templateClassList", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
+  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
+  UpdateTemplate ();
+}
+
+void EntityTemplatePanel::UpdateTemplate ()
+{
+  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
+
+  tpl->RemoveParents ();
+  wxListCtrl* parentsList = XRCCTRL (*this, "templateParentsList", wxListCtrl);
+  for (int r = 0 ; r < parentsList->GetItemCount () ; r++)
+  {
+    csStringArray row = ListCtrlTools::ReadRow (parentsList, r);
+    csString name = row[0];
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (t)	// Template should normally exist since it was checked before.
+      tpl->AddParent (t);
+  }
+
+  iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
+  chars->ClearAll ();
+  wxListCtrl* charsList = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
+  for (int r = 0 ; r < charsList->GetItemCount () ; r++)
+  {
+    csStringArray row = ListCtrlTools::ReadRow (charsList, r);
+    csString name = row[0];
+    csString value = row[1];
+    float f;
+    csScanStr (value, "%f", &f);
+    chars->SetCharacteristic (name, f);
+  }
+
+  tpl->RemoveClasses ();
+  wxListCtrl* classList = XRCCTRL (*this, "templateClassList", wxListCtrl);
+  for (int r = 0 ; r < classList->GetItemCount () ; r++)
+  {
+    csStringArray row = ListCtrlTools::ReadRow (classList, r);
+    csString name = row[0];
+    csStringID id = pl->FetchStringID (name);
+    tpl->AddClass (id);
+  }
 }
 
 void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
