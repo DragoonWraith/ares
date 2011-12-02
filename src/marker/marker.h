@@ -437,6 +437,7 @@ public:
 
   void StopDrag ();
   void HandleDrag ();
+  iMarker* GetDraggingMarker ();
 
   /**
    * Calculate the planar intersection of a beam given the current

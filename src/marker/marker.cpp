@@ -476,11 +476,10 @@ void GraphView::RemoveNode (const char* name)
   {
     nodes.DeleteAll (name);
     if (node.marker == activeMarker) activeMarker = 0;
-    if (node.marker == draggingMarker)
-    {
-      draggingMarker = 0;
+    if (node.marker == draggingMarker) draggingMarker = 0;
+    if (mgr->GetDraggingMarker () == node.marker)
       mgr->StopDrag ();
-    }
+
     mgr->DestroyMarker (node.marker);
   }
 }
@@ -492,10 +491,12 @@ void GraphView::ChangeNode (const char* name, const char* label,
   GraphNode& node = nodes.Get (name, n);
   bool setActive = false;
   csVector2 oldPos = node.marker->GetPosition ();
+
   if (node.marker == activeMarker) { activeMarker = 0; setActive = true; }
-  // @@@ Temporary!
-  mgr->StopDrag ();
-  //if (node.marker == draggingMarker) { draggingMarker = 0; mgr->StopDrag (); }
+  if (mgr->GetDraggingMarker () == node.marker)
+    mgr->StopDrag ();
+  if (node.marker == draggingMarker) draggingMarker = 0;
+
   mgr->DestroyMarker (node.marker);
   if (!label) label = name;
   int w, h;
@@ -1258,6 +1259,14 @@ void MarkerManager::Frame3D ()
 
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
     markers[i]->Render3D ();
+}
+
+iMarker* MarkerManager::GetDraggingMarker ()
+{
+  if (currentDraggingHitArea)
+    return currentDraggingHitArea->GetMarker ();
+  else
+    return 0;
 }
 
 void MarkerManager::StopDrag ()
