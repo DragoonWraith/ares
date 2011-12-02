@@ -443,7 +443,6 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
     csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBorderColor ());
   marker->Text (MARKER_2D, csVector3 (0, 0, 0), labelArray, style->GetTextColor (),
       true, style->GetTextFont ());
-  marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
 
   // Make an invisible hit area.
@@ -466,6 +465,7 @@ void GraphView::CreateNode (const char* name, const char* label,
   int w2 = w / 2;
   int h2 = h / 2;
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
+  marker->SetSelectionLevel (SELECTION_NONE);
 
   GraphNode node;
   node.name = name;
