@@ -410,12 +410,11 @@ void GraphView::LinkNode (const char* node1, const char* node2,
   links.Push (l);
 }
 
-iMarker* GraphView::CreateNodeMarker (const char* label, iGraphNodeStyle* style,
-    int& w, int& h)
+void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
+    iGraphNodeStyle* style, int& w, int& h)
 {
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
-  iMarker* marker = mgr->CreateMarker ();
 
   csStringArray labelArray (label, "\n");
 
@@ -450,7 +449,6 @@ iMarker* GraphView::CreateNodeMarker (const char* label, iGraphNodeStyle* style,
   csRef<MarkerCallback> cb;
   cb.AttachNew (new MarkerCallback (this));
   hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
-  return marker;
 }
 
 void GraphView::CreateNode (const char* name, const char* label,
@@ -458,7 +456,8 @@ void GraphView::CreateNode (const char* name, const char* label,
 {
   if (!label) label = name;
   int w, h;
-  iMarker* marker = CreateNodeMarker (label, style, w, h);
+  iMarker* marker = mgr->CreateMarker ();
+  UpdateNodeMarker (marker, label, style, w, h);
 
   GraphNode node;
   node.name = name;
@@ -487,8 +486,17 @@ void GraphView::RemoveNode (const char* name)
 void GraphView::ChangeNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
+  int w, h;
   GraphNode n;
   GraphNode& node = nodes.Get (name, n);
+#if 1
+  if (mgr->GetDraggingMarker () == node.marker)
+    mgr->StopDrag ();
+  node.marker->Clear ();
+  node.marker->ClearHitAreas ();
+  UpdateNodeMarker (node.marker, label, style, w, h);
+  node.size = csVector2 (w, h);
+#else
   bool setActive = false;
   csVector2 oldPos = node.marker->GetPosition ();
 
@@ -499,8 +507,8 @@ void GraphView::ChangeNode (const char* name, const char* label,
 
   mgr->DestroyMarker (node.marker);
   if (!label) label = name;
-  int w, h;
-  iMarker* marker = CreateNodeMarker (label, style, w, h);
+  iMarker* marker = mgr->CreateMarker ();
+  UpdateNodeMarker (marker, label, style, w, h);
   marker->SetPosition (oldPos);
   node.marker = marker;
   node.size = csVector2 (w, h);
@@ -509,6 +517,7 @@ void GraphView::ChangeNode (const char* name, const char* label,
     activeMarker = node.marker;
     activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
   }
+#endif
 }
 
 void GraphView::ReplaceNode (const char* oldNode, const char* newNode,

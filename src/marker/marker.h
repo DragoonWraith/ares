@@ -354,8 +354,8 @@ private:
 
   float secondsTodo;
 
-  iMarker* CreateNodeMarker (const char* label, iGraphNodeStyle* style,
-      int& w, int& h);
+  void UpdateNodeMarker (iMarker* marker, const char* label,
+      iGraphNodeStyle* style, int& w, int& h);
 
 public:
   GraphView (MarkerManager* mgr);
