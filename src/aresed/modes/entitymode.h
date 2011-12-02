@@ -55,7 +55,8 @@ private:
       const char* parentKey, const char* pcKey);
   void BuildStateGraph (iQuestStateFactory* state, const char* stateKey,
       const char* pcKey);
-  void BuildQuestGraph (iQuestFactory* questFact, const char* pcKey, bool fullquest);
+  void BuildQuestGraph (iQuestFactory* questFact, const char* pcKey, bool fullquest,
+      const csString& defaultState);
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcKey);
   void BuildTemplateGraph (const char* templateName);
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
@@ -70,6 +71,7 @@ private:
   csRef<iGraphNodeStyle> styleTemplate;
   csRef<iGraphNodeStyle> stylePC;
   csRef<iGraphNodeStyle> styleState;
+  csRef<iGraphNodeStyle> styleStateDefault;
   csRef<iGraphNodeStyle> styleResponse;
   csRef<iGraphNodeStyle> styleReward;
   csRef<iGraphNodeStyle> styleInvisible;
@@ -93,10 +95,13 @@ private:
   PropertyClassPanel* pcPanel;
   EntityTemplatePanel* tplPanel;
 
-  int idDelete, idCreate, idEditQuest;
+  int idDelete, idCreate, idEditQuest, idDefaultState;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
+
+  csRef<iFont> font;
+  csRef<iFont> fontBold;
 
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
@@ -120,6 +125,7 @@ public:
   void OnDelete ();
   void OnCreatePC ();
   void OnEditQuest ();
+  void OnDefaultState ();
   void OnContextMenu (wxContextMenuEvent& event);
   void OnTemplateAdd ();
   void OnTemplateDel ();
@@ -137,6 +143,7 @@ public:
     void OnDelete (wxCommandEvent& event) { s->OnDelete (); }
     void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
+    void OnDefaultState (wxCommandEvent& event) { s->OnDefaultState (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
     void OnTemplateAdd (wxCommandEvent& event) { s->OnTemplateAdd (); }

@@ -77,12 +77,14 @@ private:
   iMarkerColor* fgColor;
   iMarkerColor* bgColor;
   iMarkerColor* textColor;
+  iFont* font;
   int roundness;
   float weightFactor;
 
 public:
   GraphNodeStyle () : scfImplementationType (this),
-    fgColor (0), bgColor (0), textColor (0), roundness (10), weightFactor (1.0f) { }
+    fgColor (0), bgColor (0), textColor (0), font (0),
+    roundness (10), weightFactor (1.0f) { }
   virtual ~GraphNodeStyle () { }
 
   virtual void SetBorderColor (iMarkerColor* color) { fgColor = color; }
@@ -91,6 +93,8 @@ public:
   virtual iMarkerColor* GetBackgroundColor () const { return bgColor; }
   virtual void SetTextColor (iMarkerColor* color) { textColor = color; }
   virtual iMarkerColor* GetTextColor () const { return textColor; }
+  virtual void SetTextFont (iFont* font) { GraphNodeStyle::font = font; }
+  virtual iFont* GetTextFont () const { return font; }
   virtual void SetRoundness (int roundness) { GraphNodeStyle::roundness = roundness; }
   virtual int GetRoundness () const { return roundness; }
   virtual void SetWeightFactor (float w) { weightFactor = w; }
@@ -376,7 +380,7 @@ private:
 
 public:
   MarkerCallback (GraphView* view) : scfImplementationType (this),
-    view (view) { printf ("view=%p\n", view); fflush (stdout); }
+    view (view) { }
   virtual ~MarkerCallback () { }
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers)
@@ -418,13 +422,15 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
 
   csStringArray labelArray (label, "\n");
 
-  int textHeight = mgr->GetFont ()->GetTextHeight ();
+  iFont* font = style->GetTextFont ();
+  if (!font) font = mgr->GetFont ();
+  int textHeight = font->GetTextHeight ();
   h = textHeight * labelArray.GetSize () + 6;
   w = 0;
   for (size_t i = 0 ; i < labelArray.GetSize () ; i++)
   {
     int ww, hh;
-    mgr->GetFont ()->GetDimensions (labelArray.Get (i), ww, hh);
+    font->GetDimensions (labelArray.Get (i), ww, hh);
     if (ww > w) w = ww;
   }
   w += 10;
@@ -438,7 +444,8 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
     csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBackgroundColor ());
   marker->RoundedBox2D (MARKER_2D, csVector3 (-w2, -h2, 0),
     csVector3 (w2, h2, 0), style->GetRoundness (), style->GetBorderColor ());
-  marker->Text (MARKER_2D, csVector3 (0, 0, 0), labelArray, style->GetTextColor (), true);
+  marker->Text (MARKER_2D, csVector3 (0, 0, 0), labelArray, style->GetTextColor (),
+      true, style->GetTextFont ());
   marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
@@ -867,12 +874,14 @@ void MarkerText::Render2D (const csOrthoTransform& camtrans,
 
     int x1 = int (s.x);
     int y1 = h - int (s.y);
+    iFont* thisFont = font;
+    if (!thisFont) thisFont = mgr->GetFont ();
 
     if (centered)
-      pen->WriteLinesBoxed (mgr->GetFont (), pos.x + x1, pos.y + y1,
+      pen->WriteLinesBoxed (thisFont, pos.x + x1, pos.y + y1,
 	pos.x + x1, pos.y + y1, CS_PEN_TA_CENTER, CS_PEN_TA_CENTER, text);
     else
-      pen->WriteLines (mgr->GetFont (), pos.x + x1, pos.y + y1, text);
+      pen->WriteLines (thisFont, pos.x + x1, pos.y + y1, text);
   }
 }
 
@@ -957,7 +966,8 @@ void Marker::RoundedBox2D (MarkerSpace space,
 }
 
 void Marker::Text (MarkerSpace space, const csVector3& pos,
-      const csStringArray& text, iMarkerColor* color, bool centered)
+      const csStringArray& text, iMarkerColor* color, bool centered,
+      iFont* font)
 {
   MarkerText* txt = new MarkerText ();
   txt->space = space;
@@ -965,6 +975,7 @@ void Marker::Text (MarkerSpace space, const csVector3& pos,
   txt->color = static_cast<MarkerColor*> (color);
   txt->text = text;
   txt->centered = centered;
+  txt->font = font;
   primitives.Push (txt);
 }
 

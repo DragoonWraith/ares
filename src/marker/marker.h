@@ -121,7 +121,9 @@ struct MarkerText : public MarkerPrimitive
   csStringArray text;
   MarkerColor* color;
   bool centered;
+  iFont* font;
 
+  MarkerText () : font (0) { }
   virtual ~MarkerText () { }
   virtual void Render2D (const csOrthoTransform& camtrans,
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
@@ -279,7 +281,8 @@ public:
       const csVector3& corner1, const csVector3& corner2,
       int roundness, iMarkerColor* color);
   virtual void Text (MarkerSpace space, const csVector3& pos,
-      const csStringArray& text, iMarkerColor* color, bool centered = false);
+      const csStringArray& text, iMarkerColor* color, bool centered = false,
+      iFont* font = 0);
   virtual void Clear ();
   virtual iMarkerHitArea* HitArea (MarkerSpace space, const csVector3& center,
       float radius, int data, iMarkerColor* color);
@@ -463,6 +466,7 @@ public:
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }
 
+  virtual void SetDefaultFont (iFont* font) { MarkerManager::font = font; }
   iFont* GetFont () const { return font; }
   iGraphics2D* GetG2D () const { return g2d; }
   iVirtualClock* GetVC () const { return vc; }

@@ -72,6 +72,10 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
 
+  iGraphics2D* g2d = aresed3d->GetG2D ();
+  font = g2d->GetFontServer ()->LoadFont ("DejaVuSans", 10);
+  fontBold = g2d->GetFontServer ()->LoadFont ("DejaVuSansBold", 10);
+
   pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (),
       this);
   pcPanel->Hide ();
@@ -137,6 +141,7 @@ void EntityMode::InitColors ()
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
 
   iMarkerColor* textColor = NewColor ("viewWhite", .7, .7, .7, 1, 1, 1, false);
+  iMarkerColor* textSelColor = NewColor ("viewBlack", 0, 0, 0, 0, 0, 0, false);
 
   iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
   thickLinkColor->SetRGBColor (SELECTION_NONE, .5, .5, 0, .5);
@@ -164,28 +169,40 @@ void EntityMode::InitColors ()
   styleTemplate->SetBorderColor (NewColor ("templateColorFG", .0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleTemplate->SetBackgroundColor (NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true));
   styleTemplate->SetTextColor (textColor);
+  styleTemplate->SetTextFont (font);
 
   stylePC = mgr->CreateGraphNodeStyle ();
   stylePC->SetBorderColor (NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, 1, 1, 1, false));
   stylePC->SetBackgroundColor (NewColor ("pcColorBG", .1, .4, .5, .2, .6, .7, true));
   stylePC->SetTextColor (textColor);
+  stylePC->SetTextFont (font);
 
+  iMarkerColor* colStateFG = NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, 1, 1, 1, false);
+  iMarkerColor* colStateBG = NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true);
   styleState = mgr->CreateGraphNodeStyle ();
-  styleState->SetBorderColor (NewColor ("stateColorFG", 0, .7, 0, 0, 1, 0, 1, 1, 1, false));
-  styleState->SetBackgroundColor (NewColor ("stateColorBG", .1, .4, .5, .2, .6, .7, true));
+  styleState->SetBorderColor (colStateFG);
+  styleState->SetBackgroundColor (colStateBG);
   styleState->SetTextColor (textColor);
+  styleState->SetTextFont (font);
+  styleStateDefault = mgr->CreateGraphNodeStyle ();
+  styleStateDefault->SetBorderColor (colStateFG);
+  styleStateDefault->SetBackgroundColor (colStateBG);
+  styleStateDefault->SetTextColor (textSelColor);
+  styleStateDefault->SetTextFont (fontBold);
 
   styleResponse = mgr->CreateGraphNodeStyle ();
   styleResponse->SetBorderColor (NewColor ("respColorFG", 0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleResponse->SetBackgroundColor (NewColor ("respColorBG", .3, .6, .7, .4, .7, .8, true));
   styleResponse->SetRoundness (1);
   styleResponse->SetTextColor (NewColor ("respColorTxt", 0, 0, 0, 0, 0, 0, false));
+  styleResponse->SetTextFont (font);
 
   styleReward = mgr->CreateGraphNodeStyle ();
   styleReward->SetBorderColor (NewColor ("rewColorFG", 0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleReward->SetBackgroundColor (NewColor ("rewColorBG", .3, .6, .7, .4, .7, .8, true));
   styleReward->SetRoundness (1);
   styleReward->SetTextColor (textColor);
+  styleReward->SetTextFont (font);
 
   styleInvisible = mgr->CreateGraphNodeStyle ();
   styleInvisible->SetBorderColor (arrowLinkColor);
@@ -428,14 +445,16 @@ csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
       "NewQuest", "name");
 }
 
-void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey, bool fullquest)
+void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey,
+    bool fullquest, const csString& defaultState)
 {
   csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
   while (it->HasNext ())
   {
     iQuestStateFactory* stateFact = it->Next ();
     csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (), pcKey);
-    view->CreateNode (stateKey, stateFact->GetName (), styleState);
+    view->CreateNode (stateKey, stateFact->GetName (),
+	defaultState == stateFact->GetName () ? styleStateDefault : styleState);
     view->LinkNode (pcKey, stateKey);
     if (fullquest)
       BuildStateGraph (stateFact, stateKey, pcKey);
@@ -448,12 +467,15 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
+
   csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
     aresed3d->GetObjectRegistry (),
     "cel.manager.quests");
   iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
   // @@@ Error check
-  if (questFact) BuildQuestGraph (questFact, pcKey, false);
+  if (questFact) BuildQuestGraph (questFact, pcKey, false, defaultState);
 }
 
 csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
@@ -655,18 +677,42 @@ void EntityMode::ActivateNode (const char* nodeName)
   }
 }
 
+void EntityMode::OnDefaultState ()
+{
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
+
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return;
+
+  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+    aresed3d->GetObjectRegistry (),
+    "cel.manager.quests");
+  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  if (!questFact) return;
+
+  csStringArray tokens (contextMenuNode, ",");
+  csString state = tokens[0];
+  state = state.Slice (2);
+  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
+
+  csString pcKey, pcLabel;
+  GetPCKeyLabel (pctpl, pcKey, pcLabel);
+
+  csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+  while (it->HasNext ())
+  {
+    iQuestStateFactory* stateFact = it->Next ();
+    csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (),
+	pcKey.GetData ());
+    view->ChangeNode (stateKey, stateFact->GetName (),
+	state == stateFact->GetName () ? styleStateDefault : styleState);
+  }
+}
+
 void EntityMode::OnEditQuest ()
 {
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (!tpl) return;
-
-  csStringArray tokens (contextMenuNode, ":");
-  csString pcName = tokens[1];
-  csString tagName;
-  if (tokens.GetSize () >= 3) tagName = tokens[2];
-  iCelPropertyClassTemplate* pctpl = tpl->FindPropertyClassTemplate (
-      pcName, tagName);
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
@@ -684,7 +730,8 @@ void EntityMode::OnEditQuest ()
     GetPCKeyLabel (pctpl, pcKey, pcLabel);
     view->CreateNode (pcKey, pcLabel, stylePC);
 
-    BuildQuestGraph (questFact, pcKey, true);
+    csString defaultState;	// Empty: we have no default state here.
+    BuildQuestGraph (questFact, pcKey, true, defaultState);
     view->SetVisible (true);
   }
 }
@@ -702,6 +749,9 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idEditQuest = ui->AllocContextMenuID ();
   frame->Connect (idEditQuest, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnEditQuest), 0, panel);
+  idDefaultState = ui->AllocContextMenuID ();
+  frame->Connect (idDefaultState, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnDefaultState), 0, panel);
 }
 
 void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
@@ -718,6 +768,8 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
       contextMenu->Append (idCreate, wxT ("Create Property Class..."));
     if (type == 'P' && contextMenuNode.StartsWith ("P:pclogic.quest"))
       contextMenu->Append (idEditQuest, wxT ("Edit quest"));
+    if (type == 'S')
+      contextMenu->Append (idDefaultState, wxT ("Set default state"));
   }
 }
 

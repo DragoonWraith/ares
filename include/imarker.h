@@ -30,6 +30,7 @@ THE SOFTWARE.
 struct iView;
 struct iMeshWrapper;
 struct iMaterialWrapper;
+struct iFont;
 class csReversibleTransform;
 class csVector3;
 class csBox3;
@@ -275,7 +276,8 @@ struct iMarker : public virtual iBase
    * If centered is true the text is centered around the given position.
    */
   virtual void Text (MarkerSpace space, const csVector3& pos,
-      const csStringArray& text, iMarkerColor* color, bool centered = false) = 0;
+      const csStringArray& text, iMarkerColor* color, bool centered = false,
+      iFont* font = 0) = 0;
 
   /**
    * Clear all geometry.
@@ -353,6 +355,12 @@ struct iGraphNodeStyle : public virtual iBase
    */
   virtual void SetTextColor (iMarkerColor* color) = 0;
   virtual iMarkerColor* GetTextColor () const = 0;
+
+  /**
+   * Set the text font.
+   */
+  virtual void SetTextFont (iFont* font) = 0;
+  virtual iFont* GetTextFont () const = 0;
 
   /**
    * Set the roundness (default 10).
@@ -495,6 +503,11 @@ struct iMarkerManager : public virtual iBase
   virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY) = 0;
   virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY) = 0;
   virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY) = 0;
+
+  /**
+   * Set the default font.
+   */
+  virtual void SetDefaultFont (iFont* font) = 0;
 
   /**
    * Set the viewport.

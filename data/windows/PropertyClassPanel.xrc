@@ -145,14 +145,6 @@
 									<option>1</option>
 									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
-									<object class="wxListBox" name="questStateBox">
-										<content />
-									</object>
-								</object>
-								<object class="sizeritem">
-									<option>1</option>
-									<flag>wxALL|wxEXPAND</flag>
-									<border>5</border>
 									<object class="wxListCtrl" name="questParameterListCtrl">
 										<style>wxLC_REPORT</style>
 									</object>

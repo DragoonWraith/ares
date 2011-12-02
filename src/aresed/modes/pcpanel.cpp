@@ -139,7 +139,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_MENU (ID_Quest_Add, PropertyClassPanel :: OnQuestParameterAdd)
   EVT_MENU (ID_Quest_Edit, PropertyClassPanel :: OnQuestParameterEdit)
   EVT_MENU (ID_Quest_Delete, PropertyClassPanel :: OnQuestParameterDel)
-  EVT_LISTBOX (XRCID("questStateBox"), PropertyClassPanel :: OnQuestStateSelected)
   EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_MENU (ID_Inv_Add, PropertyClassPanel :: OnInventoryTemplateAdd)
@@ -841,7 +840,6 @@ bool PropertyClassPanel::UpdateQuest ()
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxListCtrl* parList = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  wxListBox* stateList = XRCCTRL (*this, "questStateBox", wxListBox);
   wxTextCtrl* questText = XRCCTRL (*this, "questText", wxTextCtrl);
 
   csString questName = (const char*)questText->GetValue ().mb_str (wxConvUTF8);
@@ -868,18 +866,12 @@ bool PropertyClassPanel::UpdateQuest ()
   }
   pctpl->PerformAction (pl->FetchStringID ("NewQuest"), params);
 
-  csString state = (const char*)stateList->GetStringSelection ().mb_str (wxConvUTF8);
-  if (!state.IsEmpty ())
-    pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
-
   emode->PCWasEdited (pctpl);
   return true;
 }
 
 void PropertyClassPanel::FillQuest ()
 {
-  wxListBox* stateList = XRCCTRL (*this, "questStateBox", wxListBox);
-  stateList->Clear ();
   wxListCtrl* parList = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
   wxTextCtrl* text = XRCCTRL (*this, "questText", wxTextCtrl);
@@ -914,9 +906,6 @@ void PropertyClassPanel::FillQuest ()
     if (defaultState == stateFact->GetName ()) selIdx = i;
     i++;
   }
-  stateList->InsertItems (states, 0);
-  if (selIdx != csArrayItemNotFound)
-    stateList->SetSelection (selIdx);
 
   // Fill all parameters for the quest.
   size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
