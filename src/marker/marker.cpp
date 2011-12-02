@@ -518,10 +518,10 @@ void GraphView::ReplaceNode (const char* oldNode, const char* newNode,
   const GraphNode& nodeOld = nodes.Get (oldNode, n);
   CreateNode (newNode, label, style);
   GraphNode& nodeNew = nodes.Get (newNode, n);
-  nodeNew.velocity = n.velocity;
-  nodeNew.netForce = n.netForce;
-  if (n.marker)
-    nodeNew.marker->SetPosition (n.marker->GetPosition ());
+  nodeNew.velocity = nodeOld.velocity;
+  nodeNew.netForce = nodeOld.netForce;
+  if (nodeOld.marker)
+    nodeNew.marker->SetPosition (nodeOld.marker->GetPosition ());
   if (nodeOld.marker == activeMarker)
   {
     activeMarker = nodeNew.marker;
