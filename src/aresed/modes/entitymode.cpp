@@ -75,6 +75,7 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   iGraphics2D* g2d = aresed3d->GetG2D ();
   font = g2d->GetFontServer ()->LoadFont ("DejaVuSans", 10);
   fontBold = g2d->GetFontServer ()->LoadFont ("DejaVuSansBold", 10);
+  fontLarge = g2d->GetFontServer ()->LoadFont ("DejaVuSans", 13);
 
   pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (),
       this);
@@ -169,7 +170,7 @@ void EntityMode::InitColors ()
   styleTemplate->SetBorderColor (NewColor ("templateColorFG", .0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleTemplate->SetBackgroundColor (NewColor ("templateColorBG", .1, .4, .5, .2, .6, .7, true));
   styleTemplate->SetTextColor (textColor);
-  styleTemplate->SetTextFont (font);
+  styleTemplate->SetTextFont (fontLarge);
 
   stylePC = mgr->CreateGraphNodeStyle ();
   stylePC->SetBorderColor (NewColor ("pcColorFG", 0, 0, .7, 0, 0, 1, 1, 1, 1, false));

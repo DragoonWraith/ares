@@ -102,6 +102,7 @@ private:
 
   csRef<iFont> font;
   csRef<iFont> fontBold;
+  csRef<iFont> fontLarge;
 
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
