@@ -417,9 +417,6 @@ void GraphView::LinkNode (const char* node1, const char* node2,
 void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
     iGraphNodeStyle* style, int& w, int& h)
 {
-  int fw = mgr->GetG2D ()->GetWidth ();
-  int fh = mgr->GetG2D ()->GetHeight ();
-
   csStringArray labelArray (label, "\n");
 
   iFont* font = style->GetTextFont ();
@@ -448,7 +445,6 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
       true, style->GetTextFont ());
   marker->SetSelectionLevel (SELECTION_NONE);
   marker->SetVisible (visible);
-  marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
 
   // Make an invisible hit area.
   csVector3 size3 (w2, h2, 0);
@@ -465,6 +461,11 @@ void GraphView::CreateNode (const char* name, const char* label,
   int w, h;
   iMarker* marker = mgr->CreateMarker ();
   UpdateNodeMarker (marker, label, style, w, h);
+  int fw = mgr->GetG2D ()->GetWidth ();
+  int fh = mgr->GetG2D ()->GetHeight ();
+  int w2 = w / 2;
+  int h2 = h / 2;
+  marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
 
   GraphNode node;
   node.name = name;
