@@ -496,35 +496,12 @@ void GraphView::ChangeNode (const char* name, const char* label,
   int w, h;
   GraphNode n;
   GraphNode& node = nodes.Get (name, n);
-#if 1
   if (mgr->GetDraggingMarker () == node.marker)
     mgr->StopDrag ();
   node.marker->Clear ();
   node.marker->ClearHitAreas ();
   UpdateNodeMarker (node.marker, label, style, w, h);
   node.size = csVector2 (w, h);
-#else
-  bool setActive = false;
-  csVector2 oldPos = node.marker->GetPosition ();
-
-  if (node.marker == activeMarker) { activeMarker = 0; setActive = true; }
-  if (mgr->GetDraggingMarker () == node.marker)
-    mgr->StopDrag ();
-  if (node.marker == draggingMarker) draggingMarker = 0;
-
-  mgr->DestroyMarker (node.marker);
-  if (!label) label = name;
-  iMarker* marker = mgr->CreateMarker ();
-  UpdateNodeMarker (marker, label, style, w, h);
-  marker->SetPosition (oldPos);
-  node.marker = marker;
-  node.size = csVector2 (w, h);
-  if (setActive)
-  {
-    activeMarker = node.marker;
-    activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
-  }
-#endif
 }
 
 void GraphView::ReplaceNode (const char* oldNode, const char* newNode,
