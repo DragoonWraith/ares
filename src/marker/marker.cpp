@@ -376,7 +376,7 @@ private:
 
 public:
   MarkerCallback (GraphView* view) : scfImplementationType (this),
-    view (view) { }
+    view (view) { printf ("view=%p\n", view); fflush (stdout); }
   virtual ~MarkerCallback () { }
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers)
@@ -476,6 +476,11 @@ void GraphView::RemoveNode (const char* name)
   {
     nodes.DeleteAll (name);
     if (node.marker == activeMarker) activeMarker = 0;
+    if (node.marker == draggingMarker)
+    {
+      draggingMarker = 0;
+      mgr->StopDrag ();
+    }
     mgr->DestroyMarker (node.marker);
   }
 }
@@ -488,6 +493,9 @@ void GraphView::ChangeNode (const char* name, const char* label,
   bool setActive = false;
   csVector2 oldPos = node.marker->GetPosition ();
   if (node.marker == activeMarker) { activeMarker = 0; setActive = true; }
+  // @@@ Temporary!
+  mgr->StopDrag ();
+  //if (node.marker == draggingMarker) { draggingMarker = 0; mgr->StopDrag (); }
   mgr->DestroyMarker (node.marker);
   if (!label) label = name;
   int w, h;
