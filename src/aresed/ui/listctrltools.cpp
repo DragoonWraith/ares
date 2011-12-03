@@ -26,6 +26,129 @@ THE SOFTWARE.
 
 #include "listctrltools.h"
 
+//-----------------------------------------------------------------------------
+
+enum
+{
+  ID_Add = wxID_HIGHEST + 10000,
+  ID_Edit,
+  ID_Delete,
+};
+
+void ListCtrlView::UnbindModel ()
+{
+  if (!model) return;
+  list->Disconnect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (ListCtrlView :: OnContextMenu),
+      0, static_cast<wxEvtHandler*> (this));
+  list->Disconnect (ID_Add, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnAdd), 0, this);
+  list->Disconnect (ID_Delete, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnDelete), 0, this);
+  list->Disconnect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
+  model = 0;
+}
+
+void ListCtrlView::BindModel (RowModel* model)
+{
+  if (model == ListCtrlView::model) return;
+  UnbindModel ();
+  ListCtrlView::model = model;
+
+  list->Connect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (ListCtrlView :: OnContextMenu), 0, this);
+  list->Connect (ID_Add, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnAdd), 0, this);
+  list->Connect (ID_Delete, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnDelete), 0, this);
+  list->Connect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
+
+  csStringArray columns = model->GetColumns ();
+  columnCount = columns.GetSize ();
+  for (size_t i = 0 ; i < columnCount ; i++)
+    ListCtrlTools::SetColumn (list, i, columns[i], 100);
+}
+
+ListCtrlView::~ListCtrlView ()
+{
+  UnbindModel ();
+}
+
+void ListCtrlView::Refresh ()
+{
+  list->DeleteAllItems ();
+  model->ResetIterator ();
+  while (model->HasRows ())
+  {
+    csStringArray row = model->NextRow ();
+    ListCtrlTools::AddRow (list, row);
+  }
+}
+
+void ListCtrlView::Update ()
+{
+  model->StartUpdate ();
+  for (int r = 0 ; r < list->GetItemCount () ; r++)
+  {
+    csStringArray row = ListCtrlTools::ReadRow (list, r);
+    if (!model->UpdateRow (row)) break;
+  }
+  model->FinishUpdate ();
+}
+
+void ListCtrlView::OnAdd (wxCommandEvent& event)
+{
+  csStringArray empty;
+  csStringArray row = model->EditRow (empty);
+  if (row.GetSize () > 0)
+  {
+    ListCtrlTools::AddRow (list, row);
+    Update ();
+  }
+}
+
+void ListCtrlView::OnEdit (wxCommandEvent& event)
+{
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
+  csStringArray row = model->EditRow (oldRow);
+  if (row.GetSize () > 0)
+  {
+    ListCtrlTools::ReplaceRow (list, idx, row);
+    Update ();
+  }
+}
+
+void ListCtrlView::OnDelete (wxCommandEvent& event)
+{
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return;
+  list->DeleteItem (idx);
+  for (size_t i = 0 ; i < columnCount ; i++)
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
+  Update ();
+}
+
+void ListCtrlView::OnContextMenu (wxContextMenuEvent& event)
+{
+  bool hasItem;
+  if (ListCtrlTools::CheckHitList (list, hasItem, event.GetPosition ()))
+  {
+    wxMenu contextMenu;
+    contextMenu.Append(ID_Add, wxT ("&Add"));
+    if (hasItem)
+    {
+      if (model->IsEditAllowed ())
+        contextMenu.Append(ID_Edit, wxT ("&Edit"));
+      contextMenu.Append(ID_Delete, wxT ("&Delete"));
+    }
+    list->PopupMenu (&contextMenu);
+  }
+}
+
+//-----------------------------------------------------------------------------
+
 csStringArray ListCtrlTools::ReadRow (wxListCtrl* list, int row)
 {
   wxListItem rowInfo;
@@ -76,6 +199,16 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
   return idx;
 }
 
+long ListCtrlTools::AddRow (wxListCtrl* list, const csStringArray& values)
+{
+  long idx = list->InsertItem (list->GetItemCount (), wxString::FromUTF8 (values[0]));
+  for (size_t col = 1 ; col < values.GetSize () ; col++)
+    list->SetItem (idx, col, wxString::FromUTF8 (values[col]));
+  for (int i = 0 ; i < values.GetSize () ; i++)
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
+  return idx;
+}
+
 void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const char* value, ...)
 {
   list->DeleteItem (idx);
@@ -91,6 +224,16 @@ void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const char* value, ..
   }
   va_end (args);
   for (int i = 0 ; i < col ; i++)
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
+}
+
+void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const csStringArray& values)
+{
+  list->DeleteItem (idx);
+  list->InsertItem (idx, wxString::FromUTF8 (values[0]));
+  for (size_t col = 1 ; col < values.GetSize () ; col++)
+    list->SetItem (idx, col, wxString::FromUTF8 (values[col]));
+  for (int i = 0 ; i < values.GetSize () ; i++)
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
 }
 

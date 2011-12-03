@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
+struct iCelPlLayer;
 struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
@@ -41,14 +42,15 @@ class UIDialog;
 class UIManager;
 class EntityMode;
 
+class PropertyRowModel;
+class InventoryRowModel;
+class ListCtrlView;
+
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
 enum
 {
-  ID_Prop_Add = wxID_HIGHEST + 10000,
-  ID_Prop_Edit,
-  ID_Prop_Delete,
-  ID_Inv_Add,
+  ID_Inv_Add = wxID_HIGHEST + 10000,
   ID_Inv_Edit,
   ID_Inv_Delete,
   ID_Spawn_Add,
@@ -65,10 +67,10 @@ enum
   ID_WireMsg_Delete,
 };
 
-
 class PropertyClassPanel : public wxPanel
 {
 private:
+  iCelPlLayer* pl;
   UIManager* uiManager;
   EntityMode* emode;
   wxSizer* parentSizer;
@@ -81,18 +83,16 @@ private:
   void OnUpdateEvent (wxCommandEvent& event);
 
   // Properties
+  ListCtrlView* propertyView;
+  csRef<PropertyRowModel> propertyModel;
   UIDialog* propDialog;
-  UIDialog* GetPropertyDialog ();
   bool UpdateProperties ();
   void FillProperties ();
-  void OnPropertyRMB (bool hasItem);
-  void OnPropertyAdd (wxCommandEvent& event);
-  void OnPropertyDel (wxCommandEvent& event);
-  void OnPropertyEdit (wxCommandEvent& event);
 
   // Inventory.
+  ListCtrlView* inventoryView;
+  csRef<InventoryRowModel> inventoryModel;
   UIDialog* invTempDialog;
-  UIDialog* GetInventoryTemplateDialog ();
   bool UpdateInventory ();
   void FillInventory ();
   void OnInventoryTemplateRMB (bool hasItem);
@@ -150,6 +150,12 @@ public:
 
   // Switch this dialog to editing of a PC.
   void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
+  UIManager* GetUIManager () const { return uiManager; }
+  iCelPlLayer* GetPL () const { return pl; }
+  EntityMode* GetEntityMode () const { return emode; }
+
+  UIDialog* GetPropertyDialog ();
+  UIDialog* GetInventoryTemplateDialog ();
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }

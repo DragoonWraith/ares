@@ -695,6 +695,7 @@ void EntityMode::OnDefaultState ()
   csString state = tokens[0];
   state = state.Slice (2);
   iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  pctpl->RemoveProperty (pl->FetchStringID ("state"));
   pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
 
   csString pcKey, pcLabel;

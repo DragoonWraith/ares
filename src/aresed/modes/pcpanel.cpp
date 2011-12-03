@@ -111,10 +111,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
   EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
-  EVT_MENU (ID_Prop_Add, PropertyClassPanel :: OnPropertyAdd)
-  EVT_MENU (ID_Prop_Edit, PropertyClassPanel :: OnPropertyEdit)
-  EVT_MENU (ID_Prop_Delete, PropertyClassPanel :: OnPropertyDel)
-
   EVT_MENU (ID_WireMsg_Add, PropertyClassPanel :: OnWireMessageAdd)
   EVT_MENU (ID_WireMsg_Edit, PropertyClassPanel :: OnWireMessageEdit)
   EVT_MENU (ID_WireMsg_Delete, PropertyClassPanel :: OnWireMessageDel)
@@ -140,10 +136,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_MENU (ID_Quest_Edit, PropertyClassPanel :: OnQuestParameterEdit)
   EVT_MENU (ID_Quest_Delete, PropertyClassPanel :: OnQuestParameterDel)
   EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
-
-  EVT_MENU (ID_Inv_Add, PropertyClassPanel :: OnInventoryTemplateAdd)
-  EVT_MENU (ID_Inv_Edit, PropertyClassPanel :: OnInventoryTemplateEdit)
-  EVT_MENU (ID_Inv_Delete, PropertyClassPanel :: OnInventoryTemplateDel)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -159,9 +151,7 @@ bool PropertyClassPanel::CheckHitList (const char* listname, bool& hasItem,
 void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
 {
   bool hasItem;
-  if (CheckHitList ("propertyListCtrl", hasItem, event.GetPosition ()))
-    OnPropertyRMB (hasItem);
-  else if (CheckHitList ("wireMessageListCtrl", hasItem, event.GetPosition ()))
+  if (CheckHitList ("wireMessageListCtrl", hasItem, event.GetPosition ()))
     OnWireMessageRMB (hasItem);
   else if (CheckHitList ("wireParameterListCtrl", hasItem, event.GetPosition ()))
     OnWireParameterRMB (hasItem);
@@ -169,8 +159,6 @@ void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
     OnSpawnTemplateRMB (hasItem);
   else if (CheckHitList ("questParameterListCtrl", hasItem, event.GetPosition ()))
     OnQuestParameterRMB (hasItem);
-  else if (CheckHitList ("inventoryTemplateListCtrl", hasItem, event.GetPosition ()))
-    OnInventoryTemplateRMB (hasItem);
 }
 
 void PropertyClassPanel::OnUpdateEvent (wxCommandEvent& event)
@@ -199,7 +187,6 @@ static size_t FindNotebookPage (wxChoicebook* book, const char* name)
 
 bool PropertyClassPanel::UpdateCurrentWireParams ()
 {
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
@@ -391,8 +378,6 @@ void PropertyClassPanel::OnWireMessageDel (wxCommandEvent& event)
 
 void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
 {
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
-
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
 
@@ -428,7 +413,6 @@ bool PropertyClassPanel::UpdateWire ()
   pctpl->SetName ("pclogic.wire");
   pctpl->RemoveAllProperties ();
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
@@ -485,8 +469,6 @@ void PropertyClassPanel::FillWire ()
   inputMaskText->SetValue (wxT (""));
 
   if (!pctpl || csString ("pclogic.wire") != pctpl->GetName ()) return;
-
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
 
   csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl,
       "AddInput", "mask");
@@ -594,7 +576,6 @@ bool PropertyClassPanel::UpdateSpawn ()
   pctpl->SetName ("pclogic.spawn");
   pctpl->RemoveAllProperties ();
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
@@ -683,8 +664,6 @@ void PropertyClassPanel::FillSpawn ()
   inhibitText->SetValue (wxT (""));
 
   if (!pctpl || csString ("pclogic.spawn") != pctpl->GetName ()) return;
-
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
 
   bool repeat = InspectTools::GetActionParameterValueBool (pl, pctpl,
       "SetTiming", "repeat");
@@ -835,7 +814,6 @@ bool PropertyClassPanel::UpdateQuest ()
   pctpl->SetName ("pclogic.quest");
   pctpl->RemoveAllProperties ();
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
@@ -879,7 +857,6 @@ void PropertyClassPanel::FillQuest ()
 
   if (!pctpl || csString ("pclogic.quest") != pctpl->GetName ()) return;
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
       "NewQuest", "name");
   if (questName.IsEmpty ()) return;
@@ -897,14 +874,10 @@ void PropertyClassPanel::FillQuest ()
   // Fill all states and mark the default state.
   wxArrayString states;
   csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
-  size_t selIdx = csArrayItemNotFound;
-  size_t i = 0;
   while (it->HasNext ())
   {
     iQuestStateFactory* stateFact = it->Next ();
     states.Add (wxString::FromUTF8 (stateFact->GetName ()));
-    if (defaultState == stateFact->GetName ()) selIdx = i;
-    i++;
   }
 
   // Fill all parameters for the quest.
@@ -929,95 +902,82 @@ void PropertyClassPanel::FillQuest ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnInventoryTemplateRMB (bool hasItem)
+class InventoryRowModel : public RowModel
 {
-  wxMenu contextMenu;
-  contextMenu.Append(ID_Inv_Add, wxT ("&Add"));
-  if (hasItem)
+private:
+  PropertyClassPanel* pcPanel;
+  iCelPropertyClassTemplate* pctpl;
+  size_t idx;
+
+  void SearchNextAddTemplate ()
   {
-    contextMenu.Append(ID_Inv_Edit, wxT ("&Edit"));
-    contextMenu.Append(ID_Inv_Delete, wxT ("&Delete"));
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    while (idx < pctpl->GetPropertyCount ())
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddTemplate")
+	return;
+      idx++;
+    }
   }
-  PopupMenu (&contextMenu);
-}
 
-UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
-{
-  if (!invTempDialog)
+public:
+  InventoryRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  virtual ~InventoryRowModel () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
   {
-    invTempDialog = uiManager->CreateDialog ("Edit template/amount");
-    invTempDialog->AddRow ();
-    invTempDialog->AddLabel ("Template:");
-    invTempDialog->AddText ("name");
-    invTempDialog->AddText ("amount");
+    InventoryRowModel::pctpl = pctpl;
   }
-  return invTempDialog;
-}
 
-void PropertyClassPanel::OnInventoryTemplateEdit (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetInventoryTemplateDialog ();
-
-  dialog->Clear ();
-  wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  dialog->SetText ("name", row[0]);
-  dialog->SetText ("amount", row[1]);
-
-  if (dialog->Show (0))
+  virtual void ResetIterator ()
   {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::ReplaceRow (list, idx,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("amount", "").GetData (), 0);
-    UpdatePC ();
+    idx = 0;
+    SearchNextAddTemplate ();
   }
-}
-
-void PropertyClassPanel::OnInventoryTemplateAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetInventoryTemplateDialog ();
-  dialog->Clear ();
-  if (dialog->Show (0))
+  virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
+  virtual csStringArray NextRow ()
   {
-    wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("amount", "").GetData (), 0);
-    UpdatePC ();
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+    idx++;
+    SearchNextAddTemplate ();
+
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csStringID nameID = pl->FetchStringID ("name");
+    csStringID amountID = pl->FetchStringID ("amount");
+    csString parName;
+    csString parAmount;
+    while (params->HasNext ())
+    {
+      csStringID parid;
+      iParameter* par = params->Next (parid);
+      if (parid == nameID) parName = par->GetOriginalExpression ();
+      else if (parid == amountID) parAmount = par->GetOriginalExpression ();
+    }
+    csStringArray ar;
+    ar.Push (parName);
+    ar.Push (parAmount);
+    return ar;
   }
-}
 
-void PropertyClassPanel::OnInventoryTemplateDel (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  UpdatePC ();
-}
-
-bool PropertyClassPanel::UpdateInventory ()
-{
-  pctpl->SetName ("pctools.inventory");
-  pctpl->RemoveAllProperties ();
-
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
-  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
-
-  wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  csStringID actionID = pl->FetchStringID ("AddTemplate");
-  csStringID nameID = pl->FetchStringID ("name");
-  csStringID amountID = pl->FetchStringID ("amount");
-  for (int r = 0 ; r < list->GetItemCount () ; r++)
+  virtual void StartUpdate ()
   {
-    csStringArray row = ListCtrlTools::ReadRow (list, r);
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    pctpl->RemoveProperty (pl->FetchStringID ("AddTemplate"));
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    csStringID actionID = pl->FetchStringID ("AddTemplate");
+    csStringID nameID = pl->FetchStringID ("name");
+    csStringID amountID = pl->FetchStringID ("amount");
     csString name = row[0];
     csString amount = row[1];
     ParHash params;
@@ -1032,7 +992,62 @@ bool PropertyClassPanel::UpdateInventory ()
     params.Put (amountID, par);
 
     pctpl->PerformAction (actionID, params);
+    return true;
   }
+  virtual void FinishUpdate ()
+  {
+    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Name");
+    ar.Push ("Amount");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return true; }
+
+  virtual csStringArray EditRow (const csStringArray& origRow)
+  {
+    UIDialog* dialog = pcPanel->GetInventoryTemplateDialog ();
+    dialog->Clear ();
+    if (origRow.GetSize () >= 2)
+    {
+      dialog->SetText ("name", origRow[0]);
+      dialog->SetText ("amount", origRow[1]);
+    }
+    csStringArray ar;
+    if (dialog->Show (0))
+    {
+      const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+      ar.Push (fields.Get ("name", ""));
+      ar.Push (fields.Get ("amount", ""));
+    }
+    return ar;
+  }
+};
+
+UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
+{
+  if (!invTempDialog)
+  {
+    invTempDialog = uiManager->CreateDialog ("Edit template/amount");
+    invTempDialog->AddRow ();
+    invTempDialog->AddLabel ("Template:");
+    invTempDialog->AddText ("name");
+    invTempDialog->AddText ("amount");
+  }
+  return invTempDialog;
+}
+
+bool PropertyClassPanel::UpdateInventory ()
+{
+  pctpl->SetName ("pctools.inventory");
+  pctpl->RemoveProperty (pl->FetchStringID ("SetLootGenerator"));
+
+  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxTextCtrl* lootText = XRCCTRL (*this, "inventoryLootTextCtrl", wxTextCtrl);
   csString loot = (const char*)lootText->GetValue ().mb_str (wxConvUTF8);
@@ -1041,6 +1056,7 @@ bool PropertyClassPanel::UpdateInventory ()
     ParHash params;
     csRef<iParameter> par = pm->GetParameter (loot, CEL_DATA_STRING);
     if (!par) return false;
+    csStringID nameID = pl->FetchStringID ("name");
     params.Put (nameID, par);
     pctpl->PerformAction (pl->FetchStringID ("SetLootGenerator"), params);
   }
@@ -1051,37 +1067,13 @@ bool PropertyClassPanel::UpdateInventory ()
 
 void PropertyClassPanel::FillInventory ()
 {
-  wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  list->DeleteAllItems ();
   wxTextCtrl* lootText = XRCCTRL (*this, "inventoryLootTextCtrl", wxTextCtrl);
   lootText->SetValue (wxT (""));
 
   if (!pctpl || csString ("pctools.inventory") != pctpl->GetName ()) return;
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
-
-  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
-  {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (i, id, data);
-    csString name = pl->FetchString (id);
-    csStringID nameID = pl->FetchStringID ("name");
-    csStringID amountID = pl->FetchStringID ("amount");
-    if (name == "AddTemplate")
-    {
-      csString parName;
-      csString parAmount;
-      while (params->HasNext ())
-      {
-	csStringID parid;
-	iParameter* par = params->Next (parid);
-	if (parid == nameID) parName = par->GetOriginalExpression ();
-	else if (parid == amountID) parAmount = par->GetOriginalExpression ();
-      }
-      ListCtrlTools::AddRow (list, parName.GetData (), parAmount.GetData (), 0);
-    }
-  }
+  inventoryModel->SetPC (pctpl);
+  inventoryView->Refresh ();
 
   csString lootName = InspectTools::GetActionParameterValueString (pl, pctpl,
       "SetLootGenerator", "name");
@@ -1090,17 +1082,100 @@ void PropertyClassPanel::FillInventory ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnPropertyRMB (bool hasItem)
+class PropertyRowModel : public RowModel
 {
-  wxMenu contextMenu;
-  contextMenu.Append(ID_Prop_Add, wxT ("&Add"));
-  if (hasItem)
+private:
+  PropertyClassPanel* pcPanel;
+  iCelPropertyClassTemplate* pctpl;
+  size_t idx;
+
+public:
+  PropertyRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  virtual ~PropertyRowModel () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
   {
-    contextMenu.Append(ID_Prop_Edit, wxT ("&Edit"));
-    contextMenu.Append(ID_Prop_Delete, wxT ("&Delete"));
+    PropertyRowModel::pctpl = pctpl;
   }
-  PopupMenu (&contextMenu);
-}
+
+  virtual void ResetIterator () { idx = 0; }
+  virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
+  virtual csStringArray NextRow ()
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+    idx++;
+    csString value;
+    celParameterTools::ToString (data, value);
+    csStringArray ar;
+    ar.Push (pcPanel->GetPL ()->FetchString (id));
+    ar.Push (value);
+    ar.Push (TypeToString (data.type));
+    return ar;
+  }
+
+  virtual void StartUpdate ()
+  {
+    pctpl->RemoveAllProperties ();
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csString name = row[0];
+    csString value = row[1];
+    csString type = row[2];
+    csStringID nameID = pl->FetchStringID (name);
+    if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
+    else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
+    else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
+    else if (type == "string") pctpl->SetProperty (nameID, value.GetData ());
+    else if (type == "vector2") pctpl->SetProperty (nameID, ToVector2 (value));
+    else if (type == "vector3") pctpl->SetProperty (nameID, ToVector3 (value));
+    else if (type == "color") pctpl->SetProperty (nameID, ToColor (value));
+    else
+    {
+      pcPanel->GetUIManager ()->Error ("Unknown type '%s'\n", type.GetData ());
+      return false;
+    }
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Name");
+    ar.Push ("Value");
+    ar.Push ("Type");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return true; }
+
+  virtual csStringArray EditRow (const csStringArray& origRow)
+  {
+    UIDialog* dialog = pcPanel->GetPropertyDialog ();
+    dialog->Clear ();
+    if (origRow.GetSize () >= 3)
+    {
+      dialog->SetText ("name", origRow[0]);
+      dialog->SetText ("value", origRow[1]);
+      dialog->SetChoice ("type", origRow[2]);
+    }
+    csStringArray ar;
+    if (dialog->Show (0))
+    {
+      const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+      ar.Push (fields.Get ("name", ""));
+      ar.Push (fields.Get ("value", ""));
+      ar.Push (fields.Get ("type", ""));
+    }
+    return ar;
+  }
+};
 
 UIDialog* PropertyClassPanel::GetPropertyDialog ()
 {
@@ -1118,112 +1193,19 @@ UIDialog* PropertyClassPanel::GetPropertyDialog ()
   return propDialog;
 }
 
-void PropertyClassPanel::OnPropertyEdit (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetPropertyDialog ();
-
-  dialog->Clear ();
-  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  dialog->SetText ("name", row[0]);
-  dialog->SetText ("value", row[1]);
-  dialog->SetChoice ("type", row[2]);
-
-  if (dialog->Show (0))
-  {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::ReplaceRow (list, idx,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("value", "").GetData (),
-	fields.Get ("type", "").GetData (), 0);
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnPropertyAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetPropertyDialog ();
-  dialog->Clear ();
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("value", "").GetData (),
-	fields.Get ("type", "").GetData (), 0);
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnPropertyDel (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
-  UpdatePC ();
-}
-
 bool PropertyClassPanel::UpdateProperties ()
 {
   pctpl->SetName ("pctools.properties");
-  pctpl->RemoveAllProperties ();
-
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
-
-  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  for (int r = 0 ; r < list->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (list, r);
-    csString name = row[0];
-    csString value = row[1];
-    csString type = row[2];
-    csStringID nameID = pl->FetchStringID (name);
-    if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
-    else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
-    else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
-    else if (type == "string") pctpl->SetProperty (nameID, value.GetData ());
-    else if (type == "vector2") pctpl->SetProperty (nameID, ToVector2 (value));
-    else if (type == "vector3") pctpl->SetProperty (nameID, ToVector3 (value));
-    else if (type == "color") pctpl->SetProperty (nameID, ToColor (value));
-    else
-    {
-      uiManager->Error ("Unknown type '%s'\n", type.GetData ());
-      return false;
-    }
-  }
-
   emode->PCWasEdited (pctpl);
   return true;
 }
 
 void PropertyClassPanel::FillProperties ()
 {
-  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  list->DeleteAllItems ();
-
   if (!pctpl || csString ("pctools.properties") != pctpl->GetName ()) return;
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
-
-  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
-  {
-    // @@@ Should do something with actions.
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (i, id, data);
-    csString name = pl->FetchString (id);
-    csString value, type;
-    celParameterTools::ToString (data, value);
-    type = TypeToString (data.type);
-    ListCtrlTools::AddRow (list, name.GetData (), value.GetData (), type.GetData (), 0);
-  }
+  propertyModel->SetPC (pctpl);
+  propertyView->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -1299,6 +1281,7 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
 {
+  pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
@@ -1306,13 +1289,12 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   wxListCtrl* list;
 
   list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Name", 100);
-  ListCtrlTools::SetColumn (list, 1, "Value", 100);
-  ListCtrlTools::SetColumn (list, 2, "Type", 100);
+  propertyModel.AttachNew (new PropertyRowModel (this));
+  propertyView = new ListCtrlView (list, propertyModel);
 
   list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Name", 100);
-  ListCtrlTools::SetColumn (list, 1, "Amount", 100);
+  inventoryModel.AttachNew (new InventoryRowModel (this));
+  inventoryView = new ListCtrlView (list, inventoryModel);
 
   list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
   ListCtrlTools::SetColumn (list, 0, "Template", 100);
@@ -1347,6 +1329,9 @@ PropertyClassPanel::~PropertyClassPanel ()
   delete questParDialog;
   delete wireParDialog;
   delete wireMsgDialog;
+
+  delete propertyView;
+  delete inventoryView;
 }
 
 

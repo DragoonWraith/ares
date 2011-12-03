@@ -33,6 +33,108 @@ THE SOFTWARE.
 #include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
+/**
+ * This class represents a row model. Instances of this interface
+ * can be used by supporting views (like ListCtrlView).
+ */
+class RowModel : public csRefCount
+{
+public:
+  /**
+   * Reset the iterator for this rowmodel.
+   * This method (together with HasRows() and NextRow()) are used to fetch
+   * all the data so that the list can be filled.
+   */
+  virtual void ResetIterator () = 0;
+
+  /**
+   * Check if there are still rows to process.
+   */
+  virtual bool HasRows () = 0;
+
+  /**
+   * Get the next row.
+   */
+  virtual csStringArray NextRow () = 0;
+
+  // -----------------------------------------------------------------------------
+
+  /**
+   * Start the update from the given list. This is called by the list control
+   * when it is time to update the data. This call is followed by a series of
+   * UpdateRow() calls and finished by a call to FinishUpdate().
+   */
+  virtual void StartUpdate () = 0;
+
+  /**
+   * Update a row.
+   * Returns false in case of error.
+   */
+  virtual bool UpdateRow (const csStringArray& row) = 0;
+
+  /**
+   * Finish the update.
+   */
+  virtual void FinishUpdate () = 0;
+
+  // -----------------------------------------------------------------------------
+
+  /**
+   * Get the columns for the list.
+   */
+  virtual csStringArray GetColumns () = 0;
+
+  /**
+   * Return true if this datamodel allows editing of rows.
+   */
+  virtual bool IsEditAllowed () const = 0;
+
+  // -----------------------------------------------------------------------------
+
+  /**
+   * Edit a given row and return the updated row.
+   * If the given row is empty (contains no items) then
+   * the editor will create a new row.
+   * If the returned row is empty then the dialog was canceled.
+   */
+  virtual csStringArray EditRow (const csStringArray& origRow) = 0;
+};
+
+/**
+ * A view based on a list control on top of a RowModel.
+ */
+class ListCtrlView : public wxEvtHandler
+{
+private:
+  wxListCtrl* list;
+  csRef<RowModel> model;
+  size_t columnCount;
+
+  void UnbindModel ();
+  void BindModel (RowModel* model);
+
+  void OnContextMenu (wxContextMenuEvent& event);
+  void OnAdd (wxCommandEvent& event);
+  void OnEdit (wxCommandEvent& event);
+  void OnDelete (wxCommandEvent& event);
+
+  void Update ();
+
+public:
+  ListCtrlView (wxListCtrl* list) : list (list) { }
+  ListCtrlView (wxListCtrl* list, RowModel* model) : list (list)
+  {
+    BindModel (model);
+  }
+  ~ListCtrlView ();
+
+  void SetModel (RowModel* model) { BindModel (model); Refresh (); }
+  void Refresh ();
+};
+
+/**
+ * Various tools for lists.
+ */
 class ListCtrlTools
 {
 public:
@@ -47,9 +149,19 @@ public:
   static long AddRow (wxListCtrl* list, const char* value, ...);
 
   /**
-   * Replace a row int the list control.
+   * Add a row to the list control (at the end).
+   */
+  static long AddRow (wxListCtrl* list, const csStringArray& values);
+
+  /**
+   * Replace a row in the list control.
    */
   static void ReplaceRow (wxListCtrl* list, int idx, const char* value, ...);
+
+  /**
+   * Replace a row in the list control.
+   */
+  static void ReplaceRow (wxListCtrl* list, int idx, const csStringArray& values);
 
   /**
    * Set the color of some row.
