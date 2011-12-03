@@ -735,11 +735,6 @@ void PropertyClassPanel::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnQuestStateSelected (wxCommandEvent& event)
-{
-  UpdatePC ();
-}
-
 void PropertyClassPanel::OnQuestParameterRMB (bool hasItem)
 {
   wxMenu contextMenu;

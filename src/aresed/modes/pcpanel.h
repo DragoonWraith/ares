@@ -111,7 +111,6 @@ private:
   void OnQuestParameterAdd (wxCommandEvent& event);
   void OnQuestParameterDel (wxCommandEvent& event);
   void OnQuestParameterEdit (wxCommandEvent& event);
-  void OnQuestStateSelected (wxCommandEvent& event);
 
   // Spawn.
   UIDialog* spawnTempDialog;
