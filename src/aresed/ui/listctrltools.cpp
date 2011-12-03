@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "listctrltools.h"
+#include "uimanager.h"
 
 //-----------------------------------------------------------------------------
 
@@ -96,10 +97,32 @@ void ListCtrlView::Update ()
   model->FinishUpdate ();
 }
 
+csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
+{
+  UIDialog* dialog = model->GetEditorDialog ();
+  dialog->Clear ();
+  csStringArray columns = model->GetColumns ();
+  if (origRow.GetSize () >= columnCount)
+    for (size_t i = 0 ; i < columnCount ; i++)
+      dialog->SetText (columns[i], origRow[i]);
+  csStringArray ar;
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    for (size_t i = 0 ; i < columnCount ; i++)
+      ar.Push (fields.Get (columns[i], ""));
+  }
+  return ar;
+}
+
 void ListCtrlView::OnAdd (wxCommandEvent& event)
 {
   csStringArray empty;
-  csStringArray row = model->EditRow (empty);
+  csStringArray row;
+  if (model->GetEditorDialog ())
+    row = DialogEditRow (empty);
+  else
+    row = model->EditRow (empty);
   if (row.GetSize () > 0)
   {
     ListCtrlTools::AddRow (list, row);
@@ -112,7 +135,11 @@ void ListCtrlView::OnEdit (wxCommandEvent& event)
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
   if (idx == -1) return;
   csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
-  csStringArray row = model->EditRow (oldRow);
+  csStringArray row;
+  if (model->GetEditorDialog ())
+    row = DialogEditRow (oldRow);
+  else
+    row = model->EditRow (oldRow);
   if (row.GetSize () > 0)
   {
     ListCtrlTools::ReplaceRow (list, idx, row);

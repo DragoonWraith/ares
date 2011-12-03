@@ -1007,25 +1007,7 @@ public:
     return ar;
   }
   virtual bool IsEditAllowed () const { return true; }
-
-  virtual csStringArray EditRow (const csStringArray& origRow)
-  {
-    UIDialog* dialog = pcPanel->GetInventoryTemplateDialog ();
-    dialog->Clear ();
-    if (origRow.GetSize () >= 2)
-    {
-      dialog->SetText ("name", origRow[0]);
-      dialog->SetText ("amount", origRow[1]);
-    }
-    csStringArray ar;
-    if (dialog->Show (0))
-    {
-      const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-      ar.Push (fields.Get ("name", ""));
-      ar.Push (fields.Get ("amount", ""));
-    }
-    return ar;
-  }
+  virtual UIDialog* GetEditorDialog () { return pcPanel->GetInventoryTemplateDialog (); }
 };
 
 UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
@@ -1035,8 +1017,8 @@ UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
     invTempDialog = uiManager->CreateDialog ("Edit template/amount");
     invTempDialog->AddRow ();
     invTempDialog->AddLabel ("Template:");
-    invTempDialog->AddText ("name");
-    invTempDialog->AddText ("amount");
+    invTempDialog->AddText ("Name");
+    invTempDialog->AddText ("Amount");
   }
   return invTempDialog;
 }
@@ -1154,27 +1136,7 @@ public:
     return ar;
   }
   virtual bool IsEditAllowed () const { return true; }
-
-  virtual csStringArray EditRow (const csStringArray& origRow)
-  {
-    UIDialog* dialog = pcPanel->GetPropertyDialog ();
-    dialog->Clear ();
-    if (origRow.GetSize () >= 3)
-    {
-      dialog->SetText ("name", origRow[0]);
-      dialog->SetText ("value", origRow[1]);
-      dialog->SetChoice ("type", origRow[2]);
-    }
-    csStringArray ar;
-    if (dialog->Show (0))
-    {
-      const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-      ar.Push (fields.Get ("name", ""));
-      ar.Push (fields.Get ("value", ""));
-      ar.Push (fields.Get ("type", ""));
-    }
-    return ar;
-  }
+  virtual UIDialog* GetEditorDialog () { return pcPanel->GetPropertyDialog (); }
 };
 
 UIDialog* PropertyClassPanel::GetPropertyDialog ()
@@ -1184,11 +1146,11 @@ UIDialog* PropertyClassPanel::GetPropertyDialog ()
     propDialog = uiManager->CreateDialog ("Edit property");
     propDialog->AddRow ();
     propDialog->AddLabel ("Name:");
-    propDialog->AddText ("name");
-    propDialog->AddChoice ("type", "string", "float", "long", "bool",
+    propDialog->AddText ("Name");
+    propDialog->AddChoice ("Type", "string", "float", "long", "bool",
       "vector2", "vector3", "color", (const char*)0);
     propDialog->AddRow ();
-    propDialog->AddMultiText ("value");
+    propDialog->AddMultiText ("Value");
   }
   return propDialog;
 }

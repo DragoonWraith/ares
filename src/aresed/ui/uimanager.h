@@ -76,7 +76,11 @@ public:
   // Clear all input fields to empty or default values.
   void Clear ();
 
-  /// Set the value of the given text control.
+  /**
+   * Set the value of the given text control.
+   * In case the name refers to a choice then this will automatically
+   * switch to SetChoice().
+   */
   void SetText (const char* name, const char* value);
   /// Set the value of the given choice.
   void SetChoice (const char* name, const char* value);

@@ -133,7 +133,11 @@ void UIDialog::AddButton (const char* str)
 void UIDialog::SetText (const char* name, const char* value)
 {
   wxTextCtrl* text = textFields.Get (name, 0);
-  if (!text) return;
+  if (!text)
+  {
+    SetChoice (name, value);
+    return;
+  }
   text->SetValue (wxString::FromUTF8 (value));
 }
 

@@ -33,6 +33,8 @@ THE SOFTWARE.
 #include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
+class UIDialog;
+
 /**
  * This class represents a row model. Instances of this interface
  * can be used by supporting views (like ListCtrlView).
@@ -92,12 +94,23 @@ public:
   // -----------------------------------------------------------------------------
 
   /**
+   * Return a dialog with which a row in this model can be edited.
+   * This can return 0 in which case the view should call EditRow()
+   * for more controlled editing. The dialog should support the fields
+   * with the same name as the columns in the model.
+   */
+  virtual UIDialog* GetEditorDialog () { return 0; }
+
+  /**
    * Edit a given row and return the updated row.
    * If the given row is empty (contains no items) then
    * the editor will create a new row.
    * If the returned row is empty then the dialog was canceled.
    */
-  virtual csStringArray EditRow (const csStringArray& origRow) = 0;
+  virtual csStringArray EditRow (const csStringArray& origRow)
+  {
+    return csStringArray ();
+  }
 };
 
 /**
@@ -119,6 +132,9 @@ private:
   void OnDelete (wxCommandEvent& event);
 
   void Update ();
+
+  /// This is used in case the model has a dialog to use.
+  csStringArray DialogEditRow (const csStringArray& origRow);
 
 public:
   ListCtrlView (wxListCtrl* list) : list (list) { }
