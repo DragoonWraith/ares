@@ -183,6 +183,15 @@ static size_t FindNotebookPage (wxChoicebook* book, const char* name)
   return csArrayItemNotFound;
 }
 
+void PropertyClassPanel::SwitchPCType (const char* pcType)
+{
+  csString pcTypeS = pcType;
+  if (pcTypeS == pctpl->GetName ()) return;
+  pctpl->SetName (pcType);
+  pctpl->RemoveAllProperties ();
+  emode->PCWasEdited (pctpl);
+}
+
 // -----------------------------------------------------------------------
 
 bool PropertyClassPanel::UpdateCurrentWireParams ()
@@ -410,8 +419,9 @@ void PropertyClassPanel::OnWireMessageDeselected (wxListEvent& event)
 
 bool PropertyClassPanel::UpdateWire ()
 {
-  pctpl->SetName ("pclogic.wire");
-  pctpl->RemoveAllProperties ();
+  SwitchPCType ("pclogic.wire");
+
+  pctpl->RemoveAllProperties ();//@@@
 
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
@@ -573,8 +583,9 @@ void PropertyClassPanel::OnSpawnTemplateDel (wxCommandEvent& event)
 
 bool PropertyClassPanel::UpdateSpawn ()
 {
-  pctpl->SetName ("pclogic.spawn");
-  pctpl->RemoveAllProperties ();
+  SwitchPCType ("pclogic.spawn");
+
+  pctpl->RemoveAllProperties (); //@@@
 
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
@@ -811,8 +822,9 @@ void PropertyClassPanel::OnQuestParameterDel (wxCommandEvent& event)
 
 bool PropertyClassPanel::UpdateQuest ()
 {
-  pctpl->SetName ("pclogic.quest");
-  pctpl->RemoveAllProperties ();
+  SwitchPCType ("pclogic.quest");
+
+  pctpl->RemoveAllProperties ();//@@@
 
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
@@ -1025,7 +1037,8 @@ UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
 
 bool PropertyClassPanel::UpdateInventory ()
 {
-  pctpl->SetName ("pctools.inventory");
+  SwitchPCType ("pctools.inventory");
+
   pctpl->RemoveProperty (pl->FetchStringID ("SetLootGenerator"));
 
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
@@ -1157,8 +1170,7 @@ UIDialog* PropertyClassPanel::GetPropertyDialog ()
 
 bool PropertyClassPanel::UpdateProperties ()
 {
-  pctpl->SetName ("pctools.properties");
-  emode->PCWasEdited (pctpl);
+  SwitchPCType ("pctools.properties");
   return true;
 }
 

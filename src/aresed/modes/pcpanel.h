@@ -82,6 +82,12 @@ private:
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
 
+  /**
+   * Possibly switch the type of the PC. Do nothing if the PC is
+   * already of the right type. Otherwise clear all properties.
+   */
+  void SwitchPCType (const char* pcType);
+
   // Properties
   ListCtrlView* propertyView;
   csRef<PropertyRowModel> propertyModel;
@@ -95,10 +101,6 @@ private:
   UIDialog* invTempDialog;
   bool UpdateInventory ();
   void FillInventory ();
-  void OnInventoryTemplateRMB (bool hasItem);
-  void OnInventoryTemplateAdd (wxCommandEvent& event);
-  void OnInventoryTemplateDel (wxCommandEvent& event);
-  void OnInventoryTemplateEdit (wxCommandEvent& event);
 
   // Quest.
   UIDialog* questParDialog;
