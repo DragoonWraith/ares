@@ -47,6 +47,7 @@ class InventoryRowModel;
 class QuestRowModel;
 class SpawnRowModel;
 class WireMsgRowModel;
+class WireParRowModel;
 class ListCtrlView;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
@@ -80,8 +81,6 @@ private:
   iCelEntityTemplate* tpl;
   iCelPropertyClassTemplate* pctpl;
 
-  bool CheckHitList (const char* listname, bool& hasItem, const wxPoint& pos);
-  void OnContextMenu (wxContextMenuEvent& event);
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
 
@@ -122,6 +121,8 @@ private:
   // Wire.
   ListCtrlView* wireMsgView;
   csRef<WireMsgRowModel> wireMsgModel;
+  ListCtrlView* wireParView;
+  csRef<WireParRowModel> wireParModel;
   UIDialog* wireParDialog;
   UIDialog* wireMsgDialog;
   bool UpdateWire ();
@@ -129,13 +130,13 @@ private:
   bool UpdateCurrentWireParams ();
   void OnWireMessageSelected (wxListEvent& event);
   void OnWireMessageDeselected (wxListEvent& event);
-  void OnWireParameterRMB (bool hasItem);
-  void OnWireParameterAdd (wxCommandEvent& event);
-  void OnWireParameterEdit (wxCommandEvent& event);
-  void OnWireParameterDel (wxCommandEvent& event);
 
   // Update the property class. Returns false on error.
   bool UpdatePC ();
+
+public:
+  csHash<ParHash,csString> wireParams;
+  void UpdateWireMsg ();
 
 public:
   PropertyClassPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
