@@ -121,9 +121,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_MENU (ID_WirePar_Edit, PropertyClassPanel :: OnWireParameterEdit)
   EVT_MENU (ID_WirePar_Delete, PropertyClassPanel :: OnWireParameterDel)
 
-  EVT_MENU (ID_Spawn_Add, PropertyClassPanel :: OnSpawnTemplateAdd)
-  EVT_MENU (ID_Spawn_Edit, PropertyClassPanel :: OnSpawnTemplateEdit)
-  EVT_MENU (ID_Spawn_Delete, PropertyClassPanel :: OnSpawnTemplateDel)
   EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRandomCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnUniqueCheckBox"), PropertyClassPanel :: OnUpdateEvent)
@@ -152,8 +149,6 @@ void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
     OnWireMessageRMB (hasItem);
   else if (CheckHitList ("wireParameterListCtrl", hasItem, event.GetPosition ()))
     OnWireParameterRMB (hasItem);
-  else if (CheckHitList ("spawnTemplateListCtrl", hasItem, event.GetPosition ()))
-    OnSpawnTemplateRMB (hasItem);
 }
 
 void PropertyClassPanel::OnUpdateEvent (wxCommandEvent& event)
@@ -508,17 +503,102 @@ void PropertyClassPanel::FillWire ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnSpawnTemplateRMB (bool hasItem)
+class SpawnRowModel : public RowModel
 {
-  wxMenu contextMenu;
-  contextMenu.Append(ID_Spawn_Add, wxT ("&Add"));
-  if (hasItem)
+private:
+  PropertyClassPanel* pcPanel;
+  iCelPropertyClassTemplate* pctpl;
+  size_t idx;
+
+  void SearchNextAddTemplate ()
   {
-    contextMenu.Append(ID_Spawn_Edit, wxT ("&Edit"));
-    contextMenu.Append(ID_Spawn_Delete, wxT ("&Delete"));
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    while (idx < pctpl->GetPropertyCount ())
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddEntityTemplateType")
+	return;
+      idx++;
+    }
   }
-  PopupMenu (&contextMenu);
-}
+
+public:
+  SpawnRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  virtual ~SpawnRowModel () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
+  {
+    SpawnRowModel::pctpl = pctpl;
+  }
+
+  virtual void ResetIterator ()
+  {
+    idx = 0;
+    SearchNextAddTemplate ();
+  }
+  virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
+  virtual csStringArray NextRow ()
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+    idx++;
+    SearchNextAddTemplate ();
+
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csStringID nameID = pl->FetchStringID ("template");
+    csString parName;
+    while (params->HasNext ())
+    {
+      csStringID parid;
+      iParameter* par = params->Next (parid);
+      if (parid == nameID) parName = par->GetOriginalExpression ();
+    }
+    csStringArray ar;
+    ar.Push (parName);
+    return ar;
+  }
+
+  virtual void StartUpdate ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    pctpl->RemoveProperty (pl->FetchStringID ("AddEntityTemplateType"));
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    csStringID actionID = pl->FetchStringID ("AddEntityTemplateType");
+    csStringID nameID = pl->FetchStringID ("template");
+    csString name = row[0];
+    ParHash params;
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (name, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (nameID, par);
+
+    pctpl->PerformAction (actionID, params);
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Name");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return true; }
+  virtual UIDialog* GetEditorDialog () { return pcPanel->GetSpawnTemplateDialog (); }
+};
 
 UIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
 {
@@ -527,65 +607,23 @@ UIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
     spawnTempDialog = uiManager->CreateDialog ("Edit template");
     spawnTempDialog->AddRow ();
     spawnTempDialog->AddLabel ("Template:");
-    spawnTempDialog->AddText ("name");
+    spawnTempDialog->AddText ("Name");
   }
   return spawnTempDialog;
-}
-
-void PropertyClassPanel::OnSpawnTemplateEdit (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetSpawnTemplateDialog ();
-
-  dialog->Clear ();
-  wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  dialog->SetText ("name", row[0]);
-
-  if (dialog->Show (0))
-  {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::ReplaceRow (list, idx,
-	fields.Get ("name", "").GetData (), 0);
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnSpawnTemplateAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetSpawnTemplateDialog ();
-  dialog->Clear ();
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (), 0);
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnSpawnTemplateDel (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  UpdatePC ();
 }
 
 bool PropertyClassPanel::UpdateSpawn ()
 {
   SwitchPCType ("pclogic.spawn");
 
-  pctpl->RemoveAllProperties (); //@@@
+  pctpl->RemoveProperty (pl->FetchStringID ("SetTiming"));
+  pctpl->RemoveProperty (pl->FetchStringID ("Inhibit"));
+  pctpl->RemoveProperty (pl->FetchStringID ("spawnunique"));
+  pctpl->RemoveProperty (pl->FetchStringID ("namecounter"));
 
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
-  wxListCtrl* list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
   wxCheckBox* repeatCB = XRCCTRL (*this, "spawnRepeatCheckBox", wxCheckBox);
   wxCheckBox* randomCB = XRCCTRL (*this, "spawnRandomCheckBox", wxCheckBox);
   wxCheckBox* spawnuniqueCB = XRCCTRL (*this, "spawnUniqueCheckBox", wxCheckBox);
@@ -593,19 +631,6 @@ bool PropertyClassPanel::UpdateSpawn ()
   wxTextCtrl* minDelayText = XRCCTRL (*this, "spawnMinDelayText", wxTextCtrl);
   wxTextCtrl* maxDelayText = XRCCTRL (*this, "spawnMaxDelayText", wxTextCtrl);
   wxTextCtrl* inhibitText = XRCCTRL (*this, "spawnInhibitText", wxTextCtrl);
-
-  csStringID actionID = pl->FetchStringID ("AddEntityTemplateType");
-  csStringID nameID = pl->FetchStringID ("template");
-  for (int r = 0 ; r < list->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (list, r);
-    csString name = row[0];
-    ParHash params;
-    csRef<iParameter> par = pm->GetParameter (name, CEL_DATA_STRING);
-    if (!par) return false;
-    params.Put (nameID, par);
-    pctpl->PerformAction (actionID, params);
-  }
 
   {
     csString mindelay = (const char*)minDelayText->GetValue ().mb_str (wxConvUTF8);
@@ -706,26 +731,8 @@ void PropertyClassPanel::FillSpawn ()
     inhibitText->SetValue (wxString::FromUTF8 (s));
   }
 
-  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
-  {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (i, id, data);
-    csString name = pl->FetchString (id);
-    csStringID tplID = pl->FetchStringID ("template");
-    if (name == "AddEntityTemplateType")
-    {
-      csString tplName;
-      while (params->HasNext ())
-      {
-	csStringID parid;
-	iParameter* par = params->Next (parid);
-	if (parid == tplID) tplName = par->GetOriginalExpression ();
-      }
-      if (!tplName.IsEmpty ())
-        ListCtrlTools::AddRow (list, tplName.GetData (), 0);
-    }
-  }
+  spawnModel->SetPC (pctpl);
+  spawnView->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -1278,7 +1285,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   inventoryView = new ListCtrlView (list, inventoryModel);
 
   list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Template", 100);
+  spawnModel.AttachNew (new SpawnRowModel (this));
+  spawnView = new ListCtrlView (list, spawnModel);
 
   list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
   questModel.AttachNew (new QuestRowModel (this));
@@ -1313,6 +1321,7 @@ PropertyClassPanel::~PropertyClassPanel ()
   delete propertyView;
   delete inventoryView;
   delete questView;
+  delete spawnView;
 }
 
 

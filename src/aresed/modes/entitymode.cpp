@@ -374,8 +374,8 @@ void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
     iRewardFactory* reward = rewards->Get (j);
-    csString rewKey; rewKey.Format ("r:%d,%s", j, parentKey);
-    csString rewLabel; rewLabel.Format ("%d:%s", j+1, GetRewardType (reward));
+    csString rewKey; rewKey.Format ("r:%ld,%s", j, parentKey);
+    csString rewLabel; rewLabel.Format ("%ld:%s", j+1, GetRewardType (reward));
     view->CreateNode (rewKey, rewLabel, styleReward);
     view->LinkNode (parentKey, rewKey, styleThinLink);
 
@@ -414,7 +414,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   for (size_t i = 0 ; i < responses->GetSize () ; i++)
   {
     iQuestTriggerResponseFactory* response = responses->Get (i);
-    csString responseKey; responseKey.Format ("t:%d,%s", i, stateKey);
+    csString responseKey; responseKey.Format ("t:%ld,%s", i, stateKey);
     view->CreateNode (responseKey, GetTriggerType (response->GetTriggerFactory ()), styleResponse);
     view->LinkNode (stateKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();

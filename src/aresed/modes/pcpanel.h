@@ -45,6 +45,7 @@ class EntityMode;
 class PropertyRowModel;
 class InventoryRowModel;
 class QuestRowModel;
+class SpawnRowModel;
 class ListCtrlView;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
@@ -111,14 +112,11 @@ private:
   void FillQuest ();
 
   // Spawn.
+  ListCtrlView* spawnView;
+  csRef<SpawnRowModel> spawnModel;
   UIDialog* spawnTempDialog;
-  UIDialog* GetSpawnTemplateDialog ();
   bool UpdateSpawn ();
   void FillSpawn ();
-  void OnSpawnTemplateRMB (bool hasItem);
-  void OnSpawnTemplateAdd (wxCommandEvent& event);
-  void OnSpawnTemplateDel (wxCommandEvent& event);
-  void OnSpawnTemplateEdit (wxCommandEvent& event);
 
   // Wire.
   UIDialog* wireParDialog;
@@ -156,6 +154,7 @@ public:
   UIDialog* GetPropertyDialog ();
   UIDialog* GetInventoryTemplateDialog ();
   UIDialog* GetQuestDialog ();
+  UIDialog* GetSpawnTemplateDialog ();
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
