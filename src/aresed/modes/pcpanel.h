@@ -53,25 +53,6 @@ class ListCtrlView;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
-enum
-{
-  ID_Inv_Add = wxID_HIGHEST + 10000,
-  ID_Inv_Edit,
-  ID_Inv_Delete,
-  ID_Spawn_Add,
-  ID_Spawn_Edit,
-  ID_Spawn_Delete,
-  ID_Quest_Add,
-  ID_Quest_Edit,
-  ID_Quest_Delete,
-  ID_WirePar_Add,
-  ID_WirePar_Edit,
-  ID_WirePar_Delete,
-  ID_WireMsg_Add,
-  ID_WireMsg_Edit,
-  ID_WireMsg_Delete,
-};
-
 class PropertyClassPanel : public wxPanel
 {
 private:
