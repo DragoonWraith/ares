@@ -234,8 +234,7 @@ public:
   virtual bool UpdateRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    iParameterManager* pm = pcPanel->GetPM ();
     csStringID actionID = pl->FetchStringID ("AddOutput");
     csString msg = row[0];
     csString entity = row[1];
@@ -332,8 +331,7 @@ public:
   virtual bool UpdateRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    iParameterManager* pm = pcPanel->GetPM ();
 
     ParHash ph;
     ParHash& wparams = pcPanel->wireParams.Get (currentMessage, ph);
@@ -425,9 +423,6 @@ bool PropertyClassPanel::UpdateWire ()
   SwitchPCType ("pclogic.wire");
 
   pctpl->RemoveProperty (pl->FetchStringID ("AddInput"));
-
-  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxTextCtrl* inputMaskText = XRCCTRL (*this, "wireInputMaskText", wxTextCtrl);
 
@@ -536,8 +531,7 @@ public:
   virtual bool UpdateRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    iParameterManager* pm = pcPanel->GetPM ();
     csStringID actionID = pl->FetchStringID ("AddEntityTemplateType");
     csStringID nameID = pl->FetchStringID ("template");
     csString name = row[0];
@@ -586,9 +580,6 @@ bool PropertyClassPanel::UpdateSpawn ()
   pctpl->RemoveProperty (pl->FetchStringID ("Inhibit"));
   pctpl->RemoveProperty (pl->FetchStringID ("spawnunique"));
   pctpl->RemoveProperty (pl->FetchStringID ("namecounter"));
-
-  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxCheckBox* repeatCB = XRCCTRL (*this, "spawnRepeatCheckBox", wxCheckBox);
   wxCheckBox* randomCB = XRCCTRL (*this, "spawnRandomCheckBox", wxCheckBox);
@@ -783,8 +774,7 @@ public:
       questName = newQuestName;
     newQuestName = "";
     pctpl->RemoveProperty (pl->FetchStringID ("NewQuest"));
-    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    iParameterManager* pm = pcPanel->GetPM ();
     params.DeleteAll ();
     csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
     params.Put (pl->FetchStringID ("name"), par);
@@ -792,8 +782,7 @@ public:
   virtual bool UpdateRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    iParameterManager* pm = pcPanel->GetPM ();
 
     csStringID nameID = pl->FetchStringID (row[0]);
     csRef<iParameter> par = pm->GetParameter (row[1], StringToType (row[2]));
@@ -960,8 +949,7 @@ public:
   virtual bool UpdateRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    iParameterManager* pm = pcPanel->GetPM ();
     csStringID actionID = pl->FetchStringID ("AddTemplate");
     csStringID nameID = pl->FetchStringID ("name");
     csStringID amountID = pl->FetchStringID ("amount");
@@ -1015,9 +1003,6 @@ bool PropertyClassPanel::UpdateInventory ()
   SwitchPCType ("pctools.inventory");
 
   pctpl->RemoveProperty (pl->FetchStringID ("SetLootGenerator"));
-
-  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxTextCtrl* lootText = XRCCTRL (*this, "inventoryLootTextCtrl", wxTextCtrl);
   csString loot = (const char*)lootText->GetValue ().mb_str (wxConvUTF8);
@@ -1235,7 +1220,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
 {
-  pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
+  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
+  pm = uiManager->GetApp ()->GetAresView ()->GetPM ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));

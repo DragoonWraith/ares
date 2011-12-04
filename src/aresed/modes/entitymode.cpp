@@ -231,7 +231,7 @@ void EntityMode::SetupItems ()
 {
   wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
   list->Clear ();
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelPlLayer* pl = aresed3d->GetPL ();
   wxArrayString names;
   csRef<iCelEntityTemplateIterator> it = pl->GetEntityTemplates ();
   while (it->HasNext ())
@@ -441,7 +441,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
 
 csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 {
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelPlLayer* pl = aresed3d->GetPL ();
   return InspectTools::GetActionParameterValueString (pl, pctpl,
       "NewQuest", "name");
 }
@@ -468,7 +468,7 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelPlLayer* pl = aresed3d->GetPL ();
   csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
 
   csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
@@ -518,7 +518,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   view->Clear ();
 
   view->SetVisible (false);
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelPlLayer* pl = aresed3d->GetPL ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
   if (!tpl) return;
 
@@ -543,7 +543,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
 
 iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
 {
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelPlLayer* pl = aresed3d->GetPL ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   if (!tpl) return 0;
 
@@ -581,7 +581,7 @@ void EntityMode::OnTemplateAdd ()
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     csString name = fields.Get ("name", "");
-    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelPlLayer* pl = aresed3d->GetPL ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (name);
     if (tpl)
       ui->Error ("A template with this name already exists!");
@@ -626,7 +626,7 @@ void EntityMode::OnCreatePC ()
     csString name = fields.Get ("name", "");
     csString tag = fields.Get ("tag", "");
     printf ("name=%s tag=%s\n", name.GetData (), tag.GetData ());
-    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelPlLayer* pl = aresed3d->GetPL ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (name, tag);
     if (pc)
@@ -663,7 +663,7 @@ void EntityMode::ActivateNode (const char* nodeName)
   const char type = activeNode.operator[] (0);
   if (type == 'P')
   {
-    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelPlLayer* pl = aresed3d->GetPL ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
     pcPanel->SwitchToPC (tpl, pctpl);
@@ -671,7 +671,7 @@ void EntityMode::ActivateNode (const char* nodeName)
   }
   else if (type == 'T')
   {
-    iCelPlLayer* pl = aresed3d->GetPlLayer ();
+    iCelPlLayer* pl = aresed3d->GetPL ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     tplPanel->SwitchToTpl (tpl);
     tplPanel->Show ();
@@ -694,7 +694,7 @@ void EntityMode::OnDefaultState ()
   csStringArray tokens (contextMenuNode, ",");
   csString state = tokens[0];
   state = state.Slice (2);
-  iCelPlLayer* pl = aresed3d->GetPlLayer ();
+  iCelPlLayer* pl = aresed3d->GetPL ();
   pctpl->RemoveProperty (pl->FetchStringID ("state"));
   pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
 

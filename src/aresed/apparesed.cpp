@@ -951,6 +951,13 @@ bool AresEdit3DView::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
+iParameterManager* AresEdit3DView::GetPM ()
+{
+  if (pm) return pm;
+  pm = csQueryRegistryOrLoad<iParameterManager> (object_reg, "cel.parameters.manager");
+  return pm;
+}
+
 // =========================================================================
 
 BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)

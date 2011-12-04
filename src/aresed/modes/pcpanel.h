@@ -38,6 +38,7 @@ struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iParameter;
+struct iParameterManager;
 class UIDialog;
 class UIManager;
 class EntityMode;
@@ -75,6 +76,7 @@ class PropertyClassPanel : public wxPanel
 {
 private:
   iCelPlLayer* pl;
+  iParameterManager* pm;
   UIManager* uiManager;
   EntityMode* emode;
   wxSizer* parentSizer;
@@ -146,6 +148,7 @@ public:
   void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
   UIManager* GetUIManager () const { return uiManager; }
   iCelPlLayer* GetPL () const { return pl; }
+  iParameterManager* GetPM () const { return pm; }
   EntityMode* GetEntityMode () const { return emode; }
 
   UIDialog* GetPropertyDialog ();

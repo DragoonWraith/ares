@@ -140,7 +140,7 @@ void EntityTemplatePanel::OnTemplateParentAdd (wxCommandEvent& event)
     wxListCtrl* list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     csString name = fields.Get ("name", "");
-    iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
+    iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
     iCelEntityTemplate* t = pl->FindEntityTemplate (name);
     if (t)
     {
@@ -254,7 +254,7 @@ void EntityTemplatePanel::OnClassDelete (wxCommandEvent& event)
 
 void EntityTemplatePanel::UpdateTemplate ()
 {
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
+  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
 
   tpl->RemoveParents ();
   wxListCtrl* parentsList = XRCCTRL (*this, "templateParentsList", wxListCtrl);
@@ -295,7 +295,7 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
 {
   EntityTemplatePanel::tpl = tpl;
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPlLayer ();
+  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
 
   wxListCtrl* parentsList = XRCCTRL (*this, "templateParentsList", wxListCtrl);
   parentsList->DeleteAllItems ();

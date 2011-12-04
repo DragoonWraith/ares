@@ -64,6 +64,7 @@ class EntityMode;
 struct iCelPlLayer;
 struct iCelEntity;
 struct iMarkerManager;
+struct iParameterManager;
 
 class CurvedFactoryCreator
 {
@@ -121,6 +122,7 @@ private:
   csRef<iEventQueue> eventQueue;
   csRef<iVFS> vfs;
   csRef<iDecalManager> decalMgr;
+  csRef<iParameterManager> pm;
 
   csRef<iCelPlLayer> pl;
   csRef<iCelEntity> zoneEntity;
@@ -297,7 +299,8 @@ public:
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }
-  iCelPlLayer* GetPlLayer () const { return pl; }
+  iCelPlLayer* GetPL () const { return pl; }
+  iParameterManager* GetPM ();
 
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }
