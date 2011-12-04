@@ -266,7 +266,6 @@ public:
   }
 
   virtual const char* GetColumns () { return "Message,Entity"; }
-  virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
 };
 
@@ -336,7 +335,6 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireParDialog (); }
 };
 
@@ -529,7 +527,6 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name"; }
-  virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetSpawnTemplateDialog (); }
 };
 
@@ -767,7 +764,6 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetQuestDialog (); }
 };
 
@@ -934,7 +930,6 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Amount"; }
-  virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetInventoryTemplateDialog (); }
 };
 
@@ -1054,7 +1049,6 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetPropertyDialog (); }
 };
 

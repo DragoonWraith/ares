@@ -77,7 +77,7 @@ public:
   /**
    * Finish the update.
    */
-  virtual void FinishUpdate () = 0;
+  virtual void FinishUpdate () { }
 
   // -----------------------------------------------------------------------------
 
@@ -89,7 +89,7 @@ public:
   /**
    * Return true if this datamodel allows editing of rows.
    */
-  virtual bool IsEditAllowed () const = 0;
+  virtual bool IsEditAllowed () const { return true; }
 
   // -----------------------------------------------------------------------------
 

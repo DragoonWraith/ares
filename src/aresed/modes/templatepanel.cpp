@@ -80,9 +80,6 @@ public:
     tpl->AddParent (t);
     return true;
   }
-  virtual void FinishUpdate ()
-  {
-  }
 
   virtual const char* GetColumns () { return "Template"; }
   virtual bool IsEditAllowed () const { return false; }
@@ -135,12 +132,8 @@ public:
     chars->SetCharacteristic (name, f);
     return true;
   }
-  virtual void FinishUpdate ()
-  {
-  }
 
   virtual const char* GetColumns () { return "Name,Value"; }
-  virtual bool IsEditAllowed () const { return true; }
 };
 
 //--------------------------------------------------------------------------
@@ -187,9 +180,6 @@ public:
     csStringID id = pl->FetchStringID (name);
     tpl->AddClass (id);
     return true;
-  }
-  virtual void FinishUpdate ()
-  {
   }
 
   virtual const char* GetColumns () { return "Class"; }
