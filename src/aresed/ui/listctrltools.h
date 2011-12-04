@@ -33,85 +33,11 @@ THE SOFTWARE.
 #include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
+#include "rowmodel.h"
+
 class UIDialog;
+class RowModel;
 
-/**
- * This class represents a row model. Instances of this interface
- * can be used by supporting views (like ListCtrlView).
- */
-class RowModel : public csRefCount
-{
-public:
-  /**
-   * Reset the iterator for this rowmodel.
-   * This method (together with HasRows() and NextRow()) are used to fetch
-   * all the data so that the list can be filled.
-   */
-  virtual void ResetIterator () = 0;
-
-  /**
-   * Check if there are still rows to process.
-   */
-  virtual bool HasRows () = 0;
-
-  /**
-   * Get the next row.
-   */
-  virtual csStringArray NextRow () = 0;
-
-  // -----------------------------------------------------------------------------
-
-  /**
-   * Start the update from the given list. This is called by the list control
-   * when it is time to update the data. This call is followed by a series of
-   * UpdateRow() calls and finished by a call to FinishUpdate().
-   */
-  virtual void StartUpdate () = 0;
-
-  /**
-   * Update a row.
-   * Returns false in case of error.
-   */
-  virtual bool UpdateRow (const csStringArray& row) = 0;
-
-  /**
-   * Finish the update.
-   */
-  virtual void FinishUpdate () { }
-
-  // -----------------------------------------------------------------------------
-
-  /**
-   * Get the columns for the list as a single ',' seperated string.
-   */
-  virtual const char* GetColumns () = 0;
-
-  /**
-   * Return true if this datamodel allows editing of rows.
-   */
-  virtual bool IsEditAllowed () const { return true; }
-
-  // -----------------------------------------------------------------------------
-
-  /**
-   * Return a dialog with which a row in this model can be edited.
-   * This can return 0 in which case the view should call EditRow()
-   * for more controlled editing. The dialog should support the fields
-   * with the same name as the columns in the model.
-   */
-  virtual UIDialog* GetEditorDialog () { return 0; }
-
-  /**
-   * Edit a given row and return the updated row.
-   * If the given row is empty (contains no items) then
-   * the editor will create a new row.
-   * If the returned row is empty then the dialog was canceled.
-   */
-  virtual csStringArray EditRow (const csStringArray& origRow)
-  {
-    return csStringArray ();
-  }
-};
 
 /**
  * A view based on a list control on top of a RowModel.

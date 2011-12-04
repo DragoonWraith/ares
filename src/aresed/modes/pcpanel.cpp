@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "tools/questmanager.h"
 #include "../apparesed.h"
 #include "../ui/listctrltools.h"
+#include "../ui/rowmodel.h"
 #include "../tools/inspect.h"
 #include "../tools/tools.h"
 
