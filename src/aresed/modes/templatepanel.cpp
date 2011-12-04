@@ -37,10 +37,6 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(EntityTemplatePanel, wxPanel)
   EVT_CONTEXT_MENU (EntityTemplatePanel :: OnContextMenu)
 
-  EVT_MENU (ID_Char_Add, EntityTemplatePanel :: OnCharacteristicsAdd)
-  EVT_MENU (ID_Char_Edit, EntityTemplatePanel :: OnCharacteristicsEdit)
-  EVT_MENU (ID_Char_Delete, EntityTemplatePanel :: OnCharacteristicsDelete)
-
   EVT_MENU (ID_Class_Add, EntityTemplatePanel :: OnClassAdd)
   EVT_MENU (ID_Class_Delete, EntityTemplatePanel :: OnClassDelete)
 END_EVENT_TABLE()
@@ -109,6 +105,70 @@ public:
 
 //--------------------------------------------------------------------------
 
+class CharacteristicsRowModel : public RowModel
+{
+private:
+  EntityTemplatePanel* entPanel;
+  iCelEntityTemplate* tpl;
+
+  csRef<iCharacteristicsIterator> it;
+
+public:
+  CharacteristicsRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  virtual ~CharacteristicsRowModel () { }
+
+  void SetTemplate (iCelEntityTemplate* tpl)
+  {
+    CharacteristicsRowModel::tpl = tpl;
+  }
+
+  virtual void ResetIterator ()
+  {
+    it = tpl->GetCharacteristics ()->GetAllCharacteristics ();
+  }
+  virtual bool HasRows () { return it->HasNext (); }
+  virtual csStringArray NextRow ()
+  {
+    float f;
+    csString name = it->Next (f);
+    csString value; value.Format ("%g", f);
+    csStringArray ar;
+    ar.Push (name);
+    ar.Push (value);
+    return ar;
+  }
+
+  virtual void StartUpdate ()
+  {
+    iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
+    chars->ClearAll ();
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
+    csString name = row[0];
+    csString value = row[1];
+    float f;
+    csScanStr (value, "%f", &f);
+    chars->SetCharacteristic (name, f);
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Name");
+    ar.Push ("Value");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return true; }
+};
+
+//--------------------------------------------------------------------------
+
 EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0)
@@ -129,11 +189,18 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
   dialog->AddLabel ("Template:");
   dialog->AddText ("Template");
   parentsView->SetEditorDialog (dialog, true);
-  //ListCtrlTools::SetColumn (list, 0, "Template", 100);
 
   list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Name", 100);
-  ListCtrlTools::SetColumn (list, 1, "Value", 100);
+  characteristicsModel.AttachNew (new CharacteristicsRowModel (this));
+  characteristicsView = new ListCtrlView (list, characteristicsModel);
+  dialog = uiManager->CreateDialog ("Add characteristic property");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Value:");
+  dialog->AddText ("Value");
+  characteristicsView->SetEditorDialog (dialog, true);
 
   list = XRCCTRL (*this, "templateClassList", wxListCtrl);
   ListCtrlTools::SetColumn (list, 0, "Class", 100);
@@ -142,6 +209,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
 EntityTemplatePanel::~EntityTemplatePanel ()
 {
   delete parentsView;
+  delete characteristicsView;
 }
 
 bool EntityTemplatePanel::CheckHitList (const char* listname, bool& hasItem,
@@ -155,22 +223,8 @@ bool EntityTemplatePanel::CheckHitList (const char* listname, bool& hasItem,
 void EntityTemplatePanel::OnContextMenu (wxContextMenuEvent& event)
 {
   bool hasItem;
-  if (CheckHitList ("templateCharacteristicsList", hasItem, event.GetPosition ()))
-    OnCharacteristicsRMB (hasItem);
-  else if (CheckHitList ("templateClassList", hasItem, event.GetPosition ()))
+  if (CheckHitList ("templateClassList", hasItem, event.GetPosition ()))
     OnClassesRMB (hasItem);
-}
-
-void EntityTemplatePanel::OnCharacteristicsRMB (bool hasItem)
-{
-  wxMenu contextMenu;
-  contextMenu.Append(ID_Char_Add, wxT ("&Add"));
-  if (hasItem)
-  {
-    contextMenu.Append(ID_Char_Edit, wxT ("&Edit"));
-    contextMenu.Append(ID_Char_Delete, wxT ("&Delete"));
-  }
-  PopupMenu (&contextMenu);
 }
 
 void EntityTemplatePanel::OnClassesRMB (bool hasItem)
@@ -185,67 +239,6 @@ void EntityTemplatePanel::OnClassesRMB (bool hasItem)
 }
 
 // ----------------------------------------------------------------------
-
-void EntityTemplatePanel::OnCharacteristicsAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = uiManager->CreateDialog ("Add characteristic property");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("name");
-  dialog->AddRow ();
-  dialog->AddLabel ("Value:");
-  dialog->AddText ("value");
-
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("value", "").GetData (), 0);
-    UpdateTemplate ();
-  }
-  delete dialog;
-}
-
-void EntityTemplatePanel::OnCharacteristicsEdit (wxCommandEvent& event)
-{
-  UIDialog* dialog = uiManager->CreateDialog ("Edit characteristic property");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("name");
-  dialog->AddRow ();
-  dialog->AddLabel ("Value:");
-  dialog->AddText ("value");
-
-  wxListCtrl* list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  dialog->SetText ("name", row[0]);
-  dialog->SetText ("value", row[1]);
-
-  if (dialog->Show (0))
-  {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::ReplaceRow (list, idx,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("value", "").GetData (), 0);
-    UpdateTemplate ();
-  }
-  delete dialog;
-}
-
-void EntityTemplatePanel::OnCharacteristicsDelete (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  UpdateTemplate ();
-}
 
 void EntityTemplatePanel::OnClassAdd (wxCommandEvent& event)
 {
@@ -279,19 +272,6 @@ void EntityTemplatePanel::UpdateTemplate ()
 {
   iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
 
-  iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
-  chars->ClearAll ();
-  wxListCtrl* charsList = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-  for (int r = 0 ; r < charsList->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (charsList, r);
-    csString name = row[0];
-    csString value = row[1];
-    float f;
-    csScanStr (value, "%f", &f);
-    chars->SetCharacteristic (name, f);
-  }
-
   tpl->RemoveClasses ();
   wxListCtrl* classList = XRCCTRL (*this, "templateClassList", wxListCtrl);
   for (int r = 0 ; r < classList->GetItemCount () ; r++)
@@ -310,16 +290,8 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
   parentsModel->SetTemplate (tpl);
   parentsView->Refresh ();
 
-  wxListCtrl* charList = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-  charList->DeleteAllItems ();
-  csRef<iCharacteristicsIterator> itChars = tpl->GetCharacteristics ()->GetAllCharacteristics ();
-  while (itChars->HasNext ())
-  {
-    float f;
-    csString name = itChars->Next (f);
-    csString value; value.Format ("%g", f);
-    ListCtrlTools::AddRow (charList, name.GetData (), value.GetData (), 0);
-  }
+  characteristicsModel->SetTemplate (tpl);
+  characteristicsView->Refresh ();
 
   wxListCtrl* classList = XRCCTRL (*this, "templateClassList", wxListCtrl);
   classList->DeleteAllItems ();

@@ -40,13 +40,11 @@ struct iCelEntityTemplate;
 
 class ListCtrlView;
 class ParentsRowModel;
+class CharacteristicsRowModel;
 
 enum
 {
-  ID_Char_Add = wxID_HIGHEST + 10000,
-  ID_Char_Edit,
-  ID_Char_Delete,
-  ID_Class_Add,
+  ID_Class_Add = wxID_HIGHEST + 10000,
   ID_Class_Delete,
 };
 
@@ -62,9 +60,6 @@ private:
   bool CheckHitList (const char* listname, bool& hasItem, const wxPoint& pos);
   void OnContextMenu (wxContextMenuEvent& event);
 
-  void OnCharacteristicsAdd (wxCommandEvent& event);
-  void OnCharacteristicsEdit (wxCommandEvent& event);
-  void OnCharacteristicsDelete (wxCommandEvent& event);
   void OnClassAdd (wxCommandEvent& event);
   void OnClassDelete (wxCommandEvent& event);
 
@@ -72,6 +67,8 @@ private:
 
   ListCtrlView* parentsView;
   csRef<ParentsRowModel> parentsModel;
+  ListCtrlView* characteristicsView;
+  csRef<CharacteristicsRowModel> characteristicsModel;
 
 public:
   EntityTemplatePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
@@ -83,7 +80,6 @@ public:
   // Switch this dialog to editing of a template.
   void SwitchToTpl (iCelEntityTemplate* tpl);
 
-  void OnCharacteristicsRMB (bool hasItem);
   void OnClassesRMB (bool hasItem);
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
