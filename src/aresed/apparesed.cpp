@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include <csgeom/math3d.h>
 #include "camerawin.h"
 #include "selection.h"
+#include "dynfactmodel.h"
 #include "common/worldload.h"
 #include "tools/transformtools.h"
 
@@ -117,6 +118,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   worldLoader = 0;
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
+  dynfactRowModel.AttachNew (new DynfactRowModel (this));
 }
 
 AresEdit3DView::~AresEdit3DView()

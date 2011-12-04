@@ -66,6 +66,7 @@ void ListCtrlView::BindModel (RowModel* model)
 	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
 
   const char* columnsString = model->GetColumns ();
+  columns.DeleteAll ();
   columns.SplitString (columnsString, ",");
   for (size_t i = 0 ; i < columns.GetSize () ; i++)
     ListCtrlTools::SetColumn (list, i, columns[i], 100);

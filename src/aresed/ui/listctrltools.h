@@ -36,7 +36,6 @@ THE SOFTWARE.
 #include "rowmodel.h"
 
 class UIDialog;
-class RowModel;
 
 
 /**

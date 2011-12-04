@@ -51,6 +51,7 @@ class AppAresEditWX;
 class AresEdit3DView;
 class Asset;
 
+class DynfactRowModel;
 class NewProjectDialog;
 class UIManager;
 
@@ -198,6 +199,7 @@ private:
 
   /// Categories with items.
   csHash<csStringArray,csString> categories;
+  csRef<DynfactRowModel> dynfactRowModel;
 
   /// Debug drawing enabled.
   bool do_debug;
