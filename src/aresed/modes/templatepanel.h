@@ -35,13 +35,15 @@ THE SOFTWARE.
 
 class UIManager;
 class EntityMode;
+struct iCelPlLayer;
 struct iCelEntityTemplate;
+
+class ListCtrlView;
+class ParentsRowModel;
 
 enum
 {
-  ID_TplPar_Add = wxID_HIGHEST + 10000,
-  ID_TplPar_Delete,
-  ID_Char_Add,
+  ID_Char_Add = wxID_HIGHEST + 10000,
   ID_Char_Edit,
   ID_Char_Delete,
   ID_Class_Add,
@@ -52,6 +54,7 @@ class EntityTemplatePanel : public wxPanel
 {
 private:
   UIManager* uiManager;
+  iCelPlLayer* pl;
   EntityMode* emode;
   wxSizer* parentSizer;
   iCelEntityTemplate* tpl;
@@ -59,8 +62,6 @@ private:
   bool CheckHitList (const char* listname, bool& hasItem, const wxPoint& pos);
   void OnContextMenu (wxContextMenuEvent& event);
 
-  void OnTemplateParentAdd (wxCommandEvent& event);
-  void OnTemplateParentDelete (wxCommandEvent& event);
   void OnCharacteristicsAdd (wxCommandEvent& event);
   void OnCharacteristicsEdit (wxCommandEvent& event);
   void OnCharacteristicsDelete (wxCommandEvent& event);
@@ -69,14 +70,19 @@ private:
 
   void UpdateTemplate ();
 
+  ListCtrlView* parentsView;
+  csRef<ParentsRowModel> parentsModel;
+
 public:
   EntityTemplatePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
   ~EntityTemplatePanel();
 
+  iCelPlLayer* GetPL () const { return pl; }
+  UIManager* GetUIManager () const { return uiManager; }
+
   // Switch this dialog to editing of a template.
   void SwitchToTpl (iCelEntityTemplate* tpl);
 
-  void OnTemplateRMB (bool hasItem);
   void OnCharacteristicsRMB (bool hasItem);
   void OnClassesRMB (bool hasItem);
 

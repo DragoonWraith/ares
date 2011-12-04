@@ -122,6 +122,8 @@ private:
   wxListCtrl* list;
   csRef<RowModel> model;
   size_t columnCount;
+  UIDialog* forcedDialog;
+  bool ownForcedDialog;
 
   void UnbindModel ();
   void BindModel (RowModel* model);
@@ -134,15 +136,25 @@ private:
   /// This is used in case the model has a dialog to use.
   csStringArray DialogEditRow (const csStringArray& origRow);
 
+  /// Get the right dialog.
+  csStringArray DoDialog (const csStringArray& origRow);
+
 public:
-  ListCtrlView (wxListCtrl* list) : list (list) { }
-  ListCtrlView (wxListCtrl* list, RowModel* model) : list (list)
+  ListCtrlView (wxListCtrl* list) : list (list), forcedDialog (0), ownForcedDialog (false) { }
+  ListCtrlView (wxListCtrl* list, RowModel* model) : list (list), forcedDialog (0), ownForcedDialog (false)
   {
     BindModel (model);
   }
   ~ListCtrlView ();
 
   void SetModel (RowModel* model) { BindModel (model); Refresh (); }
+
+  /**
+   * Manually force an editor dialog to use. If 'own' is true
+   * this view will assume ownership of the dialog and remove the
+   * dialog in the destructor.
+   */
+  void SetEditorDialog (UIDialog* dialog, bool own = false);
 
   /**
    * Refresh the list from the data in the model.

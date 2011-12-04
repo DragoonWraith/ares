@@ -73,6 +73,8 @@ void ListCtrlView::BindModel (RowModel* model)
 ListCtrlView::~ListCtrlView ()
 {
   UnbindModel ();
+  if (forcedDialog && ownForcedDialog)
+    delete forcedDialog;
 }
 
 void ListCtrlView::Refresh ()
@@ -92,14 +94,18 @@ void ListCtrlView::Update ()
   for (int r = 0 ; r < list->GetItemCount () ; r++)
   {
     csStringArray row = ListCtrlTools::ReadRow (list, r);
-    if (!model->UpdateRow (row)) break;
+    if (!model->UpdateRow (row))
+    {
+      Refresh ();
+      break;
+    }
   }
   model->FinishUpdate ();
 }
 
 csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
 {
-  UIDialog* dialog = model->GetEditorDialog ();
+  UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
   dialog->Clear ();
   csStringArray columns = model->GetColumns ();
   if (origRow.GetSize () >= columnCount)
@@ -115,14 +121,24 @@ csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
   return ar;
 }
 
+csStringArray ListCtrlView::DoDialog (const csStringArray& origRow)
+{
+  if (forcedDialog || model->GetEditorDialog ())
+    return DialogEditRow (origRow);
+  return model->EditRow (origRow);
+}
+
+void ListCtrlView::SetEditorDialog (UIDialog* dialog, bool own)
+{
+  if (forcedDialog && ownForcedDialog && forcedDialog != dialog) delete forcedDialog;
+  forcedDialog = dialog;
+  ownForcedDialog = own;
+}
+
 void ListCtrlView::OnAdd (wxCommandEvent& event)
 {
   csStringArray empty;
-  csStringArray row;
-  if (model->GetEditorDialog ())
-    row = DialogEditRow (empty);
-  else
-    row = model->EditRow (empty);
+  csStringArray row = DoDialog (empty);
   if (row.GetSize () > 0)
   {
     ListCtrlTools::AddRow (list, row);
@@ -135,11 +151,7 @@ void ListCtrlView::OnEdit (wxCommandEvent& event)
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
   if (idx == -1) return;
   csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
-  csStringArray row;
-  if (model->GetEditorDialog ())
-    row = DialogEditRow (oldRow);
-  else
-    row = model->EditRow (oldRow);
+  csStringArray row = DoDialog (oldRow);
   if (row.GetSize () > 0)
   {
     ListCtrlTools::ReplaceRow (list, idx, row);

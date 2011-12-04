@@ -37,9 +37,6 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(EntityTemplatePanel, wxPanel)
   EVT_CONTEXT_MENU (EntityTemplatePanel :: OnContextMenu)
 
-  EVT_MENU (ID_TplPar_Add, EntityTemplatePanel :: OnTemplateParentAdd)
-  EVT_MENU (ID_TplPar_Delete, EntityTemplatePanel :: OnTemplateParentDelete)
-
   EVT_MENU (ID_Char_Add, EntityTemplatePanel :: OnCharacteristicsAdd)
   EVT_MENU (ID_Char_Edit, EntityTemplatePanel :: OnCharacteristicsEdit)
   EVT_MENU (ID_Char_Delete, EntityTemplatePanel :: OnCharacteristicsDelete)
@@ -50,18 +47,89 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+class ParentsRowModel : public RowModel
+{
+private:
+  EntityTemplatePanel* entPanel;
+  iCelEntityTemplate* tpl;
+
+  csRef<iCelEntityTemplateIterator> it;
+
+public:
+  ParentsRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  virtual ~ParentsRowModel () { }
+
+  void SetTemplate (iCelEntityTemplate* tpl)
+  {
+    ParentsRowModel::tpl = tpl;
+  }
+
+  virtual void ResetIterator ()
+  {
+    it = tpl->GetParents ();
+  }
+  virtual bool HasRows () { return it->HasNext (); }
+  virtual csStringArray NextRow ()
+  {
+    iCelEntityTemplate* parent = it->Next ();
+    csStringArray ar;
+    ar.Push (parent->GetName ());
+    return ar;
+  }
+
+  virtual void StartUpdate ()
+  {
+    tpl->RemoveParents ();
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = entPanel->GetPL ();
+    csString name = row[0];
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      entPanel->GetUIManager ()->Error ("Can't find entity template '%s'!", name.GetData ());
+      return false;
+    }
+    tpl->AddParent (t);
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Template");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return false; }
+};
+
+//--------------------------------------------------------------------------
+
 EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0)
 {
+  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("EntityTemplatePanel"));
 
   wxListCtrl* list;
+  UIDialog* dialog;
 
   list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Template", 100);
+  parentsModel.AttachNew (new ParentsRowModel (this));
+  parentsView = new ListCtrlView (list, parentsModel);
+  dialog = uiManager->CreateDialog ("Add template");
+  dialog->AddRow ();
+  dialog->AddLabel ("Template:");
+  dialog->AddText ("Template");
+  parentsView->SetEditorDialog (dialog, true);
+  //ListCtrlTools::SetColumn (list, 0, "Template", 100);
 
   list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
   ListCtrlTools::SetColumn (list, 0, "Name", 100);
@@ -73,6 +141,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
 
 EntityTemplatePanel::~EntityTemplatePanel ()
 {
+  delete parentsView;
 }
 
 bool EntityTemplatePanel::CheckHitList (const char* listname, bool& hasItem,
@@ -86,23 +155,10 @@ bool EntityTemplatePanel::CheckHitList (const char* listname, bool& hasItem,
 void EntityTemplatePanel::OnContextMenu (wxContextMenuEvent& event)
 {
   bool hasItem;
-  if (CheckHitList ("templateParentsList", hasItem, event.GetPosition ()))
-    OnTemplateRMB (hasItem);
-  else if (CheckHitList ("templateCharacteristicsList", hasItem, event.GetPosition ()))
+  if (CheckHitList ("templateCharacteristicsList", hasItem, event.GetPosition ()))
     OnCharacteristicsRMB (hasItem);
   else if (CheckHitList ("templateClassList", hasItem, event.GetPosition ()))
     OnClassesRMB (hasItem);
-}
-
-void EntityTemplatePanel::OnTemplateRMB (bool hasItem)
-{
-  wxMenu contextMenu;
-  contextMenu.Append(ID_TplPar_Add, wxT ("&Add"));
-  if (hasItem)
-  {
-    contextMenu.Append(ID_TplPar_Delete, wxT ("&Delete"));
-  }
-  PopupMenu (&contextMenu);
 }
 
 void EntityTemplatePanel::OnCharacteristicsRMB (bool hasItem)
@@ -128,40 +184,7 @@ void EntityTemplatePanel::OnClassesRMB (bool hasItem)
   PopupMenu (&contextMenu);
 }
 
-void EntityTemplatePanel::OnTemplateParentAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = uiManager->CreateDialog ("Add template");
-  dialog->AddRow ();
-  dialog->AddLabel ("Template:");
-  dialog->AddText ("name");
-
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    csString name = fields.Get ("name", "");
-    iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (t)
-    {
-      ListCtrlTools::AddRow (list, name.GetData (), 0);
-      UpdateTemplate ();
-    }
-    else
-      uiManager->Error ("Can't find template with name '%s'!", name.GetData ());
-  }
-  delete dialog;
-}
-
-void EntityTemplatePanel::OnTemplateParentDelete (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  UpdateTemplate ();
-}
+// ----------------------------------------------------------------------
 
 void EntityTemplatePanel::OnCharacteristicsAdd (wxCommandEvent& event)
 {
@@ -256,17 +279,6 @@ void EntityTemplatePanel::UpdateTemplate ()
 {
   iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
 
-  tpl->RemoveParents ();
-  wxListCtrl* parentsList = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-  for (int r = 0 ; r < parentsList->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (parentsList, r);
-    csString name = row[0];
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (t)	// Template should normally exist since it was checked before.
-      tpl->AddParent (t);
-  }
-
   iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
   chars->ClearAll ();
   wxListCtrl* charsList = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
@@ -295,16 +307,8 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
 {
   EntityTemplatePanel::tpl = tpl;
 
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
-
-  wxListCtrl* parentsList = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-  parentsList->DeleteAllItems ();
-  csRef<iCelEntityTemplateIterator> itParents = tpl->GetParents ();
-  while (itParents->HasNext ())
-  {
-    iCelEntityTemplate* parent = itParents->Next ();
-    ListCtrlTools::AddRow (parentsList, parent->GetName (), 0);
-  }
+  parentsModel->SetTemplate (tpl);
+  parentsView->Refresh ();
 
   wxListCtrl* charList = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
   charList->DeleteAllItems ();
