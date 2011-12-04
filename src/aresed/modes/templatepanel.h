@@ -41,12 +41,7 @@ struct iCelEntityTemplate;
 class ListCtrlView;
 class ParentsRowModel;
 class CharacteristicsRowModel;
-
-enum
-{
-  ID_Class_Add = wxID_HIGHEST + 10000,
-  ID_Class_Delete,
-};
+class ClassesRowModel;
 
 class EntityTemplatePanel : public wxPanel
 {
@@ -57,18 +52,12 @@ private:
   wxSizer* parentSizer;
   iCelEntityTemplate* tpl;
 
-  bool CheckHitList (const char* listname, bool& hasItem, const wxPoint& pos);
-  void OnContextMenu (wxContextMenuEvent& event);
-
-  void OnClassAdd (wxCommandEvent& event);
-  void OnClassDelete (wxCommandEvent& event);
-
-  void UpdateTemplate ();
-
   ListCtrlView* parentsView;
   csRef<ParentsRowModel> parentsModel;
   ListCtrlView* characteristicsView;
   csRef<CharacteristicsRowModel> characteristicsModel;
+  ListCtrlView* classesView;
+  csRef<ClassesRowModel> classesModel;
 
 public:
   EntityTemplatePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
@@ -80,13 +69,9 @@ public:
   // Switch this dialog to editing of a template.
   void SwitchToTpl (iCelEntityTemplate* tpl);
 
-  void OnClassesRMB (bool hasItem);
-
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
   bool IsVisible () const { return IsShown (); }
-
-  DECLARE_EVENT_TABLE ();
 };
 
 #endif // __appares_templatepanel_h

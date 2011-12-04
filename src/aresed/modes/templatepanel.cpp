@@ -34,15 +34,6 @@ THE SOFTWARE.
 
 //--------------------------------------------------------------------------
 
-BEGIN_EVENT_TABLE(EntityTemplatePanel, wxPanel)
-  EVT_CONTEXT_MENU (EntityTemplatePanel :: OnContextMenu)
-
-  EVT_MENU (ID_Class_Add, EntityTemplatePanel :: OnClassAdd)
-  EVT_MENU (ID_Class_Delete, EntityTemplatePanel :: OnClassDelete)
-END_EVENT_TABLE()
-
-//--------------------------------------------------------------------------
-
 class ParentsRowModel : public RowModel
 {
 private:
@@ -169,6 +160,66 @@ public:
 
 //--------------------------------------------------------------------------
 
+class ClassesRowModel : public RowModel
+{
+private:
+  EntityTemplatePanel* entPanel;
+  iCelEntityTemplate* tpl;
+
+  csSet<csStringID>::GlobalIterator it;
+
+public:
+  ClassesRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  virtual ~ClassesRowModel () { }
+
+  void SetTemplate (iCelEntityTemplate* tpl)
+  {
+    ClassesRowModel::tpl = tpl;
+  }
+
+  virtual void ResetIterator ()
+  {
+    const csSet<csStringID>& classes = tpl->GetClasses ();
+    it = classes.GetIterator ();
+  }
+  virtual bool HasRows () { return it.HasNext (); }
+  virtual csStringArray NextRow ()
+  {
+    iCelPlLayer* pl = entPanel->GetPL ();
+    csStringID classID = it.Next ();
+    csString className = pl->FetchString (classID);
+    csStringArray ar;
+    ar.Push (className);
+    return ar;
+  }
+
+  virtual void StartUpdate ()
+  {
+    tpl->RemoveClasses ();
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = entPanel->GetPL ();
+    csString name = row[0];
+    csStringID id = pl->FetchStringID (name);
+    tpl->AddClass (id);
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Class");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return false; }
+};
+
+//--------------------------------------------------------------------------
+
 EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0)
@@ -203,85 +254,23 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
   characteristicsView->SetEditorDialog (dialog, true);
 
   list = XRCCTRL (*this, "templateClassList", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Class", 100);
+  classesModel.AttachNew (new ClassesRowModel (this));
+  classesView = new ListCtrlView (list, classesModel);
+  dialog = uiManager->CreateDialog ("Add class");
+  dialog->AddRow ();
+  dialog->AddLabel ("Class:");
+  dialog->AddText ("Class");
+  classesView->SetEditorDialog (dialog, true);
 }
 
 EntityTemplatePanel::~EntityTemplatePanel ()
 {
   delete parentsView;
   delete characteristicsView;
-}
-
-bool EntityTemplatePanel::CheckHitList (const char* listname, bool& hasItem,
-    const wxPoint& pos)
-{
-  wxListCtrl* list = wxStaticCast(FindWindow (
-	wxXmlResource::GetXRCID (wxString::FromUTF8 (listname))), wxListCtrl);
-  return ListCtrlTools::CheckHitList (list, hasItem, pos);
-}
-
-void EntityTemplatePanel::OnContextMenu (wxContextMenuEvent& event)
-{
-  bool hasItem;
-  if (CheckHitList ("templateClassList", hasItem, event.GetPosition ()))
-    OnClassesRMB (hasItem);
-}
-
-void EntityTemplatePanel::OnClassesRMB (bool hasItem)
-{
-  wxMenu contextMenu;
-  contextMenu.Append(ID_Class_Add, wxT ("&Add"));
-  if (hasItem)
-  {
-    contextMenu.Append(ID_Class_Delete, wxT ("&Delete"));
-  }
-  PopupMenu (&contextMenu);
+  delete classesView;
 }
 
 // ----------------------------------------------------------------------
-
-void EntityTemplatePanel::OnClassAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = uiManager->CreateDialog ("Add class");
-  dialog->AddRow ();
-  dialog->AddLabel ("Class:");
-  dialog->AddText ("name");
-
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "templateClassList", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (), 0);
-    UpdateTemplate ();
-  }
-  delete dialog;
-}
-
-void EntityTemplatePanel::OnClassDelete (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "templateClassList", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  UpdateTemplate ();
-}
-
-void EntityTemplatePanel::UpdateTemplate ()
-{
-  iCelPlLayer* pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
-
-  tpl->RemoveClasses ();
-  wxListCtrl* classList = XRCCTRL (*this, "templateClassList", wxListCtrl);
-  for (int r = 0 ; r < classList->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (classList, r);
-    csString name = row[0];
-    csStringID id = pl->FetchStringID (name);
-    tpl->AddClass (id);
-  }
-}
 
 void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
 {
@@ -293,16 +282,8 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
   characteristicsModel->SetTemplate (tpl);
   characteristicsView->Refresh ();
 
-  wxListCtrl* classList = XRCCTRL (*this, "templateClassList", wxListCtrl);
-  classList->DeleteAllItems ();
-  const csSet<csStringID>& classes = tpl->GetClasses ();
-  csSet<csStringID>::GlobalIterator itClass = classes.GetIterator ();
-  while (itClass.HasNext ())
-  {
-    csStringID classID = itClass.Next ();
-    csString className = pl->FetchString (classID);
-    ListCtrlTools::AddRow (classList, className.GetData (), 0);
-  }
+  classesModel->SetTemplate (tpl);
+  classesView->Refresh ();
 }
 
 
