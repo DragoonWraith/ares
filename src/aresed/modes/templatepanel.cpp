@@ -85,12 +85,7 @@ public:
   {
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Template");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Template"; }
   virtual bool IsEditAllowed () const { return false; }
 };
 
@@ -148,13 +143,7 @@ public:
   {
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Name");
-    ar.Push ("Value");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Name,Value"; }
   virtual bool IsEditAllowed () const { return true; }
 };
 
@@ -209,12 +198,7 @@ public:
   {
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Class");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Class"; }
   virtual bool IsEditAllowed () const { return false; }
 };
 

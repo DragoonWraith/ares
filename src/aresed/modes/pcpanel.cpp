@@ -268,13 +268,7 @@ public:
     pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Message");
-    ar.Push ("Entity");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Message,Entity"; }
   virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
 };
@@ -348,14 +342,7 @@ public:
     pcPanel->UpdateWireMsg ();
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Name");
-    ar.Push ("Value");
-    ar.Push ("Type");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Name,Value,Type"; }
   virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireParDialog (); }
 };
@@ -550,12 +537,7 @@ public:
     pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Name");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Name"; }
   virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetSpawnTemplateDialog (); }
 };
@@ -797,14 +779,7 @@ public:
     pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Name");
-    ar.Push ("Type");
-    ar.Push ("Value");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Name,Value,Type"; }
   virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetQuestDialog (); }
 };
@@ -974,13 +949,7 @@ public:
     pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Name");
-    ar.Push ("Amount");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Name,Amount"; }
   virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetInventoryTemplateDialog (); }
 };
@@ -1102,14 +1071,7 @@ public:
     pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
-  virtual csStringArray GetColumns ()
-  {
-    csStringArray ar;
-    ar.Push ("Name");
-    ar.Push ("Value");
-    ar.Push ("Type");
-    return ar;
-  }
+  virtual const char* GetColumns () { return "Name,Value,Type"; }
   virtual bool IsEditAllowed () const { return true; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetPropertyDialog (); }
 };

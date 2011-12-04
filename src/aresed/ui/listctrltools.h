@@ -82,9 +82,9 @@ public:
   // -----------------------------------------------------------------------------
 
   /**
-   * Get the columns for the list.
+   * Get the columns for the list as a single ',' seperated string.
    */
-  virtual csStringArray GetColumns () = 0;
+  virtual const char* GetColumns () = 0;
 
   /**
    * Return true if this datamodel allows editing of rows.
@@ -121,7 +121,7 @@ class ListCtrlView : public wxEvtHandler
 private:
   wxListCtrl* list;
   csRef<RowModel> model;
-  size_t columnCount;
+  csStringArray columns;
   UIDialog* forcedDialog;
   bool ownForcedDialog;
 

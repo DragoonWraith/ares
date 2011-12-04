@@ -64,9 +64,9 @@ void ListCtrlView::BindModel (RowModel* model)
   list->Connect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
 
-  csStringArray columns = model->GetColumns ();
-  columnCount = columns.GetSize ();
-  for (size_t i = 0 ; i < columnCount ; i++)
+  const char* columnsString = model->GetColumns ();
+  columns.SplitString (columnsString, ",");
+  for (size_t i = 0 ; i < columns.GetSize () ; i++)
     ListCtrlTools::SetColumn (list, i, columns[i], 100);
 }
 
@@ -107,15 +107,14 @@ csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
 {
   UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
   dialog->Clear ();
-  csStringArray columns = model->GetColumns ();
-  if (origRow.GetSize () >= columnCount)
-    for (size_t i = 0 ; i < columnCount ; i++)
+  if (origRow.GetSize () >= columns.GetSize ())
+    for (size_t i = 0 ; i < columns.GetSize () ; i++)
       dialog->SetText (columns[i], origRow[i]);
   csStringArray ar;
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    for (size_t i = 0 ; i < columnCount ; i++)
+    for (size_t i = 0 ; i < columns.GetSize () ; i++)
       ar.Push (fields.Get (columns[i], ""));
   }
   return ar;
@@ -164,7 +163,7 @@ void ListCtrlView::OnDelete (wxCommandEvent& event)
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
   if (idx == -1) return;
   list->DeleteItem (idx);
-  for (size_t i = 0 ; i < columnCount ; i++)
+  for (size_t i = 0 ; i < columns.GetSize () ; i++)
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
   Update ();
 }
