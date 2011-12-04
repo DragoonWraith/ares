@@ -111,9 +111,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
   EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
-  EVT_MENU (ID_WireMsg_Add, PropertyClassPanel :: OnWireMessageAdd)
-  EVT_MENU (ID_WireMsg_Edit, PropertyClassPanel :: OnWireMessageEdit)
-  EVT_MENU (ID_WireMsg_Delete, PropertyClassPanel :: OnWireMessageDel)
   EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageSelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageDeselected)
 
@@ -145,9 +142,7 @@ bool PropertyClassPanel::CheckHitList (const char* listname, bool& hasItem,
 void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
 {
   bool hasItem;
-  if (CheckHitList ("wireMessageListCtrl", hasItem, event.GetPosition ()))
-    OnWireMessageRMB (hasItem);
-  else if (CheckHitList ("wireParameterListCtrl", hasItem, event.GetPosition ()))
+  if (CheckHitList ("wireParameterListCtrl", hasItem, event.GetPosition ()))
     OnWireParameterRMB (hasItem);
 }
 
@@ -184,17 +179,142 @@ void PropertyClassPanel::SwitchPCType (const char* pcType)
 
 // -----------------------------------------------------------------------
 
+class WireMsgRowModel : public RowModel
+{
+private:
+  PropertyClassPanel* pcPanel;
+  iCelPropertyClassTemplate* pctpl;
+  size_t idx;
+
+  void SearchNext ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    while (idx < pctpl->GetPropertyCount ())
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddOutput")
+	return;
+      idx++;
+    }
+  }
+
+public:
+  csHash<ParHash,csString> wireParams;
+
+public:
+  WireMsgRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  virtual ~WireMsgRowModel () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
+  {
+    WireMsgRowModel::pctpl = pctpl;
+  }
+
+  virtual void ResetIterator ()
+  {
+    idx = 0;
+    SearchNext ();
+    wireParams.DeleteAll ();
+  }
+  virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
+  virtual csStringArray NextRow ()
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+    idx++;
+    SearchNext ();
+
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csStringID msgID = pl->FetchStringID ("msgid");
+    csStringID entityID = pl->FetchStringID ("entity");
+    csString msgName;
+    csString entName;
+    ParHash paramsHash;
+    while (params->HasNext ())
+    {
+      csStringID parid;
+      iParameter* par = params->Next (parid);
+      if (parid == msgID) msgName = par->GetOriginalExpression ();
+      else if (parid == entityID) entName = par->GetOriginalExpression ();
+      paramsHash.Put (parid, par);
+    }
+    wireParams.Put (msgName, paramsHash);
+
+    csStringArray ar;
+    ar.Push (msgName);
+    ar.Push (entName);
+    return ar;
+  }
+
+  virtual void StartUpdate ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    pctpl->RemoveProperty (pl->FetchStringID ("AddOutput"));
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    csStringID actionID = pl->FetchStringID ("AddOutput");
+    csString msg = row[0];
+    csString entity = row[1];
+    ParHash params;
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (msg, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("msgid"), par);
+    par = pm->GetParameter (entity, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (pl->FetchStringID ("entity"), par);
+
+    const ParHash& wparams = wireParams.Get (msg, ParHash ());
+    ParHash::ConstGlobalIterator it = wparams.GetIterator ();
+    while (it.HasNext ())
+    {
+      csStringID parid;
+      csRef<iParameter> par = it.Next (parid);
+      params.Put (parid, par);
+    }
+
+    wxListCtrl* parList = XRCCTRL (*pcPanel, "wireParameterListCtrl", wxListCtrl);
+    parList->DeleteAllItems ();
+
+    pctpl->PerformAction (actionID, params);
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Message");
+    ar.Push ("Entity");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return true; }
+  virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
+};
+
 bool PropertyClassPanel::UpdateCurrentWireParams ()
 {
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  wxTextCtrl* msgText = XRCCTRL (*this, "wireMessageText", wxTextCtrl);
+  wxTextCtrl* msgText = XRCCTRL (*this, "wireInputMaskText", wxTextCtrl);
 
   csString msg = (const char*)msgText->GetValue ().mb_str (wxConvUTF8);
   ParHash d;
-  ParHash& params = wireParams.GetOrCreate (msg, d);
+  ParHash& params = wireMsgModel->wireParams.GetOrCreate (msg, d);
   params.DeleteAll ();
   for (int r = 0 ; r < parList->GetItemCount () ; r++)
   {
@@ -292,18 +412,6 @@ void PropertyClassPanel::OnWireParameterDel (wxCommandEvent& event)
   UpdatePC ();
 }
 
-void PropertyClassPanel::OnWireMessageRMB (bool hasItem)
-{
-  wxMenu contextMenu;
-  contextMenu.Append(ID_WireMsg_Add, wxT ("&Add"));
-  if (hasItem)
-  {
-    contextMenu.Append(ID_WireMsg_Edit, wxT ("&Edit"));
-    contextMenu.Append(ID_WireMsg_Delete, wxT ("&Delete"));
-  }
-  PopupMenu (&contextMenu);
-}
-
 UIDialog* PropertyClassPanel::GetWireMsgDialog ()
 {
   if (!wireMsgDialog)
@@ -311,68 +419,13 @@ UIDialog* PropertyClassPanel::GetWireMsgDialog ()
     wireMsgDialog = uiManager->CreateDialog ("Edit message");
     wireMsgDialog->AddRow ();
     wireMsgDialog->AddLabel ("Message:");
-    wireMsgDialog->AddText ("name");
+    wireMsgDialog->AddText ("Message");
     wireMsgDialog->AddRow ();
     wireMsgDialog->AddLabel ("Entity:");
-    wireMsgDialog->AddText ("entity");
+    wireMsgDialog->AddText ("Entity");
     wireMsgDialog->AddButton ("...");	// @@@ Not implemented yet.
   }
   return wireMsgDialog;
-}
-
-void PropertyClassPanel::OnWireMessageEdit (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetWireMsgDialog ();
-
-  dialog->Clear ();
-  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  dialog->SetText ("name", row[0]);
-  dialog->SetText ("entity", row[1]);
-
-  if (dialog->Show (0))
-  {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::ReplaceRow (list, idx,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("entity", "").GetData (), 0);
-    wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-    parList->DeleteAllItems ();
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnWireMessageAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetWireMsgDialog ();
-  dialog->Clear ();
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("entity", "").GetData (), 0);
-    wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-    parList->DeleteAllItems ();
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnWireMessageDel (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  parList->DeleteAllItems ();
-  UpdatePC ();
 }
 
 void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
@@ -385,7 +438,7 @@ void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
   csStringArray row = ListCtrlTools::ReadRow (list, idx);
   csString msg = row[0];
 
-  const ParHash& params = wireParams.Get (msg, ParHash ());
+  const ParHash& params = wireMsgModel->wireParams.Get (msg, ParHash ());
   ParHash::ConstGlobalIterator it = params.GetIterator ();
   while (it.HasNext ())
   {
@@ -411,13 +464,11 @@ bool PropertyClassPanel::UpdateWire ()
 {
   SwitchPCType ("pclogic.wire");
 
-  pctpl->RemoveAllProperties ();//@@@
+  pctpl->RemoveProperty (pl->FetchStringID ("AddInput"));
 
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
 
-  wxListCtrl* outputList = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  //wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   wxTextCtrl* inputMaskText = XRCCTRL (*this, "wireInputMaskText", wxTextCtrl);
 
   {
@@ -429,32 +480,6 @@ bool PropertyClassPanel::UpdateWire ()
     pctpl->PerformAction (pl->FetchStringID ("AddInput"), params);
   }
 
-  for (int r = 0 ; r < outputList->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (outputList, r);
-    csString message = row[0];
-    csString entity = row[1];
-    ParHash params;
-
-    csRef<iParameter> par;
-    par = pm->GetParameter (message, CEL_DATA_STRING);
-    if (!par) return false;
-    params.Put (pl->FetchStringID ("msgid"), par);
-    par = pm->GetParameter (entity, CEL_DATA_STRING);
-    if (!par) return false;
-    params.Put (pl->FetchStringID ("entity"), par);
-
-    const ParHash& wparams = wireParams.Get (message, ParHash ());
-    ParHash::ConstGlobalIterator it = wparams.GetIterator ();
-    while (it.HasNext ())
-    {
-      csStringID parid;
-      csRef<iParameter> par = it.Next (parid);
-      params.Put (parid, par);
-    }
-
-    pctpl->PerformAction (pl->FetchStringID ("AddOutput"), params);
-  }
   emode->PCWasEdited (pctpl);
   return true;
 }
@@ -474,31 +499,8 @@ void PropertyClassPanel::FillWire ()
       "AddInput", "mask");
   inputMaskText->SetValue (wxString::FromUTF8 (inputMask));
 
-  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
-  {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (i, id, data);
-    csString name = pl->FetchString (id);
-    csStringID msgID = pl->FetchStringID ("msgid");
-    csStringID entityID = pl->FetchStringID ("entity");
-    if (name == "AddOutput")
-    {
-      csString msgName;
-      csString entName;
-      ParHash paramsHash;
-      while (params->HasNext ())
-      {
-	csStringID parid;
-	iParameter* par = params->Next (parid);
-	if (parid == msgID) msgName = par->GetOriginalExpression ();
-	else if (parid == entityID) entName = par->GetOriginalExpression ();
-	paramsHash.Put (parid, par);
-      }
-      wireParams.Put (msgName, paramsHash);
-      ListCtrlTools::AddRow (outputList, msgName.GetData (), entName.GetData (), 0);
-    }
-  }
+  wireMsgModel->SetPC (pctpl);
+  wireMsgView->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -510,7 +512,7 @@ private:
   iCelPropertyClassTemplate* pctpl;
   size_t idx;
 
-  void SearchNextAddTemplate ()
+  void SearchNext ()
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     while (idx < pctpl->GetPropertyCount ())
@@ -537,7 +539,7 @@ public:
   virtual void ResetIterator ()
   {
     idx = 0;
-    SearchNextAddTemplate ();
+    SearchNext ();
   }
   virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
   virtual csStringArray NextRow ()
@@ -546,7 +548,7 @@ public:
     celData data;
     csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
     idx++;
-    SearchNextAddTemplate ();
+    SearchNext ();
 
     iCelPlLayer* pl = pcPanel->GetPL ();
     csStringID nameID = pl->FetchStringID ("template");
@@ -930,7 +932,7 @@ private:
   iCelPropertyClassTemplate* pctpl;
   size_t idx;
 
-  void SearchNextAddTemplate ()
+  void SearchNext ()
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     while (idx < pctpl->GetPropertyCount ())
@@ -957,7 +959,7 @@ public:
   virtual void ResetIterator ()
   {
     idx = 0;
-    SearchNextAddTemplate ();
+    SearchNext ();
   }
   virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
   virtual csStringArray NextRow ()
@@ -966,7 +968,7 @@ public:
     celData data;
     csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
     idx++;
-    SearchNextAddTemplate ();
+    SearchNext ();
 
     iCelPlLayer* pl = pcPanel->GetPL ();
     csStringID nameID = pl->FetchStringID ("name");
@@ -1293,8 +1295,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   questView = new ListCtrlView (list, questModel);
 
   list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Message", 100);
-  ListCtrlTools::SetColumn (list, 1, "Entity", 100);
+  wireMsgModel.AttachNew (new WireMsgRowModel (this));
+  wireMsgView = new ListCtrlView (list, wireMsgModel);
 
   list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   ListCtrlTools::SetColumn (list, 0, "Name", 100);
@@ -1322,6 +1324,7 @@ PropertyClassPanel::~PropertyClassPanel ()
   delete inventoryView;
   delete questView;
   delete spawnView;
+  delete wireMsgView;
 }
 
 

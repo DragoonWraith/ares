@@ -46,6 +46,7 @@ class PropertyRowModel;
 class InventoryRowModel;
 class QuestRowModel;
 class SpawnRowModel;
+class WireMsgRowModel;
 class ListCtrlView;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
@@ -119,18 +120,13 @@ private:
   void FillSpawn ();
 
   // Wire.
+  ListCtrlView* wireMsgView;
+  csRef<WireMsgRowModel> wireMsgModel;
   UIDialog* wireParDialog;
-  UIDialog* GetWireParDialog ();
   UIDialog* wireMsgDialog;
-  UIDialog* GetWireMsgDialog ();
-  csHash<ParHash,csString> wireParams;
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
-  void OnWireMessageRMB (bool hasItem);
-  void OnWireMessageAdd (wxCommandEvent& event);
-  void OnWireMessageEdit (wxCommandEvent& event);
-  void OnWireMessageDel (wxCommandEvent& event);
   void OnWireMessageSelected (wxListEvent& event);
   void OnWireMessageDeselected (wxListEvent& event);
   void OnWireParameterRMB (bool hasItem);
@@ -155,6 +151,8 @@ public:
   UIDialog* GetInventoryTemplateDialog ();
   UIDialog* GetQuestDialog ();
   UIDialog* GetSpawnTemplateDialog ();
+  UIDialog* GetWireParDialog ();
+  UIDialog* GetWireMsgDialog ();
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
