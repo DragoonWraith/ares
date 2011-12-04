@@ -395,6 +395,7 @@ enum
   ID_Paste = wxID_PASTE,
   ID_Delete = wxID_HIGHEST + 1000,
   ID_Cells,
+  ID_Dynfacts,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
@@ -435,6 +436,7 @@ private:
 
   void OnMenuNew (wxCommandEvent& event);
   void OnMenuCells (wxCommandEvent& event);
+  void OnMenuDynfacts (wxCommandEvent& event);
   void OnMenuOpen (wxCommandEvent& event);
   void OnMenuSave (wxCommandEvent& event);
   void OnMenuQuit (wxCommandEvent& event);

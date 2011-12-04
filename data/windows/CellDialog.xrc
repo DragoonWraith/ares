@@ -3,7 +3,7 @@
 	<object class="wxDialog" name="CellDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
 		<size>472,353</size>
-		<title></title>
+		<title>Edit Cells</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>

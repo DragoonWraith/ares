@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "ui/filereq.h"
 #include "ui/newproject.h"
 #include "ui/celldialog.h"
+#include "ui/dynfactdialog.h"
 #include "modes/mainmode.h"
 #include "modes/curvemode.h"
 #include "modes/roommode.h"
@@ -965,6 +966,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_ICONIZE (AppAresEditWX::OnIconize)
   EVT_MENU (ID_New, AppAresEditWX :: OnMenuNew)
   EVT_MENU (ID_Cells, AppAresEditWX :: OnMenuCells)
+  EVT_MENU (ID_Dynfacts, AppAresEditWX :: OnMenuDynfacts)
   EVT_MENU (ID_Open, AppAresEditWX :: OnMenuOpen)
   EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
   EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
@@ -1056,6 +1058,11 @@ void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
 void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
 {
   uiManager->GetCellDialog ()->Show ();
+}
+
+void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
+{
+  uiManager->GetDynfactDialog ()->Show ();
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
@@ -1295,6 +1302,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("PropertyClassPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("EntityTemplatePanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("DynfactDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -1394,6 +1402,7 @@ void AppAresEditWX::SetupMenuBar ()
   wxMenu* fileMenu = new wxMenu ();
   fileMenu->Append (ID_New, wxT ("&New project..."));
   fileMenu->Append (ID_Cells, wxT ("&Manage Cells..."));
+  fileMenu->Append (ID_Dynfacts, wxT ("&Manage Dynamic Factories..."));
   fileMenu->AppendSeparator ();
   fileMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
   fileMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));

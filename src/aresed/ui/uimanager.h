@@ -30,6 +30,7 @@ class FileReq;
 class NewProjectDialog;
 class CellDialog;
 class UIDialog;
+class DynfactDialog;
 
 struct UIDialogCallback : public csRefCount
 {
@@ -108,6 +109,7 @@ private:
   FileReq* filereqDialog;
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
+  DynfactDialog* dynfactDialog;
 
   int contextMenuID;
 
@@ -123,6 +125,7 @@ public:
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
+  DynfactDialog* GetDynfactDialog () const { return dynfactDialog; }
 
   /// Create a dynamically buildable dialog.
   UIDialog* CreateDialog (const char* title);
