@@ -159,11 +159,25 @@ void PropertyClassPanel::SwitchPCType (const char* pcType)
 
 // -----------------------------------------------------------------------
 
-class WireMsgRowModel : public RowModel
+class PcParRowModel : public RowModel
 {
-private:
+protected:
   PropertyClassPanel* pcPanel;
   iCelPropertyClassTemplate* pctpl;
+
+public:
+  PcParRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0) { }
+  virtual ~PcParRowModel () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
+  {
+    PcParRowModel::pctpl = pctpl;
+  }
+};
+
+class WireMsgRowModel : public PcParRowModel
+{
+private:
   size_t idx;
 
   void SearchNext ()
@@ -182,13 +196,8 @@ private:
   }
 
 public:
-  WireMsgRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  WireMsgRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
   virtual ~WireMsgRowModel () { }
-
-  void SetPC (iCelPropertyClassTemplate* pctpl)
-  {
-    WireMsgRowModel::pctpl = pctpl;
-  }
 
   virtual void ResetIterator ()
   {
@@ -269,22 +278,16 @@ public:
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
 };
 
-class WireParRowModel : public RowModel
+class WireParRowModel : public PcParRowModel
 {
 private:
-  PropertyClassPanel* pcPanel;
-  iCelPropertyClassTemplate* pctpl;
   csString currentMessage;
   ParHash::ConstGlobalIterator it;
 
 public:
-  WireParRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0) { }
+  WireParRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel) { }
   virtual ~WireParRowModel () { }
 
-  void SetPC (iCelPropertyClassTemplate* pctpl)
-  {
-    WireParRowModel::pctpl = pctpl;
-  }
   void SetCurrentMessage (const char* msg)
   {
     currentMessage = msg;
@@ -442,11 +445,9 @@ void PropertyClassPanel::FillWire ()
 
 // -----------------------------------------------------------------------
 
-class SpawnRowModel : public RowModel
+class SpawnRowModel : public PcParRowModel
 {
 private:
-  PropertyClassPanel* pcPanel;
-  iCelPropertyClassTemplate* pctpl;
   size_t idx;
 
   void SearchNext ()
@@ -465,13 +466,8 @@ private:
   }
 
 public:
-  SpawnRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  SpawnRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
   virtual ~SpawnRowModel () { }
-
-  void SetPC (iCelPropertyClassTemplate* pctpl)
-  {
-    SpawnRowModel::pctpl = pctpl;
-  }
 
   virtual void ResetIterator ()
   {
@@ -664,12 +660,9 @@ void PropertyClassPanel::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-class QuestRowModel : public RowModel
+class QuestRowModel : public PcParRowModel
 {
 private:
-  PropertyClassPanel* pcPanel;
-  iCelPropertyClassTemplate* pctpl;
-
   csRef<iCelParameterIterator> it;
   csStringID nextID;
   iParameter* nextPar;
@@ -691,14 +684,9 @@ private:
   }
 
 public:
-  QuestRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0),
+  QuestRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel),
     nextID (csInvalidStringID) { }
   virtual ~QuestRowModel () { }
-
-  void SetPC (iCelPropertyClassTemplate* pctpl)
-  {
-    QuestRowModel::pctpl = pctpl;
-  }
 
   virtual void ResetIterator ()
   {
@@ -836,11 +824,9 @@ void PropertyClassPanel::FillQuest ()
 
 // -----------------------------------------------------------------------
 
-class InventoryRowModel : public RowModel
+class InventoryRowModel : public PcParRowModel
 {
 private:
-  PropertyClassPanel* pcPanel;
-  iCelPropertyClassTemplate* pctpl;
   size_t idx;
 
   void SearchNext ()
@@ -859,13 +845,8 @@ private:
   }
 
 public:
-  InventoryRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  InventoryRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
   virtual ~InventoryRowModel () { }
-
-  void SetPC (iCelPropertyClassTemplate* pctpl)
-  {
-    InventoryRowModel::pctpl = pctpl;
-  }
 
   virtual void ResetIterator ()
   {
@@ -987,21 +968,14 @@ void PropertyClassPanel::FillInventory ()
 
 // -----------------------------------------------------------------------
 
-class PropertyRowModel : public RowModel
+class PropertyRowModel : public PcParRowModel
 {
 private:
-  PropertyClassPanel* pcPanel;
-  iCelPropertyClassTemplate* pctpl;
   size_t idx;
 
 public:
-  PropertyRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0), idx (0) { }
+  PropertyRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
   virtual ~PropertyRowModel () { }
-
-  void SetPC (iCelPropertyClassTemplate* pctpl)
-  {
-    PropertyRowModel::pctpl = pctpl;
-  }
 
   virtual void ResetIterator () { idx = 0; }
   virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }

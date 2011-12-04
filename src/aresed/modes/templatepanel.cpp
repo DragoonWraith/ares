@@ -35,22 +35,30 @@ THE SOFTWARE.
 
 //--------------------------------------------------------------------------
 
-class ParentsRowModel : public RowModel
+class EntParRowModel : public RowModel
 {
-private:
+protected:
   EntityTemplatePanel* entPanel;
   iCelEntityTemplate* tpl;
 
-  csRef<iCelEntityTemplateIterator> it;
-
 public:
-  ParentsRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
-  virtual ~ParentsRowModel () { }
+  EntParRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  virtual ~EntParRowModel () { }
 
   void SetTemplate (iCelEntityTemplate* tpl)
   {
-    ParentsRowModel::tpl = tpl;
+    EntParRowModel::tpl = tpl;
   }
+};
+
+class ParentsRowModel : public EntParRowModel
+{
+private:
+  csRef<iCelEntityTemplateIterator> it;
+
+public:
+  ParentsRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
+  virtual ~ParentsRowModel () { }
 
   virtual void ResetIterator ()
   {
@@ -87,22 +95,14 @@ public:
 
 //--------------------------------------------------------------------------
 
-class CharacteristicsRowModel : public RowModel
+class CharacteristicsRowModel : public EntParRowModel
 {
 private:
-  EntityTemplatePanel* entPanel;
-  iCelEntityTemplate* tpl;
-
   csRef<iCharacteristicsIterator> it;
 
 public:
-  CharacteristicsRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  CharacteristicsRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
   virtual ~CharacteristicsRowModel () { }
-
-  void SetTemplate (iCelEntityTemplate* tpl)
-  {
-    CharacteristicsRowModel::tpl = tpl;
-  }
 
   virtual void ResetIterator ()
   {
@@ -138,22 +138,14 @@ public:
 
 //--------------------------------------------------------------------------
 
-class ClassesRowModel : public RowModel
+class ClassesRowModel : public EntParRowModel
 {
 private:
-  EntityTemplatePanel* entPanel;
-  iCelEntityTemplate* tpl;
-
   csSet<csStringID>::GlobalIterator it;
 
 public:
-  ClassesRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  ClassesRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
   virtual ~ClassesRowModel () { }
-
-  void SetTemplate (iCelEntityTemplate* tpl)
-  {
-    ClassesRowModel::tpl = tpl;
-  }
 
   virtual void ResetIterator ()
   {
