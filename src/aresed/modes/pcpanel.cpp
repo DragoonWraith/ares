@@ -132,9 +132,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("spawnMinDelayText"), PropertyClassPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
-  EVT_MENU (ID_Quest_Add, PropertyClassPanel :: OnQuestParameterAdd)
-  EVT_MENU (ID_Quest_Edit, PropertyClassPanel :: OnQuestParameterEdit)
-  EVT_MENU (ID_Quest_Delete, PropertyClassPanel :: OnQuestParameterDel)
   EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
 END_EVENT_TABLE()
 
@@ -157,8 +154,6 @@ void PropertyClassPanel::OnContextMenu (wxContextMenuEvent& event)
     OnWireParameterRMB (hasItem);
   else if (CheckHitList ("spawnTemplateListCtrl", hasItem, event.GetPosition ()))
     OnSpawnTemplateRMB (hasItem);
-  else if (CheckHitList ("questParameterListCtrl", hasItem, event.GetPosition ()))
-    OnQuestParameterRMB (hasItem);
 }
 
 void PropertyClassPanel::OnUpdateEvent (wxCommandEvent& event)
@@ -735,17 +730,122 @@ void PropertyClassPanel::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-void PropertyClassPanel::OnQuestParameterRMB (bool hasItem)
+class QuestRowModel : public RowModel
 {
-  wxMenu contextMenu;
-  contextMenu.Append(ID_Quest_Add, wxT ("&Add"));
-  if (hasItem)
+private:
+  PropertyClassPanel* pcPanel;
+  iCelPropertyClassTemplate* pctpl;
+
+  csRef<iCelParameterIterator> it;
+  csStringID nextID;
+  iParameter* nextPar;
+
+  ParHash params;
+  csString newQuestName;	// If set this will overwrite the quest name.
+
+  void SearchNext ()
   {
-    contextMenu.Append(ID_Quest_Edit, wxT ("&Edit"));
-    contextMenu.Append(ID_Quest_Delete, wxT ("&Delete"));
+    nextID = csInvalidStringID;
+    while (it->HasNext ())
+    {
+      nextPar = it->Next (nextID);
+      iCelPlLayer* pl = pcPanel->GetPL ();
+      csString name = pl->FetchString (nextID);
+      if (name != "name") return;
+      nextID = csInvalidStringID;
+    }
   }
-  PopupMenu (&contextMenu);
-}
+
+public:
+  QuestRowModel (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0),
+    nextID (csInvalidStringID) { }
+  virtual ~QuestRowModel () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
+  {
+    QuestRowModel::pctpl = pctpl;
+  }
+
+  virtual void ResetIterator ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
+    if (nqIdx != csArrayItemNotFound)
+    {
+      csStringID id;
+      celData data;
+      it = pctpl->GetProperty (nqIdx, id, data);
+      SearchNext ();
+    }
+    else
+      it = 0;
+  }
+  virtual bool HasRows () { return nextID != csInvalidStringID; }
+  virtual csStringArray NextRow ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csString name = pl->FetchString (nextID);
+    csString val = nextPar->GetOriginalExpression ();
+    csString type = TypeToString (nextPar->GetPossibleType ());
+    csStringArray ar;
+    ar.Push (name);
+    ar.Push (val);
+    ar.Push (type);
+    SearchNext ();
+    return ar;
+  }
+
+  void OverrideQuestName (const char* newname)
+  {
+    newQuestName = newname;
+  }
+  virtual void StartUpdate ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csString questName;
+    if (newQuestName.IsEmpty ())
+      questName = InspectTools::GetActionParameterValueString (pl, pctpl,
+        "NewQuest", "name");
+    else
+      questName = newQuestName;
+    newQuestName = "";
+    pctpl->RemoveProperty (pl->FetchStringID ("NewQuest"));
+    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+    params.DeleteAll ();
+    csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
+    params.Put (pl->FetchStringID ("name"), par);
+  }
+  virtual bool UpdateRow (const csStringArray& row)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
+      pcPanel->GetUIManager ()->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
+
+    csStringID nameID = pl->FetchStringID (row[0]);
+    csRef<iParameter> par = pm->GetParameter (row[1], StringToType (row[2]));
+    if (!par) return false;
+    params.Put (nameID, par);
+    return true;
+  }
+  virtual void FinishUpdate ()
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    pctpl->PerformAction (pl->FetchStringID ("NewQuest"), params);
+    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
+  }
+
+  virtual csStringArray GetColumns ()
+  {
+    csStringArray ar;
+    ar.Push ("Name");
+    ar.Push ("Type");
+    ar.Push ("Value");
+    return ar;
+  }
+  virtual bool IsEditAllowed () const { return true; }
+  virtual UIDialog* GetEditorDialog () { return pcPanel->GetQuestDialog (); }
+};
 
 UIDialog* PropertyClassPanel::GetQuestDialog ()
 {
@@ -754,79 +854,20 @@ UIDialog* PropertyClassPanel::GetQuestDialog ()
     questParDialog = uiManager->CreateDialog ("Edit parameter");
     questParDialog->AddRow ();
     questParDialog->AddLabel ("Name:");
-    questParDialog->AddText ("name");
-    questParDialog->AddChoice ("type", "string", "float", "long", "bool",
+    questParDialog->AddText ("Name");
+    questParDialog->AddChoice ("Type", "string", "float", "long", "bool",
       "vector2", "vector3", "color", (const char*)0);
     questParDialog->AddRow ();
-    questParDialog->AddMultiText ("value");
+    questParDialog->AddMultiText ("Value");
   }
   return questParDialog;
-}
-
-void PropertyClassPanel::OnQuestParameterEdit (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetQuestDialog ();
-
-  dialog->Clear ();
-  wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  dialog->SetText ("name", row[0]);
-  dialog->SetText ("value", row[1]);
-  dialog->SetChoice ("type", row[2]);
-
-  if (dialog->Show (0))
-  {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::ReplaceRow (list, idx,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("value", "").GetData (),
-	fields.Get ("type", "").GetData (), 0);
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnQuestParameterAdd (wxCommandEvent& event)
-{
-  UIDialog* dialog = GetQuestDialog ();
-  dialog->Clear ();
-  if (dialog->Show (0))
-  {
-    wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    ListCtrlTools::AddRow (list,
-	fields.Get ("name", "").GetData (),
-	fields.Get ("value", "").GetData (),
-	fields.Get ("type", "").GetData (), 0);
-    UpdatePC ();
-  }
-}
-
-void PropertyClassPanel::OnQuestParameterDel (wxCommandEvent& event)
-{
-  wxListCtrl* list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  list->DeleteItem (idx);
-  list->SetColumnWidth (0, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (1, wxLIST_AUTOSIZE_USEHEADER);
-  list->SetColumnWidth (2, wxLIST_AUTOSIZE_USEHEADER);
-  UpdatePC ();
 }
 
 bool PropertyClassPanel::UpdateQuest ()
 {
   SwitchPCType ("pclogic.quest");
 
-  pctpl->RemoveAllProperties ();//@@@
-
-  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
-      uiManager->GetApp ()->GetObjectRegistry (), "cel.parameters.manager");
-
-  wxListCtrl* parList = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
   wxTextCtrl* questText = XRCCTRL (*this, "questText", wxTextCtrl);
-
   csString questName = (const char*)questText->GetValue ().mb_str (wxConvUTF8);
   if (questName.IsEmpty ())
   {
@@ -834,24 +875,8 @@ bool PropertyClassPanel::UpdateQuest ()
     return false;
   }
 
-  ParHash params;
-  csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
-  if (!par) return false;
-  params.Put (pl->FetchStringID ("name"), par);
-  for (int r = 0 ; r < parList->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (parList, r);
-    csString name = row[0];
-    csString value = row[1];
-    csString type = row[2];
-    csStringID nameID = pl->FetchStringID (name);
-    csRef<iParameter> par = pm->GetParameter (value, StringToType (type));
-    if (!par) return false;
-    params.Put (nameID, par);
-  }
-  pctpl->PerformAction (pl->FetchStringID ("NewQuest"), params);
-
-  emode->PCWasEdited (pctpl);
+  questModel->OverrideQuestName (questName);
+  questView->Update ();
   return true;
 }
 
@@ -876,8 +901,6 @@ void PropertyClassPanel::FillQuest ()
   iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
   if (!questFact) return;
 
-  csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
-
   // Fill all states and mark the default state.
   wxArrayString states;
   csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
@@ -887,24 +910,8 @@ void PropertyClassPanel::FillQuest ()
     states.Add (wxString::FromUTF8 (stateFact->GetName ()));
   }
 
-  // Fill all parameters for the quest.
-  size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
-  if (nqIdx != csArrayItemNotFound)
-  {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> parit = pctpl->GetProperty (nqIdx, id, data);
-    while (parit->HasNext ())
-    {
-      csStringID parid;
-      iParameter* par = parit->Next (parid);
-      csString name = pl->FetchString (parid);
-      if (name == "name") continue;	// Ignore this one.
-      csString val = par->GetOriginalExpression ();
-      csString type = TypeToString (par->GetPossibleType ());
-      ListCtrlTools::AddRow (parList, name.GetData (), val.GetData (), type.GetData (), 0);
-    }
-  }
+  questModel->SetPC (pctpl);
+  questView->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -1057,6 +1064,8 @@ bool PropertyClassPanel::UpdateInventory ()
 
 void PropertyClassPanel::FillInventory ()
 {
+  wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
+  list->DeleteAllItems ();
   wxTextCtrl* lootText = XRCCTRL (*this, "inventoryLootTextCtrl", wxTextCtrl);
   lootText->SetValue (wxT (""));
 
@@ -1171,6 +1180,9 @@ bool PropertyClassPanel::UpdateProperties ()
 
 void PropertyClassPanel::FillProperties ()
 {
+  wxListCtrl* list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
+  list->DeleteAllItems ();
+
   if (!pctpl || csString ("pctools.properties") != pctpl->GetName ()) return;
 
   propertyModel->SetPC (pctpl);
@@ -1269,9 +1281,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   ListCtrlTools::SetColumn (list, 0, "Template", 100);
 
   list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (list, 0, "Name", 100);
-  ListCtrlTools::SetColumn (list, 1, "Value", 100);
-  ListCtrlTools::SetColumn (list, 2, "Type", 100);
+  questModel.AttachNew (new QuestRowModel (this));
+  questView = new ListCtrlView (list, questModel);
 
   list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
   ListCtrlTools::SetColumn (list, 0, "Message", 100);
@@ -1301,6 +1312,7 @@ PropertyClassPanel::~PropertyClassPanel ()
 
   delete propertyView;
   delete inventoryView;
+  delete questView;
 }
 
 

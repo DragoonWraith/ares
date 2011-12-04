@@ -131,8 +131,6 @@ private:
   void OnEdit (wxCommandEvent& event);
   void OnDelete (wxCommandEvent& event);
 
-  void Update ();
-
   /// This is used in case the model has a dialog to use.
   csStringArray DialogEditRow (const csStringArray& origRow);
 
@@ -145,7 +143,16 @@ public:
   ~ListCtrlView ();
 
   void SetModel (RowModel* model) { BindModel (model); Refresh (); }
+
+  /**
+   * Refresh the list from the data in the model.
+   */
   void Refresh ();
+
+  /**
+   * Update the model based on the contents of the list.
+   */
+  void Update ();
 };
 
 /**

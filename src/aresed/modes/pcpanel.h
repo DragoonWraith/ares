@@ -44,6 +44,7 @@ class EntityMode;
 
 class PropertyRowModel;
 class InventoryRowModel;
+class QuestRowModel;
 class ListCtrlView;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
@@ -103,14 +104,11 @@ private:
   void FillInventory ();
 
   // Quest.
+  ListCtrlView* questView;
+  csRef<QuestRowModel> questModel;
   UIDialog* questParDialog;
-  UIDialog* GetQuestDialog ();
   bool UpdateQuest ();
   void FillQuest ();
-  void OnQuestParameterRMB (bool hasItem);
-  void OnQuestParameterAdd (wxCommandEvent& event);
-  void OnQuestParameterDel (wxCommandEvent& event);
-  void OnQuestParameterEdit (wxCommandEvent& event);
 
   // Spawn.
   UIDialog* spawnTempDialog;
@@ -157,6 +155,7 @@ public:
 
   UIDialog* GetPropertyDialog ();
   UIDialog* GetInventoryTemplateDialog ();
+  UIDialog* GetQuestDialog ();
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
