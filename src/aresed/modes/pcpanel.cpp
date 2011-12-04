@@ -30,7 +30,8 @@ THE SOFTWARE.
 #include "tools/questmanager.h"
 #include "../apparesed.h"
 #include "../ui/listctrltools.h"
-#include "../inspect.h"
+#include "../tools/inspect.h"
+#include "../tools/tools.h"
 
 //--------------------------------------------------------------------------
 
@@ -219,11 +220,7 @@ public:
       else paramsHash.Put (parid, par);
     }
     pcPanel->wireParams.Put (msgName, paramsHash);
-
-    csStringArray ar;
-    ar.Push (msgName);
-    ar.Push (entName);
-    return ar;
+    return Tools::MakeArray (msgName.GetData (), entName.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()
@@ -309,11 +306,7 @@ public:
     csString name = pl->FetchString (parid);
     csString val = par->GetOriginalExpression ();
     csString type = TypeToString (par->GetPossibleType ());
-    csStringArray ar;
-    ar.Push (name);
-    ar.Push (val);
-    ar.Push (type);
-    return ar;
+    return Tools::MakeArray (name.GetData (), val.GetData (), type.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()
@@ -505,9 +498,7 @@ public:
       iParameter* par = params->Next (parid);
       if (parid == nameID) parName = par->GetOriginalExpression ();
     }
-    csStringArray ar;
-    ar.Push (parName);
-    return ar;
+    return Tools::MakeArray (parName.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()
@@ -733,12 +724,8 @@ public:
     csString name = pl->FetchString (nextID);
     csString val = nextPar->GetOriginalExpression ();
     csString type = TypeToString (nextPar->GetPossibleType ());
-    csStringArray ar;
-    ar.Push (name);
-    ar.Push (val);
-    ar.Push (type);
     SearchNext ();
-    return ar;
+    return Tools::MakeArray (name.GetData (), val.GetData (), type.GetData (), (const char*)0);
   }
 
   void OverrideQuestName (const char* newname)
@@ -910,10 +897,7 @@ public:
       if (parid == nameID) parName = par->GetOriginalExpression ();
       else if (parid == amountID) parAmount = par->GetOriginalExpression ();
     }
-    csStringArray ar;
-    ar.Push (parName);
-    ar.Push (parAmount);
-    return ar;
+    return Tools::MakeArray (parName.GetData (), parAmount.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()
@@ -1034,11 +1018,9 @@ public:
     idx++;
     csString value;
     celParameterTools::ToString (data, value);
-    csStringArray ar;
-    ar.Push (pcPanel->GetPL ()->FetchString (id));
-    ar.Push (value);
-    ar.Push (TypeToString (data.type));
-    return ar;
+    csString name = pcPanel->GetPL ()->FetchString (id);
+    csString type = TypeToString (data.type);
+    return Tools::MakeArray (name.GetData (), value.GetData (), type.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()

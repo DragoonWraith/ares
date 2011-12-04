@@ -22,9 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "apparesed.h"
+#include "../apparesed.h"
 #include "transformtools.h"
-#include "selection.h"
+#include "../selection.h"
 
 csVector3 TransformTools::GetCenterSelected (Selection* selection)
 {

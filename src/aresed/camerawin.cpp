@@ -23,7 +23,7 @@ THE SOFTWARE.
  */
 
 #include "camerawin.h"
-#include "transformtools.h"
+#include "tools/transformtools.h"
 #include "ui/uimanager.h"
 
 #include <wx/xrc/xmlres.h>

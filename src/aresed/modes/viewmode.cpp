@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #include "../apparesed.h"
 #include "../camerawin.h"
-#include "../transformtools.h"
+#include "../tools/transformtools.h"
 #include "viewmode.h"
 
 //---------------------------------------------------------------------------

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../ui/uimanager.h"
 #include "../ui/listctrltools.h"
+#include "../tools/tools.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -59,9 +60,7 @@ public:
   virtual csStringArray NextRow ()
   {
     iCelEntityTemplate* parent = it->Next ();
-    csStringArray ar;
-    ar.Push (parent->GetName ());
-    return ar;
+    return Tools::MakeArray (parent->GetName (), (const char*)0);
   }
 
   virtual void StartUpdate ()
@@ -118,10 +117,7 @@ public:
     float f;
     csString name = it->Next (f);
     csString value; value.Format ("%g", f);
-    csStringArray ar;
-    ar.Push (name);
-    ar.Push (value);
-    return ar;
+    return Tools::MakeArray (name.GetData (), value.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()
@@ -177,9 +173,7 @@ public:
     iCelPlLayer* pl = entPanel->GetPL ();
     csStringID classID = it.Next ();
     csString className = pl->FetchString (classID);
-    csStringArray ar;
-    ar.Push (className);
-    return ar;
+    return Tools::MakeArray (className.GetData (), (const char*)0);
   }
 
   virtual void StartUpdate ()

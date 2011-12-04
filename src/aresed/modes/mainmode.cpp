@@ -23,7 +23,7 @@ THE SOFTWARE.
  */
 
 #include "../apparesed.h"
-#include "../transformtools.h"
+#include "../tools/transformtools.h"
 #include "mainmode.h"
 #include "../ui/uimanager.h"
 

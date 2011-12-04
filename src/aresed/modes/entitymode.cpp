@@ -26,7 +26,7 @@ THE SOFTWARE.
 #include "../camerawin.h"
 #include "../ui/uimanager.h"
 #include "../ui/listctrltools.h"
-#include "../inspect.h"
+#include "../tools/inspect.h"
 #include "entitymode.h"
 #include "templatepanel.h"
 #include "pcpanel.h"

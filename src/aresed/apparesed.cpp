@@ -45,7 +45,7 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "selection.h"
 #include "common/worldload.h"
-#include "transformtools.h"
+#include "tools/transformtools.h"
 
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
