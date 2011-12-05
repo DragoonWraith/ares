@@ -25,8 +25,7 @@ THE SOFTWARE.
 #ifndef __aresed_dynfactmodel_h
 #define __aresed_dynfactmodel_h
 
-#include "ui/rowmodel.h"
-#include "tools/tools.h"
+#include "../ui/rowmodel.h"
 
 class AresEdit3DView;
 
@@ -39,62 +38,22 @@ private:
   csStringArray items;
   size_t idx;
 
-  void SearchNext ()
-  {
-    while (idx >= items.GetSize ())
-    {
-      if (it.HasNext ())
-      {
-	items = it.Next (category);
-	idx = 0;
-      }
-      else return;
-    }
-  }
+  void SearchNext ();
 
 public:
   DynfactRowModel (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
   virtual ~DynfactRowModel () { }
 
-  virtual void ResetIterator ()
-  {
-    const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
-    it = categories.GetIterator ();
-    items.DeleteAll ();
-    idx = 0;
-    SearchNext ();
-  }
+  virtual void ResetIterator ();
   virtual bool HasRows () { return idx < items.GetSize (); }
-  virtual csStringArray NextRow ()
-  {
-    csString cat = category;
-    csString item = items[idx];
-    idx++;
-    SearchNext ();
-    return Tools::MakeArray (cat.GetData (), item.GetData (), (const char*)0);
-  }
+  virtual csStringArray NextRow ();
 
-  virtual void StartUpdate ()
-  {
-  }
-  virtual bool UpdateRow (const csStringArray& row)
-  {
-#if 0
-    iCelPlLayer* pl = entPanel->GetPL ();
-    csString name = row[0];
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (!t)
-    {
-      entPanel->GetUIManager ()->Error ("Can't find entity template '%s'!", name.GetData ());
-      return false;
-    }
-    tpl->AddParent (t);
-#endif
-    return true;
-  }
+  virtual void StartUpdate ();
+  virtual bool UpdateRow (const csStringArray& row);
 
   virtual const char* GetColumns () { return "Category,Item"; }
   virtual bool IsEditAllowed () const { return false; }
+  virtual csStringArray EditRow (const csStringArray& origRow);
 };
 
 

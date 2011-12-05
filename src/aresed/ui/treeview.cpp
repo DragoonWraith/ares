@@ -133,20 +133,33 @@ void TreeCtrlView::Refresh ()
   delete root;
 }
 
+/**
+ * Read the entire tree and update the row model from this tree.
+ */
+static void UpdateModel (RowModel* model, wxTreeCtrl* tree, wxTreeItemId& parent,
+    const csStringArray& prevRow)
+{
+  wxTreeItemIdValue cookie;
+  wxTreeItemId child = tree->GetFirstChild (parent, cookie);
+  while (child.IsOk ())
+  {
+    csString name = (const char*)tree->GetItemText (child).mb_str (wxConvUTF8);
+    csStringArray newRow = prevRow;
+    newRow.Push (name);
+    if (tree->ItemHasChildren (child))
+      UpdateModel (model, tree, child, newRow);
+    else
+      model->UpdateRow (newRow);
+
+    child = tree->GetNextChild (parent, cookie);
+  }
+}
+
 void TreeCtrlView::Update ()
 {
   model->StartUpdate ();
-#if 0
-  for (int r = 0 ; r < tree->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (tree, r);
-    if (!model->UpdateRow (row))
-    {
-      Refresh ();
-      break;
-    }
-  }
-#endif
+  wxTreeItemId rootId = tree->GetRootItem ();
+  UpdateModel (model, tree, rootId, csStringArray ());
   model->FinishUpdate ();
 }
 
@@ -181,61 +194,106 @@ void TreeCtrlView::SetEditorDialog (UIDialog* dialog, bool own)
   ownForcedDialog = own;
 }
 
+/**
+ * Add a row to a tree. Does nothing if it already exists.
+ */
+static void AddToTree (wxTreeCtrl* tree, wxTreeItemId& parent,
+    const csStringArray& row, size_t rowIdx)
+{
+  if (rowIdx >= row.GetSize ()) return;
+  wxTreeItemIdValue cookie;
+  wxTreeItemId child = tree->GetFirstChild (parent, cookie);
+  while (child.IsOk ())
+  {
+    csString name = (const char*)tree->GetItemText (child).mb_str (wxConvUTF8);
+    if (name == row[rowIdx])
+    {
+      AddToTree (tree, child, row, rowIdx+1);
+      return;
+    }
+    child = tree->GetNextChild (parent, cookie);
+  }
+  child = tree->AppendItem (parent, wxString::FromUTF8 (row[rowIdx]));
+  AddToTree (tree, child, row, rowIdx+1);
+}
+
 void TreeCtrlView::OnAdd (wxCommandEvent& event)
 {
   csStringArray empty;
   csStringArray row = DoDialog (empty);
   if (row.GetSize () > 0)
   {
-    //ListCtrlTools::AddRow (tree, row);
+    wxTreeItemId rootId = tree->GetRootItem ();
+    AddToTree (tree, rootId, row, 0);
     Update ();
   }
+}
+
+/**
+ * Construct a row from a given tree item.
+ */
+static void ConstructRowFromTree (wxTreeCtrl* tree, wxTreeItemId& item,
+    csStringArray& row)
+{
+  wxTreeItemId parent = tree->GetItemParent (item);
+  if (parent.IsOk ())
+  {
+    ConstructRowFromTree (tree, parent, row);
+  }
+  csString name = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
+  row.Push (name);
 }
 
 void TreeCtrlView::OnEdit (wxCommandEvent& event)
 {
-#if 0
-  long idx = ListCtrlTools::GetFirstSelectedRow (tree);
-  if (idx == -1) return;
-  csStringArray oldRow = ListCtrlTools::ReadRow (tree, idx);
+  wxTreeItemId sel = tree->GetSelection ();
+  if (!sel.IsOk ()) return;
+
+  csStringArray oldRow;
+  ConstructRowFromTree (tree, sel, oldRow);
+
   csStringArray row = DoDialog (oldRow);
   if (row.GetSize () > 0)
   {
-    ListCtrlTools::ReplaceRow (tree, idx, row);
+    wxTreeItemId rootId = tree->GetRootItem ();
+    AddToTree (tree, rootId, row, 0);
     Update ();
   }
-#endif
 }
 
 void TreeCtrlView::OnDelete (wxCommandEvent& event)
 {
-#if 0
-  long idx = ListCtrlTools::GetFirstSelectedRow (tree);
-  if (idx == -1) return;
-  tree->DeleteItem (idx);
-  for (size_t i = 0 ; i < columns.GetSize () ; i++)
-    tree->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
+  wxTreeItemId sel = tree->GetSelection ();
+  if (!sel.IsOk ()) return;
+  tree->Delete (sel);
   Update ();
-#endif
 }
 
 void TreeCtrlView::OnContextMenu (wxContextMenuEvent& event)
 {
-#if 0
+  if (!tree->IsShownOnScreen ()) return;
+  int flags = 0;
+  long idx = tree->HitTest (tree->ScreenToClient (event.GetPosition ()), flags);
   bool hasItem;
-  if (ListCtrlTools::CheckHitList (tree, hasItem, event.GetPosition ()))
+  if (idx == wxNOT_FOUND)
   {
-    wxMenu contextMenu;
-    contextMenu.Append(ID_Add, wxT ("&Add"));
-    if (hasItem)
-    {
-      if (model->IsEditAllowed ())
-        contextMenu.Append(ID_Edit, wxT ("&Edit"));
-      contextMenu.Append(ID_Delete, wxT ("&Delete"));
-    }
-    tree->PopupMenu (&contextMenu);
+    if (!tree->GetScreenRect ().Contains (event.GetPosition ()))
+      return;
+    hasItem = false;
   }
-#endif
+  else
+  {
+    hasItem = true;
+  }
+  wxMenu contextMenu;
+  contextMenu.Append(ID_Add, wxT ("&Add"));
+  if (hasItem)
+  {
+    if (model->IsEditAllowed ())
+      contextMenu.Append(ID_Edit, wxT ("&Edit"));
+    contextMenu.Append(ID_Delete, wxT ("&Delete"));
+  }
+  tree->PopupMenu (&contextMenu);
 }
 
 //-----------------------------------------------------------------------------

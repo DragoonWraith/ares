@@ -25,12 +25,21 @@ THE SOFTWARE.
 #ifndef __uimanager_h
 #define __uimanager_h
 
+#include <wx/wx.h>
+
 class AppAresEditWX;
 class FileReq;
 class NewProjectDialog;
 class CellDialog;
 class UIDialog;
 class DynfactDialog;
+
+class wxBoxSizer;
+class wxTextCtrl;
+class wxChoice;
+class wxButton;
+class wxCommandEvent;
+class wxWindow;
 
 struct UIDialogCallback : public csRefCount
 {

@@ -42,7 +42,7 @@ void DynfactDialog::OnOkButton (wxCommandEvent& event)
 
 void DynfactDialog::UpdateTree ()
 {
-  wxTreeCtrl* list = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
+  //wxTreeCtrl* list = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
 }
 
 void DynfactDialog::Show ()

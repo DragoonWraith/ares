@@ -5,6 +5,7 @@ Application aresed :
   [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ]
   [ Wildcard [ ConcatDirs ui ] : *.cpp *.h ]
   [ Wildcard [ ConcatDirs modes ] : *.cpp *.h ]
+  [ Wildcard [ ConcatDirs models ] : *.cpp *.h ]
   [ Wildcard [ ConcatDirs tools ] : *.cpp *.h ]
   [ Wildcard [ ConcatDirs ../common ] : *.cpp *.h ] ;
 ExternalLibs aresed : CRYSTAL ;

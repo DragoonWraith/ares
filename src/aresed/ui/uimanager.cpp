@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/treectrl.h>
+#include <wx/textctrl.h>
 #include <wx/notebook.h>
 #include <wx/xrc/xmlres.h>
 

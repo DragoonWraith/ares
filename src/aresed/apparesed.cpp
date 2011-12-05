@@ -45,7 +45,7 @@ THE SOFTWARE.
 #include <csgeom/math3d.h>
 #include "camerawin.h"
 #include "selection.h"
-#include "dynfactmodel.h"
+#include "models/dynfactmodel.h"
 #include "common/worldload.h"
 #include "tools/transformtools.h"
 
@@ -616,6 +616,7 @@ bool AresEdit3DView::Setup ()
 
 bool AresEdit3DView::SetupDynWorld ()
 {
+  ClearItems ();
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);

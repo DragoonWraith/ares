@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include "mainmode.h"
 #include "../ui/uimanager.h"
 #include "../ui/treeview.h"
-#include "../dynfactmodel.h"
+#include "../models/dynfactmodel.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

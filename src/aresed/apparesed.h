@@ -235,9 +235,6 @@ private:
    */
   bool InitPhysics ();
 
-  /// Add an item to a category (create the category if not already present).
-  void AddItem (const char* category, const char* itemname);
-
 public:
   /**
    * Constructor.
@@ -317,6 +314,11 @@ public:
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
   /// Get the dynamic factory model.
   DynfactRowModel* GetDynfactRowModel () const { return dynfactRowModel; }
+
+  /// Clear all items and categories.
+  void ClearItems () { categories.DeleteAll (); }
+  /// Add an item to a category (create the category if not already present).
+  void AddItem (const char* category, const char* itemname);
 
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
