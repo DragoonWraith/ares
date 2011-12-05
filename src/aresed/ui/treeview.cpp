@@ -92,11 +92,11 @@ struct TreeNode
   }
   void BuildWxTree (wxTreeCtrl* tree, wxTreeItemId& parent)
   {
-    wxTreeItemId itemId = tree->AppendItem (parent, wxString::FromUTF8 (name));
     csHash<TreeNode*,csString>::GlobalIterator it = children.GetIterator ();
     while (it.HasNext ())
     {
       TreeNode* node = it.Next ();
+      wxTreeItemId itemId = tree->AppendItem (parent, wxString::FromUTF8 (node->name));
       node->BuildWxTree (tree, itemId);
     }
   }
@@ -107,6 +107,7 @@ void TreeCtrlView::Refresh ()
   tree->DeleteAllItems ();
   wxTreeItemId rootId = tree->AddRoot (wxString::FromUTF8 (rootName));
   TreeNode* root = new TreeNode ();
+  root->name = rootName;
 
   model->ResetIterator ();
   while (model->HasRows ())
@@ -122,6 +123,7 @@ void TreeCtrlView::Refresh ()
       else
       {
 	TreeNode* newNode = new TreeNode ();
+	newNode->name = row[i];
 	c->children.Put (row[i], newNode);
 	c = newNode;
       }

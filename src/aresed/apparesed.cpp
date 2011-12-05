@@ -1034,15 +1034,13 @@ void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
 {
   aresed3d->NewProject (assets);
-  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
-  mainMode->SetupItems (categories);
+  mainMode->Refresh ();
 }
 
 void AppAresEditWX::LoadFile (const char* filename)
 {
   aresed3d->LoadFile (filename);
-  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
-  mainMode->SetupItems (categories);
+  mainMode->Refresh ();
 }
 
 void AppAresEditWX::SaveFile (const char* filename)
@@ -1370,8 +1368,7 @@ bool AppAresEditWX::InitWX ()
   SelectionListener* listener = new AppSelectionListener (this);
   aresed3d->GetSelection ()->AddSelectionListener (listener);
 
-  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
-  mainMode->SetupItems (categories);
+  mainMode->Refresh ();
 
   SetupMenuBar ();
 

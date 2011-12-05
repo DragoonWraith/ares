@@ -2,7 +2,7 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="DynfactDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>-1,600</size>
+		<size>500,600</size>
 		<title>Edit Dynamic Factories</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">

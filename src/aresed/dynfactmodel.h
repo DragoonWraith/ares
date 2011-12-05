@@ -41,13 +41,14 @@ private:
 
   void SearchNext ()
   {
-    if (idx >= items.GetSize ())
+    while (idx >= items.GetSize ())
     {
       if (it.HasNext ())
       {
 	items = it.Next (category);
 	idx = 0;
       }
+      else return;
     }
   }
 
@@ -68,6 +69,7 @@ public:
   {
     csString cat = category;
     csString item = items[idx];
+    idx++;
     SearchNext ();
     return Tools::MakeArray (cat.GetData (), item.GetData (), (const char*)0);
   }

@@ -26,6 +26,8 @@ THE SOFTWARE.
 #include "../tools/transformtools.h"
 #include "mainmode.h"
 #include "../ui/uimanager.h"
+#include "../ui/treeview.h"
+#include "../dynfactmodel.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -59,6 +61,14 @@ MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
 
   transformationMarker = 0;
   pasteMarker = 0;
+  wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
+  dynfactView = new TreeCtrlView (tree, aresed3d->GetDynfactRowModel ());
+  dynfactView->SetRootName ("Categories");
+}
+
+MainMode::~MainMode ()
+{
+  delete dynfactView;
 }
 
 void MainMode::CreateMarkers ()
@@ -120,6 +130,8 @@ void MainMode::Start ()
   }
   else
     transformationMarker->SetVisible (false);
+
+  Refresh ();
 }
 
 void MainMode::Stop ()
@@ -153,24 +165,11 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
   }
 }
 
-void MainMode::SetupItems (const csHash<csStringArray,csString>& items)
+void MainMode::Refresh ()
 {
+  dynfactView->Refresh ();
   wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
-  tree->DeleteAllItems ();
-  wxTreeItemId rootId = tree->AddRoot (wxT ("Categories"));
-
-  csHash<csStringArray,csString>::ConstGlobalIterator it = items.GetIterator ();
-  while (it.HasNext ())
-  {
-    csString category;
-    csStringArray items = it.Next (category);
-    wxTreeItemId categoryId = tree->AppendItem (rootId, wxString::FromUTF8 (category));
-    for (size_t i = 0 ; i < items.GetSize () ; i++)
-    {
-      wxTreeItemId itemId = tree->AppendItem (categoryId, wxString::FromUTF8 (items[i]));
-    }
-  }
-
+  wxTreeItemId rootId = tree->GetRootItem ();
   tree->SelectItem (rootId);
   tree->Expand (rootId);
 }

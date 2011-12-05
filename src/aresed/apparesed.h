@@ -315,6 +315,8 @@ public:
 
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
+  /// Get the dynamic factory model.
+  DynfactRowModel* GetDynfactRowModel () const { return dynfactRowModel; }
 
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);

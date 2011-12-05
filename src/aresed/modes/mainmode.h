@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 class MainMode;
+class TreeCtrlView;
 
 struct AresDragObject
 {
@@ -71,6 +72,8 @@ private:
   iMarker* transformationMarker;
   iMarker* pasteMarker;
 
+  TreeCtrlView* dynfactView;
+
   void StartKinematicDragging (bool restrictY,
       const csSegment3& beam, const csVector3& isect, bool firstOnly);
   void StartPhysicalDragging (iRigidBody* hitBody,
@@ -108,7 +111,7 @@ private:
 
 public:
   MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
-  virtual ~MainMode () { }
+  virtual ~MainMode ();
 
   virtual void Start ();
   virtual void Stop ();
@@ -120,7 +123,7 @@ public:
     return v;
   }
 
-  void SetupItems (const csHash<csStringArray,csString>& items);
+  void Refresh ();
 
   /// Copy the current selection to the paste buffer.
   void CopySelection ();
