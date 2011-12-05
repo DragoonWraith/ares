@@ -283,6 +283,7 @@ class WireParRowModel : public PcParRowModel
 {
 private:
   csString currentMessage;
+  ParHash dummy;
   ParHash::ConstGlobalIterator it;
 
 public:
@@ -296,7 +297,7 @@ public:
 
   virtual void ResetIterator ()
   {
-    const ParHash& wparams = pcPanel->wireParams.Get (currentMessage, ParHash ());
+    const ParHash& wparams = pcPanel->wireParams.Get (currentMessage, dummy);
     it = wparams.GetIterator ();
   }
   virtual bool HasRows () { return it.HasNext (); }
