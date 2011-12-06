@@ -87,11 +87,6 @@ public:
    * Refresh the tree from the data in the model.
    */
   void Refresh ();
-
-  /**
-   * Update the model based on the contents of the tree.
-   */
-  void Update ();
 };
 
 #endif // __appares_treeview_h

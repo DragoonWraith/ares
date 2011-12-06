@@ -85,14 +85,14 @@ csStringArray DynfactRowModel::EditRow (const csStringArray& origRow)
   return csStringArray ();
 }
 
-void DynfactRowModel::StartUpdate ()
+bool DynfactRowModel::DeleteRow (const csStringArray& row)
 {
-  aresed3d->ClearItems ();
+  aresed3d->RemoveItem (row[0], row[1]);
+  return true;
 }
 
-bool DynfactRowModel::UpdateRow (const csStringArray& row)
+bool DynfactRowModel::AddRow (const csStringArray& row)
 {
-  printf ("Update %s,%s\n", row[0], row[1]);
   aresed3d->AddItem (row[0], row[1]);
   return true;
 }

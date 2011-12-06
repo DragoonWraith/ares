@@ -46,6 +46,45 @@ public:
   static float GetPropertyValueFloat (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* propName, bool* valid = 0);
 
+  /**
+   * Find the index of the action for which a given parameter has a certain
+   * value.
+   */
+  static size_t FindActionWithParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName, const char* parValue);
+
+  /**
+   * Delete a given parameter from an action.
+   * 'idx' is the index of the action.
+   */
+  static void DeleteActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName);
+
+  /**
+   * Delete a given parameter from an action.
+   */
+  static void DeleteActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName);
+
+  /**
+   * Add a parameter to an action.
+   * 'idx' is the index of the action.
+   */
+  static void AddActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx,
+      const char* parName, iParameter* parameter);
+
+  /**
+   * Add a parameter to an action.
+   */
+  static void AddActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName, iParameter* parameter);
+
+  /**
+   * Get the value of a parameter for an action.
+   */
   static iParameter* GetActionParameterValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName);
   static csString GetActionParameterValueString (iCelPlLayer* pl,

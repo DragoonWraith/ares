@@ -174,6 +174,11 @@ public:
   {
     PcParRowModel::pctpl = pctpl;
   }
+
+  virtual void FinishUpdate ()
+  {
+    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
+  }
 };
 
 class WireMsgRowModel : public PcParRowModel
@@ -200,11 +205,37 @@ public:
   WireMsgRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
   virtual ~WireMsgRowModel () { }
 
+  /**
+   * Convert the parameters to a string that can be used in the list.
+   */
+  csString GetParameterString (iCelParameterIterator* it,
+      csString& msg, csString& entity)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    csStringID msgID = pl->FetchStringID ("msgid");
+    csStringID entityID = pl->FetchStringID ("entity");
+
+    csString params;
+    while (it->HasNext ())
+    {
+      csStringID parid;
+      iParameter* par = it->Next (parid);
+      if (parid == msgID) msg = par->GetOriginalExpression ();
+      else if (parid == entityID) entity = par->GetOriginalExpression ();
+      else
+      {
+	params.AppendFmt ("%s=%s", pl->FetchString (parid),
+	    par->GetOriginalExpression ());
+	if (it->HasNext ()) params += ',';
+      }
+    }
+    return params;
+  }
+
   virtual void ResetIterator ()
   {
     idx = 0;
     SearchNext ();
-    pcPanel->wireParams.DeleteAll ();
   }
   virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
   virtual csStringArray NextRow ()
@@ -212,33 +243,44 @@ public:
     csStringID id;
     celData data;
     csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+
+    csString msgName;
+    csString entName;
+    csString pars = GetParameterString (params, msgName, entName);
+
     idx++;
     SearchNext ();
 
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    csStringID msgID = pl->FetchStringID ("msgid");
-    csStringID entityID = pl->FetchStringID ("entity");
-    csString msgName;
-    csString entName;
-    ParHash paramsHash;
-    while (params->HasNext ())
-    {
-      csStringID parid;
-      iParameter* par = params->Next (parid);
-      if (parid == msgID) msgName = par->GetOriginalExpression ();
-      else if (parid == entityID) entName = par->GetOriginalExpression ();
-      else paramsHash.Put (parid, par);
-    }
-    pcPanel->wireParams.Put (msgName, paramsHash);
-    return Tools::MakeArray (msgName.GetData (), entName.GetData (), (const char*)0);
+    return Tools::MakeArray (msgName.GetData (), entName.GetData (),
+	pars.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    pctpl->RemoveProperty (pl->FetchStringID ("AddOutput"));
+    csStringID outputID = pl->FetchStringID ("AddOutput");
+    for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> it = pctpl->GetProperty (i, id, data);
+      if (id == outputID)
+      {
+        csString msgName;
+        csString entName;
+	csString pars = GetParameterString (it, msgName, entName);
+	if (msgName == row[0] && entName == row[1] && pars == row[2])
+	{
+	  pctpl->RemovePropertyByIndex (i);
+          wxListCtrl* parList = XRCCTRL (*pcPanel, "wireParameterListCtrl", wxListCtrl);
+          parList->DeleteAllItems ();
+	  return true;
+	}
+      }
+    }
+    return false;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
@@ -255,85 +297,96 @@ public:
     if (!par) return false;
     params.Put (pl->FetchStringID ("entity"), par);
 
-    const ParHash& wparams = pcPanel->wireParams.Get (msg, ParHash ());
-    ParHash::ConstGlobalIterator it = wparams.GetIterator ();
-    while (it.HasNext ())
-    {
-      csStringID parid;
-      csRef<iParameter> par = it.Next (parid);
-      params.Put (parid, par);
-    }
-
     wxListCtrl* parList = XRCCTRL (*pcPanel, "wireParameterListCtrl", wxListCtrl);
     parList->DeleteAllItems ();
 
     pctpl->PerformAction (actionID, params);
     return true;
   }
-  virtual void FinishUpdate ()
-  {
-    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
-  }
 
-  virtual const char* GetColumns () { return "Message,Entity"; }
+  virtual const char* GetColumns () { return "Message,Entity,Parameters"; }
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
 };
 
 class WireParRowModel : public PcParRowModel
 {
 private:
-  csString currentMessage;
-  ParHash dummy;
-  ParHash::ConstGlobalIterator it;
+  csRef<iCelParameterIterator> it;
+
+  csStringID nextID;
+  iParameter* nextPar;
+
+  void SearchNext ()
+  {
+    nextID = csInvalidStringID;
+    while (it->HasNext ())
+    {
+      nextPar = it->Next (nextID);
+      iCelPlLayer* pl = pcPanel->GetPL ();
+      csString name = pl->FetchString (nextID);
+      if (name != "msgid" && name != "entity") return;
+      nextID = csInvalidStringID;
+    }
+  }
 
 public:
-  WireParRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel) { }
+  WireParRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel),
+     nextID (csInvalidStringID) { }
   virtual ~WireParRowModel () { }
-
-  void SetCurrentMessage (const char* msg)
-  {
-    currentMessage = msg;
-  }
 
   virtual void ResetIterator ()
   {
-    const ParHash& wparams = pcPanel->wireParams.Get (currentMessage, dummy);
-    it = wparams.GetIterator ();
+    nextID = csInvalidStringID;
+    size_t currentMessage = pcPanel->GetMessagePropertyIndex ();
+    if (currentMessage == csArrayItemNotFound) { it = 0; return; }
+    csStringID id;
+    celData data;
+    it = pctpl->GetProperty (currentMessage, id, data);
+    SearchNext ();
   }
-  virtual bool HasRows () { return it.HasNext (); }
+  virtual bool HasRows () { return nextID != csInvalidStringID; }
   virtual csStringArray NextRow ()
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csStringID parid;
-    csRef<iParameter> par = it.Next (parid);
+    csString name = pl->FetchString (nextID);
+    csString val = nextPar->GetOriginalExpression ();
+    csString type = TypeToString (nextPar->GetPossibleType ());
 
-    csString name = pl->FetchString (parid);
-    csString val = par->GetOriginalExpression ();
-    csString type = TypeToString (par->GetPossibleType ());
+    SearchNext ();
+
     return Tools::MakeArray (name.GetData (), val.GetData (), type.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
-    ParHash ph;
-    ParHash& wparams = pcPanel->wireParams.Get (currentMessage, ph);
-    wparams.DeleteAll ();
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    size_t currentMessage = pcPanel->GetMessagePropertyIndex ();
+    InspectTools::DeleteActionParameter (pl, pctpl, currentMessage, row[0]);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
 
-    ParHash ph;
-    ParHash& wparams = pcPanel->wireParams.Get (currentMessage, ph);
+    size_t currentMessage = pcPanel->GetMessagePropertyIndex ();
+    if (currentMessage == csArrayItemNotFound)
+    {
+      pcPanel->GetUIManager ()->Error ("Select a message first!");
+      return false;
+    }
+
     csString name = row[0];
     csString value = row[1];
     csString type = row[2];
+
     csRef<iParameter> par = pm->GetParameter (value, StringToType (type));
     if (!par) return false;
-    wparams.Put (pl->FetchStringID (name), par);
+
+    InspectTools::AddActionParameter (pl, pctpl, currentMessage, name, par);
     return true;
   }
+
   virtual void FinishUpdate ()
   {
     pcPanel->UpdateWireMsg ();
@@ -379,13 +432,6 @@ void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
 {
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
-
-  long idx = event.GetIndex ();
-  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
-  csStringArray row = ListCtrlTools::ReadRow (list, idx);
-  csString msg = row[0];
-
-  wireParModel->SetCurrentMessage (msg);
   wireParView->Refresh ();
 }
 
@@ -395,9 +441,38 @@ void PropertyClassPanel::OnWireMessageDeselected (wxListEvent& event)
   parList->DeleteAllItems ();
 }
 
+size_t PropertyClassPanel::GetMessagePropertyIndex ()
+{
+  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return csArrayItemNotFound;
+  csStringArray row = ListCtrlTools::ReadRow (list, idx);
+  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (i, id, data);
+    csString name = pl->FetchString (id);
+    if (name == "AddOutput")
+    {
+      csString msgName;
+      csString entName;
+      csString pars = wireMsgModel->GetParameterString (params, msgName, entName);
+      if (msgName == row[0] && entName == row[1] && pars == row[2])
+	return i;
+    }
+  }
+  return csArrayItemNotFound;
+}
+
 void PropertyClassPanel::UpdateWireMsg ()
 {
-  wireMsgView->Update ();
+  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+  long sel = ListCtrlTools::GetFirstSelectedRow (list);
+  wireMsgView->Refresh ();
+  emode->PCWasEdited (pctpl);
+  if (sel != -1)
+    ListCtrlTools::SelectRow (list, sel);
   wireParView->Refresh ();
 }
 
@@ -440,7 +515,6 @@ void PropertyClassPanel::FillWire ()
   wireMsgModel->SetPC (pctpl);
   wireMsgView->Refresh ();
 
-  wireParModel->SetCurrentMessage ("");
   wireParModel->SetPC (pctpl);
   wireParView->Refresh ();
 }
@@ -497,18 +571,28 @@ public:
     return Tools::MakeArray (parName.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    pctpl->RemoveProperty (pl->FetchStringID ("AddEntityTemplateType"));
+    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
+	"AddEntityTemplateType", "template", row[0]);
+    if (idx == csArrayItemNotFound) return false;
+    pctpl->RemovePropertyByIndex (idx);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
     csStringID actionID = pl->FetchStringID ("AddEntityTemplateType");
     csStringID nameID = pl->FetchStringID ("template");
     csString name = row[0];
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name.GetData ());
+      return false;
+    }
     ParHash params;
 
     csRef<iParameter> par;
@@ -518,10 +602,6 @@ public:
 
     pctpl->PerformAction (actionID, params);
     return true;
-  }
-  virtual void FinishUpdate ()
-  {
-    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
   virtual const char* GetColumns () { return "Name"; }
@@ -669,9 +749,6 @@ private:
   csStringID nextID;
   iParameter* nextPar;
 
-  ParHash params;
-  csString newQuestName;	// If set this will overwrite the quest name.
-
   void SearchNext ()
   {
     nextID = csInvalidStringID;
@@ -715,42 +792,21 @@ public:
     return Tools::MakeArray (name.GetData (), val.GetData (), type.GetData (), (const char*)0);
   }
 
-  void OverrideQuestName (const char* newname)
-  {
-    newQuestName = newname;
-  }
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csString questName;
-    if (newQuestName.IsEmpty ())
-      questName = InspectTools::GetActionParameterValueString (pl, pctpl,
-        "NewQuest", "name");
-    else
-      questName = newQuestName;
-    newQuestName = "";
-    pctpl->RemoveProperty (pl->FetchStringID ("NewQuest"));
-    iParameterManager* pm = pcPanel->GetPM ();
-    params.DeleteAll ();
-    csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
-    params.Put (pl->FetchStringID ("name"), par);
+    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", row[0]);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
 
-    csStringID nameID = pl->FetchStringID (row[0]);
     csRef<iParameter> par = pm->GetParameter (row[1], StringToType (row[2]));
     if (!par) return false;
-    params.Put (nameID, par);
+    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", row[0], par);
     return true;
-  }
-  virtual void FinishUpdate ()
-  {
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    pctpl->PerformAction (pl->FetchStringID ("NewQuest"), params);
-    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
@@ -785,8 +841,16 @@ bool PropertyClassPanel::UpdateQuest ()
     return false;
   }
 
-  questModel->OverrideQuestName (questName);
-  questView->Update ();
+  csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
+  if (!par)
+  {
+    uiManager->Error ("Invalid quest name!");
+    return false;
+  }
+  InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
+  InspectTools::AddActionParameter (pl, pctpl, "NewQuest", "name", par);
+  GetEntityMode ()->PCWasEdited (pctpl);
+
   return true;
 }
 
@@ -879,12 +943,16 @@ public:
     return Tools::MakeArray (parName.GetData (), parAmount.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    pctpl->RemoveProperty (pl->FetchStringID ("AddTemplate"));
+    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
+	"AddTemplate", "name", row[0]);
+    if (idx == csArrayItemNotFound) return false;
+    pctpl->RemovePropertyByIndex (idx);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
@@ -894,6 +962,13 @@ public:
     csString name = row[0];
     csString amount = row[1];
     ParHash params;
+
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name.GetData ());
+      return false;
+    }
 
     csRef<iParameter> par;
     par = pm->GetParameter (name, CEL_DATA_STRING);
@@ -906,10 +981,6 @@ public:
 
     pctpl->PerformAction (actionID, params);
     return true;
-  }
-  virtual void FinishUpdate ()
-  {
-    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
   virtual const char* GetColumns () { return "Name,Amount"; }
@@ -994,11 +1065,13 @@ public:
     return Tools::MakeArray (name.GetData (), value.GetData (), type.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
-    pctpl->RemoveAllProperties ();
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    pctpl->RemoveProperty (pl->FetchStringID (row[0]));
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     csString name = row[0];
@@ -1018,10 +1091,6 @@ public:
       return false;
     }
     return true;
-  }
-  virtual void FinishUpdate ()
-  {
-    pcPanel->GetEntityMode ()->PCWasEdited (pctpl);
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
@@ -1165,9 +1234,6 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   wireParModel.AttachNew (new WireParRowModel (this));
   wireParView = new ListCtrlView (list, wireParModel);
-  ListCtrlTools::SetColumn (list, 0, "Name", 100);
-  ListCtrlTools::SetColumn (list, 1, "Value", 100);
-  ListCtrlTools::SetColumn (list, 2, "Type", 100);
 
   propDialog = 0;
   invTempDialog = 0;

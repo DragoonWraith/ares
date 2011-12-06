@@ -48,8 +48,8 @@ public:
   virtual bool HasRows () { return idx < items.GetSize (); }
   virtual csStringArray NextRow ();
 
-  virtual void StartUpdate ();
-  virtual bool UpdateRow (const csStringArray& row);
+  virtual bool DeleteRow (const csStringArray& row);
+  virtual bool AddRow (const csStringArray& row);
 
   virtual const char* GetColumns () { return "Category,Item"; }
   virtual bool IsEditAllowed () const { return false; }

@@ -444,6 +444,13 @@ void AresEdit3DView::AddItem (const char* category, const char* itemname)
   categories.Get (category, a).Push (itemname);
 }
 
+void AresEdit3DView::RemoveItem (const char* category, const char* itemname)
+{
+  if (!categories.In (category)) return;
+  csStringArray a;
+  categories.Get (category, a).Delete (itemname);
+}
+
 #if USE_DECAL
 bool AresEdit3DView::SetupDecal ()
 {

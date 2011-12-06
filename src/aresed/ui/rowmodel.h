@@ -56,20 +56,19 @@ public:
   // -----------------------------------------------------------------------------
 
   /**
-   * Start the update from the given list. This is called by the list control
-   * when it is time to update the data. This call is followed by a series of
-   * UpdateRow() calls and finished by a call to FinishUpdate().
+   * Delete a row. Returns false if this row could not be deleted for some
+   * reason.
    */
-  virtual void StartUpdate () = 0;
+  virtual bool DeleteRow (const csStringArray& row) = 0;
 
   /**
-   * Update a row.
-   * Returns false in case of error.
+   * Add a new row. Returns false if the new row could not be added.
    */
-  virtual bool UpdateRow (const csStringArray& row) = 0;
+  virtual bool AddRow (const csStringArray& row) = 0;
 
   /**
-   * Finish the update.
+   * Finish the update. This can give the model a chance to refresh
+   * certain things.
    */
   virtual void FinishUpdate () { }
 

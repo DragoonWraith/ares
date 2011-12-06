@@ -137,3 +137,87 @@ float InspectTools::GetActionParameterValueFloat (iCelPlLayer* pl,
   return 0.0f;
 }
 
+void InspectTools::DeleteActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName)
+{
+  csStringID parID = pl->FetchStringID (parName);
+  csStringID id;
+  celData data;
+  csRef<iCelParameterIterator> it = pctpl->GetProperty (idx, id, data);
+  csHash<csRef<iParameter>,csStringID> newParams;
+  while (it->HasNext ())
+  {
+    csStringID parid;
+    iParameter* par = it->Next (parid);
+    if (parid != parID)
+      newParams.Put (parid, par);
+  }
+  pctpl->ReplaceActionParameters (idx, newParams);
+}
+
+void InspectTools::DeleteActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName)
+{
+  csStringID actionID = pl->FetchStringID (actionName);
+  size_t idx = pctpl->FindProperty (actionID);
+  if (idx == csArrayItemNotFound) return;
+  DeleteActionParameter (pl, pctpl, idx, parName);
+}
+
+void InspectTools::AddActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx,
+      const char* parName, iParameter* parameter)
+{
+  csStringID parID = pl->FetchStringID (parName);
+  csStringID id;
+  celData data;
+  csRef<iCelParameterIterator> it = pctpl->GetProperty (idx, id, data);
+  csHash<csRef<iParameter>,csStringID> newParams;
+  while (it->HasNext ())
+  {
+    csStringID parid;
+    iParameter* par = it->Next (parid);
+    newParams.Put (parid, par);
+  }
+  newParams.Put (parID, parameter);
+  pctpl->ReplaceActionParameters (idx, newParams);
+}
+
+void InspectTools::AddActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName, iParameter* parameter)
+{
+  csStringID actionID = pl->FetchStringID (actionName);
+  size_t idx = pctpl->FindProperty (actionID);
+  if (idx == csArrayItemNotFound) return;
+  AddActionParameter (pl, pctpl, idx, parName, parameter);
+}
+
+size_t InspectTools::FindActionWithParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName, const char* parValue)
+{
+  csStringID actionID = pl->FetchStringID (actionName);
+  csStringID parID = pl->FetchStringID (parName);
+  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> it = pctpl->GetProperty (i, id, data);
+    if (id == actionID)
+    {
+      while (it->HasNext ())
+      {
+        csStringID parid;
+        iParameter* par = it->Next (parid);
+	if (parid == parID)
+	{
+	  csString value = par->GetOriginalExpression ();
+	  if (value == parValue) return i;
+	}
+      }
+    }
+  }
+  return csArrayItemNotFound;
+}
+

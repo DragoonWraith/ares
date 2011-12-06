@@ -90,21 +90,6 @@ void ListCtrlView::Refresh ()
   }
 }
 
-void ListCtrlView::Update ()
-{
-  model->StartUpdate ();
-  for (int r = 0 ; r < list->GetItemCount () ; r++)
-  {
-    csStringArray row = ListCtrlTools::ReadRow (list, r);
-    if (!model->UpdateRow (row))
-    {
-      Refresh ();
-      break;
-    }
-  }
-  model->FinishUpdate ();
-}
-
 csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
 {
   UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
@@ -142,8 +127,11 @@ void ListCtrlView::OnAdd (wxCommandEvent& event)
   csStringArray row = DoDialog (empty);
   if (row.GetSize () > 0)
   {
-    ListCtrlTools::AddRow (list, row);
-    Update ();
+    if (model->AddRow (row))
+    {
+      ListCtrlTools::AddRow (list, row);
+      model->FinishUpdate ();
+    }
   }
 }
 
@@ -155,8 +143,14 @@ void ListCtrlView::OnEdit (wxCommandEvent& event)
   csStringArray row = DoDialog (oldRow);
   if (row.GetSize () > 0)
   {
-    ListCtrlTools::ReplaceRow (list, idx, row);
-    Update ();
+    if (!model->DeleteRow (oldRow)) return;
+    if (model->AddRow (row))
+    {
+      ListCtrlTools::ReplaceRow (list, idx, row);
+      model->FinishUpdate ();
+    }
+    else
+      model->AddRow (oldRow);
   }
 }
 
@@ -164,10 +158,14 @@ void ListCtrlView::OnDelete (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
   if (idx == -1) return;
+  csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
+  if (!model->DeleteRow (oldRow)) return;
+
   list->DeleteItem (idx);
   for (size_t i = 0 ; i < columns.GetSize () ; i++)
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
-  Update ();
+
+  model->FinishUpdate ();
 }
 
 void ListCtrlView::OnContextMenu (wxContextMenuEvent& event)
@@ -323,6 +321,15 @@ void ListCtrlTools::SetColumn (wxListCtrl* list, int idx, const char* name, int 
 long ListCtrlTools::GetFirstSelectedRow (wxListCtrl* list)
 {
   return list->GetNextItem (-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+}
+
+void ListCtrlTools::SelectRow (wxListCtrl* list, int row)
+{
+  wxListItem rowInfo;
+  rowInfo.m_itemId = row;
+  rowInfo.m_col = 0;
+  list->GetItem (rowInfo);
+  list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 }
 
 bool ListCtrlTools::CheckHitList (wxListCtrl* list, bool& hasItem,

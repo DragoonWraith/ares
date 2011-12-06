@@ -85,11 +85,6 @@ public:
    * Refresh the list from the data in the model.
    */
   void Refresh ();
-
-  /**
-   * Update the model based on the contents of the list.
-   */
-  void Update ();
 };
 
 /**
@@ -150,6 +145,11 @@ public:
    * Return the index of the first selected row or -1 if nothing is selected.
    */
   static long GetFirstSelectedRow (wxListCtrl* list);
+
+  /**
+   * Select a row in the list.
+   */
+  static void SelectRow (wxListCtrl* list, int row);
 
   /**
    * Check if a list control is hit with the given point (in screen space).

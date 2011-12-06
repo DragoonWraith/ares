@@ -118,10 +118,6 @@ private:
   bool UpdatePC ();
 
 public:
-  csHash<ParHash,csString> wireParams;
-  void UpdateWireMsg ();
-
-public:
   PropertyClassPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
   ~PropertyClassPanel();
 
@@ -131,6 +127,10 @@ public:
   iCelPlLayer* GetPL () const { return pl; }
   iParameterManager* GetPM () const { return pm; }
   EntityMode* GetEntityMode () const { return emode; }
+
+  void UpdateWireMsg ();
+  /// Return the property index of the currently selected message.
+  size_t GetMessagePropertyIndex ();
 
   UIDialog* GetPropertyDialog ();
   UIDialog* GetInventoryTemplateDialog ();

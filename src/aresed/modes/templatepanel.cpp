@@ -57,6 +57,19 @@ class ParentsRowModel : public EntParRowModel
 private:
   csRef<iCelEntityTemplateIterator> it;
 
+  iCelEntityTemplate* FindTemplate (const csStringArray& row)
+  {
+    iCelPlLayer* pl = entPanel->GetPL ();
+    csString name = row[0];
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      entPanel->GetUIManager ()->Error ("Can't find template '%s'!", name.GetData ());
+      return 0;
+    }
+    return t;
+  }
+
 public:
   ParentsRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
   virtual ~ParentsRowModel () { }
@@ -72,20 +85,17 @@ public:
     return Tools::MakeArray (parent->GetName (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
-    tpl->RemoveParents ();
+    iCelEntityTemplate* t = FindTemplate (row);
+    if (!t) return false;
+    tpl->RemoveParent (t);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
-    iCelPlLayer* pl = entPanel->GetPL ();
-    csString name = row[0];
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (!t)
-    {
-      entPanel->GetUIManager ()->Error ("Can't find entity template '%s'!", name.GetData ());
-      return false;
-    }
+    iCelEntityTemplate* t = FindTemplate (row);
+    if (!t) return false;
     tpl->AddParent (t);
     return true;
   }
@@ -118,12 +128,14 @@ public:
     return Tools::MakeArray (name.GetData (), value.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
     iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
-    chars->ClearAll ();
+    csString name = row[0];
+    chars->ClearCharacteristic (name);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
     csString name = row[0];
@@ -162,11 +174,15 @@ public:
     return Tools::MakeArray (className.GetData (), (const char*)0);
   }
 
-  virtual void StartUpdate ()
+  virtual bool DeleteRow (const csStringArray& row)
   {
-    tpl->RemoveClasses ();
+    iCelPlLayer* pl = entPanel->GetPL ();
+    csString name = row[0];
+    csStringID id = pl->FetchStringID (name);
+    tpl->RemoveClass (id);
+    return true;
   }
-  virtual bool UpdateRow (const csStringArray& row)
+  virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = entPanel->GetPL ();
     csString name = row[0];

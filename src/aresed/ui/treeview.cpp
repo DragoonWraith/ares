@@ -133,36 +133,6 @@ void TreeCtrlView::Refresh ()
   delete root;
 }
 
-/**
- * Read the entire tree and update the row model from this tree.
- */
-static void UpdateModel (RowModel* model, wxTreeCtrl* tree, wxTreeItemId& parent,
-    const csStringArray& prevRow)
-{
-  wxTreeItemIdValue cookie;
-  wxTreeItemId child = tree->GetFirstChild (parent, cookie);
-  while (child.IsOk ())
-  {
-    csString name = (const char*)tree->GetItemText (child).mb_str (wxConvUTF8);
-    csStringArray newRow = prevRow;
-    newRow.Push (name);
-    if (tree->ItemHasChildren (child))
-      UpdateModel (model, tree, child, newRow);
-    else
-      model->UpdateRow (newRow);
-
-    child = tree->GetNextChild (parent, cookie);
-  }
-}
-
-void TreeCtrlView::Update ()
-{
-  model->StartUpdate ();
-  wxTreeItemId rootId = tree->GetRootItem ();
-  UpdateModel (model, tree, rootId, csStringArray ());
-  model->FinishUpdate ();
-}
-
 csStringArray TreeCtrlView::DialogEditRow (const csStringArray& origRow)
 {
   UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
@@ -224,8 +194,11 @@ void TreeCtrlView::OnAdd (wxCommandEvent& event)
   if (row.GetSize () > 0)
   {
     wxTreeItemId rootId = tree->GetRootItem ();
-    AddToTree (tree, rootId, row, 0);
-    Update ();
+    if (model->AddRow (row))
+    {
+      AddToTree (tree, rootId, row, 0);
+      model->FinishUpdate ();
+    }
   }
 }
 
@@ -255,9 +228,15 @@ void TreeCtrlView::OnEdit (wxCommandEvent& event)
   csStringArray row = DoDialog (oldRow);
   if (row.GetSize () > 0)
   {
-    wxTreeItemId rootId = tree->GetRootItem ();
-    AddToTree (tree, rootId, row, 0);
-    Update ();
+    if (!model->DeleteRow (oldRow)) return;
+    if (model->AddRow (row))
+    {
+      wxTreeItemId rootId = tree->GetRootItem ();
+      AddToTree (tree, rootId, row, 0);
+      model->FinishUpdate ();
+    }
+    else
+      model->AddRow (oldRow);
   }
 }
 
@@ -265,8 +244,15 @@ void TreeCtrlView::OnDelete (wxCommandEvent& event)
 {
   wxTreeItemId sel = tree->GetSelection ();
   if (!sel.IsOk ()) return;
-  tree->Delete (sel);
-  Update ();
+
+  csStringArray oldRow;
+  ConstructRowFromTree (tree, sel, oldRow);
+
+  if (model->DeleteRow (oldRow))
+  {
+    tree->Delete (sel);
+    model->FinishUpdate ();
+  }
 }
 
 void TreeCtrlView::OnContextMenu (wxContextMenuEvent& event)

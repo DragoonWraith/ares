@@ -319,6 +319,8 @@ public:
   void ClearItems () { categories.DeleteAll (); }
   /// Add an item to a category (create the category if not already present).
   void AddItem (const char* category, const char* itemname);
+  /// Remove an item.
+  void RemoveItem (const char* category, const char* itemname);
 
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
