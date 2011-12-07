@@ -1128,7 +1128,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
   if (ev.Name == Frame)
   {
     editMode->FramePre ();
-    if (aresed3d) aresed3d->Frame (editMode);
+    if (aresed3d) DoFrame ();
     return true;
   }
   else if (CS_IS_KEYBOARD_EVENT(object_reg, ev))

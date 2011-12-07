@@ -499,6 +499,8 @@ public:
   void SetCurveModeEnabled (bool cm);
   MainMode* GetMainMode () const { return mainMode; }
 
+  void DoFrame () { aresed3d->Frame (editMode); }
+
   AresEdit3DView* GetAresView () const { return aresed3d; }
   iVFS* GetVFS () const { return vfs; }
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }

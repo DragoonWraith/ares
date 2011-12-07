@@ -26,11 +26,15 @@ THE SOFTWARE.
 #include "dynfactdialog.h"
 #include "uimanager.h"
 #include "listctrltools.h"
+#include "meshview.h"
+#include "treeview.h"
+#include "../models/dynfactmodel.h"
 
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), DynfactDialog :: OnOkButton)
+  EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), DynfactDialog :: OnFactoryChanged)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -48,18 +52,37 @@ void DynfactDialog::UpdateTree ()
 void DynfactDialog::Show ()
 {
   selIndex = -1;
-  UpdateTree ();
+  meshTreeView->Refresh ();
   ShowModal ();
+}
+
+void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
+{
+  wxTreeItemId item = event.GetItem ();
+  wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
+  csString meshName = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
+  printf ("mesh=%s\n", meshName.GetData ()); fflush (stdout);
+  meshView->SetMesh (meshName);
+  uiManager->GetApp ()->DoFrame ();
+  meshView->Render ();
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   uiManager (uiManager)
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
+  wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
+  meshView = new MeshView (uiManager->GetApp ()->GetObjectRegistry (), panel);
+  wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
+  meshTreeView = new TreeCtrlView (tree, uiManager->GetApp ()->GetAresView ()
+      ->GetDynfactRowModel ());
+  meshTreeView->SetRootName ("Categories");
 }
 
 DynfactDialog::~DynfactDialog ()
 {
+  delete meshView;
+  delete meshTreeView;
 }
 
 
