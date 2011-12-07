@@ -22,14 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_treeview_h
-#define __appares_treeview_h
+#ifndef __appares_listview_h
+#define __appares_listview_h
 
 #include <csutil/stringarray.h>
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
-#include <wx/treectrl.h>
+#include <wx/listctrl.h>
+#include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
 #include "../models/rowmodel.h"
@@ -38,17 +39,16 @@ class UIDialog;
 
 
 /**
- * A view based on a tree control on top of a RowModel.
+ * A view based on a list control on top of a RowModel.
  */
-class TreeCtrlView : public wxEvtHandler
+class ListCtrlView : public wxEvtHandler
 {
 private:
-  wxTreeCtrl* tree;
+  wxListCtrl* list;
   csRef<RowModel> model;
   csStringArray columns;
   UIDialog* forcedDialog;
   bool ownForcedDialog;
-  csString rootName;
 
   void UnbindModel ();
   void BindModel (RowModel* model);
@@ -65,16 +65,14 @@ private:
   csStringArray DoDialog (const csStringArray& origRow);
 
 public:
-  TreeCtrlView (wxTreeCtrl* tree) : tree (tree), forcedDialog (0), ownForcedDialog (false) { }
-  TreeCtrlView (wxTreeCtrl* tree, RowModel* model) : tree (tree), forcedDialog (0), ownForcedDialog (false)
+  ListCtrlView (wxListCtrl* list) : list (list), forcedDialog (0), ownForcedDialog (false) { }
+  ListCtrlView (wxListCtrl* list, RowModel* model) : list (list), forcedDialog (0), ownForcedDialog (false)
   {
     BindModel (model);
   }
-  ~TreeCtrlView ();
+  ~ListCtrlView ();
 
   void SetModel (RowModel* model) { BindModel (model); Refresh (); }
-
-  void SetRootName (const char* rootName) { TreeCtrlView::rootName = rootName; }
 
   /**
    * Manually force an editor dialog to use. If 'own' is true
@@ -84,10 +82,10 @@ public:
   void SetEditorDialog (UIDialog* dialog, bool own = false);
 
   /**
-   * Refresh the tree from the data in the model.
+   * Refresh the list from the data in the model.
    */
   void Refresh ();
 };
 
-#endif // __appares_treeview_h
+#endif // __appares_listview_h
 

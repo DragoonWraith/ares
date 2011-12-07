@@ -27,7 +27,8 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../ui/uimanager.h"
 #include "../ui/listctrltools.h"
-#include "../ui/rowmodel.h"
+#include "../ui/listview.h"
+#include "../models/rowmodel.h"
 #include "../tools/tools.h"
 
 #include "physicallayer/pl.h"

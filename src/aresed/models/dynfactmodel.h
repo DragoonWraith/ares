@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __aresed_dynfactmodel_h
 #define __aresed_dynfactmodel_h
 
-#include "../ui/rowmodel.h"
+#include "rowmodel.h"
 
 class AresEdit3DView;
 
