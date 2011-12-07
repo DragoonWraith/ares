@@ -62,9 +62,11 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
   wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   csString meshName = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
   printf ("mesh=%s\n", meshName.GetData ()); fflush (stdout);
-  meshView->SetMesh (meshName);
-  uiManager->GetApp ()->DoFrame ();
-  meshView->Render ();
+  if (meshView->SetMesh (meshName))
+  {
+    uiManager->GetApp ()->DoFrame ();
+    meshView->Render ();
+  }
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :

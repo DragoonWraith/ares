@@ -120,7 +120,7 @@ printf ("%d,%d\n", iw, ih); fflush (stdout);
   else
     meshOnTexture->ScaleCamera (mesh, distance);
 
-  meshOnTexture->Render (0, handle, false);
+  meshOnTexture->Render (mesh, handle, false);
   return true;
 }
 
