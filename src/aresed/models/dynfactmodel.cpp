@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "dynfactmodel.h"
+#include "meshfactmodel.h"
 #include "../tools/tools.h"
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
@@ -68,17 +69,25 @@ csStringArray DynfactRowModel::EditRow (const csStringArray& origRow)
   dialog->AddLabel ("Category:");
   dialog->AddText ("Category");
   dialog->AddRow ();
-  dialog->AddLabel ("Item:");
-  dialog->AddText ("Item");
+  //dialog->AddLabel ("Item:");
+  //dialog->AddText ("Item");
+  csRef<MeshfactRowModel> model = new MeshfactRowModel (aresed3d->GetEngine ());
+  dialog->AddList ("Item", model, 0);
   if (origRow.GetSize () >= 1)
-    dialog->SetText ("Category", origRow[0]);
+    dialog->SetValue ("Category", origRow[0]);
   if (origRow.GetSize () >= 2)
-    dialog->SetText ("Item", origRow[1]);
+    dialog->SetValue ("Item", origRow[1]);
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     csString category = fields.Get ("Category", "");
     csString item = fields.Get ("Item", "");
+    if (item.IsEmpty ())
+    {
+      ui->Error ("Please select a mesh factory!");
+      delete dialog;
+      return csStringArray ();
+    }
     return Tools::MakeArray (category.GetData (), item.GetData (), (const char*)0);
   }
   delete dialog;

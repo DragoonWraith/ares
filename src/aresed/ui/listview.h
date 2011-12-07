@@ -39,19 +39,50 @@ class UIDialog;
 
 
 /**
- * A view based on a list control on top of a RowModel.
+ * A simple view based on a list control on top of a RowModel.
+ * This version doesn't allow any editing.
  */
-class ListCtrlView : public wxEvtHandler
+class SimpleListCtrlView : public wxEvtHandler
 {
-private:
+protected:
   wxListCtrl* list;
   csRef<RowModel> model;
   csStringArray columns;
-  UIDialog* forcedDialog;
-  bool ownForcedDialog;
 
   void UnbindModel ();
   void BindModel (RowModel* model);
+
+public:
+  SimpleListCtrlView (wxListCtrl* list) : list (list) { }
+  SimpleListCtrlView (wxListCtrl* list, RowModel* model) : list (list)
+  {
+    BindModel (model);
+  }
+  ~SimpleListCtrlView ();
+
+  void SetModel (RowModel* model) { BindModel (model); Refresh (); }
+
+  /**
+   * Refresh the list from the data in the model.
+   */
+  void Refresh ();
+
+  /**
+   * Get the current selected row (or empty row in case nothing is
+   * selected).
+   */
+  csStringArray GetSelectedRow ();
+};
+
+/**
+ * A view based on a list control on top of a RowModel.
+ * This version supports a context menu to add/edit/delete items from the model.
+ */
+class ListCtrlView : public SimpleListCtrlView
+{
+private:
+  UIDialog* forcedDialog;
+  bool ownForcedDialog;
 
   void OnContextMenu (wxContextMenuEvent& event);
   void OnAdd (wxCommandEvent& event);
@@ -64,15 +95,22 @@ private:
   /// Get the right dialog.
   csStringArray DoDialog (const csStringArray& origRow);
 
+  void SetupContextMenu ();
+  void ClearContextMenu ();
+
 public:
-  ListCtrlView (wxListCtrl* list) : list (list), forcedDialog (0), ownForcedDialog (false) { }
-  ListCtrlView (wxListCtrl* list, RowModel* model) : list (list), forcedDialog (0), ownForcedDialog (false)
+  ListCtrlView (wxListCtrl* list) : SimpleListCtrlView (list), forcedDialog (0),
+    ownForcedDialog (false)
   {
-    BindModel (model);
+    SetupContextMenu ();
+  }
+  ListCtrlView (wxListCtrl* list, RowModel* model) :
+    SimpleListCtrlView (list,  model),
+    forcedDialog (0), ownForcedDialog (false)
+  {
+    SetupContextMenu ();
   }
   ~ListCtrlView ();
-
-  void SetModel (RowModel* model) { BindModel (model); Refresh (); }
 
   /**
    * Manually force an editor dialog to use. If 'own' is true
@@ -80,11 +118,6 @@ public:
    * dialog in the destructor.
    */
   void SetEditorDialog (UIDialog* dialog, bool own = false);
-
-  /**
-   * Refresh the list from the data in the model.
-   */
-  void Refresh ();
 };
 
 #endif // __appares_listview_h

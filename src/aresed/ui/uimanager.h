@@ -33,6 +33,8 @@ class NewProjectDialog;
 class CellDialog;
 class UIDialog;
 class DynfactDialog;
+class RowModel;
+class SimpleListCtrlView;
 
 class wxBoxSizer;
 class wxTextCtrl;
@@ -40,10 +42,19 @@ class wxChoice;
 class wxButton;
 class wxCommandEvent;
 class wxWindow;
+class wxListCtrl;
 
 struct UIDialogCallback : public csRefCount
 {
   virtual void ButtonPressed (UIDialog* dialog, const char* button) = 0;
+};
+
+struct ListInfo
+{
+  wxListCtrl* list;
+  size_t col;
+  csRef<RowModel> model;
+  SimpleListCtrlView* view;
 };
 
 class UIDialog : public wxDialog
@@ -53,6 +64,9 @@ private:
   wxBoxSizer* lastRowSizer;
   csHash<wxTextCtrl*,csString> textFields;
   csHash<wxChoice*,csString> choiceFields;
+
+  csHash<ListInfo,csString> listFields;
+
   csArray<wxButton*> buttons;
   csRef<UIDialogCallback> callback;
 
@@ -82,18 +96,27 @@ public:
   void AddChoice (const char* name, ...);
   /// Add a horizontal spacer in the current row.
   void AddSpace ();
+  /**
+   * Add a list. The given column index is used as the 'value'
+   * from the model.
+   */
+  void AddList (const char* name, RowModel* model, size_t valueColumn);
 
   // Clear all input fields to empty or default values.
   void Clear ();
 
   /**
-   * Set the value of the given text control.
-   * In case the name refers to a choice then this will automatically
-   * switch to SetChoice().
+   * Set the value of a given control. This will do the right thing depending
+   * on the type of the control.
    */
+  void SetValue (const char* name, const char* value);
+
+  /// Set the value of the given text control.
   void SetText (const char* name, const char* value);
   /// Set the value of the given choice.
   void SetChoice (const char* name, const char* value);
+  /// Set the vlaue of the given list.
+  void SetList (const char* name, const char* value);
 
   /**
    * Show the dialog in a modal manner.

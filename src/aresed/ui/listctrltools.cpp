@@ -173,6 +173,18 @@ void ListCtrlTools::SelectRow (wxListCtrl* list, int row)
   list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 }
 
+void ListCtrlTools::ClearSelection (wxListCtrl* list)
+{
+  wxListItem rowInfo;
+  for (int row = 0 ; row < list->GetItemCount () ; row++)
+  {
+    rowInfo.m_itemId = row;
+    rowInfo.m_col = 0;
+    list->GetItem (rowInfo);
+    list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, 0);
+  }
+}
+
 bool ListCtrlTools::CheckHitList (wxListCtrl* list, bool& hasItem,
     const wxPoint& pos)
 {

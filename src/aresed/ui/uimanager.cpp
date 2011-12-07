@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "celldialog.h"
 #include "dynfactdialog.h"
+#include "listctrltools.h"
+#include "listview.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
  * missing csMouseEventHelper symbols. */
@@ -55,6 +57,13 @@ UIDialog::~UIDialog ()
   for (size_t i = 0 ; i < buttons.GetSize () ; i++)
     buttons[i]->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
 	wxCommandEventHandler (UIDialog::OnButtonClicked), 0, this);
+  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
+  while (itLst.HasNext ())
+  {
+    csString name;
+    const ListInfo& info = itLst.Next (name);
+    delete info.view;
+  }
 }
 
 void UIDialog::AddOkCancel ()
@@ -121,6 +130,21 @@ void UIDialog::AddChoice (const char* name, ...)
   choiceFields.Put (name, choice);
 }
 
+void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxListCtrl* list = new wxListCtrl (this, wxID_ANY, wxDefaultPosition,
+      wxDefaultSize, wxLC_REPORT);
+  list->SetMinSize (wxSize (-1,150));
+  lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  ListInfo info;
+  info.list = list;
+  info.col = valueColumn;
+  info.model = model;
+  info.view = new SimpleListCtrlView (list, model);
+  listFields.Put (name, info);
+}
+
 void UIDialog::AddButton (const char* str)
 {
   CS_ASSERT (lastRowSizer != 0);
@@ -132,14 +156,27 @@ void UIDialog::AddButton (const char* str)
   buttons.Push (button);
 }
 
+void UIDialog::SetValue (const char* name, const char* value)
+{
+  wxTextCtrl* text = textFields.Get (name, 0);
+  if (text)
+  {
+    text->SetValue (wxString::FromUTF8 (value));
+    return;
+  }
+  wxChoice* choice = choiceFields.Get (name, 0);
+  if (choice)
+  {
+    choice->SetStringSelection (wxString::FromUTF8 (value));
+    return;
+  }
+  SetList (name, value);
+}
+
 void UIDialog::SetText (const char* name, const char* value)
 {
   wxTextCtrl* text = textFields.Get (name, 0);
-  if (!text)
-  {
-    SetChoice (name, value);
-    return;
-  }
+  if (!text) return;
   text->SetValue (wxString::FromUTF8 (value));
 }
 
@@ -148,6 +185,17 @@ void UIDialog::SetChoice (const char* name, const char* value)
   wxChoice* choice = choiceFields.Get (name, 0);
   if (!choice) return;
   choice->SetStringSelection (wxString::FromUTF8 (value));
+}
+
+void UIDialog::SetList (const char* name, const char* value)
+{
+  if (!listFields.Contains (name)) return;
+  ListInfo info = listFields.Get (name, ListInfo());
+  ListCtrlTools::ClearSelection (info.list);
+  if (info.col == csArrayItemNotFound) return;
+  long rowidx = ListCtrlTools::FindRow (info.list, info.col, value);
+  if (rowidx == -1) return;
+  ListCtrlTools::SelectRow (info.list, rowidx);
 }
 
 void UIDialog::Clear ()
@@ -165,6 +213,13 @@ void UIDialog::Clear ()
     csString name;
     wxChoice* choice = itCh.Next (name);
     choice->SetSelection (0);
+  }
+  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
+  while (itLst.HasNext ())
+  {
+    csString name;
+    const ListInfo& info = itLst.Next (name);
+    ListCtrlTools::ClearSelection (info.list);
   }
 }
 
@@ -188,6 +243,21 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
     csString name;
     wxChoice* choice = itCh.Next (name);
     csString value = (const char*)choice->GetStringSelection ().mb_str (wxConvUTF8);
+    fieldContents.Put (name, value);
+  }
+  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
+  while (itLst.HasNext ())
+  {
+    csString name;
+    const ListInfo& info = itLst.Next (name);
+    long rowidx = ListCtrlTools::GetFirstSelectedRow (info.list);
+    csString value;
+    if (rowidx != -1)
+    {
+      csStringArray row = ListCtrlTools::ReadRow (info.list, rowidx);
+      if (info.col != csArrayItemNotFound && info.col < row.GetSize ())
+        value = row[info.col];
+    }
     fieldContents.Put (name, value);
   }
 
@@ -218,6 +288,15 @@ int UIDialog::Show (UIDialogCallback* cb)
   Layout ();
   Fit ();
   Centre (wxBOTH);
+
+  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
+  while (itLst.HasNext ())
+  {
+    csString name;
+    const ListInfo& info = itLst.Next (name);
+    info.view->Refresh ();
+  }
+
   return ShowModal ();
 }
 

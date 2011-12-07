@@ -31,40 +31,17 @@ THE SOFTWARE.
 
 //-----------------------------------------------------------------------------
 
-enum
-{
-  ID_Add = wxID_HIGHEST + 10000,
-  ID_Edit,
-  ID_Delete,
-};
 
-void ListCtrlView::UnbindModel ()
+void SimpleListCtrlView::UnbindModel ()
 {
-  if (!model) return;
-  list->Disconnect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (ListCtrlView :: OnContextMenu),
-      0, static_cast<wxEvtHandler*> (this));
-  list->Disconnect (ID_Add, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (ListCtrlView :: OnAdd), 0, this);
-  list->Disconnect (ID_Delete, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (ListCtrlView :: OnDelete), 0, this);
-  list->Disconnect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
   model = 0;
 }
 
-void ListCtrlView::BindModel (RowModel* model)
+void SimpleListCtrlView::BindModel (RowModel* model)
 {
-  if (model == ListCtrlView::model) return;
+  if (model == SimpleListCtrlView::model) return;
   UnbindModel ();
-  ListCtrlView::model = model;
-
-  list->Connect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (ListCtrlView :: OnContextMenu), 0, this);
-  list->Connect (ID_Add, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (ListCtrlView :: OnAdd), 0, this);
-  list->Connect (ID_Delete, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (ListCtrlView :: OnDelete), 0, this);
-  list->Connect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
+  SimpleListCtrlView::model = model;
 
   const char* columnsString = model->GetColumns ();
   columns.DeleteAll ();
@@ -73,14 +50,12 @@ void ListCtrlView::BindModel (RowModel* model)
     ListCtrlTools::SetColumn (list, i, columns[i], 100);
 }
 
-ListCtrlView::~ListCtrlView ()
+SimpleListCtrlView::~SimpleListCtrlView ()
 {
   UnbindModel ();
-  if (forcedDialog && ownForcedDialog)
-    delete forcedDialog;
 }
 
-void ListCtrlView::Refresh ()
+void SimpleListCtrlView::Refresh ()
 {
   list->DeleteAllItems ();
   model->ResetIterator ();
@@ -91,13 +66,58 @@ void ListCtrlView::Refresh ()
   }
 }
 
+csStringArray SimpleListCtrlView::GetSelectedRow ()
+{
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) return csStringArray ();
+  return ListCtrlTools::ReadRow (list, idx);
+}
+
+//-----------------------------------------------------------------------------
+
+enum
+{
+  ID_Add = wxID_HIGHEST + 10000,
+  ID_Edit,
+  ID_Delete,
+};
+
+void ListCtrlView::ClearContextMenu ()
+{
+  list->Disconnect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (ListCtrlView :: OnContextMenu),
+      0, static_cast<wxEvtHandler*> (this));
+  list->Disconnect (ID_Add, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnAdd), 0, this);
+  list->Disconnect (ID_Delete, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnDelete), 0, this);
+  list->Disconnect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
+}
+
+void ListCtrlView::SetupContextMenu ()
+{
+  list->Connect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (ListCtrlView :: OnContextMenu), 0, this);
+  list->Connect (ID_Add, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnAdd), 0, this);
+  list->Connect (ID_Delete, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnDelete), 0, this);
+  list->Connect (ID_Edit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (ListCtrlView :: OnEdit), 0, this);
+}
+
+ListCtrlView::~ListCtrlView ()
+{
+  if (forcedDialog && ownForcedDialog)
+    delete forcedDialog;
+}
+
 csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
 {
   UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
   dialog->Clear ();
   if (origRow.GetSize () >= columns.GetSize ())
     for (size_t i = 0 ; i < columns.GetSize () ; i++)
-      dialog->SetText (columns[i], origRow[i]);
+      dialog->SetValue (columns[i], origRow[i]);
   csStringArray ar;
   if (dialog->Show (0))
   {

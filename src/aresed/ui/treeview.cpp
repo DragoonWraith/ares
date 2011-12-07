@@ -139,7 +139,7 @@ csStringArray TreeCtrlView::DialogEditRow (const csStringArray& origRow)
   dialog->Clear ();
   if (origRow.GetSize () >= columns.GetSize ())
     for (size_t i = 0 ; i < columns.GetSize () ; i++)
-      dialog->SetText (columns[i], origRow[i]);
+      dialog->SetValue (columns[i], origRow[i]);
   csStringArray ar;
   if (dialog->Show (0))
   {

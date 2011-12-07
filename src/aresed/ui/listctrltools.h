@@ -98,6 +98,11 @@ public:
   static void SelectRow (wxListCtrl* list, int row);
 
   /**
+   * Clear selection in the list.
+   */
+  static void ClearSelection (wxListCtrl* list);
+
+  /**
    * Check if a list control is hit with the given point (in screen space).
    * This is mostly used in combination with context menus.
    * 'hasItem' will be set to true if the point points to an item in the list
