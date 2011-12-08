@@ -46,9 +46,7 @@ private:
   csRef<iMeshWrapper> mesh;
   wxBitmapButton* button;
   csMeshOnTexture* meshOnTexture;
-  csRef<iMaterialWrapper> material;
-  iTextureWrapper* txt;
-  iTextureHandle* handle;
+  csRef<iTextureHandle> handle;
 
   iSector* FindSuitableSector (int& num);
   void RemoveMesh ();
@@ -59,17 +57,8 @@ public:
 
   /**
    * Set mesh. Returns false on failure (not reported).
-   * This will render the mesh on the texture but not update the
-   * button yet. This will happen later when Render() is called but
-   * this should not be done in the same frame.
    */
   bool SetMesh (const char* name);
-
-  /**
-   * Render the texture on the button. This should be called in the next
-   * frame after calling SetMesh().
-   */
-  void Render ();
 };
 
 #endif // __appares_meshview_h

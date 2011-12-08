@@ -37,14 +37,13 @@ MeshView::MeshView (iObjectRegistry* object_reg, wxWindow* parent) :
       wxDefaultSize, wxBU_AUTODRAW);
   parent->GetSizer ()->Add (button, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   engine = csQueryRegistry<iEngine> (object_reg);
-  meshOnTexture = new csMeshOnTexture (object_reg);
+  meshOnTexture = 0;
 }
 
 MeshView::~MeshView ()
 {
   RemoveMesh ();
   delete meshOnTexture;
-  if (material) engine->RemoveObject (material);
 }
 
 void MeshView::RemoveMesh ()
@@ -71,6 +70,7 @@ iSector* MeshView::FindSuitableSector (int& num)
     if (!engine->FindSector (name))
     {
       iSector* sector = engine->CreateSector (name);
+      printf ("sector:%s\n", name.GetData ()); fflush (stdout);
       csRef<iLight> light;
       iLightList* ll = sector->GetLights ();
       light = engine->CreateLight (0, csVector3 (-300, 300, -300), 1000, csColor (1, 1, 1));
@@ -87,70 +87,60 @@ bool MeshView::SetMesh (const char* name)
 {
   iMeshFactoryWrapper* factory = engine->FindMeshFactory (name);
   if (!factory) return false;
-printf ("Rendering mesh %s\n", name); fflush (stdout);
+  printf ("Rendering mesh %s\n", name); fflush (stdout);
   RemoveMesh ();
+  delete meshOnTexture;
+  meshOnTexture = new csMeshOnTexture (object_reg);
   int num;
   iSector* sector = FindSuitableSector (num);
   mesh = engine->CreateMeshWrapper (factory, name, sector);
   meshOnTexture->GetView ()->GetCamera ()->SetSector (sector);
-  csString matname;
-  matname.Format ("__mat__%d", num);
-  txt = engine->CreateBlackTexture (matname, 256, 256,
-      0, CS_TEXTURE_2D | CS_TEXTURE_3D | CS_TEXTURE_NOMIPMAPS);
-  txt->SetKeepImage (true);
-  material = engine->CreateMaterial (matname, txt);
-  if (!txt->GetTextureHandle ())
+
+  csRef<iGraphics3D> g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  if (!handle)
   {
-    csRef<iGraphics3D> g3d = csQueryRegistry<iGraphics3D> (object_reg);
     iTextureManager* txtmgr = g3d->GetTextureManager ();
-    txt->Register (txtmgr);
+    handle = txtmgr->CreateTexture (256, 256, csimg2D, "rgba8", CS_TEXTURE_3D);
   }
-  handle = txt->GetTextureHandle ();
 
+  // Position camera and render.
   iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
-
   cam->GetTransform ().SetOrigin (csVector3 (0, 0, -10.0f));
-
   int iw, ih;
   handle->GetRendererDimensions (iw, ih);
-printf ("%d,%d\n", iw, ih); fflush (stdout);
-  float distance = -10.0f;
-  if (distance < 0.0f)
-    meshOnTexture->ScaleCamera (mesh, iw, ih);
-  else
-    meshOnTexture->ScaleCamera (mesh, distance);
-
+  meshOnTexture->ScaleCamera (mesh, iw, ih);
   meshOnTexture->Render (mesh, handle, false);
-  return true;
-}
+  cam->Move (csVector3 (0, 0, -.5));
 
-void MeshView::Render ()
-{
+  // Actually make sure the rendermanager renders.
   iRenderManager* rm = engine->GetRenderManager ();
   rm->RenderView (meshOnTexture->GetView ());
 
+  // Convert the image to a WX image.
   CS::StructuredTextureFormat format = CS::TextureFormatStrings::ConvertStructured (
-      "rgb8");
+      "rgba8");
   csRef<iDataBuffer> buf = handle->Readback (format);
 
-  int channels = 3;
+  int channels = 4;
   int width, height;
   handle->GetRendererDimensions (width, height);
   size_t total = width * height;
 
-  wxImage wximage = wxImage(width, height, false);
+  wxImage wximage = wxImage (width, height, false);
   unsigned char* rgb = 0;
   rgb = (unsigned char*) malloc (total * 3); //Memory owned and free()d by wxImage
   unsigned char* source = (unsigned char*)buf->GetData ();
   for (size_t i = 0; i < total; i++)
   {
-    rgb[3*i] = source[channels*i+2];
-    rgb[(3*i)+1] = source[(channels*i)+1];
-    rgb[(3*i)+2] = source[(channels*i)+0];
+    rgb[(3*i)+0] = source[(channels*i)+3];
+    rgb[(3*i)+1] = source[(channels*i)+2];
+    rgb[(3*i)+2] = source[(channels*i)+1];
   }
   wximage.SetData (rgb);
  
+  // Put the image on a button.
   button->SetBitmapLabel (wxBitmap (wximage));
   button->SetMinSize (wxSize (width,height));
+  return true;
 }
 
