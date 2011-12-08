@@ -45,16 +45,17 @@ private:
   long selIndex;
   MeshView* meshView;
   TreeCtrlView* meshTreeView;
+  csRef<iTimerEvent> timerOp;
 
   void OnOkButton (wxCommandEvent& event);
   void OnFactoryChanged (wxTreeEvent& event);
-  void UpdateTree ();
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);
   ~DynfactDialog ();
 
   void Show ();
+  void Tick ();
 
   DECLARE_EVENT_TABLE ();
 };

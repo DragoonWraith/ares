@@ -509,6 +509,7 @@ public:
 
   CameraWindow* GetCameraWindow () const { return camwin; }
   UIManager* GetUIManager () const { return uiManager; }
+  iVirtualClock* GetVC () const { return vc; }
 
   bool LoadResourceFile (const char* filename, wxString& searchPath);
 

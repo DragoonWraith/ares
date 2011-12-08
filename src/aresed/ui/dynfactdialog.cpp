@@ -39,21 +39,41 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+class RotMeshTimer : public scfImplementation1<RotMeshTimer, iTimerEvent>
+{
+private:
+  DynfactDialog* df;
+
+public:
+  RotMeshTimer (DynfactDialog* df) : scfImplementationType (this), df (df) { }
+  virtual ~RotMeshTimer () { }
+  virtual bool Perform (iTimerEvent* ev) { df->Tick (); return true; }
+};
+
+//--------------------------------------------------------------------------
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
+  csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (uiManager->GetApp ()->GetObjectRegistry ());
+  timer->RemoveTimerEvent (timerOp);
   EndModal (TRUE);
-}
-
-void DynfactDialog::UpdateTree ()
-{
-  //wxTreeCtrl* list = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
 }
 
 void DynfactDialog::Show ()
 {
   selIndex = -1;
   meshTreeView->Refresh ();
+
+  csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (uiManager->GetApp ()->GetObjectRegistry ());
+  timer->AddTimerEvent (timerOp, 25);
+
   ShowModal ();
+}
+
+void DynfactDialog::Tick ()
+{
+  iVirtualClock* vc = uiManager->GetApp ()->GetVC ();
+  meshView->RotateMesh (vc->GetElapsedSeconds ());
 }
 
 void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
@@ -75,6 +95,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   meshTreeView = new TreeCtrlView (tree, uiManager->GetApp ()->GetAresView ()
       ->GetDynfactRowModel ());
   meshTreeView->SetRootName ("Categories");
+  timerOp.AttachNew (new RotMeshTimer (this));
 }
 
 DynfactDialog::~DynfactDialog ()

@@ -50,6 +50,7 @@ private:
 
   iSector* FindSuitableSector (int& num);
   void RemoveMesh ();
+  void UpdateImageButton ();
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
@@ -59,6 +60,11 @@ public:
    * Set mesh. Returns false on failure (not reported).
    */
   bool SetMesh (const char* name);
+
+  /**
+   * Rotate the mesh.
+   */
+  void RotateMesh (float seconds);
 };
 
 #endif // __appares_meshview_h

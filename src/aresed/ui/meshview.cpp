@@ -83,6 +83,18 @@ iSector* MeshView::FindSuitableSector (int& num)
   }
 }
 
+void MeshView::RotateMesh (float seconds)
+{
+  if (!mesh) return;
+  iMovable* movable = mesh->GetMovable ();
+  csReversibleTransform trans = movable->GetTransform ();
+  trans.RotateThis (csVector3 (0, 1, 0), seconds);
+  movable->SetTransform (trans);
+  movable->UpdateMove ();
+  meshOnTexture->Render (mesh, handle, false);
+  UpdateImageButton ();
+}
+
 bool MeshView::SetMesh (const char* name)
 {
   iMeshFactoryWrapper* factory = engine->FindMeshFactory (name);
@@ -94,7 +106,8 @@ bool MeshView::SetMesh (const char* name)
   int num;
   iSector* sector = FindSuitableSector (num);
   mesh = engine->CreateMeshWrapper (factory, name, sector);
-  meshOnTexture->GetView ()->GetCamera ()->SetSector (sector);
+  iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
+  cam->SetSector (sector);
 
   csRef<iGraphics3D> g3d = csQueryRegistry<iGraphics3D> (object_reg);
   if (!handle)
@@ -104,14 +117,20 @@ bool MeshView::SetMesh (const char* name)
   }
 
   // Position camera and render.
-  iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
   cam->GetTransform ().SetOrigin (csVector3 (0, 0, -10.0f));
   int iw, ih;
   handle->GetRendererDimensions (iw, ih);
   meshOnTexture->ScaleCamera (mesh, iw, ih);
+  cam->Move (csVector3 (0, 1, -.5));
+  cam->GetTransform ().LookAt (-cam->GetTransform ().GetOrigin (), csVector3 (0, 1, 0));
   meshOnTexture->Render (mesh, handle, false);
-  cam->Move (csVector3 (0, 0, -.5));
 
+  UpdateImageButton ();
+  return true;
+}
+
+void MeshView::UpdateImageButton ()
+{
   // Actually make sure the rendermanager renders.
   iRenderManager* rm = engine->GetRenderManager ();
   rm->RenderView (meshOnTexture->GetView ());
@@ -141,6 +160,5 @@ bool MeshView::SetMesh (const char* name)
   // Put the image on a button.
   button->SetBitmapLabel (wxBitmap (wximage));
   button->SetMinSize (wxSize (width,height));
-  return true;
 }
 
