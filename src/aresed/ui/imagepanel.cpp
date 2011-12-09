@@ -22,51 +22,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_meshview_h
-#define __appares_meshview_h
+#include "imagepanel.h"
 
-#include <wx/wx.h>
-#include <wx/imaglist.h>
-#include <wx/xrc/xmlres.h>
-
-#include "../models/rowmodel.h"
-
-struct iEngine;
-struct iSector;
-struct iMeshWrapper;
-class ImagePanel;
-
-/**
- * A mesh viewer.
- */
-class MeshView : public wxEvtHandler
+ 
+BEGIN_EVENT_TABLE(ImagePanel, wxPanel)
+  EVT_PAINT(ImagePanel::PaintEvent)
+END_EVENT_TABLE()
+ 
+ImagePanel::ImagePanel (wxWindow* parent) : wxPanel (parent)
 {
-private:
-  iObjectRegistry* object_reg;
-  csRef<iEngine> engine;
-  csRef<iMeshWrapper> mesh;
-  ImagePanel* imagePanel;
-  csMeshOnTexture* meshOnTexture;
-  csRef<iTextureHandle> handle;
-
-  iSector* FindSuitableSector (int& num);
-  void RemoveMesh ();
-  void UpdateImageButton ();
-
-public:
-  MeshView (iObjectRegistry* object_reg, wxWindow* parent);
-  ~MeshView ();
-
-  /**
-   * Set mesh. Returns false on failure (not reported).
-   */
-  bool SetMesh (const char* name);
-
-  /**
-   * Rotate the mesh.
-   */
-  void RotateMesh (float seconds);
-};
-
-#endif // __appares_meshview_h
-
+  image = wxNullBitmap;
+}
+ 
+void ImagePanel::PaintEvent (wxPaintEvent& evt)
+{
+  // Depending on your system you may need to look at double-buffered dcs
+  wxPaintDC dc (this);
+  Render (dc);
+}
+ 
+void ImagePanel::PaintNow ()
+{
+  // Depending on your system you may need to look at double-buffered dcs
+  wxClientDC dc (this);
+  Render (dc);
+}
+ 
+void ImagePanel::Render (wxDC& dc)
+{
+  if (!image.IsOk ()) return;
+  dc.DrawBitmap (image, 0, 0, false);
+}
+ 

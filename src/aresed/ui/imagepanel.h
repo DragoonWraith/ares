@@ -22,51 +22,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_meshview_h
-#define __appares_meshview_h
+#ifndef __appares_imagepanel_h
+#define __appares_imagepanel_h
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
+#include <wx/listctrl.h>
+#include <wx/listbox.h>
 #include <wx/xrc/xmlres.h>
 
-#include "../models/rowmodel.h"
-
-struct iEngine;
-struct iSector;
-struct iMeshWrapper;
-class ImagePanel;
-
-/**
- * A mesh viewer.
- */
-class MeshView : public wxEvtHandler
+class ImagePanel : public wxPanel
 {
 private:
-  iObjectRegistry* object_reg;
-  csRef<iEngine> engine;
-  csRef<iMeshWrapper> mesh;
-  ImagePanel* imagePanel;
-  csMeshOnTexture* meshOnTexture;
-  csRef<iTextureHandle> handle;
-
-  iSector* FindSuitableSector (int& num);
-  void RemoveMesh ();
-  void UpdateImageButton ();
-
+  wxBitmap image;
+        
 public:
-  MeshView (iObjectRegistry* object_reg, wxWindow* parent);
-  ~MeshView ();
+  ImagePanel (wxWindow* parent);
 
-  /**
-   * Set mesh. Returns false on failure (not reported).
-   */
-  bool SetMesh (const char* name);
+  void PaintEvent (wxPaintEvent & evt);
+  void PaintNow ();
 
-  /**
-   * Rotate the mesh.
-   */
-  void RotateMesh (float seconds);
+  void Render (wxDC& dc);
+
+  void SetBitmap (wxBitmap bitmap) { image = bitmap; }
+
+  DECLARE_EVENT_TABLE()
 };
-
-#endif // __appares_meshview_h
+ 
+#endif // __appares_imagepanel_h
 

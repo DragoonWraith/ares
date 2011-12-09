@@ -26,6 +26,7 @@ THE SOFTWARE.
 
 #include "meshview.h"
 #include "uimanager.h"
+#include "imagepanel.h"
 
 //-----------------------------------------------------------------------------
 
@@ -33,9 +34,8 @@ THE SOFTWARE.
 MeshView::MeshView (iObjectRegistry* object_reg, wxWindow* parent) :
   object_reg (object_reg)
 {
-  button = new wxBitmapButton (parent, wxID_ANY, wxNullBitmap, wxDefaultPosition,
-      wxDefaultSize, wxBU_AUTODRAW);
-  parent->GetSizer ()->Add (button, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  imagePanel = new ImagePanel (parent);
+  parent->GetSizer ()->Add (imagePanel, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   engine = csQueryRegistry<iEngine> (object_reg);
   meshOnTexture = 0;
 }
@@ -70,7 +70,6 @@ iSector* MeshView::FindSuitableSector (int& num)
     if (!engine->FindSector (name))
     {
       iSector* sector = engine->CreateSector (name);
-      printf ("sector:%s\n", name.GetData ()); fflush (stdout);
       csRef<iLight> light;
       iLightList* ll = sector->GetLights ();
       light = engine->CreateLight (0, csVector3 (-300, 300, -300), 1000, csColor (1, 1, 1));
@@ -147,7 +146,7 @@ void MeshView::UpdateImageButton ()
 
   wxImage wximage = wxImage (width, height, false);
   unsigned char* rgb = 0;
-  rgb = (unsigned char*) malloc (total * 3); //Memory owned and free()d by wxImage
+  rgb = (unsigned char*) malloc (total * 3); // Memory owned and free()d by wxImage
   unsigned char* source = (unsigned char*)buf->GetData ();
   for (size_t i = 0; i < total; i++)
   {
@@ -157,8 +156,8 @@ void MeshView::UpdateImageButton ()
   }
   wximage.SetData (rgb);
  
-  // Put the image on a button.
-  button->SetBitmapLabel (wxBitmap (wximage));
-  button->SetMinSize (wxSize (width,height));
+  imagePanel->SetBitmap (wxBitmap (wximage));
+  imagePanel->SetMinSize (wxSize (width,height));
+  imagePanel->PaintNow ();
 }
 
