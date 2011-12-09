@@ -46,6 +46,8 @@ public:
 
   void SetBitmap (wxBitmap bitmap) { image = bitmap; }
 
+  //virtual bool HasTransparentBackground () const { return true; }
+
   DECLARE_EVENT_TABLE()
 };
  

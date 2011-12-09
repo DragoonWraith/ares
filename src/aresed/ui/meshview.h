@@ -36,6 +36,12 @@ struct iSector;
 struct iMeshWrapper;
 class ImagePanel;
 
+struct MVBox
+{
+  csBox3 box;
+  int color;
+};
+
 /**
  * A mesh viewer.
  */
@@ -44,14 +50,18 @@ class MeshView : public wxEvtHandler
 private:
   iObjectRegistry* object_reg;
   csRef<iEngine> engine;
+  csRef<iGraphics3D> g3d;
   csRef<iMeshWrapper> mesh;
   ImagePanel* imagePanel;
   csMeshOnTexture* meshOnTexture;
   csRef<iTextureHandle> handle;
 
+  csArray<MVBox> boxes;
+
   iSector* FindSuitableSector (int& num);
   void RemoveMesh ();
   void UpdateImageButton ();
+  void Render2D ();
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
@@ -61,6 +71,16 @@ public:
    * Set mesh. Returns false on failure (not reported).
    */
   bool SetMesh (const char* name);
+
+  /**
+   * Add a box to show in 2D on top of the mesh.
+   */
+  void AddBox (const csBox3& box, int r, int g, int b);
+
+  /**
+   * Clear boxes.
+   */
+  void ClearBoxes () { boxes.DeleteAll (); }
 
   /**
    * Rotate the mesh.

@@ -82,7 +82,16 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
   wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   csString meshName = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
   printf ("mesh=%s\n", meshName.GetData ()); fflush (stdout);
+  meshView->ClearBoxes ();
   meshView->SetMesh (meshName);
+
+  iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
+  iDynamicFactory* dynfact = dynworld->FindFactory (meshName);
+  if (dynfact)
+  {
+    const csBox3& b = dynfact->GetBBox ();
+    meshView->AddBox (b, 255, 0, 0);
+  }
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
