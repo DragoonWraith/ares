@@ -82,7 +82,7 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
   wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   csString meshName = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
   printf ("mesh=%s\n", meshName.GetData ()); fflush (stdout);
-  meshView->ClearBoxes ();
+  meshView->ClearGeometry ();
   meshView->SetMesh (meshName);
 
   iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
@@ -92,12 +92,16 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
     for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
     {
       celBodyInfo info = dynfact->GetBody (i);
-      csBox3 b;
       if (info.type == BODY_BOX)
       {
+        csBox3 b;
         b.SetSize (info.size);
 	b.SetCenter (info.offset);
-        meshView->AddBox (b, 255, 0, 0);
+        meshView->AddBox (b, normalPen);
+      }
+      else if (info.type == BODY_SPHERE)
+      {
+	meshView->AddSphere (info.offset, info.radius, normalPen);
       }
     }
   }
@@ -109,6 +113,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new MeshView (uiManager->GetApp ()->GetObjectRegistry (), panel);
+  normalPen = meshView->CreatePen (1.0f, 0.0f, 0.0f, 1.0f);
   wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   meshTreeView = new TreeCtrlView (tree, uiManager->GetApp ()->GetAresView ()
       ->GetDynfactRowModel ());

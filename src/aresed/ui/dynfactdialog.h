@@ -47,6 +47,8 @@ private:
   TreeCtrlView* meshTreeView;
   csRef<iTimerEvent> timerOp;
 
+  size_t normalPen;
+
   void OnOkButton (wxCommandEvent& event);
   void OnFactoryChanged (wxTreeEvent& event);
 

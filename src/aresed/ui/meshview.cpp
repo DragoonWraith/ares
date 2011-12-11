@@ -126,19 +126,134 @@ bool MeshView::SetMesh (const char* name)
   return true;
 }
 
-void MeshView::AddBox (const csBox3& box, int r, int g, int b)
+size_t MeshView::CreatePen (float r, float g, float b, float width)
 {
   iGraphics2D* g2d = g3d->GetDriver2D ();
+  csPen* pen = new csPen (g2d, g3d);
+  pen->SetColor (r, g, b, 1.0f);
+  pen->SetPenWidth (width);
+  return pens.Push (pen);
+}
+
+void MeshView::AddSphere (const csVector3& center, float radius, size_t penIdx)
+{
+  MVSphere mvb;
+  mvb.center = center;
+  mvb.radius = radius;
+  mvb.penIdx = penIdx;
+  spheres.Push (mvb);
+}
+
+void MeshView::AddBox (const csBox3& box, size_t penIdx)
+{
   MVBox mvb;
   mvb.box = box;
-  mvb.color = g2d->FindRGB (r, g, b);
+  mvb.penIdx = penIdx;
   boxes.Push (mvb);
+}
+
+static void DrawSphere3D (const csVector3& c, float radius, float fov, csPen* pen,
+  int width, int height)
+{
+  if (c.z < SMALL_Z)
+    return;
+
+  float x = c.x, y = c.y, z = c.z;
+
+  float iz = fov / z;
+  int px = csQint (x * iz + (width / 2));
+  int py = height - 1 - csQint (y * iz + (height / 2));
+
+  radius = fov * radius / z;
+
+  pen->DrawArc (px-radius, py-radius, px+radius, py+radius);
+}
+
+static void DrawLine3D (const csVector3& v1, const csVector3& v2, float fov, csPen* pen,
+  int width, int height)
+{
+  if (v1.z < SMALL_Z && v2.z < SMALL_Z)
+    return;
+
+  float x1 = v1.x, y1 = v1.y, z1 = v1.z;
+  float x2 = v2.x, y2 = v2.y, z2 = v2.z;
+
+  if (z1 < SMALL_Z)
+  {
+    // x = t*(x2-x1)+x1;
+    // y = t*(y2-y1)+y1;
+    // z = t*(z2-z1)+z1;
+    float t = (SMALL_Z - z1) / (z2 - z1);
+    x1 = t * (x2 - x1) + x1;
+    y1 = t * (y2 - y1) + y1;
+    z1 = SMALL_Z;
+  }
+  else if (z2 < SMALL_Z)
+  {
+    // x = t*(x2-x1)+x1;
+    // y = t*(y2-y1)+y1;
+    // z = t*(z2-z1)+z1;
+    float t = (SMALL_Z - z1) / (z2 - z1);
+    x2 = t * (x2 - x1) + x1;
+    y2 = t * (y2 - y1) + y1;
+    z2 = SMALL_Z;
+  }
+  float iz1 = fov / z1;
+  int px1 = csQint (x1 * iz1 + (width / 2));
+  int py1 = height - 1 - csQint (y1 * iz1 + (height / 2));
+  float iz2 = fov / z2;
+  int px2 = csQint (x2 * iz2 + (width / 2));
+  int py2 = height - 1 - csQint (y2 * iz2 + (height / 2));
+
+  pen->DrawLine (px1, py1, px2, py2);
+}
+
+void MeshView::RenderSpheres (const csReversibleTransform& trans)
+{
+  if (spheres.GetSize () == 0) return;
+  float fov = 256;	// @@@
+  for (size_t i = 0 ; i < spheres.GetSize () ; i++)
+  {
+    const csVector3& c = spheres[i].center;
+    float radius  = spheres[i].radius;
+    csPen* pen = pens[spheres[i].penIdx];
+    DrawSphere3D (trans * c, radius, fov, pen, 256, 256);
+  }
+}
+
+void MeshView::RenderBoxes (const csReversibleTransform& trans)
+{
+  if (boxes.GetSize () == 0) return;
+  float fov = 256;	// @@@
+  for (size_t i = 0 ; i < boxes.GetSize () ; i++)
+  {
+    const csBox3& b = boxes[i].box;
+    csPen* pen = pens[boxes[i].penIdx];
+    csVector3 xyz = trans * b.GetCorner (CS_BOX_CORNER_xyz);
+    csVector3 Xyz = trans * b.GetCorner (CS_BOX_CORNER_Xyz);
+    csVector3 xYz = trans * b.GetCorner (CS_BOX_CORNER_xYz);
+    csVector3 xyZ = trans * b.GetCorner (CS_BOX_CORNER_xyZ);
+    csVector3 XYz = trans * b.GetCorner (CS_BOX_CORNER_XYz);
+    csVector3 XyZ = trans * b.GetCorner (CS_BOX_CORNER_XyZ);
+    csVector3 xYZ = trans * b.GetCorner (CS_BOX_CORNER_xYZ);
+    csVector3 XYZ = trans * b.GetCorner (CS_BOX_CORNER_XYZ);
+    DrawLine3D (xyz, Xyz, fov, pen, 256, 256);
+    DrawLine3D (Xyz, XYz, fov, pen, 256, 256);
+    DrawLine3D (XYz, xYz, fov, pen, 256, 256);
+    DrawLine3D (xYz, xyz, fov, pen, 256, 256);
+    DrawLine3D (xyZ, XyZ, fov, pen, 256, 256);
+    DrawLine3D (XyZ, XYZ, fov, pen, 256, 256);
+    DrawLine3D (XYZ, xYZ, fov, pen, 256, 256);
+    DrawLine3D (xYZ, xyZ, fov, pen, 256, 256);
+    DrawLine3D (xyz, xyZ, fov, pen, 256, 256);
+    DrawLine3D (xYz, xYZ, fov, pen, 256, 256);
+    DrawLine3D (Xyz, XyZ, fov, pen, 256, 256);
+    DrawLine3D (XYz, XYZ, fov, pen, 256, 256);
+  }
 }
 
 void MeshView::Render2D ()
 {
-  if (boxes.GetSize () == 0) return;
-
   g3d->SetRenderTarget (handle);
   g3d->BeginDraw (CSDRAW_2DGRAPHICS);
   //iGraphics2D* g2d = g3d->GetDriver2D ();
@@ -148,32 +263,8 @@ void MeshView::Render2D ()
   iMovable* movable = mesh->GetMovable ();
   const csReversibleTransform& meshtrans = movable->GetTransform ();
   csReversibleTransform trans = camtrans / meshtrans;
-  float fov = 256;	// @@@
-  for (size_t i = 0 ; i < boxes.GetSize () ; i++)
-  {
-    const csBox3& b = boxes[i].box;
-    int color = boxes[i].color;
-    csVector3 xyz = trans * b.GetCorner (CS_BOX_CORNER_xyz);
-    csVector3 Xyz = trans * b.GetCorner (CS_BOX_CORNER_Xyz);
-    csVector3 xYz = trans * b.GetCorner (CS_BOX_CORNER_xYz);
-    csVector3 xyZ = trans * b.GetCorner (CS_BOX_CORNER_xyZ);
-    csVector3 XYz = trans * b.GetCorner (CS_BOX_CORNER_XYz);
-    csVector3 XyZ = trans * b.GetCorner (CS_BOX_CORNER_XyZ);
-    csVector3 xYZ = trans * b.GetCorner (CS_BOX_CORNER_xYZ);
-    csVector3 XYZ = trans * b.GetCorner (CS_BOX_CORNER_XYZ);
-    g3d->DrawLine (xyz, Xyz, fov, color);
-    g3d->DrawLine (Xyz, XYz, fov, color);
-    g3d->DrawLine (XYz, xYz, fov, color);
-    g3d->DrawLine (xYz, xyz, fov, color);
-    g3d->DrawLine (xyZ, XyZ, fov, color);
-    g3d->DrawLine (XyZ, XYZ, fov, color);
-    g3d->DrawLine (XYZ, xYZ, fov, color);
-    g3d->DrawLine (xYZ, xyZ, fov, color);
-    g3d->DrawLine (xyz, xyZ, fov, color);
-    g3d->DrawLine (xYz, xYZ, fov, color);
-    g3d->DrawLine (Xyz, XyZ, fov, color);
-    g3d->DrawLine (XYz, XYZ, fov, color);
-  }
+  RenderBoxes (trans);
+  RenderSpheres (trans);
 
   g3d->FinishDraw ();
   g3d->SetRenderTarget (0);

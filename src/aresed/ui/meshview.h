@@ -39,7 +39,14 @@ class ImagePanel;
 struct MVBox
 {
   csBox3 box;
-  int color;
+  size_t penIdx;
+};
+
+struct MVSphere
+{
+  csVector3 center;
+  float radius;
+  size_t penIdx;
 };
 
 /**
@@ -57,11 +64,15 @@ private:
   csRef<iTextureHandle> handle;
 
   csArray<MVBox> boxes;
+  csArray<MVSphere> spheres;
+  csPDelArray<csPen> pens;
 
   iSector* FindSuitableSector (int& num);
   void RemoveMesh ();
   void UpdateImageButton ();
   void Render2D ();
+  void RenderBoxes (const csReversibleTransform& trans);
+  void RenderSpheres (const csReversibleTransform& trans);
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
@@ -73,14 +84,24 @@ public:
   bool SetMesh (const char* name);
 
   /**
-   * Add a box to show in 2D on top of the mesh.
+   * Create a pen and return the index.
    */
-  void AddBox (const csBox3& box, int r, int g, int b);
+  size_t CreatePen (float r, float g, float b, float width);
 
   /**
-   * Clear boxes.
+   * Add a box to show in 2D on top of the mesh.
    */
-  void ClearBoxes () { boxes.DeleteAll (); }
+  void AddBox (const csBox3& box, size_t penIdx);
+
+  /**
+   * Add a sphere to show in 2D on top of the mesh.
+   */
+  void AddSphere (const csVector3& center, float radius, size_t penIdx);
+
+  /**
+   * Clear geometry.
+   */
+  void ClearGeometry () { boxes.DeleteAll (); spheres.DeleteAll (); }
 
   /**
    * Rotate the mesh.
