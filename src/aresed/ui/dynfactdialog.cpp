@@ -89,8 +89,17 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
   iDynamicFactory* dynfact = dynworld->FindFactory (meshName);
   if (dynfact)
   {
-    const csBox3& b = dynfact->GetBBox ();
-    meshView->AddBox (b, 255, 0, 0);
+    for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
+    {
+      celBodyInfo info = dynfact->GetBody (i);
+      csBox3 b;
+      if (info.type == BODY_BOX)
+      {
+        b.SetSize (info.size);
+	b.SetCenter (info.offset);
+        meshView->AddBox (b, 255, 0, 0);
+      }
+    }
   }
 }
 
