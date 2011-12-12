@@ -63,6 +63,7 @@ private:
   csMeshOnTexture* meshOnTexture;
   csRef<iTextureHandle> handle;
 
+  csPenCache penCache;
   csArray<MVBox> boxes;
   csArray<MVSphere> spheres;
   csPDelArray<csPen> pens;
@@ -101,7 +102,7 @@ public:
   /**
    * Clear geometry.
    */
-  void ClearGeometry () { boxes.DeleteAll (); spheres.DeleteAll (); }
+  void ClearGeometry ();
 
   /**
    * Rotate the mesh.

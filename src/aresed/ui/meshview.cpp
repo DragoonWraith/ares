@@ -169,8 +169,8 @@ static void DrawSphere3D (const csVector3& c, float radius, float fov, csPen* pe
   pen->DrawArc (px-radius, py-radius, px+radius, py+radius);
 }
 
-static void DrawLine3D (const csVector3& v1, const csVector3& v2, float fov, csPen* pen,
-  int width, int height)
+static void DrawLine3D (const csVector3& v1, const csVector3& v2, float fov,
+  int width, int height, csArray<csPenCoordinatePair>& pairs)
 {
   if (v1.z < SMALL_Z && v2.z < SMALL_Z)
     return;
@@ -205,7 +205,7 @@ static void DrawLine3D (const csVector3& v1, const csVector3& v2, float fov, csP
   int px2 = csQint (x2 * iz2 + (width / 2));
   int py2 = height - 1 - csQint (y2 * iz2 + (height / 2));
 
-  pen->DrawLine (px1, py1, px2, py2);
+  pairs.Push (csPenCoordinatePair (px1, py1, px2, py2));
 }
 
 void MeshView::RenderSpheres (const csReversibleTransform& trans)
@@ -237,19 +237,27 @@ void MeshView::RenderBoxes (const csReversibleTransform& trans)
     csVector3 XyZ = trans * b.GetCorner (CS_BOX_CORNER_XyZ);
     csVector3 xYZ = trans * b.GetCorner (CS_BOX_CORNER_xYZ);
     csVector3 XYZ = trans * b.GetCorner (CS_BOX_CORNER_XYZ);
-    DrawLine3D (xyz, Xyz, fov, pen, 256, 256);
-    DrawLine3D (Xyz, XYz, fov, pen, 256, 256);
-    DrawLine3D (XYz, xYz, fov, pen, 256, 256);
-    DrawLine3D (xYz, xyz, fov, pen, 256, 256);
-    DrawLine3D (xyZ, XyZ, fov, pen, 256, 256);
-    DrawLine3D (XyZ, XYZ, fov, pen, 256, 256);
-    DrawLine3D (XYZ, xYZ, fov, pen, 256, 256);
-    DrawLine3D (xYZ, xyZ, fov, pen, 256, 256);
-    DrawLine3D (xyz, xyZ, fov, pen, 256, 256);
-    DrawLine3D (xYz, xYZ, fov, pen, 256, 256);
-    DrawLine3D (Xyz, XyZ, fov, pen, 256, 256);
-    DrawLine3D (XYz, XYZ, fov, pen, 256, 256);
+    csArray<csPenCoordinatePair> pairs;
+    DrawLine3D (xyz, Xyz, fov, 256, 256, pairs);
+    DrawLine3D (Xyz, XYz, fov, 256, 256, pairs);
+    DrawLine3D (XYz, xYz, fov, 256, 256, pairs);
+    DrawLine3D (xYz, xyz, fov, 256, 256, pairs);
+    DrawLine3D (xyZ, XyZ, fov, 256, 256, pairs);
+    DrawLine3D (XyZ, XYZ, fov, 256, 256, pairs);
+    DrawLine3D (XYZ, xYZ, fov, 256, 256, pairs);
+    DrawLine3D (xYZ, xyZ, fov, 256, 256, pairs);
+    DrawLine3D (xyz, xyZ, fov, 256, 256, pairs);
+    DrawLine3D (xYz, xYZ, fov, 256, 256, pairs);
+    DrawLine3D (Xyz, XyZ, fov, 256, 256, pairs);
+    DrawLine3D (XYz, XYZ, fov, 256, 256, pairs);
+    pen->DrawLines (pairs);
   }
+}
+
+void MeshView::ClearGeometry ()
+{
+  boxes.DeleteAll ();
+  spheres.DeleteAll ();
 }
 
 void MeshView::Render2D ()
