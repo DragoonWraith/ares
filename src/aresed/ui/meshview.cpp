@@ -149,10 +149,11 @@ void MeshView::AddSphere (const csVector3& center, float radius, size_t penIdx)
 
 void MeshView::AddBox (const csBox3& box, size_t penIdx)
 {
-  MVBox mvb;
-  mvb.box = box;
-  mvb.penIdx = penIdx;
-  boxes.Push (mvb);
+  csPen3D* pen = pens3d[penIdx];
+  pen->SetActiveCache (&penCache);
+  pen->DrawBox (box);
+  //pen->DrawCylinder (box, CS_AXIS_X);
+  pen->SetActiveCache (0);
 }
 
 static void DrawSphere3D (const csVector3& c, float radius, float fov, csPen* pen,
@@ -172,48 +173,11 @@ static void DrawSphere3D (const csVector3& c, float radius, float fov, csPen* pe
   pen->DrawArc (px-radius, py-radius, px+radius, py+radius);
 }
 
-static void DrawLine3D (const csVector3& v1, const csVector3& v2, float fov,
-  int width, int height, csArray<csPenCoordinatePair>& pairs)
-{
-  if (v1.z < SMALL_Z && v2.z < SMALL_Z)
-    return;
-
-  float x1 = v1.x, y1 = v1.y, z1 = v1.z;
-  float x2 = v2.x, y2 = v2.y, z2 = v2.z;
-
-  if (z1 < SMALL_Z)
-  {
-    // x = t*(x2-x1)+x1;
-    // y = t*(y2-y1)+y1;
-    // z = t*(z2-z1)+z1;
-    float t = (SMALL_Z - z1) / (z2 - z1);
-    x1 = t * (x2 - x1) + x1;
-    y1 = t * (y2 - y1) + y1;
-    z1 = SMALL_Z;
-  }
-  else if (z2 < SMALL_Z)
-  {
-    // x = t*(x2-x1)+x1;
-    // y = t*(y2-y1)+y1;
-    // z = t*(z2-z1)+z1;
-    float t = (SMALL_Z - z1) / (z2 - z1);
-    x2 = t * (x2 - x1) + x1;
-    y2 = t * (y2 - y1) + y1;
-    z2 = SMALL_Z;
-  }
-  float iz1 = fov / z1;
-  int px1 = csQint (x1 * iz1 + (width / 2));
-  int py1 = height - 1 - csQint (y1 * iz1 + (height / 2));
-  float iz2 = fov / z2;
-  int px2 = csQint (x2 * iz2 + (width / 2));
-  int py2 = height - 1 - csQint (y2 * iz2 + (height / 2));
-
-  pairs.Push (csPenCoordinatePair (px1, py1, px2, py2));
-}
-
-void MeshView::RenderSpheres (const csReversibleTransform& trans)
+void MeshView::RenderSpheres (const csOrthoTransform& camtrans,
+    const csReversibleTransform& meshtrans)
 {
   if (spheres.GetSize () == 0) return;
+  csReversibleTransform trans = camtrans / meshtrans;
   float fov = 256;	// @@@
   for (size_t i = 0 ; i < spheres.GetSize () ; i++)
   {
@@ -224,50 +188,36 @@ void MeshView::RenderSpheres (const csReversibleTransform& trans)
   }
 }
 
-void MeshView::RenderBoxes ()
-{
-  if (boxes.GetSize () == 0) return;
-
-  iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
-  const csOrthoTransform& camtrans = cam->GetTransform ();
-  csReversibleTransform oldw2c = g3d->GetWorldToCamera ();
-  g3d->SetWorldToCamera (camtrans.GetInverse ());
-  iMovable* movable = mesh->GetMovable ();
-  const csReversibleTransform& meshtrans = movable->GetTransform ();
-
-  for (size_t i = 0 ; i < boxes.GetSize () ; i++)
-  {
-    const csBox3& b = boxes[i].box;
-    csPen3D* pen = pens3d[boxes[i].penIdx];
-    pen->SetTransform (meshtrans);
-    pen->DrawBox (b);
-  }
-
-  g3d->SetWorldToCamera (oldw2c);
-}
-
 void MeshView::ClearGeometry ()
 {
-  boxes.DeleteAll ();
+  penCache.Clear ();
   spheres.DeleteAll ();
 }
 
 void MeshView::RenderGeometry ()
 {
   g3d->SetRenderTarget (handle);
-  g3d->BeginDraw (CSDRAW_2DGRAPHICS);
-  //iGraphics2D* g2d = g3d->GetDriver2D ();
 
   iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
   const csOrthoTransform& camtrans = cam->GetTransform ();
   iMovable* movable = mesh->GetMovable ();
   const csReversibleTransform& meshtrans = movable->GetTransform ();
-  csReversibleTransform trans = camtrans / meshtrans;
-  RenderSpheres (trans);
 
+  // Render the 2D primitives:
+  g3d->BeginDraw (CSDRAW_2DGRAPHICS);
+  RenderSpheres (camtrans, meshtrans);
+
+  // Render the 3D primitives:
   g3d->BeginDraw (CSDRAW_3DGRAPHICS);
-  RenderBoxes ();
+  csReversibleTransform oldw2c = g3d->GetWorldToCamera ();
+  g3d->SetWorldToCamera (camtrans.GetInverse ());
 
+  penCache.SetTransform (meshtrans);
+  penCache.Render (g3d);
+
+  g3d->SetWorldToCamera (oldw2c);
+
+  // Finish.
   g3d->FinishDraw ();
   g3d->SetRenderTarget (0);
 }

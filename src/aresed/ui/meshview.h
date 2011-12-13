@@ -36,12 +36,6 @@ struct iSector;
 struct iMeshWrapper;
 class ImagePanel;
 
-struct MVBox
-{
-  csBox3 box;
-  size_t penIdx;
-};
-
 struct MVSphere
 {
   csVector3 center;
@@ -64,7 +58,6 @@ private:
   csRef<iTextureHandle> handle;
 
   csPenCache penCache;
-  csArray<MVBox> boxes;
   csArray<MVSphere> spheres;
   csPDelArray<csPen> pens;
   csPDelArray<csPen3D> pens3d;
@@ -73,8 +66,8 @@ private:
   void RemoveMesh ();
   void UpdateImageButton ();
   void RenderGeometry ();
-  void RenderBoxes ();
-  void RenderSpheres (const csReversibleTransform& trans);
+  void RenderSpheres (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans);
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
