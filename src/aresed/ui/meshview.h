@@ -94,6 +94,12 @@ public:
   void AddSphere (const csVector3& center, float radius, size_t penIdx);
 
   /**
+   * Add a cylinder to show in 2D on top of the mesh.
+   */
+  void AddCylinder (const csVector3& center, float radius, float length,
+      size_t penIdx);
+
+  /**
    * Clear geometry.
    */
   void ClearGeometry ();

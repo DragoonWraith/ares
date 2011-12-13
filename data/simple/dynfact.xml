@@ -167,6 +167,10 @@
   <addon plugin="cel.addons.dynamicworld.loader">
     <extension plugin="ares.dynworld.loader.factories"/>
     <dynworld name="zone" />
+    <factory name="Barrel" maxradius="0.5" imposterradius=".3" mass="6">
+      <cylinder />
+      <attr name="category" value="Objects" />
+    </factory>
     <factory name="Crate" maxradius="0.5" imposterradius=".3" mass="6">
       <box />
       <attr name="category" value="Objects" />

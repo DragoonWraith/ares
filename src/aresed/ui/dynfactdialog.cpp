@@ -103,6 +103,10 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
       {
 	meshView->AddSphere (info.offset, info.radius, normalPen);
       }
+      else if (info.type == BODY_CYLINDER)
+      {
+	meshView->AddCylinder (info.offset, info.radius, info.length, normalPen);
+      }
     }
   }
 }
