@@ -167,6 +167,40 @@ void MeshView::AddCylinder (const csVector3& center, float radius, float length,
   pen->SetActiveCache (0);
 }
 
+void MeshView::AddMesh (const csVector3& center, size_t penIdx)
+{
+  csRef<iStringSet> stringSet = csQueryRegistryTagInterface<iStringSet> (object_reg,
+    "crystalspace.shared.stringset");
+  csStringID base_id = stringSet->Request ("base");
+  csStringID id = stringSet->Request ("colldet");
+  iObjectModel* objmodel = mesh->GetMeshObject ()->GetObjectModel ();
+  csRef<iTriangleMesh> trimesh;
+  if (objmodel->IsTriangleDataSet (id))
+    trimesh = objmodel->GetTriangleData (id);
+  else
+    trimesh = objmodel->GetTriangleData (base_id);
+  if (trimesh)
+  {
+    csPen3D* pen = pens3d[penIdx];
+    pen->SetActiveCache (&penCache);
+    csArray<csPen3DCoordinatePair> pairs;
+
+    csVector3* vt = trimesh->GetVertices ();
+    size_t pocount = trimesh->GetTriangleCount ();
+    csTriangle* po = trimesh->GetTriangles ();
+    for (size_t i = 0 ; i < pocount ; i++)
+    {
+      csTriangle& tri = po[i];
+      pairs.Push (csPen3DCoordinatePair (vt[tri.a], vt[tri.c]));
+      pairs.Push (csPen3DCoordinatePair (vt[tri.b], vt[tri.a]));
+      pairs.Push (csPen3DCoordinatePair (vt[tri.c], vt[tri.b]));
+    }
+
+    pen->DrawLines (pairs);
+    pen->SetActiveCache (0);
+  }
+}
+
 static void DrawSphere3D (const csVector3& c, float radius, float fov, csPen* pen,
   int width, int height)
 {

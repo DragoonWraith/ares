@@ -100,6 +100,11 @@ public:
       size_t penIdx);
 
   /**
+   * Add a mesh (linedraw) to show in 2D on top of the real mesh.
+   */
+  void AddMesh (const csVector3& center, size_t penIdx);
+
+  /**
    * Clear geometry.
    */
   void ClearGeometry ();

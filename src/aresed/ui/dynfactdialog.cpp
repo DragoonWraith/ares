@@ -107,6 +107,10 @@ void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
       {
 	meshView->AddCylinder (info.offset, info.radius, info.length, normalPen);
       }
+      else if (info.type == BODY_MESH || info.type == BODY_CONVEXMESH)
+      {
+	meshView->AddMesh (info.offset, normalPen);
+      }
     }
   }
 }
