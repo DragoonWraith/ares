@@ -67,12 +67,13 @@ private:
   csArray<MVBox> boxes;
   csArray<MVSphere> spheres;
   csPDelArray<csPen> pens;
+  csPDelArray<csPen3D> pens3d;
 
   iSector* FindSuitableSector (int& num);
   void RemoveMesh ();
   void UpdateImageButton ();
-  void Render2D ();
-  void RenderBoxes (const csReversibleTransform& trans);
+  void RenderGeometry ();
+  void RenderBoxes ();
   void RenderSpheres (const csReversibleTransform& trans);
 
 public:

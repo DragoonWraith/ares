@@ -132,6 +132,9 @@ size_t MeshView::CreatePen (float r, float g, float b, float width)
   csPen* pen = new csPen (g2d, g3d);
   pen->SetColor (r, g, b, 1.0f);
   pen->SetPenWidth (width);
+  csPen3D* pen3d = new csPen3D (g2d, g3d);
+  pen3d->SetColor (r, g, b, 1.0f);
+  pens3d.Push (pen3d);
   return pens.Push (pen);
 }
 
@@ -221,37 +224,26 @@ void MeshView::RenderSpheres (const csReversibleTransform& trans)
   }
 }
 
-void MeshView::RenderBoxes (const csReversibleTransform& trans)
+void MeshView::RenderBoxes ()
 {
   if (boxes.GetSize () == 0) return;
-  float fov = 256;	// @@@
+
+  iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
+  const csOrthoTransform& camtrans = cam->GetTransform ();
+  csReversibleTransform oldw2c = g3d->GetWorldToCamera ();
+  g3d->SetWorldToCamera (camtrans.GetInverse ());
+  iMovable* movable = mesh->GetMovable ();
+  const csReversibleTransform& meshtrans = movable->GetTransform ();
+
   for (size_t i = 0 ; i < boxes.GetSize () ; i++)
   {
     const csBox3& b = boxes[i].box;
-    csPen* pen = pens[boxes[i].penIdx];
-    csVector3 xyz = trans * b.GetCorner (CS_BOX_CORNER_xyz);
-    csVector3 Xyz = trans * b.GetCorner (CS_BOX_CORNER_Xyz);
-    csVector3 xYz = trans * b.GetCorner (CS_BOX_CORNER_xYz);
-    csVector3 xyZ = trans * b.GetCorner (CS_BOX_CORNER_xyZ);
-    csVector3 XYz = trans * b.GetCorner (CS_BOX_CORNER_XYz);
-    csVector3 XyZ = trans * b.GetCorner (CS_BOX_CORNER_XyZ);
-    csVector3 xYZ = trans * b.GetCorner (CS_BOX_CORNER_xYZ);
-    csVector3 XYZ = trans * b.GetCorner (CS_BOX_CORNER_XYZ);
-    csArray<csPenCoordinatePair> pairs;
-    DrawLine3D (xyz, Xyz, fov, 256, 256, pairs);
-    DrawLine3D (Xyz, XYz, fov, 256, 256, pairs);
-    DrawLine3D (XYz, xYz, fov, 256, 256, pairs);
-    DrawLine3D (xYz, xyz, fov, 256, 256, pairs);
-    DrawLine3D (xyZ, XyZ, fov, 256, 256, pairs);
-    DrawLine3D (XyZ, XYZ, fov, 256, 256, pairs);
-    DrawLine3D (XYZ, xYZ, fov, 256, 256, pairs);
-    DrawLine3D (xYZ, xyZ, fov, 256, 256, pairs);
-    DrawLine3D (xyz, xyZ, fov, 256, 256, pairs);
-    DrawLine3D (xYz, xYZ, fov, 256, 256, pairs);
-    DrawLine3D (Xyz, XyZ, fov, 256, 256, pairs);
-    DrawLine3D (XYz, XYZ, fov, 256, 256, pairs);
-    pen->DrawLines (pairs);
+    csPen3D* pen = pens3d[boxes[i].penIdx];
+    pen->SetTransform (meshtrans);
+    pen->DrawBox (b);
   }
+
+  g3d->SetWorldToCamera (oldw2c);
 }
 
 void MeshView::ClearGeometry ()
@@ -260,7 +252,7 @@ void MeshView::ClearGeometry ()
   spheres.DeleteAll ();
 }
 
-void MeshView::Render2D ()
+void MeshView::RenderGeometry ()
 {
   g3d->SetRenderTarget (handle);
   g3d->BeginDraw (CSDRAW_2DGRAPHICS);
@@ -271,8 +263,10 @@ void MeshView::Render2D ()
   iMovable* movable = mesh->GetMovable ();
   const csReversibleTransform& meshtrans = movable->GetTransform ();
   csReversibleTransform trans = camtrans / meshtrans;
-  RenderBoxes (trans);
   RenderSpheres (trans);
+
+  g3d->BeginDraw (CSDRAW_3DGRAPHICS);
+  RenderBoxes ();
 
   g3d->FinishDraw ();
   g3d->SetRenderTarget (0);
@@ -287,7 +281,7 @@ void MeshView::UpdateImageButton ()
   iRenderManager* rm = engine->GetRenderManager ();
   rm->RenderView (meshOnTexture->GetView ());
 
-  Render2D ();
+  RenderGeometry ();
 
   // Convert the image to a WX image.
   CS::StructuredTextureFormat format = CS::TextureFormatStrings::ConvertStructured (
