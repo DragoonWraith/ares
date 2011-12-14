@@ -112,8 +112,8 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
   EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
-  EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageDeselected)
+  //EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageSelected)
+  //EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageDeselected)
 
   EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRandomCheckBox"), PropertyClassPanel :: OnUpdateEvent)
@@ -256,6 +256,38 @@ public:
 	pars.GetData (), (const char*)0);
   }
 
+  virtual bool UpdateRow (const csStringArray& oldRow, const csStringArray& row)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csStringID outputID = pl->FetchStringID ("AddOutput");
+    for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> it = pctpl->GetProperty (i, id, data);
+      if (id == outputID)
+      {
+        csString msgName;
+        csString entName;
+	csString pars = GetParameterString (it, msgName, entName);
+	if (msgName == oldRow[0] && entName == oldRow[1] && pars == oldRow[2])
+	{
+	  csRef<iParameter> par;
+	  InspectTools::DeleteActionParameter (pl, pctpl, i, "msgid");
+	  par = pm->GetParameter (row[0], CEL_DATA_STRING);
+	  InspectTools::AddActionParameter (pl, pctpl, i, "msgid", par);
+
+	  InspectTools::DeleteActionParameter (pl, pctpl, i, "entity");
+	  par = pm->GetParameter (row[1], CEL_DATA_STRING);
+	  InspectTools::AddActionParameter (pl, pctpl, i, "entity", par);
+	  return true;
+	}
+      }
+    }
+    return false;
+  }
+
   virtual bool DeleteRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
@@ -273,14 +305,13 @@ public:
 	if (msgName == row[0] && entName == row[1] && pars == row[2])
 	{
 	  pctpl->RemovePropertyByIndex (i);
-          wxListCtrl* parList = XRCCTRL (*pcPanel, "wireParameterListCtrl", wxListCtrl);
-          parList->DeleteAllItems ();
 	  return true;
 	}
       }
     }
     return false;
   }
+
   virtual bool AddRow (const csStringArray& row)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
@@ -298,11 +329,13 @@ public:
     if (!par) return false;
     params.Put (pl->FetchStringID ("entity"), par);
 
-    wxListCtrl* parList = XRCCTRL (*pcPanel, "wireParameterListCtrl", wxListCtrl);
-    parList->DeleteAllItems ();
-
     pctpl->PerformAction (actionID, params);
     return true;
+  }
+
+  virtual void FinishUpdate ()
+  {
+    pcPanel->UpdateWireMsg ();
   }
 
   virtual const char* GetColumns () { return "Message,Entity,Parameters"; }
@@ -397,6 +430,30 @@ public:
   virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireParDialog (); }
 };
 
+/**
+ * This editor model is associated with the wire message model and
+ * is responsible for updating the wire parameter list.
+ */
+class WireParEditorModel : public EditorModel
+{
+private:
+  ListCtrlView* wireParView;
+
+public:
+  WireParEditorModel (ListCtrlView* wireParView) : wireParView (wireParView) { }
+  virtual ~WireParEditorModel () { }
+  virtual void Update (const csStringArray& row)
+  {
+    wireParView->Refresh ();
+  }
+  virtual csStringArray Read ()
+  {
+    // @@@ Not supported here.
+    return csStringArray ();
+  }
+};
+
+
 UIDialog* PropertyClassPanel::GetWireParDialog ()
 {
   if (!wireParDialog)
@@ -429,6 +486,7 @@ UIDialog* PropertyClassPanel::GetWireMsgDialog ()
   return wireMsgDialog;
 }
 
+#if 0
 void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
 {
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
@@ -441,6 +499,7 @@ void PropertyClassPanel::OnWireMessageDeselected (wxListEvent& event)
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
 }
+#endif
 
 size_t PropertyClassPanel::GetMessagePropertyIndex ()
 {
@@ -1235,6 +1294,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   list = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   wireParModel.AttachNew (new WireParRowModel (this));
   wireParView = new ListCtrlView (list, wireParModel);
+  wireParEditorModel.AttachNew (new WireParEditorModel (wireParView));
+  wireMsgView->SetEditorModel (wireParEditorModel);
 
   propDialog = 0;
   invTempDialog = 0;

@@ -228,15 +228,12 @@ void TreeCtrlView::OnEdit (wxCommandEvent& event)
   csStringArray row = DoDialog (oldRow);
   if (row.GetSize () > 0)
   {
-    if (!model->DeleteRow (oldRow)) return;
-    if (model->AddRow (row))
+    if (model->UpdateRow (oldRow, row))
     {
       wxTreeItemId rootId = tree->GetRootItem ();
       AddToTree (tree, rootId, row, 0);
       model->FinishUpdate ();
     }
-    else
-      model->AddRow (oldRow);
   }
 }
 

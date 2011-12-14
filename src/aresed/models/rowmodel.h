@@ -67,6 +67,23 @@ public:
   virtual bool AddRow (const csStringArray& row) = 0;
 
   /**
+   * Update a row. Returns false if this row could not be updated.
+   * The default implementation just calls DeleteRow() first and then
+   * AddRow() with the new row.
+   */
+  virtual bool UpdateRow (const csStringArray& oldRow,
+      const csStringArray& row)
+  {
+    if (!DeleteRow (oldRow)) return false;
+    if (!AddRow (row))
+    {
+      AddRow (oldRow);
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * Finish the update. This can give the model a chance to refresh
    * certain things.
    */
@@ -104,6 +121,41 @@ public:
   {
     return csStringArray ();
   }
+};
+
+/**
+ * An editor for a model. This is typically used in combination
+ * with a model and a view where you want to provide an editor
+ * that automatically updates whenever the selected row in the view
+ * changes.
+ */
+class EditorModel : public csRefCount
+{
+public:
+  /**
+   * Update the editor from a given row. The format of the row will
+   * be the same as the one from the associated model. If the row
+   * is empty then the editor must be cleared.
+   */
+  virtual void Update (const csStringArray& row) = 0;
+
+  /**
+   * Return the current contents of the editor in a row compatible
+   * with the associated model.
+   */
+  virtual csStringArray Read () = 0;
+
+  /**
+   * Return true if the contents of this editor is dirty. Doing Update()
+   * should automatically clear the dirty flag. If this editor doesn't support
+   * the notion of 'dirty' then it should always return true.
+   */
+  virtual bool IsDirty () { return true; }
+
+  /**
+   * Set/clear the dirty flag.
+   */
+  virtual void SetDirty (bool dirty) { }
 };
 
 #endif // __appares_rowmodel_h

@@ -48,6 +48,7 @@ class InventoryRowModel;
 class QuestRowModel;
 class SpawnRowModel;
 class WireMsgRowModel;
+class WireParEditorModel;
 class WireParRowModel;
 class ListCtrlView;
 
@@ -105,14 +106,15 @@ private:
   ListCtrlView* wireMsgView;
   csRef<WireMsgRowModel> wireMsgModel;
   ListCtrlView* wireParView;
+  csRef<WireParEditorModel> wireParEditorModel;
   csRef<WireParRowModel> wireParModel;
   UIDialog* wireParDialog;
   UIDialog* wireMsgDialog;
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
-  void OnWireMessageSelected (wxListEvent& event);
-  void OnWireMessageDeselected (wxListEvent& event);
+  //void OnWireMessageSelected (wxListEvent& event);
+  //void OnWireMessageDeselected (wxListEvent& event);
 
   // Update the property class. Returns false on error.
   bool UpdatePC ();
@@ -138,6 +140,7 @@ public:
   UIDialog* GetSpawnTemplateDialog ();
   UIDialog* GetWireParDialog ();
   UIDialog* GetWireMsgDialog ();
+  ListCtrlView* GetWireParView () const { return wireParView; }
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }

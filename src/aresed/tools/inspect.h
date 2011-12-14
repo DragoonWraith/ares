@@ -86,6 +86,8 @@ public:
    * Get the value of a parameter for an action.
    */
   static iParameter* GetActionParameterValue (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName);
+  static iParameter* GetActionParameterValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName);
   static csString GetActionParameterValueString (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,

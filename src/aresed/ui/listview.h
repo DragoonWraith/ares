@@ -47,10 +47,22 @@ class SimpleListCtrlView : public wxEvtHandler
 protected:
   wxListCtrl* list;
   csRef<RowModel> model;
+  csRef<EditorModel> editorModel;
   csStringArray columns;
 
   void UnbindModel ();
   void BindModel (RowModel* model);
+
+  void UpdateEditor ();
+
+  void OnItemSelected (wxListEvent& event);
+  void OnItemDeselected (wxListEvent& event);
+
+protected:
+  /// Add a new row to the model and refresh the list.
+  void AddNewRow (const csStringArray& row);
+  /// Update the selected row in the model and refresh the list.
+  void UpdateRow (const csStringArray& oldRow, const csStringArray& row);
 
 public:
   SimpleListCtrlView (wxListCtrl* list) : list (list) { }
@@ -60,8 +72,31 @@ public:
   }
   ~SimpleListCtrlView ();
 
+  /**
+   * Set the row model to use for this view. Automatically refresh
+   * the list from this model. A view needs a model to operate. This is
+   * not optional.
+   */
   void SetModel (RowModel* model) { BindModel (model); Refresh (); }
 
+  /**
+   * Set the editor model to use for this view. This is optional.
+   * If an editor model is present then selecting rows in the list
+   * will automatically update this editor.
+   */
+  void SetEditorModel (EditorModel* model);
+
+  /**
+   * Add a new row from the contents of the editor.
+   */
+  void AddEditorRow ();
+
+  /**
+   * Update the current row from the contents of the editor.
+   * If there is no current row then this is equivalent to AddEditorRow().
+   */
+  void UpdateEditorRow ();
+   
   /**
    * Refresh the list from the data in the model.
    */

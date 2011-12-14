@@ -53,6 +53,81 @@ void SimpleListCtrlView::BindModel (RowModel* model)
 SimpleListCtrlView::~SimpleListCtrlView ()
 {
   UnbindModel ();
+  SetEditorModel (0);
+}
+
+void SimpleListCtrlView::UpdateEditor ()
+{
+  if (!editorModel) return;
+  editorModel->Update (GetSelectedRow ());
+}
+
+void SimpleListCtrlView::OnItemSelected (wxListEvent& event)
+{
+  UpdateEditor ();
+}
+
+void SimpleListCtrlView::OnItemDeselected (wxListEvent& event)
+{
+  UpdateEditor ();
+}
+
+void SimpleListCtrlView::SetEditorModel (EditorModel* model)
+{
+  if (editorModel)
+  {
+    list->Disconnect (wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler (
+	  SimpleListCtrlView :: OnItemSelected), 0, this);
+    list->Disconnect (wxEVT_COMMAND_LIST_ITEM_DESELECTED, wxListEventHandler (
+	  SimpleListCtrlView :: OnItemDeselected), 0, this);
+  }
+  editorModel = model;
+  if (editorModel)
+  {
+    list->Connect (wxEVT_COMMAND_LIST_ITEM_SELECTED, wxListEventHandler (
+	  SimpleListCtrlView :: OnItemSelected), 0, this);
+    list->Connect (wxEVT_COMMAND_LIST_ITEM_DESELECTED, wxListEventHandler (
+	  SimpleListCtrlView :: OnItemDeselected), 0, this);
+  }
+}
+
+void SimpleListCtrlView::AddNewRow (const csStringArray& row)
+{
+  if (model->AddRow (row))
+  {
+    ListCtrlTools::AddRow (list, row);
+    model->FinishUpdate ();
+  }
+}
+
+void SimpleListCtrlView::UpdateRow (const csStringArray& oldRow,
+    const csStringArray& row)
+{
+  if (row.GetSize () > 0)
+  {
+    long idx = ListCtrlTools::GetFirstSelectedRow (list);
+    if (model->UpdateRow (oldRow, row))
+    {
+      ListCtrlTools::ReplaceRow (list, idx, row);
+      model->FinishUpdate ();
+    }
+  }
+}
+
+void SimpleListCtrlView::AddEditorRow ()
+{
+  CS_ASSERT (editorModel != 0);
+  AddNewRow (editorModel->Read ());
+}
+
+void SimpleListCtrlView::UpdateEditorRow ()
+{
+  CS_ASSERT (editorModel != 0);
+  csStringArray row = editorModel->Read ();
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+  if (idx == -1) { AddNewRow (row); return; }
+  csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
+  UpdateRow (oldRow, row);
 }
 
 void SimpleListCtrlView::Refresh ()
@@ -64,6 +139,7 @@ void SimpleListCtrlView::Refresh ()
     csStringArray row = model->NextRow ();
     ListCtrlTools::AddRow (list, row);
   }
+  UpdateEditor ();
 }
 
 csStringArray SimpleListCtrlView::GetSelectedRow ()
@@ -146,33 +222,14 @@ void ListCtrlView::OnAdd (wxCommandEvent& event)
 {
   csStringArray empty;
   csStringArray row = DoDialog (empty);
-  if (row.GetSize () > 0)
-  {
-    if (model->AddRow (row))
-    {
-      ListCtrlTools::AddRow (list, row);
-      model->FinishUpdate ();
-    }
-  }
+  if (row.GetSize () > 0) AddNewRow (row);
 }
 
 void ListCtrlView::OnEdit (wxCommandEvent& event)
 {
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-  if (idx == -1) return;
-  csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
+  csStringArray oldRow = GetSelectedRow ();
   csStringArray row = DoDialog (oldRow);
-  if (row.GetSize () > 0)
-  {
-    if (!model->DeleteRow (oldRow)) return;
-    if (model->AddRow (row))
-    {
-      ListCtrlTools::ReplaceRow (list, idx, row);
-      model->FinishUpdate ();
-    }
-    else
-      model->AddRow (oldRow);
-  }
+  UpdateRow (oldRow, row);
 }
 
 void ListCtrlView::OnDelete (wxCommandEvent& event)

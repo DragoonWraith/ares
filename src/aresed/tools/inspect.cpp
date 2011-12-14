@@ -77,12 +77,9 @@ float InspectTools::GetPropertyValueFloat (iCelPlLayer* pl,
 }
 
 iParameter* InspectTools::GetActionParameterValue (iCelPlLayer* pl,
-      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName)
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName)
 {
-  csStringID actionID = pl->FetchStringID (actionName);
-  size_t idx = pctpl->FindProperty (actionID);
-  if (idx == csArrayItemNotFound) return 0;
-
+  csStringID actionID;
   celData data;
   csRef<iCelParameterIterator> parit = pctpl->GetProperty (idx, actionID, data);
   csStringID parID = pl->FetchStringID (parName);
@@ -95,6 +92,15 @@ iParameter* InspectTools::GetActionParameterValue (iCelPlLayer* pl,
     if (parid == parID) return par;
   }
   return 0;
+}
+
+iParameter* InspectTools::GetActionParameterValue (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName)
+{
+  csStringID actionID = pl->FetchStringID (actionName);
+  size_t idx = pctpl->FindProperty (actionID);
+  if (idx == csArrayItemNotFound) return 0;
+  return GetActionParameterValue (pl, pctpl, idx, parName);
 }
 
 csString InspectTools::GetActionParameterValueString (iCelPlLayer* pl,
