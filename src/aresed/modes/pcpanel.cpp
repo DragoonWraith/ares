@@ -112,9 +112,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
   EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
-  //EVT_LIST_ITEM_SELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageSelected)
-  //EVT_LIST_ITEM_DESELECTED (XRCID("wireMessageListCtrl"), PropertyClassPanel :: OnWireMessageDeselected)
-
   EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRandomCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnUniqueCheckBox"), PropertyClassPanel :: OnUpdateEvent)
@@ -485,21 +482,6 @@ UIDialog* PropertyClassPanel::GetWireMsgDialog ()
   }
   return wireMsgDialog;
 }
-
-#if 0
-void PropertyClassPanel::OnWireMessageSelected (wxListEvent& event)
-{
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  parList->DeleteAllItems ();
-  wireParView->Refresh ();
-}
-
-void PropertyClassPanel::OnWireMessageDeselected (wxListEvent& event)
-{
-  wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
-  parList->DeleteAllItems ();
-}
-#endif
 
 size_t PropertyClassPanel::GetMessagePropertyIndex ()
 {

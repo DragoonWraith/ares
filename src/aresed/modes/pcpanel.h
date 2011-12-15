@@ -113,8 +113,6 @@ private:
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
-  //void OnWireMessageSelected (wxListEvent& event);
-  //void OnWireMessageDeselected (wxListEvent& event);
 
   // Update the property class. Returns false on error.
   bool UpdatePC ();
