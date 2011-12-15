@@ -45,6 +45,7 @@ class TreeCtrlView : public wxEvtHandler
 private:
   wxTreeCtrl* tree;
   csRef<RowModel> model;
+  csRef<EditorModel> editorModel;
   csStringArray columns;
   UIDialog* forcedDialog;
   bool ownForcedDialog;
@@ -52,6 +53,9 @@ private:
 
   void UnbindModel ();
   void BindModel (RowModel* model);
+
+  void UpdateEditor ();
+  void OnSelectionChange (wxTreeEvent& event);
 
   void OnContextMenu (wxContextMenuEvent& event);
   void OnAdd (wxCommandEvent& event);
@@ -72,8 +76,23 @@ public:
   }
   ~TreeCtrlView ();
 
+  /**
+   * Set the row model to use for this view. Automatically refresh
+   * the tree from this model. A view needs a model to operate. This is
+   * not optional.
+   */
   void SetModel (RowModel* model) { BindModel (model); Refresh (); }
 
+  /**
+   * Set the editor model to use for this view. This is optional.
+   * If an editor model is present then selecting rows in the tree
+   * will automatically update this editor.
+   */
+  void SetEditorModel (EditorModel* model);
+
+  /**
+   * Set the name of the root of the tree.
+   */
   void SetRootName (const char* rootName) { TreeCtrlView::rootName = rootName; }
 
   /**
@@ -87,6 +106,12 @@ public:
    * Refresh the tree from the data in the model.
    */
   void Refresh ();
+
+  /**
+   * Get the current selected row (or empty row in case nothing is
+   * selected).
+   */
+  csStringArray GetSelectedRow ();
 };
 
 #endif // __appares_treeview_h

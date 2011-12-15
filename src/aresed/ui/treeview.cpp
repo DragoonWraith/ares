@@ -73,8 +73,35 @@ void TreeCtrlView::BindModel (RowModel* model)
 TreeCtrlView::~TreeCtrlView ()
 {
   UnbindModel ();
+  SetEditorModel (0);
   if (forcedDialog && ownForcedDialog)
     delete forcedDialog;
+}
+
+void TreeCtrlView::UpdateEditor ()
+{
+  if (!editorModel) return;
+  editorModel->Update (GetSelectedRow ());
+}
+
+void TreeCtrlView::OnSelectionChange (wxTreeEvent& event)
+{
+  UpdateEditor ();
+}
+
+void TreeCtrlView::SetEditorModel (EditorModel* model)
+{
+  if (editorModel)
+  {
+    tree->Disconnect (wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler (
+	  TreeCtrlView :: OnSelectionChange), 0, this);
+  }
+  editorModel = model;
+  if (editorModel)
+  {
+    tree->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED, wxTreeEventHandler (
+	  TreeCtrlView :: OnSelectionChange), 0, this);
+  }
 }
 
 struct TreeNode
@@ -277,6 +304,16 @@ void TreeCtrlView::OnContextMenu (wxContextMenuEvent& event)
     contextMenu.Append(ID_Delete, wxT ("&Delete"));
   }
   tree->PopupMenu (&contextMenu);
+}
+
+csStringArray TreeCtrlView::GetSelectedRow ()
+{
+  wxTreeItemId sel = tree->GetSelection ();
+  if (!sel.IsOk ()) return csStringArray ();
+
+  csStringArray row;
+  ConstructRowFromTree (tree, sel, row);
+  return row;
 }
 
 //-----------------------------------------------------------------------------
