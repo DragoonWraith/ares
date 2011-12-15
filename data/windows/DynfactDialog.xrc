@@ -2,7 +2,7 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="DynfactDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>500,600</size>
+		<size>500,-1</size>
 		<title>Edit Dynamic Factories</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
@@ -14,7 +14,7 @@
 				<object class="wxBoxSizer">
 					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
-						<option>1</option>
+						<option>0</option>
 						<flag>wxALL|wxEXPAND</flag>
 						<border>5</border>
 						<object class="wxTreeCtrl" name="factoryTree">
@@ -27,7 +27,9 @@
 						<border>5</border>
 						<object class="wxPanel" name="meshPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<size>260,260</size>
 							<object class="wxBoxSizer">
+								<minsize>260,260</minsize>
 								<orient>wxVERTICAL</orient>
 							</object>
 						</object>
@@ -131,7 +133,23 @@
 				</object>
 			</object>
 			<object class="sizeritem">
-				<option>1</option>
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxListCtrl" name="colliderList">
+							<style>wxLC_REPORT</style>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
 				<flag>wxEXPAND</flag>
 				<border>5</border>
 				<object class="wxBoxSizer">

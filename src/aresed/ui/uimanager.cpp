@@ -311,6 +311,9 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   cellDialog = new CellDialog (parent, this);
   dynfactDialog = new DynfactDialog (parent, this);
   contextMenuID = ID_FirstContextItem;
+
+  dynfactDialog->Layout ();
+  dynfactDialog->Fit ();
 }
 
 UIManager::~UIManager ()
