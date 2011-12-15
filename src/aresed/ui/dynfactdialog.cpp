@@ -28,13 +28,59 @@ THE SOFTWARE.
 #include "listctrltools.h"
 #include "meshview.h"
 #include "treeview.h"
+#include "listview.h"
 #include "../models/dynfactmodel.h"
+#include "../tools/tools.h"
 
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), DynfactDialog :: OnOkButton)
 END_EVENT_TABLE()
+
+//--------------------------------------------------------------------------
+
+class ColliderRowModel : public RowModel
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+  size_t idx;
+
+public:
+  ColliderRowModel (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~ColliderRowModel () { }
+
+  virtual void ResetIterator ()
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    idx = 0;
+  }
+  virtual bool HasRows () { return dynfact && idx < dynfact->GetBodyCount (); }
+  virtual csStringArray NextRow ()
+  {
+    const char* type;
+    celBodyInfo info = dynfact->GetBody (idx++);
+    switch (info.type)
+    {
+      case BODY_BOX: type = "box"; break;
+      case BODY_SPHERE: type = "sphere"; break;
+      case BODY_CYLINDER: type = "cylinder"; break;
+      case BODY_MESH: type = "mesh"; break;
+      case BODY_CONVEXMESH: type = "convexmesh"; break;
+      default: type = "?";
+    }
+    return Tools::MakeArray (type, (const char*)0);
+  }
+
+  virtual bool DeleteRow (const csStringArray& row) { return false; }
+  virtual bool AddRow (const csStringArray& row) { return false; }
+
+  virtual const char* GetColumns () { return "Type"; }
+  virtual bool IsEditAllowed () const { return false; }
+  virtual csStringArray EditRow (const csStringArray& origRow) { return origRow; }
+};
 
 //--------------------------------------------------------------------------
 
@@ -49,7 +95,35 @@ public:
 
   virtual void Update (const csStringArray& row)
   {
-    dialog->EditFactory (row[1]);
+    if (row.GetSize () > 0)
+      dialog->EditFactory (row[1]);
+    else
+      dialog->EditFactory (0);
+  }
+  virtual csStringArray Read ()
+  {
+    // @@@ Not yet implemented.
+    return csStringArray ();
+  }
+};
+
+//--------------------------------------------------------------------------
+
+class ColliderEditorModel : public EditorModel
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  ColliderEditorModel (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~ColliderEditorModel () { }
+
+  virtual void Update (const csStringArray& row)
+  {
+    if (row.GetSize () > 0)
+      dialog->EditCollider (row[1]);
+    else
+      dialog->EditCollider (0);
   }
   virtual csStringArray Read ()
   {
@@ -97,37 +171,60 @@ void DynfactDialog::Tick ()
   meshView->RotateMesh (vc->GetElapsedSeconds ());
 }
 
+iDynamicFactory* DynfactDialog::GetCurrentFactory ()
+{
+  csStringArray row = meshTreeView->GetSelectedRow ();
+  if (row.GetSize () == 0) return 0;
+  iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
+  iDynamicFactory* dynfact = dynworld->FindFactory (row[1]);
+  return dynfact;
+}
+
+void DynfactDialog::EditCollider (const char* typeName)
+{
+  SetupColliderGeometry ();
+}
+
 void DynfactDialog::EditFactory (const char* meshName)
 {
   printf ("mesh=%s\n", meshName); fflush (stdout);
-  meshView->ClearGeometry ();
   meshView->SetMesh (meshName);
+  colliderView->Refresh ();
+  SetupColliderGeometry ();
+}
 
-  iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
-  iDynamicFactory* dynfact = dynworld->FindFactory (meshName);
+void DynfactDialog::SetupColliderGeometry ()
+{
+  meshView->ClearGeometry ();
+  wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
+  long idx = ListCtrlTools::GetFirstSelectedRow (list);
+
+  iDynamicFactory* dynfact = GetCurrentFactory ();
   if (dynfact)
   {
+printf ("idx=%d\n", idx); fflush (stdout);
     for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
     {
+      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
       celBodyInfo info = dynfact->GetBody (i);
       if (info.type == BODY_BOX)
       {
         csBox3 b;
         b.SetSize (info.size);
 	b.SetCenter (info.offset);
-        meshView->AddBox (b, normalPen);
+        meshView->AddBox (b, pen);
       }
       else if (info.type == BODY_SPHERE)
       {
-	meshView->AddSphere (info.offset, info.radius, normalPen);
+	meshView->AddSphere (info.offset, info.radius, pen);
       }
       else if (info.type == BODY_CYLINDER)
       {
-	meshView->AddCylinder (info.offset, info.radius, info.length, normalPen);
+	meshView->AddCylinder (info.offset, info.radius, info.length, pen);
       }
       else if (info.type == BODY_MESH || info.type == BODY_CONVEXMESH)
       {
-	meshView->AddMesh (info.offset, normalPen);
+	meshView->AddMesh (info.offset, pen);
       }
     }
   }
@@ -139,7 +236,8 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new MeshView (uiManager->GetApp ()->GetObjectRegistry (), panel);
-  normalPen = meshView->CreatePen (1.0f, 0.0f, 0.0f, 1.0f);
+  normalPen = meshView->CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
+  hilightPen = meshView->CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
 
   wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   meshTreeView = new TreeCtrlView (tree, uiManager->GetApp ()->GetAresView ()
@@ -148,6 +246,12 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   factoryEditorModel.AttachNew (new FactoryEditorModel (this));
   meshTreeView->SetEditorModel (factoryEditorModel);
 
+  wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
+  colliderModel.AttachNew (new ColliderRowModel (this));
+  colliderView = new ListCtrlView (list, colliderModel);
+  colliderEditorModel.AttachNew (new ColliderEditorModel (this));
+  colliderView->SetEditorModel (colliderEditorModel);
+
   timerOp.AttachNew (new RotMeshTimer (this));
 }
 
@@ -155,6 +259,7 @@ DynfactDialog::~DynfactDialog ()
 {
   delete meshView;
   delete meshTreeView;
+  delete colliderView;
 }
 
 

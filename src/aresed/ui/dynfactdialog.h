@@ -35,7 +35,10 @@ THE SOFTWARE.
 
 class MeshView;
 class TreeCtrlView;
+class ListCtrlView;
 class FactoryEditorModel;
+class ColliderEditorModel;
+class ColliderRowModel;
 
 class UIManager;
 
@@ -46,12 +49,18 @@ private:
   long selIndex;
   csRef<iTimerEvent> timerOp;
   size_t normalPen;
+  size_t hilightPen;
 
   MeshView* meshView;
   TreeCtrlView* meshTreeView;
   csRef<FactoryEditorModel> factoryEditorModel;
+  csRef<ColliderEditorModel> colliderEditorModel;
+
+  ListCtrlView* colliderView;
+  csRef<ColliderRowModel> colliderModel;
 
   void OnOkButton (wxCommandEvent& event);
+  void SetupColliderGeometry ();
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);
@@ -60,7 +69,9 @@ public:
   void Show ();
   void Tick ();
 
+  void EditCollider (const char* type);
   void EditFactory (const char* factory);
+  iDynamicFactory* GetCurrentFactory ();
 
   DECLARE_EVENT_TABLE ();
 };

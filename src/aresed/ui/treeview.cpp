@@ -312,9 +312,6 @@ csStringArray TreeCtrlView::GetSelectedRow ()
   wxTreeItemId sel = tree->GetSelection ();
   if (!sel.IsOk ()) return csStringArray ();
 
-csString name = (const char*)tree->GetItemText (sel).mb_str (wxConvUTF8);
-printf ("Selection: %s\n", name.GetData ()); fflush (stdout);
-
   csStringArray row;
   ConstructRowFromTree (tree, sel, row);
   return row;
