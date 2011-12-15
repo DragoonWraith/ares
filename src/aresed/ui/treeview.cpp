@@ -232,7 +232,7 @@ void TreeCtrlView::OnAdd (wxCommandEvent& event)
 /**
  * Construct a row from a given tree item.
  */
-static void ConstructRowFromTree (wxTreeCtrl* tree, wxTreeItemId& item,
+static void ConstructRowFromTree (wxTreeCtrl* tree, wxTreeItemId item,
     csStringArray& row)
 {
   wxTreeItemId parent = tree->GetItemParent (item);
@@ -240,6 +240,7 @@ static void ConstructRowFromTree (wxTreeCtrl* tree, wxTreeItemId& item,
   {
     ConstructRowFromTree (tree, parent, row);
   }
+  if (item == tree->GetRootItem ()) return;
   csString name = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
   row.Push (name);
 }
@@ -310,6 +311,9 @@ csStringArray TreeCtrlView::GetSelectedRow ()
 {
   wxTreeItemId sel = tree->GetSelection ();
   if (!sel.IsOk ()) return csStringArray ();
+
+csString name = (const char*)tree->GetItemText (sel).mb_str (wxConvUTF8);
+printf ("Selection: %s\n", name.GetData ()); fflush (stdout);
 
   csStringArray row;
   ConstructRowFromTree (tree, sel, row);

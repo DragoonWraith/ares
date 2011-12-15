@@ -34,8 +34,29 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), DynfactDialog :: OnOkButton)
-  EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), DynfactDialog :: OnFactoryChanged)
 END_EVENT_TABLE()
+
+//--------------------------------------------------------------------------
+
+class FactoryEditorModel : public EditorModel
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  FactoryEditorModel (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~FactoryEditorModel () { }
+
+  virtual void Update (const csStringArray& row)
+  {
+    dialog->EditFactory (row[1]);
+  }
+  virtual csStringArray Read ()
+  {
+    // @@@ Not yet implemented.
+    return csStringArray ();
+  }
+};
 
 //--------------------------------------------------------------------------
 
@@ -76,12 +97,9 @@ void DynfactDialog::Tick ()
   meshView->RotateMesh (vc->GetElapsedSeconds ());
 }
 
-void DynfactDialog::OnFactoryChanged (wxTreeEvent& event)
+void DynfactDialog::EditFactory (const char* meshName)
 {
-  wxTreeItemId item = event.GetItem ();
-  wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
-  csString meshName = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
-  printf ("mesh=%s\n", meshName.GetData ()); fflush (stdout);
+  printf ("mesh=%s\n", meshName); fflush (stdout);
   meshView->ClearGeometry ();
   meshView->SetMesh (meshName);
 
@@ -122,10 +140,14 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new MeshView (uiManager->GetApp ()->GetObjectRegistry (), panel);
   normalPen = meshView->CreatePen (1.0f, 0.0f, 0.0f, 1.0f);
+
   wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   meshTreeView = new TreeCtrlView (tree, uiManager->GetApp ()->GetAresView ()
       ->GetDynfactRowModel ());
   meshTreeView->SetRootName ("Categories");
+  factoryEditorModel.AttachNew (new FactoryEditorModel (this));
+  meshTreeView->SetEditorModel (factoryEditorModel);
+
   timerOp.AttachNew (new RotMeshTimer (this));
 }
 

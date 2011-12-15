@@ -35,6 +35,7 @@ THE SOFTWARE.
 
 class MeshView;
 class TreeCtrlView;
+class FactoryEditorModel;
 
 class UIManager;
 
@@ -43,14 +44,14 @@ class DynfactDialog : public wxDialog
 private:
   UIManager* uiManager;
   long selIndex;
-  MeshView* meshView;
-  TreeCtrlView* meshTreeView;
   csRef<iTimerEvent> timerOp;
-
   size_t normalPen;
 
+  MeshView* meshView;
+  TreeCtrlView* meshTreeView;
+  csRef<FactoryEditorModel> factoryEditorModel;
+
   void OnOkButton (wxCommandEvent& event);
-  void OnFactoryChanged (wxTreeEvent& event);
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);
@@ -58,6 +59,8 @@ public:
 
   void Show ();
   void Tick ();
+
+  void EditFactory (const char* factory);
 
   DECLARE_EVENT_TABLE ();
 };
