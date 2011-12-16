@@ -69,6 +69,8 @@ private:
   void RenderSpheres (const csOrthoTransform& camtrans,
       const csReversibleTransform& meshtrans);
 
+  void Cleanup ();
+
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
   ~MeshView ();

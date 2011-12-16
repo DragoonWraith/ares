@@ -59,9 +59,7 @@ SimpleListCtrlView::~SimpleListCtrlView ()
 void SimpleListCtrlView::UpdateEditor ()
 {
   if (!editorModel) return;
-  printf ("AAA\n"); fflush (stdout);
   editorModel->Update (GetSelectedRow ());
-  printf ("BBB\n"); fflush (stdout);
 }
 
 void SimpleListCtrlView::OnItemSelected (wxListEvent& event)
@@ -134,22 +132,14 @@ void SimpleListCtrlView::UpdateEditorRow ()
 
 void SimpleListCtrlView::Refresh ()
 {
-  printf ("1\n"); fflush (stdout);
   list->DeleteAllItems ();
-  printf ("2\n"); fflush (stdout);
   model->ResetIterator ();
-  printf ("3\n"); fflush (stdout);
   while (model->HasRows ())
   {
-  printf ("4\n"); fflush (stdout);
     csStringArray row = model->NextRow ();
-  printf ("5\n"); fflush (stdout);
     ListCtrlTools::AddRow (list, row);
-  printf ("6\n"); fflush (stdout);
   }
-  printf ("7\n"); fflush (stdout);
   UpdateEditor ();
-  printf ("8\n"); fflush (stdout);
 }
 
 csStringArray SimpleListCtrlView::GetSelectedRow ()

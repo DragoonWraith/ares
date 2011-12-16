@@ -43,8 +43,15 @@ MeshView::MeshView (iObjectRegistry* object_reg, wxWindow* parent) :
 
 MeshView::~MeshView ()
 {
+  Cleanup ();
+}
+
+void MeshView::Cleanup ()
+{
   RemoveMesh ();
   delete meshOnTexture;
+  handle = 0;
+  ClearGeometry ();
 }
 
 void MeshView::RemoveMesh ()
@@ -96,11 +103,15 @@ void MeshView::RotateMesh (float seconds)
 
 bool MeshView::SetMesh (const char* name)
 {
-  iMeshFactoryWrapper* factory = engine->FindMeshFactory (name);
-  if (!factory) return false;
-  printf ("Rendering mesh %s\n", name); fflush (stdout);
   RemoveMesh ();
   delete meshOnTexture;
+  meshOnTexture = 0;
+
+  if (!name) return false;
+  iMeshFactoryWrapper* factory = engine->FindMeshFactory (name);
+  if (!factory) return false;
+
+  printf ("Rendering mesh %s\n", name); fflush (stdout);
   meshOnTexture = new csMeshOnTexture (object_reg);
   int num;
   iSector* sector = FindSuitableSector (num);

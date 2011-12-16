@@ -95,7 +95,7 @@ public:
 
   virtual void Update (const csStringArray& row)
   {
-    if (row.GetSize () > 0)
+    if (row.GetSize () > 1)
       dialog->EditFactory (row[1]);
     else
       dialog->EditFactory (0);
@@ -121,7 +121,7 @@ public:
   virtual void Update (const csStringArray& row)
   {
     if (row.GetSize () > 0)
-      dialog->EditCollider (row[1]);
+      dialog->EditCollider (row[0]);
     else
       dialog->EditCollider (0);
   }
@@ -149,8 +149,6 @@ public:
 
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
-  csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (uiManager->GetApp ()->GetObjectRegistry ());
-  timer->RemoveTimerEvent (timerOp);
   EndModal (TRUE);
 }
 
@@ -163,6 +161,9 @@ void DynfactDialog::Show ()
   timer->AddTimerEvent (timerOp, 25);
 
   ShowModal ();
+
+  timer->RemoveTimerEvent (timerOp);
+  meshView->SetMesh (0);
 }
 
 void DynfactDialog::Tick ()
@@ -174,7 +175,7 @@ void DynfactDialog::Tick ()
 iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 {
   csStringArray row = meshTreeView->GetSelectedRow ();
-  if (row.GetSize () == 0) return 0;
+  if (row.GetSize () <= 1) return 0;
   iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
   iDynamicFactory* dynfact = dynworld->FindFactory (row[1]);
   return dynfact;
@@ -202,7 +203,6 @@ void DynfactDialog::SetupColliderGeometry ()
   iDynamicFactory* dynfact = GetCurrentFactory ();
   if (dynfact)
   {
-printf ("idx=%d\n", idx); fflush (stdout);
     for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
     {
       size_t pen = i == size_t (idx) ? hilightPen : normalPen;
