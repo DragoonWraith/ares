@@ -61,6 +61,8 @@ private:
 
   void OnOkButton (wxCommandEvent& event);
   void SetupColliderGeometry ();
+  void ClearColliderPanel ();
+  void UpdateColliderPanel (const celBodyInfo& info);
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);

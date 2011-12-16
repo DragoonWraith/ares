@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../ui/listctrltools.h"
 #include "../ui/listview.h"
+#include "../ui/uitools.h"
 #include "../models/rowmodel.h"
 #include "../tools/inspect.h"
 #include "../tools/tools.h"
@@ -1226,9 +1227,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
     csString pcName = pctpl->GetName ();
     csString tagName = pctpl->GetTag ();
 
-    wxChoicebook* book = XRCCTRL (*this, "pcChoicebook", wxChoicebook);
-    size_t pageIdx = FindNotebookPage (book, pcName);
-    book->ChangeSelection (pageIdx);
+    UITools::SwitchPage (this, "pcChoicebook", pcName);
 
     wxTextCtrl* text = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
     text->SetValue (wxString::FromUTF8 (tagName));
