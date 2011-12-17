@@ -49,12 +49,14 @@ protected:
   csRef<RowModel> model;
   csRef<EditorModel> editorModel;
   csStringArray columns;
+  wxButton* applyButton;
 
   void UnbindModel ();
   void BindModel (RowModel* model);
 
   void UpdateEditor ();
 
+  void OnApply (wxCommandEvent& event);
   void OnItemSelected (wxListEvent& event);
   void OnItemDeselected (wxListEvent& event);
 
@@ -65,7 +67,7 @@ protected:
   void UpdateRow (const csStringArray& oldRow, const csStringArray& row);
 
 public:
-  SimpleListCtrlView (wxListCtrl* list) : list (list) { }
+  SimpleListCtrlView (wxListCtrl* list) : list (list), applyButton (0) { }
   SimpleListCtrlView (wxListCtrl* list, RowModel* model) : list (list)
   {
     BindModel (model);
@@ -96,6 +98,14 @@ public:
    * If there is no current row then this is equivalent to AddEditorRow().
    */
   void UpdateEditorRow ();
+
+  /**
+   * Bind a button to the editor model. This button will automatically
+   * be enabled/disabled depending on the dirty state of the editor
+   * model and the selection of the row model and pressing this button
+   * will apply the changes to the list.
+   */
+  void SetApplyButton (wxWindow* parent, const char* buttonName);
    
   /**
    * Refresh the list from the data in the model.

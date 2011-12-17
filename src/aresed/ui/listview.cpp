@@ -54,12 +54,23 @@ SimpleListCtrlView::~SimpleListCtrlView ()
 {
   UnbindModel ();
   SetEditorModel (0);
+  if (applyButton)
+    applyButton->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (SimpleListCtrlView :: OnApply), 0, this);
 }
 
 void SimpleListCtrlView::UpdateEditor ()
 {
   if (!editorModel) return;
-  editorModel->Update (GetSelectedRow ());
+  csStringArray row = GetSelectedRow ();
+  editorModel->Update (row);
+  if (applyButton)
+  {
+    applyButton->Enable (row.GetSize () > 0 && editorModel->IsDirty ());
+  }
+}
+
+void SimpleListCtrlView::OnApply (wxCommandEvent& event)
+{
 }
 
 void SimpleListCtrlView::OnItemSelected (wxListEvent& event)
@@ -128,6 +139,26 @@ void SimpleListCtrlView::UpdateEditorRow ()
   if (idx == -1) { AddNewRow (row); return; }
   csStringArray oldRow = ListCtrlTools::ReadRow (list, idx);
   UpdateRow (oldRow, row);
+}
+
+void SimpleListCtrlView::SetApplyButton (wxWindow* parent, const char* buttonName)
+{
+  if (applyButton)
+  {
+    applyButton->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (SimpleListCtrlView :: OnApply), 0, this);
+    applyButton = 0;
+  }
+  wxString wxname = wxString::FromUTF8 (buttonName);
+  wxWindow* child = parent->FindWindow (wxname);
+  if (!child)
+  {
+    printf ("Can't find button %s!\n", buttonName);
+    fflush (stdout);
+    return;
+  }
+  applyButton = wxStaticCast (child, wxButton);
+  applyButton->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (SimpleListCtrlView :: OnApply), 0, this);
+  applyButton->Enable (false);
 }
 
 void SimpleListCtrlView::Refresh ()

@@ -332,6 +332,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderView = new ListCtrlView (list, colliderModel);
   colliderEditorModel.AttachNew (new ColliderEditorModel (this));
   colliderView->SetEditorModel (colliderEditorModel);
+  colliderView->SetApplyButton (this, "applyColliderButton");
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
