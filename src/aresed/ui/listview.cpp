@@ -63,8 +63,18 @@ void SimpleListCtrlView::UpdateEditor ()
   if (!editorModel) return;
   csStringArray row = GetSelectedRow ();
   editorModel->Update (row);
+  editorModel->SetDirty (false);
   if (applyButton)
   {
+    applyButton->Enable (row.GetSize () > 0 && editorModel->IsDirty ());
+  }
+}
+
+void SimpleListCtrlView::DirtyChanged ()
+{
+  if (applyButton)
+  {
+    csStringArray row = GetSelectedRow ();
     applyButton->Enable (row.GetSize () > 0 && editorModel->IsDirty ());
   }
 }
@@ -83,6 +93,20 @@ void SimpleListCtrlView::OnItemDeselected (wxListEvent& event)
   UpdateEditor ();
 }
 
+class ListDirtyListener : public DirtyListener
+{
+private:
+  SimpleListCtrlView* view;
+
+public:
+  ListDirtyListener (SimpleListCtrlView* view) : view (view) { }
+  virtual ~ListDirtyListener () { }
+  virtual void DirtyChanged (bool dirty)
+  {
+    view->DirtyChanged ();
+  }
+};
+
 void SimpleListCtrlView::SetEditorModel (EditorModel* model)
 {
   if (editorModel)
@@ -91,6 +115,11 @@ void SimpleListCtrlView::SetEditorModel (EditorModel* model)
 	  SimpleListCtrlView :: OnItemSelected), 0, this);
     list->Disconnect (wxEVT_COMMAND_LIST_ITEM_DESELECTED, wxListEventHandler (
 	  SimpleListCtrlView :: OnItemDeselected), 0, this);
+    if (listener)
+    {
+      editorModel->RemoveDirtyListener (listener);
+      listener = 0;
+    }
   }
   editorModel = model;
   if (editorModel)
@@ -99,6 +128,8 @@ void SimpleListCtrlView::SetEditorModel (EditorModel* model)
 	  SimpleListCtrlView :: OnItemSelected), 0, this);
     list->Connect (wxEVT_COMMAND_LIST_ITEM_DESELECTED, wxListEventHandler (
 	  SimpleListCtrlView :: OnItemDeselected), 0, this);
+    listener.AttachNew (new ListDirtyListener (this));
+    editorModel->AddDirtyListener (listener);
   }
 }
 

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <csutil/stringarray.h>
 
 class UIDialog;
+class EditorModel;
 
 /**
  * This class represents a row model. Instances of this interface
@@ -124,6 +125,14 @@ public:
 };
 
 /**
+ * Listen to dirty changes.
+ */
+struct DirtyListener : public csRefCount
+{
+  virtual void DirtyChanged (bool dirty) = 0;
+};
+
+/**
  * An editor for a model. This is typically used in combination
  * with a model and a view where you want to provide an editor
  * that automatically updates whenever the selected row in the view
@@ -156,6 +165,16 @@ public:
    * Set/clear the dirty flag.
    */
   virtual void SetDirty (bool dirty) { }
+
+  /**
+   * Add dirty listener.
+   */
+  virtual void AddDirtyListener (DirtyListener* listener) { }
+
+  /**
+   * Remove dirty listener.
+   */
+  virtual void RemoveDirtyListener (DirtyListener* listener) { }
 };
 
 #endif // __appares_rowmodel_h

@@ -50,6 +50,7 @@ protected:
   csRef<EditorModel> editorModel;
   csStringArray columns;
   wxButton* applyButton;
+  csRef<DirtyListener> listener;
 
   void UnbindModel ();
   void BindModel (RowModel* model);
@@ -73,6 +74,9 @@ public:
     BindModel (model);
   }
   ~SimpleListCtrlView ();
+
+  /// Internal: called by the dirty listener.
+  void DirtyChanged ();
 
   /**
    * Set the row model to use for this view. Automatically refresh

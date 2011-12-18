@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "meshview.h"
 #include "treeview.h"
 #include "listview.h"
+#include "dirtyhelper.h"
 #include "../models/dynfactmodel.h"
 #include "../tools/tools.h"
 
@@ -116,10 +117,13 @@ class ColliderEditorModel : public EditorModel
 {
 private:
   DynfactDialog* dialog;
+  DirtyHelper helper;
 
 public:
   ColliderEditorModel (DynfactDialog* dialog) : dialog (dialog) { }
   virtual ~ColliderEditorModel () { }
+
+  DirtyHelper& GetHelper () { return helper; }
 
   virtual void Update (const csStringArray& row)
   {
@@ -133,6 +137,10 @@ public:
     // @@@ Not yet implemented.
     return csStringArray ();
   }
+  virtual bool IsDirty () { return helper.IsDirty (); }
+  virtual void SetDirty (bool dirty) { helper.SetDirty (dirty); }
+  virtual void AddDirtyListener (DirtyListener* listener) { helper.AddDirtyListener (listener); }
+  virtual void RemoveDirtyListener (DirtyListener* listener) { helper.RemoveDirtyListener (listener); }
 };
 
 //--------------------------------------------------------------------------
@@ -331,6 +339,22 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderModel.AttachNew (new ColliderRowModel (this));
   colliderView = new ListCtrlView (list, colliderModel);
   colliderEditorModel.AttachNew (new ColliderEditorModel (this));
+  colliderEditorModel->GetHelper ().RegisterComponents (this,
+      "colliderChoice",
+      "boxMassText",
+      "boxOffsetXText", "boxOffsetYText", "boxOffsetZText",
+      "boxSizeXText", "boxSizeYText", "boxSizeZText",
+      "sphereMassText",
+      "sphereOffsetXText", "sphereOffsetYText", "sphereOffsetZText",
+      "sphereRadiusText",
+      "cylinderMassText",
+      "cylinderOffsetXText", "cylinderOffsetYText", "cylinderOffsetZText",
+      "cylinderRadiusText", "cylinderLengthText",
+      "meshMassText",
+      "meshOffsetXText", "meshOffsetYText", "meshOffsetZText",
+      "cmeshMassText",
+      "cmeshOffsetXText", "cmeshOffsetYText", "cmeshOffsetZText",
+      (const char*)0);
   colliderView->SetEditorModel (colliderEditorModel);
   colliderView->SetApplyButton (this, "applyColliderButton");
 
