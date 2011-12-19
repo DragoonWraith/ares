@@ -68,12 +68,135 @@ public:
   virtual ~BufferValueChangeListener () { }
   virtual void ValueChanged (Value* value)
   {
-    bufvalue->ValueChanged (value);
+    bufvalue->ValueChanged ();
   }
 };
 
 // --------------------------------------------------------------------------
 
+BufferedValue::BufferedValue (Value* originalValue) : originalValue (originalValue)
+{
+  changeListener.AttachNew (new BufferValueChangeListener (this));
+  originalValue->AddValueChangeListener (changeListener);
+}
+
+csRef<BufferedValue> BufferedValue::CreateBufferedValue (Value* originalValue)
+{
+  csRef<BufferedValue> bufferedValue;
+  switch (originalValue->GetType ())
+  {
+    case VALUE_STRING:
+      bufferedValue.AttachNew (new StringBufferedValue (originalValue));
+      return bufferedValue;
+    case VALUE_COMPOSITE:
+      bufferedValue.AttachNew (new CompositeBufferedValue (originalValue));
+      return bufferedValue;
+    case VALUE_COLLECTION:
+      bufferedValue.AttachNew (new CollectionBufferedValue (originalValue));
+      return bufferedValue;
+    default:
+      printf ("Could not create buffered value for this type!\n");
+      return 0;
+  }
+}
+
+void CompositeBufferedValue::ValueChanged ()
+{
+  buffer.DeleteAll ();
+  originalValue->ResetIterator ();
+  while (originalValue->HasNext ())
+  {
+    Value* value = originalValue->NextChild ();
+    buffer.Push (BufferedValue::CreateBufferedValue (value));
+  }
+  dirty = false;
+}
+
+void CompositeBufferedValue::Apply ()
+{
+  if (!dirty) return;
+  dirty = false;
+  ResetIterator ();
+  while (HasNext ())
+  {
+    BufferedValue* bufferedValue = static_cast<BufferedValue*> (NextChild ());
+    bufferedValue->Apply ();
+  }
+}
+
+Value* CompositeBufferedValue::GetChild (const char* name)
+{
+  csString sname = name;
+  for (size_t i = 0 ; i < buffer.GetSize () ; i++)
+  {
+    Value* v = buffer[i];
+    if (v->GetName () && sname == v->GetName ())
+      return v;
+  }
+  return 0;
+}
+
+void CollectionBufferedValue::ValueChanged ()
+{
+  buffer.DeleteAll ();
+  originalToBuffered.DeleteAll ();
+  bufferedToOriginal.DeleteAll ();
+  newvalues.DeleteAll ();
+  deletedvalues.DeleteAll ();
+
+  originalValue->ResetIterator ();
+  while (originalValue->HasNext ())
+  {
+    Value* value = originalValue->NextChild ();
+    csRef<BufferedValue> bufferedValue = BufferedValue::CreateBufferedValue (value);
+    originalToBuffered.Put (value, (BufferedValue*)bufferedValue);
+    bufferedToOriginal.Put ((BufferedValue*)bufferedValue, value);
+    buffer.Push (bufferedValue);
+  }
+  dirty = false;
+}
+
+void CollectionBufferedValue::Apply ()
+{
+  if (!dirty) return;
+  dirty = false;
+  ResetIterator ();
+  while (HasNext ())
+  {
+    BufferedValue* bufferedValue = static_cast<BufferedValue*> (NextChild ());
+    bufferedValue->Apply ();
+  }
+  for (size_t i = 0 ; i < newvalues.GetSize () ; i++)
+    originalValue->AddValue (newvalues[i]);
+  newvalues.DeleteAll ();
+  for (size_t i = 0 ; i < deletedvalues.GetSize () ; i++)
+    originalValue->DeleteValue (deletedvalues[i]);
+  deletedvalues.DeleteAll ();
+}
+
+bool CollectionBufferedValue::DeleteValue (Value* child)
+{
+  if (newvalues.Find (child))
+    newvalues.Delete (child);
+  else
+    deletedvalues.Push (child);
+  dirty = newvalues.GetSize () > 0 || deletedvalues.GetSize () > 0;
+  return true;
+}
+
+bool CollectionBufferedValue::AddValue (Value* child)
+{
+  if (deletedvalues.Find (child))
+    deletedvalues.Delete (child);
+  else
+    newvalues.Push (child);
+  dirty = newvalues.GetSize () > 0 || deletedvalues.GetSize () > 0;
+  return true;
+}
+
+// --------------------------------------------------------------------------
+
+#if 0
 BufferedValue::BufferedValue (wxListCtrl* listCtrl, Value* collectionValue) :
      listCtrl (listCtrl), collectionValue (collectionValue)
 {
@@ -120,6 +243,7 @@ void BufferedValue::OnSelectionChange (wxCommandEvent& event)
     FireValueChanged ();
   }
 }
+#endif
 
 // --------------------------------------------------------------------------
 
@@ -231,7 +355,7 @@ bool View::Bind (Value* value, wxPanel* component)
   bindingsByValue.Put (value, b);
 
   value->ResetIterator ();
-  while (value->HasChildren ())
+  while (value->HasNext ())
   {
     Value* child = value->NextChild ();
     csString name = child->GetName ();
@@ -389,7 +513,7 @@ void View::ValueChanged (Value* value)
     ListHeading lhdef;
     const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
     value->ResetIterator ();
-    while (value->HasChildren ())
+    while (value->HasNext ())
     {
       Value* child = value->NextChild ();
       ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));

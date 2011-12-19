@@ -72,7 +72,8 @@ enum ValueType
 
   /**
    * A collection of values. In this situation the
-   * children have to be accessed by name.
+   * children can also be accessed by name and
+   * it is not possible to delete or add children.
    */
   VALUE_COMPOSITE,
 };
@@ -173,7 +174,7 @@ public:
 
   /**
    * If the type of this value is VALUE_COLLECTION or VALUE_COMPOSITE,
-   * then you can get the children using ResetIterator(), HasChildren(),
+   * then you can get the children using ResetIterator(), HasNext(),
    * and NextChild().
    */
   virtual void ResetIterator () { }
@@ -181,7 +182,7 @@ public:
   /**
    * Check if there are still children to process.
    */
-  virtual bool HasChildren () { return false; }
+  virtual bool HasNext () { return false; }
 
   /**
    * Get the next child.
@@ -204,20 +205,20 @@ public:
 
   /**
    * Delete a child value from this value. Returns false if this value could not
-   * be deleted for some reason.
+   * be deleted for some reason. This only works for VALUE_COLLECTION.
    */
   virtual bool DeleteValue (Value* child) { return false; }
 
   /**
    * Add a child value to this value. Returns false if this value could
-   * not be added for some reason.
+   * not be added for some reason. This only works for VALUE_COLLECTION.
    */
   virtual bool AddValue (Value* child) { return false; }
 
   /**
    * Update a child. Returns false if this child could not be updated.
    * The default implementation just calls DeleteChild() first and then
-   * AddChild() with the new child.
+   * AddChild() with the new child. This only works for VALUE_COLLECTION.
    */
   virtual bool UpdateValue (Value* oldChild, Value* child)
   {
@@ -234,6 +235,159 @@ public:
 class BufferValueChangeListener;
 
 /**
+ * A buffered value is a value that is synchronized with another
+ * value but is able to keep changes which can be put back into
+ * the original value on request (for example when the user presses
+ * 'Save' or 'Apply' to copy the contents of the user interface to
+ * the real value).
+ */
+class BufferedValue : public wxEvtHandler, public Value
+{
+  friend class BufferValueChangeListener;
+
+protected:
+  csRef<Value> originalValue;
+  bool dirty;
+
+  csRef<BufferValueChangeListener> changeListener;
+
+public:
+  BufferedValue (Value* originalValue);
+  virtual ~BufferedValue () { }
+
+  /**
+   * Called when the original value changes.
+   * Subclasses of BufferedValue should implement this method
+   * so that they can overwrite the internal buffer they keep.
+   */
+  virtual void ValueChanged () = 0;
+
+  /**
+   * Return true if the buffer is dirty compared to the actual
+   * real original value.
+   */
+  virtual bool IsDirty () const { return dirty; }
+
+  /**
+   * Call this to apply the value in the buffer to the real value.
+   * This will also clear the dirty flag. Subclasses should override
+   * this in order to correctly copy the internal buffer to the original value.
+   * Subclasses can first test for the dirty flag. If dirty is false
+   * they don't have to do anything. Additionaly subclasses should set
+   * this flag to false.
+   */
+  virtual void Apply () = 0;
+
+  /**
+   * Factory method to create buffered values of the appropriate type.
+   */
+  static csRef<BufferedValue> CreateBufferedValue (Value* originalValue);
+
+  virtual ValueType GetType () const { return originalValue->GetType (); }
+  virtual const char* GetName () const { return originalValue->GetName (); }
+};
+
+/**
+ * A string buffered value.
+ */
+class StringBufferedValue : public BufferedValue
+{
+private:
+  csString buffer;
+
+public:
+  StringBufferedValue (Value* originalValue) : BufferedValue (originalValue)
+  {
+    CS_ASSERT (originalValue->GetType () == VALUE_STRING);
+    ValueChanged ();
+  }
+  virtual ~StringBufferedValue () { }
+
+  virtual void ValueChanged ()
+  {
+    buffer = originalValue->GetStringValue ();
+    dirty = false;
+  }
+  virtual void Apply ()
+  {
+    if (!dirty) return;
+    dirty = false;
+    originalValue->SetStringValue (buffer);
+  }
+
+  virtual const char* GetStringValue () { return buffer; }
+  virtual void SetStringValue (const char* str)
+  {
+    dirty = (buffer != str);
+    buffer = str;
+    FireValueChanged ();
+  }
+};
+
+/**
+ * A composite buffered value.
+ */
+class CompositeBufferedValue : public BufferedValue
+{
+private:
+  csRefArray<BufferedValue> buffer;
+  size_t idx;	// For the iterator.
+
+public:
+  CompositeBufferedValue (Value* originalValue) : BufferedValue (originalValue)
+  {
+    CS_ASSERT (originalValue->GetType () == VALUE_COMPOSITE);
+    ValueChanged ();
+  }
+  virtual ~CompositeBufferedValue () { }
+
+  virtual void ValueChanged ();
+  virtual void Apply ();
+
+  virtual void ResetIterator () { idx = 0; }
+  virtual bool HasNext () { return idx < buffer.GetSize (); }
+  virtual Value* NextChild () { idx++; return buffer[idx-1]; }
+  virtual Value* GetChild (size_t idx) { return buffer[idx]; }
+  virtual Value* GetChild (const char* name);
+};
+
+/**
+ * A collection buffered value.
+ */
+class CollectionBufferedValue : public BufferedValue
+{
+private:
+  csRefArray<BufferedValue> buffer;
+  csHash<csPtrKey<BufferedValue>,csPtrKey<Value> > originalToBuffered;
+  csHash<csPtrKey<Value>,csPtrKey<BufferedValue> > bufferedToOriginal;
+
+  csRefArray<Value> newvalues;
+  csRefArray<Value> deletedvalues;
+
+  size_t idx;	// For the iterator.
+
+public:
+  CollectionBufferedValue (Value* originalValue) : BufferedValue (originalValue)
+  {
+    CS_ASSERT (originalValue->GetType () == VALUE_COLLECTION);
+    ValueChanged ();
+  }
+  virtual ~CollectionBufferedValue () { }
+
+  virtual void ValueChanged ();
+  virtual void Apply ();
+
+  virtual void ResetIterator () { idx = 0; }
+  virtual bool HasNext () { return idx < buffer.GetSize (); }
+  virtual Value* NextChild () { idx++; return buffer[idx-1]; }
+  virtual Value* GetChild (size_t idx) { return buffer[idx]; }
+
+  virtual bool DeleteValue (Value* child);
+  virtual bool AddValue (Value* child);
+  //virtual bool UpdateValue (Value* oldChild, Value* child);
+};
+
+/**
  * This value can be used as the detail value for children of a
  * collection. It listens to the current selection of the list and synchronizes
  * the value corresponding to that selection with this buffered value.
@@ -242,7 +396,8 @@ class BufferValueChangeListener;
  * A buffered value only works on a collection value containing composite
  * values with itself having primitive children.
  */
-class BufferedValue : public wxEvtHandler, public Value
+#if 0
+class ListBufferedValue : public wxEvtHandler, public Value
 {
   friend class BufferValueChangeListener;
 
@@ -278,6 +433,7 @@ public:
   virtual float GetFloatValue () { return 0.0f; }
   virtual void SetFloatValue (float v) { }
 };
+#endif
 
 
 
