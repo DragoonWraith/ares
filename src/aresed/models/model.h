@@ -241,7 +241,7 @@ class BufferValueChangeListener;
  * 'Save' or 'Apply' to copy the contents of the user interface to
  * the real value).
  */
-class BufferedValue : public wxEvtHandler, public Value
+class BufferedValue : public Value
 {
   friend class BufferValueChangeListener;
 
