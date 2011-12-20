@@ -74,10 +74,30 @@ public:
 
 // --------------------------------------------------------------------------
 
+class SelectedValueChangeListener : public ValueChangeListener
+{
+private:
+  SelectedValue* selvalue;
+
+public:
+  SelectedValueChangeListener (SelectedValue* selvalue) : selvalue (selvalue) { }
+  virtual ~SelectedValueChangeListener () { }
+  virtual void ValueChanged (Value* value)
+  {
+    selvalue->ValueChanged ();
+  }
+};
+
+// --------------------------------------------------------------------------
+
 BufferedValue::BufferedValue (Value* originalValue) : originalValue (originalValue)
 {
   changeListener.AttachNew (new BufferValueChangeListener (this));
   originalValue->AddValueChangeListener (changeListener);
+}
+
+BufferedValue::~BufferedValue ()
+{
 }
 
 csRef<BufferedValue> BufferedValue::CreateBufferedValue (Value* originalValue)
@@ -103,11 +123,14 @@ csRef<BufferedValue> BufferedValue::CreateBufferedValue (Value* originalValue)
 void CompositeBufferedValue::ValueChanged ()
 {
   buffer.DeleteAll ();
+  names.DeleteAll ();
   originalValue->ResetIterator ();
   while (originalValue->HasNext ())
   {
-    Value* value = originalValue->NextChild ();
+    csString name;
+    Value* value = originalValue->NextChild (&name);
     buffer.Push (BufferedValue::CreateBufferedValue (value));
+    names.Push (name);
   }
   dirty = false;
 }
@@ -129,9 +152,7 @@ Value* CompositeBufferedValue::GetChild (const char* name)
   csString sname = name;
   for (size_t i = 0 ; i < buffer.GetSize () ; i++)
   {
-    Value* v = buffer[i];
-    if (v->GetName () && sname == v->GetName ())
-      return v;
+    if (sname == names[i]) return buffer[i];
   }
   return 0;
 }
@@ -181,45 +202,56 @@ bool CollectionBufferedValue::DeleteValue (Value* child)
   else
     deletedvalues.Push (child);
   dirty = newvalues.GetSize () > 0 || deletedvalues.GetSize () > 0;
+  BufferedValue* bufferedValue = originalToBuffered.Get (child, 0);
+  if (bufferedValue)
+    buffer.Delete (bufferedValue);
+
   return true;
 }
 
 bool CollectionBufferedValue::AddValue (Value* child)
 {
+  csRef<BufferedValue> bufferedValue;
   if (deletedvalues.Find (child))
     deletedvalues.Delete (child);
   else
+  {
     newvalues.Push (child);
+    bufferedValue = BufferedValue::CreateBufferedValue (child);
+    originalToBuffered.Put (child, (BufferedValue*)bufferedValue);
+  }
   dirty = newvalues.GetSize () > 0 || deletedvalues.GetSize () > 0;
+  bufferedValue = originalToBuffered.Get (child, 0);
+  if (bufferedValue)
+    buffer.Push (bufferedValue);
   return true;
 }
 
 // --------------------------------------------------------------------------
 
-#if 0
-BufferedValue::BufferedValue (wxListCtrl* listCtrl, Value* collectionValue) :
+SelectedValue::SelectedValue (wxListCtrl* listCtrl, Value* collectionValue) :
      listCtrl (listCtrl), collectionValue (collectionValue)
 {
   listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
-	  wxCommandEventHandler (BufferedValue :: OnSelectionChange), 0, this);
+	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
   selection = ListCtrlTools::GetFirstSelectedRow (listCtrl);
-  currentValue = 0;
-  changeListener.AttachNew (new BufferValueChangeListener (this));
+  currentValue = &nullValue;
+  changeListener.AttachNew (new SelectedValueChangeListener (this));
   UpdateToSelection ();
 }
 
-BufferedValue::~BufferedValue ()
+SelectedValue::~SelectedValue ()
 {
   listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
-	  wxCommandEventHandler (BufferedValue :: OnSelectionChange), 0, this);
+	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
 }
 
-void BufferedValue::UpdateToSelection ()
+void SelectedValue::UpdateToSelection ()
 {
-  if (currentValue)
+  if (currentValue != &nullValue)
     currentValue->RemoveValueChangeListener (changeListener);
   if (selection == -1)
-    currentValue = 0;
+    currentValue = &nullValue;
   else
   {
     currentValue = collectionValue->GetChild (size_t (selection));
@@ -227,13 +259,12 @@ void BufferedValue::UpdateToSelection ()
   }
 }
 
-void BufferedValue::ValueChanged (Value* value)
+void SelectedValue::ValueChanged ()
 {
-  CS_ASSERT (value == currentValue);
   FireValueChanged ();
 }
 
-void BufferedValue::OnSelectionChange (wxCommandEvent& event)
+void SelectedValue::OnSelectionChange (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   if (idx != selection)
@@ -243,7 +274,6 @@ void BufferedValue::OnSelectionChange (wxCommandEvent& event)
     FireValueChanged ();
   }
 }
-#endif
 
 // --------------------------------------------------------------------------
 
@@ -357,8 +387,8 @@ bool View::Bind (Value* value, wxPanel* component)
   value->ResetIterator ();
   while (value->HasNext ())
   {
-    Value* child = value->NextChild ();
-    csString name = child->GetName ();
+    csString name;
+    Value* child = value->NextChild (&name);
     wxWindow* childComp = FindComponentByName (parent, name);
     if (!childComp)
     {

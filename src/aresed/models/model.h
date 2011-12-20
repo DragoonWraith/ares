@@ -41,6 +41,9 @@ namespace Ares
 {
 
 class Value;
+class BufferValueChangeListener;
+class ViewValueChangeListener;
+class SelectedValueChangeListener;
 
 /**
  * Listen to changes in a value.
@@ -58,6 +61,10 @@ struct ValueChangeListener : public csRefCount
  */
 enum ValueType
 {
+  /// No type.
+  VALUE_NONE = 0,
+
+  /// The basic types.
   VALUE_STRING,
   VALUE_LONG,
   VALUE_BOOL,
@@ -98,12 +105,6 @@ public:
    * Get the type of the value.
    */
   virtual ValueType GetType () const { return VALUE_STRING; }
-
-  /**
-   * Get the name of this value (used if this value is a child of
-   * a VALUE_COMPOSITE).
-   */
-  virtual const char* GetName () const { return 0; }
 
   /**
    * Get the value if the type is VALUE_STRING.
@@ -185,9 +186,12 @@ public:
   virtual bool HasNext () { return false; }
 
   /**
-   * Get the next child.
+   * Get the next child. If the optional 'name' parameter
+   * is given then it will be filled with the name of the component (if
+   * it has a name). Only components of type VALUE_COMPOSITE support names
+   * for their children.
    */
-  virtual Value* NextChild () { return 0; }
+  virtual Value* NextChild (csString* name = 0) { return 0; }
 
   /**
    * If the type of this value is VALUE_COMPOSITE or VALUE_COLLECTION then you
@@ -232,8 +236,6 @@ public:
   }
 };
 
-class BufferValueChangeListener;
-
 /**
  * A buffered value is a value that is synchronized with another
  * value but is able to keep changes which can be put back into
@@ -253,7 +255,7 @@ protected:
 
 public:
   BufferedValue (Value* originalValue);
-  virtual ~BufferedValue () { }
+  virtual ~BufferedValue ();
 
   /**
    * Called when the original value changes.
@@ -284,7 +286,6 @@ public:
   static csRef<BufferedValue> CreateBufferedValue (Value* originalValue);
 
   virtual ValueType GetType () const { return originalValue->GetType (); }
-  virtual const char* GetName () const { return originalValue->GetName (); }
 };
 
 /**
@@ -330,6 +331,7 @@ public:
 class CompositeBufferedValue : public BufferedValue
 {
 private:
+  csStringArray names;
   csRefArray<BufferedValue> buffer;
   size_t idx;	// For the iterator.
 
@@ -346,7 +348,12 @@ public:
 
   virtual void ResetIterator () { idx = 0; }
   virtual bool HasNext () { return idx < buffer.GetSize (); }
-  virtual Value* NextChild () { idx++; return buffer[idx-1]; }
+  virtual Value* NextChild (csString* name = 0)
+  {
+    if (name) *name = names[idx];
+    idx++;
+    return buffer[idx-1];
+  }
   virtual Value* GetChild (size_t idx) { return buffer[idx]; }
   virtual Value* GetChild (const char* name);
 };
@@ -379,7 +386,7 @@ public:
 
   virtual void ResetIterator () { idx = 0; }
   virtual bool HasNext () { return idx < buffer.GetSize (); }
-  virtual Value* NextChild () { idx++; return buffer[idx-1]; }
+  virtual Value* NextChild (csString* name = 0) { idx++; return buffer[idx-1]; }
   virtual Value* GetChild (size_t idx) { return buffer[idx]; }
 
   virtual bool DeleteValue (Value* child);
@@ -388,18 +395,32 @@ public:
 };
 
 /**
- * This value can be used as the detail value for children of a
- * collection. It listens to the current selection of the list and synchronizes
- * the value corresponding to that selection with this buffered value.
- * It can also buffer values (as caused by changes in the UI components)
- * which can then later be applied to the real value in the collection.
- * A buffered value only works on a collection value containing composite
- * values with itself having primitive children.
+ * A constant null value.
  */
-#if 0
-class ListBufferedValue : public wxEvtHandler, public Value
+class NullValue : public Value
 {
-  friend class BufferValueChangeListener;
+public:
+  virtual ValueType GetType () const { return VALUE_NONE; }
+};
+
+/**
+ * A standard composite value which supports iteration and
+ * selection of the children by name.
+ */
+class CompositeValue : public Value
+{
+public:
+};
+
+/**
+ * This value exactly mirrors a value as it is selected in a list.
+ * When the selection changes this value will automatically change
+ * and making changes to this value will automatically reflect on
+ * to the value in the list.
+ */
+class SelectedValue : public wxEvtHandler, public Value
+{
+  friend class SelectedValueChangeListener;
 
 private:
   wxListCtrl* listCtrl;
@@ -409,35 +430,41 @@ private:
   long selection;
   /// The value from the collection we are showing.
   Value* currentValue;
+  NullValue nullValue;
 
-  csRef<BufferValueChangeListener> changeListener;
+  csRef<SelectedValueChangeListener> changeListener;
 
   // Called when the value from the collection changes.
-  void ValueChanged (Value* value);
+  void ValueChanged ();
 
   void OnSelectionChange (wxCommandEvent& event);
   void UpdateToSelection ();
 
 public:
-  BufferedValue (wxListCtrl* listCtrl, Value* collectionValue);
-  virtual ~BufferedValue ();
+  SelectedValue (wxListCtrl* listCtrl, Value* collectionValue);
+  virtual ~SelectedValue ();
 
-  virtual ValueType GetType () const { return VALUE_COMPOSITE; }
-  virtual const char* GetName () const { return 0; }
-  virtual const char* GetStringValue () { return 0; }
-  virtual void SetStringValue (const char* str) { }
-  virtual long GetLongValue () { return 0; }
-  virtual void SetLongValue (long v) { }
-  virtual bool GetBoolValue () { return false; }
-  virtual void SetBoolValue (bool v) { }
-  virtual float GetFloatValue () { return 0.0f; }
-  virtual void SetFloatValue (float v) { }
+  virtual ValueType GetType () const { return currentValue->GetType (); }
+  virtual const char* GetStringValue () { return currentValue->GetStringValue (); }
+  virtual void SetStringValue (const char* str) { currentValue->SetStringValue (str); }
+  virtual long GetLongValue () { return currentValue->GetLongValue (); }
+  virtual void SetLongValue (long v) { currentValue->SetLongValue (v); }
+  virtual bool GetBoolValue () { return currentValue->GetBoolValue (); }
+  virtual void SetBoolValue (bool v) { currentValue->SetBoolValue (v); }
+  virtual float GetFloatValue () { return currentValue->GetFloatValue (); }
+  virtual void SetFloatValue (float v) { currentValue->SetFloatValue (v); }
+  virtual void ResetIterator () { currentValue->ResetIterator (); }
+  virtual bool HasNext () { return currentValue->HasNext (); }
+  virtual Value* NextChild (csString* name = 0) { return currentValue->NextChild (name); }
+  virtual Value* GetChild (size_t idx) { return currentValue->GetChild (idx); }
+  virtual Value* GetChild (const char* name) { return currentValue->GetChild (name); }
+  virtual bool DeleteValue (Value* child) { return currentValue->DeleteValue (child); }
+  virtual bool AddValue (Value* child) { return currentValue->AddValue (child); }
+  virtual bool UpdateValue (Value* oldChild, Value* child)
+  {
+    return currentValue->UpdateValue (oldChild, child);
+  }
 };
-#endif
-
-
-
-class ViewValueChangeListener;
 
 /**
  * A view. This class keeps track of the bindings between

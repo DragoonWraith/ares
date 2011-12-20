@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "listview.h"
 #include "dirtyhelper.h"
 #include "../models/dynfactmodel.h"
+#include "../models/model.h"
 #include "../tools/tools.h"
 
 #include <wx/choicebk.h>
@@ -43,6 +44,74 @@ BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
+
+using namespace Ares;
+
+/**
+ * A composite value representing a collider for a dynamic factory.
+ */
+class ColliderValue : public Value
+{
+private:
+  celBodyInfo info;
+
+public:
+  ColliderValue (const celBodyInfo& info) : info (info) { }
+  virtual ~ColliderValue () { }
+
+  virtual ValueType GetType () const { return VALUE_COMPOSITE; }
+};
+
+/**
+ * A value representing the list of colliders for a dynamic factory.
+ * Children of this value are of type ColliderValue.
+ */
+class ColliderCollectionValue : public Value
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+  size_t idx;
+  csRefArray<ColliderValue> colliders;
+
+  void UpdateColliders ()
+  {
+    colliders.DeleteAll ();
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
+    {
+      csRef<ColliderValue> value;
+      value.AttachNew (new ColliderValue (dynfact->GetBody (i)));
+      colliders.Push (value);
+    }
+  }
+
+public:
+  ColliderCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~ColliderCollectionValue () { }
+
+  virtual ValueType GetType () const { return VALUE_COLLECTION; }
+
+  virtual void ResetIterator ()
+  {
+    UpdateColliders ();
+    idx = 0;
+  }
+  virtual bool HasNext () { return idx < colliders.GetSize (); }
+  virtual Value* NextChild ()
+  {
+    idx++;
+    return colliders[idx-1];
+  }
+
+  virtual Value* GetChild (size_t idx) { UpdateColliders (); return colliders[idx]; }
+  virtual Value* GetChild (const char* name) { return 0; }
+
+  virtual bool DeleteValue (Value* child) { return false; }
+  virtual bool AddValue (Value* child) { return false; }
+};
+
 
 class ColliderRowModel : public RowModel
 {
