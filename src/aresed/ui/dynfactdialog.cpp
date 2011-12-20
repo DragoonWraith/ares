@@ -48,18 +48,64 @@ END_EVENT_TABLE()
 using namespace Ares;
 
 /**
+ * A value for the type of a collider.
+ */
+class ColliderTypeValue : public Value
+{
+private:
+  celBodyType* type;
+
+public:
+  ColliderTypeValue (celBodyType* t) : type (t) { }
+  virtual ~ColliderTypeValue () { }
+
+  virtual ValueType GetType () const { return VALUE_STRING; }
+  virtual const char* GetStringValue ()
+  {
+    switch (*type)
+    {
+      case BODY_NONE: return "none";
+      case BODY_BOX: return "box";
+      case BODY_SPHERE: return "sphere";
+      case BODY_CYLINDER: return "cylinder";
+      case BODY_CONVEXMESH: return "convexmesh";
+      case BODY_MESH: return "mesh";
+      default: return "?";
+    }
+  }
+  virtual void SetStringValue (const char* str)
+  {
+    csString sstr = str;
+    celBodyType newtype;
+    if (sstr == "none") newtype = BODY_NONE;
+    else if (sstr == "box") newtype = BODY_BOX;
+    else if (sstr == "sphere") newtype = BODY_SPHERE;
+    else if (sstr == "cylinder") newtype = BODY_CYLINDER;
+    else if (sstr == "convexmesh") newtype = BODY_CONVEXMESH;
+    else if (sstr == "mesh") newtype = BODY_MESH;
+    else newtype = BODY_NONE;
+    if (newtype == *type) return;
+    *type = newtype;
+    FireValueChanged ();
+  }
+};
+
+/**
  * A composite value representing a collider for a dynamic factory.
  */
-class ColliderValue : public Value
+class ColliderValue : public CompositeValue
 {
 private:
   celBodyInfo info;
 
 public:
-  ColliderValue (const celBodyInfo& info) : info (info) { }
+  ColliderValue (const celBodyInfo& info) : info (info)
+  {
+    csRef<Value> typeValue;
+    typeValue.AttachNew (new ColliderTypeValue (&ColliderValue::info.type));
+    AddChild ("type", typeValue);
+  }
   virtual ~ColliderValue () { }
-
-  virtual ValueType GetType () const { return VALUE_COMPOSITE; }
 };
 
 /**

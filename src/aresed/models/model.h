@@ -237,6 +237,123 @@ public:
 };
 
 /**
+ * A constant null value.
+ */
+class NullValue : public Value
+{
+public:
+  virtual ValueType GetType () const { return VALUE_NONE; }
+};
+
+/**
+ * An abstract composite value which supports iteration and
+ * selection of the children by name. This is an abstract
+ * class that has to be subclassed in order to provide the
+ * name and value of every child by index.
+ * Subclasses must also override the standard Value::GetChild(idx).
+ */
+class AbstractCompositeValue : public Value
+{
+private:
+  size_t idx;
+
+protected:
+  /// Override this function to indicate the number of children.
+  virtual size_t GetChildCount () = 0;
+  /// Override this function to return the right name for a given child.
+  virtual const char* GetName (size_t idx) = 0;
+
+public:
+  AbstractCompositeValue () { }
+  virtual ~AbstractCompositeValue () { }
+
+  virtual ValueType GetType () const { return VALUE_COMPOSITE; }
+
+  virtual void ResetIterator () { idx = 0; }
+  virtual bool HasNext () { return idx < GetChildCount (); }
+  virtual Value* NextChild (csString* name = 0)
+  {
+    if (name) *name = GetName (idx);
+    idx++;
+    return GetChild (idx-1);
+  }
+  // This function is only here because otherwise the compiler complains
+  // in the usage of GetChild (idx-1).
+  virtual Value* GetChild (size_t idx)
+  {
+    return Value::GetChild (idx);
+  }
+  virtual Value* GetChild (const char* name)
+  {
+    csString sname = name;
+    for (size_t i = 0 ; i < GetChildCount () ; i++)
+      if (sname == GetName (i)) return GetChild (i);
+    return 0;
+  }
+};
+
+/**
+ * A standard composite value which maintains a list of
+ * names and children itself.
+ */
+class CompositeValue : public AbstractCompositeValue
+{
+private:
+  csStringArray names;
+  csRefArray<Value> children;
+
+protected:
+  virtual size_t GetChildCount () { return children.GetSize (); }
+  virtual const char* GetName (size_t idx) { return names[idx]; }
+
+public:
+  CompositeValue () { }
+  virtual ~CompositeValue () { }
+
+  /**
+   * Add a child with name to this composite.
+   */
+  void AddChild (const char* name, Value* value)
+  {
+    names.Push (name);
+    children.Push (value);
+  }
+  /**
+   * Remove all children from this composite.
+   */
+  void DeleteAll ()
+  {
+    names.DeleteAll ();
+    children.DeleteAll ();
+  }
+
+  virtual Value* GetChild (size_t idx) { return children[idx]; }
+};
+
+/**
+ * A value implementation that directly refers to a float at a given
+ * location.
+ */
+class FloatPointerValue : public Value
+{
+private:
+  float* flt;
+
+public:
+  FloatPointerValue (float* f) : flt (f) { }
+  virtual ~FloatPointerValue () { }
+
+  virtual ValueType GetType () const { return VALUE_FLOAT; }
+  virtual float GetFloatValue () { return *flt; }
+  virtual void SetFloatValue (float v)
+  {
+    if (v == *flt) return;
+    *flt = v;
+    FireValueChanged ();
+  }
+};
+
+/**
  * A buffered value is a value that is synchronized with another
  * value but is able to keep changes which can be put back into
  * the original value on request (for example when the user presses
@@ -392,24 +509,6 @@ public:
   virtual bool DeleteValue (Value* child);
   virtual bool AddValue (Value* child);
   //virtual bool UpdateValue (Value* oldChild, Value* child);
-};
-
-/**
- * A constant null value.
- */
-class NullValue : public Value
-{
-public:
-  virtual ValueType GetType () const { return VALUE_NONE; }
-};
-
-/**
- * A standard composite value which supports iteration and
- * selection of the children by name.
- */
-class CompositeValue : public Value
-{
-public:
 };
 
 /**
