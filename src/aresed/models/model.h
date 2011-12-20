@@ -257,6 +257,8 @@ class AbstractCompositeValue : public Value
 private:
   size_t idx;
 
+  using Value::GetChild;
+
 protected:
   /// Override this function to indicate the number of children.
   virtual size_t GetChildCount () = 0;
@@ -276,12 +278,6 @@ public:
     if (name) *name = GetName (idx);
     idx++;
     return GetChild (idx-1);
-  }
-  // This function is only here because otherwise the compiler complains
-  // in the usage of GetChild (idx-1).
-  virtual Value* GetChild (size_t idx)
-  {
-    return Value::GetChild (idx);
   }
   virtual Value* GetChild (const char* name)
   {
