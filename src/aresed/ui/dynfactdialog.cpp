@@ -245,14 +245,11 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
   return dynfact;
 }
 
-void DynfactDialog::EditCollider (const char* typeName)
-{
-  SetupColliderGeometry ();
-}
-
 void DynfactDialog::EditFactory (const char* meshName)
 {
   meshView->SetMesh (meshName);
+  wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
+  ListCtrlTools::ClearSelection (colliderList);
   colliderCollectionValue->Refresh ();
   SetupColliderGeometry ();
 }
@@ -317,8 +314,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
   colliderView->Bind (colliderCollectionValue, "colliderList");
 
-  // Create a selection value that will follow the selection on the collider
-  // list.
+  // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderSelectedValue.AttachNew (new SelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
   csRef<ColliderValue> colliderValue;
@@ -326,6 +322,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderSelectedValue->SetupComposite (colliderValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
+  colliderView->Bind (colliderSelectedValue->GetChild ("type"), "type_colliderChoice");
   colliderView->Bind (colliderSelectedValue, "box_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "sphere_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "cylinder_ColliderPanel");

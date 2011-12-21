@@ -391,6 +391,23 @@ bool View::Bind (Value* value, const char* compName)
   return Bind (value, comp);
 }
 
+void View::RegisterBinding (Value* value, wxWindow* component, wxEventType eventType)
+{
+  Binding b;
+  b.value = value;
+  b.component = component;
+  b.eventType = eventType;
+  bindingsByComponent.Put (component, b);
+  if (!bindingsByValue.Contains (value))
+    bindingsByValue.Put (value, csArray<Binding> ());
+  csArray<Binding> temp;
+  bindingsByValue.Get (value, temp).Push (b);
+  CS_ASSERT (temp.GetSize () == 0);
+  if (eventType != wxEVT_NULL)
+    component->Connect (eventType, wxCommandEventHandler (View :: OnComponentChanged), 0, this);
+  value->AddValueChangeListener (changeListener);
+}
+
 bool View::Bind (Value* value, wxTextCtrl* component)
 {
   switch (value->GetType ())
@@ -406,15 +423,7 @@ bool View::Bind (Value* value, wxTextCtrl* component)
       return false;
   }
 
-  Binding b;
-  b.value = value;
-  b.component = wxStaticCast (component, wxWindow);
-  b.eventType = wxEVT_COMMAND_TEXT_UPDATED;
-  bindingsByComponent.Put (component, b);
-  bindingsByValue.Put (value, b);
-  component->Connect (wxEVT_COMMAND_TEXT_UPDATED,
-      wxCommandEventHandler (View :: OnComponentChanged), 0, this);
-  value->AddValueChangeListener (changeListener);
+  RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED);
   ValueChanged (value);
   return true;
 }
@@ -432,15 +441,7 @@ bool View::Bind (Value* value, wxChoicebook* component)
       return false;
   }
 
-  Binding b;
-  b.value = value;
-  b.component = wxStaticCast (component, wxWindow);
-  b.eventType = wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED;
-  bindingsByComponent.Put (component, b);
-  bindingsByValue.Put (value, b);
-  component->Connect (wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED,
-      wxCommandEventHandler (View :: OnComponentChanged), 0, this);
-  value->AddValueChangeListener (changeListener);
+  RegisterBinding (value, component, wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED);
   ValueChanged (value);
   return true;
 }
@@ -456,18 +457,14 @@ bool View::Bind (Value* value, wxPanel* component)
     return false;
   }
 
-  Binding b;
-  b.value = value;
-  b.component = wxStaticCast (component, wxWindow);
-  bindingsByComponent.Put (component, b);
-  bindingsByValue.Put (value, b);
+  RegisterBinding (value, component, wxEVT_NULL);
 
   value->ResetIterator ();
   while (value->HasNext ())
   {
     csString name;
     Value* child = value->NextChild (&name);
-    wxWindow* childComp = FindComponentByName (parent, name);
+    wxWindow* childComp = FindComponentByName (component, name);
     if (!childComp)
     {
       printf ("Warning: no component found for child '%s'!\n", name.GetData ());
@@ -478,7 +475,6 @@ bool View::Bind (Value* value, wxPanel* component)
 	return false;
     }
   }
-  value->AddValueChangeListener (changeListener);
   ValueChanged (value);
   return true;
 }
@@ -494,12 +490,7 @@ bool View::Bind (Value* value, wxListCtrl* component)
     return false;
   }
 
-  Binding b;
-  b.value = value;
-  b.component = wxStaticCast (component, wxWindow);
-  bindingsByComponent.Put (component, b);
-  bindingsByValue.Put (value, b);
-  value->AddValueChangeListener (changeListener);
+  RegisterBinding (value, component, wxEVT_NULL);
   ValueChanged (value);
   return true;
 }
@@ -641,67 +632,71 @@ void View::OnComponentChanged (wxCommandEvent& event)
 
 void View::ValueChanged (Value* value)
 {
-  Binding b;
-  const Binding& binding = bindingsByValue.Get (value, b);
-  if (!binding.value)
+  csArray<Binding> b;
+  const csArray<Binding>& bindings = bindingsByValue.Get (value, b);
+  if (!bindings.GetSize ())
   {
     printf ("ValueChanged: Something went wrong! Called without a value!\n");
     return;
   }
-  if (binding.component->IsKindOf (CLASSINFO (wxTextCtrl)))
+  for (size_t i = 0 ; i < bindings.GetSize () ; i++)
   {
-    wxTextCtrl* textCtrl = wxStaticCast (binding.component, wxTextCtrl);
-    csString text = ValueToString (value);
-    textCtrl->SetValue (wxString::FromUTF8 (text));
-  }
-  else if (binding.component->IsKindOf (CLASSINFO (wxPanel)))
-  {
-    // If the value of a composite changes we update the children.
-    value->ResetIterator ();
-    while (value->HasNext ())
+    wxWindow* comp = bindings[i].component;
+    if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
     {
-      Value* child = value->NextChild ();
-      ValueChanged (child);
+      wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
+      csString text = ValueToString (value);
+      textCtrl->SetValue (wxString::FromUTF8 (text));
     }
-  }
-  else if (binding.component->IsKindOf (CLASSINFO (wxListCtrl)))
-  {
-    wxListCtrl* listCtrl = wxStaticCast (binding.component, wxListCtrl);
-    listCtrl->DeleteAllItems ();
-    ListHeading lhdef;
-    const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
-    value->ResetIterator ();
-    while (value->HasNext ())
+    else if (comp->IsKindOf (CLASSINFO (wxPanel)))
     {
-      Value* child = value->NextChild ();
-      ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
+      // If the value of a composite changes we update the children.
+      value->ResetIterator ();
+      while (value->HasNext ())
+      {
+	Value* child = value->NextChild ();
+	ValueChanged (child);
+      }
     }
-  }
-  else if (binding.component->IsKindOf (CLASSINFO (wxChoicebook)))
-  {
-    wxChoicebook* choicebook = wxStaticCast (binding.component, wxChoicebook);
-    if (value->GetType () == VALUE_LONG)
-      choicebook->ChangeSelection (value->GetLongValue ());
+    else if (comp->IsKindOf (CLASSINFO (wxListCtrl)))
+    {
+      wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
+      listCtrl->DeleteAllItems ();
+      ListHeading lhdef;
+      const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
+      value->ResetIterator ();
+      while (value->HasNext ())
+      {
+	Value* child = value->NextChild ();
+	ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
+      }
+    }
+    else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
+    {
+      wxChoicebook* choicebook = wxStaticCast (comp, wxChoicebook);
+      if (value->GetType () == VALUE_LONG)
+	choicebook->ChangeSelection (value->GetLongValue ());
+      else
+      {
+	csString text = ValueToString (value);
+	wxString wxtext = wxString::FromUTF8 (text);
+	for (size_t i = 0 ; i < choicebook->GetPageCount () ; i++)
+	{
+	  wxString wxp = choicebook->GetPageText (i);
+	  if (wxp == wxtext)
+	  {
+	    choicebook->ChangeSelection (i);
+	    return;
+	  }
+	}
+	// If we come here we set to the first page.
+	choicebook->SetSelection (0);
+      }
+    }
     else
     {
-      csString text = ValueToString (value);
-      wxString wxtext = wxString::FromUTF8 (text);
-      for (size_t i = 0 ; i < choicebook->GetPageCount () ; i++)
-      {
-	wxString wxp = choicebook->GetPageText (i);
-	if (wxp == wxtext)
-	{
-	  choicebook->ChangeSelection (i);
-	  return;
-	}
-      }
-      // If we come here we set to the first page.
-      choicebook->SetSelection (0);
+      printf ("ValueChanged: this type of component not yet supported!\n");
     }
-  }
-  else
-  {
-    printf ("ValueChanged: this type of component not yet supported!\n");
   }
 }
 

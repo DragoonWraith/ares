@@ -650,7 +650,7 @@ private:
     Binding () : component (0), eventType (wxEVT_NULL) { }
   };
   typedef csHash<Binding,csPtrKey<wxWindow> > ComponentToBinding;
-  typedef csHash<Binding,csPtrKey<Value> > ValueToBinding;
+  typedef csHash<csArray<Binding>,csPtrKey<Value> > ValueToBinding;
   ComponentToBinding bindingsByComponent;
   ValueToBinding bindingsByValue;
 
@@ -682,6 +682,8 @@ private:
    * in the name of the components.
    */
   wxWindow* FindComponentByName (wxWindow* container, const char* name);
+
+  void RegisterBinding (Value* value, wxWindow* component, wxEventType eventType);
 
 public:
   View (wxWindow* parent);

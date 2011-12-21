@@ -73,7 +73,6 @@ public:
   void Show ();
   void Tick ();
 
-  void EditCollider (const char* type);
   void EditFactory (const char* factory);
   iDynamicFactory* GetCurrentFactory ();
 
