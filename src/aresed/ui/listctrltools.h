@@ -99,8 +99,9 @@ public:
 
   /**
    * Clear selection in the list.
+   * If sendEvent is true then a wxEVT_COMMAND_LIST_ITEM_DESELECTED is sent.
    */
-  static void ClearSelection (wxListCtrl* list);
+  static void ClearSelection (wxListCtrl* list, bool sendEvent = false);
 
   /**
    * Check if a list control is hit with the given point (in screen space).

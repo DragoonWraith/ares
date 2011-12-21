@@ -173,7 +173,7 @@ void ListCtrlTools::SelectRow (wxListCtrl* list, int row)
   list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
 }
 
-void ListCtrlTools::ClearSelection (wxListCtrl* list)
+void ListCtrlTools::ClearSelection (wxListCtrl* list, bool sendEvent)
 {
   wxListItem rowInfo;
   for (int row = 0 ; row < list->GetItemCount () ; row++)
@@ -182,6 +182,11 @@ void ListCtrlTools::ClearSelection (wxListCtrl* list)
     rowInfo.m_col = 0;
     list->GetItem (rowInfo);
     list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, 0);
+  }
+  if (sendEvent)
+  {
+    wxCommandEvent event (wxEVT_COMMAND_LIST_ITEM_DESELECTED);
+    list->AddPendingEvent (event);
   }
 }
 

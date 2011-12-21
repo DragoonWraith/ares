@@ -248,8 +248,10 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 void DynfactDialog::EditFactory (const char* meshName)
 {
   meshView->SetMesh (meshName);
+
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
-  ListCtrlTools::ClearSelection (colliderList);
+  ListCtrlTools::ClearSelection (colliderList, true);
+
   colliderCollectionValue->Refresh ();
   SetupColliderGeometry ();
 }
