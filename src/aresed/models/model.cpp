@@ -288,6 +288,8 @@ SelectedValue::SelectedValue (wxListCtrl* listCtrl, Value* collectionValue, Valu
 {
   listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
 	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
+  listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_DESELECTED,
+	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
   selection = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   UpdateToSelection ();
 }
@@ -295,6 +297,8 @@ SelectedValue::SelectedValue (wxListCtrl* listCtrl, Value* collectionValue, Valu
 SelectedValue::~SelectedValue ()
 {
   listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
+	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
+  listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_DESELECTED,
 	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
 }
 
@@ -309,7 +313,6 @@ void SelectedValue::UpdateToSelection ()
 void SelectedValue::OnSelectionChange (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
-  printf ("idx=%ld selection=%ld\n", idx, selection);
   if (idx != selection)
   {
     selection = idx;
@@ -638,7 +641,6 @@ void View::OnComponentChanged (wxCommandEvent& event)
 
 void View::ValueChanged (Value* value)
 {
-printf ("View::ValueChanged\n"); fflush (stdout);
   Binding b;
   const Binding& binding = bindingsByValue.Get (value, b);
   if (!binding.value)
@@ -693,7 +695,8 @@ printf ("View::ValueChanged\n"); fflush (stdout);
 	  return;
 	}
       }
-      printf ("ValueChanged: could not find page '%s'!\n", text.GetData ());
+      // If we come here we set to the first page.
+      choicebook->SetSelection (0);
     }
   }
   else
