@@ -39,8 +39,6 @@ class MeshView;
 class TreeCtrlView;
 class ListCtrlView;
 class FactoryEditorModel;
-class ColliderEditorModel;
-//class ColliderRowModel;
 
 class ColliderCollectionValue;
 
@@ -60,18 +58,13 @@ private:
   MeshView* meshView;
   TreeCtrlView* meshTreeView;
   csRef<FactoryEditorModel> factoryEditorModel;
-  //csRef<ColliderEditorModel> colliderEditorModel;
 
-  //ListCtrlView* colliderView;
-  //csRef<ColliderRowModel> colliderModel;
   csRef<View> colliderView;
   csRef<ColliderCollectionValue> colliderCollectionValue;
   csRef<SelectedValue> colliderSelectedValue;
 
   void OnOkButton (wxCommandEvent& event);
   void SetupColliderGeometry ();
-  void ClearColliderPanel ();
-  void UpdateColliderPanel (const celBodyInfo& info);
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);

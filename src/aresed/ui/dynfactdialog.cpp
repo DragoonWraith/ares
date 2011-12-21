@@ -171,50 +171,6 @@ public:
   virtual bool AddValue (Value* child) { return false; }
 };
 
-#if 0
-class ColliderRowModel : public RowModel
-{
-private:
-  DynfactDialog* dialog;
-  iDynamicFactory* dynfact;
-  size_t idx;
-
-public:
-  ColliderRowModel (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
-  virtual ~ColliderRowModel () { }
-
-  virtual void ResetIterator ()
-  {
-    dynfact = dialog->GetCurrentFactory ();
-    if (!dynfact) return;
-    idx = 0;
-  }
-  virtual bool HasRows () { return dynfact && idx < dynfact->GetBodyCount (); }
-  virtual csStringArray NextRow ()
-  {
-    const char* type;
-    celBodyInfo info = dynfact->GetBody (idx++);
-    switch (info.type)
-    {
-      case BODY_BOX: type = "box"; break;
-      case BODY_SPHERE: type = "sphere"; break;
-      case BODY_CYLINDER: type = "cylinder"; break;
-      case BODY_MESH: type = "mesh"; break;
-      case BODY_CONVEXMESH: type = "convexmesh"; break;
-      default: type = "?";
-    }
-    return Tools::MakeArray (type, (const char*)0);
-  }
-
-  virtual bool DeleteRow (const csStringArray& row) { return false; }
-  virtual bool AddRow (const csStringArray& row) { return false; }
-
-  virtual const char* GetColumns () { return "Type"; }
-  virtual bool IsEditAllowed () const { return false; }
-  virtual csStringArray EditRow (const csStringArray& origRow) { return origRow; }
-};
-#endif
-
 //--------------------------------------------------------------------------
 
 class FactoryEditorModel : public EditorModel
@@ -239,40 +195,6 @@ public:
     return csStringArray ();
   }
 };
-
-//--------------------------------------------------------------------------
-
-#if 0
-class ColliderEditorModel : public EditorModel
-{
-private:
-  DynfactDialog* dialog;
-  DirtyHelper helper;
-
-public:
-  ColliderEditorModel (DynfactDialog* dialog) : dialog (dialog) { }
-  virtual ~ColliderEditorModel () { }
-
-  DirtyHelper& GetHelper () { return helper; }
-
-  virtual void Update (const csStringArray& row)
-  {
-    if (row.GetSize () > 0)
-      dialog->EditCollider (row[0]);
-    else
-      dialog->EditCollider (0);
-  }
-  virtual csStringArray Read ()
-  {
-    // @@@ Not yet implemented.
-    return csStringArray ();
-  }
-  virtual bool IsDirty () { return helper.IsDirty (); }
-  virtual void SetDirty (bool dirty) { helper.SetDirty (dirty); }
-  virtual void AddDirtyListener (DirtyListener* listener) { helper.AddDirtyListener (listener); }
-  virtual void RemoveDirtyListener (DirtyListener* listener) { helper.RemoveDirtyListener (listener); }
-};
-#endif
 
 //--------------------------------------------------------------------------
 
@@ -335,86 +257,11 @@ void DynfactDialog::EditFactory (const char* meshName)
   SetupColliderGeometry ();
 }
 
-void DynfactDialog::ClearColliderPanel ()
-{
-  wxChoicebook* book = XRCCTRL (*this, "colliderChoice", wxChoicebook);
-  book->SetSelection (0);
-  UITools::ClearControls (this,
-      "boxMassText",
-      "boxOffsetXText", "boxOffsetYText", "boxOffsetZText",
-      "boxSizeXText", "boxSizeYText", "boxSizeZText",
-      "sphereMassText",
-      "sphereOffsetXText", "sphereOffsetYText", "sphereOffsetZText",
-      "sphereRadiusText",
-      "cylinderMassText",
-      "cylinderOffsetXText", "cylinderOffsetYText", "cylinderOffsetZText",
-      "cylinderRadiusText", "cylinderLengthText",
-      "meshMassText",
-      "meshOffsetXText", "meshOffsetYText", "meshOffsetZText",
-      "cmeshMassText",
-      "cmeshOffsetXText", "cmeshOffsetYText", "cmeshOffsetZText",
-      (const char*)0);
-}
-
-void DynfactDialog::UpdateColliderPanel (const celBodyInfo& info)
-{
-  // @@@ mass
-  switch (info.type)
-  {
-    case BODY_BOX:
-      UITools::SwitchPage (this, "colliderChoice", "Box");
-      UITools::SetValue (this, "boxMassText", info.mass);
-      UITools::SetValue (this, "boxOffsetXText", info.offset.x);
-      UITools::SetValue (this, "boxOffsetYText", info.offset.y);
-      UITools::SetValue (this, "boxOffsetZText", info.offset.z);
-      UITools::SetValue (this, "boxSizeXText", info.size.x);
-      UITools::SetValue (this, "boxSizeYText", info.size.y);
-      UITools::SetValue (this, "boxSizeZText", info.size.z);
-      break;
-    case BODY_SPHERE:
-      UITools::SwitchPage (this, "colliderChoice", "Sphere");
-      UITools::SetValue (this, "sphereMassText", info.mass);
-      UITools::SetValue (this, "sphereOffsetXText", info.offset.x);
-      UITools::SetValue (this, "sphereOffsetYText", info.offset.y);
-      UITools::SetValue (this, "sphereOffsetZText", info.offset.z);
-      UITools::SetValue (this, "sphereRadiusText", info.radius);
-      break;
-    case BODY_CYLINDER:
-      UITools::SwitchPage (this, "colliderChoice", "Cylinder");
-      UITools::SetValue (this, "cylinderMassText", info.mass);
-      UITools::SetValue (this, "cylinderOffsetXText", info.offset.x);
-      UITools::SetValue (this, "cylinderOffsetYText", info.offset.y);
-      UITools::SetValue (this, "cylinderOffsetZText", info.offset.z);
-      UITools::SetValue (this, "cylinderRadiusText", info.radius);
-      UITools::SetValue (this, "cylinderLengthText", info.length);
-      break;
-    case BODY_MESH:
-      UITools::SwitchPage (this, "colliderChoice", "Mesh");
-      UITools::SetValue (this, "meshMassText", info.mass);
-      UITools::SetValue (this, "meshOffsetXText", info.offset.x);
-      UITools::SetValue (this, "meshOffsetYText", info.offset.y);
-      UITools::SetValue (this, "meshOffsetZText", info.offset.z);
-      break;
-    case BODY_CONVEXMESH:
-      UITools::SwitchPage (this, "colliderChoice", "Convex mesh");
-      UITools::SetValue (this, "cmeshMassText", info.mass);
-      UITools::SetValue (this, "cmeshOffsetXText", info.offset.x);
-      UITools::SetValue (this, "cmeshOffsetYText", info.offset.y);
-      UITools::SetValue (this, "cmeshOffsetZText", info.offset.z);
-      break;
-    default:
-      UITools::SwitchPage (this, "colliderChoice", "None");
-      break;
-  }
-}
-
 void DynfactDialog::SetupColliderGeometry ()
 {
   meshView->ClearGeometry ();
   wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
-
-  //ClearColliderPanel ();
 
   iDynamicFactory* dynfact = GetCurrentFactory ();
   if (dynfact)
@@ -423,10 +270,6 @@ void DynfactDialog::SetupColliderGeometry ()
     {
       size_t pen = i == size_t (idx) ? hilightPen : normalPen;
       celBodyInfo info = dynfact->GetBody (i);
-      //if (i == size_t (idx))
-      //{
-	//UpdateColliderPanel (info);
-      //}
       if (info.type == BODY_BOX)
       {
         csBox3 b;
@@ -466,47 +309,28 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   factoryEditorModel.AttachNew (new FactoryEditorModel (this));
   meshTreeView->SetEditorModel (factoryEditorModel);
 
-#if 1
+  // Setup the view representing this dialog.
   colliderView.AttachNew (new View (this));
-  colliderView->DefineHeading ("colliderList", "type,mass", "type,mass");
+
+  // Define the collider list and value.
+  colliderView->DefineHeading ("colliderList", "Type,Mass", "type,mass");
   colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
   colliderView->Bind (colliderCollectionValue, "colliderList");
 
+  // Create a selection value that will follow the selection on the collider
+  // list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderSelectedValue.AttachNew (new SelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
   csRef<ColliderValue> colliderValue;
   colliderValue.AttachNew (new ColliderValue (celBodyInfo ()));
   colliderSelectedValue->SetupComposite (colliderValue);
+
+  // Bind the selection value to the different panels that describe the different types of colliders.
   colliderView->Bind (colliderSelectedValue, "box_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "sphere_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "cylinder_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "mesh_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
-
-#else
-  wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
-  colliderModel.AttachNew (new ColliderRowModel (this));
-  colliderView = new ListCtrlView (list, colliderModel);
-  colliderEditorModel.AttachNew (new ColliderEditorModel (this));
-  colliderEditorModel->GetHelper ().RegisterComponents (this,
-      "colliderChoice",
-      "boxMassText",
-      "boxOffsetXText", "boxOffsetYText", "boxOffsetZText",
-      "boxSizeXText", "boxSizeYText", "boxSizeZText",
-      "sphereMassText",
-      "sphereOffsetXText", "sphereOffsetYText", "sphereOffsetZText",
-      "sphereRadiusText",
-      "cylinderMassText",
-      "cylinderOffsetXText", "cylinderOffsetYText", "cylinderOffsetZText",
-      "cylinderRadiusText", "cylinderLengthText",
-      "meshMassText",
-      "meshOffsetXText", "meshOffsetYText", "meshOffsetZText",
-      "cmeshMassText",
-      "cmeshOffsetXText", "cmeshOffsetYText", "cmeshOffsetZText",
-      (const char*)0);
-  colliderView->SetEditorModel (colliderEditorModel);
-  colliderView->SetApplyButton (this, "applyColliderButton");
-#endif
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
