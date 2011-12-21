@@ -474,17 +474,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderSelectedValue.AttachNew (new SelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
-  csRef<MirrorValue> mv;
-  mv.AttachNew (new MirrorValue (VALUE_STRING)); colliderSelectedValue->AddChild ("type", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("offsetX", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("offsetY", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("offsetZ", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("mass", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("radius", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("length", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("sizeX", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("sizeY", mv);
-  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("sizeZ", mv);
+  csRef<ColliderValue> colliderValue;
+  colliderValue.AttachNew (new ColliderValue (celBodyInfo ()));
+  colliderSelectedValue->SetupComposite (colliderValue);
   colliderView->Bind (colliderSelectedValue, "box_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "sphere_ColliderPanel");
   colliderView->Bind (colliderSelectedValue, "cylinder_ColliderPanel");

@@ -540,9 +540,17 @@ public:
   virtual ~MirrorValue ();
 
   /**
+   * Setup this composite based on another composite. It will
+   * create mirrored children with the same type as the given
+   * composite but the given value is not set as the current
+   * mirroring value.
+   */
+  void SetupComposite (Value* compositeValue);
+
+  /**
    * If this mirrored value represents a composite then this method
-   * can be used to setup the children. This setup must match exactly
-   * the setup of the value that we're mirroring.
+   * can be used to setup the children (in case you can't use SetupComposite()).
+   * This setup must match exactly the setup of the value that we're mirroring.
    */
   void AddChild (const char* name, MirrorValue* value)
   {

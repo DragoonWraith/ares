@@ -240,6 +240,21 @@ MirrorValue::~MirrorValue ()
   SetMirrorValue (0);
 }
 
+void MirrorValue::SetupComposite (Value* compositeValue)
+{
+  CS_ASSERT (compositeValue->GetType () == VALUE_COMPOSITE);
+  DeleteAll ();
+  compositeValue->ResetIterator ();
+  while (compositeValue->HasNext ())
+  {
+    csString name;
+    Value* child = compositeValue->NextChild (&name);
+    csRef<MirrorValue> mv;
+    mv.AttachNew (new MirrorValue (child->GetType ()));
+    AddChild (name, mv);
+  }
+}
+
 void MirrorValue::SetMirrorValue (Value* value)
 {
   if (mirroringValue == value) return;
