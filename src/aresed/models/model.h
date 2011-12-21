@@ -35,6 +35,7 @@ class wxTextCtrl;
 class wxCheckBox;
 class wxListCtrl;
 class wxStaticText;
+class wxChoicebook;
 class wxPanel;
 
 namespace Ares
@@ -43,7 +44,7 @@ namespace Ares
 class Value;
 class BufferValueChangeListener;
 class ViewValueChangeListener;
-class SelectedValueChangeListener;
+class MirrorValueChangeListener;
 
 /**
  * Listen to changes in a value.
@@ -508,57 +509,117 @@ public:
 };
 
 /**
+ * A mirroring value. This value refers to another value and
+ * simply passes through the changes in both directions. It is useful
+ * in case you want to make a binding between several values and a single
+ * component and the decision on which value should be chosen depends
+ * on other criteria. See SelectedValue for an example of this.
+ *
+ * A MirrorValue also supports being a composite with mirrored children.
+ */
+class MirrorValue : public Value
+{
+  friend class MirrorValueChangeListener;
+
+private:
+  ValueType type;
+  csRef<Value> mirroringValue;
+  NullValue nullValue;
+  csRef<MirrorValueChangeListener> changeListener;
+
+  // The following two are only used in case the MirrorValue represents a composite.
+  csStringArray names;
+  csRefArray<MirrorValue> children;
+  size_t idx;
+
+  // Called when the mirrored value changes.
+  void ValueChanged ();
+
+public:
+  MirrorValue (ValueType type);
+  virtual ~MirrorValue ();
+
+  /**
+   * If this mirrored value represents a composite then this method
+   * can be used to setup the children. This setup must match exactly
+   * the setup of the value that we're mirroring.
+   */
+  void AddChild (const char* name, MirrorValue* value)
+  {
+    names.Push (name);
+    children.Push (value);
+  }
+  /**
+   * Remove all children from this composite.
+   */
+  void DeleteAll ()
+  {
+    names.DeleteAll ();
+    children.DeleteAll ();
+  }
+
+  /**
+   * Set the current value we are mirroring.
+   */
+  void SetMirrorValue (Value* value);
+
+  virtual ValueType GetType () const { return type; }
+  virtual const char* GetStringValue () { return mirroringValue->GetStringValue (); }
+  virtual void SetStringValue (const char* str) { mirroringValue->SetStringValue (str); }
+  virtual long GetLongValue () { return mirroringValue->GetLongValue (); }
+  virtual void SetLongValue (long v) { mirroringValue->SetLongValue (v); }
+  virtual bool GetBoolValue () { return mirroringValue->GetBoolValue (); }
+  virtual void SetBoolValue (bool v) { mirroringValue->SetBoolValue (v); }
+  virtual float GetFloatValue () { return mirroringValue->GetFloatValue (); }
+  virtual void SetFloatValue (float v) { mirroringValue->SetFloatValue (v); }
+
+  virtual void ResetIterator () { idx = 0; }
+  virtual bool HasNext () { return idx < children.GetSize (); }
+  virtual Value* NextChild (csString* name = 0)
+  {
+    if (name) *name = names[idx];
+    idx++;
+    return children[idx-1];
+  }
+  virtual Value* GetChild (const char* name)
+  {
+    csString sname = name;
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      if (sname == names[i]) return children[i];
+    return 0;
+  }
+
+  virtual bool DeleteValue (Value* child) { return mirroringValue->DeleteValue (child); }
+  virtual bool AddValue (Value* child) { return mirroringValue->AddValue (child); }
+  virtual bool UpdateValue (Value* oldChild, Value* child)
+  {
+    return mirroringValue->UpdateValue (oldChild, child);
+  }
+};
+
+/**
  * This value exactly mirrors a value as it is selected in a list.
  * When the selection changes this value will automatically change
- * and making changes to this value will automatically reflect on
- * to the value in the list.
+ * and making changes to this value will automatically reflect
+ * to the value in the list. Note that a SelectedValue is also
+ * a MirrorValue and if it represents a composite then you need to
+ * set it up.
  */
-class SelectedValue : public wxEvtHandler, public Value
+class SelectedValue : public wxEvtHandler, public MirrorValue
 {
-  friend class SelectedValueChangeListener;
-
 private:
   wxListCtrl* listCtrl;
   csRef<Value> collectionValue;
 
   /// The selected item in the list.
   long selection;
-  /// The value from the collection we are showing.
-  Value* currentValue;
-  NullValue nullValue;
-
-  csRef<SelectedValueChangeListener> changeListener;
-
-  // Called when the value from the collection changes.
-  void ValueChanged ();
 
   void OnSelectionChange (wxCommandEvent& event);
   void UpdateToSelection ();
 
 public:
-  SelectedValue (wxListCtrl* listCtrl, Value* collectionValue);
+  SelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type);
   virtual ~SelectedValue ();
-
-  virtual ValueType GetType () const { return currentValue->GetType (); }
-  virtual const char* GetStringValue () { return currentValue->GetStringValue (); }
-  virtual void SetStringValue (const char* str) { currentValue->SetStringValue (str); }
-  virtual long GetLongValue () { return currentValue->GetLongValue (); }
-  virtual void SetLongValue (long v) { currentValue->SetLongValue (v); }
-  virtual bool GetBoolValue () { return currentValue->GetBoolValue (); }
-  virtual void SetBoolValue (bool v) { currentValue->SetBoolValue (v); }
-  virtual float GetFloatValue () { return currentValue->GetFloatValue (); }
-  virtual void SetFloatValue (float v) { currentValue->SetFloatValue (v); }
-  virtual void ResetIterator () { currentValue->ResetIterator (); }
-  virtual bool HasNext () { return currentValue->HasNext (); }
-  virtual Value* NextChild (csString* name = 0) { return currentValue->NextChild (name); }
-  virtual Value* GetChild (size_t idx) { return currentValue->GetChild (idx); }
-  virtual Value* GetChild (const char* name) { return currentValue->GetChild (name); }
-  virtual bool DeleteValue (Value* child) { return currentValue->DeleteValue (child); }
-  virtual bool AddValue (Value* child) { return currentValue->AddValue (child); }
-  virtual bool UpdateValue (Value* oldChild, Value* child)
-  {
-    return currentValue->UpdateValue (oldChild, child);
-  }
 };
 
 /**
@@ -638,11 +699,21 @@ public:
   bool Bind (Value* value, const char* compName);
 
   /**
-   * Bind a value directly to a text control.
+   * Bind a value directly to a text control. This works
+   * with all single value types (string, long, bool, float).
    * Can fail (return false) under the following conditions:
    * - Value type is not compatible with component type.
    */
   bool Bind (Value* value, wxTextCtrl* component);
+
+  /**
+   * Bind a value directly to a choicebook. This works with
+   * values of type VALUE_LONG (used as index) or VALUE_STRING
+   * (used by name).
+   * Can fail (return false) under the following conditions:
+   * - Value type is not compatible with component type.
+   */
+  bool Bind (Value* value, wxChoicebook* component);
 
   /**
    * Bind a value directly to a panel. This only works with

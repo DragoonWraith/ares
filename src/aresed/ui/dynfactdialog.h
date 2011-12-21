@@ -27,6 +27,8 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
+#include "../models/model.h"
+
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
@@ -38,9 +40,13 @@ class TreeCtrlView;
 class ListCtrlView;
 class FactoryEditorModel;
 class ColliderEditorModel;
-class ColliderRowModel;
+//class ColliderRowModel;
+
+class ColliderCollectionValue;
 
 class UIManager;
+
+using namespace Ares;
 
 class DynfactDialog : public wxDialog
 {
@@ -54,10 +60,13 @@ private:
   MeshView* meshView;
   TreeCtrlView* meshTreeView;
   csRef<FactoryEditorModel> factoryEditorModel;
-  csRef<ColliderEditorModel> colliderEditorModel;
+  //csRef<ColliderEditorModel> colliderEditorModel;
 
-  ListCtrlView* colliderView;
-  csRef<ColliderRowModel> colliderModel;
+  //ListCtrlView* colliderView;
+  //csRef<ColliderRowModel> colliderModel;
+  csRef<View> colliderView;
+  csRef<ColliderCollectionValue> colliderCollectionValue;
+  csRef<SelectedValue> colliderSelectedValue;
 
   void OnOkButton (wxCommandEvent& event);
   void SetupColliderGeometry ();

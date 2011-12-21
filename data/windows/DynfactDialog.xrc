@@ -139,19 +139,19 @@
 								<option>1</option>
 								<flag>wxEXPAND | wxALL</flag>
 								<border>5</border>
-								<object class="wxChoicebook" name="colliderChoice">
+								<object class="wxChoicebook" name="type_colliderChoice">
 									<style>wxCHB_DEFAULT</style>
 									<object class="choicebookpage">
 										<label>None</label>
 										<selected>0</selected>
-										<object class="wxPanel" name="noneColliderPanel">
+										<object class="wxPanel" name="none_ColliderPanel">
 											<style>wxTAB_TRAVERSAL</style>
 										</object>
 									</object>
 									<object class="choicebookpage">
 										<label>Box</label>
 										<selected>1</selected>
-										<object class="wxPanel" name="boxColliderPanel">
+										<object class="wxPanel" name="box_ColliderPanel">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
 												<orient>wxVERTICAL</orient>
@@ -174,7 +174,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxMassText">
+															<object class="wxTextCtrl" name="mass_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -200,7 +200,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxOffsetXText">
+															<object class="wxTextCtrl" name="offsetX_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -209,7 +209,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxOffsetYText">
+															<object class="wxTextCtrl" name="offsetY_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -218,7 +218,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxOffsetZText">
+															<object class="wxTextCtrl" name="offsetZ_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -253,7 +253,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxSizeXText">
+															<object class="wxTextCtrl" name="sizeX_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -262,7 +262,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxSizeYText">
+															<object class="wxTextCtrl" name="sizeY_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -271,7 +271,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="boxSizeZText">
+															<object class="wxTextCtrl" name="sizeZ_boxText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -293,7 +293,7 @@
 									<object class="choicebookpage">
 										<label>Sphere</label>
 										<selected>0</selected>
-										<object class="wxPanel" name="sphereColliderPanel">
+										<object class="wxPanel" name="sphere_ColliderPanel">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
 												<orient>wxVERTICAL</orient>
@@ -316,7 +316,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="sphereMassText">
+															<object class="wxTextCtrl" name="mass_sphereText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -342,7 +342,16 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="sphereOffsetXText">
+															<object class="wxTextCtrl" name="offsetX_sphereText">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="offsetY_sphereText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -351,16 +360,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="sphereOffsetYText">
-																<value></value>
-																<maxlength>0</maxlength>
-															</object>
-														</object>
-														<object class="sizeritem">
-															<option>1</option>
-															<flag>wxALL</flag>
-															<border>5</border>
-															<object class="wxTextCtrl" name="sphereOffsetZText">
+															<object class="wxTextCtrl" name="offsetZ_sphereText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -395,7 +395,7 @@
 															<option>1</option>
 															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="sphereRadiusText">
+															<object class="wxTextCtrl" name="radius_sphereText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -417,7 +417,7 @@
 									<object class="choicebookpage">
 										<label>Cylinder</label>
 										<selected>0</selected>
-										<object class="wxPanel" name="cylinderColliderPanel">
+										<object class="wxPanel" name="cylinder_ColliderPanel">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
 												<orient>wxVERTICAL</orient>
@@ -440,7 +440,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cylinderMassText">
+															<object class="wxTextCtrl" name="mass_cylinderText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -466,7 +466,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cylinderOffsetXText">
+															<object class="wxTextCtrl" name="offsetX_cylinderText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -475,7 +475,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cylinderOffsetYText">
+															<object class="wxTextCtrl" name="offsetY_cylinderText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -484,7 +484,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cylinderOffsetZText">
+															<object class="wxTextCtrl" name="offsetZ_cylinderText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -519,7 +519,7 @@
 															<option>1</option>
 															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cylinderRadiusText">
+															<object class="wxTextCtrl" name="radius_cylinderText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -554,7 +554,7 @@
 															<option>1</option>
 															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cylinderLengthText">
+															<object class="wxTextCtrl" name="length_cylinderText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -576,7 +576,7 @@
 									<object class="choicebookpage">
 										<label>Mesh</label>
 										<selected>0</selected>
-										<object class="wxPanel" name="meshColliderPanel">
+										<object class="wxPanel" name="mesh_ColliderPanel">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
 												<orient>wxVERTICAL</orient>
@@ -599,7 +599,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="meshMassText">
+															<object class="wxTextCtrl" name="mass_meshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -625,7 +625,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="meshOffsetXText">
+															<object class="wxTextCtrl" name="offsetX_meshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -634,7 +634,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="meshOffsetYText">
+															<object class="wxTextCtrl" name="offsetY_meshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -643,7 +643,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="meshOffsetZText">
+															<object class="wxTextCtrl" name="offsetZ_meshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -665,7 +665,7 @@
 									<object class="choicebookpage">
 										<label>Convex mesh</label>
 										<selected>0</selected>
-										<object class="wxPanel" name="convexMeshPanel">
+										<object class="wxPanel" name="convexMesh_ColliderPanel">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
 												<orient>wxVERTICAL</orient>
@@ -688,7 +688,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cmeshMassText">
+															<object class="wxTextCtrl" name="mass_cmeshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -714,7 +714,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cmeshOffsetXText">
+															<object class="wxTextCtrl" name="offset_cmeshXText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -723,7 +723,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cmeshOffsetYText">
+															<object class="wxTextCtrl" name="offsetY_cmeshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>
@@ -732,7 +732,7 @@
 															<option>1</option>
 															<flag>wxALL</flag>
 															<border>5</border>
-															<object class="wxTextCtrl" name="cmeshOffsetZText">
+															<object class="wxTextCtrl" name="offsetZ_cmeshText">
 																<value></value>
 																<maxlength>0</maxlength>
 															</object>

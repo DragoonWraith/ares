@@ -74,14 +74,14 @@ public:
 
 // --------------------------------------------------------------------------
 
-class SelectedValueChangeListener : public ValueChangeListener
+class MirrorValueChangeListener : public ValueChangeListener
 {
 private:
-  SelectedValue* selvalue;
+  MirrorValue* selvalue;
 
 public:
-  SelectedValueChangeListener (SelectedValue* selvalue) : selvalue (selvalue) { }
-  virtual ~SelectedValueChangeListener () { }
+  MirrorValueChangeListener (MirrorValue* selvalue) : selvalue (selvalue) { }
+  virtual ~MirrorValueChangeListener () { }
   virtual void ValueChanged (Value* value)
   {
     selvalue->ValueChanged ();
@@ -229,14 +229,51 @@ bool CollectionBufferedValue::AddValue (Value* child)
 
 // --------------------------------------------------------------------------
 
-SelectedValue::SelectedValue (wxListCtrl* listCtrl, Value* collectionValue) :
-     listCtrl (listCtrl), collectionValue (collectionValue)
+MirrorValue::MirrorValue (ValueType type) : type (type), idx (0)
+{
+  changeListener.AttachNew (new MirrorValueChangeListener (this));
+  mirroringValue = &nullValue;
+}
+
+MirrorValue::~MirrorValue ()
+{
+  SetMirrorValue (0);
+}
+
+void MirrorValue::SetMirrorValue (Value* value)
+{
+  if (mirroringValue == value) return;
+
+  if (mirroringValue && mirroringValue != &nullValue)
+  {
+    mirroringValue->RemoveValueChangeListener (changeListener);
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->SetMirrorValue (0);
+  }
+  mirroringValue = value;
+  if (mirroringValue)
+  {
+    mirroringValue->AddValueChangeListener (changeListener);
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->SetMirrorValue (value->GetChild (i));
+  }
+  else
+    mirroringValue = &nullValue;
+}
+
+void MirrorValue::ValueChanged ()
+{
+  FireValueChanged ();
+}
+
+// --------------------------------------------------------------------------
+
+SelectedValue::SelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type) :
+  MirrorValue (type), listCtrl (listCtrl), collectionValue (collectionValue)
 {
   listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
 	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
   selection = ListCtrlTools::GetFirstSelectedRow (listCtrl);
-  currentValue = &nullValue;
-  changeListener.AttachNew (new SelectedValueChangeListener (this));
   UpdateToSelection ();
 }
 
@@ -248,25 +285,16 @@ SelectedValue::~SelectedValue ()
 
 void SelectedValue::UpdateToSelection ()
 {
-  if (currentValue != &nullValue)
-    currentValue->RemoveValueChangeListener (changeListener);
   if (selection == -1)
-    currentValue = &nullValue;
+    SetMirrorValue (0);
   else
-  {
-    currentValue = collectionValue->GetChild (size_t (selection));
-    currentValue->AddValueChangeListener (changeListener);
-  }
-}
-
-void SelectedValue::ValueChanged ()
-{
-  FireValueChanged ();
+    SetMirrorValue (collectionValue->GetChild (size_t (selection)));
 }
 
 void SelectedValue::OnSelectionChange (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
+  printf ("idx=%ld selection=%ld\n", idx, selection);
   if (idx != selection)
   {
     selection = idx;
@@ -327,6 +355,8 @@ bool View::Bind (Value* value, wxWindow* component)
     return Bind (value, wxStaticCast (component, wxPanel));
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
     return Bind (value, wxStaticCast (component, wxListCtrl));
+  if (component->IsKindOf (CLASSINFO (wxChoicebook)))
+    return Bind (value, wxStaticCast (component, wxChoicebook));
   printf ("Bind: Unsupported type for component!\n");
   return false;
 }
@@ -351,6 +381,7 @@ bool View::Bind (Value* value, wxTextCtrl* component)
     case VALUE_LONG:
     case VALUE_BOOL:
     case VALUE_FLOAT:
+    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
       break;
     default:
       printf ("Unsupported value type for text control!\n");
@@ -370,9 +401,38 @@ bool View::Bind (Value* value, wxTextCtrl* component)
   return true;
 }
 
+bool View::Bind (Value* value, wxChoicebook* component)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+    case VALUE_LONG:
+    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
+      break;
+    default:
+      printf ("Unsupported value type for text control!\n");
+      return false;
+  }
+
+  Binding b;
+  b.value = value;
+  b.component = wxStaticCast (component, wxWindow);
+  b.eventType = wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED;
+  bindingsByComponent.Put (component, b);
+  bindingsByValue.Put (value, b);
+  component->Connect (wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED,
+      wxCommandEventHandler (View :: OnComponentChanged), 0, this);
+  value->AddValueChangeListener (changeListener);
+  ValueChanged (value);
+  return true;
+}
+
 bool View::Bind (Value* value, wxPanel* component)
 {
-  if (value->GetType () != VALUE_COMPOSITE)
+  // We also support VALUE_NONE here because that can be useful in situations where we don't
+  // know the type yet (for example when the value is a SelectedValue and nothing has been
+  // selected).
+  if (value->GetType () != VALUE_COMPOSITE && value->GetType () != VALUE_NONE)
   {
     printf ("Unsupported value type for panels! Only VALUE_COMPOSITE is supported.\n");
     return false;
@@ -407,7 +467,10 @@ bool View::Bind (Value* value, wxPanel* component)
 
 bool View::Bind (Value* value, wxListCtrl* component)
 {
-  if (value->GetType () != VALUE_COLLECTION)
+  // We also support VALUE_NONE here because that can be useful in situations where we don't
+  // know the type yet (for example when the value is a SelectedValue and nothing has been
+  // selected).
+  if (value->GetType () != VALUE_COLLECTION && value->GetType () != VALUE_NONE)
   {
     printf ("Unsupported value type for lists! Only VALUE_COLLECTION is supported.\n");
     return false;
@@ -435,6 +498,30 @@ static csString ValueToString (Value* value)
     case VALUE_COLLECTION: return csString ("<collection>");
     case VALUE_COMPOSITE: return csString ("<composite>");
     default: return csString ("<?>");
+  }
+}
+
+static void LongToValue (long l, Value* value)
+{
+  csString str;
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+      str.Format ("%ld", l);
+      value->SetStringValue (str);
+      return;
+    case VALUE_LONG:
+      value->SetLongValue (l);
+      return;
+    case VALUE_BOOL:
+      value->SetBoolValue (bool (l));
+      return;
+    case VALUE_FLOAT:
+      value->SetFloatValue (float (l));
+      return;
+    case VALUE_COLLECTION: return;
+    case VALUE_COMPOSITE: return;
+    default: return;
   }
 }
 
@@ -510,6 +597,24 @@ void View::OnComponentChanged (wxCommandEvent& event)
     csString text = (const char*)textCtrl->GetValue ().mb_str (wxConvUTF8);
     StringToValue (text, binding.value);
   }
+  else if (component->IsKindOf (CLASSINFO (wxChoicebook)))
+  {
+    wxChoicebook* choicebook = wxStaticCast (component, wxChoicebook);
+    int pageSel = choicebook->GetSelection ();
+    if (binding.value->GetType () == VALUE_LONG)
+      LongToValue ((long)pageSel, binding.value);
+    else
+    {
+      csString value;
+      if (pageSel == wxNOT_FOUND) value = "";
+      else
+      {
+        wxString pageTxt = choicebook->GetPageText (pageSel);
+        value = (const char*)pageTxt.mb_str (wxConvUTF8);
+      }
+      StringToValue (value, binding.value);
+    }
+  }
   else
   {
     printf ("OnComponentChanged: this type of component not yet supported!\n");
@@ -518,6 +623,7 @@ void View::OnComponentChanged (wxCommandEvent& event)
 
 void View::ValueChanged (Value* value)
 {
+printf ("View::ValueChanged\n"); fflush (stdout);
   Binding b;
   const Binding& binding = bindingsByValue.Get (value, b);
   if (!binding.value)
@@ -533,8 +639,13 @@ void View::ValueChanged (Value* value)
   }
   else if (binding.component->IsKindOf (CLASSINFO (wxPanel)))
   {
-    // @@@ TODO: what if a composite value changes? Can we update
-    // the bindings to the panel?
+    // If the value of a composite changes we update the children.
+    value->ResetIterator ();
+    while (value->HasNext ())
+    {
+      Value* child = value->NextChild ();
+      ValueChanged (child);
+    }
   }
   else if (binding.component->IsKindOf (CLASSINFO (wxListCtrl)))
   {
@@ -547,6 +658,27 @@ void View::ValueChanged (Value* value)
     {
       Value* child = value->NextChild ();
       ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
+    }
+  }
+  else if (binding.component->IsKindOf (CLASSINFO (wxChoicebook)))
+  {
+    wxChoicebook* choicebook = wxStaticCast (binding.component, wxChoicebook);
+    if (value->GetType () == VALUE_LONG)
+      choicebook->ChangeSelection (value->GetLongValue ());
+    else
+    {
+      csString text = ValueToString (value);
+      wxString wxtext = wxString::FromUTF8 (text);
+      for (size_t i = 0 ; i < choicebook->GetPageCount () ; i++)
+      {
+	wxString wxp = choicebook->GetPageText (i);
+	if (wxp == wxtext)
+	{
+	  choicebook->ChangeSelection (i);
+	  return;
+	}
+      }
+      printf ("ValueChanged: could not find page '%s'!\n", text.GetData ());
     }
   }
   else

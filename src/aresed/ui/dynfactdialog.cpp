@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "listview.h"
 #include "dirtyhelper.h"
 #include "../models/dynfactmodel.h"
-#include "../models/model.h"
 #include "../tools/tools.h"
 
 #include <wx/choicebk.h>
@@ -64,12 +63,12 @@ public:
   {
     switch (*type)
     {
-      case BODY_NONE: return "none";
-      case BODY_BOX: return "box";
-      case BODY_SPHERE: return "sphere";
-      case BODY_CYLINDER: return "cylinder";
-      case BODY_CONVEXMESH: return "convexmesh";
-      case BODY_MESH: return "mesh";
+      case BODY_NONE: return "None";
+      case BODY_BOX: return "Box";
+      case BODY_SPHERE: return "Sphere";
+      case BODY_CYLINDER: return "Cylinder";
+      case BODY_CONVEXMESH: return "Convex mesh";
+      case BODY_MESH: return "Mesh";
       default: return "?";
     }
   }
@@ -77,12 +76,12 @@ public:
   {
     csString sstr = str;
     celBodyType newtype;
-    if (sstr == "none") newtype = BODY_NONE;
-    else if (sstr == "box") newtype = BODY_BOX;
-    else if (sstr == "sphere") newtype = BODY_SPHERE;
-    else if (sstr == "cylinder") newtype = BODY_CYLINDER;
-    else if (sstr == "convexmesh") newtype = BODY_CONVEXMESH;
-    else if (sstr == "mesh") newtype = BODY_MESH;
+    if (sstr == "None") newtype = BODY_NONE;
+    else if (sstr == "Box") newtype = BODY_BOX;
+    else if (sstr == "Sphere") newtype = BODY_SPHERE;
+    else if (sstr == "Cylinder") newtype = BODY_CYLINDER;
+    else if (sstr == "Convex mesh") newtype = BODY_CONVEXMESH;
+    else if (sstr == "Mesh") newtype = BODY_MESH;
     else newtype = BODY_NONE;
     if (newtype == *type) return;
     *type = newtype;
@@ -101,9 +100,17 @@ private:
 public:
   ColliderValue (const celBodyInfo& info) : info (info)
   {
-    csRef<Value> typeValue;
-    typeValue.AttachNew (new ColliderTypeValue (&ColliderValue::info.type));
-    AddChild ("type", typeValue);
+    csRef<Value> v;
+    v.AttachNew (new ColliderTypeValue (&ColliderValue::info.type)); AddChild ("type", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.offset.x)); AddChild ("offsetX", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.offset.y)); AddChild ("offsetY", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.offset.z)); AddChild ("offsetZ", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.mass)); AddChild ("mass", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.radius)); AddChild ("radius", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.length)); AddChild ("length", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.x)); AddChild ("sizeX", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.y)); AddChild ("sizeY", v);
+    v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.z)); AddChild ("sizeZ", v);
   }
   virtual ~ColliderValue () { }
 };
@@ -137,6 +144,12 @@ public:
   ColliderCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
   virtual ~ColliderCollectionValue () { }
 
+  /**
+   * Call this when you want to refresh this value because externel data (i.e.
+   * the current factory) changes.
+   */
+  void Refresh () { FireValueChanged (); }
+
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
 
   virtual void ResetIterator ()
@@ -145,7 +158,7 @@ public:
     idx = 0;
   }
   virtual bool HasNext () { return idx < colliders.GetSize (); }
-  virtual Value* NextChild ()
+  virtual Value* NextChild (csString* name = 0)
   {
     idx++;
     return colliders[idx-1];
@@ -158,7 +171,7 @@ public:
   virtual bool AddValue (Value* child) { return false; }
 };
 
-
+#if 0
 class ColliderRowModel : public RowModel
 {
 private:
@@ -200,6 +213,7 @@ public:
   virtual bool IsEditAllowed () const { return false; }
   virtual csStringArray EditRow (const csStringArray& origRow) { return origRow; }
 };
+#endif
 
 //--------------------------------------------------------------------------
 
@@ -228,6 +242,7 @@ public:
 
 //--------------------------------------------------------------------------
 
+#if 0
 class ColliderEditorModel : public EditorModel
 {
 private:
@@ -257,6 +272,7 @@ public:
   virtual void AddDirtyListener (DirtyListener* listener) { helper.AddDirtyListener (listener); }
   virtual void RemoveDirtyListener (DirtyListener* listener) { helper.RemoveDirtyListener (listener); }
 };
+#endif
 
 //--------------------------------------------------------------------------
 
@@ -315,7 +331,7 @@ void DynfactDialog::EditCollider (const char* typeName)
 void DynfactDialog::EditFactory (const char* meshName)
 {
   meshView->SetMesh (meshName);
-  colliderView->Refresh ();
+  colliderCollectionValue->Refresh ();
   SetupColliderGeometry ();
 }
 
@@ -398,7 +414,7 @@ void DynfactDialog::SetupColliderGeometry ()
   wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
   long idx = ListCtrlTools::GetFirstSelectedRow (list);
 
-  ClearColliderPanel ();
+  //ClearColliderPanel ();
 
   iDynamicFactory* dynfact = GetCurrentFactory ();
   if (dynfact)
@@ -407,10 +423,10 @@ void DynfactDialog::SetupColliderGeometry ()
     {
       size_t pen = i == size_t (idx) ? hilightPen : normalPen;
       celBodyInfo info = dynfact->GetBody (i);
-      if (i == size_t (idx))
-      {
-	UpdateColliderPanel (info);
-      }
+      //if (i == size_t (idx))
+      //{
+	//UpdateColliderPanel (info);
+      //}
       if (info.type == BODY_BOX)
       {
         csBox3 b;
@@ -450,6 +466,32 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   factoryEditorModel.AttachNew (new FactoryEditorModel (this));
   meshTreeView->SetEditorModel (factoryEditorModel);
 
+#if 1
+  colliderView.AttachNew (new View (this));
+  colliderView->DefineHeading ("colliderList", "type,mass", "type,mass");
+  colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
+  colliderView->Bind (colliderCollectionValue, "colliderList");
+
+  wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
+  colliderSelectedValue.AttachNew (new SelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
+  csRef<MirrorValue> mv;
+  mv.AttachNew (new MirrorValue (VALUE_STRING)); colliderSelectedValue->AddChild ("type", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("offsetX", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("offsetY", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("offsetZ", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("mass", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("radius", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("length", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("sizeX", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("sizeY", mv);
+  mv.AttachNew (new MirrorValue (VALUE_FLOAT)); colliderSelectedValue->AddChild ("sizeZ", mv);
+  colliderView->Bind (colliderSelectedValue, "box_ColliderPanel");
+  colliderView->Bind (colliderSelectedValue, "sphere_ColliderPanel");
+  colliderView->Bind (colliderSelectedValue, "cylinder_ColliderPanel");
+  colliderView->Bind (colliderSelectedValue, "mesh_ColliderPanel");
+  colliderView->Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
+
+#else
   wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderModel.AttachNew (new ColliderRowModel (this));
   colliderView = new ListCtrlView (list, colliderModel);
@@ -472,6 +514,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
       (const char*)0);
   colliderView->SetEditorModel (colliderEditorModel);
   colliderView->SetApplyButton (this, "applyColliderButton");
+#endif
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
@@ -480,7 +523,7 @@ DynfactDialog::~DynfactDialog ()
 {
   delete meshView;
   delete meshTreeView;
-  delete colliderView;
+  //delete colliderView;
 }
 
 
