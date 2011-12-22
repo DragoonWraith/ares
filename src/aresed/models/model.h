@@ -247,6 +247,74 @@ public:
 };
 
 /**
+ * A standard collection value which is based on an array of values
+ * and which supports iteration and of the children. Subclasses of
+ * this class can implement UpdateChildren() in order to fill the
+ * array of children the first time iteration is done or when
+ * a child is fetched by index.
+ */
+class StandardCollectionValue : public Value
+{
+private:
+  size_t idx;
+
+  class ChangeListener : public ValueChangeListener
+  {
+  private:
+    StandardCollectionValue* collection;
+
+  public:
+    ChangeListener (StandardCollectionValue* collection) : collection (collection) { }
+    virtual ~ChangeListener () { }
+    virtual void ValueChanged (Value* value)
+    {
+      collection->ValueChanged (value);
+    }
+  };
+
+protected:
+  csRefArray<Value> children;
+
+  /**
+   * Override this function to update the children.
+   * Default implementation does nothing.
+   */
+  virtual void UpdateChildren () { }
+
+  /**
+   * This is called whenever a child is changed if this collection was
+   * set up using ListenToChildren(). The default implemention does nothing.
+   */
+  virtual void ValueChanged (Value* child) { }
+
+public:
+  StandardCollectionValue () { }
+  virtual ~StandardCollectionValue () { }
+
+  /**
+   * If you call this function the the collection will listen
+   * to value changes in the children and call the protected
+   * 'ValueChanged' method in case one of the children changes.
+   */
+  void ListenToChildren ();
+
+  virtual ValueType GetType () const { return VALUE_COLLECTION; }
+
+  virtual void ResetIterator () { UpdateChildren (); idx = 0; }
+  virtual bool HasNext () { return idx < children.GetSize (); }
+  virtual Value* NextChild (csString* name = 0)
+  {
+    idx++;
+    return children[idx-1];
+  }
+  virtual Value* GetChild (size_t idx)
+  {
+    UpdateChildren ();
+    return children[idx];
+  }
+};
+
+/**
  * An abstract composite value which supports iteration and
  * selection of the children by name. This is an abstract
  * class that has to be subclassed in order to provide the
@@ -260,15 +328,42 @@ private:
 
   using Value::GetChild;
 
+  class ChangeListener : public ValueChangeListener
+  {
+  private:
+    AbstractCompositeValue* composite;
+
+  public:
+    ChangeListener (AbstractCompositeValue* composite) : composite (composite) { }
+    virtual ~ChangeListener () { }
+    virtual void ValueChanged (Value* value)
+    {
+      composite->ValueChanged (value);
+    }
+  };
+
 protected:
   /// Override this function to indicate the number of children.
   virtual size_t GetChildCount () = 0;
   /// Override this function to return the right name for a given child.
   virtual const char* GetName (size_t idx) = 0;
 
+  /**
+   * This is called whenever a child is changed if this composite was
+   * set up using ListenToChildren(). The default implemention does nothing.
+   */
+  virtual void ValueChanged (Value* child) { }
+
 public:
   AbstractCompositeValue () { }
   virtual ~AbstractCompositeValue () { }
+
+  /**
+   * If you call this function the the composite will listen
+   * to value changes in the children and call the protected
+   * 'ValueChanged' method in case one of the children changes.
+   */
+  void ListenToChildren ();
 
   virtual ValueType GetType () const { return VALUE_COMPOSITE; }
 

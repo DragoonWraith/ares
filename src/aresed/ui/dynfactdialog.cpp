@@ -95,11 +95,43 @@ public:
 class ColliderValue : public CompositeValue
 {
 private:
+  size_t idx;
+  iDynamicFactory* dynfact;
   celBodyInfo info;
 
-public:
-  ColliderValue (const celBodyInfo& info) : info (info)
+protected:
+  virtual void ValueChanged (Value* child)
   {
+    switch (info.type)
+    {
+      case BODY_NONE:
+	break;
+      case BODY_BOX:
+	dynfact->AddRigidBox (info.offset, info.size, info.mass, idx);
+	break;
+      case BODY_SPHERE:
+	dynfact->AddRigidSphere (info.radius, info.offset, info.mass, idx);
+	break;
+      case BODY_CYLINDER:
+	dynfact->AddRigidCylinder (info.radius, info.length, info.offset, info.mass, idx);
+	break;
+      case BODY_CONVEXMESH:
+	dynfact->AddRigidConvexMesh (info.offset, info.mass, idx);
+	break;
+      case BODY_MESH:
+	dynfact->AddRigidMesh (info.offset, info.mass, idx);
+	break;
+      default:
+	printf ("Something is wrong: unknown collider type %d\n", info.type);
+	break;
+    }
+    FireValueChanged ();
+  }
+
+public:
+  ColliderValue (size_t idx, iDynamicFactory* dynfact) : idx (idx), dynfact (dynfact)
+  {
+    if (dynfact) info = dynfact->GetBody (idx);
     csRef<Value> v;
     v.AttachNew (new ColliderTypeValue (&ColliderValue::info.type)); AddChild ("type", v);
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.offset.x)); AddChild ("offsetX", v);
@@ -111,6 +143,7 @@ public:
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.x)); AddChild ("sizeX", v);
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.y)); AddChild ("sizeY", v);
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.z)); AddChild ("sizeZ", v);
+    ListenToChildren ();
   }
   virtual ~ColliderValue () { }
 };
@@ -119,25 +152,29 @@ public:
  * A value representing the list of colliders for a dynamic factory.
  * Children of this value are of type ColliderValue.
  */
-class ColliderCollectionValue : public Value
+class ColliderCollectionValue : public StandardCollectionValue
 {
 private:
   DynfactDialog* dialog;
   iDynamicFactory* dynfact;
-  size_t idx;
-  csRefArray<ColliderValue> colliders;
 
-  void UpdateColliders ()
+protected:
+  virtual void UpdateChildren ()
   {
-    colliders.DeleteAll ();
+    children.DeleteAll ();
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return;
     for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
     {
       csRef<ColliderValue> value;
-      value.AttachNew (new ColliderValue (dynfact->GetBody (i)));
-      colliders.Push (value);
+      value.AttachNew (new ColliderValue (i, dynfact));
+      children.Push (value);
     }
+    ListenToChildren ();
+  }
+  virtual void ValueChanged (Value* child)
+  {
+    FireValueChanged ();
   }
 
 public:
@@ -145,27 +182,10 @@ public:
   virtual ~ColliderCollectionValue () { }
 
   /**
-   * Call this when you want to refresh this value because externel data (i.e.
+   * Call this when you want to refresh this value because external data (i.e.
    * the current factory) changes.
    */
   void Refresh () { FireValueChanged (); }
-
-  virtual ValueType GetType () const { return VALUE_COLLECTION; }
-
-  virtual void ResetIterator ()
-  {
-    UpdateColliders ();
-    idx = 0;
-  }
-  virtual bool HasNext () { return idx < colliders.GetSize (); }
-  virtual Value* NextChild (csString* name = 0)
-  {
-    idx++;
-    return colliders[idx-1];
-  }
-
-  virtual Value* GetChild (size_t idx) { UpdateColliders (); return colliders[idx]; }
-  virtual Value* GetChild (const char* name) { return 0; }
 
   virtual bool DeleteValue (Value* child) { return false; }
   virtual bool AddValue (Value* child) { return false; }
@@ -320,7 +340,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderSelectedValue.AttachNew (new SelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
   csRef<ColliderValue> colliderValue;
-  colliderValue.AttachNew (new ColliderValue (celBodyInfo ()));
+  colliderValue.AttachNew (new ColliderValue (0, 0));
   colliderSelectedValue->SetupComposite (colliderValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.

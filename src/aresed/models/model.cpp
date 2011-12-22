@@ -229,6 +229,26 @@ bool CollectionBufferedValue::AddValue (Value* child)
 
 // --------------------------------------------------------------------------
 
+void AbstractCompositeValue::ListenToChildren ()
+{
+  csRef<ChangeListener> listener;
+  listener.AttachNew (new ChangeListener (this));
+  for (size_t i = 0 ; i < GetChildCount () ; i++)
+    GetChild (i)->AddValueChangeListener (listener);
+}
+
+// --------------------------------------------------------------------------
+
+void StandardCollectionValue::ListenToChildren ()
+{
+  csRef<ChangeListener> listener;
+  listener.AttachNew (new ChangeListener (this));
+  for (size_t i = 0 ; i < children.GetSize () ; i++)
+    children[i]->AddValueChangeListener (listener);
+}
+
+// --------------------------------------------------------------------------
+
 MirrorValue::MirrorValue (ValueType type) : type (type), idx (0)
 {
   changeListener.AttachNew (new MirrorValueChangeListener (this));
