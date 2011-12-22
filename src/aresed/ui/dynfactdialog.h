@@ -66,6 +66,20 @@ private:
   void OnOkButton (wxCommandEvent& event);
   void SetupColliderGeometry ();
 
+  class CollidersValueChangeListener : public ValueChangeListener
+  {
+  private:
+    DynfactDialog* dialog;
+
+  public:
+    CollidersValueChangeListener (DynfactDialog* dialog) : dialog (dialog) { }
+    virtual ~CollidersValueChangeListener () { }
+    virtual void ValueChanged (Value* value)
+    {
+      dialog->SetupColliderGeometry ();
+    }
+  };
+
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);
   ~DynfactDialog ();

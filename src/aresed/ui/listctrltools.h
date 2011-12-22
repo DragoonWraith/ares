@@ -95,7 +95,7 @@ public:
   /**
    * Select a row in the list.
    */
-  static void SelectRow (wxListCtrl* list, int row);
+  static void SelectRow (wxListCtrl* list, int row, bool sendEvent = false);
 
   /**
    * Clear selection in the list.

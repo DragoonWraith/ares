@@ -665,6 +665,10 @@ public:
    * Set the current value we are mirroring.
    */
   void SetMirrorValue (Value* value);
+  /**
+   * Get the current mirroring value.
+   */
+  Value* GetMirrorValue () const { return (const Value*)mirroringValue == &nullValue ? 0 : mirroringValue; }
 
   virtual ValueType GetType () const { return type; }
   virtual const char* GetStringValue () { return mirroringValue->GetStringValue (); }

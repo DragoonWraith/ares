@@ -324,21 +324,21 @@ SelectedValue::~SelectedValue ()
 
 void SelectedValue::UpdateToSelection ()
 {
-  if (selection == -1)
-    SetMirrorValue (0);
-  else
-    SetMirrorValue (collectionValue->GetChild (size_t (selection)));
+  Value* value = 0;
+  if (selection != -1)
+    value = collectionValue->GetChild (size_t (selection));
+  if (value != GetMirrorValue ())
+  {
+    SetMirrorValue (value);
+    FireValueChanged ();
+  }
 }
 
 void SelectedValue::OnSelectionChange (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
-  if (idx != selection)
-  {
-    selection = idx;
-    UpdateToSelection ();
-    FireValueChanged ();
-  }
+  selection = idx;
+  UpdateToSelection ();
 }
 
 // --------------------------------------------------------------------------
@@ -684,12 +684,14 @@ void View::ValueChanged (Value* value)
       listCtrl->DeleteAllItems ();
       ListHeading lhdef;
       const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
+      long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
       value->ResetIterator ();
       while (value->HasNext ())
       {
 	Value* child = value->NextChild ();
 	ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
       }
+      ListCtrlTools::SelectRow (listCtrl, idx, true);
     }
     else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
     {

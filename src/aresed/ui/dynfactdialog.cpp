@@ -335,6 +335,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderView->DefineHeading ("colliderList", "Type,Mass", "type,mass");
   colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
   colliderView->Bind (colliderCollectionValue, "colliderList");
+  csRef<CollidersValueChangeListener> colListener;
+  colListener.AttachNew (new CollidersValueChangeListener (this));
+  colliderCollectionValue->AddValueChangeListener (colListener);
 
   // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);

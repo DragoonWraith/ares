@@ -164,13 +164,19 @@ long ListCtrlTools::GetFirstSelectedRow (wxListCtrl* list)
   return list->GetNextItem (-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
-void ListCtrlTools::SelectRow (wxListCtrl* list, int row)
+void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent)
 {
+  ClearSelection (list);
   wxListItem rowInfo;
   rowInfo.m_itemId = row;
   rowInfo.m_col = 0;
   list->GetItem (rowInfo);
   list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+  if (sendEvent)
+  {
+    wxCommandEvent event (wxEVT_COMMAND_LIST_ITEM_SELECTED);
+    list->AddPendingEvent (event);
+  }
 }
 
 void ListCtrlTools::ClearSelection (wxListCtrl* list, bool sendEvent)
