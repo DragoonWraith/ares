@@ -42,57 +42,57 @@ namespace Ares
 
 // --------------------------------------------------------------------------
 
-class ViewValueChangeListener : public ValueChangeListener
+csString Value::Dump (bool verbose)
 {
-private:
-  View* view;
-
-public:
-  ViewValueChangeListener (View* view) : view (view) { }
-  virtual ~ViewValueChangeListener () { }
-  virtual void ValueChanged (Value* value)
+  csString dump;
+  switch (GetType ())
   {
-    view->ValueChanged (value);
+    case VALUE_STRING:
+      dump.Format ("V(string,'%s'%s)", GetStringValue (), parent ? ",[PAR]": "");
+      break;
+    case VALUE_LONG:
+      dump.Format ("V(long,'%ld'%s)", GetLongValue (), parent ? ",[PAR]": "");
+      break;
+    case VALUE_BOOL:
+      dump.Format ("V(long,'%d'%s)", GetBoolValue (), parent ? ",[PAR]": "");
+      break;
+    case VALUE_FLOAT:
+      dump.Format ("V(float,'%g'%s)", GetFloatValue (), parent ? ",[PAR]": "");
+      break;
+    case VALUE_COLLECTION:
+      dump.Format ("V(collection%s)", parent ? ",[PAR]": "");
+      break;
+    case VALUE_COMPOSITE:
+      dump.Format ("V(composite%s)", parent ? ",[PAR]": "");
+      break;
+    case VALUE_NONE:
+      dump.Format ("V(none%s)", parent ? ",[PAR]": "");
+      break;
+    default:
+      dump.Format ("V(?%s)", parent ? ",[PAR]": "");
+      break;
   }
-};
-
-// --------------------------------------------------------------------------
-
-class BufferValueChangeListener : public ValueChangeListener
-{
-private:
-  BufferedValue* bufvalue;
-
-public:
-  BufferValueChangeListener (BufferedValue* bufvalue) : bufvalue (bufvalue) { }
-  virtual ~BufferValueChangeListener () { }
-  virtual void ValueChanged (Value* value)
+  if (verbose)
   {
-    bufvalue->ValueChanged ();
+    if (GetType () == VALUE_COLLECTION || GetType () == VALUE_COMPOSITE)
+    {
+      ResetIterator ();
+      while (HasNext ())
+      {
+	csString name;
+	Value* val = NextChild (&name);
+	dump.AppendFmt ("\n    %s", (const char*)val->Dump (false));
+      }
+    }
   }
-};
-
-// --------------------------------------------------------------------------
-
-class MirrorValueChangeListener : public ValueChangeListener
-{
-private:
-  MirrorValue* selvalue;
-
-public:
-  MirrorValueChangeListener (MirrorValue* selvalue) : selvalue (selvalue) { }
-  virtual ~MirrorValueChangeListener () { }
-  virtual void ValueChanged (Value* value)
-  {
-    selvalue->ValueChanged ();
-  }
-};
+  return dump;
+} 
 
 // --------------------------------------------------------------------------
 
 BufferedValue::BufferedValue (Value* originalValue) : originalValue (originalValue)
 {
-  changeListener.AttachNew (new BufferValueChangeListener (this));
+  changeListener.AttachNew (new ChangeListener (this));
   originalValue->AddValueChangeListener (changeListener);
 }
 
@@ -122,6 +122,9 @@ csRef<BufferedValue> BufferedValue::CreateBufferedValue (Value* originalValue)
 
 void CompositeBufferedValue::ValueChanged ()
 {
+#if DO_DEBUG
+  printf ("ValueChanged: %s\n", Dump ().GetData ());
+#endif
   buffer.DeleteAll ();
   names.DeleteAll ();
   originalValue->ResetIterator ();
@@ -159,6 +162,9 @@ Value* CompositeBufferedValue::GetChild (const char* name)
 
 void CollectionBufferedValue::ValueChanged ()
 {
+#if DO_DEBUG
+  printf ("ValueChanged: %s\n", Dump ().GetData ());
+#endif
   buffer.DeleteAll ();
   originalToBuffered.DeleteAll ();
   bufferedToOriginal.DeleteAll ();
@@ -231,7 +237,7 @@ bool CollectionBufferedValue::AddValue (Value* child)
 
 MirrorValue::MirrorValue (ValueType type) : type (type), idx (0)
 {
-  changeListener.AttachNew (new MirrorValueChangeListener (this));
+  changeListener.AttachNew (new ChangeListener (this));
   mirroringValue = &nullValue;
 }
 
@@ -279,6 +285,9 @@ void MirrorValue::SetMirrorValue (Value* value)
 
 void MirrorValue::ValueChanged ()
 {
+#if DO_DEBUG
+  printf ("ValueChanged: %s\n", Dump ().GetData ());
+#endif
   FireValueChanged ();
 }
 
@@ -326,7 +335,7 @@ void SelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 View::View (wxWindow* parent) : parent (parent)
 {
-  changeListener.AttachNew (new ViewValueChangeListener (this));
+  changeListener.AttachNew (new ChangeListener (this));
 }
 
 View::~View ()
@@ -638,6 +647,9 @@ void View::OnComponentChanged (wxCommandEvent& event)
 
 void View::ValueChanged (Value* value)
 {
+#if DO_DEBUG
+  printf ("View::ValueChanged: %s\n", value->Dump ().GetData ());
+#endif
   csArray<Binding> b;
   const csArray<Binding>& bindings = bindingsByValue.Get (value, b);
   if (!bindings.GetSize ())

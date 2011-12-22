@@ -41,10 +41,9 @@ class wxPanel;
 namespace Ares
 {
 
+#define DO_DEBUG 1
+
 class Value;
-class BufferValueChangeListener;
-class ViewValueChangeListener;
-class MirrorValueChangeListener;
 
 /**
  * Listen to changes in a value.
@@ -98,6 +97,9 @@ protected:
 
   void FireValueChanged ()
   {
+#if DO_DEBUG
+    printf ("FireValueChanged: %s\n", Dump ().GetData ());
+#endif
     for (size_t i = 0 ; i < listeners.GetSize () ; i++)
       listeners[i]->ValueChanged (this);
     if (parent) parent->ChildChanged (this);
@@ -255,6 +257,17 @@ public:
     }
     return true;
   }
+
+  // -----------------------------------------------------------------------------
+
+  /**
+   * Make a debug dump of this value. Subclasses can override this
+   * to provide more detail.
+   * If 'verbose' is false (default) then the returned string should be one-line
+   * and can't contain any newlines. If 'verbose' is true then it can have multiple
+   * lines but the last line should also have no newline.
+   */
+  virtual csString Dump (bool verbose = false);
 };
 
 /**
@@ -304,6 +317,12 @@ public:
   {
     UpdateChildren ();
     return children[idx];
+  }
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[*]";
+    dump += Value::Dump (verbose);
+    return dump;
   }
 };
 
@@ -389,6 +408,12 @@ public:
   }
 
   virtual Value* GetChild (size_t idx) { return children[idx]; }
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[#]";
+    dump += AbstractCompositeValue::Dump (verbose);
+    return dump;
+  }
 };
 
 /**
@@ -423,13 +448,20 @@ public:
  */
 class BufferedValue : public Value
 {
-  friend class BufferValueChangeListener;
-
 protected:
   csRef<Value> originalValue;
   bool dirty;
 
-  csRef<BufferValueChangeListener> changeListener;
+  class ChangeListener : public ValueChangeListener
+  {
+  private:
+    BufferedValue* bufvalue;
+  public:
+    ChangeListener (BufferedValue* bufvalue) : bufvalue (bufvalue) { }
+    virtual ~ChangeListener () { }
+    virtual void ValueChanged (Value* value) { bufvalue->ValueChanged (); }
+  };
+  csRef<ChangeListener> changeListener;
 
 public:
   BufferedValue (Value* originalValue);
@@ -464,6 +496,13 @@ public:
   static csRef<BufferedValue> CreateBufferedValue (Value* originalValue);
 
   virtual ValueType GetType () const { return originalValue->GetType (); }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Buf]";
+    dump += Value::Dump (verbose);
+    return dump;
+  }
 };
 
 /**
@@ -484,6 +523,9 @@ public:
 
   virtual void ValueChanged ()
   {
+#if DO_DEBUG
+    printf ("ValueChanged: %s\n", Dump ().GetData ());
+#endif
     buffer = originalValue->GetStringValue ();
     dirty = false;
   }
@@ -583,13 +625,22 @@ public:
  */
 class MirrorValue : public Value
 {
-  friend class MirrorValueChangeListener;
-
 private:
   ValueType type;
   csRef<Value> mirroringValue;
   NullValue nullValue;
-  csRef<MirrorValueChangeListener> changeListener;
+
+  class ChangeListener : public ValueChangeListener
+  {
+  private:
+    MirrorValue* selvalue;
+  public:
+    ChangeListener (MirrorValue* selvalue) : selvalue (selvalue) { }
+    virtual ~ChangeListener () { }
+    virtual void ValueChanged (Value* value) { selvalue->ValueChanged (); }
+  };
+
+  csRef<ChangeListener> changeListener;
 
   // The following two are only used in case the MirrorValue represents a composite.
   csStringArray names;
@@ -674,6 +725,12 @@ public:
   {
     return mirroringValue->UpdateValue (oldChild, child);
   }
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Mirror]";
+    dump += Value::Dump (verbose);
+    return dump;
+  }
 };
 
 /**
@@ -707,8 +764,6 @@ public:
  */
 class View : public wxEvtHandler, public csRefCount
 {
-  friend class ViewValueChangeListener;
-
 private:
   wxWindow* parent;
 
@@ -730,7 +785,20 @@ private:
   ValueToBinding bindingsByValue;
 
   // Listeners.
-  csRef<ViewValueChangeListener> changeListener;
+  class ChangeListener : public ValueChangeListener
+  {
+  private:
+    View* view;
+
+  public:
+    ChangeListener (View* view) : view (view) { }
+    virtual ~ChangeListener () { }
+    virtual void ValueChanged (Value* value)
+    {
+      view->ValueChanged (value);
+    }
+  };
+  csRef<ChangeListener> changeListener;
 
   // Keep track of list headings.
   struct ListHeading

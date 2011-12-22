@@ -87,6 +87,13 @@ public:
     *type = newtype;
     FireValueChanged ();
   }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[ColType]";
+    dump += Value::Dump (verbose);
+    return dump;
+  }
 };
 
 /**
@@ -145,6 +152,13 @@ public:
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.z)); AddChild ("sizeZ", v);
   }
   virtual ~ColliderValue () { }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Col]";
+    dump += CompositeValue::Dump (verbose);
+    return dump;
+  }
 };
 
 /**
@@ -190,6 +204,13 @@ public:
 
   virtual bool DeleteValue (Value* child) { return false; }
   virtual bool AddValue (Value* child) { return false; }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Col*]";
+    dump += StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
 };
 
 //--------------------------------------------------------------------------
