@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 #include "../models/rowmodel.h"
+#include "customcontrol.h"
 
 struct iEngine;
 struct iSector;
@@ -46,12 +47,13 @@ struct MVSphere
 /**
  * A mesh viewer.
  */
-class MeshView : public wxEvtHandler
+class MeshView : public CustomControl
 {
 private:
   iObjectRegistry* object_reg;
   csRef<iEngine> engine;
   csRef<iGraphics3D> g3d;
+  csString meshName;
   csRef<iMeshWrapper> mesh;
   ImagePanel* imagePanel;
   csMeshOnTexture* meshOnTexture;
@@ -73,7 +75,16 @@ private:
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
-  ~MeshView ();
+  virtual ~MeshView ();
+
+  virtual void SetValue (const char* v)
+  {
+    SetMesh (v);
+  }
+  virtual const char* GetValue ()
+  {
+    return meshName;
+  }
 
   /**
    * Set mesh. Returns false on failure (not reported).

@@ -37,11 +37,12 @@ class wxListCtrl;
 class wxStaticText;
 class wxChoicebook;
 class wxPanel;
+class CustomControl;
 
 namespace Ares
 {
 
-#define DO_DEBUG 1
+#define DO_DEBUG 0
 
 class Value;
 
@@ -858,6 +859,14 @@ public:
    * - Value type is not compatible with component type.
    */
   bool Bind (Value* value, wxTextCtrl* component);
+
+  /**
+   * Bind a value directly to a custom control. This works
+   * with all single value types (string, long, bool, float).
+   * Can fail (return false) under the following conditions:
+   * - Value type is not compatible with component type.
+   */
+  bool Bind (Value* value, CustomControl* component);
 
   /**
    * Bind a value directly to a choicebook. This works with

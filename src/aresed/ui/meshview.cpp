@@ -103,6 +103,8 @@ void MeshView::RotateMesh (float seconds)
 
 bool MeshView::SetMesh (const char* name)
 {
+  meshName = name;
+
   RemoveMesh ();
   delete meshOnTexture;
   meshOnTexture = 0;

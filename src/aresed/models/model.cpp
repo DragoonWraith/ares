@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "../tools/tools.h"
 #include "../ui/uitools.h"
 #include "../ui/listctrltools.h"
+#include "../ui/customcontrol.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -385,6 +386,8 @@ bool View::Bind (Value* value, wxWindow* component)
     return Bind (value, wxStaticCast (component, wxListCtrl));
   if (component->IsKindOf (CLASSINFO (wxChoicebook)))
     return Bind (value, wxStaticCast (component, wxChoicebook));
+  if (component->IsKindOf (CLASSINFO (CustomControl)))
+    return Bind (value, wxStaticCast (component, CustomControl));
   printf ("Bind: Unsupported type for component!\n");
   return false;
 }
@@ -434,6 +437,26 @@ bool View::Bind (Value* value, wxTextCtrl* component)
   }
 
   RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED);
+  ValueChanged (value);
+  return true;
+}
+
+bool View::Bind (Value* value, CustomControl* component)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+    case VALUE_LONG:
+    case VALUE_BOOL:
+    case VALUE_FLOAT:
+    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
+      break;
+    default:
+      printf ("Unsupported value type for text control!\n");
+      return false;
+  }
+
+  RegisterBinding (value, component, wxEVT_NULL);
   ValueChanged (value);
   return true;
 }
@@ -691,7 +714,8 @@ void View::ValueChanged (Value* value)
 	  Value* child = value->NextChild ();
 	  ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
 	}
-	ListCtrlTools::SelectRow (listCtrl, idx, true);
+	if (idx != -1)
+	  ListCtrlTools::SelectRow (listCtrl, idx, true);
       }
       else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
       {

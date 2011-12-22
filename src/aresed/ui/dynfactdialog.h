@@ -66,18 +66,14 @@ private:
   void OnOkButton (wxCommandEvent& event);
   void SetupColliderGeometry ();
 
-  class CollidersValueChangeListener : public ValueChangeListener
+  class ColliderValueChangeListener : public ValueChangeListener
   {
   private:
     DynfactDialog* dialog;
-
   public:
-    CollidersValueChangeListener (DynfactDialog* dialog) : dialog (dialog) { }
-    virtual ~CollidersValueChangeListener () { }
-    virtual void ValueChanged (Value* value)
-    {
-      dialog->SetupColliderGeometry ();
-    }
+    ColliderValueChangeListener (DynfactDialog* dialog) : dialog (dialog) { }
+    virtual ~ColliderValueChangeListener () { }
+    virtual void ValueChanged (Value* value) { dialog->SetupColliderGeometry (); }
   };
 
 public:
