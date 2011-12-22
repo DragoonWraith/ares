@@ -93,15 +93,35 @@ enum ValueType
 class Value : public csRefCount
 {
 protected:
+  Value* parent;
   csRefArray<ValueChangeListener> listeners;
 
   void FireValueChanged ()
   {
     for (size_t i = 0 ; i < listeners.GetSize () ; i++)
       listeners[i]->ValueChanged (this);
+    if (parent) parent->ChildChanged (this);
   }
 
+  /**
+   * Called when a child changes. Default implementation does
+   * nothing.
+   */
+  virtual void ChildChanged (Value* child) { }
+
 public:
+  Value () : parent (0) { }
+
+  /**
+   * Set the parent of this value.
+   */
+  virtual void SetParent (Value* parent) { Value::parent = parent; }
+
+  /**
+   * Get the parent of this value.
+   */
+  virtual Value* GetParent () const { return parent; }
+
   /**
    * Get the type of the value.
    */
@@ -258,20 +278,6 @@ class StandardCollectionValue : public Value
 private:
   size_t idx;
 
-  class ChangeListener : public ValueChangeListener
-  {
-  private:
-    StandardCollectionValue* collection;
-
-  public:
-    ChangeListener (StandardCollectionValue* collection) : collection (collection) { }
-    virtual ~ChangeListener () { }
-    virtual void ValueChanged (Value* value)
-    {
-      collection->ValueChanged (value);
-    }
-  };
-
 protected:
   csRefArray<Value> children;
 
@@ -281,22 +287,9 @@ protected:
    */
   virtual void UpdateChildren () { }
 
-  /**
-   * This is called whenever a child is changed if this collection was
-   * set up using ListenToChildren(). The default implemention does nothing.
-   */
-  virtual void ValueChanged (Value* child) { }
-
 public:
   StandardCollectionValue () { }
   virtual ~StandardCollectionValue () { }
-
-  /**
-   * If you call this function the the collection will listen
-   * to value changes in the children and call the protected
-   * 'ValueChanged' method in case one of the children changes.
-   */
-  void ListenToChildren ();
 
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
 
@@ -328,42 +321,15 @@ private:
 
   using Value::GetChild;
 
-  class ChangeListener : public ValueChangeListener
-  {
-  private:
-    AbstractCompositeValue* composite;
-
-  public:
-    ChangeListener (AbstractCompositeValue* composite) : composite (composite) { }
-    virtual ~ChangeListener () { }
-    virtual void ValueChanged (Value* value)
-    {
-      composite->ValueChanged (value);
-    }
-  };
-
 protected:
   /// Override this function to indicate the number of children.
   virtual size_t GetChildCount () = 0;
   /// Override this function to return the right name for a given child.
   virtual const char* GetName (size_t idx) = 0;
 
-  /**
-   * This is called whenever a child is changed if this composite was
-   * set up using ListenToChildren(). The default implemention does nothing.
-   */
-  virtual void ValueChanged (Value* child) { }
-
 public:
   AbstractCompositeValue () { }
   virtual ~AbstractCompositeValue () { }
-
-  /**
-   * If you call this function the the composite will listen
-   * to value changes in the children and call the protected
-   * 'ValueChanged' method in case one of the children changes.
-   */
-  void ListenToChildren ();
 
   virtual ValueType GetType () const { return VALUE_COMPOSITE; }
 
@@ -400,7 +366,7 @@ protected:
 
 public:
   CompositeValue () { }
-  virtual ~CompositeValue () { }
+  virtual ~CompositeValue () { DeleteAll (); }
 
   /**
    * Add a child with name to this composite.
@@ -409,12 +375,15 @@ public:
   {
     names.Push (name);
     children.Push (value);
+    value->SetParent (this);
   }
   /**
    * Remove all children from this composite.
    */
   void DeleteAll ()
   {
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->SetParent (0);
     names.DeleteAll ();
     children.DeleteAll ();
   }
@@ -651,12 +620,15 @@ public:
   {
     names.Push (name);
     children.Push (value);
+    value->SetParent (this);
   }
   /**
    * Remove all children from this composite.
    */
   void DeleteAll ()
   {
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->SetParent (0);
     names.DeleteAll ();
     children.DeleteAll ();
   }

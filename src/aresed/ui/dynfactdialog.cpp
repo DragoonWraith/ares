@@ -100,7 +100,7 @@ private:
   celBodyInfo info;
 
 protected:
-  virtual void ValueChanged (Value* child)
+  virtual void ChildChanged (Value* child)
   {
     switch (info.type)
     {
@@ -143,7 +143,6 @@ public:
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.x)); AddChild ("sizeX", v);
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.y)); AddChild ("sizeY", v);
     v.AttachNew (new FloatPointerValue (&ColliderValue::info.size.z)); AddChild ("sizeZ", v);
-    ListenToChildren ();
   }
   virtual ~ColliderValue () { }
 };
@@ -161,6 +160,8 @@ private:
 protected:
   virtual void UpdateChildren ()
   {
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->SetParent (0);
     children.DeleteAll ();
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return;
@@ -169,10 +170,10 @@ protected:
       csRef<ColliderValue> value;
       value.AttachNew (new ColliderValue (i, dynfact));
       children.Push (value);
+      value->SetParent (this);
     }
-    ListenToChildren ();
   }
-  virtual void ValueChanged (Value* child)
+  virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
   }
