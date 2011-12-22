@@ -718,7 +718,11 @@ private:
     csRef<Value> value;
     wxWindow* component;
     wxEventType eventType;
-    Binding () : component (0), eventType (wxEVT_NULL) { }
+    // If processing is true we are busy processing an event from this component
+    // and in that case we should not process it again and also not process
+    // value changes.
+    bool processing;
+    Binding () : component (0), eventType (wxEVT_NULL), processing (false) { }
   };
   typedef csHash<Binding,csPtrKey<wxWindow> > ComponentToBinding;
   typedef csHash<csArray<Binding>,csPtrKey<Value> > ValueToBinding;

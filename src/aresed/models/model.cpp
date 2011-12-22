@@ -595,12 +595,16 @@ void View::OnComponentChanged (wxCommandEvent& event)
 {
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
   Binding b;
-  const Binding& binding = bindingsByComponent.Get (component, b);
+  Binding& binding = bindingsByComponent.Get (component, b);
   if (!binding.value)
   {
     printf ("OnComponentChanged: Something went wrong! Called without a value!\n");
     return;
   }
+
+  if (binding.processing) return;
+  binding.processing = true;
+
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
   {
     wxTextCtrl* textCtrl = wxStaticCast (component, wxTextCtrl);
@@ -629,6 +633,7 @@ void View::OnComponentChanged (wxCommandEvent& event)
   {
     printf ("OnComponentChanged: this type of component not yet supported!\n");
   }
+  binding.processing = false;
 }
 
 void View::ValueChanged (Value* value)
@@ -638,69 +643,71 @@ void View::ValueChanged (Value* value)
   if (!bindings.GetSize ())
   {
     printf ("ValueChanged: Something went wrong! Called without a value!\n");
+    //CS_ASSERT (false);
     return;
   }
   for (size_t i = 0 ; i < bindings.GetSize () ; i++)
-  {
-    wxWindow* comp = bindings[i].component;
-    if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
+    if (!bindings[i].processing)
     {
-      wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
-      csString text = ValueToString (value);
-      textCtrl->SetValue (wxString::FromUTF8 (text));
-    }
-    else if (comp->IsKindOf (CLASSINFO (wxPanel)))
-    {
-      // If the value of a composite changes we update the children.
-      value->ResetIterator ();
-      while (value->HasNext ())
+      wxWindow* comp = bindings[i].component;
+      if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
-	Value* child = value->NextChild ();
-	ValueChanged (child);
+	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
+	csString text = ValueToString (value);
+	textCtrl->SetValue (wxString::FromUTF8 (text));
       }
-    }
-    else if (comp->IsKindOf (CLASSINFO (wxListCtrl)))
-    {
-      wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
-      listCtrl->DeleteAllItems ();
-      ListHeading lhdef;
-      const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
-      long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
-      value->ResetIterator ();
-      while (value->HasNext ())
+      else if (comp->IsKindOf (CLASSINFO (wxPanel)))
       {
-	Value* child = value->NextChild ();
-	ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
+	// If the value of a composite changes we update the children.
+	value->ResetIterator ();
+	while (value->HasNext ())
+	{
+	  Value* child = value->NextChild ();
+	  ValueChanged (child);
+	}
       }
-      ListCtrlTools::SelectRow (listCtrl, idx, true);
-    }
-    else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
-    {
-      wxChoicebook* choicebook = wxStaticCast (comp, wxChoicebook);
-      if (value->GetType () == VALUE_LONG)
-	choicebook->ChangeSelection (value->GetLongValue ());
+      else if (comp->IsKindOf (CLASSINFO (wxListCtrl)))
+      {
+	wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
+	listCtrl->DeleteAllItems ();
+	ListHeading lhdef;
+	const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
+	long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
+	value->ResetIterator ();
+	while (value->HasNext ())
+	{
+	  Value* child = value->NextChild ();
+	  ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
+	}
+	ListCtrlTools::SelectRow (listCtrl, idx, true);
+      }
+      else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
+      {
+	wxChoicebook* choicebook = wxStaticCast (comp, wxChoicebook);
+	if (value->GetType () == VALUE_LONG)
+	  choicebook->ChangeSelection (value->GetLongValue ());
+	else
+	{
+	  csString text = ValueToString (value);
+	  wxString wxtext = wxString::FromUTF8 (text);
+	  for (size_t i = 0 ; i < choicebook->GetPageCount () ; i++)
+	  {
+	    wxString wxp = choicebook->GetPageText (i);
+	    if (wxp == wxtext)
+	    {
+	      choicebook->ChangeSelection (i);
+	      return;
+	    }
+	  }
+	  // If we come here we set to the first page.
+	  choicebook->SetSelection (0);
+	}
+      }
       else
       {
-	csString text = ValueToString (value);
-	wxString wxtext = wxString::FromUTF8 (text);
-	for (size_t i = 0 ; i < choicebook->GetPageCount () ; i++)
-	{
-	  wxString wxp = choicebook->GetPageText (i);
-	  if (wxp == wxtext)
-	  {
-	    choicebook->ChangeSelection (i);
-	    return;
-	  }
-	}
-	// If we come here we set to the first page.
-	choicebook->SetSelection (0);
+	printf ("ValueChanged: this type of component not yet supported!\n");
       }
     }
-    else
-    {
-      printf ("ValueChanged: this type of component not yet supported!\n");
-    }
-  }
 }
 
 bool View::DefineHeading (const char* listName, const char* heading,
