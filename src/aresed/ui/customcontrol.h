@@ -28,6 +28,9 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
 
+namespace Ares { class Value; }
+using namespace Ares;
+
 /**
  * Base class for custom controls in Ares.
  */
@@ -39,14 +42,9 @@ public:
   virtual ~CustomControl () { }
 
   /**
-   * Subclasses should override this to set a value.
+   * Synchronize this control with the given value.
    */
-  virtual void SetValue (const char* v) { }
-
-  /**
-   * Subclasses should override this to get a value.
-   */
-  virtual const char* GetValue () { return 0; }
+  virtual void SyncValue (Ares::Value* value) { }
 };
 
 #endif // __appares_custromcontrol_h

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "../models/model.h"
+#include "meshview.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -35,16 +36,29 @@ THE SOFTWARE.
 #include <wx/treectrl.h>
 #include <wx/xrc/xmlres.h>
 
-class MeshView;
 class TreeCtrlView;
 class ListCtrlView;
 class FactoryEditorModel;
 
+class DynfactDialog;
 class ColliderCollectionValue;
 
 class UIManager;
 
 using namespace Ares;
+
+class DynfactMeshView : public MeshView
+{
+private:
+  DynfactDialog* dynfact;
+
+public:
+  DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* object_reg, wxWindow* parent) :
+    MeshView (object_reg, parent), dynfact (dynfact) { }
+  virtual ~DynfactMeshView () { }
+
+  virtual void SyncValue (Ares::Value* value);
+};
 
 class DynfactDialog : public wxDialog
 {
@@ -55,7 +69,7 @@ private:
   size_t normalPen;
   size_t hilightPen;
 
-  MeshView* meshView;
+  DynfactMeshView* meshView;
   TreeCtrlView* meshTreeView;
   csRef<FactoryEditorModel> factoryEditorModel;
 
@@ -64,17 +78,6 @@ private:
   csRef<SelectedValue> colliderSelectedValue;
 
   void OnOkButton (wxCommandEvent& event);
-  void SetupColliderGeometry ();
-
-  class ColliderValueChangeListener : public ValueChangeListener
-  {
-  private:
-    DynfactDialog* dialog;
-  public:
-    ColliderValueChangeListener (DynfactDialog* dialog) : dialog (dialog) { }
-    virtual ~ColliderValueChangeListener () { }
-    virtual void ValueChanged (Value* value) { dialog->SetupColliderGeometry (); }
-  };
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);
@@ -82,6 +85,8 @@ public:
 
   void Show ();
   void Tick ();
+
+  void SetupColliderGeometry ();
 
   void EditFactory (const char* factory);
   iDynamicFactory* GetCurrentFactory ();

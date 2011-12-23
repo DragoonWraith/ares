@@ -443,19 +443,6 @@ bool View::Bind (Value* value, wxTextCtrl* component)
 
 bool View::Bind (Value* value, CustomControl* component)
 {
-  switch (value->GetType ())
-  {
-    case VALUE_STRING:
-    case VALUE_LONG:
-    case VALUE_BOOL:
-    case VALUE_FLOAT:
-    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
-      break;
-    default:
-      printf ("Unsupported value type for text control!\n");
-      return false;
-  }
-
   RegisterBinding (value, component, wxEVT_NULL);
   ValueChanged (value);
   return true;
@@ -690,6 +677,11 @@ void View::ValueChanged (Value* value)
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
+      }
+      else if (comp->IsKindOf (CLASSINFO (CustomControl)))
+      {
+	CustomControl* customCtrl = wxStaticCast (comp, CustomControl);
+	customCtrl->SyncValue (value);
       }
       else if (comp->IsKindOf (CLASSINFO (wxPanel)))
       {

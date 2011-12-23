@@ -44,6 +44,13 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+void DynfactMeshView::SyncValue (Ares::Value* value)
+{
+  dynfact->SetupColliderGeometry ();
+}
+
+//--------------------------------------------------------------------------
+
 using namespace Ares;
 
 /**
@@ -289,13 +296,13 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 
 void DynfactDialog::EditFactory (const char* meshName)
 {
-  meshView->SetMesh (meshName);
-
-  wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
-  ListCtrlTools::ClearSelection (colliderList, true);
-
   colliderCollectionValue->Refresh ();
+
+  meshView->SetMesh (meshName);
   SetupColliderGeometry ();
+
+  //wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
+  //ListCtrlTools::ClearSelection (colliderList, true);
 }
 
 void DynfactDialog::SetupColliderGeometry ()
@@ -339,7 +346,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
-  meshView = new MeshView (uiManager->GetApp ()->GetObjectRegistry (), panel);
+  meshView = new DynfactMeshView (this, uiManager->GetApp ()->GetObjectRegistry (), panel);
   normalPen = meshView->CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
   hilightPen = meshView->CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
 
@@ -354,7 +361,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderView.AttachNew (new View (this));
 
   // Define the collider list and value.
-  colliderView->DefineHeading ("colliderList", "Type,Mass", "type,mass");
+  colliderView->DefineHeading ("colliderList", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
   colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
   colliderView->Bind (colliderCollectionValue, "colliderList");
 
@@ -364,9 +371,11 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   csRef<ColliderValue> colliderValue;
   colliderValue.AttachNew (new ColliderValue (0, 0));
   colliderSelectedValue->SetupComposite (colliderValue);
-  csRef<ColliderValueChangeListener> colListener;
-  colListener.AttachNew (new ColliderValueChangeListener (this));
-  colliderSelectedValue->AddValueChangeListener (colListener);
+
+  // Bind the selected collider value to the mesh view. This value is not actually
+  // used by the mesh view but this binding only serves as a signal for the mesh
+  // view to update itself.
+  colliderView->Bind (colliderSelectedValue, meshView);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
   colliderView->Bind (colliderSelectedValue->GetChild ("type"), "type_colliderChoice");

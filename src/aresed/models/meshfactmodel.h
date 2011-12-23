@@ -39,7 +39,7 @@ private:
 
 public:
   MeshfactRowModel (iEngine* engine) : engine (engine),
-    list (0), idx (csArrayItemNotFound) { }
+    list (0), idx (0) { }
   virtual ~MeshfactRowModel () { }
 
   virtual void ResetIterator ();

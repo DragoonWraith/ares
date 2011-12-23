@@ -53,8 +53,8 @@ private:
   iObjectRegistry* object_reg;
   csRef<iEngine> engine;
   csRef<iGraphics3D> g3d;
-  csString meshName;
   csRef<iMeshWrapper> mesh;
+  csString meshName;
   ImagePanel* imagePanel;
   csMeshOnTexture* meshOnTexture;
   csRef<iTextureHandle> handle;
@@ -77,13 +77,10 @@ public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
   virtual ~MeshView ();
 
-  virtual void SetValue (const char* v)
+  virtual void SyncValue (Ares::Value* value)
   {
-    SetMesh (v);
-  }
-  virtual const char* GetValue ()
-  {
-    return meshName;
+    if (!meshName.IsEmpty ())
+      SetMesh (meshName);
   }
 
   /**

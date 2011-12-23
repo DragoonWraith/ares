@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
+#include "../models/model.h"
 #include "customcontrol.h"
 
 IMPLEMENT_DYNAMIC_CLASS(CustomControl, wxWindow)
