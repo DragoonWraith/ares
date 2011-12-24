@@ -624,6 +624,10 @@ void View::OnComponentChanged (wxCommandEvent& event)
   if (binding.processing) return;
   binding.processing = true;
 
+#if DO_DEBUG
+  printf ("View::OnComponentChanged: %s\n", binding.value->Dump ().GetData ());
+#endif
+
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
   {
     wxTextCtrl* textCtrl = wxStaticCast (component, wxTextCtrl);
@@ -661,7 +665,7 @@ void View::ValueChanged (Value* value)
   printf ("View::ValueChanged: %s\n", value->Dump ().GetData ());
 #endif
   csArray<Binding> b;
-  const csArray<Binding>& bindings = bindingsByValue.Get (value, b);
+  csArray<Binding>& bindings = bindingsByValue.Get (value, b);
   if (!bindings.GetSize ())
   {
     printf ("ValueChanged: Something went wrong! Called without a value!\n");
@@ -674,9 +678,11 @@ void View::ValueChanged (Value* value)
       wxWindow* comp = bindings[i].component;
       if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
+	bindings[i].processing = true;
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
+	bindings[i].processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (CustomControl)))
       {
