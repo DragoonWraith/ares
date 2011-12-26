@@ -181,9 +181,7 @@ private:
 protected:
   virtual void UpdateChildren ()
   {
-    for (size_t i = 0 ; i < children.GetSize () ; i++)
-      children[i]->SetParent (0);
-    children.DeleteAll ();
+    ReleaseChildren ();
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return;
     for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)

@@ -281,6 +281,21 @@ public:
 };
 
 /**
+ * A constant string value.
+ */
+class ConstantStringValue : public Value
+{
+private:
+  csString str;
+
+public:
+  ConstantStringValue (const char* str) : str (str) { }
+  virtual ~ConstantStringValue () { }
+  virtual ValueType GetType () const { return VALUE_STRING; }
+  virtual const char* GetStringValue () { return str; }
+};
+
+/**
  * A standard collection value which is based on an array of values
  * and which supports iteration and of the children. Subclasses of
  * this class can implement UpdateChildren() in order to fill the
@@ -300,6 +315,17 @@ protected:
    * Default implementation does nothing.
    */
   virtual void UpdateChildren () { }
+
+  /**
+   * Release the current children and remove them. UpdateChildren() should call
+   * this first if it wants to replace the array of children.
+   */
+  void ReleaseChildren ()
+  {
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->SetParent (0);
+    children.DeleteAll ();
+  }
 
 public:
   StandardCollectionValue () { }

@@ -30,6 +30,33 @@ THE SOFTWARE.
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
 
+
+void DynfactCollectionValue::UpdateChildren ()
+{
+  ReleaseChildren ();
+  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
+  csHash<csStringArray,csString>::ConstGlobalIterator it = categories.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString category;
+    const csStringArray& items = it.Next (category);
+    csRef<Ares::ConstantStringValue> strValue;
+    for (size_t i = 0 ; i < items.GetSize () ; i++)
+    {
+      csRef<Ares::CompositeValue> value;
+      value.AttachNew (new Ares::CompositeValue ());
+      strValue.AttachNew (new Ares::ConstantStringValue (category));
+      value->AddChild ("category", strValue);
+      strValue.AttachNew (new Ares::ConstantStringValue (items[i]));
+      value->AddChild ("item", strValue);
+      children.Push (value);
+      value->SetParent (this);
+    }
+  }
+}
+
+//--------------------------------------------------------------------------
+
 void DynfactRowModel::SearchNext ()
 {
   while (idx >= items.GetSize ())

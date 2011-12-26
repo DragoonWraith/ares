@@ -26,8 +26,40 @@ THE SOFTWARE.
 #define __aresed_dynfactmodel_h
 
 #include "rowmodel.h"
+#include "model.h"
 
 class AresEdit3DView;
+
+/**
+ * A value representing the list of dynamic factories.
+ * Children of this value are of type CompositeValue.
+ */
+class DynfactCollectionValue : public Ares::StandardCollectionValue
+{
+private:
+  AresEdit3DView* aresed3d;
+
+protected:
+  virtual void UpdateChildren ();
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
+  virtual ~DynfactCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child) { return false; }
+  virtual bool AddValue (Value* child) { return false; }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[DynFact*]";
+    dump += Ares::StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
+};
 
 class DynfactRowModel : public RowModel
 {
