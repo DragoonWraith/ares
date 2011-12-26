@@ -704,10 +704,10 @@ void View::ValueChanged (Value* value)
       else if (comp->IsKindOf (CLASSINFO (wxListCtrl)))
       {
 	wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
+	long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
 	listCtrl->DeleteAllItems ();
 	ListHeading lhdef;
 	const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
-	long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
 	value->ResetIterator ();
 	while (value->HasNext ())
 	{
