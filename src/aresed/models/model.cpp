@@ -329,6 +329,9 @@ void SelectedValue::OnSelectionChange (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   selection = idx;
+#if DO_DEBUG
+  printf ("SelectedValue::OnSelectionChange: %s\n", Dump ().GetData ());
+#endif
   UpdateToSelection ();
 }
 
@@ -345,12 +348,12 @@ View::~View ()
   while (it.HasNext ())
   {
     csPtrKey<wxWindow> component;
-    Binding binding = it.Next (component);
-    if (binding.eventType == wxEVT_COMMAND_TEXT_UPDATED)
-      component->Disconnect (binding.eventType,
+    Binding* binding = it.Next (component);
+    if (binding->eventType == wxEVT_COMMAND_TEXT_UPDATED)
+      component->Disconnect (binding->eventType,
 	  wxCommandEventHandler (View :: OnComponentChanged), 0, this);
-    else if (binding.eventType == wxEVT_COMMAND_LIST_ITEM_SELECTED)
-      component->Disconnect (binding.eventType,
+    else if (binding->eventType == wxEVT_COMMAND_LIST_ITEM_SELECTED)
+      component->Disconnect (binding->eventType,
 	  wxCommandEventHandler (View :: OnComponentChanged), 0, this);
   }
 }
@@ -406,14 +409,14 @@ bool View::Bind (Value* value, const char* compName)
 
 void View::RegisterBinding (Value* value, wxWindow* component, wxEventType eventType)
 {
-  Binding b;
-  b.value = value;
-  b.component = component;
-  b.eventType = eventType;
+  Binding* b = new Binding ();
+  b->value = value;
+  b->component = component;
+  b->eventType = eventType;
   bindingsByComponent.Put (component, b);
   if (!bindingsByValue.Contains (value))
-    bindingsByValue.Put (value, csArray<Binding> ());
-  csArray<Binding> temp;
+    bindingsByValue.Put (value, csArray<Binding*> ());
+  csArray<Binding*> temp;
   bindingsByValue.Get (value, temp).Push (b);
   CS_ASSERT (temp.GetSize () == 0);
   if (eventType != wxEVT_NULL)
@@ -613,33 +616,32 @@ csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)
 void View::OnComponentChanged (wxCommandEvent& event)
 {
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
-  Binding b;
-  Binding& binding = bindingsByComponent.Get (component, b);
-  if (!binding.value)
+  Binding* binding = bindingsByComponent.Get (component, 0);
+  if (!binding)
   {
     printf ("OnComponentChanged: Something went wrong! Called without a value!\n");
     return;
   }
 
-  if (binding.processing) return;
-  binding.processing = true;
+  if (binding->processing) return;
+  binding->processing = true;
 
 #if DO_DEBUG
-  printf ("View::OnComponentChanged: %s\n", binding.value->Dump ().GetData ());
+  printf ("View::OnComponentChanged: %s\n", binding->value->Dump ().GetData ());
 #endif
 
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
   {
     wxTextCtrl* textCtrl = wxStaticCast (component, wxTextCtrl);
     csString text = (const char*)textCtrl->GetValue ().mb_str (wxConvUTF8);
-    StringToValue (text, binding.value);
+    StringToValue (text, binding->value);
   }
   else if (component->IsKindOf (CLASSINFO (wxChoicebook)))
   {
     wxChoicebook* choicebook = wxStaticCast (component, wxChoicebook);
     int pageSel = choicebook->GetSelection ();
-    if (binding.value->GetType () == VALUE_LONG)
-      LongToValue ((long)pageSel, binding.value);
+    if (binding->value->GetType () == VALUE_LONG)
+      LongToValue ((long)pageSel, binding->value);
     else
     {
       csString value;
@@ -649,14 +651,14 @@ void View::OnComponentChanged (wxCommandEvent& event)
         wxString pageTxt = choicebook->GetPageText (pageSel);
         value = (const char*)pageTxt.mb_str (wxConvUTF8);
       }
-      StringToValue (value, binding.value);
+      StringToValue (value, binding->value);
     }
   }
   else
   {
     printf ("OnComponentChanged: this type of component not yet supported!\n");
   }
-  binding.processing = false;
+  binding->processing = false;
 }
 
 void View::ValueChanged (Value* value)
@@ -664,8 +666,8 @@ void View::ValueChanged (Value* value)
 #if DO_DEBUG
   printf ("View::ValueChanged: %s\n", value->Dump ().GetData ());
 #endif
-  csArray<Binding> b;
-  csArray<Binding>& bindings = bindingsByValue.Get (value, b);
+  csArray<Binding*> b;
+  csArray<Binding*>& bindings = bindingsByValue.Get (value, b);
   if (!bindings.GetSize ())
   {
     printf ("ValueChanged: Something went wrong! Called without a value!\n");
@@ -673,16 +675,16 @@ void View::ValueChanged (Value* value)
     return;
   }
   for (size_t i = 0 ; i < bindings.GetSize () ; i++)
-    if (!bindings[i].processing)
+    if (!bindings[i]->processing)
     {
-      wxWindow* comp = bindings[i].component;
+      wxWindow* comp = bindings[i]->component;
       if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
-	bindings[i].processing = true;
+	bindings[i]->processing = true;
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
-	bindings[i].processing = false;
+	bindings[i]->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (CustomControl)))
       {

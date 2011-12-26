@@ -780,8 +780,9 @@ private:
     bool processing;
     Binding () : component (0), eventType (wxEVT_NULL), processing (false) { }
   };
-  typedef csHash<Binding,csPtrKey<wxWindow> > ComponentToBinding;
-  typedef csHash<csArray<Binding>,csPtrKey<Value> > ValueToBinding;
+  csPDelArray<Binding> bindings;
+  typedef csHash<Binding*,csPtrKey<wxWindow> > ComponentToBinding;
+  typedef csHash<csArray<Binding*>,csPtrKey<Value> > ValueToBinding;
   ComponentToBinding bindingsByComponent;
   ValueToBinding bindingsByValue;
 
