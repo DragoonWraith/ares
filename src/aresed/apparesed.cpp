@@ -119,6 +119,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactRowModel.AttachNew (new DynfactRowModel (this));
+  dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
 }
 
 AresEdit3DView::~AresEdit3DView()

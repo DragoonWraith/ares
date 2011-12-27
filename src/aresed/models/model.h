@@ -29,11 +29,13 @@ THE SOFTWARE.
 #include <csutil/stringarray.h>
 
 #include <wx/event.h>
+#include <wx/treectrl.h>
 
 class wxWindow;
 class wxTextCtrl;
 class wxCheckBox;
 class wxListCtrl;
+class wxTreeCtrl;
 class wxStaticText;
 class wxChoicebook;
 class wxPanel;
@@ -96,16 +98,6 @@ protected:
   Value* parent;
   csRefArray<ValueChangeListener> listeners;
 
-  void FireValueChanged ()
-  {
-#if DO_DEBUG
-    printf ("FireValueChanged: %s\n", Dump ().GetData ());
-#endif
-    for (size_t i = 0 ; i < listeners.GetSize () ; i++)
-      listeners[i]->ValueChanged (this);
-    if (parent) parent->ChildChanged (this);
-  }
-
   /**
    * Called when a child changes. Default implementation does
    * nothing.
@@ -114,6 +106,20 @@ protected:
 
 public:
   Value () : parent (0) { }
+
+  /**
+   * Notify this value as if it has changed. This will cause
+   * the listeners and parent to be notified.
+   */
+  virtual void FireValueChanged ()
+  {
+#if DO_DEBUG
+    printf ("FireValueChanged: %s\n", Dump ().GetData ());
+#endif
+    for (size_t i = 0 ; i < listeners.GetSize () ; i++)
+      listeners[i]->ValueChanged (this);
+    if (parent) parent->ChildChanged (this);
+  }
 
   /**
    * Set the parent of this value.
@@ -133,6 +139,9 @@ public:
   /**
    * Get the value if the type is VALUE_STRING.
    * Returns 0 if the value does not represent a string.
+   * Exception: if the value is a node in a model then it will
+   * be a collection but also return a string representing the
+   * name of this node to show in the tree.
    */
   virtual const char* GetStringValue () { return 0; }
 
@@ -646,7 +655,8 @@ public:
  * simply passes through the changes in both directions. It is useful
  * in case you want to make a binding between several values and a single
  * component and the decision on which value should be chosen depends
- * on other criteria. See SelectedValue for an example of this.
+ * on other criteria. See ListSelectedValue and TreeSelectedValue for
+ * examples of this.
  *
  * A MirrorValue also supports being a composite with mirrored children.
  */
@@ -764,11 +774,11 @@ public:
  * This value exactly mirrors a value as it is selected in a list.
  * When the selection changes this value will automatically change
  * and making changes to this value will automatically reflect
- * to the value in the list. Note that a SelectedValue is also
+ * to the value in the list. Note that a ListSelectedValue is also
  * a MirrorValue and if it represents a composite then you need to
- * set it up.
+ * set it up (manually or with SetupComposite()).
  */
-class SelectedValue : public wxEvtHandler, public MirrorValue
+class ListSelectedValue : public wxEvtHandler, public MirrorValue
 {
 private:
   wxListCtrl* listCtrl;
@@ -781,8 +791,33 @@ private:
   void UpdateToSelection ();
 
 public:
-  SelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type);
-  virtual ~SelectedValue ();
+  ListSelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type);
+  virtual ~ListSelectedValue ();
+};
+
+/**
+ * This value exactly mirrors a value as it is selected in a tree.
+ * When the selection changes this value will automatically change
+ * and making changes to this value will automatically reflect
+ * to the value in the tree. Note that a TreeSelectedValue is also
+ * a MirrorValue and if it represents a composite then you need to
+ * set it up (manually or with SetupComposite()).
+ */
+class TreeSelectedValue : public wxEvtHandler, public MirrorValue
+{
+private:
+  wxTreeCtrl* treeCtrl;
+  csRef<Value> collectionValue;
+
+  /// The selected item in the tree.
+  wxTreeItemId selection;
+
+  void OnSelectionChange (wxCommandEvent& event);
+  void UpdateToSelection ();
+
+public:
+  TreeSelectedValue (wxTreeCtrl* treeCtrl, Value* collectionValue, ValueType type);
+  virtual ~TreeSelectedValue ();
 };
 
 /**
@@ -854,7 +889,13 @@ private:
    */
   wxWindow* FindComponentByName (wxWindow* container, const char* name);
 
+  /// Register a binding for a given component and eventtype.
   void RegisterBinding (Value* value, wxWindow* component, wxEventType eventType);
+
+  /**
+   * Build a tree from a value.
+   */
+  void BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent);
 
 public:
   View (wxWindow* parent);
@@ -926,6 +967,21 @@ public:
    * - Value type is not compatible with component type.
    */
   bool Bind (Value* value, wxListCtrl* component);
+
+  /**
+   * Bind a value directly to a tree control. This only works with
+   * values of type VALUE_COLLECTION.
+   * Can fail (return false) under the following conditions:
+   * - Value type is not compatible with component type.
+   */
+  bool Bind (Value* value, wxTreeCtrl* component);
+
+  /**
+   * Connect a value to another value. This is a one-directional
+   * connection which will cause the second value to get 'fired'
+   * in case the first one is fired.
+   */
+  void Connect (Value* source, Value* dest);
 
   /**
    * Define a heading for a list control. For every column in the list

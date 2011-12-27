@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
+#include <wx/treectrl.h>
 #include <wx/listbox.h>
 #include <wx/choicebk.h>
 #include <wx/notebook.h>
@@ -294,26 +295,26 @@ void MirrorValue::ValueChanged ()
 
 // --------------------------------------------------------------------------
 
-SelectedValue::SelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type) :
+ListSelectedValue::ListSelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type) :
   MirrorValue (type), listCtrl (listCtrl), collectionValue (collectionValue)
 {
   listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
-	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
+	  wxCommandEventHandler (ListSelectedValue :: OnSelectionChange), 0, this);
   listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_DESELECTED,
-	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
+	  wxCommandEventHandler (ListSelectedValue :: OnSelectionChange), 0, this);
   selection = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   UpdateToSelection ();
 }
 
-SelectedValue::~SelectedValue ()
+ListSelectedValue::~ListSelectedValue ()
 {
   listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
-	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
+	  wxCommandEventHandler (ListSelectedValue :: OnSelectionChange), 0, this);
   listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_DESELECTED,
-	  wxCommandEventHandler (SelectedValue :: OnSelectionChange), 0, this);
+	  wxCommandEventHandler (ListSelectedValue :: OnSelectionChange), 0, this);
 }
 
-void SelectedValue::UpdateToSelection ()
+void ListSelectedValue::UpdateToSelection ()
 {
   Value* value = 0;
   if (selection != -1)
@@ -325,12 +326,76 @@ void SelectedValue::UpdateToSelection ()
   }
 }
 
-void SelectedValue::OnSelectionChange (wxCommandEvent& event)
+void ListSelectedValue::OnSelectionChange (wxCommandEvent& event)
 {
   long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   selection = idx;
 #if DO_DEBUG
-  printf ("SelectedValue::OnSelectionChange: %s\n", Dump ().GetData ());
+  printf ("ListSelectedValue::OnSelectionChange: %s\n", Dump ().GetData ());
+#endif
+  UpdateToSelection ();
+}
+
+// --------------------------------------------------------------------------
+
+TreeSelectedValue::TreeSelectedValue (wxTreeCtrl* treeCtrl, Value* collectionValue, ValueType type) :
+  MirrorValue (type), treeCtrl (treeCtrl), collectionValue (collectionValue)
+{
+  treeCtrl->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,
+	  wxCommandEventHandler (TreeSelectedValue :: OnSelectionChange), 0, this);
+  selection = treeCtrl->GetSelection ();
+  UpdateToSelection ();
+}
+
+TreeSelectedValue::~TreeSelectedValue ()
+{
+  treeCtrl->Disconnect (wxEVT_COMMAND_TREE_SEL_CHANGED,
+	  wxCommandEventHandler (TreeSelectedValue :: OnSelectionChange), 0, this);
+}
+
+/**
+ * Get a value corresponding with a given tree item.
+ */
+static Value* ValueFromTree (wxTreeCtrl* tree, wxTreeItemId item, Value* collectionValue)
+{
+  wxTreeItemId parent = tree->GetItemParent (item);
+  if (parent.IsOk ())
+  {
+    Value* value = ValueFromTree (tree, parent, collectionValue);
+    if (!value) return 0;	// Can this happen?
+    csString name = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
+    value->ResetIterator ();
+    while (value->HasNext ())
+    {
+      Value* child = value->NextChild ();
+      if (name == child->GetStringValue ())
+	return child;
+    }
+    return 0;	// Can this happen?
+  }
+  else
+  {
+    return collectionValue;
+  }
+}
+
+void TreeSelectedValue::UpdateToSelection ()
+{
+  Value* value = 0;
+  if (selection.IsOk ())
+    value = ValueFromTree (treeCtrl, selection, collectionValue);
+  if (value != GetMirrorValue ())
+  {
+    SetMirrorValue (value);
+    FireValueChanged ();
+  }
+}
+
+void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
+{
+  selection = treeCtrl->GetSelection ();
+#if DO_DEBUG
+  printf ("TreeSelectedValue::OnSelectionChange: %s\n", Dump ().GetData ());
 #endif
   UpdateToSelection ();
 }
@@ -387,6 +452,8 @@ bool View::Bind (Value* value, wxWindow* component)
     return Bind (value, wxStaticCast (component, wxPanel));
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
     return Bind (value, wxStaticCast (component, wxListCtrl));
+  if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+    return Bind (value, wxStaticCast (component, wxTreeCtrl));
   if (component->IsKindOf (CLASSINFO (wxChoicebook)))
     return Bind (value, wxStaticCast (component, wxChoicebook));
   if (component->IsKindOf (CLASSINFO (CustomControl)))
@@ -472,7 +539,7 @@ bool View::Bind (Value* value, wxChoicebook* component)
 bool View::Bind (Value* value, wxPanel* component)
 {
   // We also support VALUE_NONE here because that can be useful in situations where we don't
-  // know the type yet (for example when the value is a SelectedValue and nothing has been
+  // know the type yet (for example when the value is a ListSelectedValue and nothing has been
   // selected).
   if (value->GetType () != VALUE_COMPOSITE && value->GetType () != VALUE_NONE)
   {
@@ -505,11 +572,27 @@ bool View::Bind (Value* value, wxPanel* component)
 bool View::Bind (Value* value, wxListCtrl* component)
 {
   // We also support VALUE_NONE here because that can be useful in situations where we don't
-  // know the type yet (for example when the value is a SelectedValue and nothing has been
+  // know the type yet (for example when the value is a ListSelectedValue and nothing has been
   // selected).
   if (value->GetType () != VALUE_COLLECTION && value->GetType () != VALUE_NONE)
   {
     printf ("Unsupported value type for lists! Only VALUE_COLLECTION is supported.\n");
+    return false;
+  }
+
+  RegisterBinding (value, component, wxEVT_NULL);
+  ValueChanged (value);
+  return true;
+}
+
+bool View::Bind (Value* value, wxTreeCtrl* component)
+{
+  // We also support VALUE_NONE here because that can be useful in situations where we don't
+  // know the type yet (for example when the value is a ListSelectedValue and nothing has been
+  // selected).
+  if (value->GetType () != VALUE_COLLECTION && value->GetType () != VALUE_NONE)
+  {
+    printf ("Unsupported value type for trees! Only VALUE_COLLECTION is supported.\n");
     return false;
   }
 
@@ -661,6 +744,17 @@ void View::OnComponentChanged (wxCommandEvent& event)
   binding->processing = false;
 }
 
+void View::BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent)
+{
+  value->ResetIterator ();
+  while (value->HasNext ())
+  {
+    Value* child = value->NextChild ();
+    wxTreeItemId itemId = treeCtrl->AppendItem (parent, wxString::FromUTF8 (child->GetStringValue ()));
+    BuildTree (treeCtrl, child, itemId);
+  }
+}
+
 void View::ValueChanged (Value* value)
 {
 #if DO_DEBUG
@@ -716,6 +810,16 @@ void View::ValueChanged (Value* value)
 	}
 	if (idx != -1)
 	  ListCtrlTools::SelectRow (listCtrl, idx, true);
+      }
+      else if (comp->IsKindOf (CLASSINFO (wxTreeCtrl)))
+      {
+	wxTreeCtrl* treeCtrl = wxStaticCast (comp, wxTreeCtrl);
+	//long idx = ListCtrlTools::GetFirstSelectedRow (treeCtrl);
+	treeCtrl->DeleteAllItems ();
+	wxTreeItemId rootId = treeCtrl->AddRoot (wxString::FromUTF8 (value->GetStringValue ()));
+	BuildTree (treeCtrl, value, rootId);
+	//if (idx != -1)
+	  //ListCtrlTools::SelectRow (treeCtrl, idx, true);
       }
       else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
       {
@@ -775,6 +879,27 @@ bool View::DefineHeading (wxListCtrl* listCtrl, const char* heading,
     ListCtrlTools::SetColumn (listCtrl, i, lh.heading[i], 100);
   listToHeading.Put (listCtrl, lh);
   return true;
+}
+
+class ConnectChangeListener : public ValueChangeListener
+{
+private:
+  csRef<Value> dest;
+
+public:
+  ConnectChangeListener (Value* dest) : dest (dest) { }
+  virtual ~ConnectChangeListener () { }
+  virtual void ValueChanged (Value* value)
+  {
+    dest->FireValueChanged ();
+  }
+};
+
+void View::Connect (Value* source, Value* dest)
+{
+  csRef<ConnectChangeListener> listener;
+  listener.AttachNew (new ConnectChangeListener (dest));
+  source->AddValueChangeListener (listener);
 }
 
 // --------------------------------------------------------------------------

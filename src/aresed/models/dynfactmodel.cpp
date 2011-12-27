@@ -31,6 +31,36 @@ THE SOFTWARE.
 #include "../apparesed.h"
 
 
+void CategoryCollectionValue::UpdateChildren ()
+{
+  ReleaseChildren ();
+  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
+  const csStringArray& items = categories.Get (category, csStringArray ());
+  for (size_t i = 0 ; i < items.GetSize () ; i++)
+  {
+    csRef<Ares::ConstantStringValue> strValue;
+    strValue.AttachNew (new Ares::ConstantStringValue (items[i]));
+    children.Push (strValue);
+    strValue->SetParent (this);
+  }
+}
+
+void DynfactCollectionValue::UpdateChildren ()
+{
+  ReleaseChildren ();
+  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
+  csHash<csStringArray,csString>::ConstGlobalIterator it = categories.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString category;
+    it.Next (category);
+    csRef<CategoryCollectionValue> catValue;
+    catValue.AttachNew (new CategoryCollectionValue (aresed3d, category));
+    children.Push (catValue);
+    catValue->SetParent (this);
+  }
+}
+#if 0
 void DynfactCollectionValue::UpdateChildren ()
 {
   ReleaseChildren ();
@@ -54,6 +84,7 @@ void DynfactCollectionValue::UpdateChildren ()
     }
   }
 }
+#endif
 
 //--------------------------------------------------------------------------
 

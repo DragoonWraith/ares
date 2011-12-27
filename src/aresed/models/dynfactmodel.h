@@ -31,6 +31,82 @@ THE SOFTWARE.
 class AresEdit3DView;
 
 /**
+ * A value representing a category.
+ * The children of this value are of type ConstantStringValue.
+ */
+class CategoryCollectionValue : public Ares::StandardCollectionValue
+{
+private:
+  AresEdit3DView* aresed3d;
+  csString category;
+
+protected:
+  virtual void UpdateChildren ();
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  CategoryCollectionValue (AresEdit3DView* aresed3d, const char* category) :
+    aresed3d (aresed3d), category (category) { }
+  virtual ~CategoryCollectionValue () { }
+
+  virtual const char* GetStringValue () { return category; }
+
+  virtual bool DeleteValue (Value* child) { return false; }
+  virtual bool AddValue (Value* child) { return false; }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[DFCat*]";
+    dump += Ares::StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
+};
+
+/**
+ * A value representing the tree of dynamic factories.
+ * The children of this value are of type CategoryCollectionValue.
+ */
+class DynfactCollectionValue : public Ares::StandardCollectionValue
+{
+private:
+  AresEdit3DView* aresed3d;
+
+protected:
+  virtual void UpdateChildren ();
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
+  virtual ~DynfactCollectionValue () { }
+
+  /**
+   * Call this when you want to refresh this value because external data (i.e.
+   * the factories and items) changed.
+   */
+  void Refresh () { FireValueChanged (); }
+
+  virtual const char* GetStringValue () { return "Factories"; }
+
+  virtual bool DeleteValue (Value* child) { return false; }
+  virtual bool AddValue (Value* child) { return false; }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[DFRoot*]";
+    dump += Ares::StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
+};
+
+#if 0
+
+/**
  * A value representing the list of dynamic factories.
  * Children of this value are of type CompositeValue.
  */
@@ -60,6 +136,7 @@ public:
     return dump;
   }
 };
+#endif
 
 class DynfactRowModel : public RowModel
 {

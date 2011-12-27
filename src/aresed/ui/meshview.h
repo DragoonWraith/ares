@@ -88,6 +88,9 @@ public:
    */
   bool SetMesh (const char* name);
 
+  /// Get the current mesh name.
+  const csString& GetMeshName () const { return meshName; }
+
   /**
    * Create a pen and return the index.
    */

@@ -46,6 +46,11 @@ END_EVENT_TABLE()
 
 void DynfactMeshView::SyncValue (Ares::Value* value)
 {
+  iDynamicFactory* fact = dynfact->GetCurrentFactory ();
+  if (fact && GetMeshName () != fact->GetName ())
+  {
+    SetMesh (fact->GetName ());
+  }
   dynfact->SetupColliderGeometry ();
 }
 
@@ -220,31 +225,6 @@ public:
 
 //--------------------------------------------------------------------------
 
-class FactoryEditorModel : public EditorModel
-{
-private:
-  DynfactDialog* dialog;
-
-public:
-  FactoryEditorModel (DynfactDialog* dialog) : dialog (dialog) { }
-  virtual ~FactoryEditorModel () { }
-
-  virtual void Update (const csStringArray& row)
-  {
-    if (row.GetSize () > 1)
-      dialog->EditFactory (row[1]);
-    else
-      dialog->EditFactory (0);
-  }
-  virtual csStringArray Read ()
-  {
-    // @@@ Not yet implemented.
-    return csStringArray ();
-  }
-};
-
-//--------------------------------------------------------------------------
-
 class RotMeshTimer : public scfImplementation1<RotMeshTimer, iTimerEvent>
 {
 private:
@@ -265,8 +245,7 @@ void DynfactDialog::OnOkButton (wxCommandEvent& event)
 
 void DynfactDialog::Show ()
 {
-  selIndex = -1;
-  meshTreeView->Refresh ();
+  uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ()->Refresh ();
 
   csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (uiManager->GetApp ()->GetObjectRegistry ());
   timer->AddTimerEvent (timerOp, 25);
@@ -285,22 +264,11 @@ void DynfactDialog::Tick ()
 
 iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 {
-  csStringArray row = meshTreeView->GetSelectedRow ();
-  if (row.GetSize () <= 1) return 0;
+  csString selectedFactory = factorySelectedValue->GetStringValue ();
+  if (selectedFactory.IsEmpty ()) return 0;
   iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
-  iDynamicFactory* dynfact = dynworld->FindFactory (row[1]);
+  iDynamicFactory* dynfact = dynworld->FindFactory (selectedFactory);
   return dynfact;
-}
-
-void DynfactDialog::EditFactory (const char* meshName)
-{
-  colliderCollectionValue->Refresh ();
-
-  meshView->SetMesh (meshName);
-  SetupColliderGeometry ();
-
-  //wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
-  //ListCtrlTools::ClearSelection (colliderList, true);
 }
 
 void DynfactDialog::SetupColliderGeometry ()
@@ -348,15 +316,14 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   normalPen = meshView->CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
   hilightPen = meshView->CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
 
-  wxTreeCtrl* tree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
-  meshTreeView = new TreeCtrlView (tree, uiManager->GetApp ()->GetAresView ()
-      ->GetDynfactRowModel ());
-  meshTreeView->SetRootName ("Categories");
-  factoryEditorModel.AttachNew (new FactoryEditorModel (this));
-  meshTreeView->SetEditorModel (factoryEditorModel);
-
   // Setup the view representing this dialog.
   colliderView.AttachNew (new View (this));
+
+  // Setup the dynamic factory tree.
+  Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
+  colliderView->Bind (dynfactCollectionValue, "factoryTree");
+  wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
+  factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
 
   // Define the collider list and value.
   colliderView->DefineHeading ("colliderList", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
@@ -365,7 +332,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
-  colliderSelectedValue.AttachNew (new SelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
+  colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
   csRef<ColliderValue> colliderValue;
   colliderValue.AttachNew (new ColliderValue (0, 0));
   colliderSelectedValue->SetupComposite (colliderValue);
@@ -374,6 +341,12 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // used by the mesh view but this binding only serves as a signal for the mesh
   // view to update itself.
   colliderView->Bind (colliderSelectedValue, meshView);
+
+  // Connect the selected value from the category tree to the collection
+  // of colliders so that it gets refreshed if the current category changes.
+  // Also connect it to the mesh view so that a new mesh is rendered.
+  colliderView->Connect (factorySelectedValue, colliderCollectionValue);
+  colliderView->Connect (factorySelectedValue, colliderSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
   colliderView->Bind (colliderSelectedValue->GetChild ("type"), "type_colliderChoice");
@@ -389,8 +362,6 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 DynfactDialog::~DynfactDialog ()
 {
   delete meshView;
-  delete meshTreeView;
-  //delete colliderView;
 }
 
 

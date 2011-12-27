@@ -64,18 +64,16 @@ class DynfactDialog : public wxDialog
 {
 private:
   UIManager* uiManager;
-  long selIndex;
   csRef<iTimerEvent> timerOp;
   size_t normalPen;
   size_t hilightPen;
 
   DynfactMeshView* meshView;
-  TreeCtrlView* meshTreeView;
-  csRef<FactoryEditorModel> factoryEditorModel;
+  csRef<TreeSelectedValue> factorySelectedValue;
 
   csRef<View> colliderView;
   csRef<ColliderCollectionValue> colliderCollectionValue;
-  csRef<SelectedValue> colliderSelectedValue;
+  csRef<ListSelectedValue> colliderSelectedValue;
 
   void OnOkButton (wxCommandEvent& event);
 
@@ -88,7 +86,6 @@ public:
 
   void SetupColliderGeometry ();
 
-  void EditFactory (const char* factory);
   iDynamicFactory* GetCurrentFactory ();
 
   DECLARE_EVENT_TABLE ();
