@@ -60,7 +60,7 @@ public:
   virtual void SyncValue (Ares::Value* value);
 };
 
-class DynfactDialog : public wxDialog
+class DynfactDialog : public wxDialog, public View
 {
 private:
   UIManager* uiManager;
@@ -71,7 +71,6 @@ private:
   DynfactMeshView* meshView;
   csRef<TreeSelectedValue> factorySelectedValue;
 
-  csRef<View> colliderView;
   csRef<ColliderCollectionValue> colliderCollectionValue;
   csRef<ListSelectedValue> colliderSelectedValue;
 

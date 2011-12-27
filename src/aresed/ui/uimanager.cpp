@@ -309,7 +309,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
   newprojectDialog = new NewProjectDialog (parent, this, app->GetVFS ());
   cellDialog = new CellDialog (parent, this);
-  dynfactDialog = new DynfactDialog (parent, this);
+  dynfactDialog.AttachNew (new DynfactDialog (parent, this));
   contextMenuID = ID_FirstContextItem;
 
   dynfactDialog->Layout ();
@@ -321,7 +321,6 @@ UIManager::~UIManager ()
   delete filereqDialog;
   delete newprojectDialog;
   delete cellDialog;
-  delete dynfactDialog;
 }
 
 void UIManager::Message (const char* description, ...)

@@ -141,7 +141,7 @@ private:
   FileReq* filereqDialog;
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
-  DynfactDialog* dynfactDialog;
+  csRef<DynfactDialog> dynfactDialog;
 
   int contextMenuID;
 

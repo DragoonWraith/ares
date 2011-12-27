@@ -308,7 +308,7 @@ void DynfactDialog::SetupColliderGeometry ()
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
-  uiManager (uiManager)
+  View (this), uiManager (uiManager)
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
@@ -316,19 +316,16 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   normalPen = meshView->CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
   hilightPen = meshView->CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
 
-  // Setup the view representing this dialog.
-  colliderView.AttachNew (new View (this));
-
   // Setup the dynamic factory tree.
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
-  colliderView->Bind (dynfactCollectionValue, "factoryTree");
+  Bind (dynfactCollectionValue, "factoryTree");
   wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
 
   // Define the collider list and value.
-  colliderView->DefineHeading ("colliderList", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
+  DefineHeading ("colliderList", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
   colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
-  colliderView->Bind (colliderCollectionValue, "colliderList");
+  Bind (colliderCollectionValue, "colliderList");
 
   // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
@@ -340,21 +337,21 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
   // view to update itself.
-  colliderView->Bind (colliderSelectedValue, meshView);
+  Bind (colliderSelectedValue, meshView);
 
   // Connect the selected value from the category tree to the collection
   // of colliders so that it gets refreshed if the current category changes.
   // Also connect it to the mesh view so that a new mesh is rendered.
-  colliderView->Connect (factorySelectedValue, colliderCollectionValue);
-  colliderView->Connect (factorySelectedValue, colliderSelectedValue);
+  Signal (factorySelectedValue, colliderCollectionValue);
+  Signal (factorySelectedValue, colliderSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
-  colliderView->Bind (colliderSelectedValue->GetChild ("type"), "type_colliderChoice");
-  colliderView->Bind (colliderSelectedValue, "box_ColliderPanel");
-  colliderView->Bind (colliderSelectedValue, "sphere_ColliderPanel");
-  colliderView->Bind (colliderSelectedValue, "cylinder_ColliderPanel");
-  colliderView->Bind (colliderSelectedValue, "mesh_ColliderPanel");
-  colliderView->Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
+  Bind (colliderSelectedValue->GetChild ("type"), "type_colliderChoice");
+  Bind (colliderSelectedValue, "box_ColliderPanel");
+  Bind (colliderSelectedValue, "sphere_ColliderPanel");
+  Bind (colliderSelectedValue, "cylinder_ColliderPanel");
+  Bind (colliderSelectedValue, "mesh_ColliderPanel");
+  Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }

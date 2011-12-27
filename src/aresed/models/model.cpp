@@ -402,7 +402,7 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 // --------------------------------------------------------------------------
 
-View::View (wxWindow* parent) : parent (parent)
+View::View (wxWindow* parent) : parent (parent), eventHandler (this)
 {
   changeListener.AttachNew (new ChangeListener (this));
 }
@@ -416,10 +416,10 @@ View::~View ()
     Binding* binding = it.Next (component);
     if (binding->eventType == wxEVT_COMMAND_TEXT_UPDATED)
       component->Disconnect (binding->eventType,
-	  wxCommandEventHandler (View :: OnComponentChanged), 0, this);
+	  wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
     else if (binding->eventType == wxEVT_COMMAND_LIST_ITEM_SELECTED)
       component->Disconnect (binding->eventType,
-	  wxCommandEventHandler (View :: OnComponentChanged), 0, this);
+	  wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
   }
 }
 
@@ -487,7 +487,7 @@ void View::RegisterBinding (Value* value, wxWindow* component, wxEventType event
   bindingsByValue.Get (value, temp).Push (b);
   CS_ASSERT (temp.GetSize () == 0);
   if (eventType != wxEVT_NULL)
-    component->Connect (eventType, wxCommandEventHandler (View :: OnComponentChanged), 0, this);
+    component->Connect (eventType, wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
   value->AddValueChangeListener (changeListener);
 }
 
@@ -881,24 +881,24 @@ bool View::DefineHeading (wxListCtrl* listCtrl, const char* heading,
   return true;
 }
 
-class ConnectChangeListener : public ValueChangeListener
+class SignalChangeListener : public ValueChangeListener
 {
 private:
   csRef<Value> dest;
 
 public:
-  ConnectChangeListener (Value* dest) : dest (dest) { }
-  virtual ~ConnectChangeListener () { }
+  SignalChangeListener (Value* dest) : dest (dest) { }
+  virtual ~SignalChangeListener () { }
   virtual void ValueChanged (Value* value)
   {
     dest->FireValueChanged ();
   }
 };
 
-void View::Connect (Value* source, Value* dest)
+void View::Signal (Value* source, Value* dest)
 {
-  csRef<ConnectChangeListener> listener;
-  listener.AttachNew (new ConnectChangeListener (dest));
+  csRef<SignalChangeListener> listener;
+  listener.AttachNew (new SignalChangeListener (dest));
   source->AddValueChangeListener (listener);
 }
 

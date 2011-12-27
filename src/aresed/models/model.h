@@ -824,7 +824,7 @@ public:
  * A view. This class keeps track of the bindings between
  * models and WX controls for a given logical unit (frame, dialog, panel, ...).
  */
-class View : public wxEvtHandler, public csRefCount
+class View : public csRefCount
 {
 private:
   wxWindow* parent;
@@ -862,6 +862,20 @@ private:
     }
   };
   csRef<ChangeListener> changeListener;
+
+  // Handler for wx events.
+  class EventHandler : public wxEvtHandler
+  {
+  private:
+    View* view;
+
+  public:
+    EventHandler (View* view) : view (view) { }
+    void OnComponentChanged (wxCommandEvent& event)
+    {
+      view->OnComponentChanged (event);
+    }
+  } eventHandler;
 
   // Keep track of list headings.
   struct ListHeading
@@ -977,11 +991,11 @@ public:
   bool Bind (Value* value, wxTreeCtrl* component);
 
   /**
-   * Connect a value to another value. This is a one-directional
+   * Create a signal between a value to another value. This is a one-directional
    * connection which will cause the second value to get 'fired'
    * in case the first one is fired.
    */
-  void Connect (Value* source, Value* dest);
+  void Signal (Value* source, Value* dest);
 
   /**
    * Define a heading for a list control. For every column in the list
