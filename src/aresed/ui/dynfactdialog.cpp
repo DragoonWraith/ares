@@ -44,6 +44,13 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+DynfactMeshView::DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* object_reg, wxWindow* parent) :
+    MeshView (object_reg, parent), dynfact (dynfact)
+{
+  normalPen = CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
+  hilightPen = CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
+}
+
 void DynfactMeshView::SyncValue (Ares::Value* value)
 {
   iDynamicFactory* fact = dynfact->GetCurrentFactory ();
@@ -51,7 +58,30 @@ void DynfactMeshView::SyncValue (Ares::Value* value)
   {
     SetMesh (fact->GetName ());
   }
-  dynfact->SetupColliderGeometry ();
+  SetupColliderGeometry ();
+}
+
+void DynfactMeshView::SetupColliderGeometry ()
+{
+  ClearGeometry ();
+  long idx = dynfact->GetSelectedCollider ();
+  iDynamicFactory* fact = dynfact->GetCurrentFactory ();
+  if (fact)
+  {
+    for (size_t i = 0 ; i < fact->GetBodyCount () ; i++)
+    {
+      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
+      celBodyInfo info = fact->GetBody (i);
+      if (info.type == BODY_BOX)
+        AddBox (csBox3 (info.offset - info.size * .5, info.offset + info.size * .5), pen);
+      else if (info.type == BODY_SPHERE)
+	AddSphere (info.offset, info.radius, pen);
+      else if (info.type == BODY_CYLINDER)
+	AddCylinder (info.offset, info.radius, info.length, pen);
+      else if (info.type == BODY_MESH || info.type == BODY_CONVEXMESH)
+	AddMesh (info.offset, pen);
+    }
+  }
 }
 
 //--------------------------------------------------------------------------
@@ -271,40 +301,10 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
   return dynfact;
 }
 
-void DynfactDialog::SetupColliderGeometry ()
+long DynfactDialog::GetSelectedCollider ()
 {
-  meshView->ClearGeometry ();
   wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
-  long idx = ListCtrlTools::GetFirstSelectedRow (list);
-
-  iDynamicFactory* dynfact = GetCurrentFactory ();
-  if (dynfact)
-  {
-    for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
-    {
-      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
-      celBodyInfo info = dynfact->GetBody (i);
-      if (info.type == BODY_BOX)
-      {
-        csBox3 b;
-        b.SetSize (info.size);
-	b.SetCenter (info.offset);
-        meshView->AddBox (b, pen);
-      }
-      else if (info.type == BODY_SPHERE)
-      {
-	meshView->AddSphere (info.offset, info.radius, pen);
-      }
-      else if (info.type == BODY_CYLINDER)
-      {
-	meshView->AddCylinder (info.offset, info.radius, info.length, pen);
-      }
-      else if (info.type == BODY_MESH || info.type == BODY_CONVEXMESH)
-      {
-	meshView->AddMesh (info.offset, pen);
-      }
-    }
-  }
+  return ListCtrlTools::GetFirstSelectedRow (list);
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
@@ -313,8 +313,6 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new DynfactMeshView (this, uiManager->GetApp ()->GetObjectRegistry (), panel);
-  normalPen = meshView->CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
-  hilightPen = meshView->CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
 
   // Setup the dynamic factory tree.
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();

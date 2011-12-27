@@ -51,10 +51,13 @@ class DynfactMeshView : public MeshView
 {
 private:
   DynfactDialog* dynfact;
+  size_t normalPen;
+  size_t hilightPen;
+
+  void SetupColliderGeometry ();
 
 public:
-  DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* object_reg, wxWindow* parent) :
-    MeshView (object_reg, parent), dynfact (dynfact) { }
+  DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* object_reg, wxWindow* parent);
   virtual ~DynfactMeshView () { }
 
   virtual void SyncValue (Ares::Value* value);
@@ -65,8 +68,6 @@ class DynfactDialog : public wxDialog, public View
 private:
   UIManager* uiManager;
   csRef<iTimerEvent> timerOp;
-  size_t normalPen;
-  size_t hilightPen;
 
   DynfactMeshView* meshView;
   csRef<TreeSelectedValue> factorySelectedValue;
@@ -83,9 +84,8 @@ public:
   void Show ();
   void Tick ();
 
-  void SetupColliderGeometry ();
-
   iDynamicFactory* GetCurrentFactory ();
+  long GetSelectedCollider ();
 
   DECLARE_EVENT_TABLE ();
 };
