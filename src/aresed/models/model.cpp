@@ -402,6 +402,21 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 // --------------------------------------------------------------------------
 
+bool NewChildAction::Do (View* view, wxWindow* component)
+{
+  // Get @@@ selected index.
+  return collection->NewValue (0) != 0;
+}
+
+bool DeleteChildAction::Do (View* view, wxWindow* component)
+{
+  Value* value = view->GetSelectedValue (component);
+  if (!value) return false;	// Nothing to do.
+  return collection->DeleteValue (value);
+}
+
+// --------------------------------------------------------------------------
+
 View::View (wxWindow* parent) : parent (parent), lastContextID (wxID_HIGHEST + 10000), eventHandler (this)
 {
   changeListener.AttachNew (new ChangeListener (this));
@@ -748,17 +763,14 @@ void View::OnRMB (wxContextMenuEvent& event)
 void View::OnActionExecuted (wxCommandEvent& event)
 {
   int id = event.GetId ();
-  wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
-  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  // We have to scan all lists here to find the one that has the right id.
+  for (size_t i = 0 ; i < listContexts.GetSize () ; i++)
   {
-    wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
-    size_t idx = FindListContext (listCtrl);
-    if (idx == csArrayItemNotFound) return;
-    const ListContext& lc = listContexts[idx];
+    const ListContext& lc = listContexts[i];
     for (size_t j = 0 ; j < lc.actionDefs.GetSize () ; j++)
       if (lc.actionDefs[j].id == id)
       {
-	lc.actionDefs[j].action->Do ();
+	lc.actionDefs[j].action->Do (this, lc.listCtrl);
 	return;
       }
   }
@@ -882,12 +894,9 @@ void View::ValueChanged (Value* value)
       else if (comp->IsKindOf (CLASSINFO (wxTreeCtrl)))
       {
 	wxTreeCtrl* treeCtrl = wxStaticCast (comp, wxTreeCtrl);
-	//long idx = ListCtrlTools::GetFirstSelectedRow (treeCtrl);
 	treeCtrl->DeleteAllItems ();
 	wxTreeItemId rootId = treeCtrl->AddRoot (wxString::FromUTF8 (value->GetStringValue ()));
 	BuildTree (treeCtrl, value, rootId);
-	//if (idx != -1)
-	  //ListCtrlTools::SelectRow (treeCtrl, idx, true);
       }
       else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
       {
@@ -994,6 +1003,34 @@ bool View::AddAction (wxButton* button, Action* action)
 {
   printf ("AddAction: buttons not implemented yet!\n");
   return true;
+}
+
+Value* View::GetSelectedValue (wxWindow* component)
+{
+  Binding* binding = bindingsByComponent.Get (component, 0);
+  if (!binding)
+  {
+    printf ("GetSelectedValue: Component is not bound to a value!\n");
+    return 0;
+  }
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
+    long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
+    if (idx < 0) return 0;
+    return binding->value->GetChild (size_t (idx));
+  }
+  if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+  {
+    wxTreeCtrl* treeCtrl = wxStaticCast (component, wxTreeCtrl);
+    wxTreeItemId selection = treeCtrl->GetSelection ();
+    if (selection.IsOk ())
+      return ValueFromTree (treeCtrl, selection, binding->value);
+    else
+      return 0;
+  }
+  printf ("GetSelectedValue: Unsupported type for component!\n");
+  return 0;
 }
 
 class SignalChangeListener : public ValueChangeListener

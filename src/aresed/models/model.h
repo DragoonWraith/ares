@@ -48,6 +48,7 @@ namespace Ares
 #define DO_DEBUG 0
 
 class Value;
+class View;
 
 /**
  * Listen to changes in a value.
@@ -847,8 +848,41 @@ public:
   
   /**
    * Perform the action. Returns false on failure.
+   * It gets the view and the component on which the action was set as parameters.
    */
-  virtual bool Do () = 0;
+  virtual bool Do (View* view, wxWindow* component) = 0;
+};
+
+/**
+ * This standard action creates a new default child for a collection.
+ * It assumes the collection supports the NewValue() method.
+ */
+class NewChildAction : public Action
+{
+private:
+  Value* collection;
+
+public:
+  NewChildAction (Value* collection) : collection (collection) { }
+  virtual ~NewChildAction () { }
+  virtual const char* GetName () const { return "New"; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * This standard action removes a child from a collection.
+ * It assumes the collection supports the DeleteValue() method.
+ */
+class DeleteChildAction : public Action
+{
+private:
+  Value* collection;
+
+public:
+  DeleteChildAction (Value* collection) : collection (collection) { }
+  virtual ~DeleteChildAction () { }
+  virtual const char* GetName () const { return "Delete"; }
+  virtual bool Do (View* view, wxWindow* component);
 };
 
 /**
@@ -999,6 +1033,8 @@ public:
   View (wxWindow* parent);
   ~View ();
 
+  //----------------------------------------------------------------
+
   /**
    * Bind a value to a WX component. This function will try to find the
    * best match between the given value and the component.
@@ -1074,12 +1110,16 @@ public:
    */
   bool Bind (Value* value, wxTreeCtrl* component);
 
+  //----------------------------------------------------------------
+
   /**
    * Create a signal between a value to another value. This is a one-directional
    * connection which will cause the second value to get 'fired'
    * in case the first one is fired.
    */
   void Signal (Value* source, Value* dest);
+
+  //----------------------------------------------------------------
 
   /**
    * Add an action to a component. This works with various types
@@ -1106,6 +1146,8 @@ public:
    */
   bool AddAction (wxButton* button, Action* action);
 
+  //----------------------------------------------------------------
+
   /**
    * Define a heading for a list control. For every column in the list
    * there is a logical name which will be used as the name of the
@@ -1120,6 +1162,14 @@ public:
       const char* names);
   bool DefineHeading (wxListCtrl* listCtrl, const char* heading,
       const char* names);
+
+  //----------------------------------------------------------------
+
+  /**
+   * Get the selected value from a component (must be a tree or a list control).
+   * Returns 0 if no value is selected.
+   */
+  Value* GetSelectedValue (wxWindow* component);
 };
 
 } // namespace Ares

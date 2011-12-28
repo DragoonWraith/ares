@@ -247,6 +247,21 @@ public:
    */
   void Refresh () { FireValueChanged (); }
 
+  virtual bool DeleteValue (Value* child)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return false;
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      if (children[i] == child)
+      {
+	dynfact->DeleteBody (i);
+	child->SetParent (0);
+	children.DeleteIndex (i);
+	FireValueChanged ();
+	return true;
+      }
+    return false;
+  }
   virtual Value* NewValue (size_t idx)
   {
     dynfact = dialog->GetCurrentFactory ();
@@ -265,33 +280,6 @@ public:
     return dump;
   }
 };
-
-#if 0
-/**
- * This action creates a new empty collider value.
- */
-class NewColliderAction : public Action
-{
-private:
-  DynfactDialog* dialog;
-
-public:
-  NewColliderAction (DynfactDialog* dialog) : dialog (dialog) { }
-  virtual ~NewColliderAction () { }
-  virtual const char* GetName () const { return "New"; }
-  virtual bool Do ()
-  {
-    iDynamicFactory* fact = dialog->GetCurrentFactory ();
-    if (fact)
-    {
-      fact->AddRigidBox (info.offset, info.size, info.mass);
-      return true;
-    }
-    return false;
-  }
-};
-#endif
-
 
 //--------------------------------------------------------------------------
 
@@ -390,6 +378,13 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "cylinder_ColliderPanel");
   Bind (colliderSelectedValue, "mesh_ColliderPanel");
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
+
+  // The actions.
+  csRef<Action> action;
+  action.AttachNew (new NewChildAction (colliderCollectionValue));
+  AddAction (colliderList, action);
+  action.AttachNew (new DeleteChildAction (colliderCollectionValue));
+  AddAction (colliderList, action);
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
