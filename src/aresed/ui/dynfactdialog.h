@@ -47,22 +47,29 @@ class UIManager;
 
 using namespace Ares;
 
+/**
+ * A mesh view that knows how to setup the colliders
+ * for the given mesh.
+ */
 class DynfactMeshView : public MeshView
 {
 private:
-  DynfactDialog* dynfact;
+  DynfactDialog* dialog;
   size_t normalPen;
   size_t hilightPen;
 
   void SetupColliderGeometry ();
 
 public:
-  DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* object_reg, wxWindow* parent);
+  DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object_reg, wxWindow* parent);
   virtual ~DynfactMeshView () { }
 
   virtual void SyncValue (Ares::Value* value);
 };
 
+/**
+ * The dialog for editing dynamic factories.
+ */
 class DynfactDialog : public wxDialog, public View
 {
 private:

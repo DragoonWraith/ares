@@ -44,8 +44,8 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
-DynfactMeshView::DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* object_reg, wxWindow* parent) :
-    MeshView (object_reg, parent), dynfact (dynfact)
+DynfactMeshView::DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object_reg, wxWindow* parent) :
+    MeshView (object_reg, parent), dialog (dialog)
 {
   normalPen = CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
   hilightPen = CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
@@ -53,7 +53,7 @@ DynfactMeshView::DynfactMeshView (DynfactDialog* dynfact, iObjectRegistry* objec
 
 void DynfactMeshView::SyncValue (Ares::Value* value)
 {
-  iDynamicFactory* fact = dynfact->GetCurrentFactory ();
+  iDynamicFactory* fact = dialog->GetCurrentFactory ();
   if (fact && GetMeshName () != fact->GetName ())
   {
     SetMesh (fact->GetName ());
@@ -64,8 +64,8 @@ void DynfactMeshView::SyncValue (Ares::Value* value)
 void DynfactMeshView::SetupColliderGeometry ()
 {
   ClearGeometry ();
-  long idx = dynfact->GetSelectedCollider ();
-  iDynamicFactory* fact = dynfact->GetCurrentFactory ();
+  long idx = dialog->GetSelectedCollider ();
+  iDynamicFactory* fact = dialog->GetCurrentFactory ();
   if (fact)
   {
     for (size_t i = 0 ; i < fact->GetBodyCount () ; i++)
@@ -213,6 +213,16 @@ private:
   DynfactDialog* dialog;
   iDynamicFactory* dynfact;
 
+  // Create a new child and add to the array.
+  Value* NewChild (size_t i)
+  {
+    csRef<ColliderValue> value;
+    value.AttachNew (new ColliderValue (i, dynfact));
+    children.Push (value);
+    value->SetParent (this);
+    return value;
+  }
+
 protected:
   virtual void UpdateChildren ()
   {
@@ -220,12 +230,7 @@ protected:
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return;
     for (size_t i = 0 ; i < dynfact->GetBodyCount () ; i++)
-    {
-      csRef<ColliderValue> value;
-      value.AttachNew (new ColliderValue (i, dynfact));
-      children.Push (value);
-      value->SetParent (this);
-    }
+      NewChild (i);
   }
   virtual void ChildChanged (Value* child)
   {
@@ -242,8 +247,16 @@ public:
    */
   void Refresh () { FireValueChanged (); }
 
-  virtual bool DeleteValue (Value* child) { return false; }
-  virtual bool AddValue (Value* child) { return false; }
+  virtual Value* NewValue (size_t idx)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return 0;
+    dynfact->AddRigidBox (csVector3 (0, 0, 0), csVector3 (.2, .2, .2), 1.0f);
+    idx = dynfact->GetBodyCount ()-1;
+    Value* value = NewChild (idx);
+    FireValueChanged ();
+    return value;
+  }
 
   virtual csString Dump (bool verbose = false)
   {
@@ -252,6 +265,33 @@ public:
     return dump;
   }
 };
+
+#if 0
+/**
+ * This action creates a new empty collider value.
+ */
+class NewColliderAction : public Action
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  NewColliderAction (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~NewColliderAction () { }
+  virtual const char* GetName () const { return "New"; }
+  virtual bool Do ()
+  {
+    iDynamicFactory* fact = dialog->GetCurrentFactory ();
+    if (fact)
+    {
+      fact->AddRigidBox (info.offset, info.size, info.mass);
+      return true;
+    }
+    return false;
+  }
+};
+#endif
+
 
 //--------------------------------------------------------------------------
 

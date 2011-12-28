@@ -37,6 +37,7 @@ class wxCheckBox;
 class wxListCtrl;
 class wxTreeCtrl;
 class wxStaticText;
+class wxButton;
 class wxChoicebook;
 class wxPanel;
 class CustomControl;
@@ -251,6 +252,14 @@ public:
    * not be added for some reason. This only works for VALUE_COLLECTION.
    */
   virtual bool AddValue (Value* child) { return false; }
+
+  /**
+   * Create a new empty value in this value. Returns 0 if this value
+   * could not be created for some reason. This only works for VALUE_COLLECTION.
+   * The given index is the position at which the new value should be created
+   * but this is only a hint.
+   */
+  virtual Value* NewValue (size_t idx) { return 0; }
 
   /**
    * Update a child. Returns false if this child could not be updated.
@@ -821,6 +830,28 @@ public:
 };
 
 /**
+ * An action. An action can be coupled to a contact menu for a list
+ * or tree or it can be coupled to a button.
+ */
+class Action : public csRefCount
+{
+public:
+  Action () { }
+  virtual ~Action () { }
+
+  /**
+   * The name of the action. Will be used as the label of the
+   * action on the menu or button.
+   */
+  virtual const char* GetName () const = 0;
+  
+  /**
+   * Perform the action. Returns false on failure.
+   */
+  virtual bool Do () = 0;
+};
+
+/**
  * A view. This class keeps track of the bindings between
  * models and WX controls for a given logical unit (frame, dialog, panel, ...).
  */
@@ -828,6 +859,9 @@ class View : public csRefCount
 {
 private:
   wxWindow* parent;
+  int lastContextID;
+
+  // --------------------------------------------
 
   // All the bindings.
   struct Binding
@@ -847,6 +881,8 @@ private:
   ComponentToBinding bindingsByComponent;
   ValueToBinding bindingsByValue;
 
+  // --------------------------------------------
+
   // Listeners.
   class ChangeListener : public ValueChangeListener
   {
@@ -863,19 +899,27 @@ private:
   };
   csRef<ChangeListener> changeListener;
 
-  // Handler for wx events.
-  class EventHandler : public wxEvtHandler
-  {
-  private:
-    View* view;
+  // --------------------------------------------
 
-  public:
-    EventHandler (View* view) : view (view) { }
-    void OnComponentChanged (wxCommandEvent& event)
-    {
-      view->OnComponentChanged (event);
-    }
-  } eventHandler;
+  // Keep track of actions in context menus.
+  struct ActionDef
+  {
+    int id;	// Context menu id.
+    csRef<Action> action;
+  };
+  struct ListContext
+  {
+    wxListCtrl* listCtrl;
+    csArray<ActionDef> actionDefs;
+  };
+  csArray<ListContext> listContexts;
+  /**
+   * Find the index of the list context for a given list or csArrayItemNotFound
+   * if there is no list context yet.
+   */
+  size_t FindListContext (wxListCtrl* ctrl);
+
+  // --------------------------------------------
 
   // Keep track of list headings.
   struct ListHeading
@@ -892,10 +936,40 @@ private:
    */
   csStringArray ConstructListRow (const ListHeading& lh, Value* value);
 
+  // --------------------------------------------
+
   /// Called by components when they change. Will update the corresponding Value.
   void OnComponentChanged (wxCommandEvent& event);
+  /// Called when an action is executed.
+  void OnActionExecuted (wxCommandEvent& event);
+  /// Called when a context menu is desired.
+  void OnRMB (wxContextMenuEvent& event);
   /// Called by values when they change. Will update the corresponding component.
   void ValueChanged (Value* value);
+
+  // Handler for wx events.
+  class EventHandler : public wxEvtHandler
+  {
+  private:
+    View* view;
+
+  public:
+    EventHandler (View* view) : view (view) { }
+    void OnComponentChanged (wxCommandEvent& event)
+    {
+      view->OnComponentChanged (event);
+    }
+    void OnActionExecuted (wxCommandEvent& event)
+    {
+      view->OnActionExecuted (event);
+    }
+    void OnRMB (wxContextMenuEvent& event)
+    {
+      view->OnRMB (event);
+    }
+  } eventHandler;
+
+  // --------------------------------------------
 
   /**
    * Recursively find a component by name. Also supports the '_' notation
@@ -910,6 +984,16 @@ private:
    * Build a tree from a value.
    */
   void BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent);
+
+  /**
+   * Destroy all bindings.
+   */
+  void DestroyBindings ();
+
+  /**
+   * Destroy all action bindings.
+   */
+  void DestroyActionBindings ();
 
 public:
   View (wxWindow* parent);
@@ -996,6 +1080,31 @@ public:
    * in case the first one is fired.
    */
   void Signal (Value* source, Value* dest);
+
+  /**
+   * Add an action to a component. This works with various types
+   * of components and the way the action is added depends on the component
+   * type. For lists and trees the action will be added as a context menu
+   * item. For buttons it will be added as a simple action that is called
+   * when the button is pressed. Returns false on failure (the component
+   * type is not supported for actions).
+   */
+  bool AddAction (wxWindow* component, Action* action);
+
+  /**
+   * Add an action to a list control as a context menu action.
+   */
+  bool AddAction (wxListCtrl* listCtrl, Action* action);
+
+  /**
+   * Add an action to a tree control as a context menu action.
+   */
+  bool AddAction (wxTreeCtrl* treeCtrl, Action* action);
+
+  /**
+   * Add an action to a button.
+   */
+  bool AddAction (wxButton* button, Action* action);
 
   /**
    * Define a heading for a list control. For every column in the list

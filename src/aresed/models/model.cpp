@@ -402,12 +402,12 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 // --------------------------------------------------------------------------
 
-View::View (wxWindow* parent) : parent (parent), eventHandler (this)
+View::View (wxWindow* parent) : parent (parent), lastContextID (wxID_HIGHEST + 10000), eventHandler (this)
 {
   changeListener.AttachNew (new ChangeListener (this));
 }
 
-View::~View ()
+void View::DestroyBindings ()
 {
   ComponentToBinding::GlobalIterator it = bindingsByComponent.GetIterator ();
   while (it.HasNext ())
@@ -421,6 +421,27 @@ View::~View ()
       component->Disconnect (binding->eventType,
 	  wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
   }
+}
+
+void View::DestroyActionBindings ()
+{
+  while (listContexts.GetSize () > 0)
+  {
+    ListContext lc = listContexts.Pop ();
+    lc.listCtrl->Disconnect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (EventHandler :: OnRMB), 0, &eventHandler);
+    while (lc.actionDefs.GetSize () > 0)
+    {
+      ActionDef ad = lc.actionDefs.Pop ();
+      lc.listCtrl->Disconnect (ad.id, wxEVT_COMMAND_MENU_SELECTED,
+	    wxCommandEventHandler (EventHandler :: OnActionExecuted), 0, &eventHandler);
+    }
+  }
+}
+
+View::~View ()
+{
+  DestroyBindings ();
+  DestroyActionBindings ();
 }
 
 wxWindow* View::FindComponentByName (wxWindow* container, const char* name)
@@ -696,6 +717,53 @@ csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)
   return row;
 }
 
+size_t View::FindListContext (wxListCtrl* listCtrl)
+{
+  for (size_t i = 0 ; i < listContexts.GetSize () ; i++)
+    if (listContexts[i].listCtrl == listCtrl)
+      return i;
+  return csArrayItemNotFound;
+}
+
+void View::OnRMB (wxContextMenuEvent& event)
+{
+  wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
+    size_t idx = FindListContext (listCtrl);
+    if (idx == csArrayItemNotFound) return;
+    bool hasItem;
+    if (ListCtrlTools::CheckHitList (listCtrl, hasItem, event.GetPosition ()))
+    {
+      const ListContext& lc = listContexts[idx];
+      wxMenu contextMenu;
+      for (size_t j = 0 ; j < lc.actionDefs.GetSize () ; j++)
+	contextMenu.Append(lc.actionDefs[j].id, wxString::FromUTF8 (lc.actionDefs[j].action->GetName ()));
+      listCtrl->PopupMenu (&contextMenu);
+    }
+  }
+}
+
+void View::OnActionExecuted (wxCommandEvent& event)
+{
+  int id = event.GetId ();
+  wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
+    size_t idx = FindListContext (listCtrl);
+    if (idx == csArrayItemNotFound) return;
+    const ListContext& lc = listContexts[idx];
+    for (size_t j = 0 ; j < lc.actionDefs.GetSize () ; j++)
+      if (lc.actionDefs[j].id == id)
+      {
+	lc.actionDefs[j].action->Do ();
+	return;
+      }
+  }
+}
+
 void View::OnComponentChanged (wxCommandEvent& event)
 {
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
@@ -878,6 +946,53 @@ bool View::DefineHeading (wxListCtrl* listCtrl, const char* heading,
   for (size_t i = 0 ; i < lh.heading.GetSize () ; i++)
     ListCtrlTools::SetColumn (listCtrl, i, lh.heading[i], 100);
   listToHeading.Put (listCtrl, lh);
+  return true;
+}
+
+bool View::AddAction (wxWindow* component, Action* action)
+{
+  if (component->IsKindOf (CLASSINFO (wxButton)))
+    return AddAction (wxStaticCast (component, wxButton), action);
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+    return AddAction (wxStaticCast (component, wxListCtrl), action);
+  if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+    return AddAction (wxStaticCast (component, wxTreeCtrl), action);
+  printf ("AddAction: Unsupported type for component!\n");
+  return false;
+}
+
+bool View::AddAction (wxListCtrl* listCtrl, Action* action)
+{
+  listCtrl->Connect (lastContextID, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EventHandler :: OnActionExecuted), 0, &eventHandler);
+
+  size_t idx = FindListContext (listCtrl);
+  if (idx == csArrayItemNotFound)
+  {
+    ListContext lc;
+    lc.listCtrl = listCtrl;
+    idx = listContexts.Push (lc);
+    listCtrl->Connect (wxEVT_CONTEXT_MENU, wxContextMenuEventHandler (EventHandler :: OnRMB), 0, &eventHandler);
+  }
+
+  ListContext& lc = listContexts[idx];
+  ActionDef ad;
+  ad.id = lastContextID;
+  ad.action = action;
+  lc.actionDefs.Push (ad);
+  lastContextID++;
+  return true;
+}
+
+bool View::AddAction (wxTreeCtrl* treeCtrl, Action* action)
+{
+  printf ("AddAction: tree controls not implemented yet!\n");
+  return true;
+}
+
+bool View::AddAction (wxButton* button, Action* action)
+{
+  printf ("AddAction: buttons not implemented yet!\n");
   return true;
 }
 
