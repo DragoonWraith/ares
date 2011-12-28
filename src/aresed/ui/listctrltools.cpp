@@ -187,7 +187,7 @@ void ListCtrlTools::ClearSelection (wxListCtrl* list, bool sendEvent)
     rowInfo.m_itemId = row;
     rowInfo.m_col = 0;
     list->GetItem (rowInfo);
-    list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, 0);
+    list->SetItemState (rowInfo, 0, wxLIST_STATE_SELECTED);
   }
   if (sendEvent)
   {

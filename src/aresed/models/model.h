@@ -258,7 +258,8 @@ public:
    * Create a new empty value in this value. Returns 0 if this value
    * could not be created for some reason. This only works for VALUE_COLLECTION.
    * The given index is the position at which the new value should be created
-   * but this is only a hint.
+   * but this is only a hint. If idx is equal to csArrayItemNotFound then
+   * it means after the end of the collection.
    */
   virtual Value* NewValue (size_t idx) { return 0; }
 

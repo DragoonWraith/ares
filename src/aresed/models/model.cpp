@@ -404,8 +404,31 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 bool NewChildAction::Do (View* view, wxWindow* component)
 {
-  // Get @@@ selected index.
-  return collection->NewValue (0) != 0;
+  size_t idx = csArrayItemNotFound;
+  wxListCtrl* listCtrl = 0;
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    listCtrl = wxStaticCast (component, wxListCtrl);
+    idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
+  }
+  Value* value = collection->NewValue (idx);
+  if (!value) return false;
+
+  if (listCtrl)
+  {
+    collection->ResetIterator ();
+    bool found = false;
+    idx = 0;
+    while (collection->HasNext ())
+    {
+      Value* child = collection->NextChild ();
+      if (child == value) { found = true; break; }
+      idx++;
+    }
+    if (found)
+      ListCtrlTools::SelectRow (listCtrl, idx, true);
+  }
+  return true;
 }
 
 bool DeleteChildAction::Do (View* view, wxWindow* component)
