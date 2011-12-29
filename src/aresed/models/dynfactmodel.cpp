@@ -33,6 +33,8 @@ THE SOFTWARE.
 
 void CategoryCollectionValue::UpdateChildren ()
 {
+  if (!dirty) return;
+  dirty = false;
   ReleaseChildren ();
   const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
   const csStringArray& items = categories.Get (category, csStringArray ());
@@ -47,6 +49,8 @@ void CategoryCollectionValue::UpdateChildren ()
 
 void DynfactCollectionValue::UpdateChildren ()
 {
+  if (!dirty) return;
+  dirty = false;
   ReleaseChildren ();
   const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
   csHash<csStringArray,csString>::ConstGlobalIterator it = categories.GetIterator ();
@@ -60,31 +64,6 @@ void DynfactCollectionValue::UpdateChildren ()
     catValue->SetParent (this);
   }
 }
-#if 0
-void DynfactCollectionValue::UpdateChildren ()
-{
-  ReleaseChildren ();
-  const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
-  csHash<csStringArray,csString>::ConstGlobalIterator it = categories.GetIterator ();
-  while (it.HasNext ())
-  {
-    csString category;
-    const csStringArray& items = it.Next (category);
-    csRef<Ares::ConstantStringValue> strValue;
-    for (size_t i = 0 ; i < items.GetSize () ; i++)
-    {
-      csRef<Ares::CompositeValue> value;
-      value.AttachNew (new Ares::CompositeValue ());
-      strValue.AttachNew (new Ares::ConstantStringValue (category));
-      value->AddChild ("category", strValue);
-      strValue.AttachNew (new Ares::ConstantStringValue (items[i]));
-      value->AddChild ("item", strValue);
-      children.Push (value);
-      value->SetParent (this);
-    }
-  }
-}
-#endif
 
 //--------------------------------------------------------------------------
 

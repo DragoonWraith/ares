@@ -39,6 +39,7 @@ class CategoryCollectionValue : public Ares::StandardCollectionValue
 private:
   AresEdit3DView* aresed3d;
   csString category;
+  bool dirty;
 
 protected:
   virtual void UpdateChildren ();
@@ -49,13 +50,13 @@ protected:
 
 public:
   CategoryCollectionValue (AresEdit3DView* aresed3d, const char* category) :
-    aresed3d (aresed3d), category (category) { }
+    aresed3d (aresed3d), category (category), dirty (true) { }
   virtual ~CategoryCollectionValue () { }
 
   virtual const char* GetStringValue () { return category; }
 
   virtual bool DeleteValue (Value* child) { return false; }
-  virtual bool AddValue (Value* child) { return false; }
+  virtual Value* NewValue (size_t idx, Value* selectedValue) { return 0; }
 
   virtual csString Dump (bool verbose = false)
   {
@@ -73,6 +74,7 @@ class DynfactCollectionValue : public Ares::StandardCollectionValue
 {
 private:
   AresEdit3DView* aresed3d;
+  bool dirty;
 
 protected:
   virtual void UpdateChildren ();
@@ -82,19 +84,19 @@ protected:
   }
 
 public:
-  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
+  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d), dirty (true) { }
   virtual ~DynfactCollectionValue () { }
 
   /**
    * Call this when you want to refresh this value because external data (i.e.
    * the factories and items) changed.
    */
-  void Refresh () { FireValueChanged (); }
+  void Refresh () { dirty = true; FireValueChanged (); }
 
   virtual const char* GetStringValue () { return "Factories"; }
 
   virtual bool DeleteValue (Value* child) { return false; }
-  virtual bool AddValue (Value* child) { return false; }
+  virtual Value* NewValue (size_t idx, Value* selectedValue) { return 0; }
 
   virtual csString Dump (bool verbose = false)
   {
@@ -103,40 +105,6 @@ public:
     return dump;
   }
 };
-
-#if 0
-
-/**
- * A value representing the list of dynamic factories.
- * Children of this value are of type CompositeValue.
- */
-class DynfactCollectionValue : public Ares::StandardCollectionValue
-{
-private:
-  AresEdit3DView* aresed3d;
-
-protected:
-  virtual void UpdateChildren ();
-  virtual void ChildChanged (Value* child)
-  {
-    FireValueChanged ();
-  }
-
-public:
-  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
-  virtual ~DynfactCollectionValue () { }
-
-  virtual bool DeleteValue (Value* child) { return false; }
-  virtual bool AddValue (Value* child) { return false; }
-
-  virtual csString Dump (bool verbose = false)
-  {
-    csString dump = "[DynFact*]";
-    dump += Ares::StandardCollectionValue::Dump (verbose);
-    return dump;
-  }
-};
-#endif
 
 class DynfactRowModel : public RowModel
 {

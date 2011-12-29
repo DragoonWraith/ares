@@ -195,8 +195,11 @@ void CollectionBufferedValue::Apply ()
     BufferedValue* bufferedValue = static_cast<BufferedValue*> (NextChild ());
     bufferedValue->Apply ();
   }
-  for (size_t i = 0 ; i < newvalues.GetSize () ; i++)
-    originalValue->AddValue (newvalues[i]);
+  printf ("Not implemented yet!\n"); fflush (stdout);
+  CS_ASSERT (false);
+
+  //for (size_t i = 0 ; i < newvalues.GetSize () ; i++)
+    //originalValue->AddValue (newvalues[i]);
   newvalues.DeleteAll ();
   for (size_t i = 0 ; i < deletedvalues.GetSize () ; i++)
     originalValue->DeleteValue (deletedvalues[i]);
@@ -217,8 +220,11 @@ bool CollectionBufferedValue::DeleteValue (Value* child)
   return true;
 }
 
-bool CollectionBufferedValue::AddValue (Value* child)
+Value* CollectionBufferedValue::NewValue (size_t idx, Value* selectedValue)
 {
+  printf ("Not implemented yet!\n"); fflush (stdout);
+  CS_ASSERT (false);
+#if 0
   csRef<BufferedValue> bufferedValue;
   if (deletedvalues.Find (child))
     deletedvalues.Delete (child);
@@ -233,6 +239,8 @@ bool CollectionBufferedValue::AddValue (Value* child)
   if (bufferedValue)
     buffer.Push (bufferedValue);
   return true;
+#endif
+  return 0;
 }
 
 // --------------------------------------------------------------------------
@@ -411,7 +419,7 @@ bool NewChildAction::Do (View* view, wxWindow* component)
     listCtrl = wxStaticCast (component, wxListCtrl);
     idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   }
-  Value* value = collection->NewValue (idx);
+  Value* value = collection->NewValue (idx, view->GetSelectedValue (component));
   if (!value) return false;
 
   if (listCtrl)

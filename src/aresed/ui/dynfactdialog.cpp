@@ -266,7 +266,7 @@ public:
       }
     return false;
   }
-  virtual Value* NewValue (size_t idx)
+  virtual Value* NewValue (size_t idx, Value* selectedValue)
   {
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return 0;

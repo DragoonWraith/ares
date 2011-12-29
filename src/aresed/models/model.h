@@ -249,35 +249,16 @@ public:
   virtual bool DeleteValue (Value* child) { return false; }
 
   /**
-   * Add a child value to this value. Returns false if this value could
-   * not be added for some reason. This only works for VALUE_COLLECTION.
-   */
-  virtual bool AddValue (Value* child) { return false; }
-
-  /**
    * Create a new empty value in this value. Returns 0 if this value
    * could not be created for some reason. This only works for VALUE_COLLECTION.
    * The given index is the position at which the new value should be created
    * but this is only a hint. If idx is equal to csArrayItemNotFound then
    * it means after the end of the collection.
+   * The selectedValue is a pointer to the value as it is selected in this
+   * collection. Can be 0 if nothing is selected. This is useful (for example) in
+   * case of a tree where you want the new item to be added to the selected node.
    */
-  virtual Value* NewValue (size_t idx) { return 0; }
-
-  /**
-   * Update a child. Returns false if this child could not be updated.
-   * The default implementation just calls DeleteChild() first and then
-   * AddChild() with the new child. This only works for VALUE_COLLECTION.
-   */
-  virtual bool UpdateValue (Value* oldChild, Value* child)
-  {
-    if (!DeleteValue (oldChild)) return false;
-    if (!AddValue (child))
-    {
-      AddValue (oldChild);
-      return false;
-    }
-    return true;
-  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue) { return 0; }
 
   // -----------------------------------------------------------------------------
 
@@ -657,8 +638,7 @@ public:
   virtual Value* GetChild (size_t idx) { return buffer[idx]; }
 
   virtual bool DeleteValue (Value* child);
-  virtual bool AddValue (Value* child);
-  //virtual bool UpdateValue (Value* oldChild, Value* child);
+  virtual Value* NewValue (size_t idx, Value* selectedValue);
 };
 
 /**
@@ -768,10 +748,9 @@ public:
   }
 
   virtual bool DeleteValue (Value* child) { return mirroringValue->DeleteValue (child); }
-  virtual bool AddValue (Value* child) { return mirroringValue->AddValue (child); }
-  virtual bool UpdateValue (Value* oldChild, Value* child)
+  virtual Value* NewValue (size_t idx, Value* selectedValue)
   {
-    return mirroringValue->UpdateValue (oldChild, child);
+    return mirroringValue->NewValue (idx, selectedValue);
   }
   virtual csString Dump (bool verbose = false)
   {
