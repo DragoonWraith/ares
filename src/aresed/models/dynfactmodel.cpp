@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
 
+using namespace Ares;
 
 void CategoryCollectionValue::UpdateChildren ()
 {
@@ -40,8 +41,8 @@ void CategoryCollectionValue::UpdateChildren ()
   const csStringArray& items = categories.Get (category, csStringArray ());
   for (size_t i = 0 ; i < items.GetSize () ; i++)
   {
-    csRef<Ares::ConstantStringValue> strValue;
-    strValue.AttachNew (new Ares::ConstantStringValue (items[i]));
+    csRef<ConstantStringValue> strValue;
+    strValue.AttachNew (new ConstantStringValue (items[i]));
     children.Push (strValue);
     strValue->SetParent (this);
   }
@@ -63,6 +64,11 @@ void DynfactCollectionValue::UpdateChildren ()
     children.Push (catValue);
     catValue->SetParent (this);
   }
+}
+
+Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue)
+{
+  return 0;
 }
 
 //--------------------------------------------------------------------------

@@ -42,6 +42,16 @@ class wxChoicebook;
 class wxPanel;
 class CustomControl;
 
+/**
+ * This macro creates a new reference for a certain type and makes sure
+ * the reference is decremented after it has been given to the function.
+ * This macro should be used when you want to make a new object, pass it to
+ * some function that itself maintains its own reference and then you
+ * immediatelly want to release the reference you own.
+ * e.g.: view->AddAction (component, NEWREF (new MyAction ()));
+ */
+#define NEWREF(T,N) (csRef<T> (csPtr<T> (N)))
+
 namespace Ares
 {
 
@@ -921,17 +931,17 @@ private:
     int id;	// Context menu id.
     csRef<Action> action;
   };
-  struct ListContext
+  struct RmbContext
   {
-    wxListCtrl* listCtrl;
+    wxWindow* component;
     csArray<ActionDef> actionDefs;
   };
-  csArray<ListContext> listContexts;
+  csArray<RmbContext> rmbContexts;
   /**
-   * Find the index of the list context for a given list or csArrayItemNotFound
-   * if there is no list context yet.
+   * Find the index of the rmb context for a given component or csArrayItemNotFound
+   * if there is no rmb context.
    */
-  size_t FindListContext (wxListCtrl* ctrl);
+  size_t FindRmbContext (wxWindow* ctrl);
 
   // --------------------------------------------
 
@@ -1105,26 +1115,21 @@ public:
    * Add an action to a component. This works with various types
    * of components and the way the action is added depends on the component
    * type. For lists and trees the action will be added as a context menu
-   * item. For buttons it will be added as a simple action that is called
-   * when the button is pressed. Returns false on failure (the component
-   * type is not supported for actions).
+   * item (using AddContextAction()). For buttons it will be added as a
+   * simple action that is called when the button is pressed. Returns false
+   * on failure (the component type is not supported for actions).
    */
   bool AddAction (wxWindow* component, Action* action);
-
-  /**
-   * Add an action to a list control as a context menu action.
-   */
-  bool AddAction (wxListCtrl* listCtrl, Action* action);
-
-  /**
-   * Add an action to a tree control as a context menu action.
-   */
-  bool AddAction (wxTreeCtrl* treeCtrl, Action* action);
 
   /**
    * Add an action to a button.
    */
   bool AddAction (wxButton* button, Action* action);
+
+  /**
+   * Add a context action to a list or tree control.
+   */
+  bool AddContextAction (wxWindow* component, Action* action);
 
   //----------------------------------------------------------------
 

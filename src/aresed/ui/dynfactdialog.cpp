@@ -360,9 +360,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
-  csRef<ColliderValue> colliderValue;
-  colliderValue.AttachNew (new ColliderValue (0, 0));
-  colliderSelectedValue->SetupComposite (colliderValue);
+  colliderSelectedValue->SetupComposite (NEWREF(ColliderValue,new ColliderValue(0,0)));
 
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
@@ -384,11 +382,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
 
   // The actions.
-  csRef<Action> action;
-  action.AttachNew (new NewChildAction (colliderCollectionValue));
-  AddAction (colliderList, action);
-  action.AttachNew (new DeleteChildAction (colliderCollectionValue));
-  AddAction (colliderList, action);
+  AddAction (colliderList, NEWREF(Action, new NewChildAction (colliderCollectionValue)));
+  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliderCollectionValue)));
+  AddAction (colliderList, NEWREF(Action, new NewChildAction (dynfactCollectionValue)));
+  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }

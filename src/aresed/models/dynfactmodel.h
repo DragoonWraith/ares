@@ -96,7 +96,7 @@ public:
   virtual const char* GetStringValue () { return "Factories"; }
 
   virtual bool DeleteValue (Value* child) { return false; }
-  virtual Value* NewValue (size_t idx, Value* selectedValue) { return 0; }
+  virtual Value* NewValue (size_t idx, Value* selectedValue);
 
   virtual csString Dump (bool verbose = false)
   {
