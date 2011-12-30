@@ -781,15 +781,27 @@ void View::OnRMB (wxContextMenuEvent& event)
   {
     wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
     bool hasItem;
-    if (ListCtrlTools::CheckHitList (listCtrl, hasItem, event.GetPosition ()))
+    if (!ListCtrlTools::CheckHitList (listCtrl, hasItem, event.GetPosition ()))
+      return;
+  }
+  else if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+  {
+    wxTreeCtrl* treeCtrl = wxStaticCast (component, wxTreeCtrl);
+    if (!treeCtrl->IsShownOnScreen ()) return;
+    int flags = 0;
+    long idx = treeCtrl->HitTest (treeCtrl->ScreenToClient (event.GetPosition ()), flags);
+    if (idx == wxNOT_FOUND)
     {
-      const RmbContext& lc = rmbContexts[idx];
-      wxMenu contextMenu;
-      for (size_t j = 0 ; j < lc.actionDefs.GetSize () ; j++)
-	contextMenu.Append(lc.actionDefs[j].id, wxString::FromUTF8 (lc.actionDefs[j].action->GetName ()));
-      listCtrl->PopupMenu (&contextMenu);
+      if (!treeCtrl->GetScreenRect ().Contains (event.GetPosition ()))
+        return;
     }
   }
+
+  const RmbContext& lc = rmbContexts[idx];
+  wxMenu contextMenu;
+  for (size_t j = 0 ; j < lc.actionDefs.GetSize () ; j++)
+    contextMenu.Append(lc.actionDefs[j].id, wxString::FromUTF8 (lc.actionDefs[j].action->GetName ()));
+  component->PopupMenu (&contextMenu);
 }
 
 void View::OnActionExecuted (wxCommandEvent& event)

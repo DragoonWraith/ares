@@ -384,8 +384,8 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // The actions.
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliderCollectionValue)));
   AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliderCollectionValue)));
-  AddAction (colliderList, NEWREF(Action, new NewChildAction (dynfactCollectionValue)));
-  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
+  AddAction (factoryTree, NEWREF(Action, new NewChildAction (dynfactCollectionValue)));
+  AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
