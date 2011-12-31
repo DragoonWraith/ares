@@ -66,7 +66,8 @@ void DynfactCollectionValue::UpdateChildren ()
   }
 }
 
-Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue)
+Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
+    const DialogResult& suggestion)
 {
   return 0;
 }

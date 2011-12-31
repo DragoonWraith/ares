@@ -220,7 +220,7 @@ bool CollectionBufferedValue::DeleteValue (Value* child)
   return true;
 }
 
-Value* CollectionBufferedValue::NewValue (size_t idx, Value* selectedValue)
+Value* CollectionBufferedValue::NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
 {
   printf ("Not implemented yet!\n"); fflush (stdout);
   CS_ASSERT (false);
@@ -419,7 +419,38 @@ bool NewChildAction::Do (View* view, wxWindow* component)
     listCtrl = wxStaticCast (component, wxListCtrl);
     idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   }
-  Value* value = collection->NewValue (idx, view->GetSelectedValue (component));
+  Value* value = collection->NewValue (idx, view->GetSelectedValue (component), DialogResult ());
+  if (!value) return false;
+
+  if (listCtrl)
+  {
+    collection->ResetIterator ();
+    bool found = false;
+    idx = 0;
+    while (collection->HasNext ())
+    {
+      Value* child = collection->NextChild ();
+      if (child == value) { found = true; break; }
+      idx++;
+    }
+    if (found)
+      ListCtrlTools::SelectRow (listCtrl, idx, true);
+  }
+  return true;
+}
+
+bool NewChildDialogAction::Do (View* view, wxWindow* component)
+{
+  if (dialog->Show (0) == 0) return false;
+
+  size_t idx = csArrayItemNotFound;
+  wxListCtrl* listCtrl = 0;
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    listCtrl = wxStaticCast (component, wxListCtrl);
+    idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
+  }
+  Value* value = collection->NewValue (idx, view->GetSelectedValue (component), dialog->GetFieldContents ());
   if (!value) return false;
 
   if (listCtrl)

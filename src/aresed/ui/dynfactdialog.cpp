@@ -266,7 +266,7 @@ public:
       }
     return false;
   }
-  virtual Value* NewValue (size_t idx, Value* selectedValue)
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return 0;

@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <csutil/hash.h>
 #include <csutil/stringarray.h>
 
+#include "../ui/uimanager.h"
+
 #include <wx/event.h>
 #include <wx/treectrl.h>
 
@@ -261,14 +263,22 @@ public:
   /**
    * Create a new empty value in this value. Returns 0 if this value
    * could not be created for some reason. This only works for VALUE_COLLECTION.
+   *
    * The given index is the position at which the new value should be created
    * but this is only a hint. If idx is equal to csArrayItemNotFound then
    * it means after the end of the collection.
+   *
    * The selectedValue is a pointer to the value as it is selected in this
    * collection. Can be 0 if nothing is selected. This is useful (for example) in
    * case of a tree where you want the new item to be added to the selected node.
+   *
+   * The suggestion is a hash of named string values that can serve as a suggestion
+   * for creating the new value. Typically this will be the result of a dialog.
+   * The format of this suggestion array is application dependend and sometimes it can
+   * be an empty container.
    */
-  virtual Value* NewValue (size_t idx, Value* selectedValue) { return 0; }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  { return 0; }
 
   // -----------------------------------------------------------------------------
 
@@ -648,7 +658,7 @@ public:
   virtual Value* GetChild (size_t idx) { return buffer[idx]; }
 
   virtual bool DeleteValue (Value* child);
-  virtual Value* NewValue (size_t idx, Value* selectedValue);
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion);
 };
 
 /**
@@ -758,9 +768,9 @@ public:
   }
 
   virtual bool DeleteValue (Value* child) { return mirroringValue->DeleteValue (child); }
-  virtual Value* NewValue (size_t idx, Value* selectedValue)
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
-    return mirroringValue->NewValue (idx, selectedValue);
+    return mirroringValue->NewValue (idx, selectedValue, suggestion);
   }
   virtual csString Dump (bool verbose = false)
   {
@@ -845,7 +855,8 @@ public:
 
 /**
  * This standard action creates a new default child for a collection.
- * It assumes the collection supports the NewValue() method.
+ * It assumes the collection supports the NewValue() method. It will
+ * call the NewValue() method with an empty suggestion array.
  */
 class NewChildAction : public Action
 {
@@ -856,6 +867,25 @@ public:
   NewChildAction (Value* collection) : collection (collection) { }
   virtual ~NewChildAction () { }
   virtual const char* GetName () const { return "New"; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * This standard action creates a new child for a collection based
+ * on a suggestion from a dialog.
+ * It assumes the collection supports the NewValue() method.
+ */
+class NewChildDialogAction : public Action
+{
+private:
+  Value* collection;
+  UIDialog* dialog;
+
+public:
+  NewChildDialogAction (Value* collection, UIDialog* dialog) :
+    collection (collection), dialog (dialog) { }
+  virtual ~NewChildDialogAction () { }
+  virtual const char* GetName () const { return "New..."; }
   virtual bool Do (View* view, wxWindow* component);
 };
 

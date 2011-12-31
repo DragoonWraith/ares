@@ -44,6 +44,8 @@ class wxCommandEvent;
 class wxWindow;
 class wxListCtrl;
 
+typedef csHash<csString,csString> DialogResult;
+
 struct UIDialogCallback : public csRefCount
 {
   virtual void ButtonPressed (UIDialog* dialog, const char* button) = 0;
@@ -70,7 +72,7 @@ private:
   csArray<wxButton*> buttons;
   csRef<UIDialogCallback> callback;
 
-  csHash<csString,csString> fieldContents;
+  DialogResult fieldContents;
 
   bool okCancelAdded;
   void AddOkCancel ();
@@ -128,7 +130,7 @@ public:
    * When any button is pressed (including Ok and Cancel) this will return
    * the contents of all text controls and choices.
    */
-  const csHash<csString,csString>& GetFieldContents () const { return fieldContents; }
+  const DialogResult& GetFieldContents () const { return fieldContents; }
 };
 
 

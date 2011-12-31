@@ -56,7 +56,7 @@ public:
   virtual const char* GetStringValue () { return category; }
 
   virtual bool DeleteValue (Value* child) { return false; }
-  virtual Value* NewValue (size_t idx, Value* selectedValue) { return 0; }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion) { return 0; }
 
   virtual csString Dump (bool verbose = false)
   {
@@ -96,7 +96,7 @@ public:
   virtual const char* GetStringValue () { return "Factories"; }
 
   virtual bool DeleteValue (Value* child) { return false; }
-  virtual Value* NewValue (size_t idx, Value* selectedValue);
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion);
 
   virtual csString Dump (bool verbose = false)
   {
