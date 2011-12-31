@@ -343,8 +343,16 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   View (this), uiManager (uiManager)
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
+
+  // The mesh panel.
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new DynfactMeshView (this, uiManager->GetApp ()->GetObjectRegistry (), panel);
+
+  // The dialog for editing new factories.
+  factoryDialog = new UIDialog (this, "Factory name");
+  factoryDialog->AddRow ();
+  factoryDialog->AddLabel ("Name:");
+  factoryDialog->AddText ("name");
 
   // Setup the dynamic factory tree.
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
@@ -384,7 +392,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // The actions.
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliderCollectionValue)));
   AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliderCollectionValue)));
-  AddAction (factoryTree, NEWREF(Action, new NewChildAction (dynfactCollectionValue)));
+  AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
 
   timerOp.AttachNew (new RotMeshTimer (this));
@@ -393,6 +401,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 DynfactDialog::~DynfactDialog ()
 {
   delete meshView;
+  delete factoryDialog;
 }
 
 

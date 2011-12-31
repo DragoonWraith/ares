@@ -82,6 +82,8 @@ private:
   csRef<ColliderCollectionValue> colliderCollectionValue;
   csRef<ListSelectedValue> colliderSelectedValue;
 
+  UIDialog* factoryDialog;
+
   void OnOkButton (wxCommandEvent& event);
 
 public:

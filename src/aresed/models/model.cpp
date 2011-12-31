@@ -441,6 +441,7 @@ bool NewChildAction::Do (View* view, wxWindow* component)
 
 bool NewChildDialogAction::Do (View* view, wxWindow* component)
 {
+  dialog->Clear ();
   if (dialog->Show (0) == 0) return false;
 
   size_t idx = csArrayItemNotFound;
