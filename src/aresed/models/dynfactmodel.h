@@ -53,6 +53,9 @@ public:
     aresed3d (aresed3d), category (category), dirty (true) { }
   virtual ~CategoryCollectionValue () { }
 
+  void AddChild (Value* child) { children.Push (child); child->SetParent (this); dirty = true; }
+  void Refresh () { dirty = true; FireValueChanged (); }
+
   virtual const char* GetStringValue () { return category; }
 
   virtual bool DeleteValue (Value* child) { return false; }
@@ -75,6 +78,12 @@ class DynfactCollectionValue : public Ares::StandardCollectionValue
 private:
   AresEdit3DView* aresed3d;
   bool dirty;
+
+  /**
+   * Find the category value corresponding with
+   * the given value.
+   */
+  Value* GetCategoryForValue (Value* value);
 
 protected:
   virtual void UpdateChildren ();

@@ -252,6 +252,11 @@ public:
    */
   virtual Value* GetChild (const char* name) { return 0; }
 
+  /**
+   * Check if a given value is a direct child of this value.
+   */
+  virtual bool IsChild (Value* value);
+
   // -----------------------------------------------------------------------------
 
   /**

@@ -69,6 +69,28 @@ void DynfactCollectionValue::UpdateChildren ()
 Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     const DialogResult& suggestion)
 {
+  csString newname = suggestion.Get ("name", (const char*)0);
+  if (newname.IsEmpty ()) return 0;	// @@@ Error report.
+  Value* categoryValue = GetCategoryForValue (selectedValue);
+  if (!categoryValue) return 0;	// @@@ Error report.
+
+  aresed3d->AddItem (categoryValue->GetStringValue (), newname);
+  csRef<ConstantStringValue> strValue;
+  strValue.AttachNew (new ConstantStringValue (newname));
+
+  CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
+      //children.Push (strValue);
+  //categoryCollectionValue->AddChild (strValue);
+  categoryCollectionValue->Refresh ();
+  FireValueChanged ();
+  return strValue;
+}
+
+Value* DynfactCollectionValue::GetCategoryForValue (Value* value)
+{
+  for (size_t i = 0 ; i < children.GetSize () ; i++)
+    if (children[i] == value) return value;
+    else if (children[i]->IsChild (value)) return children[i];
   return 0;
 }
 

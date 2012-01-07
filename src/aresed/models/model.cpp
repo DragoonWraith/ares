@@ -90,6 +90,16 @@ csString Value::Dump (bool verbose)
   return dump;
 } 
 
+bool Value::IsChild (Value* value)
+{
+  ResetIterator ();
+  while (HasNext ())
+  {
+    if (value == NextChild ()) return true;
+  }
+  return false;
+}
+
 // --------------------------------------------------------------------------
 
 BufferedValue::BufferedValue (Value* originalValue) : originalValue (originalValue)
