@@ -118,7 +118,8 @@ public:
    * as children and the requested value out of the composite should
    * be a string.
    */
-  void AddList (const char* name, Ares::Value* collectionValue, size_t valueColumn);
+  void AddList (const char* name, Ares::Value* collectionValue, size_t valueColumn,
+      const char* heading, const char* names);
 
   // Clear all input fields to empty or default values.
   void Clear ();

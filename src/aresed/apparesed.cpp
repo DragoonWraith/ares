@@ -1286,6 +1286,9 @@ bool AppAresEditWX::Initialize ()
   vfs = csQueryRegistry<iVFS> (object_reg);
   if (!vfs) return ReportError ("Can't find the iVFS plugin!");
 
+  engine = csQueryRegistry<iEngine> (object_reg);
+  if (!engine) return ReportError ("Can't find the engine plugin!");
+
   if (!InitWX ())
     return false;
 

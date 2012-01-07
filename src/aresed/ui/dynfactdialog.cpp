@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "listview.h"
 #include "dirtyhelper.h"
 #include "../models/dynfactmodel.h"
+#include "../models/meshfactmodel.h"
 #include "../tools/tools.h"
 
 #include <wx/choicebk.h>
@@ -342,17 +343,19 @@ long DynfactDialog::GetSelectedCollider ()
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   View (this), uiManager (uiManager)
 {
+  AppAresEditWX* app = uiManager->GetApp ();
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
 
   // The mesh panel.
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
-  meshView = new DynfactMeshView (this, uiManager->GetApp ()->GetObjectRegistry (), panel);
+  meshView = new DynfactMeshView (this, app->GetObjectRegistry (), panel);
 
   // The dialog for editing new factories.
   factoryDialog = new UIDialog (this, "Factory name");
   factoryDialog->AddRow ();
   factoryDialog->AddLabel ("Name:");
-  factoryDialog->AddText ("name");
+  factoryDialog->AddList ("name", NEWREF(MeshCollectionValue,new MeshCollectionValue(app->GetEngine ())), 0,
+      "Name", "name");
 
   // Setup the dynamic factory tree.
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();

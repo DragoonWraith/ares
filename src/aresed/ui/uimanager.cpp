@@ -145,7 +145,8 @@ void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
   listFields.Put (name, info);
 }
 
-void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn)
+void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn,
+    const char* heading, const char* names)
 {
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
@@ -158,6 +159,8 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
   info.col = valueColumn;
   info.collectionValue = collectionValue;
   valueListFields.Put (name, info);
+  DefineHeading (list, heading, names);
+  Bind (collectionValue, list);
 }
 
 void UIDialog::AddButton (const char* str)
@@ -362,7 +365,7 @@ int UIDialog::Show (UIDialogCallback* cb)
   {
     csString name;
     const ValueListInfo& info = itvLst.Next (name);
-    info.collectionValue->FireValueChanged ();
+    info.collectionValue->Refresh ();
   }
 
   return ShowModal ();

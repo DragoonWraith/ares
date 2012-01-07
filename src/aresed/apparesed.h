@@ -417,6 +417,7 @@ private:
   iObjectRegistry* object_reg;
   csRef<iGraphics3D> g3d;
   csRef<iVirtualClock> vc;
+  csRef<iEngine> engine;
   csRef<iVFS> vfs;
   csRef<iWxWindow> wxwindow;
   csRef<FramePrinter> printer;
@@ -514,6 +515,7 @@ public:
   CameraWindow* GetCameraWindow () const { return camwin; }
   UIManager* GetUIManager () const { return uiManager; }
   iVirtualClock* GetVC () const { return vc; }
+  iEngine* GetEngine () const { return engine; }
 
   bool LoadResourceFile (const char* filename, wxString& searchPath);
 

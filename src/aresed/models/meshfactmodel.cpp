@@ -29,6 +29,25 @@ THE SOFTWARE.
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
 
+using namespace Ares;
+
+void MeshCollectionValue::UpdateChildren ()
+{
+  if (!dirty) return;
+  dirty = false;
+  ReleaseChildren ();
+  iMeshFactoryList* list = engine->GetMeshFactories ();
+  for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
+  {
+    iMeshFactoryWrapper* fact = list->Get (i);
+    const char* name = fact->QueryObject ()->GetName ();
+    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
+    composite->AddChild ("name", NEWREF(ConstantStringValue,new ConstantStringValue(name)));
+    children.Push (composite);
+    composite->SetParent (this);
+  }
+}
+
 void MeshfactRowModel::ResetIterator ()
 {
   list = engine->GetMeshFactories ();

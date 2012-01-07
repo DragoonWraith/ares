@@ -26,9 +26,34 @@ THE SOFTWARE.
 #define __aresed_meshfactmodel_h
 
 #include "rowmodel.h"
+#include "model.h"
 
 struct iEngine;
 struct iMeshFactoryList;
+
+class MeshCollectionValue : public Ares::StandardCollectionValue
+{
+private:
+  iEngine* engine;
+
+protected:
+  virtual void UpdateChildren ();
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  MeshCollectionValue (iEngine* engine) : engine (engine) { }
+  virtual ~MeshCollectionValue () { }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Mesh*]";
+    dump += Ares::StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
+};
 
 class MeshfactRowModel : public RowModel
 {

@@ -39,7 +39,6 @@ class CategoryCollectionValue : public Ares::StandardCollectionValue
 private:
   AresEdit3DView* aresed3d;
   csString category;
-  bool dirty;
 
 protected:
   virtual void UpdateChildren ();
@@ -50,11 +49,10 @@ protected:
 
 public:
   CategoryCollectionValue (AresEdit3DView* aresed3d, const char* category) :
-    aresed3d (aresed3d), category (category), dirty (true) { }
+    aresed3d (aresed3d), category (category) { }
   virtual ~CategoryCollectionValue () { }
 
   void AddChild (Value* child) { children.Push (child); child->SetParent (this); dirty = true; }
-  void Refresh () { dirty = true; FireValueChanged (); }
 
   virtual const char* GetStringValue () { return category; }
 
@@ -77,7 +75,6 @@ class DynfactCollectionValue : public Ares::StandardCollectionValue
 {
 private:
   AresEdit3DView* aresed3d;
-  bool dirty;
 
   /**
    * Find the category value corresponding with
@@ -93,14 +90,8 @@ protected:
   }
 
 public:
-  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d), dirty (true) { }
+  DynfactCollectionValue (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
   virtual ~DynfactCollectionValue () { }
-
-  /**
-   * Call this when you want to refresh this value because external data (i.e.
-   * the factories and items) changed.
-   */
-  void Refresh () { dirty = true; FireValueChanged (); }
 
   virtual const char* GetStringValue () { return "Factories"; }
 

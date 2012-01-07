@@ -113,6 +113,7 @@ class Value : public csRefCount
 protected:
   Value* parent;
   csRefArray<ValueChangeListener> listeners;
+  bool dirty;
 
   /**
    * Called when a child changes. Default implementation does
@@ -121,7 +122,7 @@ protected:
   virtual void ChildChanged (Value* child) { }
 
 public:
-  Value () : parent (0) { }
+  Value () : parent (0), dirty (true) { }
 
   /**
    * Notify this value as if it has changed. This will cause
@@ -136,6 +137,12 @@ public:
       listeners[i]->ValueChanged (this);
     if (parent) parent->ChildChanged (this);
   }
+
+  /**
+   * Force a refresh of the data. The default implementation sets a dirty
+   * flag and calls FireValueChanged().
+   */
+  virtual void Refresh () { dirty = true; FireValueChanged (); }
 
   /**
    * Set the parent of this value.
