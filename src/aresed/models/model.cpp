@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "../ui/uitools.h"
 #include "../ui/listctrltools.h"
 #include "../ui/customcontrol.h"
+#include "../ui/uimanager.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

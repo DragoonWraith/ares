@@ -43,8 +43,8 @@ THE SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-UIDialog::UIDialog (wxWindow* parent, const char* title) : wxDialog (parent, -1,
-      wxString::FromUTF8 (title))
+UIDialog::UIDialog (wxWindow* parent, const char* title) :
+  wxDialog (parent, -1, wxString::FromUTF8 (title)), View (this)
 {
   sizer = new wxBoxSizer (wxVERTICAL);
   SetSizer (sizer);
@@ -145,6 +145,21 @@ void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
   listFields.Put (name, info);
 }
 
+void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn)
+{
+  CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
+  CS_ASSERT (lastRowSizer != 0);
+  wxListCtrl* list = new wxListCtrl (this, wxID_ANY, wxDefaultPosition,
+      wxDefaultSize, wxLC_REPORT);
+  list->SetMinSize (wxSize (-1,150));
+  lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  ValueListInfo info;
+  info.list = list;
+  info.col = valueColumn;
+  info.collectionValue = collectionValue;
+  valueListFields.Put (name, info);
+}
+
 void UIDialog::AddButton (const char* str)
 {
   CS_ASSERT (lastRowSizer != 0);
@@ -189,6 +204,27 @@ void UIDialog::SetChoice (const char* name, const char* value)
 
 void UIDialog::SetList (const char* name, const char* value)
 {
+  if (valueListFields.Contains (name))
+  {
+    ValueListInfo info = valueListFields.Get (name, ValueListInfo());
+    ListCtrlTools::ClearSelection (info.list);
+    if (info.col == csArrayItemNotFound) return;
+    size_t rowidx = 0;
+    csString sValue = value;
+    info.collectionValue->ResetIterator ();
+    while (info.collectionValue->HasNext ())
+    {
+      Value* compositeValue = info.collectionValue->NextChild ();
+      Value* child = compositeValue->GetChild (rowidx);
+      if (sValue == child->GetStringValue ())
+      {
+        ListCtrlTools::SelectRow (info.list, rowidx);
+	break;
+      }
+      rowidx++;
+    }
+    return;
+  }
   if (!listFields.Contains (name)) return;
   ListInfo info = listFields.Get (name, ListInfo());
   ListCtrlTools::ClearSelection (info.list);
@@ -219,6 +255,13 @@ void UIDialog::Clear ()
   {
     csString name;
     const ListInfo& info = itLst.Next (name);
+    ListCtrlTools::ClearSelection (info.list);
+  }
+  csHash<ValueListInfo,csString>::GlobalIterator itvLst = valueListFields.GetIterator ();
+  while (itvLst.HasNext ())
+  {
+    csString name;
+    const ValueListInfo& info = itvLst.Next (name);
     ListCtrlTools::ClearSelection (info.list);
   }
 }
@@ -260,6 +303,24 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
     }
     fieldContents.Put (name, value);
   }
+  csHash<ValueListInfo,csString>::GlobalIterator itvLst = valueListFields.GetIterator ();
+  while (itvLst.HasNext ())
+  {
+    csString name;
+    const ValueListInfo& info = itvLst.Next (name);
+    long rowidx = ListCtrlTools::GetFirstSelectedRow (info.list);
+    csString value;
+    if (rowidx != -1)
+    {
+      Value* compositeValue = info.collectionValue->GetChild (rowidx);
+      if (info.col != csArrayItemNotFound)
+      {
+        Value* child = compositeValue->GetChild (info.col);
+        value = child->GetStringValue ();
+      }
+    }
+    fieldContents.Put (name, value);
+  }
 
   if (buttonLabel == "Ok")
   {
@@ -295,6 +356,13 @@ int UIDialog::Show (UIDialogCallback* cb)
     csString name;
     const ListInfo& info = itLst.Next (name);
     info.view->Refresh ();
+  }
+  csHash<ValueListInfo,csString>::GlobalIterator itvLst = valueListFields.GetIterator ();
+  while (itvLst.HasNext ())
+  {
+    csString name;
+    const ValueListInfo& info = itvLst.Next (name);
+    info.collectionValue->FireValueChanged ();
   }
 
   return ShowModal ();

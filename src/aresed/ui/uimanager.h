@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __uimanager_h
 
 #include <wx/wx.h>
+#include "../models/model.h"
 
 class AppAresEditWX;
 class FileReq;
@@ -59,7 +60,14 @@ struct ListInfo
   SimpleListCtrlView* view;
 };
 
-class UIDialog : public wxDialog
+struct ValueListInfo
+{
+  wxListCtrl* list;
+  size_t col;
+  csRef<Ares::Value> collectionValue;
+};
+
+class UIDialog : public wxDialog, public Ares::View
 {
 private:
   wxBoxSizer* sizer;
@@ -68,6 +76,7 @@ private:
   csHash<wxChoice*,csString> choiceFields;
 
   csHash<ListInfo,csString> listFields;
+  csHash<ValueListInfo,csString> valueListFields;
 
   csArray<wxButton*> buttons;
   csRef<UIDialogCallback> callback;
@@ -103,6 +112,13 @@ public:
    * from the model.
    */
   void AddList (const char* name, RowModel* model, size_t valueColumn);
+  /**
+   * Add a list. The given column index is used as the 'value'
+   * from the model. The value should be a collection with composites
+   * as children and the requested value out of the composite should
+   * be a string.
+   */
+  void AddList (const char* name, Ares::Value* collectionValue, size_t valueColumn);
 
   // Clear all input fields to empty or default values.
   void Clear ();

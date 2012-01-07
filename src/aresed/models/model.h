@@ -28,8 +28,6 @@ THE SOFTWARE.
 #include <csutil/hash.h>
 #include <csutil/stringarray.h>
 
-#include "../ui/uimanager.h"
-
 #include <wx/event.h>
 #include <wx/treectrl.h>
 
@@ -43,6 +41,10 @@ class wxButton;
 class wxChoicebook;
 class wxPanel;
 class CustomControl;
+class UIDialog;
+
+// @@@ Ugly: we can't include uimanager.h because of circular includes.
+typedef csHash<csString,csString> DialogResult;
 
 /**
  * This macro creates a new reference for a certain type and makes sure
