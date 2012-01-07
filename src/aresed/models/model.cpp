@@ -818,7 +818,15 @@ void View::OnRMB (wxContextMenuEvent& event)
 {
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
   size_t idx = FindRmbContext (component);
-  if (idx == csArrayItemNotFound) return;
+  if (idx == csArrayItemNotFound)
+  {
+    // We also try the parent since when the list is empty we apparently get
+    // a child of the list instead of the list itself.
+    component = component->GetParent ();
+    if (component == 0) return;
+    idx = FindRmbContext (component);
+    if (idx == csArrayItemNotFound) return;
+  }
 
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
   {

@@ -213,7 +213,6 @@ class ColliderCollectionValue : public StandardCollectionValue
 private:
   DynfactDialog* dialog;
   iDynamicFactory* dynfact;
-  bool dirty;
 
   // Create a new child and add to the array.
   Value* NewChild (size_t i)
@@ -243,14 +242,8 @@ protected:
   }
 
 public:
-  ColliderCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0), dirty (true) { }
+  ColliderCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
   virtual ~ColliderCollectionValue () { }
-
-  /**
-   * Call this when you want to refresh this value because external data (i.e.
-   * the current factory) changes.
-   */
-  void Refresh () { dirty = true; FireValueChanged (); }
 
   virtual bool DeleteValue (Value* child)
   {

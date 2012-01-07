@@ -78,9 +78,10 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   csRef<ConstantStringValue> strValue;
   strValue.AttachNew (new ConstantStringValue (newname));
 
+  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  dynworld->AddFactory (newname, 1.0f, 1.0f);
+
   CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
-      //children.Push (strValue);
-  //categoryCollectionValue->AddChild (strValue);
   categoryCollectionValue->Refresh ();
   FireValueChanged ();
   return strValue;
