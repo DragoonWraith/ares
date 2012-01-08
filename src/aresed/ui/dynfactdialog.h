@@ -79,6 +79,7 @@ private:
   DynfactMeshView* meshView;
   csRef<TreeSelectedValue> factorySelectedValue;
 
+  csRef<CompositeValue> dynfactValue;
   csRef<ColliderCollectionValue> colliderCollectionValue;
   csRef<ListSelectedValue> colliderSelectedValue;
 

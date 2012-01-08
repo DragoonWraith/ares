@@ -316,18 +316,67 @@ public:
 };
 
 /**
- * A constant string value.
+ * A string value.
  */
-class ConstantStringValue : public Value
+class StringValue : public Value
 {
 private:
   csString str;
 
 public:
-  ConstantStringValue (const char* str) : str (str) { }
-  virtual ~ConstantStringValue () { }
+  StringValue (const char* str = "") : str (str) { }
+  virtual ~StringValue () { }
   virtual ValueType GetType () const { return VALUE_STRING; }
+  virtual void SetStringValue (const char* s) { if (str != s) { str = s; FireValueChanged (); } }
   virtual const char* GetStringValue () { return str; }
+};
+
+/**
+ * A float value.
+ */
+class FloatValue : public Value
+{
+private:
+  float f;
+
+public:
+  FloatValue (float f = 0.0f) : f (f) { }
+  virtual ~FloatValue () { }
+  virtual ValueType GetType () const { return VALUE_FLOAT; }
+  virtual void SetFloatValue (float fl) { if (fl != f) { f = fl; FireValueChanged (); } }
+  virtual float GetFloatValue () { return f; }
+};
+
+/**
+ * A long value.
+ */
+class LongValue : public Value
+{
+private:
+  long f;
+
+public:
+  LongValue (long f = 0) : f (f) { }
+  virtual ~LongValue () { }
+  virtual ValueType GetType () const { return VALUE_LONG; }
+  virtual void SetLongValue (long fl) { if (fl != f) { f = fl; FireValueChanged (); } }
+  virtual long GetLongValue () { return f; }
+};
+
+/**
+ * A bool value.
+ */
+class BoolValue : public Value
+{
+private:
+  bool f;
+
+public:
+  BoolValue (bool f = false) : f (f) { }
+  virtual ~BoolValue () { }
+  virtual ValueType GetType () const { return VALUE_BOOL; }
+  virtual void SetBoolValue (bool fl) { if (fl != f) { f = fl; FireValueChanged (); } }
+  virtual bool GetBoolValue () { return f; }
 };
 
 /**
@@ -1162,8 +1211,10 @@ public:
    * Create a signal between a value to another value. This is a one-directional
    * connection which will cause the second value to get 'fired'
    * in case the first one is fired.
+   * If 'dochildren' is true then the children of the destination will also
+   * get fired.
    */
-  void Signal (Value* source, Value* dest);
+  void Signal (Value* source, Value* dest, bool dochildren = false);
 
   //----------------------------------------------------------------
 

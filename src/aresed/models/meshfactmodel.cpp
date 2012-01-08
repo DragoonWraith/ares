@@ -42,7 +42,7 @@ void MeshCollectionValue::UpdateChildren ()
     iMeshFactoryWrapper* fact = list->Get (i);
     const char* name = fact->QueryObject ()->GetName ();
     csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("name", NEWREF(ConstantStringValue,new ConstantStringValue(name)));
+    composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
     children.Push (composite);
     composite->SetParent (this);
   }

@@ -41,8 +41,8 @@ void CategoryCollectionValue::UpdateChildren ()
   const csStringArray& items = categories.Get (category, csStringArray ());
   for (size_t i = 0 ; i < items.GetSize () ; i++)
   {
-    csRef<ConstantStringValue> strValue;
-    strValue.AttachNew (new ConstantStringValue (items[i]));
+    csRef<StringValue> strValue;
+    strValue.AttachNew (new StringValue (items[i]));
     children.Push (strValue);
     strValue->SetParent (this);
   }
@@ -84,8 +84,8 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   if (!categoryValue) return 0;	// @@@ Error report.
 
   aresed3d->AddItem (categoryValue->GetStringValue (), newname);
-  csRef<ConstantStringValue> strValue;
-  strValue.AttachNew (new ConstantStringValue (newname));
+  csRef<StringValue> strValue;
+  strValue.AttachNew (new StringValue (newname));
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   dynworld->AddFactory (newname, 1.0f, 1.0f);

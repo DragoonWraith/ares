@@ -1142,20 +1142,27 @@ class SignalChangeListener : public ValueChangeListener
 {
 private:
   csRef<Value> dest;
+  bool dochildren;
 
 public:
-  SignalChangeListener (Value* dest) : dest (dest) { }
+  SignalChangeListener (Value* dest, bool dochildren) : dest (dest), dochildren (dochildren) { }
   virtual ~SignalChangeListener () { }
   virtual void ValueChanged (Value* value)
   {
     dest->FireValueChanged ();
+    if (dochildren)
+    {
+      dest->ResetIterator ();
+      while (dest->HasNext ())
+	dest->NextChild ()->FireValueChanged ();
+    }
   }
 };
 
-void View::Signal (Value* source, Value* dest)
+void View::Signal (Value* source, Value* dest, bool dochildren)
 {
   csRef<SignalChangeListener> listener;
-  listener.AttachNew (new SignalChangeListener (dest));
+  listener.AttachNew (new SignalChangeListener (dest, dochildren));
   source->AddValueChangeListener (listener);
 }
 

@@ -281,6 +281,50 @@ public:
 
 //--------------------------------------------------------------------------
 
+/// Value for the maximum radius of a dynamic factory.
+class MaxRadiusValue : public FloatValue
+{
+private:
+  DynfactDialog* dialog;
+public:
+  MaxRadiusValue (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~MaxRadiusValue () { }
+  virtual void SetFloatValue (float f)
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    if (dynfact) dynfact->SetMaximumRadiusRelative (f);
+    FireValueChanged ();
+  }
+  virtual float GetFloatValue ()
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    return dynfact ? dynfact->GetMaximumRadiusRelative () : 0.0f;
+  }
+};
+
+/// Value for the imposter radius of a dynamic factory.
+class ImposterRadiusValue : public FloatValue
+{
+private:
+  DynfactDialog* dialog;
+public:
+  ImposterRadiusValue (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~ImposterRadiusValue () { }
+  virtual void SetFloatValue (float f)
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    if (dynfact) dynfact->SetImposterRadius (f);
+    FireValueChanged ();
+  }
+  virtual float GetFloatValue ()
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    return dynfact ? dynfact->GetImposterRadius () : 0.0f;
+  }
+};
+
+//--------------------------------------------------------------------------
+
 class RotMeshTimer : public scfImplementation1<RotMeshTimer, iTimerEvent>
 {
 private:
@@ -361,6 +405,16 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
   Bind (colliderCollectionValue, "colliderList");
 
+  // Setup the composite representing the dynamic factory that is selected.
+  csRef<Value> maxRadiusValue = NEWREF(MaxRadiusValue,new MaxRadiusValue(this));
+  Bind (maxRadiusValue, "maxRadiusText");
+  csRef<Value> imposterRadiusValue = NEWREF(ImposterRadiusValue,new ImposterRadiusValue(this));
+  Bind (imposterRadiusValue, "imposterRadiusText");
+  dynfactValue.AttachNew (new CompositeValue ());
+  dynfactValue->AddChild ("colliders", colliderCollectionValue);
+  dynfactValue->AddChild ("maxRadius", maxRadiusValue);
+  dynfactValue->AddChild ("imposterRadius", imposterRadiusValue);
+
   // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
   colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
@@ -371,10 +425,14 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // view to update itself.
   Bind (colliderSelectedValue, meshView);
 
-  // Connect the selected value from the category tree to the collection
-  // of colliders so that it gets refreshed if the current category changes.
-  // Also connect it to the mesh view so that a new mesh is rendered.
-  Signal (factorySelectedValue, colliderCollectionValue);
+  // Connect the selected value from the catetory tree to the dynamic
+  // factory value so that the two radius values and the collider list
+  // gets refreshed in case the current dynfact changes. We connect
+  // with 'dochildren' equal to true to make sure the children get notified
+  // as well (i.e. the list for example).
+  Signal (factorySelectedValue, dynfactValue, true);
+  // Also connect it to the selected value so that a new mesh is rendered
+  // when the current dynfact changes.
   Signal (factorySelectedValue, colliderSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
