@@ -868,17 +868,30 @@ public:
 };
 
 /**
+ * Superclass for the classes that handle new children.
+ */
+class AbstractNewAction : public Action
+{
+protected:
+  Value* collection;
+
+  /// Do method that has an optional 'dialog' (dialog can be 0).
+  bool DoDialog (View* view, wxWindow* component, UIDialog* dialog);
+
+public:
+  AbstractNewAction (Value* collection) : collection (collection) { }
+  virtual ~AbstractNewAction () { }
+};
+
+/**
  * This standard action creates a new default child for a collection.
  * It assumes the collection supports the NewValue() method. It will
  * call the NewValue() method with an empty suggestion array.
  */
-class NewChildAction : public Action
+class NewChildAction : public AbstractNewAction
 {
-private:
-  Value* collection;
-
 public:
-  NewChildAction (Value* collection) : collection (collection) { }
+  NewChildAction (Value* collection) : AbstractNewAction (collection) { }
   virtual ~NewChildAction () { }
   virtual const char* GetName () const { return "New"; }
   virtual bool Do (View* view, wxWindow* component);
@@ -889,15 +902,14 @@ public:
  * on a suggestion from a dialog.
  * It assumes the collection supports the NewValue() method.
  */
-class NewChildDialogAction : public Action
+class NewChildDialogAction : public AbstractNewAction
 {
 private:
-  Value* collection;
   UIDialog* dialog;
 
 public:
   NewChildDialogAction (Value* collection, UIDialog* dialog) :
-    collection (collection), dialog (dialog) { }
+    AbstractNewAction (collection), dialog (dialog) { }
   virtual ~NewChildDialogAction () { }
   virtual const char* GetName () const { return "New..."; }
   virtual bool Do (View* view, wxWindow* component);

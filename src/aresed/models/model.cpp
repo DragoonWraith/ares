@@ -373,6 +373,25 @@ TreeSelectedValue::~TreeSelectedValue ()
 }
 
 /**
+ * Find a tree item corresponding with a given value.
+ */
+static wxTreeItemId TreeFromValue (wxTreeCtrl* tree, wxTreeItemId parent, Value* collectionValue, Value* value)
+{
+  wxTreeItemIdValue cookie;
+  wxTreeItemId treeChild = tree->GetFirstChild (parent, cookie);
+  collectionValue->ResetIterator ();
+  while (collectionValue->HasNext ())
+  {
+    Value* child = collectionValue->NextChild ();
+    if (value == child) return treeChild;
+    treeChild = TreeFromValue (tree, treeChild, child, value);
+    if (treeChild.IsOk ()) return treeChild;
+    treeChild = tree->GetNextChild (parent, cookie);
+  }
+  return 0;
+}
+
+/**
  * Get a value corresponding with a given tree item.
  */
 static Value* ValueFromTree (wxTreeCtrl* tree, wxTreeItemId item, Value* collectionValue)
@@ -421,16 +440,29 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 // --------------------------------------------------------------------------
 
-bool NewChildAction::Do (View* view, wxWindow* component)
+bool AbstractNewAction::DoDialog (View* view, wxWindow* component, UIDialog* dialog)
 {
+  if (dialog)
+  {
+    dialog->Clear ();
+    if (dialog->Show (0) == 0) return false;
+  }
+
   size_t idx = csArrayItemNotFound;
   wxListCtrl* listCtrl = 0;
+  wxTreeCtrl* treeCtrl = 0;
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
   {
     listCtrl = wxStaticCast (component, wxListCtrl);
     idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
   }
-  Value* value = collection->NewValue (idx, view->GetSelectedValue (component), DialogResult ());
+  else if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+  {
+    treeCtrl = wxStaticCast (component, wxTreeCtrl);
+  }
+  DialogResult dialogResult;
+  if (dialog) dialogResult = dialog->GetFieldContents ();
+  Value* value = collection->NewValue (idx, view->GetSelectedValue (component), dialogResult);
   if (!value) return false;
 
   if (listCtrl)
@@ -446,40 +478,26 @@ bool NewChildAction::Do (View* view, wxWindow* component)
     }
     if (found)
       ListCtrlTools::SelectRow (listCtrl, idx, true);
+  }
+  else if (treeCtrl)
+  {
+    wxTreeItemId child = TreeFromValue (treeCtrl, treeCtrl->GetRootItem (), collection, value);
+    if (child.IsOk ())
+    {
+      treeCtrl->SelectItem (child);
+    }
   }
   return true;
 }
 
+bool NewChildAction::Do (View* view, wxWindow* component)
+{
+  return DoDialog (view, component, 0);
+}
+
 bool NewChildDialogAction::Do (View* view, wxWindow* component)
 {
-  dialog->Clear ();
-  if (dialog->Show (0) == 0) return false;
-
-  size_t idx = csArrayItemNotFound;
-  wxListCtrl* listCtrl = 0;
-  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
-  {
-    listCtrl = wxStaticCast (component, wxListCtrl);
-    idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
-  }
-  Value* value = collection->NewValue (idx, view->GetSelectedValue (component), dialog->GetFieldContents ());
-  if (!value) return false;
-
-  if (listCtrl)
-  {
-    collection->ResetIterator ();
-    bool found = false;
-    idx = 0;
-    while (collection->HasNext ())
-    {
-      Value* child = collection->NextChild ();
-      if (child == value) { found = true; break; }
-      idx++;
-    }
-    if (found)
-      ListCtrlTools::SelectRow (listCtrl, idx, true);
-  }
-  return true;
+  return DoDialog (view, component, dialog);
 }
 
 bool DeleteChildAction::Do (View* view, wxWindow* component)

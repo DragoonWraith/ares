@@ -53,6 +53,7 @@ public:
   virtual ~CategoryCollectionValue () { }
 
   void AddChild (Value* child) { children.Push (child); child->SetParent (this); dirty = true; }
+  Value* FindChild (const char* name);
 
   virtual const char* GetStringValue () { return category; }
 

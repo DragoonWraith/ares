@@ -48,6 +48,15 @@ void CategoryCollectionValue::UpdateChildren ()
   }
 }
 
+Value* CategoryCollectionValue::FindChild (const char* name)
+{
+  csString sName = name;
+  for (size_t i = 0 ; i < children.GetSize () ; i++)
+    if (sName == children[i]->GetStringValue ())
+      return children[i];
+  return 0;
+}
+
 void DynfactCollectionValue::UpdateChildren ()
 {
   if (!dirty) return;
@@ -84,7 +93,7 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
   categoryCollectionValue->Refresh ();
   FireValueChanged ();
-  return strValue;
+  return categoryCollectionValue->FindChild (newname);
 }
 
 Value* DynfactCollectionValue::GetCategoryForValue (Value* value)
