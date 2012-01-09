@@ -136,6 +136,7 @@ bool MeshView::SetMesh (const char* name)
   cam->GetTransform ().LookAt (-cam->GetTransform ().GetOrigin (), csVector3 (0, 1, 0));
 
   UpdateImageButton ();
+
   return true;
 }
 
@@ -317,6 +318,7 @@ void MeshView::UpdateImageButton ()
   //wximage.SetAlpha (alpha);
  
   imagePanel->SetBitmap (wxBitmap (wximage));
+  imagePanel->SetSize (wxSize (width,height));
   imagePanel->SetMinSize (wxSize (width,height));
   imagePanel->PaintNow ();
 }
