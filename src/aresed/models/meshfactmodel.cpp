@@ -36,15 +36,19 @@ void MeshCollectionValue::UpdateChildren ()
   if (!dirty) return;
   dirty = false;
   ReleaseChildren ();
-  iMeshFactoryList* list = engine->GetMeshFactories ();
+  iPcDynamicWorld* dynworld = app->GetAresView ()->GetDynamicWorld ();
+  iMeshFactoryList* list = app->GetEngine ()->GetMeshFactories ();
   for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
   {
     iMeshFactoryWrapper* fact = list->Get (i);
     const char* name = fact->QueryObject ()->GetName ();
-    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
-    children.Push (composite);
-    composite->SetParent (this);
+    if (!dynworld->FindFactory (name))
+    {
+      csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
+      composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
+      children.Push (composite);
+      composite->SetParent (this);
+    }
   }
 }
 

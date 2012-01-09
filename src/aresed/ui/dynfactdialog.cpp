@@ -391,7 +391,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   factoryDialog = new UIDialog (this, "Factory name");
   factoryDialog->AddRow ();
   factoryDialog->AddLabel ("Name:");
-  factoryDialog->AddList ("name", NEWREF(MeshCollectionValue,new MeshCollectionValue(app->GetEngine ())), 0,
+  factoryDialog->AddList ("name", NEWREF(MeshCollectionValue,new MeshCollectionValue(app)), 0,
       "Name", "name");
 
   // Setup the dynamic factory tree.

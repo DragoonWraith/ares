@@ -79,9 +79,17 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     const DialogResult& suggestion)
 {
   csString newname = suggestion.Get ("name", (const char*)0);
-  if (newname.IsEmpty ()) return 0;	// @@@ Error report.
+  if (newname.IsEmpty ())
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Enter a valid mesh!");
+    return 0;
+  }
   Value* categoryValue = GetCategoryForValue (selectedValue);
-  if (!categoryValue) return 0;	// @@@ Error report.
+  if (!categoryValue)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Please select a category!");
+    return 0;
+  }
 
   aresed3d->AddItem (categoryValue->GetStringValue (), newname);
   csRef<StringValue> strValue;

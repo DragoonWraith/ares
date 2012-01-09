@@ -28,13 +28,13 @@ THE SOFTWARE.
 #include "rowmodel.h"
 #include "model.h"
 
-struct iEngine;
+class AppAresEditWX;
 struct iMeshFactoryList;
 
 class MeshCollectionValue : public Ares::StandardCollectionValue
 {
 private:
-  iEngine* engine;
+  AppAresEditWX* app;
 
 protected:
   virtual void UpdateChildren ();
@@ -44,7 +44,7 @@ protected:
   }
 
 public:
-  MeshCollectionValue (iEngine* engine) : engine (engine) { }
+  MeshCollectionValue (AppAresEditWX* app) : app (app) { }
   virtual ~MeshCollectionValue () { }
 
   virtual csString Dump (bool verbose = false)
