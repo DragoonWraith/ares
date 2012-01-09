@@ -55,7 +55,7 @@
 						<option>1</option>
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
-						<object class="wxTextCtrl" name="maxRadiusText">
+						<object class="wxTextCtrl" name="maxRadius_Text">
 							<value></value>
 							<maxlength>0</maxlength>
 						</object>
@@ -73,7 +73,7 @@
 						<option>1</option>
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
-						<object class="wxTextCtrl" name="imposterRadiusText">
+						<object class="wxTextCtrl" name="imposterRadius_Text">
 							<value></value>
 							<maxlength>0</maxlength>
 						</object>
@@ -97,7 +97,7 @@
 								<option>1</option>
 								<flag>wxALL|wxEXPAND</flag>
 								<border>5</border>
-								<object class="wxListCtrl" name="colliderList">
+								<object class="wxListCtrl" name="colliders_List">
 									<style>wxLC_REPORT</style>
 								</object>
 							</object>

@@ -75,12 +75,6 @@ class DynfactCollectionValue : public Ares::StandardCollectionValue
 private:
   AresEdit3DView* aresed3d;
 
-  /**
-   * Find the category value corresponding with
-   * the given value.
-   */
-  Value* GetCategoryForValue (Value* value);
-
 protected:
   virtual void UpdateChildren ();
   virtual void ChildChanged (Value* child)
@@ -96,6 +90,12 @@ public:
 
   virtual bool DeleteValue (Value* child);
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion);
+
+  /**
+   * Find the category value corresponding with
+   * the given value.
+   */
+  Value* GetCategoryForValue (Value* value);
 
   virtual csString Dump (bool verbose = false)
   {

@@ -68,6 +68,34 @@ public:
 };
 
 /**
+ * Action to edit the category of an item.
+ */
+class EditCategoryAction : public Action
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  EditCategoryAction (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~EditCategoryAction () { }
+  virtual const char* GetName () const { return "Edit category..."; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * The composite value representing the selected dynamic factory.
+ */
+class DynfactValue : public CompositeValue
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  DynfactValue (DynfactDialog* dialog);
+  virtual ~DynfactValue () { }
+};
+
+/**
  * The dialog for editing dynamic factories.
  */
 class DynfactDialog : public wxDialog, public View
@@ -79,8 +107,7 @@ private:
   DynfactMeshView* meshView;
   csRef<TreeSelectedValue> factorySelectedValue;
 
-  csRef<CompositeValue> dynfactValue;
-  csRef<ColliderCollectionValue> colliderCollectionValue;
+  csRef<DynfactValue> dynfactValue;
   csRef<ListSelectedValue> colliderSelectedValue;
 
   UIDialog* factoryDialog;
@@ -93,6 +120,8 @@ public:
 
   void Show ();
   void Tick ();
+
+  UIManager* GetUIManager () const { return uiManager; }
 
   iDynamicFactory* GetCurrentFactory ();
   long GetSelectedCollider ();

@@ -163,7 +163,7 @@ void CompositeBufferedValue::Apply ()
   }
 }
 
-Value* CompositeBufferedValue::GetChild (const char* name)
+Value* CompositeBufferedValue::GetChildByName (const char* name)
 {
   csString sname = name;
   for (size_t i = 0 ; i < buffer.GetSize () ; i++)
@@ -578,6 +578,8 @@ bool View::Bind (Value* value, wxWindow* component)
     return Bind (value, wxStaticCast (component, wxTextCtrl));
   if (component->IsKindOf (CLASSINFO (wxPanel)))
     return Bind (value, wxStaticCast (component, wxPanel));
+  if (component->IsKindOf (CLASSINFO (wxDialog)))
+    return Bind (value, wxStaticCast (component, wxDialog));
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
     return Bind (value, wxStaticCast (component, wxListCtrl));
   if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
@@ -664,7 +666,7 @@ bool View::Bind (Value* value, wxChoicebook* component)
   return true;
 }
 
-bool View::Bind (Value* value, wxPanel* component)
+bool View::BindContainer (Value* value, wxWindow* component)
 {
   // We also support VALUE_NONE here because that can be useful in situations where we don't
   // know the type yet (for example when the value is a ListSelectedValue and nothing has been
@@ -695,6 +697,16 @@ bool View::Bind (Value* value, wxPanel* component)
   }
   ValueChanged (value);
   return true;
+}
+
+bool View::Bind (Value* value, wxDialog* component)
+{
+  return BindContainer (value, component);
+}
+
+bool View::Bind (Value* value, wxPanel* component)
+{
+  return BindContainer (value, component);
 }
 
 bool View::Bind (Value* value, wxListCtrl* component)
@@ -812,7 +824,7 @@ csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)
   }
   for (size_t i = 0 ; i < lh.names.GetSize () ; i++)
   {
-    Value* child = value->GetChild (lh.names[i]);
+    Value* child = value->GetChildByName (lh.names[i]);
     if (child)
       row.Push (ValueToString (child));
     else
@@ -978,7 +990,8 @@ void View::ValueChanged (Value* value)
 	CustomControl* customCtrl = wxStaticCast (comp, CustomControl);
 	customCtrl->SyncValue (value);
       }
-      else if (comp->IsKindOf (CLASSINFO (wxPanel)))
+      else if (comp->IsKindOf (CLASSINFO (wxPanel)) ||
+	       comp->IsKindOf (CLASSINFO (wxDialog)))
       {
 	// If the value of a composite changes we update the children.
 	value->ResetIterator ();

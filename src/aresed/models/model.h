@@ -40,6 +40,7 @@ class wxStaticText;
 class wxButton;
 class wxChoicebook;
 class wxPanel;
+class wxDialog;
 class CustomControl;
 class UIDialog;
 
@@ -259,7 +260,7 @@ public:
    * If the type of this value is VALUE_COMPOSITE then you can get
    * a child by name here.
    */
-  virtual Value* GetChild (const char* name) { return 0; }
+  virtual Value* GetChildByName (const char* name) { return 0; }
 
   /**
    * Check if a given value is a direct child of this value.
@@ -471,7 +472,7 @@ public:
     idx++;
     return GetChild (idx-1);
   }
-  virtual Value* GetChild (const char* name)
+  virtual Value* GetChildByName (const char* name)
   {
     csString sname = name;
     for (size_t i = 0 ; i < GetChildCount () ; i++)
@@ -686,7 +687,7 @@ public:
     return buffer[idx-1];
   }
   virtual Value* GetChild (size_t idx) { return buffer[idx]; }
-  virtual Value* GetChild (const char* name);
+  virtual Value* GetChildByName (const char* name);
 };
 
 /**
@@ -822,7 +823,7 @@ public:
     idx++;
     return children[idx-1];
   }
-  virtual Value* GetChild (const char* name)
+  virtual Value* GetChildByName (const char* name)
   {
     csString sname = name;
     for (size_t i = 0 ; i < children.GetSize () ; i++)
@@ -1124,6 +1125,11 @@ private:
    */
   void DestroyActionBindings ();
 
+  /**
+   * Bind the value to a container.
+   */
+  bool BindContainer (Value* value, wxWindow* component);
+
 public:
   View (wxWindow* parent);
   ~View ();
@@ -1175,7 +1181,7 @@ public:
   bool Bind (Value* value, wxChoicebook* component);
 
   /**
-   * Bind a value directly to a panel. This only works with
+   * Bind a value directly to a panel or a dialog. This only works with
    * values of type VALUE_COMPOSITE. Note that it will try
    * to find GUI components on the panel by scanning the names.
    * If a name of such a component contains an underscore ('_')
@@ -1188,6 +1194,7 @@ public:
    * - Value type is not compatible with component type.
    */
   bool Bind (Value* value, wxPanel* component);
+  bool Bind (Value* value, wxDialog* component);
 
   /**
    * Bind a value directly to a list control. This only works with

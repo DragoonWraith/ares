@@ -338,6 +338,52 @@ public:
 
 //--------------------------------------------------------------------------
 
+DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
+{
+  // Setup the composite representing the dynamic factory that is selected.
+  AddChild ("colliders", NEWREF(ColliderCollectionValue,new ColliderCollectionValue (dialog)));
+  AddChild ("maxRadius", NEWREF(MaxRadiusValue,new MaxRadiusValue(dialog)));
+  AddChild ("imposterRadius", NEWREF(ImposterRadiusValue,new ImposterRadiusValue(dialog)));
+}
+
+//--------------------------------------------------------------------------
+
+bool EditCategoryAction::Do (View* view, wxWindow* component)
+{
+  UIManager* uiManager = dialog->GetUIManager ();
+
+  Value* value = view->GetSelectedValue (component);
+  if (!value)
+  {
+    uiManager->Error ("Please select a valid item!");
+    return false;
+  }
+
+  DynfactCollectionValue* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
+  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  if (!categoryValue || categoryValue == value)
+  {
+    uiManager->Error ("Please select a valid item!");
+    return false;
+  }
+
+  UIDialog* dia = new UIDialog (dialog, "Edit category");
+  dia->AddRow ();
+  dia->AddLabel ("Category:");
+  dia->AddText ("category");
+
+  dia->SetText ("category", categoryValue->GetStringValue ());
+  if (dia->Show (0))
+  {
+    const DialogResult& rc = dia->GetFieldContents ();
+  }
+
+  delete dia;
+  return true;
+}
+
+//--------------------------------------------------------------------------
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
   EndModal (TRUE);
@@ -373,7 +419,7 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 
 long DynfactDialog::GetSelectedCollider ()
 {
-  wxListCtrl* list = XRCCTRL (*this, "colliderList", wxListCtrl);
+  wxListCtrl* list = XRCCTRL (*this, "colliders_List", wxListCtrl);
   return ListCtrlTools::GetFirstSelectedRow (list);
 }
 
@@ -400,24 +446,17 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
 
-  // Define the collider list and value.
-  DefineHeading ("colliderList", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
-  colliderCollectionValue.AttachNew (new ColliderCollectionValue (this));
-  Bind (colliderCollectionValue, "colliderList");
+  // Setup the collider list.
+  DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
 
   // Setup the composite representing the dynamic factory that is selected.
-  csRef<Value> maxRadiusValue = NEWREF(MaxRadiusValue,new MaxRadiusValue(this));
-  Bind (maxRadiusValue, "maxRadiusText");
-  csRef<Value> imposterRadiusValue = NEWREF(ImposterRadiusValue,new ImposterRadiusValue(this));
-  Bind (imposterRadiusValue, "imposterRadiusText");
-  dynfactValue.AttachNew (new CompositeValue ());
-  dynfactValue->AddChild ("colliders", colliderCollectionValue);
-  dynfactValue->AddChild ("maxRadius", maxRadiusValue);
-  dynfactValue->AddChild ("imposterRadius", imposterRadiusValue);
+  dynfactValue.AttachNew (new DynfactValue (this));
+  Bind (dynfactValue, this);
+  Value* colliders = dynfactValue->GetChildByName ("colliders");
 
   // Create a selection value that will follow the selection on the collider list.
-  wxListCtrl* colliderList = XRCCTRL (*this, "colliderList", wxListCtrl);
-  colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliderCollectionValue, VALUE_COMPOSITE));
+  wxListCtrl* colliderList = XRCCTRL (*this, "colliders_List", wxListCtrl);
+  colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliders, VALUE_COMPOSITE));
   colliderSelectedValue->SetupComposite (NEWREF(ColliderValue,new ColliderValue(0,0)));
 
   // Bind the selected collider value to the mesh view. This value is not actually
@@ -436,7 +475,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Signal (factorySelectedValue, colliderSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
-  Bind (colliderSelectedValue->GetChild ("type"), "type_colliderChoice");
+  Bind (colliderSelectedValue->GetChildByName ("type"), "type_colliderChoice");
   Bind (colliderSelectedValue, "box_ColliderPanel");
   Bind (colliderSelectedValue, "sphere_ColliderPanel");
   Bind (colliderSelectedValue, "cylinder_ColliderPanel");
@@ -444,10 +483,11 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
 
   // The actions.
-  AddAction (colliderList, NEWREF(Action, new NewChildAction (colliderCollectionValue)));
-  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliderCollectionValue)));
+  AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
+  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
+  AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }

@@ -166,6 +166,14 @@ long ListCtrlTools::GetFirstSelectedRow (wxListCtrl* list)
 
 void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent)
 {
+  if (row >= list->GetItemCount ())
+  {
+    // If we don't have sufficient rows we also clear the selection but
+    // in that case we have to send an event in case we wanted an event
+    // when a new selection was made.
+    ClearSelection (list, sendEvent);
+    return;
+  }
   ClearSelection (list);
   wxListItem rowInfo;
   rowInfo.m_itemId = row;
