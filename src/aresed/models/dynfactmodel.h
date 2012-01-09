@@ -53,12 +53,10 @@ public:
   virtual ~CategoryCollectionValue () { }
 
   void AddChild (Value* child) { children.Push (child); child->SetParent (this); dirty = true; }
+  void RemoveChild (Value* child) { children.Delete (child); child->SetParent (0); dirty = true; }
   Value* FindChild (const char* name);
 
   virtual const char* GetStringValue () { return category; }
-
-  virtual bool DeleteValue (Value* child) { return false; }
-  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion) { return 0; }
 
   virtual csString Dump (bool verbose = false)
   {
@@ -96,7 +94,7 @@ public:
 
   virtual const char* GetStringValue () { return "Factories"; }
 
-  virtual bool DeleteValue (Value* child) { return false; }
+  virtual bool DeleteValue (Value* child);
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion);
 
   virtual csString Dump (bool verbose = false)

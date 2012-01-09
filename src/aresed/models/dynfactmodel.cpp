@@ -75,6 +75,40 @@ void DynfactCollectionValue::UpdateChildren ()
   }
 }
 
+bool DynfactCollectionValue::DeleteValue (Value* child)
+{
+  if (!child)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Please select an item!");
+    return false;
+  }
+  Value* categoryValue = GetCategoryForValue (child);
+  if (!categoryValue)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Please select an item!");
+    return false;
+  }
+  if (categoryValue == child)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Can't delete an entire category at once!");
+    return false;
+  }
+
+  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  iDynamicFactory* factory = dynworld->FindFactory (child->GetStringValue ());
+  CS_ASSERT (factory != 0);
+  dynworld->RemoveFactory (factory);
+  aresed3d->RemoveItem (categoryValue->GetStringValue (), child->GetStringValue ());
+
+  dirty = true;
+  //CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
+  //categoryCollectionValue->RemoveChild (child);
+  //categoryCollectionValue->Refresh ();
+  FireValueChanged ();
+
+  return true;
+}
+
 Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     const DialogResult& suggestion)
 {

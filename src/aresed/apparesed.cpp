@@ -449,7 +449,9 @@ void AresEdit3DView::RemoveItem (const char* category, const char* itemname)
 {
   if (!categories.In (category)) return;
   csStringArray a;
-  categories.Get (category, a).Delete (itemname);
+  csStringArray& items = categories.Get (category, a);
+  size_t idx = items.Find (itemname);
+  items.DeleteIndex (idx);
 }
 
 #if USE_DECAL
