@@ -125,6 +125,7 @@ public:
 
   iDynamicFactory* GetCurrentFactory ();
   long GetSelectedCollider ();
+  Value* GetColliderSelectedValue () const { return colliderSelectedValue; }
 
   DECLARE_EVENT_TABLE ();
 };

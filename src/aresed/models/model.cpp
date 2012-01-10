@@ -961,6 +961,13 @@ void View::BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent)
   }
 }
 
+bool View::IsValueBound (Value* value) const
+{
+  csArray<Binding*> b;
+  const csArray<Binding*>& bindings = bindingsByValue.Get (value, b);
+  return bindings.GetSize () > 0;
+}
+
 void View::ValueChanged (Value* value)
 {
 #if DO_DEBUG
@@ -970,8 +977,8 @@ void View::ValueChanged (Value* value)
   csArray<Binding*>& bindings = bindingsByValue.Get (value, b);
   if (!bindings.GetSize ())
   {
-    printf ("ValueChanged: Something went wrong! Called without a value!\n");
-    //CS_ASSERT (false);
+    printf ("ValueChanged: Something went wrong! Called without a valid binding!\n");
+    CS_ASSERT (false);
     return;
   }
   for (size_t i = 0 ; i < bindings.GetSize () ; i++)
@@ -999,7 +1006,8 @@ void View::ValueChanged (Value* value)
 	while (value->HasNext ())
 	{
 	  Value* child = value->NextChild ();
-	  ValueChanged (child);
+	  if (IsValueBound (child))
+	    ValueChanged (child);
 	}
       }
       else if (comp->IsKindOf (CLASSINFO (wxListCtrl)))
@@ -1135,6 +1143,8 @@ bool View::AddAction (wxButton* button, Action* action)
   button->Connect (wxEVT_COMMAND_BUTTON_CLICKED,
 	  wxCommandEventHandler (EventHandler :: OnActionExecuted), 0, &eventHandler);
   buttonActions.Put (button, action);
+  wxString wxlabel = wxString::FromUTF8 (action->GetName ());
+  button->SetLabel (wxlabel);
   return true;
 }
 

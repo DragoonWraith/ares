@@ -1133,7 +1133,16 @@ private:
    */
   bool BindContainer (Value* value, wxWindow* component);
 
+  /**
+   * Return true if a given value is bound to some component.
+   */
+  bool IsValueBound (Value* value) const;
+
 public:
+  /**
+   * Create a new view managing the given WX parent. If the parent is
+   * not immediatelly given it must be set later using SetParent().
+   */
   View (wxWindow* parent = 0);
   ~View ();
 
@@ -1206,7 +1215,9 @@ public:
 
   /**
    * Bind a value directly to a list control. This only works with
-   * values of type VALUE_COLLECTION.
+   * values of type VALUE_COLLECTION and children of type VALUE_COMPOSITE.
+   * Note that the list should have a valid heading as defined with
+   * DefineHeading().
    * Can fail (return false) under the following conditions:
    * - Value type is not compatible with component type.
    */
@@ -1214,7 +1225,11 @@ public:
 
   /**
    * Bind a value directly to a tree control. This only works with
-   * values of type VALUE_COLLECTION.
+   * values of type VALUE_COLLECTION. The GetStringValue() representation
+   * of this value will be used as the name of the root. The children
+   * of this value will be the children of this root. These children can
+   * themselves also have children (note that in all cases the GetStringValue()
+   * of every value is used as the representation in the tree).
    * Can fail (return false) under the following conditions:
    * - Value type is not compatible with component type.
    */

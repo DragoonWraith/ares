@@ -404,16 +404,68 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
 
 //--------------------------------------------------------------------------
 
-class TestAction : public Action
+/**
+ * This action calculates the best fit for a given body type for the given
+ * mesh. Works for BOX, CYLINDER, and SPHERE body types.
+ */
+class BestFitAction : public Action
 {
+private:
+  DynfactDialog* dialog;
+  celBodyType type;
+
 public:
-  TestAction () { }
-  virtual ~TestAction () { }
-  virtual const char* GetName () const { return "Test"; }
+  BestFitAction (DynfactDialog* dialog, celBodyType type) :
+    dialog (dialog), type (type) { }
+  virtual ~BestFitAction () { }
+  virtual const char* GetName () const { return "Fit"; }
   virtual bool Do (View* view, wxWindow* component)
   {
-    printf ("test\n");
-    fflush (stdout);
+    iDynamicFactory* fact = dialog->GetCurrentFactory ();
+    if (!fact) return false;
+    const csBox3& bbox = fact->GetBBox ();
+    csVector3 c = bbox.GetCenter ();
+    csVector3 s = bbox.GetSize ();
+    Value* colliderSelectedValue = dialog->GetColliderSelectedValue ();
+    switch (type)
+    {
+      case BODY_BOX:
+	{
+	  colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	  colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	  colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	  colliderSelectedValue->GetChildByName ("sizeX")->SetFloatValue (s.x);
+	  colliderSelectedValue->GetChildByName ("sizeY")->SetFloatValue (s.y);
+	  colliderSelectedValue->GetChildByName ("sizeZ")->SetFloatValue (s.z);
+	  break;
+	}
+      case BODY_SPHERE:
+	{
+	  float radius = s.x;
+	  if (s.y > radius) radius = s.y;
+	  if (s.z > radius) radius = s.z;
+	  radius /= 2.0f;
+	  colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	  colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	  colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	  colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
+	  break;
+	}
+      case BODY_CYLINDER:
+	{
+	  float radius = s.x;
+	  if (s.z > radius) radius = s.z;
+	  radius /= 2.0f;
+	  float length = s.y;
+	  colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	  colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	  colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	  colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
+	  colliderSelectedValue->GetChildByName ("length")->SetFloatValue (length);
+	  break;
+	}
+      default: CS_ASSERT (false);
+    }
     return true;
   }
 };
@@ -524,7 +576,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
-  AddAction ("boxClearOffsetButton", NEWREF(Action, new TestAction()));
+  AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_BOX)));
+  AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_SPHERE)));
+  AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_CYLINDER)));
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
