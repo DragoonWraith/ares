@@ -451,7 +451,25 @@ void AresEdit3DView::RemoveItem (const char* category, const char* itemname)
   csStringArray a;
   csStringArray& items = categories.Get (category, a);
   size_t idx = items.Find (itemname);
-  items.DeleteIndex (idx);
+  if (idx != csArrayItemNotFound)
+    items.DeleteIndex (idx);
+}
+
+void AresEdit3DView::ChangeCategory (const char* newCategory, const char* itemname)
+{
+  csHash<csStringArray,csString>::GlobalIterator it = categories.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString category;
+    csStringArray& items = it.Next (category);
+    size_t idx = items.Find (itemname);
+    if (idx != csArrayItemNotFound)
+    {
+      items.DeleteIndex (idx);
+      break;
+    }
+  }
+  AddItem (newCategory, itemname);
 }
 
 #if USE_DECAL

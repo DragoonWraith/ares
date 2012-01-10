@@ -325,6 +325,11 @@ public:
   void AddItem (const char* category, const char* itemname);
   /// Remove an item.
   void RemoveItem (const char* category, const char* itemname);
+  /**
+   * Move an item to another category. If the item doesn't already exist
+   * then this is equivalent to calling AddItem().
+   */
+  void ChangeCategory (const char* newCategory, const char* itemname);
 
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);

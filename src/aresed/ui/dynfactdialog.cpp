@@ -359,7 +359,8 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     return false;
   }
 
-  DynfactCollectionValue* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
+  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
   {
@@ -367,18 +368,37 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     return false;
   }
 
-  UIDialog* dia = new UIDialog (dialog, "Edit category");
-  dia->AddRow ();
-  dia->AddLabel ("Category:");
-  dia->AddText ("category");
+  UIDialog dia (dialog, "Edit category");
+  dia.AddRow ();
+  dia.AddLabel ("Category:");
+  dia.AddText ("category");
 
-  dia->SetText ("category", categoryValue->GetStringValue ());
-  if (dia->Show (0))
+  csString oldCategory = categoryValue->GetStringValue ();
+  dia.SetText ("category", categoryValue->GetStringValue ());
+  if (dia.Show (0))
   {
-    const DialogResult& rc = dia->GetFieldContents ();
+    const DialogResult& rc = dia.GetFieldContents ();
+    csString newCategory = rc.Get ("category", oldCategory);
+    if (newCategory.IsEmpty ())
+    {
+      uiManager->Error ("The category cannot be empty!");
+      return false;
+    }
+    if (newCategory != oldCategory)
+    {
+      csString itemname = value->GetStringValue ();
+      ares3d->ChangeCategory (newCategory, itemname);
+      iPcDynamicWorld* dynworld = ares3d->GetDynamicWorld ();
+      iDynamicFactory* fact = dynworld->FindFactory (itemname);
+      CS_ASSERT (fact != 0);
+      fact->SetAttribute ("category", newCategory);
+      dynfactCollectionValue->Refresh ();
+      Value* itemValue = dynfactCollectionValue->FindValueForItem (itemname);
+      if (itemValue)
+	view->SetSelectedValue (component, itemValue);
+    }
   }
 
-  delete dia;
   return true;
 }
 

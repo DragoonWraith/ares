@@ -465,28 +465,7 @@ bool AbstractNewAction::DoDialog (View* view, wxWindow* component, UIDialog* dia
   Value* value = collection->NewValue (idx, view->GetSelectedValue (component), dialogResult);
   if (!value) return false;
 
-  if (listCtrl)
-  {
-    collection->ResetIterator ();
-    bool found = false;
-    idx = 0;
-    while (collection->HasNext ())
-    {
-      Value* child = collection->NextChild ();
-      if (child == value) { found = true; break; }
-      idx++;
-    }
-    if (found)
-      ListCtrlTools::SelectRow (listCtrl, idx, true);
-  }
-  else if (treeCtrl)
-  {
-    wxTreeItemId child = TreeFromValue (treeCtrl, treeCtrl->GetRootItem (), collection, value);
-    if (child.IsOk ())
-    {
-      treeCtrl->SelectItem (child);
-    }
-  }
+  view->SetSelectedValue (component, value);
   return true;
 }
 
@@ -1122,6 +1101,49 @@ bool View::AddAction (wxButton* button, Action* action)
 {
   printf ("AddAction: buttons not implemented yet!\n");
   return true;
+}
+
+bool View::SetSelectedValue (wxWindow* component, Value* value)
+{
+  Binding* binding = bindingsByComponent.Get (component, 0);
+  if (!binding)
+  {
+    printf ("SetSelectedValue: Component is not bound to a value!\n");
+    return false;
+  }
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
+    binding->value->ResetIterator ();
+    bool found = false;
+    size_t idx = 0;
+    while (binding->value->HasNext ())
+    {
+      Value* child = binding->value->NextChild ();
+      if (child == value) { found = true; break; }
+      idx++;
+    }
+    if (found)
+    {
+      ListCtrlTools::SelectRow (listCtrl, idx, true);
+      return true;
+    }
+    return false;
+  }
+  if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+  {
+    wxTreeCtrl* treeCtrl = wxStaticCast (component, wxTreeCtrl);
+    wxTreeItemId child = TreeFromValue (treeCtrl, treeCtrl->GetRootItem (),
+	binding->value, value);
+    if (child.IsOk ())
+    {
+      treeCtrl->SelectItem (child);
+      return true;
+    }
+    return false;
+  }
+  printf ("SetSelectedValue: Unsupported type for component!\n");
+  return false;
 }
 
 Value* View::GetSelectedValue (wxWindow* component)

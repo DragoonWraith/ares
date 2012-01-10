@@ -1269,6 +1269,13 @@ public:
    * Returns 0 if no value is selected.
    */
   Value* GetSelectedValue (wxWindow* component);
+
+  /**
+   * Given a component (tree or list control), select the value in this
+   * component. Returns false if this failed for some reason (like value
+   * is not in this component or the component is not a tree or list).
+   */
+  bool SetSelectedValue (wxWindow* component, Value* value);
 };
 
 } // namespace Ares

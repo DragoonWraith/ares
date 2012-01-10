@@ -101,9 +101,6 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
   aresed3d->RemoveItem (categoryValue->GetStringValue (), child->GetStringValue ());
 
   dirty = true;
-  //CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
-  //categoryCollectionValue->RemoveChild (child);
-  //categoryCollectionValue->Refresh ();
   FireValueChanged ();
 
   return true;
@@ -130,7 +127,8 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   strValue.AttachNew (new StringValue (newname));
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
-  dynworld->AddFactory (newname, 1.0f, 1.0f);
+  iDynamicFactory* fact = dynworld->AddFactory (newname, 1.0f, 1.0f);
+  fact->SetAttribute ("category", categoryValue->GetStringValue ());
 
   CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
   categoryCollectionValue->Refresh ();
@@ -143,6 +141,18 @@ Value* DynfactCollectionValue::GetCategoryForValue (Value* value)
   for (size_t i = 0 ; i < children.GetSize () ; i++)
     if (children[i] == value) return value;
     else if (children[i]->IsChild (value)) return children[i];
+  return 0;
+}
+
+Value* DynfactCollectionValue::FindValueForItem (const char* itemname)
+{
+  for (size_t i = 0 ; i < children.GetSize () ; i++)
+  {
+    CategoryCollectionValue* cvalue = static_cast<CategoryCollectionValue*> (
+	children[i]);
+    Value* value = cvalue->FindChild (itemname);
+    if (value) return value;
+  }
   return 0;
 }
 

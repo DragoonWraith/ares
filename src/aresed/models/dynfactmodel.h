@@ -97,6 +97,11 @@ public:
    */
   Value* GetCategoryForValue (Value* value);
 
+  /**
+   * Find the value corresponding with a given item.
+   */
+  Value* FindValueForItem (const char* itemname);
+
   virtual csString Dump (bool verbose = false)
   {
     csString dump = "[DFRoot*]";
