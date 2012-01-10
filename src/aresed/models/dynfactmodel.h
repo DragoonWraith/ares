@@ -25,7 +25,6 @@ THE SOFTWARE.
 #ifndef __aresed_dynfactmodel_h
 #define __aresed_dynfactmodel_h
 
-#include "rowmodel.h"
 #include "model.h"
 
 class AresEdit3DView;
@@ -109,34 +108,6 @@ public:
     return dump;
   }
 };
-
-class DynfactRowModel : public RowModel
-{
-private:
-  AresEdit3DView* aresed3d;
-  csHash<csStringArray,csString>::ConstGlobalIterator it;
-  csString category;
-  csStringArray items;
-  size_t idx;
-
-  void SearchNext ();
-
-public:
-  DynfactRowModel (AresEdit3DView* aresed3d) : aresed3d (aresed3d) { }
-  virtual ~DynfactRowModel () { }
-
-  virtual void ResetIterator ();
-  virtual bool HasRows () { return idx < items.GetSize (); }
-  virtual csStringArray NextRow ();
-
-  virtual bool DeleteRow (const csStringArray& row);
-  virtual bool AddRow (const csStringArray& row);
-
-  virtual const char* GetColumns () { return "Category,Item"; }
-  virtual bool IsEditAllowed () const { return false; }
-  virtual csStringArray EditRow (const csStringArray& origRow);
-};
-
 
 #endif // __aresed_dynfactmodel_h
 

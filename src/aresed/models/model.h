@@ -1131,8 +1131,13 @@ private:
   bool BindContainer (Value* value, wxWindow* component);
 
 public:
-  View (wxWindow* parent);
+  View (wxWindow* parent = 0);
   ~View ();
+
+  /**
+   * Set the parent for this view.
+   */
+  void SetParent (wxWindow* parent) { View::parent = parent; }
 
   //----------------------------------------------------------------
 

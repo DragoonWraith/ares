@@ -200,7 +200,6 @@ private:
 
   /// Categories with items.
   csHash<csStringArray,csString> categories;
-  csRef<DynfactRowModel> dynfactRowModel;
   csRef<DynfactCollectionValue> dynfactCollectionValue;
 
   /// Debug drawing enabled.
@@ -314,8 +313,6 @@ public:
 
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
-  /// Get the dynamic factory model.
-  DynfactRowModel* GetDynfactRowModel () const { return dynfactRowModel; }
   /// Get the dynamic factory value.
   DynfactCollectionValue* GetDynfactCollectionValue () const { return dynfactCollectionValue; }
 

@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include "imarker.h"
 #include "propclass/dynworld.h"
 
+#include "../models/model.h"
+
 class AresEdit3DView;
 
 class EditingMode;
@@ -51,7 +53,7 @@ public:
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
-class EditingMode
+class EditingMode : public Ares::View
 {
 protected:
   AresEdit3DView* aresed3d;

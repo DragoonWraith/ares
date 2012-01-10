@@ -56,19 +56,17 @@ MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));
+  SetParent (panel);
   do_dragging = false;
   do_kinematic_dragging = false;
 
   transformationMarker = 0;
   pasteMarker = 0;
-  wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
-  dynfactView = new TreeCtrlView (tree, aresed3d->GetDynfactRowModel ());
-  dynfactView->SetRootName ("Categories");
+  Bind (aresed3d->GetDynfactCollectionValue (), "factoryTree");
 }
 
 MainMode::~MainMode ()
 {
-  delete dynfactView;
 }
 
 void MainMode::CreateMarkers ()
@@ -167,7 +165,7 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 
 void MainMode::Refresh ()
 {
-  dynfactView->Refresh ();
+  aresed3d->GetDynfactCollectionValue ()->Refresh ();
   wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
   wxTreeItemId rootId = tree->GetRootItem ();
   tree->SelectItem (rootId);

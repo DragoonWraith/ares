@@ -72,8 +72,6 @@ private:
   iMarker* transformationMarker;
   iMarker* pasteMarker;
 
-  TreeCtrlView* dynfactView;
-
   void StartKinematicDragging (bool restrictY,
       const csSegment3& beam, const csVector3& isect, bool firstOnly);
   void StartPhysicalDragging (iRigidBody* hitBody,
