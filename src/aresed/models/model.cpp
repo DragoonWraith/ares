@@ -522,6 +522,15 @@ void View::DestroyActionBindings ()
 	    wxCommandEventHandler (EventHandler :: OnActionExecuted), 0, &eventHandler);
     }
   }
+  csHash<csRef<Action>,csPtrKey<wxButton> >::GlobalIterator it = buttonActions.GetIterator ();
+  while (it.HasNext ())
+  {
+    csPtrKey<wxButton> button;
+    csRef<Action> action = it.Next (button);
+    button->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
+	    wxCommandEventHandler (EventHandler :: OnActionExecuted), 0, &eventHandler);
+  }
+  buttonActions.DeleteAll ();
 }
 
 View::~View ()
@@ -879,6 +888,18 @@ void View::OnActionExecuted (wxCommandEvent& event)
 	return;
       }
   }
+  // Scan all buttons if we didn't find a list.
+  csHash<csRef<Action>,csPtrKey<wxButton> >::GlobalIterator it = buttonActions.GetIterator ();
+  while (it.HasNext ())
+  {
+    csPtrKey<wxButton> button;
+    csRef<Action> action = it.Next (button);
+    if (button == event.GetEventObject ())
+    {
+      action->Do (this, button);
+      return;
+    }
+  }
 }
 
 void View::OnComponentChanged (wxCommandEvent& event)
@@ -1064,6 +1085,18 @@ bool View::DefineHeading (wxListCtrl* listCtrl, const char* heading,
   return true;
 }
 
+bool View::AddAction (const char* compName, Action* action)
+{
+  wxString wxcompName = wxString::FromUTF8 (compName);
+  wxWindow* comp = parent->FindWindow (wxcompName);
+  if (!comp)
+  {
+    printf ("AddAction: Can't find component '%s'!\n", compName);
+    return false;
+  }
+  return AddAction (comp, action);
+}
+
 bool View::AddAction (wxWindow* component, Action* action)
 {
   if (component->IsKindOf (CLASSINFO (wxButton)))
@@ -1099,7 +1132,9 @@ bool View::AddContextAction (wxWindow* component, Action* action)
 
 bool View::AddAction (wxButton* button, Action* action)
 {
-  printf ("AddAction: buttons not implemented yet!\n");
+  button->Connect (wxEVT_COMMAND_BUTTON_CLICKED,
+	  wxCommandEventHandler (EventHandler :: OnActionExecuted), 0, &eventHandler);
+  buttonActions.Put (button, action);
   return true;
 }
 

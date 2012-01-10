@@ -404,6 +404,22 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
 
 //--------------------------------------------------------------------------
 
+class TestAction : public Action
+{
+public:
+  TestAction () { }
+  virtual ~TestAction () { }
+  virtual const char* GetName () const { return "Test"; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    printf ("test\n");
+    fflush (stdout);
+    return true;
+  }
+};
+
+//--------------------------------------------------------------------------
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
   EndModal (TRUE);
@@ -508,6 +524,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
+  AddAction ("boxClearOffsetButton", NEWREF(Action, new TestAction()));
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }

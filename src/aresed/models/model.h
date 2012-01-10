@@ -1049,6 +1049,9 @@ private:
    */
   size_t FindRmbContext (wxWindow* ctrl);
 
+  // Button actions.
+  csHash<csRef<Action>,csPtrKey<wxButton> > buttonActions;
+
   // --------------------------------------------
 
   // Keep track of list headings.
@@ -1239,6 +1242,7 @@ public:
    * on failure (the component type is not supported for actions).
    */
   bool AddAction (wxWindow* component, Action* action);
+  bool AddAction (const char* compName, Action* action);
 
   /**
    * Add an action to a button.
