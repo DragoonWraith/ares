@@ -870,12 +870,13 @@ void View::OnRMB (wxContextMenuEvent& event)
     wxTreeCtrl* treeCtrl = wxStaticCast (component, wxTreeCtrl);
     if (!treeCtrl->IsShownOnScreen ()) return;
     int flags = 0;
-    long idx = treeCtrl->HitTest (treeCtrl->ScreenToClient (event.GetPosition ()), flags);
+    wxTreeItemId idx = treeCtrl->HitTest (treeCtrl->ScreenToClient (event.GetPosition ()), flags);
     if (idx == wxNOT_FOUND)
     {
       if (!treeCtrl->GetScreenRect ().Contains (event.GetPosition ()))
         return;
     }
+    else treeCtrl->SelectItem (idx);
   }
 
   const RmbContext& lc = rmbContexts[idx];
