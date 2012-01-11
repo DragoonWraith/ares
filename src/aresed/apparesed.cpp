@@ -661,6 +661,9 @@ bool AresEdit3DView::SetupDynWorld ()
   iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
   fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
   AddItem ("Nodes", "Node");
+  fact = dynworld->AddFactory ("Player", 1.0, -1);
+  fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
+  AddItem ("Nodes", "Player");
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryTemplateCount () ; i++)
   {
