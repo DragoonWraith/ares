@@ -341,9 +341,9 @@ public:
 DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
 {
   // Setup the composite representing the dynamic factory that is selected.
-  AddChild ("colliders", NEWREF(ColliderCollectionValue,new ColliderCollectionValue (dialog)));
-  AddChild ("maxRadius", NEWREF(MaxRadiusValue,new MaxRadiusValue(dialog)));
-  AddChild ("imposterRadius", NEWREF(ImposterRadiusValue,new ImposterRadiusValue(dialog)));
+  AddChild ("colliders", NEWREF(Value,new ColliderCollectionValue (dialog)));
+  AddChild ("maxRadius", NEWREF(Value,new MaxRadiusValue(dialog)));
+  AddChild ("imposterRadius", NEWREF(Value,new ImposterRadiusValue(dialog)));
 }
 
 //--------------------------------------------------------------------------
@@ -525,7 +525,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   factoryDialog = new UIDialog (this, "Factory name");
   factoryDialog->AddRow ();
   factoryDialog->AddLabel ("Name:");
-  factoryDialog->AddList ("name", NEWREF(MeshCollectionValue,new MeshCollectionValue(app)), 0,
+  factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue(app)), 0,
       "Name", "name");
 
   // Setup the dynamic factory tree.
@@ -545,7 +545,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Create a selection value that will follow the selection on the collider list.
   wxListCtrl* colliderList = XRCCTRL (*this, "colliders_List", wxListCtrl);
   colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliders, VALUE_COMPOSITE));
-  colliderSelectedValue->SetupComposite (NEWREF(ColliderValue,new ColliderValue(0,0)));
+  colliderSelectedValue->SetupComposite (NEWREF(Value,new ColliderValue(0,0)));
 
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh

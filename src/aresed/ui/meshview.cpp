@@ -30,7 +30,6 @@ THE SOFTWARE.
 
 //-----------------------------------------------------------------------------
 
-
 MeshView::MeshView (iObjectRegistry* object_reg, wxWindow* parent) :
   object_reg (object_reg)
 {
@@ -39,11 +38,14 @@ MeshView::MeshView (iObjectRegistry* object_reg, wxWindow* parent) :
   engine = csQueryRegistry<iEngine> (object_reg);
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
   meshOnTexture = 0;
+  reldist = 1.0f;
+  imagePanel->Connect (wxEVT_MOUSEWHEEL, wxMouseEventHandler (MeshView :: OnMouseWheel), 0, this);
 }
 
 MeshView::~MeshView ()
 {
   Cleanup ();
+  imagePanel->Disconnect (wxEVT_MOUSEWHEEL, wxMouseEventHandler (MeshView :: OnMouseWheel), 0, this);
 }
 
 void MeshView::Cleanup ()
@@ -52,6 +54,14 @@ void MeshView::Cleanup ()
   delete meshOnTexture;
   handle = 0;
   ClearGeometry ();
+}
+
+void MeshView::OnMouseWheel (wxMouseEvent& event)
+{
+  if (event.GetWheelRotation () < 0)
+    ChangeRelativeDistance (-.3f);
+  else
+    ChangeRelativeDistance (.3f);
 }
 
 void MeshView::RemoveMesh ()
@@ -113,7 +123,7 @@ bool MeshView::SetMesh (const char* name)
   iMeshFactoryWrapper* factory = engine->FindMeshFactory (name);
   if (!factory) return false;
 
-  printf ("Rendering mesh %s\n", name); fflush (stdout);
+  reldist = 1.0f;
   meshOnTexture = new csMeshOnTexture (object_reg);
   int num;
   iSector* sector = FindSuitableSector (num);
@@ -132,12 +142,27 @@ bool MeshView::SetMesh (const char* name)
   int iw, ih;
   handle->GetRendererDimensions (iw, ih);
   meshOnTexture->ScaleCamera (mesh, iw, ih);
-  cam->Move (csVector3 (0, 1, -.5));
+  cam->Move (csVector3 (0, 1, -.5) * reldist);
   cam->GetTransform ().LookAt (-cam->GetTransform ().GetOrigin (), csVector3 (0, 1, 0));
 
   UpdateImageButton ();
 
   return true;
+}
+
+void MeshView::ChangeRelativeDistance (float d)
+{
+  reldist += d;
+  if (reldist < 0.1f) reldist = 0.1f;
+
+  // Position camera and render.
+  iCamera* cam = meshOnTexture->GetView ()->GetCamera ();
+  cam->GetTransform ().SetOrigin (csVector3 (0, 0, -10.0f));
+  int iw, ih;
+  handle->GetRendererDimensions (iw, ih);
+  meshOnTexture->ScaleCamera (mesh, iw, ih);
+  cam->Move (csVector3 (0, 1, -.5) * reldist);
+  cam->GetTransform ().LookAt (-cam->GetTransform ().GetOrigin (), csVector3 (0, 1, 0));
 }
 
 size_t MeshView::CreatePen (float r, float g, float b, float width)

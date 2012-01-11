@@ -58,6 +58,7 @@ private:
   ImagePanel* imagePanel;
   csMeshOnTexture* meshOnTexture;
   csRef<iTextureHandle> handle;
+  float reldist;
 
   csPenCache penCache;
   csArray<MVSphere> spheres;
@@ -72,6 +73,8 @@ private:
       const csReversibleTransform& meshtrans);
 
   void Cleanup ();
+
+  void OnMouseWheel (wxMouseEvent& event);
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
@@ -126,6 +129,12 @@ public:
    * Rotate the mesh.
    */
   void RotateMesh (float seconds);
+
+  /**
+   * Change the relative distance between the camera and the mesh.
+   * Default is 1.0f.
+   */
+  void ChangeRelativeDistance (float d);
 };
 
 #endif // __appares_meshview_h
