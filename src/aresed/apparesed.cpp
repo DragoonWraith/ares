@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "ui/newproject.h"
 #include "ui/celldialog.h"
 #include "ui/dynfactdialog.h"
+#include "modes/playmode.h"
 #include "modes/mainmode.h"
 #include "modes/curvemode.h"
 #include "modes/roommode.h"
@@ -106,6 +107,46 @@ struct SaveCallback : public OKCallback
 
 // =========================================================================
 
+DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
+{
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      Obj obj;
+      obj.cell = dynobj->GetCell ();
+      obj.fact = dynobj->GetFactory ();
+      obj.isStatic = dynobj->IsStatic ();
+      obj.trans = dynobj->GetTransform ();
+      objects.Push (obj);
+    }
+  }
+}
+
+void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
+{
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    cell->DeleteObjects ();
+  }
+  for (size_t i = 0 ; i < objects.GetSize () ; i++)
+  {
+    Obj& obj = objects[i];
+    iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
+    if (obj.isStatic)
+      dynobj->MakeStatic ();
+    else
+      dynobj->MakeDynamic ();
+  }
+}
+
+// =========================================================================
+
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
   app (app), object_reg (object_reg), camera (this)
 {
@@ -119,12 +160,40 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
+  snapshot = 0;
 }
 
 AresEdit3DView::~AresEdit3DView()
 {
   delete worldLoader;
   delete selection;
+  delete snapshot;
+}
+
+void AresEdit3DView::Play ()
+{
+  selection->SetCurrentObject (0);
+  delete snapshot;
+  snapshot = new DynworldSnapshot (dynworld);
+
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      dynobj->SetEntity (0, 0, 0);
+    }
+  }
+}
+
+void AresEdit3DView::ExitPlay ()
+{
+  if (!snapshot) return;
+  snapshot->Restore (dynworld);
+  delete snapshot;
+  snapshot = 0;
 }
 
 void AresEdit3DView::Do3DPreFrameStuff ()
@@ -165,6 +234,8 @@ void AresEdit3DView::Frame (EditingMode* editMode)
 
 bool AresEdit3DView::OnMouseMove (iEvent& ev)
 {
+  if (IsPlaying ()) return false;
+
   // Save the mouse position
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
@@ -290,6 +361,8 @@ iRigidBody* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 
 bool AresEdit3DView::OnMouseDown (iEvent& ev)
 {
+  if (IsPlaying ()) return false;
+
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
@@ -302,6 +375,8 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
 
 bool AresEdit3DView::OnMouseUp (iEvent& ev)
 {
+  if (IsPlaying ()) return false;
+
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
@@ -312,7 +387,7 @@ bool AresEdit3DView::OnMouseUp (iEvent& ev)
   return false;
 }
 
-bool AresEdit3DView::OnKeyboard(iEvent& ev)
+bool AresEdit3DView::OnKeyboard (iEvent& ev)
 {
   if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
   {
@@ -320,12 +395,11 @@ bool AresEdit3DView::OnKeyboard(iEvent& ev)
     utf32_char code = csKeyEventHelper::GetCookedCode(&ev);
     if (code == CSKEY_ESC)
     {
-      // The user pressed escape, so terminate the application.  The proper way
-      // to terminate a Crystal Space application is by broadcasting a
-      // csevQuit event.  That will cause the main run loop to stop.  To do
-      // so we retrieve the event queue from the object registry and then post
-      // the event.
-      eventQueue->GetEventOutlet()->Broadcast(csevQuit(GetObjectRegistry()));
+      if (IsPlaying ())
+      {
+	// If we are playing the game then escape will exit game mode.
+	ExitPlay ();
+      }
       return true;
     }
   }
@@ -432,7 +506,7 @@ void AresEdit3DView::LoadFile (const char* filename)
   PostLoadMap ();
 }
 
-void AresEdit3DView::OnExit()
+void AresEdit3DView::OnExit ()
 {
 }
 
@@ -1000,6 +1074,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_New, AppAresEditWX :: OnMenuNew)
   EVT_MENU (ID_Cells, AppAresEditWX :: OnMenuCells)
   EVT_MENU (ID_Dynfacts, AppAresEditWX :: OnMenuDynfacts)
+  EVT_MENU (ID_Play, AppAresEditWX :: OnMenuPlay)
   EVT_MENU (ID_Open, AppAresEditWX :: OnMenuOpen)
   EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
   EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
@@ -1038,6 +1113,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
 AppAresEditWX::~AppAresEditWX ()
 {
   delete camwin;
+  delete playMode;
   delete mainMode;
   delete curveMode;
   delete roomMode;
@@ -1094,6 +1170,12 @@ void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
 void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
 {
   uiManager->GetDynfactDialog ()->Show ();
+}
+
+void AppAresEditWX::OnMenuPlay (wxCommandEvent& event)
+{
+  SwitchToPlayMode ();
+  aresed3d->Play ();
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
@@ -1374,6 +1456,8 @@ bool AppAresEditWX::InitWX ()
  
   uiManager = new UIManager (this, wxwindow->GetWindow ());
 
+  playMode = new PlayMode (aresed3d);
+
   wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
   mainMode = new MainMode (mainModeTabPanel, aresed3d);
   mainMode->AllocContextHandlers (this);
@@ -1437,6 +1521,8 @@ void AppAresEditWX::SetupMenuBar ()
   fileMenu->Append (ID_Cells, wxT ("&Manage Cells..."));
   fileMenu->Append (ID_Dynfacts, wxT ("&Manage Dynamic Factories..."));
   fileMenu->AppendSeparator ();
+  fileMenu->Append (ID_Play, wxT ("&Play"));
+  fileMenu->AppendSeparator ();
   fileMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
   fileMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
   fileMenu->Append (ID_Quit, wxT ("&Exit..."));
@@ -1463,7 +1549,8 @@ void AppAresEditWX::SetMenuState ()
   if (!menuBar) return;
 
   // Should menus be globally disabled?
-  bool dis = mainMode ? mainMode->IsPasteSelectionActive () : TRUE;
+  bool dis = mainMode ? mainMode->IsPasteSelectionActive () : true;
+  if (aresed3d->IsPlaying ()) dis = true;
   if (dis)
   {
     menuBar->EnableTop (0, false);
@@ -1545,6 +1632,14 @@ static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
     if (pageName == iname) return i;
   }
   return csArrayItemNotFound;
+}
+
+void AppAresEditWX::SwitchToPlayMode ()
+{
+  if (editMode) editMode->Stop ();
+  editMode = playMode;
+  editMode->Start ();
+  SetMenuState ();
 }
 
 void AppAresEditWX::SwitchToMainMode ()

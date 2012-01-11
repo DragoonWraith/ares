@@ -57,6 +57,7 @@ class NewProjectDialog;
 class UIManager;
 
 class EditingMode;
+class PlayMode;
 class MainMode;
 class FoliageMode;
 class CurveMode;
@@ -103,6 +104,31 @@ public:
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 };
 
+/**
+ * A snapshot of the current objects. This is used to remember the situation
+ * before 'Play' is selected.
+ */
+class DynworldSnapshot
+{
+private:
+  struct Obj
+  {
+    iDynamicCell* cell;
+    iDynamicFactory* fact;
+    bool isStatic;
+    csReversibleTransform trans;
+  };
+  csArray<Obj> objects;
+
+public:
+  DynworldSnapshot (iPcDynamicWorld* dynworld);
+  void Restore (iPcDynamicWorld* dynworld);
+};
+
+
+/**
+ * The main logic behind the Ares Editor 3D view.
+ */
 class AresEdit3DView
 {
 private:
@@ -115,6 +141,8 @@ private:
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;
   csRef<iMarkerManager> markerMgr;
+
+  DynworldSnapshot* snapshot;
 
   csRef<iGraphics3D> g3d;
   csRef<iKeyboardDriver> kbd;
@@ -260,6 +288,21 @@ public:
   void ResizeView (int width, int height);
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
+  
+  /**
+   * Do a test play of the game.
+   */
+  void Play ();
+
+  /**
+   * Exit play testing and restore the editing world.
+   */
+  void ExitPlay ();
+
+  /**
+   * Return true if we are in play mode.
+   */
+  bool IsPlaying () const { return snapshot != 0; }
 
   /**
    * Handle all the 3D related stuff like nature, camera, camera light,
@@ -410,6 +453,7 @@ enum
   ID_Delete = wxID_HIGHEST + 1000,
   ID_Cells,
   ID_Dynfacts,
+  ID_Play,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
@@ -439,6 +483,7 @@ private:
   UIManager* uiManager;
 
   NewProjectDialog* newprojectDialog;
+  PlayMode* playMode;
   MainMode* mainMode;
   CurveMode* curveMode;
   RoomMode* roomMode;
@@ -452,6 +497,7 @@ private:
   void OnMenuNew (wxCommandEvent& event);
   void OnMenuCells (wxCommandEvent& event);
   void OnMenuDynfacts (wxCommandEvent& event);
+  void OnMenuPlay (wxCommandEvent& event);
   void OnMenuOpen (wxCommandEvent& event);
   void OnMenuSave (wxCommandEvent& event);
   void OnMenuQuit (wxCommandEvent& event);
@@ -498,6 +544,7 @@ public:
   void LoadFile (const char* filename);
   void NewProject (const csArray<Asset>& assets);
 
+  void SwitchToPlayMode ();
   void SwitchToMainMode ();
   void SwitchToCurveMode ();
   void SwitchToRoomMode ();
