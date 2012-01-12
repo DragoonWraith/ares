@@ -32,6 +32,46 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
+DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
+{
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      Obj obj;
+      obj.cell = dynobj->GetCell ();
+      obj.fact = dynobj->GetFactory ();
+      obj.isStatic = dynobj->IsStatic ();
+      obj.trans = dynobj->GetTransform ();
+      objects.Push (obj);
+    }
+  }
+}
+
+void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
+{
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    cell->DeleteObjects ();
+  }
+  for (size_t i = 0 ; i < objects.GetSize () ; i++)
+  {
+    Obj& obj = objects[i];
+    iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
+    if (obj.isStatic)
+      dynobj->MakeStatic ();
+    else
+      dynobj->MakeDynamic ();
+  }
+}
+
+//---------------------------------------------------------------------------
+
 PlayMode::PlayMode (AresEdit3DView* aresed3d)
   : EditingMode (aresed3d, "Play")
 {
@@ -50,6 +90,11 @@ void PlayMode::Start ()
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   snapshot = new DynworldSnapshot (dynworld);
 
+  // Set entities for all dynamic objects and find the player object.
+  iDynamicFactory* playerFact = dynworld->FindFactory ("Player");
+  csReversibleTransform playerTrans;
+  iDynamicCell* foundCell = 0;
+  iDynamicObject* foundPlayerDynobj = 0;
   csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
   while (cellIt->HasNext ())
   {
@@ -57,9 +102,20 @@ void PlayMode::Start ()
     for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
     {
       iDynamicObject* dynobj = cell->GetObject (i);
+      if (dynobj->GetFactory () == playerFact)
+      {
+	playerTrans = dynobj->GetTransform ();
+	foundCell = cell;
+	foundPlayerDynobj = dynobj;
+	break;
+      }
+
       dynobj->SetEntity (0, 0, 0);
     }
   }
+
+  if (foundPlayerDynobj)
+    foundCell->DeleteObject (foundPlayerDynobj);
 
   iCelPlLayer* pl = aresed3d->GetPL ();
   world = pl->CreateEntity (pl->FindEntityTemplate ("World"), "World", 0);
@@ -67,7 +123,16 @@ void PlayMode::Start ()
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
-  pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), csVector3 (0, 3, 0));
+  if (foundCell)
+  {
+    dynworld->SetCurrentCell (foundCell);
+    // @@@ Need support for setting transform on pcmesh.
+    pcmesh->MoveMesh (foundCell->GetSector (), playerTrans.GetOrigin ());
+  }
+  else
+  {
+    pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), csVector3 (0, 3, 0));
+  }
   iELCM* elcm = aresed3d->GetELCM ();
   elcm->SetPlayer (player);
 }

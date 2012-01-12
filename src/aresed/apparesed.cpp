@@ -108,46 +108,6 @@ struct SaveCallback : public OKCallback
 
 // =========================================================================
 
-DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
-{
-  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
-  while (cellIt->HasNext ())
-  {
-    iDynamicCell* cell = cellIt->NextCell ();
-    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
-    {
-      iDynamicObject* dynobj = cell->GetObject (i);
-      Obj obj;
-      obj.cell = dynobj->GetCell ();
-      obj.fact = dynobj->GetFactory ();
-      obj.isStatic = dynobj->IsStatic ();
-      obj.trans = dynobj->GetTransform ();
-      objects.Push (obj);
-    }
-  }
-}
-
-void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
-{
-  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
-  while (cellIt->HasNext ())
-  {
-    iDynamicCell* cell = cellIt->NextCell ();
-    cell->DeleteObjects ();
-  }
-  for (size_t i = 0 ; i < objects.GetSize () ; i++)
-  {
-    Obj& obj = objects[i];
-    iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
-    if (obj.isStatic)
-      dynobj->MakeStatic ();
-    else
-      dynobj->MakeDynamic ();
-  }
-}
-
-// =========================================================================
-
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
   app (app), object_reg (object_reg), camera (this)
 {
