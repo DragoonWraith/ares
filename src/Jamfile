@@ -3,6 +3,7 @@ SubDir TOP src ;
 SubInclude TOP src ares ;
 SubInclude TOP src aresed ;
 SubInclude TOP src curvemesh ;
+SubInclude TOP src gamecontrol ;
 SubInclude TOP src rooms ;
 SubInclude TOP src dynworldload ;
 SubInclude TOP src nature ;

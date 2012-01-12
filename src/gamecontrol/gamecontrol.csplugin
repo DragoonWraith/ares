@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- gamecontrol.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.gamecontrol</name>
+        <implementation>celPcGameController</implementation>
+        <description>Game Controller Property Class</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

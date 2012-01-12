@@ -1,0 +1,8 @@
+SubDir TOP src gamecontrol ;
+
+Description gamecontrol : "Game Controller Property Class" ;
+Plugin gamecontrol :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs gamecontrol : CRYSTAL ;
+ExternalLibs gamecontrol : CEL ;
+
