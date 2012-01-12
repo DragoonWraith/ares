@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "editmodes.h"
 
 struct iPcDynamicWorld;
+struct iCelEntity;
 
 /**
  * A snapshot of the current objects. This is used to remember the situation
@@ -56,6 +57,8 @@ class PlayMode : public EditingMode
 {
 private:
   DynworldSnapshot* snapshot;
+  csRef<iCelEntity> world;
+  csRef<iCelEntity> player;
 
 public:
   PlayMode (AresEdit3DView* aresed3d);

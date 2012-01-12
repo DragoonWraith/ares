@@ -23,6 +23,11 @@ THE SOFTWARE.
  */
 
 #include "../apparesed.h"
+#include "physicallayer/pl.h"
+#include "physicallayer/entity.h"
+#include "physicallayer/propclas.h"
+#include "propclass/camera.h"
+#include "propclass/mesh.h"
 #include "playmode.h"
 
 //---------------------------------------------------------------------------
@@ -55,11 +60,30 @@ void PlayMode::Start ()
       dynobj->SetEntity (0, 0, 0);
     }
   }
+
+  iCelPlLayer* pl = aresed3d->GetPL ();
+  world = pl->CreateEntity (pl->FindEntityTemplate ("World"), "World", 0);
+  player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
+
+  csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
+  csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
+  pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), csVector3 (0, 3, 0));
+  iELCM* elcm = aresed3d->GetELCM ();
+  elcm->SetPlayer (player);
 }
 
 void PlayMode::Stop ()
 {
   if (!snapshot) return;
+
+  iCelPlLayer* pl = aresed3d->GetPL ();
+  pl->RemoveEntity (world);
+  world = 0;
+  pl->RemoveEntity (player);
+  player = 0;
+  iELCM* elcm = aresed3d->GetELCM ();
+  elcm->SetPlayer (0);
+
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   snapshot->Restore (dynworld);
   delete snapshot;

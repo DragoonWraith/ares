@@ -4,8 +4,8 @@
   <scf>
     <classes>
       <class>
-        <name>ares.gamecontrol</name>
-        <implementation>celPcGameController</implementation>
+        <name>cel.pcfactory.ares.gamecontrol</name>
+        <implementation>celPfGameController</implementation>
         <description>Game Controller Property Class</description>
       </class>
     </classes>

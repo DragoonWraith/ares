@@ -52,41 +52,32 @@ class celPcGameController : public scfImplementationExt1<
 private:
   // For SendMessage parameters.
   static csStringID id_message;
-  celOneParameterBlock* params;
+  static csStringID id_timeout;
 
   // For actions.
   enum actionids
   {
-    action_print = 0
+    action_message = 0
   };
 
   // For properties.
-  enum propids
-  {
-    propid_counter = 0,
-    propid_max
-  };
+  //enum propids
+  //{
+    //propid_counter = 0,
+    //propid_max
+  //};
   static PropertyHolder propinfo;
 
-  // Other fields.
-  int counter;
-  size_t max;
-
-  csRef<iMessageDispatcher> dispatcher_print;
+  //csRef<iMessageDispatcher> dispatcher_print;
 
 public:
   celPcGameController (iObjectRegistry* object_reg);
   virtual ~celPcGameController ();
 
-  virtual void Print (const char* msg);
+  virtual void Message (const char* message, float timeout = 2.0f);
 
   virtual bool PerformActionIndexed (int idx,
       iCelParameterBlock* params, celData& ret);
-
-  // Override SetProperty from celPcCommon in order to provide support
-  // for the 'max' property.
-  virtual bool SetPropertyIndexed (int idx, long b);
-  virtual bool GetPropertyIndexed (int, long&);
 };
 
 #endif // __CEL_PF_GAMECONTROL__

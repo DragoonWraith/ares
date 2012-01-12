@@ -221,6 +221,10 @@ private:
   /// Setup stuff after map loading.
   bool PostLoadMap ();
 
+  /**
+   * Setup the dynamic world and add a few standard dynamic factories
+   * ('Player' and 'Node').
+   */
   bool SetupDynWorld ();
 
 #if USE_DECAL
@@ -304,6 +308,7 @@ public:
   iNature* GetNature () const { return nature; }
   iCelPlLayer* GetPL () const { return pl; }
   iParameterManager* GetPM ();
+  iELCM* GetELCM () const { return elcm; }
 
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }

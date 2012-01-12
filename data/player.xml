@@ -1,0 +1,77 @@
+<library>
+    <library path="/lib/frankie" file="frankie.xml" />
+    <addon plugin="cel.addons.celentitytpl" entityname="Player" >
+      <propclass name="pcobject.mesh">
+	<action name="LoadMesh">
+	  <par name="factoryname" string="franky_frankie" />
+	</action>
+      </propclass>
+      <propclass name="pcinput.standard">
+	<action name="Bind">
+	  <par name="trigger" string="left" />
+	  <par name="command" string="rotateleft" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="right" />
+	  <par name="command" string="rotateright" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="up" />
+	  <par name="command" string="forward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="down" />
+	  <par name="command" string="backward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="a" />
+	  <par name="command" string="rotateleft" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="d" />
+	  <par name="command" string="rotateright" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="w" />
+	  <par name="command" string="forward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="s" />
+	  <par name="command" string="backward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="q" />
+	  <par name="command" string="strafeleft" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="e" />
+	  <par name="command" string="straferight" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="space" />
+	  <par name="command" string="jump" />
+	</action>
+      </propclass>
+      <propclass name="pctools.inventory"/>
+      <propclass name="pccamera.delegate" />
+      <propclass name="pccamera.mode.tracking">
+	<property name="pan_topspeed" float="2.5" />
+	<property name="tilt_topspeed" float="1.2" />
+      </propclass>
+      <propclass name="pcmove.linear">
+        <action name="InitCD" >
+          <par name="body" vector3=".5,.4,.5" />
+          <par name="legs" vector3=".5,.2,.5" />
+          <par name="offset" vector3="0,0,0" />
+	</action>
+      </propclass>
+      <propclass name="pcmove.actor.standard">
+	<action name="SetSpeed">
+	  <par name="movement" float="5" />
+	  <par name="running" float="8" />
+	  <par name="rotation" float="2" />
+	</action>
+	<action name="Subscribe" />
+      </propclass>
+    </addon>
+</library>

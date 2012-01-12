@@ -29,10 +29,26 @@ THE SOFTWARE.
 
 /**
  * Interface to the game control property class plugin.
+ *
+ * This property class can send out the following messages to entities:
+ * - 'ares.controller.activate': entity is activated.
+ *
+ * This property class supports the following actions (
+ * add prefix 'ares.controller.' if you want to access this action through a
+ * message):
+ * - Message: parameters 'message' (string), 'timeout' (float, default 2 seconds).
+ *   Show a message to the user for the specified amount of time.
+ *
+ * This property class supports the following properties:
  */
 struct iPcGameController : public virtual iBase
 {
   SCF_INTERFACE(iPcGameController,0,0,1);
+
+  /**
+   * Show a message to the user for a given amount of time.
+   */
+  virtual void Message (const char* message, float timeout = 2.0f) = 0;
 };
 
 #endif // __ARES_GAMECONTROL_H__

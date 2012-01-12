@@ -41,6 +41,7 @@ THE SOFTWARE.
 #include "cstool/simplestaticlighter.h"
 #include "celtool/persisthelper.h"
 #include "physicallayer/pl.h"
+#include "physicallayer/entitytpl.h"
 #include "tools/parameters.h"
 
 #include <csgeom/math3d.h>
@@ -384,6 +385,7 @@ void AresEdit3DView::CleanupWorld ()
   dynworld->DeleteAll ();
   dynworld->DeleteFactories ();
   engine->DeleteAll ();
+  pl->RemoveEntityTemplates ();
 }
 
 void AresEdit3DView::SaveFile (const char* filename)
@@ -566,7 +568,7 @@ bool AresEdit3DView::Setup ()
       r, "cel.parameters.manager");
   pm->SetRememberExpression (true);
 
-  zoneEntity = pl->CreateEntity ("zone", 0, 0,
+  zoneEntity = pl->CreateEntity ("Zone", 0, 0,
       "pcworld.dynamic", CEL_PROPCLASS_END);
   if (!zoneEntity) return app->ReportError ("Failed to create zone entity!");
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
@@ -754,6 +756,19 @@ bool AresEdit3DView::PostLoadMap ()
   // Force the update of the clock.
   nature->UpdateTime (currentTime+100, GetCsCamera ());
   nature->UpdateTime (currentTime, GetCsCamera ());
+
+  // Make the 'Player' and 'World' entity templates if they don't already
+  // exist.
+  if (!pl->FindEntityTemplate ("Player"))
+  {
+printf ("1:Loading library player.xml!\n"); fflush (stdout);
+    if (!LoadLibrary ("/appdata/", "player.xml"))
+      return app->ReportError ("Error loading player library!");
+printf ("2:Loading library player.xml!\n"); fflush (stdout);
+  }
+  if (!pl->FindEntityTemplate ("World"))
+    if (!LoadLibrary ("/appdata/", "world.xml"))
+      return app->ReportError ("Error loading world library!");
 
   return true;
 }

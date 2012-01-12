@@ -6,7 +6,7 @@
 
         <state name="init">
           <oninit>
-            <reward type="message" entity="world" id="ares.logentry">
+            <reward type="message" entity="World" id="ares.logentry">
               <par name="logid" string="SECNOTE_intro" />
               <par name="message" string="You must go find a secret note. Perhaps look in the basement?" />
             </reward>
@@ -16,16 +16,16 @@
 
         <state name="watchout">
           <trigger type="entersector">
-            <fireon entity="player" sector="cellBasement" />
-            <reward type="message" entity="world" id="ares.logentry">
+            <fireon entity="Player" sector="cellBasement" />
+            <reward type="message" entity="World" id="ares.logentry">
               <par name="logid" string="SECNOTE_enterbasement" />
               <par name="message" string="As you enter the basement you get the impression that there was a fight recently. Perhaps you will find a clue here?" />
             </reward>
               <reward type="newstate" state="watchout" />
           </trigger>
           <trigger type="inventory">
-            <fireon entity="player" child_entity="SecretNote" />
-            <reward type="message" entity="world" id="ares.logentry">
+            <fireon entity="Player" child_entity="SecretNote" />
+            <reward type="message" entity="World" id="ares.logentry">
               <par name="logid" string="SECNOTE_gotnote" />
               <par name="message" string="You pick up a note. This looks like the secret note you had to find." />
             </reward>
@@ -35,7 +35,7 @@
 
         <state name="finish">
           <oninit>
-            <reward type="message" entity="world" id="ares.finishquest" />
+            <reward type="message" entity="World" id="ares.finishquest" />
           </oninit>
         </state>
 
@@ -97,7 +97,7 @@
 	</action>
 	<action name="AddOutput">
 	  <par name="msgid" string="ares.teleport" />
-	  <par name="entity" string="world" />
+	  <par name="entity" string="World" />
 	  <par name="cell" string="$cell" />
 	  <par name="pos" vector3="$pos" />
 	</action>
@@ -166,7 +166,7 @@
 
   <addon plugin="cel.addons.dynamicworld.loader">
     <extension plugin="ares.dynworld.loader.factories"/>
-    <dynworld name="zone" />
+    <dynworld name="Zone" />
     <factory name="Barrel" maxradius="0.5" imposterradius=".3" mass="6">
       <cylinder />
       <attr name="category" value="Objects" />

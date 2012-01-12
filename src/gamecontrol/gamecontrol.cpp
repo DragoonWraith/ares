@@ -35,6 +35,7 @@ CEL_IMPLEMENT_FACTORY (GameController, "ares.gamecontrol")
 //---------------------------------------------------------------------------
 
 csStringID celPcGameController::id_message = csInvalidStringID;
+csStringID celPcGameController::id_timeout = csInvalidStringID;
 
 PropertyHolder celPcGameController::propinfo;
 
@@ -43,53 +44,30 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 {
   // For SendMessage parameters.
   if (id_message == csInvalidStringID)
+  {
     id_message = pl->FetchStringID ("message");
-  params = new celOneParameterBlock ();
-  params->SetParameterDef (id_message);
+    id_timeout = pl->FetchStringID ("timeout");
+  }
 
   propholder = &propinfo;
 
   // For actions.
   if (!propinfo.actions_done)
   {
-    SetActionMask ("cel.test.action.");
-    AddAction (action_print, "Print");
+    SetActionMask ("ares.controller.");
+    AddAction (action_message, "Message");
   }
 
   // For properties.
-  propinfo.SetCount (2);
-  AddProperty (propid_counter, "counter",
-	CEL_DATA_LONG, false, "Print counter.", &counter);
-  AddProperty (propid_max, "max",
-	CEL_DATA_LONG, false, "Max length.", 0);
-
-  counter = 0;
-  max = 0;
+  propinfo.SetCount (0);
+  //AddProperty (propid_counter, "counter",
+	//CEL_DATA_LONG, false, "Print counter.", &counter);
+  //AddProperty (propid_max, "max",
+	//CEL_DATA_LONG, false, "Max length.", 0);
 }
 
 celPcGameController::~celPcGameController ()
 {
-  delete params;
-}
-
-bool celPcGameController::SetPropertyIndexed (int idx, long b)
-{
-  if (idx == propid_max)
-  {
-    max = b;
-    return true;
-  }
-  return false;
-}
-
-bool celPcGameController::GetPropertyIndexed (int idx, long& l)
-{
-  if (idx == propid_max)
-  {
-    l = max;
-    return true;
-  }
-  return false;
 }
 
 bool celPcGameController::PerformActionIndexed (int idx,
@@ -98,11 +76,13 @@ bool celPcGameController::PerformActionIndexed (int idx,
 {
   switch (idx)
   {
-    case action_print:
+    case action_message:
       {
         CEL_FETCH_STRING_PAR (msg,params,id_message);
         if (!p_msg) return false;
-        Print (msg);
+        CEL_FETCH_FLOAT_PAR (timeout,params,id_timeout);
+        if (!p_timeout) timeout = 2.0f;
+        Message (msg, timeout);
         return true;
       }
     default:
@@ -111,6 +91,13 @@ bool celPcGameController::PerformActionIndexed (int idx,
   return false;
 }
 
+void celPcGameController::Message (const char* message, float timeout)
+{
+  printf ("MSG: %s\n", message);
+  fflush (stdout);
+}
+
+#if 0
 void celPcGameController::Print (const char* msg)
 {
   printf ("Print: %s\n", msg);
@@ -135,6 +122,7 @@ void celPcGameController::Print (const char* msg)
   size_t l = strlen (msg);
   if (l > max) max = l;
 }
+#endif
 
 //---------------------------------------------------------------------------
 
