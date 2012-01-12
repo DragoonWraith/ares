@@ -28,20 +28,43 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "editmodes.h"
 
-struct iGeometryGenerator;
+struct iPcDynamicWorld;
+
+/**
+ * A snapshot of the current objects. This is used to remember the situation
+ * before 'Play' is selected.
+ */
+class DynworldSnapshot
+{
+private:
+  struct Obj
+  {
+    iDynamicCell* cell;
+    iDynamicFactory* fact;
+    bool isStatic;
+    csReversibleTransform trans;
+  };
+  csArray<Obj> objects;
+
+public:
+  DynworldSnapshot (iPcDynamicWorld* dynworld);
+  void Restore (iPcDynamicWorld* dynworld);
+};
+
 
 class PlayMode : public EditingMode
 {
 private:
-  iRoomFactory* editingRoomFactory;
-  csRef<iGeometryGenerator> ggen;
+  DynworldSnapshot* snapshot;
 
 public:
   PlayMode (AresEdit3DView* aresed3d);
-  virtual ~PlayMode () { }
+  virtual ~PlayMode ();
 
   virtual csString GetStatusLine () { return csString ("Playtest mode, press escape to exit"); }
 
+  virtual void Start ();
+  virtual void Stop ();
   virtual bool OnKeyboard(iEvent& ev, utf32_char code);
 };
 

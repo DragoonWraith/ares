@@ -30,14 +30,46 @@ THE SOFTWARE.
 PlayMode::PlayMode (AresEdit3DView* aresed3d)
   : EditingMode (aresed3d, "Play")
 {
+  snapshot = 0;
 }
 
+PlayMode::~PlayMode ()
+{
+  delete snapshot;
+}
+
+void PlayMode::Start ()
+{
+  aresed3d->GetSelection ()->SetCurrentObject (0);
+  delete snapshot;
+  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  snapshot = new DynworldSnapshot (dynworld);
+
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      dynobj->SetEntity (0, 0, 0);
+    }
+  }
+}
+
+void PlayMode::Stop ()
+{
+  if (!snapshot) return;
+  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  snapshot->Restore (dynworld);
+  delete snapshot;
+  snapshot = 0;
+}
 
 bool PlayMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
   if (code == CSKEY_ESC)
   {
-    aresed3d->ExitPlay ();
     aresed3d->GetApp ()->SwitchToMainMode ();
     return true;
   }

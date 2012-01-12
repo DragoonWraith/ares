@@ -160,40 +160,12 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
-  snapshot = 0;
 }
 
 AresEdit3DView::~AresEdit3DView()
 {
   delete worldLoader;
   delete selection;
-  delete snapshot;
-}
-
-void AresEdit3DView::Play ()
-{
-  selection->SetCurrentObject (0);
-  delete snapshot;
-  snapshot = new DynworldSnapshot (dynworld);
-
-  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
-  while (cellIt->HasNext ())
-  {
-    iDynamicCell* cell = cellIt->NextCell ();
-    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
-    {
-      iDynamicObject* dynobj = cell->GetObject (i);
-      dynobj->SetEntity (0, 0, 0);
-    }
-  }
-}
-
-void AresEdit3DView::ExitPlay ()
-{
-  if (!snapshot) return;
-  snapshot->Restore (dynworld);
-  delete snapshot;
-  snapshot = 0;
 }
 
 void AresEdit3DView::Do3DPreFrameStuff ()
@@ -234,8 +206,6 @@ void AresEdit3DView::Frame (EditingMode* editMode)
 
 bool AresEdit3DView::OnMouseMove (iEvent& ev)
 {
-  if (IsPlaying ()) return false;
-
   // Save the mouse position
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
@@ -361,8 +331,6 @@ iRigidBody* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 
 bool AresEdit3DView::OnMouseDown (iEvent& ev)
 {
-  if (IsPlaying ()) return false;
-
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
@@ -375,8 +343,6 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
 
 bool AresEdit3DView::OnMouseUp (iEvent& ev)
 {
-  if (IsPlaying ()) return false;
-
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
@@ -1155,8 +1121,12 @@ void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuPlay (wxCommandEvent& event)
 {
-  aresed3d->Play ();
   SwitchToPlayMode ();
+}
+
+bool AppAresEditWX::IsPlaying () const
+{
+  return editMode == playMode;
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
@@ -1229,7 +1199,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
     int mouseY = csMouseEventHelper::GetY (&ev);
     if (aresed3d)
     {
-      if (aresed3d->OnMouseMove (ev))
+      if (!IsPlaying () && aresed3d->OnMouseMove (ev))
 	return true;
       else
 	return editMode->OnMouseMove (ev, mouseX, mouseY);
@@ -1242,7 +1212,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
     int mouseY = csMouseEventHelper::GetY (&ev);
     if (aresed3d)
     {
-      if (but == csmbRight)
+      if (!IsPlaying () && but == csmbRight)
       {
 	wxMenu contextMenu;
 	bool camwinVis = camwin->IsVisible ();
@@ -1258,7 +1228,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
       }
       else
       {
-        if (aresed3d->OnMouseDown (ev))
+        if (!IsPlaying () && aresed3d->OnMouseDown (ev))
 	  return true;
         else
 	  return editMode->OnMouseDown (ev, but, mouseX, mouseY);
@@ -1272,7 +1242,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
     int mouseY = csMouseEventHelper::GetY (&ev);
     if (aresed3d)
     {
-      if (aresed3d->OnMouseUp (ev))
+      if (!IsPlaying () && aresed3d->OnMouseUp (ev))
 	return true;
       else
 	return editMode->OnMouseUp (ev, but, mouseX, mouseY);
@@ -1519,7 +1489,7 @@ void AppAresEditWX::SetMenuState ()
 
   // Should menus be globally disabled?
   bool dis = mainMode ? mainMode->IsPasteSelectionActive () : true;
-  if (aresed3d->IsPlaying ()) dis = true;
+  if (IsPlaying ()) dis = true;
   if (dis)
   {
     menuBar->EnableTop (0, false);

@@ -105,28 +105,6 @@ public:
 };
 
 /**
- * A snapshot of the current objects. This is used to remember the situation
- * before 'Play' is selected.
- */
-class DynworldSnapshot
-{
-private:
-  struct Obj
-  {
-    iDynamicCell* cell;
-    iDynamicFactory* fact;
-    bool isStatic;
-    csReversibleTransform trans;
-  };
-  csArray<Obj> objects;
-
-public:
-  DynworldSnapshot (iPcDynamicWorld* dynworld);
-  void Restore (iPcDynamicWorld* dynworld);
-};
-
-
-/**
  * The main logic behind the Ares Editor 3D view.
  */
 class AresEdit3DView
@@ -141,8 +119,6 @@ private:
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iNature> nature;
   csRef<iMarkerManager> markerMgr;
-
-  DynworldSnapshot* snapshot;
 
   csRef<iGraphics3D> g3d;
   csRef<iKeyboardDriver> kbd;
@@ -289,21 +265,6 @@ public:
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
   
-  /**
-   * Do a test play of the game.
-   */
-  void Play ();
-
-  /**
-   * Exit play testing and restore the editing world.
-   */
-  void ExitPlay ();
-
-  /**
-   * Return true if we are in play mode.
-   */
-  bool IsPlaying () const { return snapshot != 0; }
-
   /**
    * Handle all the 3D related stuff like nature, camera, camera light,
    * physics simulation, ...
@@ -551,6 +512,11 @@ public:
   void SwitchToEntityMode ();
   void SetCurveModeEnabled (bool cm);
   MainMode* GetMainMode () const { return mainMode; }
+
+  /**
+   * Return true if we are in play mode.
+   */
+  bool IsPlaying () const;
 
   void DoFrame () { aresed3d->Frame (editMode); }
 
