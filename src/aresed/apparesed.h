@@ -317,7 +317,6 @@ public:
   }
 
   void Frame (EditingMode* editMode);
-  bool OnKeyboard(iEvent&);
   bool OnMouseDown(iEvent&);
   bool OnMouseUp(iEvent&);
   bool OnMouseMove (iEvent&);

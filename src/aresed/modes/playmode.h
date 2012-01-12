@@ -41,6 +41,8 @@ public:
   virtual ~PlayMode () { }
 
   virtual csString GetStatusLine () { return csString ("Playtest mode, press escape to exit"); }
+
+  virtual bool OnKeyboard(iEvent& ev, utf32_char code);
 };
 
 #endif // __aresed_playmode_h

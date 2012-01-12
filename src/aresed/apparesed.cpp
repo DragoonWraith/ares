@@ -387,25 +387,6 @@ bool AresEdit3DView::OnMouseUp (iEvent& ev)
   return false;
 }
 
-bool AresEdit3DView::OnKeyboard (iEvent& ev)
-{
-  if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
-  {
-    // The user pressed a key (as opposed to releasing it).
-    utf32_char code = csKeyEventHelper::GetCookedCode(&ev);
-    if (code == CSKEY_ESC)
-    {
-      if (IsPlaying ())
-      {
-	// If we are playing the game then escape will exit game mode.
-	ExitPlay ();
-      }
-      return true;
-    }
-  }
-  return false;
-}
-
 //---------------------------------------------------------------------------
 
 void AresEdit3DView::DeleteSelectedObjects ()
@@ -1174,8 +1155,8 @@ void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuPlay (wxCommandEvent& event)
 {
-  SwitchToPlayMode ();
   aresed3d->Play ();
+  SwitchToPlayMode ();
 }
 
 void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
@@ -1239,20 +1220,8 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
   else if (CS_IS_KEYBOARD_EVENT(object_reg, ev))
   {
     utf32_char code = csKeyEventHelper::GetCookedCode(&ev);
-    if ((ev.Name == KeyboardDown) && (code == CSKEY_ESC))
-    {
-      /* Close the main window, which will trigger an application exit.
-         CS-specific cleanup happens in OnClose(). */
-      Close();
-      return true;
-    }
-    if (aresed3d)
-    {
-      if (aresed3d->OnKeyboard (ev))
-	return true;
-      else if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
-        return editMode->OnKeyboard (ev, code);
-    }
+    if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
+      return editMode->OnKeyboard (ev, code);
   }
   else if ((ev.Name == MouseMove))
   {

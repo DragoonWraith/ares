@@ -33,3 +33,14 @@ PlayMode::PlayMode (AresEdit3DView* aresed3d)
 }
 
 
+bool PlayMode::OnKeyboard(iEvent& ev, utf32_char code)
+{
+  if (code == CSKEY_ESC)
+  {
+    aresed3d->ExitPlay ();
+    aresed3d->GetApp ()->SwitchToMainMode ();
+    return true;
+  }
+  return false;
+}
+
