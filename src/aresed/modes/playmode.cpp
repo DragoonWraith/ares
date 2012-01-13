@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "physicallayer/propclas.h"
 #include "propclass/camera.h"
 #include "propclass/mesh.h"
+#include "propclass/mechsys.h"
 #include "playmode.h"
 
 //---------------------------------------------------------------------------
@@ -115,24 +116,33 @@ void PlayMode::Start ()
   }
 
   if (foundPlayerDynobj)
-    foundCell->DeleteObject (foundPlayerDynobj);
-
-  iCelPlLayer* pl = aresed3d->GetPL ();
-  world = pl->CreateEntity (pl->FindEntityTemplate ("World"), "World", 0);
-  player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
-
-  csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
-  csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
-  if (foundCell)
   {
     dynworld->SetCurrentCell (foundCell);
-    // @@@ Need support for setting transform on pcmesh.
-    pcmesh->MoveMesh (foundCell->GetSector (), playerTrans.GetOrigin ());
+    foundCell->DeleteObject (foundPlayerDynobj);
   }
   else
   {
-    pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), csVector3 (0, 3, 0));
+    playerTrans.SetOrigin (csVector3 (0, 3, 0));
   }
+
+  iCelPlLayer* pl = aresed3d->GetPL ();
+
+  iCelEntity* zoneEntity = pl->FindEntity ("Zone");
+  csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (zoneEntity);
+  mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
+
+  world = pl->CreateEntity (pl->FindEntityTemplate ("World"), "World", 0);
+  player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
+  //csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
+  //iRigidBody* body = mechPlayer->GetBody ();
+  //csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
+  //bulletBody->MakeKinematic ();
+
+  csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
+  csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
+  // @@@ Need support for setting transform on pcmesh.
+  pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
+
   iELCM* elcm = aresed3d->GetELCM ();
   elcm->SetPlayer (player);
 }

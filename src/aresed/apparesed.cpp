@@ -529,7 +529,7 @@ bool AresEdit3DView::Setup ()
   pm->SetRememberExpression (true);
 
   zoneEntity = pl->CreateEntity ("Zone", 0, 0,
-      "pcworld.dynamic", CEL_PROPCLASS_END);
+      "pcworld.dynamic", "pcphysics.system", CEL_PROPCLASS_END);
   if (!zoneEntity) return app->ReportError ("Failed to create zone entity!");
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
 
