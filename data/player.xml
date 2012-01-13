@@ -78,8 +78,9 @@
 	  <par name="systempcent" string="Zone" />
 	</action>
 	<action name="SetColliderCylinder">
-	  <par name="length" float="1.3" />
-	  <par name="radius" float=".5" />
+	  <par name="length" float=".8" />
+	  <par name="radius" float=".3" />
+	  <par name="offset" vector3="0,.3,0" />
 	</action>
       </propclass>
     </addon>
