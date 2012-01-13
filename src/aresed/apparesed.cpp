@@ -958,7 +958,7 @@ bool AresEdit3DView::InitPhysics ()
   if (!dynSys) return app->ReportError ("Error creating dynamic system!");
   //dynSys->SetLinearDampener(.3f);
   dynSys->SetRollingDampener(.995f);
-  dynSys->SetGravity (csVector3 (0.0f, -9.81f, 0.0f));
+  dynSys->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
 
   bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
   bullet_dynSys->SetInternalScale (1.0f);
