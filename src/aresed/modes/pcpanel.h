@@ -74,7 +74,11 @@ private:
    */
   void SwitchPCType (const char* pcType);
 
-  // Properties
+  // Old camera.
+  bool UpdateOldCamera ();
+  void FillOldCamera ();
+
+  // Properties.
   ListCtrlView* propertyView;
   csRef<PropertyRowModel> propertyModel;
   UIDialog* propDialog;

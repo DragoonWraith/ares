@@ -122,6 +122,8 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
+
+  EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -135,17 +137,6 @@ void PropertyClassPanel::OnUpdateEvent (wxCommandEvent& event)
 void PropertyClassPanel::OnChoicebookPageChange (wxChoicebookEvent& event)
 {
   UpdatePC ();
-}
-
-static size_t FindNotebookPage (wxChoicebook* book, const char* name)
-{
-  wxString iname = wxString::FromUTF8 (name);
-  for (size_t i = 0 ; i < book->GetPageCount () ; i++)
-  {
-    wxString pageName = book->GetPageText (i);
-    if (pageName == iname) return i;
-  }
-  return csArrayItemNotFound;
 }
 
 void PropertyClassPanel::SwitchPCType (const char* pcType)
@@ -560,6 +551,33 @@ void PropertyClassPanel::FillWire ()
 
   wireParModel->SetPC (pctpl);
   wireParView->Refresh ();
+}
+
+// -----------------------------------------------------------------------
+
+bool PropertyClassPanel::UpdateOldCamera ()
+{
+  SwitchPCType ("pccamera.old");
+
+  wxChoice* modeChoice = XRCCTRL (*this, "modeChoice", wxChoice);
+  csString modeName = (const char*)modeChoice->GetStringSelection ().mb_str(wxConvUTF8);
+
+  InspectTools::DeleteActionParameter (pl, pctpl, "SetCamera", "modename");
+  csRef<iParameter> par = pm->GetParameter (modeName, CEL_DATA_STRING);
+  if (!par) return false;
+  InspectTools::AddActionParameter (pl, pctpl, "SetCamera", "modename", par);
+
+  emode->PCWasEdited (pctpl);
+  return true;
+}
+
+void PropertyClassPanel::FillOldCamera ()
+{
+  if (!pctpl || csString ("pccamera.old") != pctpl->GetName ()) return;
+  csString modeName = InspectTools::GetActionParameterValueString (pl, pctpl,
+      "SetCamera", "modename");
+  wxChoice* modeChoice = XRCCTRL (*this, "modeChoice", wxChoice);
+  modeChoice->SetStringSelection (wxString::FromUTF8 (modeName));
 }
 
 // -----------------------------------------------------------------------
@@ -1209,6 +1227,7 @@ bool PropertyClassPanel::UpdatePC ()
   else if (page == "pclogic.wire") return UpdateWire ();
   else if (page == "pclogic.quest") return UpdateQuest ();
   else if (page == "pclogic.spawn") return UpdateSpawn ();
+  else if (page == "pccamera.old") return UpdateOldCamera ();
   else
   {
     uiManager->Error ("Unknown property class type!");
@@ -1238,6 +1257,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
   FillQuest ();
   FillSpawn ();
   FillWire ();
+  FillOldCamera ();
 }
 
 PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,

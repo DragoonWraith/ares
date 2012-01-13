@@ -108,6 +108,31 @@
 						</object>
 					</object>
 					<object class="choicebookpage">
+						<label>pccamera.old</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="cameraOldPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxChoice" name="modeChoice">
+										<selection>0</selection>
+										<content>
+											<item>freelook</item>
+											<item>firstperson</item>
+											<item>thirdperson</item>
+											<item>m64_thirdperson</item>
+											<item>lara_thirdperson</item>
+										</content>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
 						<label>pclogic.quest</label>
 						<selected>0</selected>
 						<object class="wxPanel" name="questPanel">
