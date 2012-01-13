@@ -53,35 +53,16 @@
 	</action>
       </propclass>
       <propclass name="pctools.inventory"/>
-      <propclass name="pccamera.delegate" />
-      <propclass name="pccamera.mode.tracking">
-	<property name="pan_topspeed" float="2.5" />
-	<property name="tilt_topspeed" float="1.2" />
-      </propclass>
-      <!--
-      <propclass name="pcmove.linear">
-        <action name="InitCD" >
-          <par name="body" vector3=".5,.4,.5" />
-          <par name="legs" vector3=".5,.2,.5" />
-          <par name="offset" vector3="0,0,0" />
+      <propclass name="pccamera.old">
+	<action name="SetCamera">
+	  <par name="modename" string="thirdperson" />
 	</action>
       </propclass>
-      -->
       <propclass name="pcmove.actor.dynamic">
 	<property name="speed" float=".5" />
 	<property name="jumpspeed" float="1" />
 	<property name="rotspeed" float=".5" />
       </propclass>
-      <!--
-      <propclass name="pcmove.actor.standard">
-	<action name="SetSpeed">
-	  <par name="movement" float="5" />
-	  <par name="running" float="8" />
-	  <par name="rotation" float="2" />
-	</action>
-	<action name="Subscribe" />
-      </propclass>
-      -->
       <propclass name="pcphysics.object">
 	<action name="SetSystem">
 	  <par name="systempcent" string="Zone" />
