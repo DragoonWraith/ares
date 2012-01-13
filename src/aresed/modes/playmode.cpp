@@ -133,10 +133,10 @@ void PlayMode::Start ()
 
   world = pl->CreateEntity (pl->FindEntityTemplate ("World"), "World", 0);
   player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
-  //csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
-  //iRigidBody* body = mechPlayer->GetBody ();
-  //csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
-  //bulletBody->MakeKinematic ();
+  csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
+  iRigidBody* body = mechPlayer->GetBody ();
+  csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
+  bulletBody->MakeKinematic ();
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);

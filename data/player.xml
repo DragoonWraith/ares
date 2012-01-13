@@ -73,16 +73,14 @@
 	</action>
 	<action name="Subscribe" />
       </propclass>
-      <!--
       <propclass name="pcphysics.object">
 	<action name="SetSystem">
-	  <par name="systempcent" float="Zone" />
+	  <par name="systempcent" string="Zone" />
 	</action>
 	<action name="SetColliderCylinder">
 	  <par name="length" float="1.3" />
 	  <par name="radius" float=".5" />
 	</action>
       </propclass>
-      -->
     </addon>
 </library>
