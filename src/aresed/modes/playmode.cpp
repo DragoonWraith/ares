@@ -142,6 +142,7 @@ void PlayMode::Start ()
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
   // @@@ Need support for setting transform on pcmesh.
   pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
+  body->SetTransform (playerTrans);
 
   iELCM* elcm = aresed3d->GetELCM ();
   elcm->SetPlayer (player);
