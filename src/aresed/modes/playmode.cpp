@@ -136,7 +136,7 @@ void PlayMode::Start ()
   csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
   iRigidBody* body = mechPlayer->GetBody ();
   csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
-  bulletBody->MakeKinematic ();
+  //bulletBody->MakeKinematic ();
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);

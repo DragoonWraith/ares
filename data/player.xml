@@ -58,6 +58,7 @@
 	<property name="pan_topspeed" float="2.5" />
 	<property name="tilt_topspeed" float="1.2" />
       </propclass>
+      <!--
       <propclass name="pcmove.linear">
         <action name="InitCD" >
           <par name="body" vector3=".5,.4,.5" />
@@ -65,6 +66,13 @@
           <par name="offset" vector3="0,0,0" />
 	</action>
       </propclass>
+      -->
+      <propclass name="pcmove.actor.dynamic">
+	<property name="speed" float=".5" />
+	<property name="jumpspeed" float="1" />
+	<property name="rotspeed" float=".5" />
+      </propclass>
+      <!--
       <propclass name="pcmove.actor.standard">
 	<action name="SetSpeed">
 	  <par name="movement" float="5" />
@@ -73,14 +81,21 @@
 	</action>
 	<action name="Subscribe" />
       </propclass>
+      -->
       <propclass name="pcphysics.object">
 	<action name="SetSystem">
 	  <par name="systempcent" string="Zone" />
 	</action>
+	<!--
 	<action name="SetColliderCylinder">
 	  <par name="length" float=".8" />
 	  <par name="radius" float=".3" />
 	  <par name="offset" vector3="0,.3,0" />
+	  <par name="axis" vector3="0,0,1" />
+	  <par name="angle" float="1.57079632679" />
+	</action>
+	-->
+	<action name="SetColliderBoundingBox">
 	</action>
       </propclass>
     </addon>
