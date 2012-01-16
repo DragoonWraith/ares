@@ -104,7 +104,7 @@ static bool HeightDiff (const csVector3& pos, iMeshWrapper* thisMesh, float& dy)
 static float cmax (bool u1, float v1, bool u2, float v2)
 {
   if (u1 && u2)
-    return MAX (v1, v2);
+    return csMax (v1, v2);
   else if (u1)
     return v1;
   return v2;

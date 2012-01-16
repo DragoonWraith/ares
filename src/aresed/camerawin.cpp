@@ -189,7 +189,7 @@ void CameraWindow::OnTopDownSelButton ()
   csBox3 box = GetBoxSelected ();
   float xdim = box.MaxX ()-box.MinX ();
   float zdim = box.MaxZ ()-box.MinZ ();
-  csVector3 origin = box.GetCenter () + csVector3 (0, MAX(xdim,zdim), 0);
+  csVector3 origin = box.GetCenter () + csVector3 (0, csMax(xdim,zdim), 0);
   aresed3d->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
 }
 
