@@ -8,6 +8,18 @@
       </propclass>
       <propclass name="pcinput.standard">
 	<action name="Bind">
+	  <par name="trigger" string="MouseAxis0" />
+	  <par name="command" string="mouselook" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="pgdn" />
+	  <par name="command" string="lookdown" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="pgup" />
+	  <par name="command" string="lookup" />
+	</action>
+	<action name="Bind">
 	  <par name="trigger" string="left" />
 	  <par name="command" string="rotateleft" />
 	</action>
@@ -55,7 +67,7 @@
       <propclass name="pctools.inventory"/>
       <propclass name="pccamera.old">
 	<action name="SetCamera">
-	  <par name="modename" string="thirdperson" />
+	  <par name="modename" string="firstperson" />
 	  <par name="pitch" float="-.4" />
 	</action>
       </propclass>
