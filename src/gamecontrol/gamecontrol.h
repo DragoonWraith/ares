@@ -34,9 +34,14 @@ THE SOFTWARE.
 #include "celtool/stdpcimp.h"
 #include "celtool/stdparams.h"
 #include "include/igamecontrol.h"
+#include "ivaria/bullet.h"
 
 struct iCelEntity;
 struct iObjectRegistry;
+struct iPcCamera;
+struct iMouseDriver;
+struct iGraphics2D;
+struct iPcDynamicWorld;
 
 /**
  * Factory for game controller.
@@ -54,10 +59,22 @@ private:
   static csStringID id_message;
   static csStringID id_timeout;
 
+  csRef<iMouseDriver> mouse;
+  csRef<iGraphics2D> g2d;
+  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
+
+  csRef<iPcDynamicWorld> dynworld;
+  void TryGetDynworld ();
+
+  csWeakRef<iPcCamera> pccamera;
+  void TryGetCamera ();
+
   // For actions.
   enum actionids
   {
-    action_message = 0
+    action_message = 0,
+    action_startdrag,
+    action_stopdrag,
   };
 
   // For properties.
@@ -75,6 +92,8 @@ public:
   virtual ~celPcGameController ();
 
   virtual void Message (const char* message, float timeout = 2.0f);
+  virtual bool StartDrag ();
+  virtual void StopDrag ();
 
   virtual bool PerformActionIndexed (int idx,
       iCelParameterBlock* params, celData& ret);

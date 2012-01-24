@@ -23,10 +23,17 @@ THE SOFTWARE.
  */
 
 #include "cssysdef.h"
+#include "csutil/csinput.h"
 #include "iutil/objreg.h"
+#include "ivideo/graph3d.h"
+#include "ivideo/graph2d.h"
+#include "iengine/camera.h"
 #include "gamecontrol.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"
+#include "propclass/camera.h"
+#include "propclass/dynworld.h"
+#include "ivaria/dynamics.h"
 
 //---------------------------------------------------------------------------
 
@@ -56,6 +63,8 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   {
     SetActionMask ("ares.controller.");
     AddAction (action_message, "Message");
+    AddAction (action_startdrag, "StartDrag");
+    AddAction (action_stopdrag, "StopDrag");
   }
 
   // For properties.
@@ -64,10 +73,47 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 	//CEL_DATA_LONG, false, "Print counter.", &counter);
   //AddProperty (propid_max, "max",
 	//CEL_DATA_LONG, false, "Max length.", 0);
+
+  mouse = csQueryRegistry<iMouseDriver> (object_reg);
+  csRef<iGraphics3D> g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  g2d = g3d->GetDriver2D ();
 }
 
 celPcGameController::~celPcGameController ()
 {
+}
+
+void celPcGameController::TryGetDynworld ()
+{
+  if (dynworld) return;
+  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (entity);
+  if (dynworld) return;
+
+  // Not very clean. We should only depend on the dynworld plugin
+  // to be in this entity but for the editor we actually have the
+  // dynworld plugin in the 'Zone' entity. Need to find a way for this
+  // that is cleaner.
+  csRef<iCelEntity> zone = pl->FindEntity ("Zone");
+  if (!zone)
+  {
+    printf ("Can't find entity 'Zone' and current entity has no dynworld PC!\n");
+    return;
+  }
+  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zone);
+  iDynamicSystem* dynSys = dynworld->GetCurrentCell ()->GetDynamicSystem ();
+  bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+}
+
+void celPcGameController::TryGetCamera ()
+{
+  if (pccamera) return;
+  csRef<iCelEntity> player = pl->FindEntity ("Player");
+  if (!player)
+  {
+    printf ("Can't find entity 'Player'!\n");
+    return;
+  }
+  pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
 }
 
 bool celPcGameController::PerformActionIndexed (int idx,
@@ -85,6 +131,11 @@ bool celPcGameController::PerformActionIndexed (int idx,
         Message (msg, timeout);
         return true;
       }
+    case action_startdrag:
+      return StartDrag ();
+    case action_stopdrag:
+      StopDrag ();
+      return true;
     default:
       return false;
   }
@@ -95,6 +146,35 @@ void celPcGameController::Message (const char* message, float timeout)
 {
   printf ("MSG: %s\n", message);
   fflush (stdout);
+}
+
+bool celPcGameController::StartDrag ()
+{
+  TryGetCamera ();
+  TryGetDynworld ();
+  iCamera* cam = pccamera->GetCamera ();
+  if (!cam) return false;
+  int x = mouse->GetLastX ();
+  int y = mouse->GetLastY ();
+  csVector2 v2d (x, g2d->GetHeight () - y);
+  csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
+  csVector3 start = cam->GetTransform ().GetOrigin ();
+  csVector3 end = cam->GetTransform ().This2Other (v3d);
+  // Trace the physical beam
+  iRigidBody* hitBody = 0;
+  CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (start, end);
+  if (result.body)
+  {
+    hitBody = result.body->QueryRigidBody ();
+    csVector3 isect = result.isect;
+    printf ("Hit something!\n"); fflush (stdout);
+    return true;
+  }
+  return false;
+}
+
+void celPcGameController::StopDrag ()
+{
 }
 
 #if 0

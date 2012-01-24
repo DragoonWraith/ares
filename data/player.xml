@@ -12,6 +12,10 @@
 	  <par name="command" string="mouselook" />
 	</action>
 	<action name="Bind">
+	  <par name="trigger" string="MouseButton0" />
+	  <par name="command" string="drag" />
+	</action>
+	<action name="Bind">
 	  <par name="trigger" string="pgdn" />
 	  <par name="command" string="lookdown" />
 	</action>
@@ -62,6 +66,24 @@
 	<action name="Bind">
 	  <par name="trigger" string="space" />
 	  <par name="command" string="jump" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.drag.down" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.StartDrag" />
+	  <par name="entity" string="World" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.drag.up" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.StopDrag" />
+	  <par name="entity" string="World" />
 	</action>
       </propclass>
       <propclass name="pctools.inventory"/>
