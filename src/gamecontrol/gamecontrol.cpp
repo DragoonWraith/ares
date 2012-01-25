@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "ivideo/graph3d.h"
 #include "ivideo/graph2d.h"
 #include "iengine/camera.h"
+#include "iengine/movable.h"
 #include "gamecontrol.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"
@@ -74,6 +75,8 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   //AddProperty (propid_max, "max",
 	//CEL_DATA_LONG, false, "Max length.", 0);
 
+  dragobj = 0;
+
   mouse = csQueryRegistry<iMouseDriver> (object_reg);
   csRef<iGraphics3D> g3d = csQueryRegistry<iGraphics3D> (object_reg);
   g2d = g3d->GetDriver2D ();
@@ -81,6 +84,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 
 celPcGameController::~celPcGameController ()
 {
+  pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_PRE);
 }
 
 void celPcGameController::TryGetDynworld ()
@@ -166,8 +170,16 @@ bool celPcGameController::StartDrag ()
   if (result.body)
   {
     hitBody = result.body->QueryRigidBody ();
+    dragobj = dynworld->FindObject (hitBody);
+    if (!dragobj) return false;
     csVector3 isect = result.isect;
+    dragDistance = (isect - start).Norm ();
+    dragobj->MakeKinematic ();
+    iMeshWrapper* mesh = dragobj->GetMesh ();
+    csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
+    dragOffset = isect - meshpos;
     printf ("Hit something!\n"); fflush (stdout);
+    pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_PRE);
     return true;
   }
   return false;
@@ -175,6 +187,37 @@ bool celPcGameController::StartDrag ()
 
 void celPcGameController::StopDrag ()
 {
+  if (!dragobj) return;
+  printf ("Stop drag!\n"); fflush (stdout);
+  dragobj->UndoKinematic ();
+  dragobj = 0;
+  pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_PRE);
+}
+
+void celPcGameController::TickEveryFrame ()
+{
+printf ("Do Drag!\n"); fflush (stdout);
+  if (!dragobj) return;
+  iCamera* cam = pccamera->GetCamera ();
+  if (!cam) return;
+  int x = mouse->GetLastX ();
+  int y = mouse->GetLastY ();
+  csVector2 v2d (x, g2d->GetHeight () - y);
+  csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
+  csVector3 start = cam->GetTransform ().GetOrigin ();
+  csVector3 end = cam->GetTransform ().This2Other (v3d);
+  csVector3 newPosition = end - start;
+  newPosition.Normalize ();
+  newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
+  iMeshWrapper* mesh = dragobj->GetMesh ();
+  if (mesh)
+  {
+    iMovable* mov = mesh->GetMovable ();
+    csVector3 np = newPosition - dragOffset;
+    mov->GetTransform ().SetOrigin (np);
+    mov->UpdateMove ();
+  }
+
 }
 
 #if 0

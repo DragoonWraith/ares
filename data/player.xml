@@ -68,7 +68,7 @@
 	  <par name="command" string="jump" />
 	</action>
       </propclass>
-      <propclass name="pclogic.wire">
+      <propclass name="pclogic.wire" tag="down">
 	<action name="AddInput">
 	  <par name="mask" string="cel.input.drag.down" />
 	</action>
@@ -77,7 +77,7 @@
 	  <par name="entity" string="World" />
 	</action>
       </propclass>
-      <propclass name="pclogic.wire">
+      <propclass name="pclogic.wire" tag="up">
 	<action name="AddInput">
 	  <par name="mask" string="cel.input.drag.up" />
 	</action>

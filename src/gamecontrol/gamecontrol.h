@@ -42,6 +42,7 @@ struct iPcCamera;
 struct iMouseDriver;
 struct iGraphics2D;
 struct iPcDynamicWorld;
+struct iDynamicObject;
 
 /**
  * Factory for game controller.
@@ -62,6 +63,10 @@ private:
   csRef<iMouseDriver> mouse;
   csRef<iGraphics2D> g2d;
   csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
+  bool do_drag;
+  float dragDistance;
+  csVector3 dragOffset;
+  iDynamicObject* dragobj;
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();
@@ -97,6 +102,8 @@ public:
 
   virtual bool PerformActionIndexed (int idx,
       iCelParameterBlock* params, celData& ret);
+
+  virtual void TickEveryFrame ();
 };
 
 #endif // __CEL_PF_GAMECONTROL__
