@@ -25,8 +25,10 @@ THE SOFTWARE.
 #include "cssysdef.h"
 #include "csutil/csinput.h"
 #include "iutil/objreg.h"
+#include "iutil/virtclk.h"
 #include "ivideo/graph3d.h"
 #include "ivideo/graph2d.h"
+#include "ivideo/fontserv.h"
 #include "iengine/camera.h"
 #include "iengine/movable.h"
 #include "gamecontrol.h"
@@ -78,13 +80,19 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   dragobj = 0;
 
   mouse = csQueryRegistry<iMouseDriver> (object_reg);
-  csRef<iGraphics3D> g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  vc = csQueryRegistry<iVirtualClock> (object_reg);
   g2d = g3d->GetDriver2D ();
+  pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
+
+  messageColor = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
+  font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
+  font->GetMaxSize (fontW, fontH);
 }
 
 celPcGameController::~celPcGameController ()
 {
-  pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_PRE);
+  pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
 }
 
 void celPcGameController::TryGetDynworld ()
@@ -148,6 +156,10 @@ bool celPcGameController::PerformActionIndexed (int idx,
 
 void celPcGameController::Message (const char* message, float timeout)
 {
+  TimedMessage m;
+  m.message = message;
+  m.timeleft = timeout;
+  messages.Push (m);
   printf ("MSG: %s\n", message);
   fflush (stdout);
 }
@@ -179,7 +191,6 @@ bool celPcGameController::StartDrag ()
     csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
     dragOffset = isect - meshpos;
     printf ("Hit something!\n"); fflush (stdout);
-    pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_PRE);
     return true;
   }
   return false;
@@ -191,61 +202,53 @@ void celPcGameController::StopDrag ()
   printf ("Stop drag!\n"); fflush (stdout);
   dragobj->UndoKinematic ();
   dragobj = 0;
-  pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_PRE);
 }
 
 void celPcGameController::TickEveryFrame ()
 {
-printf ("Do Drag!\n"); fflush (stdout);
-  if (!dragobj) return;
-  iCamera* cam = pccamera->GetCamera ();
-  if (!cam) return;
-  int x = mouse->GetLastX ();
-  int y = mouse->GetLastY ();
-  csVector2 v2d (x, g2d->GetHeight () - y);
-  csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
-  csVector3 start = cam->GetTransform ().GetOrigin ();
-  csVector3 end = cam->GetTransform ().This2Other (v3d);
-  csVector3 newPosition = end - start;
-  newPosition.Normalize ();
-  newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
-  iMeshWrapper* mesh = dragobj->GetMesh ();
-  if (mesh)
+  if (dragobj)
   {
-    iMovable* mov = mesh->GetMovable ();
-    csVector3 np = newPosition - dragOffset;
-    mov->GetTransform ().SetOrigin (np);
-    mov->UpdateMove ();
+    iCamera* cam = pccamera->GetCamera ();
+    if (!cam) return;
+    int x = mouse->GetLastX ();
+    int y = mouse->GetLastY ();
+    csVector2 v2d (x, g2d->GetHeight () - y);
+    csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
+    csVector3 start = cam->GetTransform ().GetOrigin ();
+    csVector3 end = cam->GetTransform ().This2Other (v3d);
+    csVector3 newPosition = end - start;
+    newPosition.Normalize ();
+    newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
+    iMeshWrapper* mesh = dragobj->GetMesh ();
+    if (mesh)
+    {
+      iMovable* mov = mesh->GetMovable ();
+      csVector3 np = newPosition - dragOffset;
+      mov->GetTransform ().SetOrigin (np);
+      mov->UpdateMove ();
+    }
   }
-
+  if (messages.GetSize () > 0)
+  {
+    float elapsed = vc->GetElapsedSeconds ();
+    int y = 20;
+    size_t i = 0;
+    g3d->BeginDraw (CSDRAW_2DGRAPHICS);
+    while (i < messages.GetSize ())
+    {
+      TimedMessage& m = messages[i];
+      m.timeleft -= elapsed;
+      if (m.timeleft <= 0)
+	messages.DeleteIndex (i);
+      else
+      {
+	g2d->Write (font, 20, y, messageColor, -1, m.message.GetData ());
+	y += fontH + 2;
+        i++;
+      }
+    }
+  }
 }
-
-#if 0
-void celPcGameController::Print (const char* msg)
-{
-  printf ("Print: %s\n", msg);
-  fflush (stdout);
-  params->GetParameter (0).Set (msg);
-  iCelBehaviour* ble = entity->GetBehaviour ();
-  if (ble)
-  {
-    celData ret;
-    ble->SendMessage ("pcmisc.test_print", this, ret, params);
-  }
-
-  if (!dispatcher_print)
-  {
-    dispatcher_print = entity->QueryMessageChannel ()->
-      CreateMessageDispatcher (this, pl->FetchStringID ("cel.test.print"));
-    if (!dispatcher_print) return;
-  }
-  dispatcher_print->SendMessage (params);
-
-  counter++;
-  size_t l = strlen (msg);
-  if (l > max) max = l;
-}
-#endif
 
 //---------------------------------------------------------------------------
 

@@ -76,6 +76,11 @@
 	  <par name="msgid" string="ares.controller.StartDrag" />
 	  <par name="entity" string="World" />
 	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.Message" />
+	  <par name="entity" string="World" />
+	  <par name="message" string="Drag this thing!" />
+	</action>
       </propclass>
       <propclass name="pclogic.wire" tag="up">
 	<action name="AddInput">

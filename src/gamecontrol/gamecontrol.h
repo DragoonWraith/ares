@@ -40,14 +40,23 @@ struct iCelEntity;
 struct iObjectRegistry;
 struct iPcCamera;
 struct iMouseDriver;
+struct iGraphics3D;
 struct iGraphics2D;
 struct iPcDynamicWorld;
 struct iDynamicObject;
+struct iFont;
+struct iVirtualClock;
 
 /**
  * Factory for game controller.
  */
 CEL_DECLARE_FACTORY (GameController)
+
+struct TimedMessage
+{
+  csString message;
+  float timeleft;
+};
 
 /**
  * This is a game controller property class.
@@ -60,13 +69,23 @@ private:
   static csStringID id_message;
   static csStringID id_timeout;
 
-  csRef<iMouseDriver> mouse;
+  csRef<iGraphics3D> g3d;
   csRef<iGraphics2D> g2d;
+  csRef<iVirtualClock> vc;
+
+  // For dragging.
+  csRef<iMouseDriver> mouse;
   csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
   bool do_drag;
   float dragDistance;
   csVector3 dragOffset;
   iDynamicObject* dragobj;
+
+  // For messages.
+  csArray<TimedMessage> messages;
+  int messageColor;
+  csRef<iFont> font;
+  int fontW, fontH;
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();
