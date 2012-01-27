@@ -364,12 +364,16 @@ void celPcGameController::TickEveryFrame ()
 	messages.DeleteIndex (i);
       else
       {
+	int alpha = 255;
+	if (m.timeleft < 1.0f) alpha = int (255.0f * (m.timeleft));
+	messageColor = g3d->GetDriver2D ()->FindRGB (255, 255, 255, alpha);
 	g2d->Write (font, 20, y, messageColor, -1, m.message.GetData ());
 	y += fontH + 2;
         i++;
       }
     }
   }
+
   icon->DrawScaled (g3d, sw / 2, sh / 2, iconW, iconH);
 }
 
