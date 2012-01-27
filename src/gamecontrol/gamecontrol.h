@@ -95,8 +95,12 @@ private:
 
   // Icons.
   csSimplePixmap* iconCursor;
+  csSimplePixmap* iconEye;
+  csSimplePixmap* iconBook;
   csSimplePixmap* iconDot;
   void LoadIcons ();
+  csStringID classNoteID;
+  csStringID classInfoID;
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();

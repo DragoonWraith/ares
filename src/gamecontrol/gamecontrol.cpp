@@ -94,6 +94,9 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
   font->GetMaxSize (fontW, fontH);
 
+  classNoteID = pl->FetchStringID ("ares.note");
+  classInfoID = pl->FetchStringID ("ares.info");
+
   LoadIcons ();
 }
 
@@ -101,6 +104,8 @@ celPcGameController::~celPcGameController ()
 {
   pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
   delete iconCursor;
+  delete iconEye;
+  delete iconBook;
   delete iconDot;
 }
 
@@ -117,6 +122,16 @@ void celPcGameController::LoadIcons ()
       "/icons/icon_dot.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
   txt->Register (g3d->GetTextureManager ());
   iconDot = new csSimplePixmap (txt->GetTextureHandle ());
+
+  txt = engine->CreateTexture ("icon_eye",
+      "/icons/iconic_eye_32x24.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (g3d->GetTextureManager ());
+  iconEye = new csSimplePixmap (txt->GetTextureHandle ());
+
+  txt = engine->CreateTexture ("icon_book",
+      "/icons/iconic_book_alt2_32x28.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (g3d->GetTextureManager ());
+  iconBook = new csSimplePixmap (txt->GetTextureHandle ());
 }
 
 void celPcGameController::TryGetDynworld ()
@@ -274,7 +289,18 @@ void celPcGameController::TickEveryFrame ()
     iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
     if (obj)
     {
-      if (!obj->IsStatic ())
+      iCelEntity* ent = obj->GetEntity ();
+      if (ent && ent->HasClass (classNoteID))
+      {
+        icon = iconBook;
+        iconW = 16; iconH = 16;
+      }
+      else if (ent && ent->HasClass (classInfoID))
+      {
+        icon = iconEye;
+        iconW = 16; iconH = 16;
+      }
+      else if (!obj->IsStatic ())
       {
         icon = iconCursor;
         iconW = 16; iconH = 16;
