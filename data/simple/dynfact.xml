@@ -85,8 +85,21 @@
     <addon plugin="cel.addons.celentitytpl" entityname="Base">
       <propclass name="pcobject.mesh" />
     </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="Crate"> <propclass name="pcobject.mesh" /> </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="Box">
+    <addon plugin="cel.addons.celentitytpl" entityname="Crate">
+      <propclass name="pcobject.mesh" />
+      <class>ares.info</class>
+      <propclass name="pctools.properties">
+        <property name="ares.info" string="A simple crate" />
+      </propclass>
+    </addon>
+    <addon plugin="cel.addons.celentitytpl" entityname="Barrel">
+      <propclass name="pcobject.mesh" />
+      <class>ares.info</class>
+      <propclass name="pctools.properties">
+        <property name="ares.info" string="This is a barrel. The type of barrel that is overused in almost any 3D game" />
+      </propclass>
+    </addon>
+    <addon plugin="cel.addons.celentitytpl" entityname="Box">
       <template name="Base" />
       <propclass name="pctools.properties">
 	<property name="counter" long="1" />

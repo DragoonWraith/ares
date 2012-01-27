@@ -114,6 +114,7 @@ private:
     action_message = 0,
     action_startdrag,
     action_stopdrag,
+    action_examine,
   };
 
   // For properties.
@@ -131,6 +132,7 @@ public:
   virtual ~celPcGameController ();
 
   virtual void Message (const char* message, float timeout = 2.0f);
+  virtual void Examine ();
   virtual bool StartDrag ();
   virtual void StopDrag ();
 

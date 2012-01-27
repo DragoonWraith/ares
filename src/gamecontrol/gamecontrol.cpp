@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include "physicallayer/entity.h"
 #include "propclass/camera.h"
 #include "propclass/dynworld.h"
+#include "propclass/prop.h"
 #include "ivaria/dynamics.h"
 
 //---------------------------------------------------------------------------
@@ -72,6 +73,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     AddAction (action_message, "Message");
     AddAction (action_startdrag, "StartDrag");
     AddAction (action_stopdrag, "StopDrag");
+    AddAction (action_examine, "Examine");
   }
 
   // For properties.
@@ -91,7 +93,9 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
 
   messageColor = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
-  font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
+  iFontServer* fontsrv = g3d->GetDriver2D ()->GetFontServer ();
+  //font = fontsrv->LoadFont (CSFONT_COURIER);
+  font = fontsrv->LoadFont ("DejaVuSansBold", 10);
   font->GetMaxSize (fontW, fontH);
 
   classNoteID = pl->FetchStringID ("ares.note");
@@ -187,10 +191,48 @@ bool celPcGameController::PerformActionIndexed (int idx,
     case action_stopdrag:
       StopDrag ();
       return true;
+    case action_examine:
+      Examine ();
+      return true;
     default:
       return false;
   }
   return false;
+}
+
+void celPcGameController::Examine ()
+{
+  iRigidBody* hitBody;
+  csVector3 start, isect;
+  iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
+  if (obj)
+  {
+    iCelEntity* ent = obj->GetEntity ();
+    if (ent && ent->HasClass (classInfoID))
+    {
+      csRef<iPcProperties> prop = celQueryPropertyClassEntity<iPcProperties> (ent);
+      if (!prop)
+      {
+        Message ("ERROR: Entity has no properties!");
+	return;
+      }
+      size_t idx = prop->GetPropertyIndex ("ares.info");
+      if (idx == csArrayItemNotFound)
+      {
+        Message ("ERROR: Entity has no 'ares.info' property!");
+	return;
+      }
+      Message (prop->GetPropertyString (idx));
+    }
+    else
+    {
+      Message ("I see nothing special!");
+    }
+  }
+  else
+  {
+    Message ("Nothing to examine!");
+  }
 }
 
 void celPcGameController::Message (const char* message, float timeout)

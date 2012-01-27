@@ -16,6 +16,10 @@
 	  <par name="command" string="drag" />
 	</action>
 	<action name="Bind">
+	  <par name="trigger" string="MouseButton1" />
+	  <par name="command" string="examine" />
+	</action>
+	<action name="Bind">
 	  <par name="trigger" string="pgdn" />
 	  <par name="command" string="lookdown" />
 	</action>
@@ -88,6 +92,15 @@
 	</action>
 	<action name="AddOutput">
 	  <par name="msgid" string="ares.controller.StopDrag" />
+	  <par name="entity" string="World" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="examine">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.examine.down" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.Examine" />
 	  <par name="entity" string="World" />
 	</action>
       </propclass>

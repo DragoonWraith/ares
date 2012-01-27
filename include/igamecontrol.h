@@ -53,6 +53,13 @@ struct iPcGameController : public virtual iBase
   virtual void Message (const char* message, float timeout = 2.0f) = 0;
 
   /**
+   * Examine the object which the player is currently focusing on.
+   * This will see if the object has the 'ares.info' class and if so
+   * it will get the 'ares.info' property to use as a message.
+   */
+  virtual void Examine () = 0;
+
+  /**
    * Start dragging the object in the center of the screen (if possible).
    * Returns false if not possible.
    */
