@@ -164,6 +164,8 @@ void PlayMode::Stop ()
   snapshot->Restore (dynworld);
   delete snapshot;
   snapshot = 0;
+
+  aresed3d->GetG2D ()->SetMouseCursor (csmcArrow);
 }
 
 bool PlayMode::OnKeyboard(iEvent& ev, utf32_char code)

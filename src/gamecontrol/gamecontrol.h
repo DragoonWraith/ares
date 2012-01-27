@@ -45,7 +45,9 @@ struct iGraphics2D;
 struct iPcDynamicWorld;
 struct iDynamicObject;
 struct iFont;
+struct iEngine;
 struct iVirtualClock;
+class csSimplePixmap;
 
 /**
  * Factory for game controller.
@@ -72,6 +74,7 @@ private:
   csRef<iGraphics3D> g3d;
   csRef<iGraphics2D> g2d;
   csRef<iVirtualClock> vc;
+  csRef<iEngine> engine;
 
   // For dragging.
   csRef<iMouseDriver> mouse;
@@ -80,12 +83,20 @@ private:
   float dragDistance;
   csVector3 dragOffset;
   iDynamicObject* dragobj;
+  /// Find the object that is pointed at in the center of the screen.
+  iDynamicObject* FindCenterObject (iRigidBody*& hitBody,
+      csVector3& start, csVector3& isect);
 
   // For messages.
   csArray<TimedMessage> messages;
   int messageColor;
   csRef<iFont> font;
   int fontW, fontH;
+
+  // Icons.
+  csSimplePixmap* iconCursor;
+  csSimplePixmap* iconDot;
+  void LoadIcons ();
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();

@@ -24,11 +24,15 @@ THE SOFTWARE.
 
 #include "cssysdef.h"
 #include "csutil/csinput.h"
+#include "cstool/cspixmap.h"
 #include "iutil/objreg.h"
 #include "iutil/virtclk.h"
 #include "ivideo/graph3d.h"
 #include "ivideo/graph2d.h"
 #include "ivideo/fontserv.h"
+#include "ivideo/txtmgr.h"
+#include "iengine/engine.h"
+#include "iengine/texture.h"
 #include "iengine/camera.h"
 #include "iengine/movable.h"
 #include "gamecontrol.h"
@@ -83,16 +87,36 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
   vc = csQueryRegistry<iVirtualClock> (object_reg);
   g2d = g3d->GetDriver2D ();
+  engine = csQueryRegistry<iEngine> (object_reg);
   pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
 
   messageColor = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
   font->GetMaxSize (fontW, fontH);
+
+  LoadIcons ();
 }
 
 celPcGameController::~celPcGameController ()
 {
   pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
+  delete iconCursor;
+  delete iconDot;
+}
+
+void celPcGameController::LoadIcons ()
+{
+  iTextureWrapper* txt;
+
+  txt = engine->CreateTexture ("icon_cursor",
+      "/icons/iconic_cursor_32x32.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (g3d->GetTextureManager ());
+  iconCursor = new csSimplePixmap (txt->GetTextureHandle ());
+
+  txt = engine->CreateTexture ("icon_dot",
+      "/icons/icon_dot.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (g3d->GetTextureManager ());
+  iconDot = new csSimplePixmap (txt->GetTextureHandle ());
 }
 
 void celPcGameController::TryGetDynworld ()
@@ -164,27 +188,35 @@ void celPcGameController::Message (const char* message, float timeout)
   fflush (stdout);
 }
 
-bool celPcGameController::StartDrag ()
+iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
+    csVector3& start, csVector3& isect)
 {
   TryGetCamera ();
   TryGetDynworld ();
   iCamera* cam = pccamera->GetCamera ();
-  if (!cam) return false;
+  if (!cam) return 0;
   int x = mouse->GetLastX ();
   int y = mouse->GetLastY ();
   csVector2 v2d (x, g2d->GetHeight () - y);
   csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
-  csVector3 start = cam->GetTransform ().GetOrigin ();
+  start = cam->GetTransform ().GetOrigin ();
   csVector3 end = cam->GetTransform ().This2Other (v3d);
   // Trace the physical beam
-  iRigidBody* hitBody = 0;
   CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (start, end);
-  if (result.body)
+  if (!result.body) return 0;
+  hitBody = result.body->QueryRigidBody ();
+  isect = result.isect;
+  return dynworld->FindObject (hitBody);
+}
+
+bool celPcGameController::StartDrag ()
+{
+  iRigidBody* hitBody;
+  csVector3 start, isect;
+  iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
+  if (obj)
   {
-    hitBody = result.body->QueryRigidBody ();
-    dragobj = dynworld->FindObject (hitBody);
-    if (!dragobj) return false;
-    csVector3 isect = result.isect;
+    dragobj = obj;
     dragDistance = (isect - start).Norm ();
     dragobj->MakeKinematic ();
     iMeshWrapper* mesh = dragobj->GetMesh ();
@@ -206,13 +238,18 @@ void celPcGameController::StopDrag ()
 
 void celPcGameController::TickEveryFrame ()
 {
+  csSimplePixmap* icon = iconDot;
+  int iconW = 8, iconH = 8;
+
+  int sw = g2d->GetWidth ();
+  int sh = g2d->GetHeight ();
   if (dragobj)
   {
     iCamera* cam = pccamera->GetCamera ();
     if (!cam) return;
     int x = mouse->GetLastX ();
     int y = mouse->GetLastY ();
-    csVector2 v2d (x, g2d->GetHeight () - y);
+    csVector2 v2d (x, sh - y);
     csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
     csVector3 start = cam->GetTransform ().GetOrigin ();
     csVector3 end = cam->GetTransform ().This2Other (v3d);
@@ -227,13 +264,30 @@ void celPcGameController::TickEveryFrame ()
       mov->GetTransform ().SetOrigin (np);
       mov->UpdateMove ();
     }
+    icon = iconCursor;
+    iconW = 16; iconH = 16;
   }
+  else
+  {
+    iRigidBody* hitBody;
+    csVector3 start, isect;
+    iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
+    if (obj)
+    {
+      if (!obj->IsStatic ())
+      {
+        icon = iconCursor;
+        iconW = 16; iconH = 16;
+      }
+    }
+  }
+
+  g3d->BeginDraw (CSDRAW_2DGRAPHICS);
   if (messages.GetSize () > 0)
   {
     float elapsed = vc->GetElapsedSeconds ();
     int y = 20;
     size_t i = 0;
-    g3d->BeginDraw (CSDRAW_2DGRAPHICS);
     while (i < messages.GetSize ())
     {
       TimedMessage& m = messages[i];
@@ -248,6 +302,7 @@ void celPcGameController::TickEveryFrame ()
       }
     }
   }
+  icon->DrawScaled (g3d, sw / 2, sh / 2, iconW, iconH);
 }
 
 //---------------------------------------------------------------------------

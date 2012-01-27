@@ -1,0 +1,2 @@
+The icons from Iconic (all icons starting with iconic_) have the license
+CC SA 3.0. The original set can be found at: http://somerandomdude.com/work/iconic/
