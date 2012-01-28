@@ -1,0 +1,19 @@
+<library>
+  <materials>
+    <material name="barril">
+      <shadervar type="texture" name="tex diffuse">barril_color3_jpg</shadervar>
+      <shadervar type="texture" name="tex normal">barril_color3_jpg</shadervar>
+      <shadervar type="texture" name="tex normal 2">barril_color3_bump_jp</shadervar>
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+  </materials>
+  <textures>
+    <texture name="barril_color3_bump_jp">
+      <file>textures/barril_color3_bump.jpg</file>
+    </texture>
+    <texture name="barril_color3_jpg">
+      <file>textures/barril_color3.jpg</file>
+    </texture>
+  </textures>
+  <library>factories/Barril</library>
+</library>

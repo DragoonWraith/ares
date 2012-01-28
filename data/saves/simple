@@ -2,6 +2,7 @@
   <asset path="/appdata/simple/" file="assets.xml" />
   <asset path="/appdata/simple/" file="dynfact.xml" />
   <asset path="/appdata/simple/" file="level.xml" />
+  <asset path="/models/" file="library" />
   <dynworld lastid="1000020000">
     <cell name="outside">
       <obj fact="Crate" m="0.951568 -2.25244e-009 0.307438 2.17593e-009 1 5.91649e-010 -0.307438 1.05969e-010 0.951568" v="-5.69458 -1.78814e-007 13.64" id="1000000000" ent="Crate" />

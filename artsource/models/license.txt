@@ -1,0 +1,7 @@
+barril2.blend:
+  Original: http://www.blendswap.com/blends/misc-objects/barril2-blend/
+  License: Creative Commons Attribution 3.0
+  You can use it for whatever you like (even commercially), but if you use
+  this blend you must:
+      Credit Xavi Valle	 .
+
