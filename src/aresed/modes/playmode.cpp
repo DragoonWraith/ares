@@ -89,6 +89,7 @@ void PlayMode::Start ()
   aresed3d->GetSelection ()->SetCurrentObject (0);
   delete snapshot;
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  dynworld->InhibitEntities (false);
   snapshot = new DynworldSnapshot (dynworld);
 
   // Set entities for all dynamic objects and find the player object.
@@ -111,7 +112,7 @@ void PlayMode::Start ()
 	break;
       }
 
-      dynobj->SetEntity (0, 0, 0);
+      dynobj->ForceEntity ();
     }
   }
 
@@ -161,6 +162,7 @@ void PlayMode::Stop ()
   elcm->SetPlayer (0);
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  dynworld->InhibitEntities (true);
   snapshot->Restore (dynworld);
   delete snapshot;
   snapshot = 0;

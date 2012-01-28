@@ -535,6 +535,7 @@ bool AresEdit3DView::Setup ()
 
   elcm = csQueryRegistry<iELCM> (r);
   dynworld->SetELCM (elcm);
+  dynworld->InhibitEntities (true);
 
   worldLoader = new WorldLoader (r);
   worldLoader->SetZone (dynworld);
