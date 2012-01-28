@@ -146,7 +146,7 @@ void CellDialog::UpdateList ()
       info.AppendFmt ("%d meshes", sector->GetMeshes ()->GetCount());
       if (cell) info += ", ";
     }
-    if (cell) info.AppendFmt ("%d objects", cell->GetObjectCount ());
+    if (cell) info.AppendFmt ("%uz objects", cell->GetObjectCount ());
 
     int idx = ListCtrlTools::AddRow (list, name, (const char*)info, 0);
     if (!cell)

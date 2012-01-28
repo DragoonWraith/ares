@@ -129,6 +129,7 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   iDynamicFactory* fact = dynworld->AddFactory (newname, 1.0f, 1.0f);
   fact->SetAttribute ("category", categoryValue->GetStringValue ());
+  aresed3d->SetupFactorySettings (fact);
 
   CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
   categoryCollectionValue->Refresh ();

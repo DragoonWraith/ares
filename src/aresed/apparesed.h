@@ -339,6 +339,12 @@ public:
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
 
+  /**
+   * When the physical properties of a factory change or a new factory is created
+   * we need to change various internal settings for this.
+   */
+  void SetupFactorySettings (iDynamicFactory* fact);
+
   /// Warp the camera to another cell.
   void WarpCell (iDynamicCell* cell);
 

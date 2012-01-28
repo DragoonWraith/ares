@@ -625,6 +625,14 @@ bool AresEdit3DView::Setup ()
   return true;
 }
 
+void AresEdit3DView::SetupFactorySettings (iDynamicFactory* fact)
+{
+  csBox3 bbox = fact->GetPhysicsBBox ();
+  factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
+  const char* st = fact->GetAttribute ("defaultstatic");
+  if (st && *st == 't') static_factories.Add (fact->GetName ());
+}
+
 bool AresEdit3DView::SetupDynWorld ()
 {
   ClearItems ();
@@ -634,10 +642,7 @@ bool AresEdit3DView::SetupDynWorld ()
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
-    csBox3 bbox = fact->GetPhysicsBBox ();
-    factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
-    const char* st = fact->GetAttribute ("defaultstatic");
-    if (st && *st == 't') static_factories.Add (fact->GetName ());
+    SetupFactorySettings (fact);
     const char* category = fact->GetAttribute ("category");
     AddItem (category, fact->GetName ());
   }

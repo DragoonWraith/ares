@@ -239,6 +239,9 @@ protected:
   virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
+    UIManager* uiManager = dialog->GetUIManager ();
+    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    ares3d->SetupFactorySettings (dialog->GetCurrentFactory ());
   }
 
 public:
