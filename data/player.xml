@@ -20,22 +20,6 @@
 	  <par name="command" string="examine" />
 	</action>
 	<action name="Bind">
-	  <par name="trigger" string="pgdn" />
-	  <par name="command" string="lookdown" />
-	</action>
-	<action name="Bind">
-	  <par name="trigger" string="pgup" />
-	  <par name="command" string="lookup" />
-	</action>
-	<action name="Bind">
-	  <par name="trigger" string="left" />
-	  <par name="command" string="rotateleft" />
-	</action>
-	<action name="Bind">
-	  <par name="trigger" string="right" />
-	  <par name="command" string="rotateright" />
-	</action>
-	<action name="Bind">
 	  <par name="trigger" string="up" />
 	  <par name="command" string="forward" />
 	</action>
@@ -45,11 +29,11 @@
 	</action>
 	<action name="Bind">
 	  <par name="trigger" string="a" />
-	  <par name="command" string="rotateleft" />
+	  <par name="command" string="strafeleft" />
 	</action>
 	<action name="Bind">
 	  <par name="trigger" string="d" />
-	  <par name="command" string="rotateright" />
+	  <par name="command" string="straferight" />
 	</action>
 	<action name="Bind">
 	  <par name="trigger" string="w" />
@@ -58,14 +42,6 @@
 	<action name="Bind">
 	  <par name="trigger" string="s" />
 	  <par name="command" string="backward" />
-	</action>
-	<action name="Bind">
-	  <par name="trigger" string="q" />
-	  <par name="command" string="strafeleft" />
-	</action>
-	<action name="Bind">
-	  <par name="trigger" string="e" />
-	  <par name="command" string="straferight" />
 	</action>
 	<action name="Bind">
 	  <par name="trigger" string="space" />
