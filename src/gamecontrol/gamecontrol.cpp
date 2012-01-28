@@ -275,10 +275,16 @@ bool celPcGameController::StartDrag ()
   {
     dragobj = obj;
     dragDistance = (isect - start).Norm ();
-    dragobj->MakeKinematic ();
-    iMeshWrapper* mesh = dragobj->GetMesh ();
-    csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
-    dragOffset = isect - meshpos;
+    dragJoint = bullet_dynSys->CreatePivotJoint ();
+    dragJoint->Attach (hitBody, isect);
+
+    // Set some dampening on the rigid body to have a more stable dragging
+    csRef<CS::Physics::Bullet::iRigidBody> csBody =
+          scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
+    oldLinearDampening = csBody->GetLinearDampener ();
+    oldAngularDampening = csBody->GetRollingDampener ();
+    csBody->SetLinearDampener (0.9f);
+    csBody->SetRollingDampener (0.9f);
     printf ("Hit something!\n"); fflush (stdout);
     return true;
   }
@@ -289,14 +295,18 @@ void celPcGameController::StopDrag ()
 {
   if (!dragobj) return;
   printf ("Stop drag!\n"); fflush (stdout);
-  dragobj->UndoKinematic ();
+  csRef<CS::Physics::Bullet::iRigidBody> csBody =
+    scfQueryInterface<CS::Physics::Bullet::iRigidBody> (dragJoint->GetAttachedBody ());
+  csBody->SetLinearDampener (oldLinearDampening);
+  csBody->SetRollingDampener (oldAngularDampening);
+  bullet_dynSys->RemovePivotJoint (dragJoint);
+  dragJoint = 0;
   dragobj = 0;
 }
 
 void celPcGameController::TickEveryFrame ()
 {
   csSimplePixmap* icon = iconDot;
-  int iconW = 8, iconH = 8;
 
   int sw = g2d->GetWidth ();
   int sh = g2d->GetHeight ();
@@ -313,16 +323,8 @@ void celPcGameController::TickEveryFrame ()
     csVector3 newPosition = end - start;
     newPosition.Normalize ();
     newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
-    iMeshWrapper* mesh = dragobj->GetMesh ();
-    if (mesh)
-    {
-      iMovable* mov = mesh->GetMovable ();
-      csVector3 np = newPosition - dragOffset;
-      mov->GetTransform ().SetOrigin (np);
-      mov->UpdateMove ();
-    }
+     dragJoint->SetPosition (newPosition);
     icon = iconCursor;
-    iconW = 16; iconH = 16;
   }
   else
   {
@@ -335,17 +337,14 @@ void celPcGameController::TickEveryFrame ()
       if (ent && ent->HasClass (classNoteID))
       {
         icon = iconBook;
-        iconW = 16; iconH = 16;
       }
       else if (ent && ent->HasClass (classInfoID))
       {
         icon = iconEye;
-        iconW = 16; iconH = 16;
       }
       else if (!obj->IsStatic ())
       {
         icon = iconCursor;
-        iconW = 16; iconH = 16;
       }
     }
   }
@@ -374,7 +373,7 @@ void celPcGameController::TickEveryFrame ()
     }
   }
 
-  icon->DrawScaled (g3d, sw / 2, sh / 2, iconW, iconH);
+  icon->Draw (g3d, sw / 2, sh / 2);
 }
 
 //---------------------------------------------------------------------------

@@ -76,16 +76,18 @@ private:
   csRef<iVirtualClock> vc;
   csRef<iEngine> engine;
 
-  // For dragging.
-  csRef<iMouseDriver> mouse;
-  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
-  bool do_drag;
-  float dragDistance;
-  csVector3 dragOffset;
-  iDynamicObject* dragobj;
   /// Find the object that is pointed at in the center of the screen.
   iDynamicObject* FindCenterObject (iRigidBody*& hitBody,
       csVector3& start, csVector3& isect);
+
+  // For dragging.
+  csRef<iMouseDriver> mouse;
+  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
+  csRef<CS::Physics::Bullet::iPivotJoint> dragJoint;
+  float oldLinearDampening;
+  float oldAngularDampening;
+  float dragDistance;
+  iDynamicObject* dragobj;
 
   // For messages.
   csArray<TimedMessage> messages;
