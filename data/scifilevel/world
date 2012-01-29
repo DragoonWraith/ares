@@ -1,0 +1,84 @@
+<world>
+  <materials>
+    <material name="Material">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+  </materials>
+  <textures>
+  </textures>
+  <library>factories/Room</library>
+  <sector name="outside">
+    <light name="Lamp_003">
+      <center x="5.173634" z="-5.302315" y="3.636661" />
+      <color red="1.000000" green="1.000000" blue="1.000000" />
+      <radius brightness="1.000000">29.999983</radius>
+      <attenuation>linear</attenuation>
+    </light>
+    <light name="Lamp_002">
+      <center x="-3.489573" z="-4.799672" y="3.636661" />
+      <color red="1.000000" green="1.000000" blue="1.000000" />
+      <radius brightness="1.000000">29.999983</radius>
+      <attenuation>linear</attenuation>
+    </light>
+    <light name="Lamp_001">
+      <center x="-4.731398" z="4.040940" y="3.636661" />
+      <color red="1.000000" green="1.000000" blue="1.000000" />
+      <radius brightness="1.000000">29.999983</radius>
+      <attenuation>linear</attenuation>
+    </light>
+    <meshref name="Room">
+      <factory>Room</factory>
+      <move>
+        <v x="0.0" z="0.0" y="0.0" />
+      </move>
+      <addon plugin="crystalspace.dynamics.loader">
+        <system name="ares.dynamics.system">
+           <colliderbox x="400" y="10" z="400">
+             <move y="-5" />
+           </colliderbox>
+           <colliderbox x="400" y="1" z="400">
+             <move y="5.5" />
+           </colliderbox>
+           <colliderbox x="18" y="5" z=".5">
+             <move y="2.5" z="8.75" />
+           </colliderbox>
+           <colliderbox x="18" y="5" z=".5">
+             <move y="2.5" z="-8.75" />
+           </colliderbox>
+           <colliderbox x=".5" y="5" z="18">
+             <move y="2.5" x="8.75" />
+           </colliderbox>
+           <colliderbox x=".5" y="5" z="18">
+             <move y="2.5" x="-8.75" />
+           </colliderbox>
+           <colliderbox x=".5" y="5" z="11">
+             <move y="2.5" z="3" x="-.25" />
+           </colliderbox>
+           <colliderbox x=".5" y="5" z="2">
+             <move y="2.5" z="-7.5" x="-.25" />
+           </colliderbox>
+           <colliderbox x="2" y="5" z=".5">
+             <move y="2.5" x="1" z="3.55" />
+           </colliderbox>
+           <colliderbox x=".8" y="5" z=".5">
+             <move y="2.5" x="-8.1" z="-1.45" />
+           </colliderbox>
+           <colliderbox x="4.9" y="5" z=".5">
+             <move y="2.5" x="-2.95" z="-1.45" />
+           </colliderbox>
+        </system>
+      </addon>
+    </meshref>
+    <light name="Lamp">
+      <center x="7.268602" z="6.040940" y="3.636661" />
+      <color red="1.000000" green="1.000000" blue="1.000000" />
+      <radius brightness="1.000000">29.999983</radius>
+      <attenuation>linear</attenuation>
+    </light>
+  </sector>
+  <start name="Camera">
+    <sector>outside</sector>
+    <position x="5.074326" z="-6.293959" y="2.465084" />
+    <up y="1" x="0" z="0" />
+  </start>
+</world>

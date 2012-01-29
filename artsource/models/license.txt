@@ -1,7 +1,33 @@
-barril2.blend:
+The models in ccmodels.blend were collected from various sources and
+combined in a single blend.
+They have the following licenses:
+
+Barril:
   Original: http://www.blendswap.com/blends/misc-objects/barril2-blend/
   License: Creative Commons Attribution 3.0
   You can use it for whatever you like (even commercially), but if you use
-  this blend you must:
-      Credit Xavi Valle	 .
+  this blend you must: Credit Xavi Valle	
+
+MetalDesk:
+  Original: http://www.blendswap.com/blends/furniture/grungy-desk/
+  License: Creative Commons Attribution 3.0
+  You can use it for whatever you like (even commercially), but if you use
+  this blend you must: Credit Tim Edwards
+
+RedChair2:
+  Original: http://www.blendswap.com/blends/furniture/school-furniture/
+  License: Creative Commons Zero Mark 1.0
+  You can use it for whatever you like (even commercially).
+  We recommend you to credit Theo, but you are not required to do so.
+
+scifilevel.blend:
+  Author: Jorrit Tyberghein
+  License: Creative Commons Attribution 3.0 
+  Credit not needed but always nice.
+  Some textures used have other license:
+      - metal010-new-tileable-bar.png (todo, site down)
+      - metal005-new-tileable.png
+
+Textures:
+  various_textures.png: CC Attribution 3.0 (Jorrit Tyberghein)
 

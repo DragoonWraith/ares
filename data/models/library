@@ -6,6 +6,17 @@
       <shadervar type="texture" name="tex normal 2">barril_color3_bump_jp</shadervar>
       <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
     </material>
+    <material name="legs">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Handles">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Main">
+      <shadervar type="texture" name="tex diffuse">metal_desk_uv</shadervar>
+      <shadervar type="texture" name="tex normal">metal_desk_uv</shadervar>
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
   </materials>
   <textures>
     <texture name="barril_color3_bump_jp">
@@ -14,6 +25,11 @@
     <texture name="barril_color3_jpg">
       <file>textures/barril_color3.jpg</file>
     </texture>
+    <texture name="metal_desk_uv">
+      <file>textures/metal desk uv.png</file>
+    </texture>
   </textures>
   <library>factories/Barril</library>
+  <library>factories/RedChair2</library>
+  <library>factories/MetalDesk</library>
 </library>
