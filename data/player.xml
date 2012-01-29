@@ -85,7 +85,7 @@
 	<action name="SetCamera">
 	  <par name="modename" string="firstperson" />
 	  <par name="pitch" float="-.4" />
-	  <par name="fpoffset" vector3="0,1.7,0" />
+	  <par name="fpoffset" vector3="0,1.6,0" />
 	</action>
       </propclass>
       <propclass name="pcmove.actor.dynamic">
