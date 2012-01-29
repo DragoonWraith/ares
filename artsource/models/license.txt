@@ -25,8 +25,9 @@ scifilevel.blend:
   License: Creative Commons Attribution 3.0 
   Credit not needed but always nice.
   Some textures used have other license:
-      - metal010-new-tileable-bar.png (todo, site down)
-      - metal005-new-tileable.png
+      - metal010-new-tileable-bar.png and metal005-new-tileable.png:
+        Original: http://opengameart.org/content/rusted-metal-texture-pack
+	License: Creative Commons 3.0 BY
 
 Textures:
   various_textures.png: CC Attribution 3.0 (Jorrit Tyberghein)
