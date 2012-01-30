@@ -461,7 +461,11 @@ void Camera::CamZoom (int x, int y, bool forward)
   csVector3 isect;
   aresed3d->TraceBeam (aresed3d->GetBeam (x, y), isect);
   float camdist = sqrt (csSquaredDist::PointPoint (isect, camera->GetTransform ().GetOrigin ()));
-  if (camdist < 20) camdist = camdist / 2.0f;
+  if (camdist < 20)
+  {
+    camdist = camdist / 2.0f;
+    if (camdist < 1.0f) camdist = 1.0f;
+  }
   else camdist = 10.0f;
 
   csVector2 v2d (x, aresed3d->GetG2D ()->GetHeight () - y);
