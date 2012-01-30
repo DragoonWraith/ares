@@ -455,8 +455,17 @@ void Camera::CamBlendLookAtPosition (const csVector3& center, float weight)
 
 void Camera::CamZoom (int x, int y, bool forward)
 {
+  // First we are going to calculate how far we are from the object
+  // that we are focusing on. If we are close enough we slow down
+  // the movement a bit to make it more precise.
+  csVector3 isect;
+  aresed3d->TraceBeam (aresed3d->GetBeam (x, y), isect);
+  float camdist = sqrt (csSquaredDist::PointPoint (isect, camera->GetTransform ().GetOrigin ()));
+  if (camdist < 20) camdist = camdist / 2.0f;
+  else camdist = 10.0f;
+
   csVector2 v2d (x, aresed3d->GetG2D ()->GetHeight () - y);
-  csVector3 v3d = camera->InvPerspective (v2d, 10.0f);
+  csVector3 v3d = camera->InvPerspective (v2d, camdist);
   csVector3 endBeamMove = camera->GetTransform ().This2Other (forward ? v3d : -v3d);
   csVector3 endBeamLookAt = camera->GetTransform ().This2Other (v3d);
 
