@@ -253,7 +253,8 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       do_mouse_panning = false;
       if (!do_mouse_dragging)
       {
-        aresed3d->TraceBeam (aresed3d->GetBeam (mouseX, mouseY), panningCenter);
+        if (!aresed3d->TraceBeam (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
+	  return false;
         do_mouse_dragging = true;
       }
     }
