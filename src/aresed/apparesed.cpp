@@ -906,6 +906,11 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
     tc.SetOrigin (newPosition);
   }
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
+  if (!dynobj)
+  {
+    app->GetUIManager ()->Error ("Could not create object for '%s'!", fname.GetData ());
+    return 0;
+  }
   dynobj->SetEntity (0, fname, 0);
   dynworld->ForceVisible (dynobj);
 
