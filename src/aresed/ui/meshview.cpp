@@ -194,6 +194,14 @@ void MeshView::AddBox (const csBox3& box, size_t penIdx)
   pen->SetActiveCache (0);
 }
 
+void MeshView::AddLine (const csVector3& v1, const csVector3& v2, size_t penIdx)
+{
+  csPen3D* pen = pens3d[penIdx];
+  pen->SetActiveCache (&penCache);
+  pen->DrawLine (v1, v2);
+  pen->SetActiveCache (0);
+}
+
 void MeshView::AddCylinder (const csVector3& center, float radius, float length,
       size_t penIdx)
 {

@@ -50,6 +50,9 @@ DynfactMeshView::DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object
 {
   normalPen = CreatePen (0.5f, 0.0f, 0.0f, 0.5f);
   hilightPen = CreatePen (1.0f, 0.7f, 0.7f, 1.0f);
+  originXPen = CreatePen (1.0f, 0.0f, 0.0f, 1.0f);
+  originYPen = CreatePen (0.0f, 1.0f, 0.0f, 1.0f);
+  originZPen = CreatePen (0.0f, 0.0f, 1.0f, 1.0f);
 }
 
 void DynfactMeshView::SyncValue (Ares::Value* value)
@@ -68,6 +71,10 @@ void DynfactMeshView::SetupColliderGeometry ()
   iDynamicFactory* fact = dialog->GetCurrentFactory ();
   if (fact)
   {
+    AddLine (csVector3 (0), csVector3 (.1, 0, 0), originXPen);
+    AddLine (csVector3 (0), csVector3 (0, .1, 0), originYPen);
+    AddLine (csVector3 (0), csVector3 (0, 0, .1), originZPen);
+
     long idx = dialog->GetSelectedCollider ();
     for (size_t i = 0 ; i < fact->GetBodyCount () ; i++)
     {

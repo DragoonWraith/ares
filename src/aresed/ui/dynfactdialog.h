@@ -57,6 +57,9 @@ private:
   DynfactDialog* dialog;
   size_t normalPen;
   size_t hilightPen;
+  size_t originXPen;
+  size_t originYPen;
+  size_t originZPen;
 
   void SetupColliderGeometry ();
 

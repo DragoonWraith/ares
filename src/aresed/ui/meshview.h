@@ -105,6 +105,11 @@ public:
   void AddBox (const csBox3& box, size_t penIdx);
 
   /**
+   * Add a line to show in 2D on top of the mesh.
+   */
+  void AddLine (const csVector3& v1, const csVector3& v2, size_t penIdx);
+
+  /**
    * Add a sphere to show in 2D on top of the mesh.
    */
   void AddSphere (const csVector3& center, float radius, size_t penIdx);
