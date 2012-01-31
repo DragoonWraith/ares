@@ -2,7 +2,7 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="DynfactDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>700,-1</size>
+		<size>800,-1</size>
 		<title>Edit Dynamic Factories</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
@@ -31,6 +31,94 @@
 							<object class="wxBoxSizer">
 								<minsize>260,260</minsize>
 								<orient>wxVERTICAL</orient>
+							</object>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxStaticBoxSizer">
+							<minsize>200,-1</minsize>
+							<orient>wxVERTICAL</orient>
+							<label>Pivots</label>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxListCtrl" name="pivots_List">
+									<style>wxLC_REPORT</style>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxPanel" name="pivotPosition_Panel">
+									<style>wxTAB_TRAVERSAL</style>
+									<object class="wxFlexGridSizer">
+										<rows>0</rows>
+										<cols>2</cols>
+										<vgap>0</vgap>
+										<hgap>0</hgap>
+										<growablecols>1</growablecols>
+										<growablerows></growablerows>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText36">
+												<label>X:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pivotX_Text">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText37">
+												<label>Y:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pivotY_Text">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText38">
+												<label>Z:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pivotZ_Text">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
 							</object>
 						</object>
 					</object>
@@ -160,7 +248,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="mass_boxText">
@@ -186,28 +274,31 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetX_boxText">
+																		<size>50,-1</size>
 																		<value></value>
 																		<maxlength>0</maxlength>
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetY_boxText">
+																		<size>50,-1</size>
 																		<value></value>
 																		<maxlength>0</maxlength>
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetZ_boxText">
+																		<size>50,-1</size>
 																		<value></value>
 																		<maxlength>0</maxlength>
 																	</object>
@@ -239,28 +330,31 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="sizeX_boxText">
+																		<size>50,-1</size>
 																		<value></value>
 																		<maxlength>0</maxlength>
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="sizeY_boxText">
+																		<size>50,-1</size>
 																		<value></value>
 																		<maxlength>0</maxlength>
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="sizeZ_boxText">
+																		<size>50,-1</size>
 																		<value></value>
 																		<maxlength>0</maxlength>
 																	</object>
@@ -293,7 +387,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="mass_sphereText">
@@ -319,7 +413,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetX_sphereText">
@@ -337,7 +431,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetZ_sphereText">
@@ -372,7 +466,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="radius_sphereText">
@@ -408,7 +502,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="mass_cylinderText">
@@ -434,7 +528,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetX_cylinderText">
@@ -443,7 +537,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetY_cylinderText">
@@ -452,7 +546,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetZ_cylinderText">
@@ -487,7 +581,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="radius_cylinderText">
@@ -513,7 +607,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="length_cylinderText">
@@ -549,7 +643,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="mass_meshText">
@@ -575,7 +669,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetX_meshText">
@@ -584,7 +678,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetY_meshText">
@@ -593,7 +687,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetZ_meshText">
@@ -629,7 +723,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="mass_cmeshText">
@@ -655,7 +749,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetX_cmeshText">
@@ -664,7 +758,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetY_cmeshText">
@@ -673,7 +767,7 @@
 																	</object>
 																</object>
 																<object class="sizeritem">
-																	<option>1</option>
+																	<option>0</option>
 																	<flag>wxALL</flag>
 																	<border>5</border>
 																	<object class="wxTextCtrl" name="offsetZ_cmeshText">
@@ -693,54 +787,439 @@
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>0</option>
+						<option>1</option>
 						<flag>wxEXPAND</flag>
 						<border>5</border>
 						<object class="wxStaticBoxSizer">
-							<minsize>200,-1</minsize>
 							<orient>wxVERTICAL</orient>
-							<label>Pivots</label>
+							<label>Joints</label>
 							<object class="sizeritem">
 								<option>1</option>
-								<flag>wxALL|wxEXPAND</flag>
+								<flag>wxEXPAND</flag>
 								<border>5</border>
-								<object class="wxListCtrl" name="pivots_List">
-									<style>wxLC_REPORT</style>
-								</object>
-							</object>
-							<object class="sizeritem">
-								<option>1</option>
-								<flag>wxEXPAND | wxALL</flag>
-								<border>5</border>
-								<object class="wxPanel" name="pivotPosition_Panel">
-									<style>wxTAB_TRAVERSAL</style>
-									<object class="wxBoxSizer">
-										<orient>wxVERTICAL</orient>
-										<object class="sizeritem">
-											<option>0</option>
-											<flag>wxALL|wxEXPAND</flag>
-											<border>5</border>
-											<object class="wxTextCtrl" name="pivotX_Text">
-												<value></value>
-												<maxlength>0</maxlength>
-											</object>
+								<object class="wxBoxSizer">
+									<orient>wxVERTICAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxEXPAND</flag>
+										<border>5</border>
+										<object class="wxListCtrl" name="joints_List">
+											<style>wxLC_REPORT</style>
 										</object>
-										<object class="sizeritem">
-											<option>0</option>
-											<flag>wxALL|wxEXPAND</flag>
-											<border>5</border>
-											<object class="wxTextCtrl" name="pivotY_Text">
-												<value></value>
-												<maxlength>0</maxlength>
-											</object>
-										</object>
-										<object class="sizeritem">
-											<option>0</option>
-											<flag>wxALL|wxEXPAND</flag>
-											<border>5</border>
-											<object class="wxTextCtrl" name="pivotZ_Text">
-												<value></value>
-												<maxlength>0</maxlength>
+									</object>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxEXPAND | wxALL</flag>
+										<border>5</border>
+										<object class="wxPanel" name="m_panel22">
+											<style>wxTAB_TRAVERSAL</style>
+											<object class="wxBoxSizer">
+												<orient>wxVERTICAL</orient>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxEXPAND</flag>
+													<border>5</border>
+													<object class="wxBoxSizer">
+														<orient>wxHORIZONTAL</orient>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText39">
+																<label>Pos:</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="jointPosX_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="jointPosY_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="jointPosZ_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxEXPAND</flag>
+													<border>5</border>
+													<object class="wxBoxSizer">
+														<orient>wxHORIZONTAL</orient>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText60">
+																<label>Bounce:</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="bounceX_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="bounceY_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="bounceZ_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxEXPAND</flag>
+													<border>5</border>
+													<object class="wxBoxSizer">
+														<orient>wxHORIZONTAL</orient>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText601">
+																<label>Max Force:</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="maxforceX_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="maxforceY_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="maxforceZ_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxEXPAND | wxALL</flag>
+													<border>5</border>
+													<object class="wxStaticLine" name="m_staticline1">
+														<style>wxLI_HORIZONTAL</style>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>1</option>
+													<flag>wxEXPAND</flag>
+													<border>5</border>
+													<object class="wxFlexGridSizer">
+														<rows>0</rows>
+														<cols>7</cols>
+														<vgap>0</vgap>
+														<hgap>0</hgap>
+														<growablecols></growablecols>
+														<growablerows></growablerows>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText47">
+																<label></label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText48">
+																<label>Trans</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText50">
+																<label>Min</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText49">
+																<label>Max</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText51">
+																<label>Rot</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText52">
+																<label>Min</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText53">
+																<label>Max</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText54">
+																<label>X</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxCheckBox" name="xLockTrans_Check">
+																<label></label>
+																<checked>0</checked>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="xMinTrans_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="xMaxTrans_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxCheckBox" name="xLockRot_Check">
+																<label></label>
+																<checked>0</checked>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="xMinRot_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="xMaxRot_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText55">
+																<label>Y</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxCheckBox" name="yLockTrans_Check">
+																<label></label>
+																<checked>0</checked>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="yMinTrans_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="yMaxTrans_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxCheckBox" name="yLockRot_Check">
+																<label></label>
+																<checked>0</checked>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="yMinRot_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="yMaxRot_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxStaticText" name="m_staticText551">
+																<label>Z</label>
+																<wrap>-1</wrap>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxCheckBox" name="zLockTrans_Check">
+																<label></label>
+																<checked>0</checked>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="zMinTrans_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="zMaxTrans_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<object class="wxCheckBox" name="zLockRot_Check">
+																<label></label>
+																<checked>0</checked>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="zMinRot_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>0</option>
+															<flag>wxALL</flag>
+															<border>5</border>
+															<object class="wxTextCtrl" name="zMaxRot_Text">
+																<value></value>
+																<maxlength>0</maxlength>
+															</object>
+														</object>
+													</object>
+												</object>
 											</object>
 										</object>
 									</object>
