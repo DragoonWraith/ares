@@ -228,7 +228,6 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   if (but == csmbWheelUp)
   {
-    printf ("WheelUp do_panning=%d\n", do_panning); fflush (stdout);
     if (do_panning) 
       Pan (0.0f, 0.0f, -10.0f);
     else
@@ -237,7 +236,6 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
   else if (but == csmbWheelDown)
   {
-    printf ("WheelDown do_panning=%d\n", do_panning); fflush (stdout);
     if (do_panning) 
       Pan (0.0f, 0.0f, 10.0f);
     else
@@ -247,7 +245,6 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   else if (but == csmbMiddle)
   {
     iKeyboardDriver* kbd = aresed3d->GetKeyboardDriver ();
-    printf ("Middle shift=%d\n", kbd->GetKeyState (CSKEY_SHIFT)); fflush (stdout);
     if (kbd->GetKeyState (CSKEY_SHIFT))
     {
       do_mouse_panning = false;
