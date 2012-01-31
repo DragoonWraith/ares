@@ -710,35 +710,38 @@
 							</object>
 							<object class="sizeritem">
 								<option>1</option>
-								<flag>wxEXPAND</flag>
+								<flag>wxEXPAND | wxALL</flag>
 								<border>5</border>
-								<object class="wxBoxSizer">
-									<orient>wxVERTICAL</orient>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
-										<object class="wxTextCtrl" name="pivotX_Text">
-											<value></value>
-											<maxlength>0</maxlength>
+								<object class="wxPanel" name="pivotPosition_Panel">
+									<style>wxTAB_TRAVERSAL</style>
+									<object class="wxBoxSizer">
+										<orient>wxVERTICAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pivotX_Text">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
 										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
-										<object class="wxTextCtrl" name="pivotY_Text">
-											<value></value>
-											<maxlength>0</maxlength>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pivotY_Text">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
 										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
-										<object class="wxTextCtrl" name="pivotZ_Text">
-											<value></value>
-											<maxlength>0</maxlength>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pivotZ_Text">
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
 										</object>
 									</object>
 								</object>
