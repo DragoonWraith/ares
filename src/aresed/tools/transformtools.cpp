@@ -55,11 +55,13 @@ void TransformTools::Move (Selection* selection,
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     csReversibleTransform& trans = mesh->GetMovable ()->GetTransform ();
     trans.Translate (trans.This2OtherRelative (vector));
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 
@@ -78,10 +80,12 @@ void TransformTools::Rotate (Selection* selection, float baseAngle,
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     mesh->GetMovable ()->GetTransform ().RotateOther (csVector3 (0, 1, 0), angle);
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 
@@ -163,11 +167,13 @@ void TransformTools::AlignSelectedObjects (Selection* selection)
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
     FindBestAlignedTransform (trans, tr);
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 
@@ -186,6 +192,7 @@ void TransformTools::StackSelectedObjects (Selection* selection)
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     const csBox3& bbox = dynobj->GetFactory ()->GetPhysicsBBox ();
     csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
@@ -194,6 +201,7 @@ void TransformTools::StackSelectedObjects (Selection* selection)
     tr.SetOrigin (v);
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
 
     // Next stack we perform relative to the previous one we stacked.
     firstTrans = tr;
@@ -216,6 +224,7 @@ void TransformTools::SameYSelectedObjects (Selection* selection)
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
     csVector3 v = tr.GetOrigin ();
@@ -223,6 +232,7 @@ void TransformTools::SameYSelectedObjects (Selection* selection)
     tr.SetOrigin (v);
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 
@@ -243,6 +253,7 @@ void TransformTools::SetPosSelectedObjects (Selection* selection)
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
     const csBox3& bbox = dynobj->GetFactory ()->GetPhysicsBBox ();
@@ -250,6 +261,7 @@ void TransformTools::SetPosSelectedObjects (Selection* selection)
     tr.SetOrigin (newpos);
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
 
     // Next SetPos we perform relative to the previous one we stacked.
     firstTrans = tr;
@@ -266,10 +278,12 @@ void TransformTools::RotResetSelectedObjects (Selection* selection)
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     mesh->GetMovable ()->GetTransform ().LookAt (csVector3 (0, 0, 1), csVector3 (0, 1, 0));
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 

@@ -268,6 +268,7 @@ void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
@@ -319,6 +320,7 @@ void MainMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
   {
     iDynamicObject* dynobj = it.Next ();
     dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 
@@ -347,6 +349,7 @@ void MainMode::StopDrag ()
     {
       iDynamicObject* dynobj = it.Next ();
       dynobj->UndoKinematic ();
+      dynobj->RecreatePivotJoints ();
       if (kinematicFirstOnly) break;
     }
   }
@@ -590,6 +593,8 @@ void MainMode::StartKinematicDragging (bool restrictY,
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
+    // First remove all pivot joints before starting to drag.
+    dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
