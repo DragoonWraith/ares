@@ -134,6 +134,9 @@ public:
   /// Is there something in the paste buffer?
   bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
 
+  /// Join two selected objects.
+  void JoinObjects ();
+
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
 

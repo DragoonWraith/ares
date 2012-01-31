@@ -583,6 +583,23 @@ void MainMode::StartPasteSelection (const char* name)
   aresed3d->GetApp ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
 }
 
+void MainMode::JoinObjects ()
+{
+  Selection* selection = aresed3d->GetSelection ();
+  if (selection->GetSize () != 2)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Select two objects to join!");
+    return;
+  }
+  csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  if (ob[0]->GetFactory ()->GetJointCount () == 0)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("The first object has no joints!");
+    return;
+  }
+  ob[0]->Connect (0, ob[1]);
+}
+
 void MainMode::StartKinematicDragging (bool restrictY,
     const csSegment3& beam, const csVector3& isect, bool firstOnly)
 {

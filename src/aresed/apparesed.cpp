@@ -1015,6 +1015,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Delete, AppAresEditWX :: OnMenuDelete)
   EVT_MENU (ID_Copy, AppAresEditWX :: OnMenuCopy)
   EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
+  EVT_MENU (ID_Join, AppAresEditWX :: OnMenuJoin)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
 END_EVENT_TABLE()
@@ -1070,6 +1071,12 @@ void AppAresEditWX::OnMenuPaste (wxCommandEvent& event)
 void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
 {
   aresed3d->DeleteSelectedObjects ();
+}
+
+void AppAresEditWX::OnMenuJoin (wxCommandEvent& event)
+{
+  if (editMode != mainMode) return;
+  mainMode->JoinObjects ();
 }
 
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
@@ -1457,6 +1464,8 @@ void AppAresEditWX::SetupMenuBar ()
   editMenu->Append (ID_Copy, wxT ("&Copy\tCtrl+C"));
   editMenu->Append (ID_Paste, wxT ("&Paste\tCtrl+V"));
   editMenu->Append (ID_Delete, wxT ("&Delete"));
+  editMenu->AppendSeparator ();
+  editMenu->Append (ID_Join, wxT ("&Join\tCtrl+J"));
 
   wxMenuBar* menuBar = new wxMenuBar ();
   menuBar->Append (fileMenu, wxT ("&File"));
@@ -1493,12 +1502,14 @@ void AppAresEditWX::SetMenuState ()
     menuBar->Enable (ID_Paste, mainMode->IsPasteBufferFull ());
     menuBar->Enable (ID_Delete, sel);
     menuBar->Enable (ID_Copy, sel);
+    menuBar->Enable (ID_Join, objects.GetSize () == 2);
   }
   else
   {
     menuBar->Enable (ID_Paste, false);
     menuBar->Enable (ID_Delete, false);
     menuBar->Enable (ID_Copy, false);
+    menuBar->Enable (ID_Join, false);
   }
 }
 
