@@ -89,12 +89,166 @@ void DynfactMeshView::SetupColliderGeometry ()
       csVector3 pos = fact->GetPivotJointPosition (i);
       AddSphere (pos, .01, pen);
     }
+    idx = dialog->GetSelectedJoint ();
+    for (size_t i = 0 ; i < fact->GetJointCount () ; i++)
+    {
+      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
+      DynFactJointDefinition& def = fact->GetJoint (i);
+      csVector3 pos = def.GetTransform ().GetOrigin ();
+      AddSphere (pos, .01, pen);
+    }
   }
 }
 
 //--------------------------------------------------------------------------
 
 using namespace Ares;
+
+/**
+ * A composite value representing a joint for a dynamic factory.
+ */
+class JointValue : public CompositeValue
+{
+private:
+  size_t idx;
+  iDynamicFactory* dynfact;
+  csVector3 origin;
+  DynFactJointDefinition def;
+
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    def.trans.SetOrigin (origin);
+    dynfact->SetJoint (idx, def);
+    FireValueChanged ();
+  }
+
+public:
+  JointValue (size_t idx, iDynamicFactory* dynfact) : idx (idx), dynfact (dynfact)
+  {
+    if (dynfact)
+    {
+      def = dynfact->GetJoint (idx);
+      origin = def.trans.GetOrigin ();
+    }
+    else
+    {
+      origin.Set (0, 0, 0);
+    }
+    AddChild ("jointPosX", NEWREF(Value,new FloatPointerValue (&origin.x)));
+    AddChild ("jointPosY", NEWREF(Value,new FloatPointerValue (&origin.y)));
+    AddChild ("jointPosZ", NEWREF(Value,new FloatPointerValue (&origin.z)));
+    AddChild ("bounceX", NEWREF(Value,new FloatPointerValue (&def.bounce.x)));
+    AddChild ("bounceY", NEWREF(Value,new FloatPointerValue (&def.bounce.y)));
+    AddChild ("bounceZ", NEWREF(Value,new FloatPointerValue (&def.bounce.z)));
+    AddChild ("maxforceX", NEWREF(Value,new FloatPointerValue (&def.maxforce.x)));
+    AddChild ("maxforceY", NEWREF(Value,new FloatPointerValue (&def.maxforce.y)));
+    AddChild ("maxforceZ", NEWREF(Value,new FloatPointerValue (&def.maxforce.z)));
+    AddChild ("xLockTrans", NEWREF(Value,new BoolPointerValue (&def.transX)));
+    AddChild ("yLockTrans", NEWREF(Value,new BoolPointerValue (&def.transY)));
+    AddChild ("zLockTrans", NEWREF(Value,new BoolPointerValue (&def.transZ)));
+    AddChild ("xMinTrans", NEWREF(Value,new FloatPointerValue (&def.mindist.x)));
+    AddChild ("yMinTrans", NEWREF(Value,new FloatPointerValue (&def.mindist.y)));
+    AddChild ("zMinTrans", NEWREF(Value,new FloatPointerValue (&def.mindist.z)));
+    AddChild ("xMaxTrans", NEWREF(Value,new FloatPointerValue (&def.maxdist.x)));
+    AddChild ("yMaxTrans", NEWREF(Value,new FloatPointerValue (&def.maxdist.y)));
+    AddChild ("zMaxTrans", NEWREF(Value,new FloatPointerValue (&def.maxdist.z)));
+    AddChild ("xLockRot", NEWREF(Value,new BoolPointerValue (&def.rotX)));
+    AddChild ("yLockRot", NEWREF(Value,new BoolPointerValue (&def.rotY)));
+    AddChild ("zLockRot", NEWREF(Value,new BoolPointerValue (&def.rotZ)));
+    AddChild ("xMinRot", NEWREF(Value,new FloatPointerValue (&def.minrot.x)));
+    AddChild ("yMinRot", NEWREF(Value,new FloatPointerValue (&def.minrot.y)));
+    AddChild ("zMinRot", NEWREF(Value,new FloatPointerValue (&def.minrot.z)));
+    AddChild ("xMaxRot", NEWREF(Value,new FloatPointerValue (&def.maxrot.x)));
+    AddChild ("yMaxRot", NEWREF(Value,new FloatPointerValue (&def.maxrot.y)));
+    AddChild ("zMaxRot", NEWREF(Value,new FloatPointerValue (&def.maxrot.z)));
+  }
+  virtual ~JointValue () { }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Jnt]";
+    dump += CompositeValue::Dump (verbose);
+    return dump;
+  }
+};
+
+/**
+ * A value representing the list of joints for a dynamic factory.
+ * Children of this value are of type JointValue.
+ */
+class JointCollectionValue : public StandardCollectionValue
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+
+  // Create a new child and add to the array.
+  Value* NewChild (size_t i)
+  {
+    csRef<JointValue> value;
+    value.AttachNew (new JointValue (i, dynfact));
+    children.Push (value);
+    value->SetParent (this);
+    return value;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (dynfact != dialog->GetCurrentFactory ()) dirty = true;
+    if (!dirty) return;
+    ReleaseChildren ();
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    dirty = false;
+    for (size_t i = 0 ; i < dynfact->GetJointCount () ; i++)
+      NewChild (i);
+  }
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  JointCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~JointCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return false;
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      if (children[i] == child)
+      {
+	dynfact->RemovePivotJoint (i);
+	child->SetParent (0);
+	children.DeleteIndex (i);
+	FireValueChanged ();
+	return true;
+      }
+    return false;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return 0;
+    dynfact->CreateJoint ();
+    idx = dynfact->GetJointCount ()-1;
+    Value* value = NewChild (idx);
+    FireValueChanged ();
+    return value;
+  }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Jnt*]";
+    dump += StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
+};
+
+//--------------------------------------------------------------------------
 
 /**
  * A composite value representing a pivot joint for a dynamic factory.
@@ -208,6 +362,8 @@ public:
     return dump;
   }
 };
+
+//--------------------------------------------------------------------------
 
 /**
  * A value for the type of a collider.
@@ -495,6 +651,7 @@ DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
   // Setup the composite representing the dynamic factory that is selected.
   AddChild ("colliders", NEWREF(Value,new ColliderCollectionValue (dialog)));
   AddChild ("pivots", NEWREF(Value,new PivotCollectionValue (dialog)));
+  AddChild ("joints", NEWREF(Value,new JointCollectionValue (dialog)));
   AddChild ("maxRadius", NEWREF(Value,new MaxRadiusValue(dialog)));
   AddChild ("imposterRadius", NEWREF(Value,new ImposterRadiusValue(dialog)));
   AddChild ("static", NEWREF(Value,new StaticValue(dialog)));
@@ -682,6 +839,12 @@ long DynfactDialog::GetSelectedPivot ()
   return ListCtrlTools::GetFirstSelectedRow (list);
 }
 
+long DynfactDialog::GetSelectedJoint ()
+{
+  wxListCtrl* list = XRCCTRL (*this, "joints_List", wxListCtrl);
+  return ListCtrlTools::GetFirstSelectedRow (list);
+}
+
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   View (this), uiManager (uiManager)
 {
@@ -708,6 +871,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Setup the collider and pivot list.
   DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
   DefineHeading ("pivots_List", "x,y,z", "pivotX,pivotY,pivotZ");
+  DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
 
   // Setup the composite representing the dynamic factory that is selected.
   dynfactValue.AttachNew (new DynfactValue (this));
@@ -726,12 +890,21 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   pivotsSelectedValue.AttachNew (new ListSelectedValue (pivotsList, pivots, VALUE_COMPOSITE));
   pivotsSelectedValue->SetupComposite (NEWREF(Value,new PivotValue(0,0)));
 
+  // Create a selection value that will follow the selection on the joint list.
+  Value* joints = dynfactValue->GetChildByName ("joints");
+  wxListCtrl* jointsList = XRCCTRL (*this, "joints_List", wxListCtrl);
+  csRef<ListSelectedValue> jointsSelectedValue;
+  jointsSelectedValue.AttachNew (new ListSelectedValue (jointsList, joints, VALUE_COMPOSITE));
+  jointsSelectedValue->SetupComposite (NEWREF(Value,new JointValue(0,0)));
+
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
   // view to update itself.
   Bind (colliderSelectedValue, meshView);
   // Also do this for the selected pivot value.
   Bind (pivotsSelectedValue, meshView);
+  // Also do this for the selected joint value.
+  Bind (jointsSelectedValue, meshView);
 
   // Connect the selected value from the catetory tree to the dynamic
   // factory value so that the two radius values and the collider list
@@ -743,6 +916,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // when the current dynfact changes.
   Signal (factorySelectedValue, colliderSelectedValue);
   Signal (factorySelectedValue, pivotsSelectedValue);
+  Signal (factorySelectedValue, jointsSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
   Bind (colliderSelectedValue->GetChildByName ("type"), "type_colliderChoice");
@@ -753,12 +927,15 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
 
   Bind (pivotsSelectedValue, "pivotPosition_Panel");
+  Bind (jointsSelectedValue, "joints_Panel");
 
   // The actions.
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
   AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
   AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
   AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
+  AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
+  AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));

@@ -529,6 +529,29 @@ public:
 };
 
 /**
+ * A value implementation that directly refers to a bool at a given
+ * location.
+ */
+class BoolPointerValue : public Value
+{
+private:
+  bool* bl;
+
+public:
+  BoolPointerValue (bool* f) : bl (f) { }
+  virtual ~BoolPointerValue () { }
+
+  virtual ValueType GetType () const { return VALUE_BOOL; }
+  virtual bool GetBoolValue () { return *bl; }
+  virtual void SetBoolValue (bool v)
+  {
+    if (v == *bl) return;
+    *bl = v;
+    FireValueChanged ();
+  }
+};
+
+/**
  * A value implementation that directly refers to a float at a given
  * location.
  */

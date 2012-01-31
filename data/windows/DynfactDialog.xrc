@@ -811,7 +811,7 @@
 										<option>1</option>
 										<flag>wxEXPAND | wxALL</flag>
 										<border>5</border>
-										<object class="wxPanel" name="m_panel22">
+										<object class="wxPanel" name="joints_Panel">
 											<style>wxTAB_TRAVERSAL</style>
 											<object class="wxBoxSizer">
 												<orient>wxVERTICAL</orient>
