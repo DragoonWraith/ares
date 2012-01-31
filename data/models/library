@@ -1,26 +1,49 @@
 <library>
   <materials>
+    <material name="Main">
+      <shadervar type="texture" name="tex diffuse">metal_desk_uv</shadervar>
+      <shadervar type="texture" name="tex normal">metal_desk_uv</shadervar>
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Material">
+      <shadervar type="texture" name="tex diffuse">metall001-new_png</shadervar>
+      <shadervar type="texture" name="tex normal">metall001-new-nm_png</shadervar>
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Handles">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Material_023">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Material_024">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Material_025">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="Material_026">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
+    <material name="legs">
+      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
+    </material>
     <material name="barril">
       <shadervar type="texture" name="tex diffuse">barril_color3_jpg</shadervar>
       <shadervar type="texture" name="tex normal">barril_color3_jpg</shadervar>
       <shadervar type="texture" name="tex normal 2">barril_color3_bump_jp</shadervar>
       <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
     </material>
-    <material name="legs">
-      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
-    </material>
-    <material name="Handles">
-      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
-    </material>
-    <material name="Main">
-      <shadervar type="texture" name="tex diffuse">metal_desk_uv</shadervar>
-      <shadervar type="texture" name="tex normal">metal_desk_uv</shadervar>
-      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
-    </material>
   </materials>
   <textures>
+    <texture name="metall001-new_png">
+      <file>textures/metall001-new.png</file>
+    </texture>
     <texture name="barril_color3_bump_jp">
       <file>textures/barril_color3_bump.jpg</file>
+    </texture>
+    <texture name="metall001-new-nm_png">
+      <file>textures/metall001-new-nm.png</file>
     </texture>
     <texture name="barril_color3_jpg">
       <file>textures/barril_color3.jpg</file>
@@ -30,6 +53,7 @@
     </texture>
   </textures>
   <library>factories/Barril</library>
+  <library>factories/MetalDoor</library>
   <library>factories/RedChair2</library>
   <library>factories/MetalDesk</library>
 </library>

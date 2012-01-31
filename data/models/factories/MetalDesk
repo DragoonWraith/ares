@@ -6503,20 +6503,6 @@
           <e c0="1024" /> <e c0="1025" /> <e c0="1027" />
         </indexbuffer>
       </submesh>
-      <submesh name="MetalDesk-legs-metal_desk_uv">
-        <material>legs</material>
-        <shadervar type="texture" name="tex diffuse">metal_desk_uv</shadervar>
-        <indexbuffer indices="yes" checkelementcount="no" components="1" type="uint">
-          <e c0="1252" /> <e c0="1253" /> <e c0="1254" />
-          <e c0="1251" /> <e c0="1252" /> <e c0="1254" />
-          <e c0="1273" /> <e c0="1274" /> <e c0="1275" />
-          <e c0="1272" /> <e c0="1273" /> <e c0="1275" />
-          <e c0="1294" /> <e c0="1295" /> <e c0="1296" />
-          <e c0="1293" /> <e c0="1294" /> <e c0="1296" />
-          <e c0="1315" /> <e c0="1316" /> <e c0="1317" />
-          <e c0="1314" /> <e c0="1315" /> <e c0="1317" />
-        </indexbuffer>
-      </submesh>
       <submesh name="MetalDesk-legs">
         <material>legs</material>
         <indexbuffer indices="yes" checkelementcount="no" components="1" type="uint">
@@ -6560,6 +6546,20 @@
           <e c0="1306" /> <e c0="1321" /> <e c0="1323" />
           <e c0="1325" /> <e c0="1326" /> <e c0="1313" />
           <e c0="1324" /> <e c0="1325" /> <e c0="1313" />
+        </indexbuffer>
+      </submesh>
+      <submesh name="MetalDesk-legs-metal_desk_uv">
+        <material>legs</material>
+        <shadervar type="texture" name="tex diffuse">metal_desk_uv</shadervar>
+        <indexbuffer indices="yes" checkelementcount="no" components="1" type="uint">
+          <e c0="1252" /> <e c0="1253" /> <e c0="1254" />
+          <e c0="1251" /> <e c0="1252" /> <e c0="1254" />
+          <e c0="1273" /> <e c0="1274" /> <e c0="1275" />
+          <e c0="1272" /> <e c0="1273" /> <e c0="1275" />
+          <e c0="1294" /> <e c0="1295" /> <e c0="1296" />
+          <e c0="1293" /> <e c0="1294" /> <e c0="1296" />
+          <e c0="1315" /> <e c0="1316" /> <e c0="1317" />
+          <e c0="1314" /> <e c0="1315" /> <e c0="1317" />
         </indexbuffer>
       </submesh>
     </params>

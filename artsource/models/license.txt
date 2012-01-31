@@ -20,12 +20,17 @@ RedChair2:
   You can use it for whatever you like (even commercially).
   We recommend you to credit Theo, but you are not required to do so.
 
+MetalDoor:
+  Author: Jorrit Tyberghein
+  License: Creative Commons 3.0
+
 scifilevel.blend:
   Author: Jorrit Tyberghein
   License: Creative Commons Attribution 3.0 
   Credit not needed but always nice.
   Some textures used have other license:
-      - metal010-new-tileable-bar.png and metal005-new-tileable.png:
+      - metal010-new-tileable-bar.png, metal005-new-tileable.png,
+        metall001-new.png, metall001-new-nm.png:
         Original: http://opengameart.org/content/rusted-metal-texture-pack
 	License: Creative Commons 3.0 BY
 
