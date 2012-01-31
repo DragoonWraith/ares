@@ -564,6 +564,8 @@ bool View::Bind (Value* value, wxWindow* component)
 {
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
     return Bind (value, wxStaticCast (component, wxTextCtrl));
+  if (component->IsKindOf (CLASSINFO (wxCheckBox)))
+    return Bind (value, wxStaticCast (component, wxCheckBox));
   if (component->IsKindOf (CLASSINFO (wxPanel)))
     return Bind (value, wxStaticCast (component, wxPanel));
   if (component->IsKindOf (CLASSINFO (wxDialog)))
@@ -624,7 +626,27 @@ bool View::Bind (Value* value, wxTextCtrl* component)
       return false;
   }
 
-  RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED);
+  RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED );
+  ValueChanged (value);
+  return true;
+}
+
+bool View::Bind (Value* value, wxCheckBox* component)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+    case VALUE_LONG:
+    case VALUE_BOOL:
+    case VALUE_FLOAT:
+    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
+      break;
+    default:
+      printf ("Unsupported value type for checkbox!\n");
+      return false;
+  }
+
+  RegisterBinding (value, component, wxEVT_COMMAND_CHECKBOX_CLICKED );
   ValueChanged (value);
   return true;
 }
@@ -729,6 +751,30 @@ bool View::Bind (Value* value, wxTreeCtrl* component)
   return true;
 }
 
+static bool ValueToBool (Value* value)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+      {
+	const char* v = value->GetStringValue ();
+	return v && *v == 't';
+      }
+    case VALUE_LONG:
+      return bool (value->GetLongValue ());
+    case VALUE_BOOL:
+      return value->GetBoolValue ();
+    case VALUE_FLOAT:
+      return fabs (value->GetFloatValue ()) > .000001f;
+    case VALUE_COLLECTION:
+      return false;
+    case VALUE_COMPOSITE:
+      return false;
+    default:
+      return false;
+  }
+}
+
 static csString ValueToString (Value* value)
 {
   csString val;
@@ -761,6 +807,28 @@ static void LongToValue (long l, Value* value)
       return;
     case VALUE_FLOAT:
       value->SetFloatValue (float (l));
+      return;
+    case VALUE_COLLECTION: return;
+    case VALUE_COMPOSITE: return;
+    default: return;
+  }
+}
+
+static void BoolToValue (bool in, Value* value)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+      value->SetStringValue (in ? "true" : "false");
+      return;
+    case VALUE_LONG:
+      value->SetLongValue (long (in));
+      return;
+    case VALUE_BOOL:
+      value->SetBoolValue (in);
+      return;
+    case VALUE_FLOAT:
+      value->SetFloatValue (float (in));
       return;
     case VALUE_COLLECTION: return;
     case VALUE_COMPOSITE: return;
@@ -925,6 +993,11 @@ void View::OnComponentChanged (wxCommandEvent& event)
     csString text = (const char*)textCtrl->GetValue ().mb_str (wxConvUTF8);
     StringToValue (text, binding->value);
   }
+  else if (component->IsKindOf (CLASSINFO (wxCheckBox)))
+  {
+    wxCheckBox* checkBox = wxStaticCast (component, wxCheckBox);
+    BoolToValue (checkBox->GetValue (), binding->value);
+  }
   else if (component->IsKindOf (CLASSINFO (wxChoicebook)))
   {
     wxChoicebook* choicebook = wxStaticCast (component, wxChoicebook);
@@ -991,6 +1064,14 @@ void View::ValueChanged (Value* value)
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
+	bindings[i]->processing = false;
+      }
+      else if (comp->IsKindOf (CLASSINFO (wxCheckBox)))
+      {
+	bindings[i]->processing = true;
+	wxCheckBox* checkBox = wxStaticCast (comp, wxCheckBox);
+	bool in = ValueToBool (value);
+	checkBox->SetValue (in);
 	bindings[i]->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (CustomControl)))

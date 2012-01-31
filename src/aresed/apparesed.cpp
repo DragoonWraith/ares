@@ -631,6 +631,7 @@ void AresEdit3DView::SetupFactorySettings (iDynamicFactory* fact)
   factory_to_origin_offset.Put (fact->GetName (), bbox.MinY ());
   const char* st = fact->GetAttribute ("defaultstatic");
   if (st && *st == 't') static_factories.Add (fact->GetName ());
+  else static_factories.Delete (fact->GetName ());
 }
 
 bool AresEdit3DView::SetupDynWorld ()

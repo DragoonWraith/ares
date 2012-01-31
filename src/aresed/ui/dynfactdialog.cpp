@@ -305,6 +305,36 @@ public:
   }
 };
 
+/// Value for the static value of a dynamic factory.
+class StaticValue : public BoolValue
+{
+private:
+  DynfactDialog* dialog;
+public:
+  StaticValue (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~StaticValue () { }
+  virtual void SetBoolValue (bool f)
+  {
+    printf ("StaticValue::SetBoolValue %d\n", f); fflush (stdout);
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    if (dynfact)
+    {
+      dynfact->SetAttribute ("defaultstatic", f ? "true" : "false");
+      //UIManager* uiManager = dialog->GetUIManager ();
+      //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+      //ares3d->SetupFactorySettings (dynfact);
+      FireValueChanged ();
+    }
+  }
+  virtual bool GetBoolValue ()
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return false;
+    const char* st = dynfact->GetAttribute ("defaultstatic");
+    return (st && *st == 't');
+  }
+};
+
 /// Value for the imposter radius of a dynamic factory.
 class ImposterRadiusValue : public FloatValue
 {
@@ -347,6 +377,18 @@ DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
   AddChild ("colliders", NEWREF(Value,new ColliderCollectionValue (dialog)));
   AddChild ("maxRadius", NEWREF(Value,new MaxRadiusValue(dialog)));
   AddChild ("imposterRadius", NEWREF(Value,new ImposterRadiusValue(dialog)));
+  AddChild ("static", NEWREF(Value,new StaticValue(dialog)));
+}
+
+void DynfactValue::ChildChanged (Value* child)
+{
+  iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+  if (dynfact)
+  {
+    UIManager* uiManager = dialog->GetUIManager ();
+    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    ares3d->SetupFactorySettings (dynfact);
+  }
 }
 
 //--------------------------------------------------------------------------

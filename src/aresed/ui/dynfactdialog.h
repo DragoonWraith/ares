@@ -90,6 +90,9 @@ class DynfactValue : public CompositeValue
 private:
   DynfactDialog* dialog;
 
+protected:
+  virtual void ChildChanged (Value* child);
+
 public:
   DynfactValue (DynfactDialog* dialog);
   virtual ~DynfactValue () { }
