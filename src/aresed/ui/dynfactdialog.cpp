@@ -938,6 +938,18 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
   BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMinTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMaxTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMinTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMaxTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMinTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMaxTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMinRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMaxRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMinRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMaxRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMinRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMaxRot");
 
   // The actions.
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));

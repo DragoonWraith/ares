@@ -105,7 +105,7 @@ bool Value::IsChild (Value* value)
 
 BufferedValue::BufferedValue (Value* originalValue) : originalValue (originalValue)
 {
-  changeListener.AttachNew (new ChangeListener (this));
+  changeListener.AttachNew (new BufChangeListener (this));
   originalValue->AddValueChangeListener (changeListener);
 }
 
@@ -258,7 +258,7 @@ Value* CollectionBufferedValue::NewValue (size_t idx, Value* selectedValue, cons
 
 MirrorValue::MirrorValue (ValueType type) : type (type), idx (0)
 {
-  changeListener.AttachNew (new ChangeListener (this));
+  changeListener.AttachNew (new SelChangeListener (this));
   mirroringValue = &nullValue;
 }
 
@@ -519,7 +519,7 @@ bool DeleteChildAction::Do (View* view, wxWindow* component)
 
 View::View (wxWindow* parent) : parent (parent), lastContextID (wxID_HIGHEST + 10000), eventHandler (this)
 {
-  changeListener.AttachNew (new ChangeListener (this));
+  changeListener.AttachNew (new ViewChangeListener (this));
 }
 
 void View::DestroyBindings ()
@@ -598,8 +598,9 @@ bool View::BindEnabled (Value* value, wxWindow* component)
 
 bool View::BindEnabled (Value* value, const char* compName)
 {
-  wxString wxcompName = wxString::FromUTF8 (compName);
-  wxWindow* comp = parent->FindWindow (wxcompName);
+  //wxString wxcompName = wxString::FromUTF8 (compName);
+  //wxWindow* comp = parent->FindWindow (wxcompName);
+  wxWindow* comp = FindComponentByName (parent, compName);
   if (!comp)
   {
     printf ("BindEnabled: Can't find component '%s'!\n", compName);
@@ -632,8 +633,9 @@ bool View::Bind (Value* value, wxWindow* component)
 
 bool View::Bind (Value* value, const char* compName)
 {
-  wxString wxcompName = wxString::FromUTF8 (compName);
-  wxWindow* comp = parent->FindWindow (wxcompName);
+  //wxString wxcompName = wxString::FromUTF8 (compName);
+  //wxWindow* comp = parent->FindWindow (wxcompName);
+  wxWindow* comp = FindComponentByName (parent, compName);
   if (!comp)
   {
     printf ("Bind: Can't find component '%s'!\n", compName);
@@ -650,7 +652,8 @@ void View::RegisterBinding (Value* value, wxWindow* component, wxEventType event
   b->component = component;
   b->eventType = eventType;
   b->changeEnabled = changeEnabled;
-  bindingsByComponent.Put (component, b);
+  if (!changeEnabled)
+    bindingsByComponent.Put (component, b);
   if (!bindingsByValue.Contains (value))
     bindingsByValue.Put (value, csArray<Binding*> ());
   csArray<Binding*> temp;
@@ -1091,24 +1094,55 @@ bool View::IsValueBound (Value* value) const
   return bindings.GetSize () > 0;
 }
 
+bool View::CheckIfParentDisabled (wxWindow* window)
+{
+  window = window->GetParent ();
+  while (window)
+  {
+    if (window == parent) return false;
+    if (disabledComponents.In (window)) return true;
+    if (window->IsEnabled () == false) return true;
+    window = window->GetParent ();
+  }
+  return false;
+}
+
 void View::EnableBoundComponents (wxWindow* comp, bool state)
+{
+  if (state)
+    disabledComponents.Delete (comp);
+  else
+    disabledComponents.Add (comp);
+  bool parentDisabled = CheckIfParentDisabled (comp);
+  if (parentDisabled) state = false;
+  EnableBoundComponentsInt (comp, state);
+}
+
+void View::EnableBoundComponentsInt (wxWindow* comp, bool state)
 {
   if (comp->IsKindOf (CLASSINFO (wxPanel)) ||
       comp->IsKindOf (CLASSINFO (wxDialog)))
   {
+    if (disabledComponents.In (comp))
+      state = false;
     wxWindowList list = comp->GetChildren ();
     wxWindowList::iterator iter;
     for (iter = list.begin (); iter != list.end () ; ++iter)
     {
       wxWindow* child = *iter;
-      EnableBoundComponents (child, state);
+      EnableBoundComponentsInt (child, state);
     }
   }
   else
   {
     Binding* binding = bindingsByComponent.Get (comp, 0);
     if (binding)
-      comp->Enable (state);
+    {
+      if (!state)
+	comp->Enable (state);
+      else if (!disabledComponents.In (comp))
+	comp->Enable (state);
+    }
   }
 }
 
@@ -1405,6 +1439,83 @@ void View::Signal (Value* source, Value* dest, bool dochildren)
   csRef<SignalChangeListener> listener;
   listener.AttachNew (new SignalChangeListener (dest, dochildren));
   source->AddValueChangeListener (listener);
+}
+
+class NotValue : public BoolValue
+{
+private:
+  csRef<Value> value;
+
+public:
+  NotValue (Value* value) : value (value) { }
+  virtual ~NotValue () { }
+  virtual void SetBoolValue (bool fl) { }
+  virtual bool GetBoolValue ()
+  {
+    return !ValueToBool (value);
+  }
+};
+
+csRef<Value> View::Not (Value* value)
+{
+  csRef<Value> v;
+  v.AttachNew (new NotValue (value));
+  csRef<StandardChangeListener> changeListener;
+  changeListener.AttachNew (new StandardChangeListener (v));
+  value->AddValueChangeListener (changeListener);
+  return v;
+}
+
+class AndValue : public BoolValue
+{
+private:
+  csRef<Value> value1, value2;
+
+public:
+  AndValue (Value* value1, Value* value2) : value1 (value1), value2 (value2) { }
+  virtual ~AndValue () { }
+  virtual void SetBoolValue (bool fl) { }
+  virtual bool GetBoolValue ()
+  {
+    return ValueToBool (value1) && ValueToBool (value2);
+  }
+};
+
+csRef<Value> View::And (Value* value1, Value* value2)
+{
+  csRef<Value> v;
+  v.AttachNew (new AndValue (value1, value2));
+  csRef<StandardChangeListener> changeListener;
+  changeListener.AttachNew (new StandardChangeListener (v));
+  value1->AddValueChangeListener (changeListener);
+  value2->AddValueChangeListener (changeListener);
+  return v;
+}
+
+class OrValue : public BoolValue
+{
+private:
+  csRef<Value> value1, value2;
+
+public:
+  OrValue (Value* value1, Value* value2) : value1 (value1), value2 (value2) { }
+  virtual ~OrValue () { }
+  virtual void SetBoolValue (bool fl) { }
+  virtual bool GetBoolValue ()
+  {
+    return ValueToBool (value1) || ValueToBool (value2);
+  }
+};
+
+csRef<Value> View::Or (Value* value1, Value* value2)
+{
+  csRef<Value> v;
+  v.AttachNew (new OrValue (value1, value2));
+  csRef<StandardChangeListener> changeListener;
+  changeListener.AttachNew (new StandardChangeListener (v));
+  value1->AddValueChangeListener (changeListener);
+  value2->AddValueChangeListener (changeListener);
+  return v;
 }
 
 // --------------------------------------------------------------------------

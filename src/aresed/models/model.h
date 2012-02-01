@@ -575,6 +575,20 @@ public:
 };
 
 /**
+ * A standard change listener that notifies another value when
+ * a value has changed.
+ */
+class StandardChangeListener : public ValueChangeListener
+{
+private:
+  Value* value;
+public:
+  StandardChangeListener (Value* value) : value (value) { }
+  virtual ~StandardChangeListener () { }
+  virtual void ValueChanged (Value*) { value->FireValueChanged (); }
+};
+
+/**
  * A buffered value is a value that is synchronized with another
  * value but is able to keep changes which can be put back into
  * the original value on request (for example when the user presses
@@ -587,16 +601,17 @@ protected:
   csRef<Value> originalValue;
   bool dirty;
 
-  class ChangeListener : public ValueChangeListener
+  class BufChangeListener : public ValueChangeListener
   {
   private:
-    BufferedValue* bufvalue;
+    BufferedValue* value;
   public:
-    ChangeListener (BufferedValue* bufvalue) : bufvalue (bufvalue) { }
-    virtual ~ChangeListener () { }
-    virtual void ValueChanged (Value* value) { bufvalue->ValueChanged (); }
+    BufChangeListener (BufferedValue* value) : value (value) { }
+    virtual ~BufChangeListener () { }
+    virtual void ValueChanged (Value*) { value->ValueChanged (); }
   };
-  csRef<ChangeListener> changeListener;
+
+  csRef<BufChangeListener> changeListener;
 
 public:
   BufferedValue (Value* originalValue);
@@ -765,17 +780,17 @@ private:
   csRef<Value> mirroringValue;
   NullValue nullValue;
 
-  class ChangeListener : public ValueChangeListener
+  class SelChangeListener : public ValueChangeListener
   {
   private:
     MirrorValue* selvalue;
   public:
-    ChangeListener (MirrorValue* selvalue) : selvalue (selvalue) { }
-    virtual ~ChangeListener () { }
-    virtual void ValueChanged (Value* value) { selvalue->ValueChanged (); }
+    SelChangeListener (MirrorValue* selvalue) : selvalue (selvalue) { }
+    virtual ~SelChangeListener () { }
+    virtual void ValueChanged (Value*) { selvalue->ValueChanged (); }
   };
 
-  csRef<ChangeListener> changeListener;
+  csRef<SelChangeListener> changeListener;
 
   // The following two are only used in case the MirrorValue represents a composite.
   csStringArray names;
@@ -788,6 +803,13 @@ private:
 public:
   MirrorValue (ValueType type);
   virtual ~MirrorValue ();
+
+  virtual void FireValueChanged ()
+  {
+    Value::FireValueChanged ();
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      children[i]->FireValueChanged ();
+  }
 
   /**
    * Setup this composite based on another composite. It will
@@ -1048,21 +1070,32 @@ private:
 
   // --------------------------------------------
 
+  /**
+   * Recursively enable/disable components but only if they are
+   * bound to a value.
+   */
+  void EnableBoundComponents (wxWindow* window, bool enable);
+  void EnableBoundComponentsInt (wxWindow* window, bool enable);
+  csSet<csPtrKey<wxWindow> > disabledComponents;
+  bool CheckIfParentDisabled (wxWindow* window);
+
+  // --------------------------------------------
+
   // Listeners.
-  class ChangeListener : public ValueChangeListener
+  class ViewChangeListener : public ValueChangeListener
   {
   private:
     View* view;
 
   public:
-    ChangeListener (View* view) : view (view) { }
-    virtual ~ChangeListener () { }
+    ViewChangeListener (View* view) : view (view) { }
+    virtual ~ViewChangeListener () { }
     virtual void ValueChanged (Value* value)
     {
       view->ValueChanged (value);
     }
   };
-  csRef<ChangeListener> changeListener;
+  csRef<ViewChangeListener> changeListener;
 
   // --------------------------------------------
 
@@ -1173,12 +1206,6 @@ private:
    * Return true if a given value is bound to some component.
    */
   bool IsValueBound (Value* value) const;
-
-  /**
-   * Recursively enable/disable components but only if they are
-   * bound to a value.
-   */
-  void EnableBoundComponents (wxWindow* window, bool enable);
 
 public:
   /**
@@ -1307,6 +1334,29 @@ public:
    * get fired.
    */
   void Signal (Value* source, Value* dest, bool dochildren = false);
+
+  //----------------------------------------------------------------
+
+  /**
+   * Create a read-only boolean value that negates the input value (true becomes
+   * false and false becomes true). The input value doesn't have to be a boolean
+   * value. Other types are also supported.
+   */
+  csRef<Value> Not (Value* value);
+
+  /**
+   * Create a read-only boolean value that returns true if both input values
+   * are 'true'. The input values don't have to be boolean values.
+   * Other types are also supported.
+   */
+  csRef<Value> And (Value* value1, Value* value2);
+
+  /**
+   * Create a read-only boolean value that returns true if one of the input values
+   * is 'true'. The input values don't have to be boolean values.
+   * Other types are also supported.
+   */
+  csRef<Value> Or (Value* value1, Value* value2);
 
   //----------------------------------------------------------------
 
