@@ -281,13 +281,17 @@ bool celPcGameController::StartDrag ()
     iCelEntity* ent = obj->GetEntity ();
     if (ent && ent->HasClass (classDragRotYID))
     {
+      printf ("Start roty drag!\n"); fflush (stdout);
       dragType = DRAGTYPE_ROTY;
       pcdynmove->EnableMouselook (false);
       dragOrigin = obj->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
+      dragOrigin.y = isect.y;
+      dragAnchor = isect;
       dragDistance = (isect - dragOrigin).Norm ();
     }
     else
     {
+      printf ("Start normal drag!\n"); fflush (stdout);
       dragType = DRAGTYPE_NORMAL;
       dragDistance = (isect - start).Norm ();
     }
@@ -302,7 +306,6 @@ bool celPcGameController::StartDrag ()
     oldAngularDampening = csBody->GetRollingDampener ();
     csBody->SetLinearDampener (0.9f);
     csBody->SetRollingDampener (0.9f);
-    printf ("Hit something!\n"); fflush (stdout);
     return true;
   }
   return false;
@@ -329,26 +332,6 @@ static float sgn (float x)
   else return 1.0f;
 }
 
-static csVector3 IntersectCircleLine2D (const csVector3& center, float radius,
-    const csVector3& start, const csVector3& end)
-{
-  float dx = end.x - start.x;
-  float dy = end.z - start.z;
-  float dr = sqrt (dx * dx + dy * dy);
-  float d = start.x * end.z - end.x * start.z;
-  float ix, iy;
-  ix = (d * dy + sgn (dy) * dx * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
-  iy = (- d * dx + fabs (dy) * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
-  csVector3 i1 (ix, center.y, iy);
-  ix = (d * dy - sgn (dy) * dx * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
-  iy = (- d * dx - fabs (dy) * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
-  csVector3 i2 (ix, center.y, iy);
-  if (csSquaredDist::PointPoint (start, i1) < csSquaredDist::PointPoint (start, i2))
-    return i1;
-  else
-    return i2;
-}
-
 void celPcGameController::TickEveryFrame ()
 {
   csSimplePixmap* icon = iconDot;
@@ -361,23 +344,31 @@ void celPcGameController::TickEveryFrame ()
     if (!cam) return;
     int x = mouse->GetLastX ();
     int y = mouse->GetLastY ();
-    csVector2 v2d (x, sh - y);
-    csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
-    csVector3 start = cam->GetTransform ().GetOrigin ();
-    csVector3 end = cam->GetTransform ().This2Other (v3d);
     csVector3 newPosition;
     if (dragType == DRAGTYPE_ROTY)
     {
-      newPosition = IntersectCircleLine2D (dragOrigin, dragDistance, start, end);
+      int sx = x - sw / 2;
+      int sy = y - sh / 2;
+      g2d->SetMousePosition (sw / 2, sh / 2);
+      dragAnchor.x -= float (sx) / 200.0f;
+      dragAnchor.z -= float (sy) / 200.0f;
+      newPosition = dragAnchor - dragOrigin;
+      newPosition.Normalize ();
+      newPosition = dragOrigin + newPosition * dragDistance;
+      icon = iconDot;
     }
     else
     {
+      csVector2 v2d (x, sh - y);
+      csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
+      csVector3 start = cam->GetTransform ().GetOrigin ();
+      csVector3 end = cam->GetTransform ().This2Other (v3d);
       newPosition = end - start;
       newPosition.Normalize ();
       newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
+      icon = iconCursor;
     }
     dragJoint->SetPosition (newPosition);
-    icon = iconCursor;
   }
   else
   {
