@@ -44,6 +44,7 @@ private:
     iDynamicFactory* fact;
     bool isStatic;
     csReversibleTransform trans;
+    csString entityName;
   };
   csArray<Obj> objects;
 

@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"
+#include "physicallayer/entitytpl.h"
 #include "physicallayer/propclas.h"
 #include "propclass/camera.h"
 #include "propclass/mesh.h"
@@ -47,6 +48,8 @@ DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
       obj.fact = dynobj->GetFactory ();
       obj.isStatic = dynobj->IsStatic ();
       obj.trans = dynobj->GetTransform ();
+      if (dynobj->GetEntityTemplate ())
+        obj.entityName = dynobj->GetEntityTemplate ()->GetName ();
       objects.Push (obj);
     }
   }
@@ -64,6 +67,8 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
   {
     Obj& obj = objects[i];
     iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
+    if (!obj.entityName.IsEmpty ())
+      dynobj->SetEntity (0, obj.entityName, 0);
     if (obj.isStatic)
       dynobj->MakeStatic ();
     else
