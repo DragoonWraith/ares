@@ -55,7 +55,6 @@ void Selection::AddCurrentObject (iDynamicObject* dynobj)
 
 void Selection::SetCurrentObject (iDynamicObject* dynobj)
 {
-  if (current_objects.Find (dynobj) != csArrayItemNotFound) return;
   SelectionIterator it = current_objects.GetIterator ();
   while (it.HasNext ())
   {

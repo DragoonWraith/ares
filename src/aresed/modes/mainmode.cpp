@@ -786,6 +786,11 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
 
   iDynamicObject* newobj = aresed3d->GetDynamicWorld ()->FindObject (hitBody);
+  if (!newobj && but == csmbLeft)
+  {
+    aresed3d->GetSelection ()->SetCurrentObject (0);
+    return true;
+  }
   if (!newobj) return false;
 
   if (but == csmbLeft)
