@@ -936,6 +936,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (pivotsSelectedValue, "pivotPosition_Panel");
   Bind (jointsSelectedValue, "joints_Panel");
 
+  BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
+  BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
+
   // The actions.
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
   AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));

@@ -314,6 +314,25 @@ void MirrorValue::ValueChanged ()
 
 // --------------------------------------------------------------------------
 
+class SelectedBoolValue : public BoolValue
+{
+private:
+  long* selection;
+
+public:
+  SelectedBoolValue (long* s) : selection (s) { }
+  virtual ~SelectedBoolValue () { }
+  // Make sure this class doesn't cause crashes if the parent list
+  // selection value is removed.
+  void Invalidate () { selection = 0; }
+  virtual void SetBoolValue (bool fl) { }
+  virtual bool GetBoolValue ()
+  {
+    if (!selection) return false;
+    return (*selection != -1);
+  }
+};
+
 ListSelectedValue::ListSelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type) :
   MirrorValue (type), listCtrl (listCtrl), collectionValue (collectionValue)
 {
@@ -327,6 +346,7 @@ ListSelectedValue::ListSelectedValue (wxListCtrl* listCtrl, Value* collectionVal
 
 ListSelectedValue::~ListSelectedValue ()
 {
+  if (selectedStateValue) selectedStateValue->Invalidate ();
   listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
 	  wxCommandEventHandler (ListSelectedValue :: OnSelectionChange), 0, this);
   listCtrl->Disconnect (wxEVT_COMMAND_LIST_ITEM_DESELECTED,
@@ -353,6 +373,15 @@ void ListSelectedValue::OnSelectionChange (wxCommandEvent& event)
   printf ("ListSelectedValue::OnSelectionChange: %s\n", Dump ().GetData ());
 #endif
   UpdateToSelection ();
+  if (selectedStateValue)
+    selectedStateValue->FireValueChanged ();
+}
+
+Value* ListSelectedValue::GetSelectedState ()
+{
+  if (!selectedStateValue)
+    selectedStateValue.AttachNew (new SelectedBoolValue (&selection));
+  return selectedStateValue;
 }
 
 // --------------------------------------------------------------------------
@@ -560,6 +589,25 @@ wxWindow* View::FindComponentByName (wxWindow* container, const char* name)
   return 0;
 }
 
+bool View::BindEnabled (Value* value, wxWindow* component)
+{
+  RegisterBinding (value, component, wxEVT_NULL, true);
+  ValueChanged (value);
+  return true;
+}
+
+bool View::BindEnabled (Value* value, const char* compName)
+{
+  wxString wxcompName = wxString::FromUTF8 (compName);
+  wxWindow* comp = parent->FindWindow (wxcompName);
+  if (!comp)
+  {
+    printf ("BindEnabled: Can't find component '%s'!\n", compName);
+    return false;
+  }
+  return BindEnabled (value, comp);
+}
+
 bool View::Bind (Value* value, wxWindow* component)
 {
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
@@ -594,12 +642,14 @@ bool View::Bind (Value* value, const char* compName)
   return Bind (value, comp);
 }
 
-void View::RegisterBinding (Value* value, wxWindow* component, wxEventType eventType)
+void View::RegisterBinding (Value* value, wxWindow* component, wxEventType eventType,
+    bool changeEnabled)
 {
   Binding* b = new Binding ();
   b->value = value;
   b->component = component;
   b->eventType = eventType;
+  b->changeEnabled = changeEnabled;
   bindingsByComponent.Put (component, b);
   if (!bindingsByValue.Contains (value))
     bindingsByValue.Put (value, csArray<Binding*> ());
@@ -767,9 +817,9 @@ static bool ValueToBool (Value* value)
     case VALUE_FLOAT:
       return fabs (value->GetFloatValue ()) > .000001f;
     case VALUE_COLLECTION:
-      return false;
     case VALUE_COMPOSITE:
-      return false;
+      value->ResetIterator ();
+      return value->HasNext ();
     default:
       return false;
   }
@@ -1041,6 +1091,27 @@ bool View::IsValueBound (Value* value) const
   return bindings.GetSize () > 0;
 }
 
+void View::EnableBoundComponents (wxWindow* comp, bool state)
+{
+  if (comp->IsKindOf (CLASSINFO (wxPanel)) ||
+      comp->IsKindOf (CLASSINFO (wxDialog)))
+  {
+    wxWindowList list = comp->GetChildren ();
+    wxWindowList::iterator iter;
+    for (iter = list.begin (); iter != list.end () ; ++iter)
+    {
+      wxWindow* child = *iter;
+      EnableBoundComponents (child, state);
+    }
+  }
+  else
+  {
+    Binding* binding = bindingsByComponent.Get (comp, 0);
+    if (binding)
+      comp->Enable (state);
+  }
+}
+
 void View::ValueChanged (Value* value)
 {
 #if DO_DEBUG
@@ -1058,6 +1129,14 @@ void View::ValueChanged (Value* value)
     if (!bindings[i]->processing)
     {
       wxWindow* comp = bindings[i]->component;
+      if (bindings[i]->changeEnabled)
+      {
+	// Modify disabled/enabled state instead of value.
+	bool state = ValueToBool (value);
+	EnableBoundComponents (comp, state);
+	continue;
+      }
+
       if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
 	bindings[i]->processing = true;

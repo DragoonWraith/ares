@@ -867,6 +867,8 @@ public:
   }
 };
 
+class SelectedBoolValue;
+
 /**
  * This value exactly mirrors a value as it is selected in a list.
  * When the selection changes this value will automatically change
@@ -880,6 +882,7 @@ class ListSelectedValue : public wxEvtHandler, public MirrorValue
 private:
   wxListCtrl* listCtrl;
   csRef<Value> collectionValue;
+  csRef<SelectedBoolValue> selectedStateValue;
 
   /// The selected item in the list.
   long selection;
@@ -890,6 +893,11 @@ private:
 public:
   ListSelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type);
   virtual ~ListSelectedValue ();
+
+  /**
+   * Get a representation of the selected state with this value.
+   */
+  Value* GetSelectedState ();
 };
 
 /**
@@ -1026,7 +1034,11 @@ private:
     // and in that case we should not process it again and also not process
     // value changes.
     bool processing;
-    Binding () : component (0), eventType (wxEVT_NULL), processing (false) { }
+    // If true then this event will change the enabled state of the
+    // component instead of changing the value.
+    bool changeEnabled;
+    Binding () : component (0), eventType (wxEVT_NULL), processing (false),
+      changeEnabled (false) { }
   };
   csPDelArray<Binding> bindings;
   typedef csHash<Binding*,csPtrKey<wxWindow> > ComponentToBinding;
@@ -1134,7 +1146,8 @@ private:
   wxWindow* FindComponentByName (wxWindow* container, const char* name);
 
   /// Register a binding for a given component and eventtype.
-  void RegisterBinding (Value* value, wxWindow* component, wxEventType eventType);
+  void RegisterBinding (Value* value, wxWindow* component, wxEventType eventType,
+      bool changeEnabled = false);
 
   /**
    * Build a tree from a value.
@@ -1160,6 +1173,12 @@ private:
    * Return true if a given value is bound to some component.
    */
   bool IsValueBound (Value* value) const;
+
+  /**
+   * Recursively enable/disable components but only if they are
+   * bound to a value.
+   */
+  void EnableBoundComponents (wxWindow* window, bool enable);
 
 public:
   /**
@@ -1265,6 +1284,18 @@ public:
    * - Value type is not compatible with component type.
    */
   bool Bind (Value* value, wxTreeCtrl* component);
+
+  /**
+   * Bind a value to the enabled/disabled state of a component.
+   */
+  bool BindEnabled (Value* value, wxWindow* component);
+
+  /**
+   * Bind a value to the enabled/disabled state of a component.
+   * Can fail (return false) under the following conditions:
+   * - Component could not be found by this name.
+   */
+  bool BindEnabled (Value* value, const char* compName);
 
   //----------------------------------------------------------------
 
