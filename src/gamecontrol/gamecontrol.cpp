@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "cssysdef.h"
 #include "csutil/csinput.h"
 #include "cstool/cspixmap.h"
+#include "csgeom/math3d.h"
 #include "iutil/objreg.h"
 #include "iutil/virtclk.h"
 #include "ivideo/graph3d.h"
@@ -40,6 +41,7 @@ THE SOFTWARE.
 #include "physicallayer/entity.h"
 #include "propclass/camera.h"
 #include "propclass/dynworld.h"
+#include "propclass/dynmove.h"
 #include "propclass/prop.h"
 #include "ivaria/dynamics.h"
 
@@ -100,6 +102,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 
   classNoteID = pl->FetchStringID ("ares.note");
   classInfoID = pl->FetchStringID ("ares.info");
+  classDragRotYID = pl->FetchStringID ("ares.drag.roty");
 
   LoadIcons ();
 }
@@ -161,7 +164,7 @@ void celPcGameController::TryGetDynworld ()
 
 void celPcGameController::TryGetCamera ()
 {
-  if (pccamera) return;
+  if (pccamera && pcdynmove) return;
   csRef<iCelEntity> player = pl->FindEntity ("Player");
   if (!player)
   {
@@ -169,6 +172,7 @@ void celPcGameController::TryGetCamera ()
     return;
   }
   pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
+  pcdynmove = celQueryPropertyClassEntity<iPcDynamicMove> (player);
 }
 
 bool celPcGameController::PerformActionIndexed (int idx,
@@ -274,7 +278,20 @@ bool celPcGameController::StartDrag ()
   if (obj)
   {
     dragobj = obj;
-    dragDistance = (isect - start).Norm ();
+    iCelEntity* ent = obj->GetEntity ();
+    if (ent && ent->HasClass (classDragRotYID))
+    {
+      dragType = DRAGTYPE_ROTY;
+      pcdynmove->EnableMouselook (false);
+      dragOrigin = obj->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
+      dragDistance = (isect - dragOrigin).Norm ();
+    }
+    else
+    {
+      dragType = DRAGTYPE_NORMAL;
+      dragDistance = (isect - start).Norm ();
+    }
+
     dragJoint = bullet_dynSys->CreatePivotJoint ();
     dragJoint->Attach (hitBody, isect);
 
@@ -302,6 +319,34 @@ void celPcGameController::StopDrag ()
   bullet_dynSys->RemovePivotJoint (dragJoint);
   dragJoint = 0;
   dragobj = 0;
+  if (dragType == DRAGTYPE_ROTY)
+    pcdynmove->EnableMouselook (true);
+}
+
+static float sgn (float x)
+{
+  if (x < 0.0f) return -1.0f;
+  else return 1.0f;
+}
+
+static csVector3 IntersectCircleLine2D (const csVector3& center, float radius,
+    const csVector3& start, const csVector3& end)
+{
+  float dx = end.x - start.x;
+  float dy = end.z - start.z;
+  float dr = sqrt (dx * dx + dy * dy);
+  float d = start.x * end.z - end.x * start.z;
+  float ix, iy;
+  ix = (d * dy + sgn (dy) * dx * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
+  iy = (- d * dx + fabs (dy) * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
+  csVector3 i1 (ix, center.y, iy);
+  ix = (d * dy - sgn (dy) * dx * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
+  iy = (- d * dx - fabs (dy) * sqrt (radius * radius * dr * dr - d * d)) / (dr * dr);
+  csVector3 i2 (ix, center.y, iy);
+  if (csSquaredDist::PointPoint (start, i1) < csSquaredDist::PointPoint (start, i2))
+    return i1;
+  else
+    return i2;
 }
 
 void celPcGameController::TickEveryFrame ()
@@ -320,10 +365,18 @@ void celPcGameController::TickEveryFrame ()
     csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
     csVector3 start = cam->GetTransform ().GetOrigin ();
     csVector3 end = cam->GetTransform ().This2Other (v3d);
-    csVector3 newPosition = end - start;
-    newPosition.Normalize ();
-    newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
-     dragJoint->SetPosition (newPosition);
+    csVector3 newPosition;
+    if (dragType == DRAGTYPE_ROTY)
+    {
+      newPosition = IntersectCircleLine2D (dragOrigin, dragDistance, start, end);
+    }
+    else
+    {
+      newPosition = end - start;
+      newPosition.Normalize ();
+      newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
+    }
+    dragJoint->SetPosition (newPosition);
     icon = iconCursor;
   }
   else

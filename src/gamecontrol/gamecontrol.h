@@ -43,6 +43,7 @@ struct iMouseDriver;
 struct iGraphics3D;
 struct iGraphics2D;
 struct iPcDynamicWorld;
+struct iPcDynamicMove;
 struct iDynamicObject;
 struct iFont;
 struct iEngine;
@@ -58,6 +59,12 @@ struct TimedMessage
 {
   csString message;
   float timeleft;
+};
+
+enum DragType
+{
+  DRAGTYPE_NORMAL = 0,
+  DRAGTYPE_ROTY
 };
 
 /**
@@ -86,8 +93,10 @@ private:
   csRef<CS::Physics::Bullet::iPivotJoint> dragJoint;
   float oldLinearDampening;
   float oldAngularDampening;
-  float dragDistance;
+  float dragDistance;	// Distance depends on type of dragging.
   iDynamicObject* dragobj;
+  csVector3 dragOrigin; // Only for DRAGTYPE_ROTY
+  DragType dragType;
 
   // For messages.
   csArray<TimedMessage> messages;
@@ -103,11 +112,13 @@ private:
   void LoadIcons ();
   csStringID classNoteID;
   csStringID classInfoID;
+  csStringID classDragRotYID;
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();
 
   csWeakRef<iPcCamera> pccamera;
+  csWeakRef<iPcDynamicMove> pcdynmove;
   void TryGetCamera ();
 
   // For actions.
