@@ -425,7 +425,9 @@ enum
   ID_Cells,
   ID_Dynfacts,
   ID_Play,
+  ID_UpdateObjects,
   ID_Join,
+  ID_Unjoin,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
@@ -477,6 +479,8 @@ private:
   void OnMenuCopy (wxCommandEvent& event);
   void OnMenuPaste (wxCommandEvent& event);
   void OnMenuJoin (wxCommandEvent& event);
+  void OnMenuUnjoin (wxCommandEvent& event);
+  void OnMenuUpdateObjects (wxCommandEvent& event);
   void OnNotebookChange (wxNotebookEvent& event);
   void OnNotebookChanged (wxNotebookEvent& event);
 

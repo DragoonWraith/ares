@@ -136,6 +136,10 @@ public:
 
   /// Join two selected objects.
   void JoinObjects ();
+  void UnjoinObjects ();
+
+  /// Update all objects (after factory changes).
+  void UpdateObjects ();
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);

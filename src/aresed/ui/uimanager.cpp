@@ -416,6 +416,18 @@ void UIManager::Error (const char* description, ...)
   va_end (args);
 }
 
+bool UIManager::Ask (const char* description, ...)
+{
+  va_list args;
+  va_start (args, description);
+  csString msg;
+  msg.FormatV (description, args);
+  int answer = wxMessageBox (wxString::FromUTF8 (msg), wxT("Confirm"),
+      wxYES_NO | wxICON_QUESTION, parent);
+  va_end (args);
+  return answer == wxYES;
+}
+
 UIDialog* UIManager::CreateDialog (const char* title)
 {
   UIDialog* dialog = new UIDialog (parent, title);

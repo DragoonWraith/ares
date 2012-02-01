@@ -172,6 +172,7 @@ public:
 
   void Message (const char* description, ...);
   void Error (const char* description, ...);
+  bool Ask (const char* description, ...);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }

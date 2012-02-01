@@ -600,6 +600,69 @@ void MainMode::JoinObjects ()
   ob[0]->Connect (0, ob[1]);
 }
 
+void MainMode::UnjoinObjects ()
+{
+  Selection* selection = aresed3d->GetSelection ();
+  if (selection->GetSize () == 0)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Select at least one object to unjoin!");
+    return;
+  }
+  csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  size_t count = ob[0]->GetFactory ()->GetJointCount ();
+  if (count == 0)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("The first object has no joints!");
+    return;
+  }
+  if (selection->GetSize () == 1)
+  {
+    int removed = 0;
+    for (size_t i = 0 ; i < count ; i++)
+      if (ob[0]->GetConnectedObject (i))
+      {
+	ob[0]->Connect (i, 0);
+	removed++;
+      }
+    aresed3d->GetApp ()->GetUIManager ()->Message ("Disconnected %d objects.", removed);
+  }
+  else
+  {
+    for (size_t i = 1 ; i < ob.GetSize () ; i++)
+    {
+      bool found = false;
+      for (size_t j = 0 ; j < ob[0]->GetFactory ()->GetJointCount () ; j++)
+	if (ob[0]->GetConnectedObject (j) == ob[i]) { found = true; break; }
+      if (!found)
+      {
+        aresed3d->GetApp ()->GetUIManager ()->Error ("Some of the objects are not connected!");
+        return;
+      }
+    }
+    for (size_t i = 1 ; i < ob.GetSize () ; i++)
+    {
+      for (size_t j = 0 ; j < ob[0]->GetFactory ()->GetJointCount () ; j++)
+	if (ob[0]->GetConnectedObject (j) == ob[i])
+	{
+	  ob[0]->Connect (j, 0);
+	  break;
+	}
+    }
+  }
+}
+
+void MainMode::UpdateObjects ()
+{
+  if (!aresed3d->GetApp ()->GetUIManager ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
+  iDynamicCell* cell = aresed3d->GetDynamicCell ();
+  for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+  {
+    iDynamicObject* obj = cell->GetObject (i);
+    obj->RefreshColliders ();
+    obj->RecreateJoints ();
+  }
+}
+
 void MainMode::StartKinematicDragging (bool restrictY,
     const csSegment3& beam, const csVector3& isect, bool firstOnly)
 {

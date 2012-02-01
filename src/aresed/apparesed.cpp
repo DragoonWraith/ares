@@ -1016,6 +1016,8 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Copy, AppAresEditWX :: OnMenuCopy)
   EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
   EVT_MENU (ID_Join, AppAresEditWX :: OnMenuJoin)
+  EVT_MENU (ID_Unjoin, AppAresEditWX :: OnMenuUnjoin)
+  EVT_MENU (ID_UpdateObjects, AppAresEditWX :: OnMenuUpdateObjects)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
 END_EVENT_TABLE()
@@ -1077,6 +1079,18 @@ void AppAresEditWX::OnMenuJoin (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
   mainMode->JoinObjects ();
+}
+
+void AppAresEditWX::OnMenuUnjoin (wxCommandEvent& event)
+{
+  if (editMode != mainMode) return;
+  mainMode->UnjoinObjects ();
+}
+
+void AppAresEditWX::OnMenuUpdateObjects (wxCommandEvent& event)
+{
+  if (editMode != mainMode) return;
+  mainMode->UpdateObjects ();
 }
 
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
@@ -1465,7 +1479,10 @@ void AppAresEditWX::SetupMenuBar ()
   editMenu->Append (ID_Paste, wxT ("&Paste\tCtrl+V"));
   editMenu->Append (ID_Delete, wxT ("&Delete"));
   editMenu->AppendSeparator ();
+  editMenu->Append (ID_UpdateObjects, wxT ("&Update Objects"));
+  editMenu->AppendSeparator ();
   editMenu->Append (ID_Join, wxT ("&Join\tCtrl+J"));
+  editMenu->Append (ID_Unjoin, wxT ("&Unjoin"));
 
   wxMenuBar* menuBar = new wxMenuBar ();
   menuBar->Append (fileMenu, wxT ("&File"));
@@ -1503,6 +1520,8 @@ void AppAresEditWX::SetMenuState ()
     menuBar->Enable (ID_Delete, sel);
     menuBar->Enable (ID_Copy, sel);
     menuBar->Enable (ID_Join, objects.GetSize () == 2);
+    menuBar->Enable (ID_Unjoin, objects.GetSize () >= 1);
+    menuBar->Enable (ID_UpdateObjects, true);
   }
   else
   {
@@ -1510,6 +1529,8 @@ void AppAresEditWX::SetMenuState ()
     menuBar->Enable (ID_Delete, false);
     menuBar->Enable (ID_Copy, false);
     menuBar->Enable (ID_Join, false);
+    menuBar->Enable (ID_Unjoin, false);
+    menuBar->Enable (ID_UpdateObjects, false);
   }
 }
 
