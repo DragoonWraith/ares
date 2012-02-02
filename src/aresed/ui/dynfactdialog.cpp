@@ -35,6 +35,8 @@ THE SOFTWARE.
 #include "../models/meshfactmodel.h"
 #include "../tools/tools.h"
 
+#include "physicallayer/pl.h"
+
 #include <wx/choicebk.h>
 
 //--------------------------------------------------------------------------
@@ -110,6 +112,134 @@ void DynfactMeshView::SetupColliderGeometry ()
 //--------------------------------------------------------------------------
 
 using namespace Ares;
+
+/**
+ * A composite value representing an attribute for a dynamic factory.
+ */
+class AttributeValue : public CompositeValue
+{
+private:
+  csStringID nameID;
+  iDynamicFactory* dynfact;
+  csRef<Value> valueValue;
+
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    dynfact->SetAttribute (nameID, valueValue->GetStringValue ());
+    FireValueChanged ();
+  }
+
+public:
+  AttributeValue (csStringID nameID, const char* name, iDynamicFactory* dynfact) : nameID (nameID), dynfact (dynfact)
+  {
+    csString value;
+    if (dynfact)
+    {
+      value = dynfact->GetAttribute (nameID);
+    }
+    valueValue.AttachNew (new StringValue (value));
+    AddChild ("attrName", NEWREF(Value,new StringValue (name)));
+    AddChild ("attrValue", valueValue);
+  }
+  virtual ~AttributeValue () { }
+
+  csStringID GetName () const { return nameID; }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Att]";
+    dump += CompositeValue::Dump (verbose);
+    return dump;
+  }
+};
+
+/**
+ * A value representing the list of attributes for a dynamic factory.
+ * Children of this value are of type AttributeValue.
+ */
+class AttributeCollectionValue : public StandardCollectionValue
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+
+  // Create a new child and add to the array.
+  Value* NewChild (csStringID nameID, const char* name)
+  {
+    csRef<AttributeValue> value;
+    value.AttachNew (new AttributeValue (nameID, name, dynfact));
+    children.Push (value);
+    value->SetParent (this);
+    return value;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (dynfact != dialog->GetCurrentFactory ()) dirty = true;
+    if (!dirty) return;
+    ReleaseChildren ();
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    dirty = false;
+    AresEdit3DView* ares3d = dialog->GetUIManager ()->GetApp ()->GetAresView ();
+    csRef<iAttributeIterator> it = dynfact->GetAttributes ();
+    while (it->HasNext ())
+    {
+      csStringID nameID = it->Next ();
+      csString name = ares3d->GetPL ()->FetchString (nameID);
+      NewChild (nameID, name);
+    }
+  }
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  AttributeCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~AttributeCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return false;
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      if (children[i] == child)
+      {
+	AttributeValue* attValue = static_cast<AttributeValue*> (child);
+	dynfact->ClearAttribute (attValue->GetName ());
+	child->SetParent (0);
+	children.DeleteIndex (i);
+	FireValueChanged ();
+	return true;
+      }
+    return false;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return 0;
+    csString name = suggestion.Get ("name", (const char*)0);
+    csString value = suggestion.Get ("value", (const char*)0);
+    AresEdit3DView* ares3d = dialog->GetUIManager ()->GetApp ()->GetAresView ();
+    csStringID nameID = ares3d->GetPL ()->FetchStringID (name);
+    dynfact->SetAttribute (nameID, value);
+    Value* child = NewChild (nameID, name);
+    FireValueChanged ();
+    return child;
+  }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[Att*]";
+    dump += StandardCollectionValue::Dump (verbose);
+    return dump;
+  }
+};
+
+//--------------------------------------------------------------------------
 
 /**
  * A composite value representing a joint for a dynamic factory.
@@ -659,6 +789,7 @@ DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
   AddChild ("colliders", NEWREF(Value,new ColliderCollectionValue (dialog)));
   AddChild ("pivots", NEWREF(Value,new PivotCollectionValue (dialog)));
   AddChild ("joints", NEWREF(Value,new JointCollectionValue (dialog)));
+  AddChild ("attributes", NEWREF(Value,new AttributeCollectionValue (dialog)));
   AddChild ("maxRadius", NEWREF(Value,new MaxRadiusValue(dialog)));
   AddChild ("imposterRadius", NEWREF(Value,new ImposterRadiusValue(dialog)));
   AddChild ("static", NEWREF(Value,new StaticValue(dialog)));
@@ -869,16 +1000,26 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue(app)), 0,
       "Name", "name");
 
+  // The dialog for editing new attributes.
+  attributeDialog = new UIDialog (this, "Attribute");
+  attributeDialog->AddRow ();
+  attributeDialog->AddLabel ("Name:");
+  attributeDialog->AddText ("name");
+  attributeDialog->AddRow ();
+  attributeDialog->AddLabel ("Value:");
+  attributeDialog->AddText ("value");
+
   // Setup the dynamic factory tree.
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
   Bind (dynfactCollectionValue, "factoryTree");
   wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
 
-  // Setup the collider and pivot list.
+  // Setup the lists.
   DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
   DefineHeading ("pivots_List", "x,y,z", "pivotX,pivotY,pivotZ");
   DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
+  DefineHeading ("attributes_List", "Name,Value", "attrName,attrValue");
 
   // Setup the composite representing the dynamic factory that is selected.
   dynfactValue.AttachNew (new DynfactValue (this));
@@ -961,6 +1102,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
+  Value* attributes = dynfactValue->GetChildByName ("attributes");
+  AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
+  AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
   AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_BOX)));
   AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_SPHERE)));
   AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_CYLINDER)));
@@ -972,6 +1116,7 @@ DynfactDialog::~DynfactDialog ()
 {
   delete meshView;
   delete factoryDialog;
+  delete attributeDialog;
 }
 
 
