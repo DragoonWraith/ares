@@ -189,7 +189,8 @@ protected:
     {
       csStringID nameID = it->Next ();
       csString name = ares3d->GetPL ()->FetchString (nameID);
-      NewChild (nameID, name);
+      if (name != "category" && name != "defaultstatic")
+        NewChild (nameID, name);
     }
   }
   virtual void ChildChanged (Value* child)
