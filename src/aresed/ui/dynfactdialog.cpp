@@ -933,6 +933,29 @@ public:
 
 //--------------------------------------------------------------------------
 
+bool NewInvisibleChildAction::Do (View* view, wxWindow* component)
+{
+  UIDialog* dialog = new UIDialog (component, "Factory name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Min corner:");
+  dialog->AddText ("minx");
+  dialog->AddText ("miny");
+  dialog->AddText ("minz");
+  dialog->AddRow ();
+  dialog->AddLabel ("Max corner:");
+  dialog->AddText ("maxx");
+  dialog->AddText ("maxy");
+  dialog->AddText ("maxz");
+  bool d = DoDialog (view, component, dialog);
+  delete dialog;
+  return d;
+}
+
+//--------------------------------------------------------------------------
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
   EndModal (TRUE);
@@ -1101,6 +1124,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
   AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
+  AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
   Value* attributes = dynfactValue->GetChildByName ("attributes");

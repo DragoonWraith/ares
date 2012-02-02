@@ -102,6 +102,21 @@ public:
 };
 
 /**
+ * This standard action creates a new child for a collection based
+ * on a suggestion from a dialog.
+ * It assumes the collection supports the NewValue() method.
+ */
+class NewInvisibleChildAction : public AbstractNewAction
+{
+public:
+  NewInvisibleChildAction (Value* collection) :
+    AbstractNewAction (collection) { }
+  virtual ~NewInvisibleChildAction () { }
+  virtual const char* GetName () const { return "New Invisible..."; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
  * The dialog for editing dynamic factories.
  */
 class DynfactDialog : public wxDialog, public View

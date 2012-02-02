@@ -106,6 +106,13 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
   return true;
 }
 
+static float Gf (const DialogResult& suggestion, const char* name)
+{
+  float f;
+  csScanStr (suggestion.Get (name, "0"), "%f", &f);
+  return f;
+}
+
 Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     const DialogResult& suggestion)
 {
@@ -122,6 +129,21 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     return 0;
   }
 
+  if (suggestion.Contains ("minx"))
+  {
+    // We are creating a new invisible mesh.
+    using namespace CS::Geometry;
+    csBox3 bbox;
+    bbox.Set (
+	Gf (suggestion, "minx"), Gf (suggestion, "miny"), Gf (suggestion, "minz"),
+	Gf (suggestion, "maxx"), Gf (suggestion, "maxy"), Gf (suggestion, "maxz"));
+    Box primitive (bbox);
+    csRef<iMeshFactoryWrapper> mf = GeneralMeshBuilder::CreateFactory (
+	aresed3d->GetEngine (), newname, &primitive);
+    iMaterialWrapper* mat = aresed3d->GetEngine ()->FindMaterial ("invisible");
+    mf->GetMeshObjectFactory ()->SetMaterialWrapper (mat);
+  }
+
   aresed3d->AddItem (categoryValue->GetStringValue (), newname);
   csRef<StringValue> strValue;
   strValue.AttachNew (new StringValue (newname));
@@ -130,6 +152,11 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   iDynamicFactory* fact = dynworld->AddFactory (newname, 1.0f, 1.0f);
   fact->SetAttribute ("category", categoryValue->GetStringValue ());
   aresed3d->SetupFactorySettings (fact);
+
+  // Mark as invisible if it is an invisible mesh (will still be shown
+  // in editor).
+  if (suggestion.Contains ("minx"))
+    fact->SetInvisible (true);
 
   CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
   categoryCollectionValue->Refresh ();

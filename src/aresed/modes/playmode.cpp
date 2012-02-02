@@ -95,6 +95,7 @@ void PlayMode::Start ()
   delete snapshot;
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   dynworld->InhibitEntities (false);
+  dynworld->ShowInvisible (false);
   snapshot = new DynworldSnapshot (dynworld);
 
   // Set entities for all dynamic objects and find the player object.
@@ -102,6 +103,7 @@ void PlayMode::Start ()
   csReversibleTransform playerTrans;
   iDynamicCell* foundCell = 0;
   iDynamicObject* foundPlayerDynobj = 0;
+
   csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
   while (cellIt->HasNext ())
   {
@@ -168,6 +170,7 @@ void PlayMode::Stop ()
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   dynworld->InhibitEntities (true);
+  dynworld->ShowInvisible (true);
   snapshot->Restore (dynworld);
   delete snapshot;
   snapshot = 0;
