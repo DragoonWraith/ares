@@ -113,7 +113,7 @@ private:
   void LoadIcons ();
   csStringID classNoteID;
   csStringID classInfoID;
-  csStringID classDragRotYID;
+  csStringID attrDragType;
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();

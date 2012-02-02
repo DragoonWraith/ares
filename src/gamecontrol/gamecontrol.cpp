@@ -102,7 +102,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 
   classNoteID = pl->FetchStringID ("ares.note");
   classInfoID = pl->FetchStringID ("ares.info");
-  classDragRotYID = pl->FetchStringID ("ares.drag.roty");
+  attrDragType = pl->FetchStringID ("ares.dragtype");
 
   LoadIcons ();
 }
@@ -278,8 +278,8 @@ bool celPcGameController::StartDrag ()
   if (obj)
   {
     dragobj = obj;
-    iCelEntity* ent = obj->GetEntity ();
-    if (ent && ent->HasClass (classDragRotYID))
+    csString dt = obj->GetFactory ()->GetAttribute (attrDragType);
+    if (dt == "roty")
     {
       printf ("Start roty drag!\n"); fflush (stdout);
       dragType = DRAGTYPE_ROTY;
