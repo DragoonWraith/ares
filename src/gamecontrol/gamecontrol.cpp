@@ -285,7 +285,8 @@ bool celPcGameController::StartDrag ()
       dragType = DRAGTYPE_ROTY;
       pcdynmove->EnableMouselook (false);
       dragOrigin = obj->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
-      dragOrigin.y = isect.y;
+      //dragOrigin.y = isect.y;
+      isect.y = dragOrigin.y;
       dragAnchor = isect;
       dragDistance = (isect - dragOrigin).Norm ();
     }
@@ -326,12 +327,6 @@ void celPcGameController::StopDrag ()
     pcdynmove->EnableMouselook (true);
 }
 
-static float sgn (float x)
-{
-  if (x < 0.0f) return -1.0f;
-  else return 1.0f;
-}
-
 void celPcGameController::TickEveryFrame ()
 {
   csSimplePixmap* icon = iconDot;
@@ -350,11 +345,20 @@ void celPcGameController::TickEveryFrame ()
       int sx = x - sw / 2;
       int sy = y - sh / 2;
       g2d->SetMousePosition (sw / 2, sh / 2);
-      dragAnchor.x -= float (sx) / 200.0f;
-      dragAnchor.z -= float (sy) / 200.0f;
-      newPosition = dragAnchor - dragOrigin;
-      newPosition.Normalize ();
-      newPosition = dragOrigin + newPosition * dragDistance;
+      csVector3 v (float (sx) / 200.0f, 0, - float (sy) / 200.0f);
+      float len = v.Norm ();
+      v = cam->GetTransform ().This2OtherRelative (v);
+      v.y = 0;
+      if (v.Norm () > .0001f)
+      {
+	v.Normalize ();
+	v *= len;
+        dragAnchor += v;
+        newPosition = dragAnchor - dragOrigin;
+        newPosition.Normalize ();
+        newPosition = dragOrigin + newPosition * dragDistance;
+        dragJoint->SetPosition (newPosition);
+      }
       icon = iconDot;
     }
     else
@@ -366,9 +370,9 @@ void celPcGameController::TickEveryFrame ()
       newPosition = end - start;
       newPosition.Normalize ();
       newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
+      dragJoint->SetPosition (newPosition);
       icon = iconCursor;
     }
-    dragJoint->SetPosition (newPosition);
   }
   else
   {
