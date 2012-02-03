@@ -378,6 +378,100 @@
 																</object>
 															</object>
 														</object>
+														<object class="sizeritem">
+															<option>1</option>
+															<flag>wxEXPAND</flag>
+															<border>5</border>
+															<object class="wxBoxSizer">
+																<orient>wxHORIZONTAL</orient>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																	<border>5</border>
+																	<object class="wxStaticText" name="m_staticText2511">
+																		<label>Min:</label>
+																		<wrap>-1</wrap>
+																	</object>
+																</object>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL</flag>
+																	<border>5</border>
+																	<object class="wxTextCtrl" name="minX_boxText">
+																		<size>50,-1</size>
+																		<value></value>
+																		<maxlength>0</maxlength>
+																	</object>
+																</object>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL</flag>
+																	<border>5</border>
+																	<object class="wxTextCtrl" name="minY_boxText">
+																		<size>50,-1</size>
+																		<value></value>
+																		<maxlength>0</maxlength>
+																	</object>
+																</object>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL</flag>
+																	<border>5</border>
+																	<object class="wxTextCtrl" name="minZ_boxText">
+																		<size>50,-1</size>
+																		<value></value>
+																		<maxlength>0</maxlength>
+																	</object>
+																</object>
+															</object>
+														</object>
+														<object class="sizeritem">
+															<option>1</option>
+															<flag>wxEXPAND</flag>
+															<border>5</border>
+															<object class="wxBoxSizer">
+																<orient>wxHORIZONTAL</orient>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																	<border>5</border>
+																	<object class="wxStaticText" name="m_staticText25111">
+																		<label>Max:</label>
+																		<wrap>-1</wrap>
+																	</object>
+																</object>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL</flag>
+																	<border>5</border>
+																	<object class="wxTextCtrl" name="maxX_boxText">
+																		<size>50,-1</size>
+																		<value></value>
+																		<maxlength>0</maxlength>
+																	</object>
+																</object>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL</flag>
+																	<border>5</border>
+																	<object class="wxTextCtrl" name="maxY_boxText">
+																		<size>50,-1</size>
+																		<value></value>
+																		<maxlength>0</maxlength>
+																	</object>
+																</object>
+																<object class="sizeritem">
+																	<option>0</option>
+																	<flag>wxALL</flag>
+																	<border>5</border>
+																	<object class="wxTextCtrl" name="maxZ_boxText">
+																		<size>50,-1</size>
+																		<value></value>
+																		<maxlength>0</maxlength>
+																	</object>
+																</object>
+															</object>
+														</object>
 													</object>
 												</object>
 											</object>

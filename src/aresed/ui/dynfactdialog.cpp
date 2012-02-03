@@ -956,6 +956,22 @@ bool NewInvisibleChildAction::Do (View* view, wxWindow* component)
 
 //--------------------------------------------------------------------------
 
+Offset2MinMaxValue::Offset2MinMaxValue (Value* offset, Value* size, bool operatorPlus)
+  : offset (offset), size (size), operatorPlus (operatorPlus)
+{
+  listener.AttachNew (new StandardChangeListener (this));
+  offset->AddValueChangeListener (listener);
+  size->AddValueChangeListener (listener);
+}
+
+Offset2MinMaxValue::~Offset2MinMaxValue ()
+{
+  offset->RemoveValueChangeListener (listener);
+  size->RemoveValueChangeListener (listener);
+}
+
+//--------------------------------------------------------------------------
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
   EndModal (TRUE);
@@ -1097,6 +1113,21 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "cylinder_ColliderPanel");
   Bind (colliderSelectedValue, "mesh_ColliderPanel");
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
+
+  // Bind calculated value for the box collider so that there are also min/max
+  // controls in addition to offset/size.
+  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetX"),
+	  colliderSelectedValue->GetChildByName ("sizeX"), false)), "minX_boxText");
+  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetY"),
+	  colliderSelectedValue->GetChildByName ("sizeY"), false)), "minY_boxText");
+  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetZ"),
+	  colliderSelectedValue->GetChildByName ("sizeZ"), false)), "minZ_boxText");
+  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetX"),
+	  colliderSelectedValue->GetChildByName ("sizeX"), true)), "maxX_boxText");
+  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetY"),
+	  colliderSelectedValue->GetChildByName ("sizeY"), true)), "maxY_boxText");
+  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetZ"),
+	  colliderSelectedValue->GetChildByName ("sizeZ"), true)), "maxZ_boxText");
 
   Bind (pivotsSelectedValue, "pivotPosition_Panel");
   Bind (jointsSelectedValue, "joints_Panel");

@@ -102,6 +102,44 @@ public:
 };
 
 /**
+ * A float value that calculates v = offset +- size/2 in both directions.
+ */
+class Offset2MinMaxValue : public FloatValue
+{
+private:
+  csRef<StandardChangeListener> listener;
+  csRef<Value> offset;
+  csRef<Value> size;
+  bool operatorPlus;
+
+public:
+  Offset2MinMaxValue (Value* offset, Value* size, bool operatorPlus);
+  virtual ~Offset2MinMaxValue ();
+  virtual void SetFloatValue (float fl)
+  {
+    if (operatorPlus)
+    {
+      float min = offset->GetFloatValue () - size->GetFloatValue () / 2.0f;
+      offset->SetFloatValue ((fl+min) / 2.0f);
+      size->SetFloatValue (fl-min);
+    }
+    else
+    {
+      float max = offset->GetFloatValue () + size->GetFloatValue () / 2.0f;
+      offset->SetFloatValue ((fl+max) / 2.0f);
+      size->SetFloatValue (max-fl);
+    }
+  }
+  virtual float GetFloatValue ()
+  {
+    if (operatorPlus)
+      return offset->GetFloatValue () + size->GetFloatValue () / 2.0f;
+    else
+      return offset->GetFloatValue () - size->GetFloatValue () / 2.0f;
+  }
+};
+
+/**
  * This standard action creates a new child for a collection based
  * on a suggestion from a dialog.
  * It assumes the collection supports the NewValue() method.
