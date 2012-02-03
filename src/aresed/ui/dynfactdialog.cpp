@@ -1114,6 +1114,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "mesh_ColliderPanel");
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
 
+  Bind (pivotsSelectedValue, "pivotPosition_Panel");
+  Bind (jointsSelectedValue, "joints_Panel");
+
   // Bind calculated value for the box collider so that there are also min/max
   // controls in addition to offset/size.
   Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetX"),
@@ -1129,9 +1132,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetZ"),
 	  colliderSelectedValue->GetChildByName ("sizeZ"), true)), "maxZ_boxText");
 
-  Bind (pivotsSelectedValue, "pivotPosition_Panel");
-  Bind (jointsSelectedValue, "joints_Panel");
-
+  // Bind some values to the enabled/disabled state of several components.
   BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
   BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
   BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMinTrans");
