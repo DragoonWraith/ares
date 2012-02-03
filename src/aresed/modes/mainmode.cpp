@@ -597,7 +597,12 @@ void MainMode::JoinObjects ()
     aresed3d->GetApp ()->GetUIManager ()->Error ("The first object has no joints!");
     return;
   }
-  ob[0]->Connect (0, ob[1]);
+  ob[1]->MakeKinematic ();
+  ob[1]->SetTransform (ob[0]->GetTransform ());
+  ob[1]->UndoKinematic ();
+  // In this function all joints are connected between the two same objects.
+  for (size_t i = 0 ; i < ob[0]->GetFactory ()->GetJointCount () ; i++)
+    ob[0]->Connect (i, ob[1]);
 }
 
 void MainMode::UnjoinObjects ()
