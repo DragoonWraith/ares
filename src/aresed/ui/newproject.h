@@ -57,7 +57,8 @@ private:
   long selIndex;
   csRef<NewProjectCallback> callback;
 
-  void SetPathFile (const char* path, const char* file);
+  void SetPathFile (const char* path, const char* file,
+      bool saveDynfacts, bool saveTemplates);
   void ScanCSNode (csString& msg, iDocumentNode* node);
 
 public:

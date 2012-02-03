@@ -111,6 +111,26 @@
 				<border>5</border>
 				<object class="wxBoxSizer">
 					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxCheckBox" name="dynfact_Check">
+							<tooltip>If checked then dynamic factories will save to this file</tooltip>
+							<label>Dynfacts</label>
+							<checked>0</checked>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxCheckBox" name="entity_Check">
+							<tooltip>If checked then entity templates will save to this file.</tooltip>
+							<label>Templates</label>
+							<checked>0</checked>
+						</object>
+					</object>
 					<object class="spacer">
 						<option>1</option>
 						<flag>wxEXPAND</flag>

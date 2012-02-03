@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "worldload.h"
 
 #include "propclass/dynworld.h"
+#include "physicallayer/pl.h"
+#include "physicallayer/entitytpl.h"
 
 WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
 {
@@ -68,9 +70,17 @@ bool WorldLoader::LoadDoc (iDocument* doc)
     {
       csString path = child->GetAttributeValue ("path");
       csString file = child->GetAttributeValue ("file");
-      if (!LoadLibrary (path, file))
-	return false;
-      assets.Push (Asset (path, file));
+      bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
+      bool saveTemplates = child->GetAttributeValueAsBool ("templates");
+      vfs->PushDir (path);
+      // If the file doesn't exist we don't try to load it. That's not an error
+      // as it might be saved later.
+      bool exists = vfs->Exists (file);
+      vfs->PopDir ();
+      if (exists)
+        if (!LoadLibrary (path, file))
+	  ;//return false;
+      assets.Push (Asset (path, file, saveDynfacts, saveTemplates));
     }
     // Ignore the other tags. These are processed below.
   }
@@ -179,6 +189,16 @@ bool WorldLoader::NewProject (const csArray<Asset>& newassets)
   return true;
 }
 
+bool WorldLoader::SaveTemplates (iDocumentNode* parent)
+{
+  return true;
+}
+
+bool WorldLoader::SaveDynfacts (iDocumentNode* parent)
+{
+  return true;
+}
+
 csRef<iDocument> WorldLoader::SaveDoc ()
 {
   csRef<iDocumentSystem> docsys;
@@ -209,6 +229,65 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   csRef<iDocumentNode> roomNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
   roomNode->SetValue ("rooms");
   roomMeshCreator->Save (roomNode);
+
+  // Now save all assets in their respective files. @@@ In the future this should
+  // be modified to only save the new assets and assets that actually came from here.
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    const Asset& asset = assets[i];
+printf ("Asset %d\n", i); fflush (stdout);
+    if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile ())
+    {
+      csRef<iDocument> docasset = docsys->CreateDocument ();
+
+      csRef<iDocumentNode> root = docasset->CreateRoot ();
+      csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
+      rootNode->SetValue ("library");
+      if (asset.IsDynfactSavefile ())
+      {
+printf ("Save Dynfact\n"); fflush (stdout);
+	csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
+	    "cel.addons.dynamicworld.loader");
+	if (!saver) return 0;
+        csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+        addonNode->SetValue ("addon");
+	addonNode->SetAttribute ("plugin", "cel.addons.dynamicworld.loader");
+	if (!saver->WriteDown (dynworld, addonNode, 0))
+	  return 0;
+      }
+      if (asset.IsTemplateSavefile ())
+      {
+printf ("Save Template 1\n"); fflush (stdout);
+	csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
+	    "cel.addons.celentitytpl");
+	if (!saver) return 0;
+printf ("Save Template 2\n"); fflush (stdout);
+	csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+	csRef<iCelEntityTemplateIterator> tempIt = pl->GetEntityTemplates ();
+printf ("Save Template 3\n"); fflush (stdout);
+	while (tempIt->HasNext ())
+	{
+	  iCelEntityTemplate* temp = tempIt->Next ();
+printf ("Save Template 4\n"); fflush (stdout);
+          csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+          addonNode->SetValue ("addon");
+	  addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
+printf ("Save Template 5\n"); fflush (stdout);
+	  if (!saver->WriteDown (temp, addonNode, 0))
+	    return 0;
+	}
+      }
+printf ("Save Template 6\n"); fflush (stdout);
+      csRef<iString> xml;
+      xml.AttachNew (new scfString ());
+      docasset->Write (xml);
+      printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetPath ().GetData ());
+      vfs->PushDir (asset.GetPath ());
+      vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
+      vfs->PopDir ();
+    }
+  }
+
   return doc;
 }
 
@@ -216,6 +295,7 @@ bool WorldLoader::SaveFile (const char* filename)
 {
   csRef<iDocument> doc = SaveDoc ();
 
+printf ("Writing '%s' at '%s\n", filename, vfs->GetCwd ());
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   doc->Write (xml);

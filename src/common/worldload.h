@@ -35,12 +35,18 @@ class Asset
 private:
   csString path;
   csString file;
+  bool saveDynfacts;
+  bool saveTemplates;
 
 public:
-  Asset (const char* path, const char* file) : path (path), file (file) { }
+  Asset (const char* path, const char* file,
+      bool saveDynfacts, bool saveTemplates) :
+    path (path), file (file), saveDynfacts (saveDynfacts), saveTemplates (saveTemplates) { }
 
   const csString& GetPath () const { return path; }
   const csString& GetFile () const { return file; }
+  bool IsDynfactSavefile () const { return saveDynfacts; }
+  bool IsTemplateSavefile () const { return saveTemplates; }
 };
 
 class WorldLoader
@@ -62,6 +68,9 @@ private:
   csRef<iDocument> SaveDoc ();
   bool LoadDoc (iDocument* doc);
   bool LoadLibrary (const char* path, const char* file);
+
+  bool SaveTemplates (iDocumentNode* parent);
+  bool SaveDynfacts (iDocumentNode* parent);
 
 public:
   WorldLoader (iObjectRegistry* object_reg);
