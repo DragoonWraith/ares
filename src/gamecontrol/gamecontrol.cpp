@@ -298,6 +298,7 @@ bool celPcGameController::StartDrag ()
     }
 
     dragJoint = bullet_dynSys->CreatePivotJoint ();
+    dragJoint->SetParameters (1.0f, 0.001f, 1.0f);
     dragJoint->Attach (hitBody, isect);
 
     // Set some dampening on the rigid body to have a more stable dragging
