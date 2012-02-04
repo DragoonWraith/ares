@@ -189,13 +189,54 @@ bool WorldLoader::NewProject (const csArray<Asset>& newassets)
   return true;
 }
 
-bool WorldLoader::SaveTemplates (iDocumentNode* parent)
+bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
 {
-  return true;
-}
+  csRef<iDocument> docasset = docsys->CreateDocument ();
 
-bool WorldLoader::SaveDynfacts (iDocumentNode* parent)
-{
+  csRef<iDocumentNode> root = docasset->CreateRoot ();
+  csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
+  rootNode->SetValue ("library");
+  if (asset.IsDynfactSavefile ())
+  {
+    csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
+	"cel.addons.dynamicworld.loader");
+    if (!saver) return 0;
+    csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+    addonNode->SetValue ("addon");
+    addonNode->SetAttribute ("plugin", "cel.addons.dynamicworld.loader");
+    if (!saver->WriteDown (dynworld, addonNode, 0))
+      return 0;
+  }
+  if (asset.IsTemplateSavefile ())
+  {
+    csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
+	"cel.addons.celentitytpl");
+    if (!saver) return 0;
+    csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+    csRef<iCelEntityTemplateIterator> tempIt = pl->GetEntityTemplates ();
+    // @@@ Todo: only save entities from read-only assets if they are modified.
+    // @@@ Todo: save Player and World if they are modified.
+    while (tempIt->HasNext ())
+    {
+      iCelEntityTemplate* temp = tempIt->Next ();
+      csString tempName = temp->GetName ();
+      if (tempName != "Player" && tempName != "World")
+      {
+	csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+	addonNode->SetValue ("addon");
+	addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
+	if (!saver->WriteDown (temp, addonNode, 0))
+	  return 0;
+      }
+    }
+  }
+  csRef<iString> xml;
+  xml.AttachNew (new scfString ());
+  docasset->Write (xml);
+  printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetPath ().GetData ());
+  vfs->PushDir (asset.GetPath ());
+  vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
+  vfs->PopDir ();
   return true;
 }
 
@@ -235,56 +276,11 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     const Asset& asset = assets[i];
-printf ("Asset %d\n", i); fflush (stdout);
     if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile ())
     {
-      csRef<iDocument> docasset = docsys->CreateDocument ();
-
-      csRef<iDocumentNode> root = docasset->CreateRoot ();
-      csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
-      rootNode->SetValue ("library");
-      if (asset.IsDynfactSavefile ())
-      {
-printf ("Save Dynfact\n"); fflush (stdout);
-	csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
-	    "cel.addons.dynamicworld.loader");
-	if (!saver) return 0;
-        csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-        addonNode->SetValue ("addon");
-	addonNode->SetAttribute ("plugin", "cel.addons.dynamicworld.loader");
-	if (!saver->WriteDown (dynworld, addonNode, 0))
-	  return 0;
-      }
-      if (asset.IsTemplateSavefile ())
-      {
-printf ("Save Template 1\n"); fflush (stdout);
-	csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
-	    "cel.addons.celentitytpl");
-	if (!saver) return 0;
-printf ("Save Template 2\n"); fflush (stdout);
-	csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
-	csRef<iCelEntityTemplateIterator> tempIt = pl->GetEntityTemplates ();
-printf ("Save Template 3\n"); fflush (stdout);
-	while (tempIt->HasNext ())
-	{
-	  iCelEntityTemplate* temp = tempIt->Next ();
-printf ("Save Template 4\n"); fflush (stdout);
-          csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-          addonNode->SetValue ("addon");
-	  addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
-printf ("Save Template 5\n"); fflush (stdout);
-	  if (!saver->WriteDown (temp, addonNode, 0))
-	    return 0;
-	}
-      }
-printf ("Save Template 6\n"); fflush (stdout);
-      csRef<iString> xml;
-      xml.AttachNew (new scfString ());
-      docasset->Write (xml);
-      printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetPath ().GetData ());
-      vfs->PushDir (asset.GetPath ());
-      vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
-      vfs->PopDir ();
+      // @@@ Todo: proper error reporting.
+      if (!SaveAsset (docsys, asset))
+	return 0;
     }
   }
 

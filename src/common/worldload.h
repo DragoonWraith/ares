@@ -69,8 +69,7 @@ private:
   bool LoadDoc (iDocument* doc);
   bool LoadLibrary (const char* path, const char* file);
 
-  bool SaveTemplates (iDocumentNode* parent);
-  bool SaveDynfacts (iDocumentNode* parent);
+  bool SaveAsset (iDocumentSystem* docsys, const Asset& asset);
 
 public:
   WorldLoader (iObjectRegistry* object_reg);
