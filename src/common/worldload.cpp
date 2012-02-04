@@ -79,7 +79,7 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       vfs->PopDir ();
       if (exists)
         if (!LoadLibrary (path, file))
-	  ;//return false;
+	  return false;
       assets.Push (Asset (path, file, saveDynfacts, saveTemplates));
     }
     // Ignore the other tags. These are processed below.
@@ -183,8 +183,14 @@ bool WorldLoader::NewProject (const csArray<Asset>& newassets)
   {
     csString path = newassets[i].GetPath ();
     csString file = newassets[i].GetFile ();
-    if (!LoadLibrary (path, file))
-      return false;
+    vfs->PushDir (path);
+    // If the file doesn't exist we don't try to load it. That's not an error
+    // as it might be saved later.
+    bool exists = vfs->Exists (file);
+    vfs->PopDir ();
+    if (exists)
+      if (!LoadLibrary (path, file))
+	return false;
   }
   return true;
 }
@@ -257,6 +263,10 @@ csRef<iDocument> WorldLoader::SaveDoc ()
     assetNode->SetValue ("asset");
     assetNode->SetAttribute ("path", asset.GetPath ());
     assetNode->SetAttribute ("file", asset.GetFile ());
+    if (asset.IsDynfactSavefile ())
+      assetNode->SetAttribute ("dynfacts", "true");
+    if (asset.IsTemplateSavefile ())
+      assetNode->SetAttribute ("templates", "true");
   }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
