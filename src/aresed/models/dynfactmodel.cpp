@@ -129,34 +129,28 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     return 0;
   }
 
-  if (suggestion.Contains ("minx"))
-  {
-    // We are creating a new invisible mesh.
-    using namespace CS::Geometry;
-    csBox3 bbox;
-    bbox.Set (
-	Gf (suggestion, "minx"), Gf (suggestion, "miny"), Gf (suggestion, "minz"),
-	Gf (suggestion, "maxx"), Gf (suggestion, "maxy"), Gf (suggestion, "maxz"));
-    Box primitive (bbox);
-    csRef<iMeshFactoryWrapper> mf = GeneralMeshBuilder::CreateFactory (
-	aresed3d->GetEngine (), newname, &primitive);
-    iMaterialWrapper* mat = aresed3d->GetEngine ()->FindMaterial ("invisible");
-    mf->GetMeshObjectFactory ()->SetMaterialWrapper (mat);
-  }
-
   aresed3d->AddItem (categoryValue->GetStringValue (), newname);
   csRef<StringValue> strValue;
   strValue.AttachNew (new StringValue (newname));
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
-  iDynamicFactory* fact = dynworld->AddFactory (newname, 1.0f, 1.0f);
+
+  iDynamicFactory* fact;
+  // Check if it is a logic factory.
+  if (suggestion.Contains ("minx"))
+  {
+    csBox3 logicBox (
+	Gf (suggestion, "minx"), Gf (suggestion, "miny"), Gf (suggestion, "minz"),
+	Gf (suggestion, "maxx"), Gf (suggestion, "maxy"), Gf (suggestion, "maxz"));
+    fact = dynworld->AddLogicFactory (newname, 1.0f, 1.0f, logicBox);
+  }
+  else
+  {
+    fact = dynworld->AddFactory (newname, 1.0f, 1.0f);
+  }
+
   fact->SetAttribute ("category", categoryValue->GetStringValue ());
   aresed3d->SetupFactorySettings (fact);
-
-  // Mark as invisible if it is an invisible mesh (will still be shown
-  // in editor).
-  if (suggestion.Contains ("minx"))
-    fact->SetInvisible (true);
 
   CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
   categoryCollectionValue->Refresh ();
