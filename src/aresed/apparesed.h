@@ -36,6 +36,7 @@ THE SOFTWARE.
 
 #include "propclass/dynworld.h"
 #include "tools/elcm.h"
+#include "celtool/ticktimer.h"
 
 #include "ivideo/wxwin.h"
 #include "csutil/custom_new_disable.h"
@@ -540,6 +541,7 @@ public:
   AresEdit3DView* GetAresView () const { return aresed3d; }
   iVFS* GetVFS () const { return vfs; }
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
+  iGraphics3D* GetG3D () const { return g3d; }
 
   void SetMenuState ();
 

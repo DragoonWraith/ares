@@ -637,29 +637,18 @@ void AresEdit3DView::SetupFactorySettings (iDynamicFactory* fact)
 
 bool AresEdit3DView::SetupDynWorld ()
 {
-  ClearItems ();
+  csString playerName = "Player";
+  csString nodeName = "Node";
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
+    if (playerName == fact->GetName () || nodeName == fact->GetName ()) continue;
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
     SetupFactorySettings (fact);
     const char* category = fact->GetAttribute ("category");
     AddItem (category, fact->GetName ());
-  }
-
-  if (!dynworld->FindFactory ("Node"))
-  {
-    iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
-    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
-    AddItem ("Nodes", "Node");
-  }
-  if (!dynworld->FindFactory ("Player"))
-  {
-    iDynamicFactory* fact = dynworld->AddFactory ("Player", 1.0, -1);
-    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
-    AddItem ("Nodes", "Player");
   }
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryTemplateCount () ; i++)
@@ -775,6 +764,20 @@ bool AresEdit3DView::SetupWorld ()
 
   dyncell = dynworld->AddCell ("outside", sector, dynSys);
   dynworld->SetCurrentCell (dyncell);
+
+  ClearItems ();
+  if (!dynworld->FindFactory ("Node"))
+  {
+    iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
+    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
+    AddItem ("Nodes", "Node");
+  }
+  if (!dynworld->FindFactory ("Player"))
+  {
+    iDynamicFactory* fact = dynworld->AddFactory ("Player", 1.0, -1);
+    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
+    AddItem ("Nodes", "Player");
+  }
 
   return true;
 }
@@ -1286,7 +1289,6 @@ bool AppAresEditWX::LoadResourceFile (const char* filename, wxString& searchPath
     return ReportError ("Could not load XRC resource file: %s!", filename);
   return true;
 }
-
 
 bool AppAresEditWX::Initialize ()
 {
