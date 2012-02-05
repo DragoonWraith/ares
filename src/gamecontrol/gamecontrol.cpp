@@ -105,7 +105,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 
   classNoteID = pl->FetchStringID ("ares.note");
   classInfoID = pl->FetchStringID ("ares.info");
-  classPickUp = pl->FetchStringID ("ares.pickup");
+  classPickUpID = pl->FetchStringID ("ares.pickup");
   attrDragType = pl->FetchStringID ("ares.dragtype");
 
   LoadIcons ();
@@ -118,6 +118,7 @@ celPcGameController::~celPcGameController ()
   delete iconEye;
   delete iconBook;
   delete iconDot;
+  delete iconCheck;
 }
 
 void celPcGameController::Activate ()
@@ -129,7 +130,7 @@ void celPcGameController::Activate ()
   {
     iCelEntity* ent = obj->GetEntity ();
     if (ent) printf ("ent=%s\n",ent->GetName ());
-    if (ent && ent->HasClass (classPickUp))
+    if (ent && ent->HasClass (classPickUpID))
       PickUpDynObj (obj);
     else StartDrag ();
   }
@@ -143,7 +144,7 @@ void celPcGameController::PickUp ()
   if (obj)
   {
     iCelEntity* ent = obj->GetEntity ();
-    if (ent && ent->HasClass (classPickUp))
+    if (ent && ent->HasClass (classPickUpID))
       PickUpDynObj (obj);
   }
 }
@@ -198,6 +199,11 @@ void celPcGameController::LoadIcons ()
       "/icons/iconic_book_alt2_32x28.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
   txt->Register (g3d->GetTextureManager ());
   iconBook = new csSimplePixmap (txt->GetTextureHandle ());
+
+  txt = engine->CreateTexture ("icon_check",
+      "/icons/iconic_check_32x26.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (g3d->GetTextureManager ());
+  iconCheck = new csSimplePixmap (txt->GetTextureHandle ());
 }
 
 void celPcGameController::TryGetDynworld ()
@@ -450,17 +456,13 @@ void celPcGameController::TickEveryFrame ()
     {
       iCelEntity* ent = obj->GetEntity ();
       if (ent && ent->HasClass (classNoteID))
-      {
         icon = iconBook;
-      }
       else if (ent && ent->HasClass (classInfoID))
-      {
         icon = iconEye;
-      }
+      else if (ent && ent->HasClass (classPickUpID))
+	icon = iconCheck;
       else if (!obj->IsStatic ())
-      {
         icon = iconCursor;
-      }
     }
   }
 
