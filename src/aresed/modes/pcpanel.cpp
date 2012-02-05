@@ -924,25 +924,29 @@ void PropertyClassPanel::FillQuest ()
 
   if (!pctpl || csString ("pclogic.quest") != pctpl->GetName ()) return;
 
-  csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
-      "NewQuest", "name");
-  if (questName.IsEmpty ()) return;
-
-  text->SetValue (wxString::FromUTF8 (questName));
-
   csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
     uiManager->GetApp ()->GetObjectRegistry (),
     "cel.manager.quests");
-  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
-  if (!questFact) return;
 
-  // Fill all states and mark the default state.
-  wxArrayString states;
-  csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
-  while (it->HasNext ())
+  iQuestFactory* questFact = 0;
+  csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
+      "NewQuest", "name");
+  if (!questName.IsEmpty ())
   {
-    iQuestStateFactory* stateFact = it->Next ();
-    states.Add (wxString::FromUTF8 (stateFact->GetName ()));
+    text->SetValue (wxString::FromUTF8 (questName));
+    questFact = quest_mgr->GetQuestFactory (questName);
+  }
+  if (questFact)
+  {
+    // Fill all states and mark the default state.
+    // @@@ Check? Does this actually do anything?
+    wxArrayString states;
+    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+    while (it->HasNext ())
+    {
+      iQuestStateFactory* stateFact = it->Next ();
+      states.Add (wxString::FromUTF8 (stateFact->GetName ()));
+    }
   }
 
   questModel->SetPC (pctpl);

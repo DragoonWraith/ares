@@ -722,20 +722,21 @@ void EntityMode::OnEditQuest ()
     aresed3d->GetObjectRegistry (),
     "cel.manager.quests");
   iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
-  // @@@ Error check
-  if (questFact)
+  if (!questFact)
   {
-    view->Clear ();
-    view->SetVisible (false);
-
-    csString pcKey, pcLabel;
-    GetPCKeyLabel (pctpl, pcKey, pcLabel);
-    view->CreateNode (pcKey, pcLabel, stylePC);
-
-    csString defaultState;	// Empty: we have no default state here.
-    BuildQuestGraph (questFact, pcKey, true, defaultState);
-    view->SetVisible (true);
+    questFact = quest_mgr->CreateQuestFactory (questName);
   }
+
+  view->Clear ();
+  view->SetVisible (false);
+
+  csString pcKey, pcLabel;
+  GetPCKeyLabel (pctpl, pcKey, pcLabel);
+  view->CreateNode (pcKey, pcLabel, stylePC);
+
+  csString defaultState;	// Empty: we have no default state here.
+  BuildQuestGraph (questFact, pcKey, true, defaultState);
+  view->SetVisible (true);
 }
 
 void EntityMode::AllocContextHandlers (wxFrame* frame)
