@@ -78,6 +78,9 @@ private:
   // For SendMessage parameters.
   static csStringID id_message;
   static csStringID id_timeout;
+  static csStringID id_name;
+  static csStringID id_template;
+  static csStringID id_factory;
 
   csRef<iGraphics3D> g3d;
   csRef<iGraphics2D> g2d;
@@ -135,6 +138,8 @@ private:
     action_examine,
     action_pickup,
     action_activate,
+    action_spawn,
+    action_createentity,
   };
 
   // For properties.
@@ -159,6 +164,8 @@ public:
   virtual void StopDrag ();
   virtual void PickUp ();
   virtual void Activate ();
+  virtual void Spawn (const char* factname);
+  virtual void CreateEntity (const char* tmpname, const char* name);
 
   virtual bool PerformActionIndexed (int idx,
       iCelParameterBlock* params, celData& ret);

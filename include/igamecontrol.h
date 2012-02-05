@@ -44,6 +44,8 @@ THE SOFTWARE.
  * - PickUp: pick up the object in the centre of the screen.
  * - Activate: if the object can be picked up (has class 'ares.pickup') then it will
  *   be picked up. Else it will try to drag it.
+ * - Spawn: parameters 'factory' (string). Spawn a new object in front of the player.
+ * - CreateEntity: parameters 'template' (string), 'name' (string). Create an entity.
  *
  * This property class supports the following properties:
  */
@@ -73,6 +75,27 @@ struct iPcGameController : public virtual iBase
    * Stop dragging (if dragging).
    */
   virtual void StopDrag () = 0;
+
+  /**
+   * Pick up the item in front of the player.
+   */
+  virtual void PickUp () = 0;
+
+  /**
+   * If the item in front of the player can be picked up (has class 'ares.pickup')
+   * then this will call PickUp(). Otherwise it calls StartDrag().
+   */
+  virtual void Activate () = 0;
+
+  /**
+   * Spawn a dynamic object in front of the player.
+   */
+  virtual void Spawn (const char* factname) = 0;
+
+  /**
+   * Create a new entity.
+   */
+  virtual void CreateEntity (const char* tmpname, const char* name) = 0;
 };
 
 #endif // __ARES_GAMECONTROL_H__

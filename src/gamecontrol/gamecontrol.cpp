@@ -54,6 +54,9 @@ CEL_IMPLEMENT_FACTORY (GameController, "ares.gamecontrol")
 
 csStringID celPcGameController::id_message = csInvalidStringID;
 csStringID celPcGameController::id_timeout = csInvalidStringID;
+csStringID celPcGameController::id_name = csInvalidStringID;
+csStringID celPcGameController::id_template = csInvalidStringID;
+csStringID celPcGameController::id_factory = csInvalidStringID;
 
 PropertyHolder celPcGameController::propinfo;
 
@@ -65,6 +68,9 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   {
     id_message = pl->FetchStringID ("message");
     id_timeout = pl->FetchStringID ("timeout");
+    id_name = pl->FetchStringID ("name");
+    id_template = pl->FetchStringID ("template");
+    id_factory = pl->FetchStringID ("factory");
   }
 
   propholder = &propinfo;
@@ -79,6 +85,8 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     AddAction (action_examine, "Examine");
     AddAction (action_pickup, "PickUp");
     AddAction (action_activate, "Activate");
+    AddAction (action_spawn, "Spawn");
+    AddAction (action_createentity, "CreateEntity");
   }
 
   // For properties.
@@ -134,6 +142,33 @@ void celPcGameController::Activate ()
       PickUpDynObj (obj);
     else StartDrag ();
   }
+}
+
+void celPcGameController::Spawn (const char* factname)
+{
+  TryGetCamera ();
+  TryGetDynworld ();
+  iCamera* cam = pccamera->GetCamera ();
+  if (!cam) return;
+  int x = mouse->GetLastX ();
+  int y = mouse->GetLastY ();
+  csVector2 v2d (x, g2d->GetHeight () - y);
+  csVector3 v3d = cam->InvPerspective (v2d, 0.5f);
+  csVector3 end = cam->GetTransform ().This2Other (v3d);
+  csReversibleTransform trans = cam->GetTransform ();
+  trans.SetOrigin (end);
+  dynworld->GetCurrentCell ()->AddObject (factname, trans);
+}
+
+void celPcGameController::CreateEntity (const char* tmpname, const char* name)
+{
+  iCelEntityTemplate* temp = pl->FindEntityTemplate (tmpname);
+  if (!temp)
+  {
+    printf ("Error! Game controller: cannot find entity template '%s'!\n", tmpname);
+    return;
+  }
+  pl->CreateEntity (temp, name);
 }
 
 void celPcGameController::PickUp ()
@@ -269,6 +304,22 @@ bool celPcGameController::PerformActionIndexed (int idx,
       return true;
     case action_activate:
       Activate ();
+      return true;
+    case action_spawn:
+      {
+        CEL_FETCH_STRING_PAR (factory,params,id_factory);
+        if (!p_factory) return false;
+        Spawn (factory);
+      }
+      return true;
+    case action_createentity:
+      {
+        CEL_FETCH_STRING_PAR (temp,params,id_template);
+        if (!p_temp) return false;
+        CEL_FETCH_STRING_PAR (name,params,id_name);
+        if (!p_name) return false;
+        CreateEntity (temp, name);
+      }
       return true;
     default:
       return false;
