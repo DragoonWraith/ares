@@ -24,6 +24,10 @@ MetalDoor:
   Author: Jorrit Tyberghein
   License: Creative Commons 3.0
 
+Key:
+  Author: Jorrit Tyberghein
+  License: Creative Commons 3.0
+
 scifilevel.blend:
   Author: Jorrit Tyberghein
   License: Creative Commons Attribution 3.0 

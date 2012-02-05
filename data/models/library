@@ -52,8 +52,9 @@
       <file>textures/metal desk uv.png</file>
     </texture>
   </textures>
-  <library>factories/Barril</library>
-  <library>factories/MetalDoor</library>
   <library>factories/RedChair2</library>
+  <library>factories/MetalDoor</library>
+  <library>factories/Key</library>
   <library>factories/MetalDesk</library>
+  <library>factories/Barril</library>
 </library>
