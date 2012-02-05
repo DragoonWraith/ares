@@ -69,7 +69,7 @@ protected:
 
 public:
   SimpleListCtrlView (wxListCtrl* list) : list (list), applyButton (0) { }
-  SimpleListCtrlView (wxListCtrl* list, RowModel* model) : list (list)
+  SimpleListCtrlView (wxListCtrl* list, RowModel* model) : list (list), applyButton (0)
   {
     BindModel (model);
   }
