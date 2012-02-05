@@ -43,6 +43,7 @@ THE SOFTWARE.
 #include "propclass/dynworld.h"
 #include "propclass/dynmove.h"
 #include "propclass/prop.h"
+#include "propclass/inv.h"
 #include "ivaria/dynamics.h"
 
 //---------------------------------------------------------------------------
@@ -76,6 +77,8 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     AddAction (action_startdrag, "StartDrag");
     AddAction (action_stopdrag, "StopDrag");
     AddAction (action_examine, "Examine");
+    AddAction (action_pickup, "PickUp");
+    AddAction (action_activate, "Activate");
   }
 
   // For properties.
@@ -102,6 +105,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 
   classNoteID = pl->FetchStringID ("ares.note");
   classInfoID = pl->FetchStringID ("ares.info");
+  classPickUp = pl->FetchStringID ("ares.pickup");
   attrDragType = pl->FetchStringID ("ares.dragtype");
 
   LoadIcons ();
@@ -114,6 +118,62 @@ celPcGameController::~celPcGameController ()
   delete iconEye;
   delete iconBook;
   delete iconDot;
+}
+
+void celPcGameController::Activate ()
+{
+  iRigidBody* hitBody;
+  csVector3 start, isect;
+  iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
+  if (obj)
+  {
+printf ("obj=%s\n", obj->GetFactory ()->GetName ());
+    iCelEntity* ent = obj->GetEntity ();
+    if (ent) printf ("ent=%s\n",ent->GetName ());
+    if (ent && ent->HasClass (classPickUp))
+      PickUpDynObj (obj);
+    else StartDrag ();
+  }
+}
+
+void celPcGameController::PickUp ()
+{
+  iRigidBody* hitBody;
+  csVector3 start, isect;
+  iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
+  if (obj)
+  {
+    iCelEntity* ent = obj->GetEntity ();
+    if (ent && ent->HasClass (classPickUp))
+      PickUpDynObj (obj);
+  }
+}
+
+void celPcGameController::PickUpDynObj (iDynamicObject* dynobj)
+{
+  TryGetCamera ();
+  iCelEntity* ent = dynobj->GetEntity ();
+  csRef<iPcInventory> inventory = celQueryPropertyClassEntity<iPcInventory> (
+	  player);
+  if (ent->IsModifiedSinceBaseline ())
+  {
+    // This entity has state. We cannot convert it to a template in the
+    // inventory so we have to add the actual entity.
+    inventory->AddEntity (ent);
+    dynworld->ForceInvisible (dynobj);
+    dynobj->UnlinkEntity ();
+    dynworld->GetCurrentCell ()->DeleteObject (dynobj);
+  }
+  else
+  {
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (
+	dynobj->GetFactory ()->GetName ());
+    if (tpl)
+    {
+      inventory->AddEntityTemplate (tpl, 1);
+      dynworld->GetCurrentCell ()->DeleteObject (dynobj);
+    }
+  }
 }
 
 void celPcGameController::LoadIcons ()
@@ -164,8 +224,9 @@ void celPcGameController::TryGetDynworld ()
 
 void celPcGameController::TryGetCamera ()
 {
-  if (pccamera && pcdynmove) return;
-  csRef<iCelEntity> player = pl->FindEntity ("Player");
+  if (player && pccamera && pcdynmove) return;
+  if (!player)
+    player = pl->FindEntity ("Player");
   if (!player)
   {
     printf ("Can't find entity 'Player'!\n");
@@ -197,6 +258,12 @@ bool celPcGameController::PerformActionIndexed (int idx,
       return true;
     case action_examine:
       Examine ();
+      return true;
+    case action_pickup:
+      PickUp ();
+      return true;
+    case action_activate:
+      Activate ();
       return true;
     default:
       return false;

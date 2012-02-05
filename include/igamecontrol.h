@@ -40,6 +40,10 @@ THE SOFTWARE.
  *   Show a message to the user for the specified amount of time.
  * - StartDrag: start dragging the object in the centre of the screen.
  * - StopDrag: stop dragging.
+ * - Examine: examine the object in the centre of the screen.
+ * - PickUp: pick up the object in the centre of the screen.
+ * - Activate: if the object can be picked up (has class 'ares.pickup') then it will
+ *   be picked up. Else it will try to drag it.
  *
  * This property class supports the following properties:
  */

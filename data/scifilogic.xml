@@ -2,8 +2,7 @@
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="Zone" />
     <factory name="MetalDoor" maxradius="1" imposterradius="0" mass="1">
-      <attr name="category" value="Nodes" />
-      <attr name="category" value="Nodes" />
+      <attr name="category" value="Doors" />
       <attr name="ares.dragtype" value="roty" />
       <box>
         <offset x="-0.5" y="1" z="-1.49943e-07" />
@@ -34,8 +33,7 @@
       </joint>
     </factory>
     <factory name="MetalDesk" maxradius="1" imposterradius="0" mass="40">
-      <attr name="category" value="Doors" />
-      <attr name="category" value="Doors" />
+      <attr name="category" value="Furniture" />
       <box>
         <offset x="0" y="0.459502" z="-5.96046e-08" />
         <size x="0.885924" y="0.91844" z="2.05786" />
@@ -54,5 +52,8 @@
         <offset x="0" y="0.541" z="0" />
       </cylinder>
     </factory>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="RedChair2">
+    <class>ares.pickup</class>
   </addon>
 </library>

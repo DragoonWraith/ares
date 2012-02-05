@@ -116,7 +116,7 @@ void PlayMode::Start ()
 	playerTrans = dynobj->GetTransform ();
 	foundCell = cell;
 	foundPlayerDynobj = dynobj;
-	break;
+	continue;
       }
 
       dynobj->ForceEntity ();

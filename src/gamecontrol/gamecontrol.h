@@ -48,6 +48,7 @@ struct iDynamicObject;
 struct iFont;
 struct iEngine;
 struct iVirtualClock;
+struct iPcInventory;
 class csSimplePixmap;
 
 /**
@@ -82,6 +83,7 @@ private:
   csRef<iGraphics2D> g2d;
   csRef<iVirtualClock> vc;
   csRef<iEngine> engine;
+  csRef<iCelEntity> player;
 
   /// Find the object that is pointed at in the center of the screen.
   iDynamicObject* FindCenterObject (iRigidBody*& hitBody,
@@ -113,6 +115,7 @@ private:
   void LoadIcons ();
   csStringID classNoteID;
   csStringID classInfoID;
+  csStringID classPickUp;
   csStringID attrDragType;
 
   csRef<iPcDynamicWorld> dynworld;
@@ -129,6 +132,8 @@ private:
     action_startdrag,
     action_stopdrag,
     action_examine,
+    action_pickup,
+    action_activate,
   };
 
   // For properties.
@@ -141,6 +146,8 @@ private:
 
   //csRef<iMessageDispatcher> dispatcher_print;
 
+  void PickUpDynObj (iDynamicObject* dynobj);
+
 public:
   celPcGameController (iObjectRegistry* object_reg);
   virtual ~celPcGameController ();
@@ -149,6 +156,8 @@ public:
   virtual void Examine ();
   virtual bool StartDrag ();
   virtual void StopDrag ();
+  virtual void PickUp ();
+  virtual void Activate ();
 
   virtual bool PerformActionIndexed (int idx,
       iCelParameterBlock* params, celData& ret);

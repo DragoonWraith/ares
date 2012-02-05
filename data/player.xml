@@ -13,7 +13,7 @@
 	</action>
 	<action name="Bind">
 	  <par name="trigger" string="MouseButton0" />
-	  <par name="command" string="drag" />
+	  <par name="command" string="activate" />
 	</action>
 	<action name="Bind">
 	  <par name="trigger" string="MouseButton1" />
@@ -50,21 +50,21 @@
       </propclass>
       <propclass name="pclogic.wire" tag="down">
 	<action name="AddInput">
-	  <par name="mask" string="cel.input.drag.down" />
+	  <par name="mask" string="cel.input.activate.down" />
 	</action>
 	<action name="AddOutput">
-	  <par name="msgid" string="ares.controller.StartDrag" />
+	  <par name="msgid" string="ares.controller.Activate" />
 	  <par name="entity" string="World" />
 	</action>
 	<action name="AddOutput">
 	  <par name="msgid" string="ares.controller.Message" />
 	  <par name="entity" string="World" />
-	  <par name="message" string="Drag this thing!" />
+	  <par name="message" string="Activate this thing!" />
 	</action>
       </propclass>
       <propclass name="pclogic.wire" tag="up">
 	<action name="AddInput">
-	  <par name="mask" string="cel.input.drag.up" />
+	  <par name="mask" string="cel.input.activate.up" />
 	</action>
 	<action name="AddOutput">
 	  <par name="msgid" string="ares.controller.StopDrag" />
