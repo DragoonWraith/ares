@@ -127,7 +127,6 @@ void celPcGameController::Activate ()
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
   {
-printf ("obj=%s\n", obj->GetFactory ()->GetName ());
     iCelEntity* ent = obj->GetEntity ();
     if (ent) printf ("ent=%s\n",ent->GetName ());
     if (ent && ent->HasClass (classPickUp))
