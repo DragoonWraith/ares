@@ -730,9 +730,12 @@ void EntityMode::OnNewState ()
     ui->Error ("State already exists with this name!");
     return;
   }
-  questFact->CreateState (name);
-  // @@@ TODO
-  PCWasEdited (pctpl);
+  iQuestStateFactory* state = questFact->CreateState (name);
+  csString pcKey, pcLabel;
+  GetPCKeyLabel (pctpl, pcKey, pcLabel);
+  csString stateKey; stateKey.Format ("S:%s,%s", state->GetName (), pcKey.GetData ());
+  view->CreateNode (stateKey, state->GetName (), styleState);
+  view->LinkNode (pcKey, stateKey);
 }
 
 void EntityMode::OnEditQuest ()
