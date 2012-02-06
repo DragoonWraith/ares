@@ -573,14 +573,9 @@ void EntityMode::OnTemplateSelect ()
 void EntityMode::OnTemplateAdd ()
 {
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  UIDialog* dialog = ui->CreateDialog ("New Template");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("name");
-  if (dialog->Show (0))
+  csString name = ui->AskDialog ("New Template", "Name:");
+  if (!name.IsEmpty ())
   {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    csString name = fields.Get ("name", "");
     iCelPlLayer* pl = aresed3d->GetPL ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (name);
     if (tpl)
@@ -593,7 +588,6 @@ void EntityMode::OnTemplateAdd ()
       SetupItems ();
     }
   }
-  delete dialog;
 }
 
 void EntityMode::OnTemplateDel ()
@@ -648,6 +642,7 @@ void EntityMode::OnCreatePC ()
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
   csString activeNode = view->GetActiveNode ();
+  if (activeNode.IsEmpty ()) return;
 
   csString newKey, newLabel;
   GetPCKeyLabel (pctpl, newKey, newLabel);
@@ -712,6 +707,34 @@ void EntityMode::OnDefaultState ()
   }
 }
 
+void EntityMode::OnNewState ()
+{
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return;
+
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  csString name = ui->AskDialog ("New State", "Name:");
+  if (name.IsEmpty ()) return;
+
+  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+    aresed3d->GetObjectRegistry (),
+    "cel.manager.quests");
+  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  if (!questFact)
+  {
+    questFact = quest_mgr->CreateQuestFactory (questName);
+  }
+  if (questFact->GetState (name))
+  {
+    ui->Error ("State already exists with this name!");
+    return;
+  }
+  questFact->CreateState (name);
+  // @@@ TODO
+  PCWasEdited (pctpl);
+}
+
 void EntityMode::OnEditQuest ()
 {
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
@@ -752,6 +775,9 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idEditQuest = ui->AllocContextMenuID ();
   frame->Connect (idEditQuest, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnEditQuest), 0, panel);
+  idNewState = ui->AllocContextMenuID ();
+  frame->Connect (idNewState, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnNewState), 0, panel);
   idDefaultState = ui->AllocContextMenuID ();
   frame->Connect (idDefaultState, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnDefaultState), 0, panel);
@@ -770,7 +796,10 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
     if (type == 'T')
       contextMenu->Append (idCreate, wxT ("Create Property Class..."));
     if (type == 'P' && contextMenuNode.StartsWith ("P:pclogic.quest"))
+    {
       contextMenu->Append (idEditQuest, wxT ("Edit quest"));
+      contextMenu->Append (idNewState, wxT ("New state..."));
+    }
     if (type == 'S')
       contextMenu->Append (idDefaultState, wxT ("Set default state"));
   }

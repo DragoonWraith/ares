@@ -95,7 +95,7 @@ private:
   PropertyClassPanel* pcPanel;
   EntityTemplatePanel* tplPanel;
 
-  int idDelete, idCreate, idEditQuest, idDefaultState;
+  int idDelete, idCreate, idEditQuest, idNewState, idDefaultState;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -126,6 +126,7 @@ public:
   void OnDelete ();
   void OnCreatePC ();
   void OnEditQuest ();
+  void OnNewState ();
   void OnDefaultState ();
   void OnContextMenu (wxContextMenuEvent& event);
   void OnTemplateAdd ();
@@ -144,6 +145,7 @@ public:
     void OnDelete (wxCommandEvent& event) { s->OnDelete (); }
     void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
+    void OnNewState (wxCommandEvent& event) { s->OnNewState (); }
     void OnDefaultState (wxCommandEvent& event) { s->OnDefaultState (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }

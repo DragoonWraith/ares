@@ -173,6 +173,7 @@ public:
   void Message (const char* description, ...);
   void Error (const char* description, ...);
   bool Ask (const char* description, ...);
+  csString AskDialog (const char* description, const char* label);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }

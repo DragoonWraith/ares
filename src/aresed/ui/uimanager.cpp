@@ -394,6 +394,22 @@ UIManager::~UIManager ()
   delete cellDialog;
 }
 
+csString UIManager::AskDialog (const char* description, const char* label)
+{
+  UIDialog* dialog = CreateDialog (description);
+  dialog->AddRow ();
+  dialog->AddLabel (label);
+  dialog->AddText ("name");
+  csString result;
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    result = fields.Get ("name", "");
+  }
+  delete dialog;
+  return result;
+}
+
 void UIManager::Message (const char* description, ...)
 {
   va_list args;
