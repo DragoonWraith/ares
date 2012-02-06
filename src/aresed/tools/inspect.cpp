@@ -195,7 +195,12 @@ void InspectTools::AddActionParameter (iCelPlLayer* pl,
 {
   csStringID actionID = pl->FetchStringID (actionName);
   size_t idx = pctpl->FindProperty (actionID);
-  if (idx == csArrayItemNotFound) return;
+  if (idx == csArrayItemNotFound)
+  {
+    csHash<csRef<iParameter>,csStringID> newParams;
+    pctpl->PerformAction (actionID, newParams);
+    idx = pctpl->FindProperty (actionID);
+  }
   AddActionParameter (pl, pctpl, idx, parName, parameter);
 }
 
