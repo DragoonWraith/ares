@@ -90,7 +90,11 @@ private:
   void InitColors ();
 
   csString currentTemplate;
+  bool editQuestMode;		// If true we're editing a quest.
   csString contextMenuNode;	// Node that is being used for the context menu.
+
+  /// Refresh the view.
+  void RefreshView ();
 
   PropertyClassPanel* pcPanel;
   EntityTemplatePanel* tplPanel;

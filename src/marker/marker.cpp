@@ -103,7 +103,11 @@ public:
 
 //--------------------------------------------------------------------------------
 
-GraphView::GraphView (MarkerManager* mgr) : scfImplementationType (this), mgr (mgr), visible (false)
+GraphView::GraphView (MarkerManager* mgr) :
+  scfImplementationType (this),
+  mgr (mgr),
+  visible (false),
+  smartRefresh (false)
 {
   draggingMarker = 0;
   coolDownPeriod = true;
@@ -373,6 +377,51 @@ void GraphView::Clear ()
   activeMarker = 0;
 }
 
+void GraphView::StartRefresh ()
+{
+  // Mark all nodes and links as 'maybeDelete'.
+  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    it.Next ().maybeDelete = true;
+  }
+  for (size_t i = 0 ; i < links.GetSize () ; i++)
+  {
+    links[i].maybeDelete = true;
+  }
+  smartRefresh = true;
+}
+
+void GraphView::FinishRefresh ()
+{
+  // Delete all nodes and links that remain.
+  size_t i = 0;
+  while (i < links.GetSize ())
+  {
+    if (links[i].maybeDelete)
+      links.DeleteIndex (i);
+    else
+      i++;
+  }
+  csSet<csString> toDelete;
+  csHash<GraphNode,csString>::GlobalIterator nodesIt = nodes.GetIterator ();
+  while (nodesIt.HasNext ())
+  {
+    csString key;
+    GraphNode& node = nodesIt.Next (key);
+    if (node.maybeDelete) toDelete.Add (key);
+    else node.maybeDelete = false;
+  }
+  csSet<csString>::GlobalIterator delIt = toDelete.GetIterator ();
+  while (delIt.HasNext ())
+  {
+    csString key = delIt.Next ();
+    RemoveNode (key);
+  }
+
+  smartRefresh = false;
+}
+
 class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
 {
 private:
@@ -405,6 +454,19 @@ void GraphView::LinkNode (const char* node1, const char* node2,
       iGraphLinkStyle* style)
 {
   if (!style) style = defaultLinkStyle;
+  for (size_t i = 0 ; i < links.GetSize () ; i++)
+  {
+    GraphLink& l = links[i];
+    if ((l.node1 == node1 && l.node2 == node2)
+	  || (l.node1 == node2 && l.node2 == node1))
+    {
+      l.color = style->GetColor ();
+      l.arrow = style->IsArrow ();
+      l.strength = style->GetLinkStrength ();
+      l.maybeDelete = false;
+      return;
+    }
+  }
   GraphLink l;
   l.node1 = node1;
   l.node2 = node2;
@@ -456,6 +518,16 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
 void GraphView::CreateNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
+  if (smartRefresh)
+  {
+    if (nodes.Contains (name))
+    {
+      ChangeNode (name, label, style);
+      return;
+    }
+    // Otherwise just add the node as usual.
+  }
+
   if (!label) label = name;
   int w, h;
   iMarker* marker = mgr->CreateMarker ();
@@ -503,6 +575,7 @@ void GraphView::ChangeNode (const char* name, const char* label,
   node.marker->ClearHitAreas ();
   UpdateNodeMarker (node.marker, label, style, w, h);
   node.size = csVector2 (w, h);
+  node.maybeDelete = false;
 }
 
 void GraphView::ReplaceNode (const char* oldNode, const char* newNode,

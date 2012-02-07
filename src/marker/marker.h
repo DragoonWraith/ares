@@ -308,7 +308,8 @@ struct GraphNode
   bool frozen;
   csVector2 size;
   float weightFactor;
-  GraphNode () : marker (0), frozen (false), weightFactor (1.0f) { }
+  bool maybeDelete;	// Used in smart refresh mode.
+  GraphNode () : marker (0), frozen (false), weightFactor (1.0f), maybeDelete (false) { }
 };
 
 struct GraphLink
@@ -318,7 +319,8 @@ struct GraphLink
   iMarkerColor* color;
   bool arrow;
   float strength;
-  GraphLink () : color (0), arrow (false), strength (1.0f) { }
+  bool maybeDelete;	// Used in smart refresh mode.
+  GraphLink () : color (0), arrow (false), strength (1.0f), maybeDelete (false) { }
 };
 
 class GraphView : public scfImplementation1<GraphView, iGraphView>
@@ -326,6 +328,7 @@ class GraphView : public scfImplementation1<GraphView, iGraphView>
 private:
   MarkerManager* mgr;
   bool visible;
+  bool smartRefresh;
 
   csHash<GraphNode,csString> nodes;
   csArray<GraphLink> links;
@@ -385,6 +388,8 @@ public:
   virtual void SetVisible (bool v);
   virtual bool IsVisible () const { return visible; }
   virtual void Clear ();
+  virtual void StartRefresh ();
+  virtual void FinishRefresh ();
   virtual void CreateNode (const char* name, const char* label = 0,
       iGraphNodeStyle* style = 0);
   virtual void RemoveNode (const char* name);

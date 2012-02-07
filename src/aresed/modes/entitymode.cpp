@@ -95,6 +95,7 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   view->SetVisible (false);
 
   InitColors ();
+  editQuestMode = false;
 }
 
 EntityMode::~EntityMode ()
@@ -515,12 +516,12 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   pcPanel->Hide ();
   tplPanel->Hide ();
 
-  view->Clear ();
+  view->StartRefresh ();
 
   view->SetVisible (false);
   iCelPlLayer* pl = aresed3d->GetPL ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (templateName);
-  if (!tpl) return;
+  if (!tpl) { view->FinishRefresh (); return; }
 
   csString tplKey; tplKey.Format ("T:%s", templateName);
   view->CreateNode (tplKey, templateName, styleTemplate);
@@ -538,7 +539,40 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
     if (pcName == "pclogic.quest")
       BuildQuestGraph (pctpl, pcKey);
   }
+  view->FinishRefresh ();
   view->SetVisible (true);
+}
+
+void EntityMode::RefreshView ()
+{
+  if (editQuestMode)
+  {
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
+    csString questName = GetQuestName (pctpl);
+    if (questName.IsEmpty ()) return;
+
+    csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+      aresed3d->GetObjectRegistry (), "cel.manager.quests");
+    iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+    if (!questFact)
+    {
+      questFact = quest_mgr->CreateQuestFactory (questName);
+    }
+
+    view->StartRefresh ();
+    view->SetVisible (false);
+
+    csString pcKey, pcLabel;
+    GetPCKeyLabel (pctpl, pcKey, pcLabel);
+    view->CreateNode (pcKey, pcLabel, stylePC);
+
+    csString defaultState;	// Empty: we have no default state here.
+    BuildQuestGraph (questFact, pcKey, true, defaultState);
+    view->FinishRefresh ();
+    view->SetVisible (true);
+  }
+  else
+    BuildTemplateGraph (currentTemplate);
 }
 
 iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
@@ -567,6 +601,7 @@ void EntityMode::OnTemplateSelect ()
 {
   wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
   csString templateName = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
+  editQuestMode = false;
   BuildTemplateGraph (templateName);
 }
 
@@ -584,6 +619,7 @@ void EntityMode::OnTemplateAdd ()
     {
       tpl = pl->CreateEntityTemplate (name);
       currentTemplate = name;
+      editQuestMode = false;
       BuildTemplateGraph (currentTemplate);
       SetupItems ();
     }
@@ -632,7 +668,7 @@ void EntityMode::OnCreatePC ()
       if (tag && *tag)
         pc->SetTag (tag);
 
-      BuildTemplateGraph (currentTemplate);
+      RefreshView ();
     }
 
   }
@@ -641,12 +677,7 @@ void EntityMode::OnCreatePC ()
 
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
-  csString activeNode = view->GetActiveNode ();
-  if (activeNode.IsEmpty ()) return;
-
-  csString newKey, newLabel;
-  GetPCKeyLabel (pctpl, newKey, newLabel);
-  view->ReplaceNode (activeNode, newKey, newLabel, stylePC);
+  RefreshView ();
 }
 
 void EntityMode::ActivateNode (const char* nodeName)
@@ -692,19 +723,7 @@ void EntityMode::OnDefaultState ()
   iCelPlLayer* pl = aresed3d->GetPL ();
   pctpl->RemoveProperty (pl->FetchStringID ("state"));
   pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
-
-  csString pcKey, pcLabel;
-  GetPCKeyLabel (pctpl, pcKey, pcLabel);
-
-  csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
-  while (it->HasNext ())
-  {
-    iQuestStateFactory* stateFact = it->Next ();
-    csString stateKey; stateKey.Format ("S:%s,%s", stateFact->GetName (),
-	pcKey.GetData ());
-    view->ChangeNode (stateKey, stateFact->GetName (),
-	state == stateFact->GetName () ? styleStateDefault : styleState);
-  }
+  RefreshView ();
 }
 
 void EntityMode::OnNewState ()
@@ -730,39 +749,14 @@ void EntityMode::OnNewState ()
     ui->Error ("State already exists with this name!");
     return;
   }
-  iQuestStateFactory* state = questFact->CreateState (name);
-  csString pcKey, pcLabel;
-  GetPCKeyLabel (pctpl, pcKey, pcLabel);
-  csString stateKey; stateKey.Format ("S:%s,%s", state->GetName (), pcKey.GetData ());
-  view->CreateNode (stateKey, state->GetName (), styleState);
-  view->LinkNode (pcKey, stateKey);
+  questFact->CreateState (name);
+  RefreshView ();
 }
 
 void EntityMode::OnEditQuest ()
 {
-  iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
-  csString questName = GetQuestName (pctpl);
-  if (questName.IsEmpty ()) return;
-
-  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-    aresed3d->GetObjectRegistry (),
-    "cel.manager.quests");
-  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
-  if (!questFact)
-  {
-    questFact = quest_mgr->CreateQuestFactory (questName);
-  }
-
-  view->Clear ();
-  view->SetVisible (false);
-
-  csString pcKey, pcLabel;
-  GetPCKeyLabel (pctpl, pcKey, pcLabel);
-  view->CreateNode (pcKey, pcLabel, stylePC);
-
-  csString defaultState;	// Empty: we have no default state here.
-  BuildQuestGraph (questFact, pcKey, true, defaultState);
-  view->SetVisible (true);
+  editQuestMode = true;
+  RefreshView ();
 }
 
 void EntityMode::AllocContextHandlers (wxFrame* frame)

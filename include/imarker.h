@@ -408,6 +408,18 @@ struct iGraphView : public virtual iBase
   virtual void Clear () = 0;
 
   /**
+   * Start refresh of the view. After calling this you can build the view as if
+   * you were building it from a 'Clear()' situation. The graph view will only
+   * update the graph when needed. Don't forget to call FinishRefresh() when ready.
+   */
+  virtual void StartRefresh () = 0;
+
+  /**
+   * Finish refresh of the view.
+   */
+  virtual void FinishRefresh () = 0;
+
+  /**
    * Make the graph visible/invisible.
    * By default graphs are created invisible.
    */
