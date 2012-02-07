@@ -38,7 +38,7 @@ struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iParameter;
-struct iParameterManager;
+struct iQuestTriggerResponseFactory;
 class UIDialog;
 class UIManager;
 class EntityMode;
@@ -51,8 +51,14 @@ private:
   EntityMode* emode;
   wxSizer* parentSizer;
 
+  iQuestTriggerResponseFactory* triggerResp;
+  csString GetCurrentTriggerType ();
+
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
+
+  void UpdateTrigger ();
+  void UpdatePanel ();
 
 public:
   TriggerPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
@@ -62,7 +68,7 @@ public:
    * Possibly switch the type of the trigger. Do nothing if the trigger is
    * already of the right type. Otherwise clear all properties.
    */
-  void SwitchTrigger (const char* trigger);
+  void SwitchTrigger (iQuestTriggerResponseFactory* triggerResp);
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }

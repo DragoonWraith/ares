@@ -431,6 +431,11 @@ struct iGraphView : public virtual iBase
   virtual bool IsVisible () const = 0;
 
   /**
+   * Return true if a node exists.
+   */
+  virtual bool NodeExists (const char* nodeName) const = 0;
+
+  /**
    * Create a node.
    */
   virtual void CreateNode (const char* name, const char* label = 0, iGraphNodeStyle* style = 0) = 0;

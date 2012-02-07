@@ -83,6 +83,44 @@ void UITools::ClearControls (wxWindow* parent, ...)
   va_end (args);
 }
 
+csString UITools::GetValue (wxWindow* parent, const char* name)
+{
+  wxString wxname = wxString::FromUTF8 (name);
+  wxWindow* child = parent->FindWindow (wxname);
+  if (!child)
+  {
+    printf ("Error getting value for '%s'!\n", name);
+    fflush (stdout);
+    return "";
+  }
+  if (child->IsKindOf (CLASSINFO (wxTextCtrl)))
+  {
+    wxTextCtrl* text = wxStaticCast (child, wxTextCtrl);
+    return (const char*)text->GetValue ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxStaticText)))
+  {
+    wxStaticText* text = wxStaticCast (child, wxStaticText);
+    return (const char*)text->GetLabel ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxButton)))
+  {
+    wxButton* cb = wxStaticCast (child, wxButton);
+    return (const char*)cb->GetLabel ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxChoice)))
+  {
+    wxChoice* cb = wxStaticCast (child, wxChoice);
+    return (const char*)cb->GetStringSelection ().mb_str (wxConvUTF8);
+  }
+  else
+  {
+    printf ("Can't set value for '%s', unknown type!\n", name);
+    fflush (stdout);
+    return "";
+  }
+}
+
 void UITools::SetValue (wxWindow* parent, const char* name, float value)
 {
   csString v;
@@ -123,6 +161,11 @@ void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
     {
       wxButton* cb = wxStaticCast (child, wxButton);
       cb->SetLabel (wxvalue);
+    }
+    else if (child->IsKindOf (CLASSINFO (wxChoice)))
+    {
+      wxChoice* cb = wxStaticCast (child, wxChoice);
+      cb->SetStringSelection (wxvalue);
     }
     else
     {

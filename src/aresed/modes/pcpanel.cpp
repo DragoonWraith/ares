@@ -1251,9 +1251,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
     csString tagName = pctpl->GetTag ();
 
     UITools::SwitchPage (this, "pcChoicebook", pcName);
-
-    wxTextCtrl* text = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
-    text->SetValue (wxString::FromUTF8 (tagName));
+    UITools::SetValue (this, "tagTextCtrl", tagName);
   }
 
   FillProperties ();

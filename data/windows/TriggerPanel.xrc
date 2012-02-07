@@ -13,7 +13,7 @@
 					<style>wxCHB_DEFAULT</style>
 					<object class="choicebookpage">
 						<label>entersector</label>
-						<selected>0</selected>
+						<selected>1</selected>
 						<object class="wxPanel" name="entersectorPanel">
 							<style>wxTAB_TRAVERSAL</style>
 							<object class="wxBoxSizer">
@@ -38,6 +38,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Es_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -47,6 +48,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Es_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -73,6 +75,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="sector_Es_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -109,6 +112,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_In_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -118,6 +122,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_In_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -144,6 +149,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="child_In_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -180,6 +186,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Ms_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -189,6 +196,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Ms_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -225,6 +233,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Me_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -251,6 +260,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="mask_Me_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -306,6 +316,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Pc_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -315,6 +326,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Pc_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -341,6 +353,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="property_Pc_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<tooltip>The name of the property to test.</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
@@ -378,6 +391,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="value_Pc_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<tooltip>The value to test.</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
@@ -432,6 +446,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Sf_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -441,6 +456,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Sf_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -467,6 +483,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="sequence_Sf_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -503,6 +520,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="timeout_To_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -539,6 +557,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -548,6 +567,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -602,6 +622,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -611,6 +632,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -637,6 +659,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="target_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -646,6 +669,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="targettag_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -672,6 +696,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="checktime_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -698,6 +723,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="radius_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -724,6 +750,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="offsetX_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
@@ -734,6 +761,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="offsetY_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
@@ -744,7 +772,82 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="offsetZ_Wa_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>meshentersector</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="meshentersectorPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText541">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Me_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="tag_Me_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText551">
+												<label>Sector:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="sector_Me_Text">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -759,3 +862,4 @@
 		</object>
 	</object>
 </resource>
+

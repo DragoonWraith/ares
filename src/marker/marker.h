@@ -390,6 +390,7 @@ public:
   virtual void Clear ();
   virtual void StartRefresh ();
   virtual void FinishRefresh ();
+  virtual bool NodeExists (const char* nodeName) const { return nodes.Contains (nodeName); }
   virtual void CreateNode (const char* name, const char* label = 0,
       iGraphNodeStyle* style = 0);
   virtual void RemoveNode (const char* name);

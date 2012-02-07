@@ -95,9 +95,7 @@ private:
   csString currentTemplate;
   bool editQuestMode;		// If true we're editing a quest.
   csString contextMenuNode;	// Node that is being used for the context menu.
-
-  /// Refresh the view.
-  void RefreshView ();
+  csString GetContextMenuNode ();
 
   PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
@@ -128,6 +126,11 @@ private:
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~EntityMode ();
+
+  iQuestManager* GetQuestManager () const { return questMgr; }
+
+  /// Refresh the view. The tiven pctpl is optional and will be used if given.
+  void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
 
   virtual void Start ();
   virtual void Stop ();

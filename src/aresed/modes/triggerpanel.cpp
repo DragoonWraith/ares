@@ -37,31 +37,266 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(TriggerPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("triggerChoicebook"), TriggerPanel :: OnChoicebookPageChange)
-  //EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
-  //EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_CHECKBOX (XRCID("onChange_Pc_Check"), TriggerPanel :: OnUpdateEvent)
+  EVT_CHECKBOX (XRCID("leave_Tr_Check"), TriggerPanel :: OnUpdateEvent)
+  EVT_CHOICE (XRCID("operation_Pc_Choice"), TriggerPanel :: OnUpdateEvent)
+
+  EVT_TEXT_ENTER (XRCID("entity_Es_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Es_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("sector_Es_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_In_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_In_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("child_In_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Ms_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Ms_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("mask_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Pc_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Pc_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("property_Pc_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("value_Pc_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Sf_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Sf_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("sequence_Sf_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("timeout_To_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Tr_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Tr_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("target_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("targettag_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("checktime_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("radius_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("offsetX_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("offsetY_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("offsetZ_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("entity_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("tag_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("sector_Me_Text"), TriggerPanel :: OnUpdateEvent)
+
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
 void TriggerPanel::OnUpdateEvent (wxCommandEvent& event)
 {
+  printf ("Update Trigger!\n"); fflush (stdout);
+  UpdateTrigger ();
 }
 
 void TriggerPanel::OnChoicebookPageChange (wxChoicebookEvent& event)
 {
+  UpdateTrigger ();
 }
 
-void TriggerPanel::SwitchTrigger (const char* trigger)
+csString TriggerPanel::GetCurrentTriggerType ()
 {
+  if (!triggerResp) return "";
+  csString trigger = triggerResp->GetTriggerFactory ()->GetTriggerType ()->GetName ();
   csString triggerS = trigger;
   if (triggerS.StartsWith ("cel.triggers."))
-    triggerS = trigger+13;
-  UITools::SwitchPage (this, "triggerChoicebook", triggerS);
-  //if (triggerS == pctpl->GetName ()) return;
-  //pctpl->SetName (pcType);
-  //pctpl->RemoveAllProperties ();
-  //emode->PCWasEdited (pctpl);
+    triggerS = trigger.GetData ()+13;
+  return triggerS;
+}
+
+void TriggerPanel::SwitchTrigger (iQuestTriggerResponseFactory* triggerResp)
+{
+  TriggerPanel::triggerResp = triggerResp;
+  UITools::SwitchPage (this, "triggerChoicebook", GetCurrentTriggerType ());
+  UpdatePanel ();
+}
+
+void TriggerPanel::UpdatePanel ()
+{
+  csString type = GetCurrentTriggerType ();
+  if (type == "entersector" || type == "meshentersector")
+  {
+    csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Es_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_Es_Text", tf->GetTag ());
+    UITools::SetValue (this, "sector_Es_Text", tf->GetSector ());
+  }
+  else if (type == "inventory")
+  {
+    csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_In_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_In_Text", tf->GetTag ());
+    UITools::SetValue (this, "child_In_Text", tf->GetChildEntity ());
+  }
+  else if (type == "meshselect")
+  {
+    csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Ms_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_Ms_Text", tf->GetTag ());
+  }
+  else if (type == "message")
+  {
+    csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
+    UITools::SetValue (this, "mask_Me_Text", tf->GetMask ());
+  }
+  else if (type == "operation")
+  {
+    // @@@ TODO
+  }
+  else if (type == "propertychange")
+  {
+    csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Pc_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_Pc_Text", tf->GetTag ());
+    UITools::SetValue (this, "property_Pc_Text", tf->GetProperty ());
+    UITools::SetValue (this, "value_Pc_Text", tf->GetValue ());
+    UITools::SetValue (this, "operation_Pc_Choice", tf->GetOperation ());
+    wxCheckBox* check = XRCCTRL (*this, "onChange_Pc_Check", wxCheckBox);
+    check->SetValue (tf->IsOnChangeOnly ());
+  }
+  else if (type == "sequencefinish")
+  {
+    csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Sf_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_Sf_Text", tf->GetTag ());
+    UITools::SetValue (this, "sequence_Sf_Text", tf->GetSequence ());
+  }
+  else if (type == "timeout")
+  {
+    csRef<iTimeoutTriggerFactory> tf = scfQueryInterface<iTimeoutTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "timeout_To_Text", tf->GetTimeout ());
+  }
+  else if (type == "trigger")
+  {
+    csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Tr_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_Tr_Text", tf->GetTag ());
+    wxCheckBox* check = XRCCTRL (*this, "leave_Tr_Check", wxCheckBox);
+    check->SetValue (tf->IsLeaveEnabled ());
+  }
+  else if (type == "watch")
+  {
+    csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerResp->GetTriggerFactory ());
+    UITools::SetValue (this, "entity_Wa_Text", tf->GetEntity ());
+    UITools::SetValue (this, "tag_Wa_Text", tf->GetTag ());
+    UITools::SetValue (this, "target_Wa_Text", tf->GetTargetEntity ());
+    UITools::SetValue (this, "targettag_Wa_Text", tf->GetTargetTag ());
+    UITools::SetValue (this, "checktime_Wa_Text", tf->GetChecktime ());
+    UITools::SetValue (this, "radius_Wa_Text", tf->GetRadius ());
+    UITools::SetValue (this, "offsetX_Wa_Text", tf->GetOffsetX ());
+    UITools::SetValue (this, "offsetY_Wa_Text", tf->GetOffsetY ());
+    UITools::SetValue (this, "offsetZ_Wa_Text", tf->GetOffsetZ ());
+  }
+  else
+  {
+    printf ("Internal error: unknown type '%s'\n", type.GetData ());
+  }
+}
+
+void TriggerPanel::UpdateTrigger ()
+{
+printf ("1:UpdateTrigger\n"); fflush (stdout);
+  if (!triggerResp) return;
+printf ("2:UpdateTrigger\n"); fflush (stdout);
+  wxChoicebook* book = XRCCTRL (*this, "triggerChoicebook", wxChoicebook);
+  int pageSel = book->GetSelection ();
+  if (pageSel == wxNOT_FOUND)
+  {
+    uiManager->Error ("Internal error! Page not found!");
+    return;
+  }
+  wxString pageTxt = book->GetPageText (pageSel);
+  iQuestManager* questMgr = emode->GetQuestManager ();
+  csString type = (const char*)pageTxt.mb_str (wxConvUTF8);
+printf ("Updating for type '%s'\n", type.GetData ());
+fflush (stdout);
+  if (type != GetCurrentTriggerType ())
+  {
+    iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+type);
+    csRef<iTriggerFactory> triggerfact = triggertype
+		->CreateTriggerFactory ();
+    triggerResp->SetTriggerFactory (triggerfact);
+    UpdatePanel ();
+  }
+  else
+  {
+    if (type == "entersector" || type == "meshentersector")
+    {
+      csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Es_Text"),
+	  UITools::GetValue (this, "tag_Es_Text"));
+      tf->SetSectorParameter (UITools::GetValue (this, "sector_Es_Text"));
+    }
+    else if (type == "inventory")
+    {
+      csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_In_Text"),
+	  UITools::GetValue (this, "tag_In_Text"));
+      tf->SetChildEntityParameter (UITools::GetValue (this, "child_In_Text"));
+    }
+    else if (type == "meshselect")
+    {
+      csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Ms_Text"),
+	  UITools::GetValue (this, "tag_Ms_Text"));
+    }
+    else if (type == "message")
+    {
+      csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Me_Text"));
+      tf->SetMaskParameter (UITools::GetValue (this, "mask_Me_Text"));
+    }
+    else if (type == "operation")
+    {
+      // @@@ TODO
+    }
+    else if (type == "propertychange")
+    {
+      csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Pc_Text"),
+	  UITools::GetValue (this, "tag_Pc_Text"));
+      tf->SetPropertyParameter (UITools::GetValue (this, "property_Pc_Text"));
+      tf->SetValueParameter (UITools::GetValue (this, "value_Pc_Text"));
+      tf->SetOperationParameter (UITools::GetValue (this, "operation_Pc_Choice"));
+      wxCheckBox* check = XRCCTRL (*this, "onChange_Pc_Check", wxCheckBox);
+      tf->SetOnChangeOnly (check->GetValue ());
+    }
+    else if (type == "sequencefinish")
+    {
+      csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Sf_Text"),
+	  UITools::GetValue (this, "tag_Sf_Text"));
+      tf->SetSequenceParameter (UITools::GetValue (this, "sequence_Sf_Text"));
+    }
+    else if (type == "timeout")
+    {
+      csRef<iTimeoutTriggerFactory> tf = scfQueryInterface<iTimeoutTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetTimeoutParameter (UITools::GetValue (this, "timeout_To_Text"));
+    }
+    else if (type == "trigger")
+    {
+      csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Tr_Text"),
+	  UITools::GetValue (this, "tag_Tr_Text"));
+      wxCheckBox* check = XRCCTRL (*this, "leave_Tr_Check", wxCheckBox);
+      tf->EnableLeave (check->GetValue ());
+    }
+    else if (type == "watch")
+    {
+      csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerResp->GetTriggerFactory ());
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Wa_Text"),
+	  UITools::GetValue (this, "tag_Wa_Text"));
+      tf->SetTargetEntityParameter (UITools::GetValue (this, "target_Wa_Text"),
+	  UITools::GetValue (this, "targettag_Wa_Text"));
+      tf->SetChecktimeParameter (UITools::GetValue (this, "checktime_Wa_Text"));
+      tf->SetRadiusParameter (UITools::GetValue (this, "radius_Wa_Text"));
+      tf->SetOffsetParameter (UITools::GetValue (this, "offsetX_Wa_Text"),
+	  UITools::GetValue (this, "offsetY_Wa_Text"),
+	  UITools::GetValue (this, "offsetZ_Wa_Text"));
+    }
+    else
+    {
+      printf ("Internal error: unknown type '%s'\n", type.GetData ());
+    }
+  }
+  emode->RefreshView ();
 }
 
 // -----------------------------------------------------------------------
@@ -70,6 +305,7 @@ TriggerPanel::TriggerPanel (wxWindow* parent, UIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode)
 {
+  triggerResp = 0;
   pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);

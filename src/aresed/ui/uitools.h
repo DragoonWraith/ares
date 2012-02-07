@@ -47,6 +47,11 @@ public:
   static void ClearControls (wxWindow* parent, ...);
 
   /**
+   * Get the value of a specific control as a string.
+   */
+  static csString GetValue (wxWindow* parent, const char* name);
+
+  /**
    * Set the value of a specific control (only for controls supporting
    * text values like text fields, buttons, and labels).
    */

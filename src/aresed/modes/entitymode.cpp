@@ -547,11 +547,15 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   view->SetVisible (true);
 }
 
-void EntityMode::RefreshView ()
+void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
 {
   if (editQuestMode)
   {
-    iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
+    if (!pctpl)
+    {
+      if (!GetContextMenuNode ()) return;
+      pctpl = GetPCTemplate (GetContextMenuNode ());
+    }
     csString questName = GetQuestName (pctpl);
     if (questName.IsEmpty ()) return;
 
@@ -738,7 +742,7 @@ void EntityMode::OnCreatePC ()
 
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
-  RefreshView ();
+  RefreshView (pctpl);
 }
 
 void EntityMode::ActivateNode (const char* nodeName)
@@ -769,26 +773,27 @@ printf ("node:%s\n", nodeName); fflush (stdout);
   {
     iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (activeNode);
     if (!resp || !resp->GetTriggerFactory ()) return;
-    triggerPanel->SwitchTrigger (resp->GetTriggerFactory ()->GetTriggerType ()->GetName ());
+    triggerPanel->SwitchTrigger (resp);
     triggerPanel->Show ();
   }
 }
 
 void EntityMode::OnCreateTrigger ()
 {
+  if (!GetContextMenuNode ()) return;
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
   UIDialog* dialog = ui->CreateDialog ("New Trigger");
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
-  dialog->AddChoice ("name", "entersector", "inventory", "meshselect",
-      "message", "operation", "propertychange", "sequencefinish", "timeout",
-      "trigger", "watch", (const char*)0);
+  dialog->AddChoice ("name", "entersector", "meshentersector", "inventory",
+      "meshselect", "message", "operation", "propertychange", "sequencefinish",
+      "timeout", "trigger", "watch", (const char*)0);
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     csString name = fields.Get ("name", "");
-    csString state = GetSelectedStateName (contextMenuNode);
-    iQuestFactory* questFact = GetSelectedQuest (contextMenuNode);
+    csString state = GetSelectedStateName (GetContextMenuNode ());
+    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
     iQuestStateFactory* questState = questFact->GetState (state);
     iQuestTriggerResponseFactory* resp = questState->CreateTriggerResponseFactory ();
     iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+name);
@@ -801,7 +806,8 @@ void EntityMode::OnCreateTrigger ()
 
 void EntityMode::OnDefaultState ()
 {
-  iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
+  if (!GetContextMenuNode ()) return;
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
 
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
@@ -809,18 +815,19 @@ void EntityMode::OnDefaultState ()
   iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
   if (!questFact) return;
 
-  csStringArray tokens (contextMenuNode, ",");
+  csStringArray tokens (GetContextMenuNode (), ",");
   csString state = tokens[0];
   state = state.Slice (2);
   iCelPlLayer* pl = aresed3d->GetPL ();
   pctpl->RemoveProperty (pl->FetchStringID ("state"));
   pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
-  RefreshView ();
+  RefreshView (pctpl);
 }
 
 void EntityMode::OnNewState ()
 {
-  iCelPropertyClassTemplate* pctpl = GetPCTemplate (contextMenuNode);
+  if (!GetContextMenuNode ()) return;
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
@@ -837,7 +844,7 @@ void EntityMode::OnNewState ()
     return;
   }
   questFact->CreateState (name);
-  RefreshView ();
+  RefreshView (pctpl);
 }
 
 void EntityMode::OnEditQuest ()
@@ -868,6 +875,14 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idCreateTrigger = ui->AllocContextMenuID ();
   frame->Connect (idCreateTrigger, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnCreateTrigger), 0, panel);
+}
+
+csString EntityMode::GetContextMenuNode ()
+{
+  if (!contextMenuNode) return "";
+  if (!view->NodeExists (contextMenuNode))
+    contextMenuNode = "";
+  return contextMenuNode;
 }
 
 void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
