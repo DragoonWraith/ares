@@ -64,10 +64,12 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
   for (int i = 0 ; i < assetList->GetItemCount () ; i++)
   {
     csStringArray row = ListCtrlTools::ReadRow (assetList, i);
-    bool saveDynfacts, saveTemplates;
+    bool saveDynfacts, saveTemplates, saveQuests;
     csScanStr (row[2], "%b", &saveDynfacts);
     csScanStr (row[3], "%b", &saveTemplates);
-    assets.Push (Asset (row[0], row[1], saveDynfacts, saveTemplates));
+    csScanStr (row[4], "%b", &saveQuests);
+    assets.Push (Asset (row[0], row[1], saveDynfacts, saveTemplates,
+	  saveQuests));
   }
   callback->OkPressed (assets);
   callback = 0;
@@ -133,16 +135,18 @@ void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
 }
 
 void NewProjectDialog::SetPathFile (const char* path, const char* file,
-    bool saveDynfacts, bool saveTemplates)
+    bool saveDynfacts, bool saveTemplates, bool saveQuests)
 {
   wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
   wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
+  wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
   pathText->SetValue (wxString::FromUTF8 (path));
   fileText->SetValue (wxString::FromUTF8 (file));
   dynfactsCheck->SetValue (saveDynfacts);
   templatesCheck->SetValue (saveTemplates);
+  questsCheck->SetValue (saveQuests);
 
   wxStaticText* contents = XRCCTRL (*this, "contentsStaticText", wxStaticText);
 
@@ -198,7 +202,7 @@ void NewProjectDialog::SetPathFile (const char* path, const char* file,
 
 void NewProjectDialog::SetFilename (const char* filename)
 {
-  SetPathFile (vfs->GetCwd (), filename, false, false);
+  SetPathFile (vfs->GetCwd (), filename, false, false, false);
 }
 
 void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
@@ -208,13 +212,15 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
   wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
+  wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
   ListCtrlTools::AddRow (assetList,
       (const char*)(pathText->GetValue ().mb_str (wxConvUTF8)),
       (const char*)(fileText->GetValue ().mb_str (wxConvUTF8)),
       dynfactsCheck->GetValue () ? "true" : "",
       templatesCheck->GetValue () ? "true" : "",
+      questsCheck->GetValue () ? "true" : "",
       0);
-  SetPathFile ("", "", false, false);
+  SetPathFile ("", "", false, false, false);
 }
 
 void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
@@ -225,7 +231,10 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
     assetList->DeleteItem (selIndex);
     assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
     assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
-    SetPathFile ("", "", false, false);
+    assetList->SetColumnWidth (2, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+    assetList->SetColumnWidth (3, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+    assetList->SetColumnWidth (4, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
+    SetPathFile ("", "", false, false, false);
     selIndex = -1;
   }
 }
@@ -237,10 +246,12 @@ void NewProjectDialog::OnAssetSelected (wxListEvent& event)
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   selIndex = event.GetIndex ();
   csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
-  bool saveDynfacts, saveTemplates;
+  bool saveDynfacts, saveTemplates, saveQuests;
   csScanStr (row[2], "%b", &saveDynfacts);
   csScanStr (row[3], "%b", &saveTemplates);
-  SetPathFile (row[0], row[1], saveDynfacts, saveTemplates);
+  csScanStr (row[4], "%b", &saveQuests);
+  SetPathFile (row[0], row[1], saveDynfacts, saveTemplates,
+      saveQuests);
 }
 
 void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
@@ -270,6 +281,7 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS
   ListCtrlTools::SetColumn (assetList, 1, "File", 200);
   ListCtrlTools::SetColumn (assetList, 2, "Dynfacts", 50);
   ListCtrlTools::SetColumn (assetList, 3, "Templates", 50);
+  ListCtrlTools::SetColumn (assetList, 4, "Quests", 50);
 }
 
 NewProjectDialog::~NewProjectDialog ()

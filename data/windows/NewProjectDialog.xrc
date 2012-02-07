@@ -2,7 +2,7 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="NewProjectDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>396,345</size>
+		<size>536,408</size>
 		<title>New Project</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
@@ -128,6 +128,15 @@
 						<object class="wxCheckBox" name="entity_Check">
 							<tooltip>If checked then entity templates will save to this file.</tooltip>
 							<label>Templates</label>
+							<checked>0</checked>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxCheckBox" name="quest_Check">
+							<label>Quests</label>
 							<checked>0</checked>
 						</object>
 					</object>

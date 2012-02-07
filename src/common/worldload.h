@@ -37,16 +37,21 @@ private:
   csString file;
   bool saveDynfacts;
   bool saveTemplates;
+  bool saveQuests;
 
 public:
   Asset (const char* path, const char* file,
-      bool saveDynfacts, bool saveTemplates) :
-    path (path), file (file), saveDynfacts (saveDynfacts), saveTemplates (saveTemplates) { }
+      bool saveDynfacts, bool saveTemplates, bool saveQuests) :
+    path (path), file (file),
+    saveDynfacts (saveDynfacts), saveTemplates (saveTemplates),
+    saveQuests (saveQuests)
+  { }
 
   const csString& GetPath () const { return path; }
   const csString& GetFile () const { return file; }
   bool IsDynfactSavefile () const { return saveDynfacts; }
   bool IsTemplateSavefile () const { return saveTemplates; }
+  bool IsQuestSaveFile () const { return saveQuests; }
 };
 
 class WorldLoader

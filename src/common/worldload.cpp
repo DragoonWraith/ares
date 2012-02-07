@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "propclass/dynworld.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
+#include "tools/questmanager.h"
 
 WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
 {
@@ -72,6 +73,7 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       csString file = child->GetAttributeValue ("file");
       bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
       bool saveTemplates = child->GetAttributeValueAsBool ("templates");
+      bool saveQuests = child->GetAttributeValueAsBool ("quests");
       vfs->PushDir (path);
       // If the file doesn't exist we don't try to load it. That's not an error
       // as it might be saved later.
@@ -80,7 +82,7 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       if (exists)
         if (!LoadLibrary (path, file))
 	  return false;
-      assets.Push (Asset (path, file, saveDynfacts, saveTemplates));
+      assets.Push (Asset (path, file, saveDynfacts, saveTemplates, saveQuests));
     }
     // Ignore the other tags. These are processed below.
   }
@@ -206,12 +208,12 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
   {
     csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
 	"cel.addons.dynamicworld.loader");
-    if (!saver) return 0;
+    if (!saver) return false;
     csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
     addonNode->SetValue ("addon");
     addonNode->SetAttribute ("plugin", "cel.addons.dynamicworld.loader");
     if (!saver->WriteDown (dynworld, addonNode, 0))
-      return 0;
+      return false;
   }
   if (asset.IsTemplateSavefile ())
   {
@@ -232,9 +234,20 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
 	addonNode->SetValue ("addon");
 	addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
 	if (!saver->WriteDown (temp, addonNode, 0))
-	  return 0;
+	  return false;
       }
     }
+  }
+  if (asset.IsQuestSaveFile ())
+  {
+    csRef<iQuestManager> questmgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
+    	"cel.manager.quests");
+    if (!questmgr) return false;
+    csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+    addonNode->SetValue ("addon");
+    addonNode->SetAttribute ("plugin", "cel.addons.questdef");
+    if (!questmgr->Save (addonNode))
+      return false;
   }
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
@@ -286,7 +299,7 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     const Asset& asset = assets[i];
-    if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile ())
+    if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile () || asset.IsQuestSaveFile ())
     {
       // @@@ Todo: proper error reporting.
       if (!SaveAsset (docsys, asset))

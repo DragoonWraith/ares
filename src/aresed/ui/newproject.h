@@ -58,7 +58,7 @@ private:
   csRef<NewProjectCallback> callback;
 
   void SetPathFile (const char* path, const char* file,
-      bool saveDynfacts, bool saveTemplates);
+      bool saveDynfacts, bool saveTemplates, bool saveQuests);
   void ScanCSNode (csString& msg, iDocumentNode* node);
 
 public:
