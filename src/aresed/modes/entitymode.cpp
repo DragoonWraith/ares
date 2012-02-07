@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "entitymode.h"
 #include "templatepanel.h"
 #include "pcpanel.h"
+#include "triggerpanel.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -77,12 +78,16 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
   fontBold = g2d->GetFontServer ()->LoadFont ("DejaVuSansBold", 10);
   fontLarge = g2d->GetFontServer ()->LoadFont ("DejaVuSans", 13);
 
-  pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (),
-      this);
+  questMgr = csQueryRegistryOrLoad<iQuestManager> (
+    aresed3d->GetObjectRegistry (), "cel.manager.quests");
+
+  pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
   pcPanel->Hide ();
 
-  tplPanel = new EntityTemplatePanel (panel, aresed3d->GetApp ()->GetUIManager (),
-      this);
+  triggerPanel = new TriggerPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  triggerPanel->Hide ();
+
+  tplPanel = new EntityTemplatePanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
   tplPanel->Hide ();
 
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
@@ -250,6 +255,7 @@ void EntityMode::Start ()
   SetupItems ();
   view->SetVisible (true);
   pcPanel->Hide ();
+  triggerPanel->Hide ();
   tplPanel->Hide ();
   contextMenuNode = "";
 }
@@ -472,10 +478,7 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
   iCelPlLayer* pl = aresed3d->GetPL ();
   csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
 
-  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-    aresed3d->GetObjectRegistry (),
-    "cel.manager.quests");
-  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
   // @@@ Error check
   if (questFact) BuildQuestGraph (questFact, pcKey, false, defaultState);
 }
@@ -514,6 +517,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   currentTemplate = templateName;
   pcPanel->Hide ();
+  triggerPanel->Hide ();
   tplPanel->Hide ();
 
   view->StartRefresh ();
@@ -551,13 +555,9 @@ void EntityMode::RefreshView ()
     csString questName = GetQuestName (pctpl);
     if (questName.IsEmpty ()) return;
 
-    csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-      aresed3d->GetObjectRegistry (), "cel.manager.quests");
-    iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+    iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
     if (!questFact)
-    {
-      questFact = quest_mgr->CreateQuestFactory (questName);
-    }
+      questFact = questMgr->CreateQuestFactory (questName);
 
     view->StartRefresh ();
     view->SetVisible (false);
@@ -574,6 +574,68 @@ void EntityMode::RefreshView ()
   else
     BuildTemplateGraph (currentTemplate);
 }
+
+iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
+{
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (key);
+  csString questName = GetQuestName (pctpl);
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+  return questFact;
+}
+
+iQuestTriggerResponseFactory* EntityMode::GetSelectedTriggerResponse (const char* key)
+{
+  iCelPlLayer* pl = aresed3d->GetPL ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return 0;
+
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op.operator[] (0) == 't')
+    {
+      csStringArray tokens (op, ":");
+      csString triggerNum = tokens[1];
+      int num;
+      csScanStr (triggerNum, "%d", &num);
+      iQuestStateFactory* state = GetSelectedState (key);
+      if (!state) return 0;
+      return state->GetTriggerResponseFactories ()->Get (num);;
+    }
+  }
+  return 0;
+}
+
+csString EntityMode::GetSelectedStateName (const char* key)
+{
+  iCelPlLayer* pl = aresed3d->GetPL ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return "";
+
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op.operator[] (0) == 'S')
+    {
+      csStringArray tokens (op, ":");
+      csString stateName = tokens[1];
+      return stateName;
+    }
+  }
+  return "";
+}
+
+iQuestStateFactory* EntityMode::GetSelectedState (const char* key)
+{
+  csString n = GetSelectedStateName (key);
+  if (!n) return 0;
+  iQuestFactory* questFact = GetSelectedQuest (key);
+  if (!questFact) return 0;
+  return questFact->GetState (n);
+}
+
 
 iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
 {
@@ -655,7 +717,6 @@ void EntityMode::OnCreatePC ()
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     csString name = fields.Get ("name", "");
     csString tag = fields.Get ("tag", "");
-    printf ("name=%s tag=%s\n", name.GetData (), tag.GetData ());
     iCelPlLayer* pl = aresed3d->GetPL ();
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (name, tag);
@@ -684,8 +745,10 @@ void EntityMode::ActivateNode (const char* nodeName)
 {
   tplPanel->Hide ();
   pcPanel->Hide ();
+  triggerPanel->Hide ();
   if (!nodeName) return;
   csString activeNode = nodeName;
+printf ("node:%s\n", nodeName); fflush (stdout);
   const char type = activeNode.operator[] (0);
   if (type == 'P')
   {
@@ -702,6 +765,38 @@ void EntityMode::ActivateNode (const char* nodeName)
     tplPanel->SwitchToTpl (tpl);
     tplPanel->Show ();
   }
+  else if (type == 't')
+  {
+    iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (activeNode);
+    if (!resp || !resp->GetTriggerFactory ()) return;
+    triggerPanel->SwitchTrigger (resp->GetTriggerFactory ()->GetTriggerType ()->GetName ());
+    triggerPanel->Show ();
+  }
+}
+
+void EntityMode::OnCreateTrigger ()
+{
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  UIDialog* dialog = ui->CreateDialog ("New Trigger");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddChoice ("name", "entersector", "inventory", "meshselect",
+      "message", "operation", "propertychange", "sequencefinish", "timeout",
+      "trigger", "watch", (const char*)0);
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("name", "");
+    csString state = GetSelectedStateName (contextMenuNode);
+    iQuestFactory* questFact = GetSelectedQuest (contextMenuNode);
+    iQuestStateFactory* questState = questFact->GetState (state);
+    iQuestTriggerResponseFactory* resp = questState->CreateTriggerResponseFactory ();
+    iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+name);
+    csRef<iTriggerFactory> triggerFact = triggertype->CreateTriggerFactory ();
+    resp->SetTriggerFactory (triggerFact);
+    RefreshView ();
+  }
+  delete dialog;
 }
 
 void EntityMode::OnDefaultState ()
@@ -711,10 +806,7 @@ void EntityMode::OnDefaultState ()
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
-  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-    aresed3d->GetObjectRegistry (),
-    "cel.manager.quests");
-  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
   if (!questFact) return;
 
   csStringArray tokens (contextMenuNode, ",");
@@ -736,14 +828,9 @@ void EntityMode::OnNewState ()
   csString name = ui->AskDialog ("New State", "Name:");
   if (name.IsEmpty ()) return;
 
-  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-    aresed3d->GetObjectRegistry (),
-    "cel.manager.quests");
-  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
   if (!questFact)
-  {
-    questFact = quest_mgr->CreateQuestFactory (questName);
-  }
+    questFact = questMgr->CreateQuestFactory (questName);
   if (questFact->GetState (name))
   {
     ui->Error ("State already exists with this name!");
@@ -778,6 +865,9 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idDefaultState = ui->AllocContextMenuID ();
   frame->Connect (idDefaultState, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnDefaultState), 0, panel);
+  idCreateTrigger = ui->AllocContextMenuID ();
+  frame->Connect (idCreateTrigger, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnCreateTrigger), 0, panel);
 }
 
 void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
@@ -798,7 +888,10 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
       contextMenu->Append (idNewState, wxT ("New state..."));
     }
     if (type == 'S')
+    {
       contextMenu->Append (idDefaultState, wxT ("Set default state"));
+      contextMenu->Append (idCreateTrigger, wxT ("Create trigger"));
+    }
   }
 }
 

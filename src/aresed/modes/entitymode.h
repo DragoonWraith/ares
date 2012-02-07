@@ -36,8 +36,11 @@ struct iQuestStateFactory;
 struct iRewardFactoryArray;
 struct iRewardFactory;
 struct iTriggerFactory;
+struct iQuestManager;
+struct iQuestTriggerResponseFactory;
 
 class PropertyClassPanel;
+class TriggerPanel;
 class EntityTemplatePanel;
 
 enum
@@ -97,16 +100,30 @@ private:
   void RefreshView ();
 
   PropertyClassPanel* pcPanel;
+  TriggerPanel* triggerPanel;
   EntityTemplatePanel* tplPanel;
 
   int idDelete, idCreate, idEditQuest, idNewState, idDefaultState;
+  int idCreateTrigger;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
 
+  // Get the selected state.
+  iQuestStateFactory* GetSelectedState (const char* key);
+  csString GetSelectedStateName (const char* key);
+
+  // Get the current quest.
+  iQuestFactory* GetSelectedQuest (const char* key);
+
+  // Get the name of the trigger.
+  iQuestTriggerResponseFactory* GetSelectedTriggerResponse (const char* key);
+
   csRef<iFont> font;
   csRef<iFont> fontBold;
   csRef<iFont> fontLarge;
+
+  csRef<iQuestManager> questMgr;
 
 public:
   EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
@@ -132,6 +149,7 @@ public:
   void OnEditQuest ();
   void OnNewState ();
   void OnDefaultState ();
+  void OnCreateTrigger ();
   void OnContextMenu (wxContextMenuEvent& event);
   void OnTemplateAdd ();
   void OnTemplateDel ();
@@ -151,6 +169,7 @@ public:
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
     void OnNewState (wxCommandEvent& event) { s->OnNewState (); }
     void OnDefaultState (wxCommandEvent& event) { s->OnDefaultState (); }
+    void OnCreateTrigger (wxCommandEvent& event) { s->OnCreateTrigger (); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
     void OnTemplateAdd (wxCommandEvent& event) { s->OnTemplateAdd (); }
