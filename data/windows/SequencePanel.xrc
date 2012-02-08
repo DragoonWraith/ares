@@ -3,6 +3,13 @@
 	<object class="wxPanel" name="SequencePanel">
 		<style>wxTAB_TRAVERSAL</style>
 		<size>500,500</size>
+		<font>
+			<size>8</size>
+			<family>default</family>
+			<style>normal</style>
+			<weight>normal</weight>
+			<underlined>0</underlined>
+		</font>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
@@ -12,6 +19,13 @@
 				<object class="wxListCtrl" name="operations_List">
 					<style>wxLC_REPORT</style>
 					<size>-1,120</size>
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -50,7 +64,7 @@
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>0</option>
+						<option>1</option>
 						<flag>wxALL</flag>
 						<border>5</border>
 						<object class="wxTextCtrl" name="duration_Text">
@@ -67,11 +81,25 @@
 				<border>5</border>
 				<object class="wxChoicebook" name="seqopChoicebook">
 					<style>wxCHB_DEFAULT</style>
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 					<object class="choicebookpage">
 						<label>debugprint</label>
 						<selected>0</selected>
 						<object class="wxPanel" name="debugprintPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -90,7 +118,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="message_Dp_Text">
@@ -109,6 +137,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="ambientmeshPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -137,7 +172,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Am_Text">
@@ -164,34 +199,31 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="relred_Am_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="relgreen_Am_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="relblue_Am_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -214,34 +246,31 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="absred_Am_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="absgreen_Am_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="absblue_Am_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -256,6 +285,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="lightPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -284,7 +320,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Li_Text">
@@ -311,34 +347,31 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="relred_Li_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="relgreen_Li_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="relblue_Li_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -361,34 +394,31 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="absred_Li_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="absgreen_Li_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="absblue_Li_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -403,6 +433,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="movepathPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -431,7 +468,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Mp_Text">
@@ -458,6 +495,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="propertyPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -476,7 +520,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Pr_Text">
@@ -513,7 +557,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Pr_Text">
@@ -540,7 +584,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="property_Pr_Text">
@@ -595,7 +639,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="long_Pr_Text">
@@ -622,34 +666,31 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="vectorx_Pr_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="vectory_Pr_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="vectorz_Pr_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -664,6 +705,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="transformPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -692,7 +740,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Tr_Text">
@@ -719,34 +767,31 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="vectorx_Tr_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="vectory_Tr_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="vectorz_Tr_Text">
 												<style>wxTE_PROCESS_ENTER</style>
-												<size>50,-1</size>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -782,7 +827,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="angle_Tr_Text">
