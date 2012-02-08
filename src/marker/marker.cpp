@@ -113,7 +113,7 @@ GraphView::GraphView (MarkerManager* mgr) :
   coolDownPeriod = true;
 
   nodeForceFactor = 750.0f;
-  linkForceFactor = 0.3f;
+  linkForceFactor = 0.15;
 
   secondsTodo = 0.0f;
 
@@ -530,13 +530,15 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
 
 void GraphView::UpdateSubNodePositions (GraphNode& node)
 {
-  csVector2 relpos (30, node.size.y-2);
+  csVector2 relpos (20, 30);
+  relpos.y -= node.size.y / 2;
   for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
   {
     SubNode& sn = node.subnodes[i];
     sn.relpos = relpos;
     relpos.y += sn.size.y;
     csVector2 realpos = node.marker->GetPosition () + sn.relpos;
+    realpos.x -= (node.size.x - sn.size.x) / 2;
     sn.marker->SetPosition (realpos);
   }
 }
@@ -544,7 +546,6 @@ void GraphView::UpdateSubNodePositions (GraphNode& node)
 void GraphView::CreateSubNode (const char* parentNode, const char* name, const char* label,
       iGraphNodeStyle* style)
 {
-  printf ("CreateSubNode %s/%s (%s)\n", parentNode, name, label); fflush (stdout);
   // @@@ Error check if parent doesn't exist?
   GraphNode n;
   GraphNode& node = nodes.Get (parentNode, n);
@@ -1342,6 +1343,8 @@ void MarkerManager::HandleDrag ()
       newpos.x = mouseX;
       newpos.y = mouseY;
       newpos.z = 0;
+      newpos.x -= dragOffset.x;
+      newpos.y -= dragOffset.y;
     }
     else
     {
@@ -1449,6 +1452,7 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       const csOrthoTransform& camtrans = camera->GetTransform ();
       const csReversibleTransform& meshtrans = hitArea->GetMarker ()
 	->GetTransform ();
+      dragOffset = csVector2 (mouseX, mouseY) - hitArea->GetMarker ()->GetPosition ();
       dragRestrict = TransPointWorld (camtrans, meshtrans,
 	  hitArea->GetSpace (), hitArea->GetCenter ());
       dragDistance = (dragRestrict - camtrans.GetOrigin ()).Norm ();

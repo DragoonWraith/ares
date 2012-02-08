@@ -458,6 +458,7 @@ public:
   MarkerDraggingMode* currentDraggingMode;
   float dragDistance;
   csVector3 dragRestrict;
+  csVector2 dragOffset;
 
   void StopDrag ();
   void HandleDrag ();

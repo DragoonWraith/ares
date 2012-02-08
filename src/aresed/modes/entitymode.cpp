@@ -147,7 +147,7 @@ void EntityMode::InitColors ()
 {
   iMarkerManager* mgr = aresed3d->GetMarkerManager ();
 
-  iMarkerColor* textColor = NewColor ("viewWhite", .7, .7, .7, 1, 1, 1, false);
+  iMarkerColor* textColor = NewColor ("viewWhite", .8, .8, .8, 1, 1, 1, false);
   iMarkerColor* textSelColor = NewColor ("viewBlack", 0, 0, 0, 0, 0, 0, false);
 
   iMarkerColor* thickLinkColor = mgr->CreateMarkerColor ("thickLink");
@@ -200,7 +200,7 @@ void EntityMode::InitColors ()
   styleResponse = mgr->CreateGraphNodeStyle ();
   styleResponse->SetBorderColor (NewColor ("respColorFG", 0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleResponse->SetBackgroundColor (NewColor ("respColorBG", .3, .6, .7, .4, .7, .8, true));
-  styleResponse->SetRoundness (1);
+  styleResponse->SetRoundness (5);
   styleResponse->SetTextColor (NewColor ("respColorTxt", 0, 0, 0, 0, 0, 0, false));
   styleResponse->SetTextFont (font);
 
@@ -422,7 +422,7 @@ csString EntityMode::GetRewardsLabel (iRewardFactoryArray* rewards)
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
     iRewardFactory* reward = rewards->Get (j);
-    label += csString ("\n    ") + GetRewardType (reward);
+    label += csString ("\n    ");// + GetRewardType (reward);
   }
   return label;
 }
@@ -436,7 +436,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
     iQuestTriggerResponseFactory* response = responses->Get (i);
     csString responseKey; responseKey.Format ("t:%zu,%s", i, stateKey);
     csString triggerLabel = GetTriggerType (response->GetTriggerFactory ());
-    //triggerLabel += GetRewardsLabel (response->GetRewardFactories ());
+    triggerLabel += GetRewardsLabel (response->GetRewardFactories ());
     view->CreateNode (responseKey, triggerLabel, styleResponse);
     view->LinkNode (stateKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
@@ -448,7 +448,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   {
     csString newKeyKey; newKeyKey.Format ("i:%s", stateKey);
     csString label = "Oninit:";
-    //label += GetRewardsLabel (initRewards);
+    label += GetRewardsLabel (initRewards);
     view->CreateNode (newKeyKey, label, styleResponse);
     view->LinkNode (stateKey, newKeyKey);
     BuildRewardGraph (initRewards, newKeyKey, pcKey);
@@ -458,7 +458,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   {
     csString newKeyKey; newKeyKey.Format ("e:%s", stateKey);
     csString label = "Onexit:";
-    //label += GetRewardsLabel (exitRewards);
+    label += GetRewardsLabel (exitRewards);
     view->CreateNode (newKeyKey, label, styleResponse);
     view->LinkNode (stateKey, newKeyKey);
     BuildRewardGraph (exitRewards, newKeyKey, pcKey);
