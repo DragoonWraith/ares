@@ -1,0 +1,804 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
+	<object class="wxPanel" name="SequencePanel">
+		<style>wxTAB_TRAVERSAL</style>
+		<size>500,500</size>
+		<object class="wxBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxALL|wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxListCtrl" name="operations_List">
+					<style>wxLC_REPORT</style>
+					<size>-1,120</size>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxButton" name="up_Button">
+							<size>50,-1</size>
+							<label>Up</label>
+							<default>0</default>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxButton" name="down_Button">
+							<size>50,-1</size>
+							<label>Down</label>
+							<default>0</default>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="m_staticText114">
+							<label>Duration:</label>
+							<wrap>-1</wrap>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxTextCtrl" name="duration_Text">
+							<style>wxTE_PROCESS_ENTER</style>
+							<value></value>
+							<maxlength>0</maxlength>
+						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND | wxALL</flag>
+				<border>5</border>
+				<object class="wxChoicebook" name="seqopChoicebook">
+					<style>wxCHB_DEFAULT</style>
+					<object class="choicebookpage">
+						<label>debugprint</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="debugprintPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText109">
+												<label>Message:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="message_Dp_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>ambientmesh</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="ambientmeshPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText110">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="tag_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText111">
+												<label>Relcol:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="relred_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="relgreen_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="relblue_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText1111">
+												<label>Abscol:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="absred_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="absgreen_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="absblue_Am_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>light</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="lightPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText1101">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="tag_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText1112">
+												<label>Relcol:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="relred_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="relgreen_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="relblue_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText11111">
+												<label>Abscol:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="absred_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="absgreen_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="absblue_Li_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>movepath</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="movepathPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText121">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Mp_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="tag_Mp_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="path_List">
+										<style>wxLC_REPORT</style>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>property</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="propertyPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText122">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText123">
+												<label>PC/Tag:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="pc_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="tag_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText124">
+												<label>Property:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="property_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxCheckBox" name="relative_Pr_Check">
+												<label>Relative</label>
+												<checked>0</checked>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText125">
+												<label>Float:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="float_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText1251">
+												<label>Long:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="long_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText131">
+												<label>Vector2/3:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="vectorx_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="vectory_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="vectorz_Pr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>transform</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="transformPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText132">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="tag_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText1311">
+												<label>Vector:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="vectorx_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="vectory_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="vectorz_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<size>50,-1</size>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText135">
+												<label>Rotation:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxChoice" name="axis_Tr_Choice">
+												<selection>0</selection>
+												<content>
+													<item>x</item>
+													<item>y</item>
+													<item>z</item>
+												</content>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="angle_Tr_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+				</object>
+			</object>
+		</object>
+	</object>
+</resource>
+

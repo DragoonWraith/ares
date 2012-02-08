@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "pcpanel.h"
 #include "triggerpanel.h"
 #include "rewardpanel.h"
+#include "sequencepanel.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -90,6 +91,9 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
 
   rewardPanel = new RewardPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
   rewardPanel->Hide ();
+
+  sequencePanel = new SequencePanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  sequencePanel->Hide ();
 
   tplPanel = new EntityTemplatePanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
   tplPanel->Hide ();
@@ -201,6 +205,14 @@ void EntityMode::InitColors ()
   styleStateDefault->SetTextColor (textSelColor);
   styleStateDefault->SetTextFont (fontBold);
 
+  iMarkerColor* colSeqFG = NewColor ("seqColorFG", 0, 0, 0, 0, 0, 0, 1, 1, 1, false);
+  iMarkerColor* colSeqBG = NewColor ("seqColorBG", .8, 0, 0, 1, 0, 0, true);
+  styleSequence = mgr->CreateGraphNodeStyle ();
+  styleSequence->SetBorderColor (colSeqFG);
+  styleSequence->SetBackgroundColor (colSeqBG);
+  styleSequence->SetTextColor (textColor);
+  styleSequence->SetTextFont (font);
+
   styleResponse = mgr->CreateGraphNodeStyle ();
   styleResponse->SetBorderColor (NewColor ("respColorFG", 0, .7, .7, 0, 1, 1, 1, 1, 1, false));
   styleResponse->SetBackgroundColor (NewColor ("respColorBG", .3, .6, .7, .4, .7, .8, true));
@@ -261,6 +273,7 @@ void EntityMode::Start ()
   pcPanel->Hide ();
   triggerPanel->Hide ();
   rewardPanel->Hide ();
+  sequencePanel->Hide ();
   tplPanel->Hide ();
   contextMenuNode = "";
 }
@@ -490,6 +503,14 @@ void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey,
     if (fullquest)
       BuildStateGraph (stateFact, stateKey, pcKey);
   }
+  csRef<iCelSequenceFactoryIterator> seqIt = questFact->GetSequences ();
+  while (seqIt->HasNext ())
+  {
+    iCelSequenceFactory* seqFact = seqIt->Next ();
+    csString seqKey; seqKey.Format ("s:%s,%s", seqFact->GetName (), pcKey);
+    view->CreateNode (seqKey, seqFact->GetName (), styleSequence);
+    view->LinkNode (pcKey, seqKey);
+  }
 }
 
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
@@ -542,6 +563,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   pcPanel->Hide ();
   triggerPanel->Hide ();
   rewardPanel->Hide ();
+  sequencePanel->Hide ();
   tplPanel->Hide ();
 
   view->StartRefresh ();
@@ -629,6 +651,27 @@ bool EntityMode::IsOnExit (const char* key)
   {
     csString op = ops.Get (i);
     if (op.operator[] (0) == 'e') return true;
+  }
+  return 0;
+}
+
+iCelSequenceFactory* EntityMode::GetSelectedSequence (const char* key)
+{
+  iCelPlLayer* pl = aresed3d->GetPL ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return 0;
+
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op.operator[] (0) == 's')
+    {
+      csStringArray tokens (op, ":");
+      csString sequenceName = tokens[1];
+      iQuestFactory* questFact = GetSelectedQuest (key);
+      return questFact->GetSequence (sequenceName);
+    }
   }
   return 0;
 }
@@ -831,6 +874,7 @@ void EntityMode::ActivateNode (const char* nodeName)
   pcPanel->Hide ();
   triggerPanel->Hide ();
   rewardPanel->Hide ();
+  sequencePanel->Hide ();
   if (!nodeName) return;
   csString activeNode = nodeName;
 printf ("node:%s\n", nodeName); fflush (stdout);
@@ -863,6 +907,13 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     if (!reward) return;
     rewardPanel->SwitchReward (reward);
     rewardPanel->Show ();
+  }
+  else if (type == 's')
+  {
+    iCelSequenceFactory* sequence = GetSelectedSequence (activeNode);
+    if (!sequence) return;
+    sequencePanel->SwitchSequence (sequence);
+    sequencePanel->Show ();
   }
 }
 
@@ -1023,7 +1074,7 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
     contextMenu->AppendSeparator ();
 
     const char type = contextMenuNode.operator[] (0);
-    if (strchr ("TPStier", type))
+    if (strchr ("TPSstier", type))
       contextMenu->Append (idDelete, wxT ("Delete"));
     if (type == 'T')
       contextMenu->Append (idCreate, wxT ("Create Property Class..."));

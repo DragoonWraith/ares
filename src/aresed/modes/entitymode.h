@@ -35,6 +35,7 @@ struct iQuestFactory;
 struct iQuestStateFactory;
 struct iRewardFactoryArray;
 struct iRewardFactory;
+struct iCelSequenceFactory;
 struct iTriggerFactory;
 struct iQuestManager;
 struct iQuestTriggerResponseFactory;
@@ -42,6 +43,7 @@ struct iQuestTriggerResponseFactory;
 class PropertyClassPanel;
 class TriggerPanel;
 class RewardPanel;
+class SequencePanel;
 class EntityTemplatePanel;
 
 enum
@@ -75,6 +77,7 @@ private:
 
   csRef<iGraphNodeStyle> styleTemplate;
   csRef<iGraphNodeStyle> stylePC;
+  csRef<iGraphNodeStyle> styleSequence;
   csRef<iGraphNodeStyle> styleState;
   csRef<iGraphNodeStyle> styleStateDefault;
   csRef<iGraphNodeStyle> styleResponse;
@@ -102,6 +105,7 @@ private:
   PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
   RewardPanel* rewardPanel;
+  SequencePanel* sequencePanel;
   EntityTemplatePanel* tplPanel;
 
   int idDelete, idCreate, idEditQuest, idNewState, idDefaultState;
@@ -121,8 +125,8 @@ private:
   iQuestTriggerResponseFactory* GetSelectedTriggerResponse (const char* key);
   bool IsOnInit (const char* key);
   bool IsOnExit (const char* key);
-  // Get the name of the reward.
   iRewardFactory* GetSelectedReward (const char* key);
+  iCelSequenceFactory* GetSelectedSequence (const char* key);
 
   csRef<iFont> font;
   csRef<iFont> fontBold;
