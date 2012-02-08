@@ -3,6 +3,13 @@
 	<object class="wxPanel" name="PropertyClassPanel">
 		<style>wxTAB_TRAVERSAL</style>
 		<size>304,589</size>
+		<font>
+			<size>8</size>
+			<family>default</family>
+			<style>normal</style>
+			<weight>normal</weight>
+			<underlined>0</underlined>
+		</font>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
@@ -13,9 +20,16 @@
 					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
 						<option>0</option>
-						<flag>wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND</flag>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
 						<object class="wxStaticText" name="m_staticText11">
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<label>Tag:</label>
 							<wrap>-1</wrap>
 						</object>
@@ -26,6 +40,13 @@
 						<border>5</border>
 						<object class="wxTextCtrl" name="tagTextCtrl">
 							<style>wxTE_PROCESS_ENTER</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<value></value>
 							<maxlength>0</maxlength>
 						</object>
@@ -38,11 +59,25 @@
 				<border>5</border>
 				<object class="wxChoicebook" name="pcChoicebook">
 					<style>wxCHB_DEFAULT</style>
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 					<object class="choicebookpage">
 						<label>pctools.properties</label>
 						<selected>0</selected>
 						<object class="wxPanel" name="propertiesPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -61,6 +96,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="inventoryPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -105,6 +147,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="meshPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 						</object>
 					</object>
 					<object class="choicebookpage">
@@ -112,10 +161,17 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="cameraOldPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
-									<option>1</option>
+									<option>0</option>
 									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<object class="wxChoice" name="modeChoice">
@@ -137,6 +193,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="questPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -182,6 +245,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="spawnPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">
@@ -365,6 +435,13 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="wirePanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
 								<object class="sizeritem">

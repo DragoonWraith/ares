@@ -3,6 +3,13 @@
 	<object class="wxPanel" name="EntityTemplatePanel">
 		<style>wxTAB_TRAVERSAL</style>
 		<size>373,520</size>
+		<font>
+			<size>8</size>
+			<family>default</family>
+			<style>normal</style>
+			<weight>normal</weight>
+			<underlined>0</underlined>
+		</font>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
@@ -10,6 +17,13 @@
 				<flag>wxALL</flag>
 				<border>5</border>
 				<object class="wxStaticText" name="m_staticText19">
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 					<label>Template Parents:</label>
 					<wrap>-1</wrap>
 				</object>
@@ -20,6 +34,13 @@
 				<border>5</border>
 				<object class="wxListCtrl" name="templateParentsList">
 					<style>wxLC_REPORT</style>
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -27,6 +48,13 @@
 				<flag>wxALL</flag>
 				<border>5</border>
 				<object class="wxStaticText" name="m_staticText17">
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 					<label>Characteristics:</label>
 					<wrap>-1</wrap>
 				</object>
@@ -37,6 +65,13 @@
 				<border>5</border>
 				<object class="wxListCtrl" name="templateCharacteristicsList">
 					<style>wxLC_REPORT</style>
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -44,6 +79,13 @@
 				<flag>wxALL</flag>
 				<border>5</border>
 				<object class="wxStaticText" name="m_staticText16">
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 					<label>Classes:</label>
 					<wrap>-1</wrap>
 				</object>
@@ -54,6 +96,13 @@
 				<border>5</border>
 				<object class="wxListCtrl" name="templateClassList">
 					<style>wxLC_REPORT</style>
+					<font>
+						<size>8</size>
+						<family>default</family>
+						<style>normal</style>
+						<weight>normal</weight>
+						<underlined>0</underlined>
+					</font>
 				</object>
 			</object>
 			<object class="sizeritem">
@@ -67,6 +116,13 @@
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
 						<object class="wxStaticText" name="m_staticText18">
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<label>Startup Messages:</label>
 							<wrap>-1</wrap>
 						</object>
@@ -76,6 +132,13 @@
 						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>
 						<object class="wxButton" name="templateEditStartupMessagesButton">
+							<font>
+								<size>8</size>
+								<family>default</family>
+								<style>normal</style>
+								<weight>normal</weight>
+								<underlined>0</underlined>
+							</font>
 							<label>Edit...</label>
 							<default>0</default>
 						</object>
