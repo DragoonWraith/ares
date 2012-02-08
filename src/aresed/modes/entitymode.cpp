@@ -383,9 +383,10 @@ void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
     iRewardFactory* reward = rewards->Get (j);
     csString rewKey; rewKey.Format ("r:%zu,%s", j, parentKey);
     csString rewLabel; rewLabel.Format ("%zu:%s", j+1, GetRewardType (reward));
-    view->CreateNode (rewKey, rewLabel, styleReward);
-    view->LinkNode (parentKey, rewKey, styleThinLink);
+    view->CreateSubNode (parentKey, rewKey, rewLabel, styleReward);
+    //view->LinkNode (parentKey, rewKey, styleThinLink);
 
+#if 0
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     if (newState)
     {
@@ -411,7 +412,19 @@ void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
       view->LinkNode (i5, i6, styleArrow0Link);
       view->LinkNode (i6, stateKey, styleArrow0Link);
     }
+#endif
   }
+}
+
+csString EntityMode::GetRewardsLabel (iRewardFactoryArray* rewards)
+{
+  csString label;
+  for (size_t j = 0 ; j < rewards->GetSize () ; j++)
+  {
+    iRewardFactory* reward = rewards->Get (j);
+    label += csString ("\n    ") + GetRewardType (reward);
+  }
+  return label;
 }
 
 void EntityMode::BuildStateGraph (iQuestStateFactory* state,
@@ -422,7 +435,9 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   {
     iQuestTriggerResponseFactory* response = responses->Get (i);
     csString responseKey; responseKey.Format ("t:%zu,%s", i, stateKey);
-    view->CreateNode (responseKey, GetTriggerType (response->GetTriggerFactory ()), styleResponse);
+    csString triggerLabel = GetTriggerType (response->GetTriggerFactory ());
+    //triggerLabel += GetRewardsLabel (response->GetRewardFactories ());
+    view->CreateNode (responseKey, triggerLabel, styleResponse);
     view->LinkNode (stateKey, responseKey);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
     BuildRewardGraph (rewards, responseKey, pcKey);
@@ -432,7 +447,9 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   if (initRewards->GetSize () > 0)
   {
     csString newKeyKey; newKeyKey.Format ("i:%s", stateKey);
-    view->CreateNode (newKeyKey, "I", styleResponse);
+    csString label = "Oninit:";
+    //label += GetRewardsLabel (initRewards);
+    view->CreateNode (newKeyKey, label, styleResponse);
     view->LinkNode (stateKey, newKeyKey);
     BuildRewardGraph (initRewards, newKeyKey, pcKey);
   }
@@ -440,7 +457,9 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   if (exitRewards->GetSize () > 0)
   {
     csString newKeyKey; newKeyKey.Format ("e:%s", stateKey);
-    view->CreateNode (newKeyKey, "E", styleResponse);
+    csString label = "Onexit:";
+    //label += GetRewardsLabel (exitRewards);
+    view->CreateNode (newKeyKey, label, styleResponse);
     view->LinkNode (stateKey, newKeyKey);
     BuildRewardGraph (exitRewards, newKeyKey, pcKey);
   }

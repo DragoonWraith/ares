@@ -300,6 +300,15 @@ public:
   float CheckHitAreas (int x, int y, iMarkerHitArea*& bestHitArea);
 };
 
+struct SubNode
+{
+  csString name;
+  iMarker* marker;
+  csVector2 relpos;	// Relative position (relative to parent node).
+  csVector2 size;
+  bool maybeDelete;	// Used in smart refresh mode.
+};
+
 struct GraphNode
 {
   csString name;
@@ -309,6 +318,7 @@ struct GraphNode
   csVector2 size;
   float weightFactor;
   bool maybeDelete;	// Used in smart refresh mode.
+  csArray<SubNode> subnodes;
   GraphNode () : marker (0), frozen (false), weightFactor (1.0f), maybeDelete (false) { }
 };
 
@@ -357,6 +367,7 @@ private:
   // velocities. Returns true if the simulation appears cool enough (not
   // a lot of movement).
   bool MoveNodes (float seconds);
+  void UpdateSubNodePositions (GraphNode& node);
 
   float secondsTodo;
 
@@ -391,10 +402,14 @@ public:
   virtual void StartRefresh ();
   virtual void FinishRefresh ();
   virtual bool NodeExists (const char* nodeName) const { return nodes.Contains (nodeName); }
+  virtual void CreateSubNode (const char* parentNode, const char* name, const char* label = 0,
+      iGraphNodeStyle* style = 0);
   virtual void CreateNode (const char* name, const char* label = 0,
       iGraphNodeStyle* style = 0);
   virtual void RemoveNode (const char* name);
   virtual void ChangeNode (const char* name, const char* label, iGraphNodeStyle* style);
+  virtual void ChangeSubNode (const char* parentNode, const char* name,
+      const char* label, iGraphNodeStyle* style);
   virtual void ReplaceNode (const char* oldNode, const char* newNode,
       const char* label = 0, iGraphNodeStyle* style = 0);
   virtual void LinkNode (const char* node1, const char* node2,

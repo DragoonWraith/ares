@@ -441,6 +441,13 @@ struct iGraphView : public virtual iBase
   virtual void CreateNode (const char* name, const char* label = 0, iGraphNodeStyle* style = 0) = 0;
 
   /**
+   * Create a subnode. This is a node which is directly placed under a parent node (no links)
+   * and always moves with the parent directly.
+   */
+  virtual void CreateSubNode (const char* parentNode, const char* name, const char* label = 0,
+      iGraphNodeStyle* style = 0) = 0;
+
+  /**
    * Remove a node.
    */
   virtual void RemoveNode (const char* name) = 0;
@@ -449,6 +456,12 @@ struct iGraphView : public virtual iBase
    * Change the label and style of a node.
    */
   virtual void ChangeNode (const char* name, const char* label, iGraphNodeStyle* style) = 0;
+
+  /**
+   * Change the label and style of a subnode.
+   */
+  virtual void ChangeSubNode (const char* parentNode, const char* name,
+      const char* label, iGraphNodeStyle* style) = 0;
 
   /**
    * Replace a node with another node. This will create a new node and replace

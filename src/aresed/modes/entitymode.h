@@ -54,6 +54,7 @@ class EntityMode : public EditingMode
 private:
   void SetupItems ();
 
+  csString GetRewardsLabel (iRewardFactoryArray* rewards);
   void BuildRewardGraph (iRewardFactoryArray* rewards,
       const char* parentKey, const char* pcKey);
   void BuildStateGraph (iQuestStateFactory* state, const char* stateKey,

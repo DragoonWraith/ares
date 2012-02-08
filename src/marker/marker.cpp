@@ -171,7 +171,10 @@ void GraphView::ForcePosition (const char* name, const csVector2& pos)
   GraphNode& node = nodes.Get (name, n);
   node.frozen = true;
   if (node.marker)
+  {
     node.marker->SetPosition (pos);
+    UpdateSubNodePositions (node);
+  }
 }
 
 const char* GraphView::FindHitNode (int mouseX, int mouseY)
@@ -277,6 +280,7 @@ bool GraphView::MoveNodes (float seconds)
     if (pos.y > fh-node.size.y/2-NODE_MARGIN) pos.y = fh-node.size.y/2-NODE_MARGIN;
     else if (pos.y < node.size.y/2+NODE_MARGIN) pos.y = node.size.y/2+NODE_MARGIN;
     node.marker->SetPosition (pos);
+    UpdateSubNodePositions (node);
     if (coolDownPeriod)
     {
       float d = SqDistance2d (pos, oldpos);
@@ -359,8 +363,11 @@ void GraphView::SetVisible (bool v)
   csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    iMarker* marker = it.Next ().marker;
+    GraphNode& node = it.Next ();
+    iMarker* marker = node.marker;
     marker->SetVisible (v);
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+      node.subnodes[i].marker->SetVisible (v);
   }
 }
 
@@ -369,8 +376,11 @@ void GraphView::Clear ()
   csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    iMarker* marker = it.Next ().marker;
+    GraphNode& node = it.Next ();
+    iMarker* marker = node.marker;
     mgr->DestroyMarker (marker);
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+      mgr->DestroyMarker (node.subnodes[i].marker);
   }
   nodes.DeleteAll ();
   links.DeleteAll ();
@@ -383,7 +393,10 @@ void GraphView::StartRefresh ()
   csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    it.Next ().maybeDelete = true;
+    GraphNode& node = it.Next ();
+    node.maybeDelete = true;
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+      node.subnodes[i].maybeDelete = true;
   }
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
@@ -515,6 +528,51 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
   hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
 }
 
+void GraphView::UpdateSubNodePositions (GraphNode& node)
+{
+  csVector2 relpos (30, node.size.y-2);
+  for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+  {
+    SubNode& sn = node.subnodes[i];
+    sn.relpos = relpos;
+    relpos.y += sn.size.y;
+    csVector2 realpos = node.marker->GetPosition () + sn.relpos;
+    sn.marker->SetPosition (realpos);
+  }
+}
+
+void GraphView::CreateSubNode (const char* parentNode, const char* name, const char* label,
+      iGraphNodeStyle* style)
+{
+  printf ("CreateSubNode %s/%s (%s)\n", parentNode, name, label); fflush (stdout);
+  // @@@ Error check if parent doesn't exist?
+  GraphNode n;
+  GraphNode& node = nodes.Get (parentNode, n);
+  if (smartRefresh)
+  {
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+      if (node.subnodes[i].name == name)
+      {
+	ChangeSubNode (parentNode, name, label, style);
+	return;
+      }
+    // Otherwise just add the node as usual.
+  }
+
+  if (!label) label = name;
+  int w, h;
+  iMarker* marker = mgr->CreateMarker ();
+  UpdateNodeMarker (marker, label, style, w, h);
+  marker->SetSelectionLevel (SELECTION_NONE);
+
+  SubNode sn;
+  sn.name = name;
+  sn.marker = marker;
+  sn.size = csVector2 (w, h);
+  node.subnodes.Push (sn);
+  UpdateSubNodePositions (node);
+}
+
 void GraphView::CreateNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
@@ -563,6 +621,29 @@ void GraphView::RemoveNode (const char* name)
   }
 }
 
+void GraphView::ChangeSubNode (const char* parentNode, const char* name, const char* label,
+    iGraphNodeStyle* style)
+{
+  int w, h;
+  GraphNode n;
+  GraphNode& node = nodes.Get (parentNode, n);
+  if (mgr->GetDraggingMarker () == node.marker)
+    mgr->StopDrag ();
+  for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+  {
+    SubNode& sn = node.subnodes[i];
+    if (sn.name == name)
+    {
+      sn.marker->Clear ();
+      sn.marker->ClearHitAreas ();
+      UpdateNodeMarker (sn.marker, label, style, w, h);
+      sn.size = csVector2 (w, h);
+      sn.maybeDelete = false;
+      return;
+    }
+  }
+}
+
 void GraphView::ChangeNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
@@ -581,6 +662,7 @@ void GraphView::ChangeNode (const char* name, const char* label,
 void GraphView::ReplaceNode (const char* oldNode, const char* newNode,
       const char* label, iGraphNodeStyle* style)
 {
+  // @@@ TODO: Support for subnodes!
   printf ("Replacing old '%s' with new '%s'!\n", oldNode, newNode); fflush (stdout);
   if (!strcmp (oldNode, newNode))
   {
