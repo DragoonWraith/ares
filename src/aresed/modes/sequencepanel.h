@@ -40,6 +40,8 @@ struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iCelSequenceFactory;
+struct iSeqOpFactory;
+struct iQuestManager;
 class UIDialog;
 class UIManager;
 class EntityMode;
@@ -56,12 +58,15 @@ private:
   csString GetCurrentSequenceType ();
 
   void OnChoicebookPageChange (wxChoicebookEvent& event);
-  void OnUpdateEvent (wxCommandEvent& event);
 
   void UpdateSequence ();
   void UpdatePanel ();
 
-  csRef<Ares::Value> seqopCollection;
+  UIDialog* newopDialog;
+
+  csRef<Ares::ListSelectedValue> operationsSelectedValue;
+  wxListCtrl* operationsList;
+  csRef<Ares::Value> operations;
 
 public:
   SequencePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
@@ -75,6 +80,8 @@ public:
    */
   void SwitchSequence (iCelSequenceFactory* sequence);
   iCelSequenceFactory* GetCurrentSequence () const { return sequence; }
+  iSeqOpFactory* GetSeqOpFactory ();
+  iQuestManager* GetQuestManager () const;
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { sequence = 0; wxPanel::Hide (); parentSizer->Layout (); }

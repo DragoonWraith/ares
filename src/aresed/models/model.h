@@ -328,7 +328,14 @@ public:
   StringValue (const char* str = "") : str (str) { }
   virtual ~StringValue () { }
   virtual ValueType GetType () const { return VALUE_STRING; }
-  virtual void SetStringValue (const char* s) { if (str != s) { str = s; FireValueChanged (); } }
+  virtual void SetStringValue (const char* s)
+  {
+    if (!s || (str != s))
+    {
+      str = s;
+      FireValueChanged ();
+    }
+  }
   virtual const char* GetStringValue () { return str; }
 };
 
