@@ -445,6 +445,11 @@ bool AppAres::Application ()
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
   if (!curvedMeshCreator) return ReportError("Failed to load the curved mesh creator plugin!");
 
+  // Setup the name of the application window
+  iNativeWindow* nw = g3d->GetDriver2D()->GetNativeWindow ();
+  if (nw) nw->SetTitle ("Ares");
+
+  // Create the scene
   zoneEntity = pl->CreateEntity ("zone", 0, 0,
       "pcworld.dynamic", CEL_PROPCLASS_END);
   if (!zoneEntity) return ReportError ("Failed to create zone entity!");

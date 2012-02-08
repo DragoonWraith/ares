@@ -1040,7 +1040,7 @@ END_EVENT_TABLE()
 AppAresEditWX* aresed = 0;
 
 AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
-  : wxFrame (0, -1, wxT ("Crystal Space WxWidget Canvas test"), 
+  : wxFrame (0, -1, wxT ("AresEd"), 
              wxDefaultPosition, wxSize (1000, 600))
 {
   AppAresEditWX::object_reg = object_reg;
