@@ -154,6 +154,15 @@ void GraphView::ActivateMarker (iMarker* marker, const char* node)
       csString key;
       const GraphNode& n = it.Next (key);
       if (marker == n.marker) { node = n.name; break; }
+      bool found = false;
+      for (size_t i = 0 ; i < n.subnodes.GetSize () ; i++)
+	if (n.subnodes[i].marker == marker)
+	{
+	  found = true;
+	  node = n.subnodes[i].name;
+	  break;
+	}
+      if (found) break;
     }
   }
   for (size_t i = 0 ; i < callbacks.GetSize () ; i++)
@@ -186,6 +195,9 @@ const char* GraphView::FindHitNode (int mouseX, int mouseY)
   {
     GraphNode& node = it.Next (currentNode);
     if (node.marker == marker) return currentNode;
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+      if (node.subnodes[i].marker == marker)
+	return node.subnodes[i].name;
   }
   return 0;
 }

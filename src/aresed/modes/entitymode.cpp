@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "templatepanel.h"
 #include "pcpanel.h"
 #include "triggerpanel.h"
+#include "rewardpanel.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -86,6 +87,9 @@ EntityMode::EntityMode (wxWindow* parent, AresEdit3DView* aresed3d)
 
   triggerPanel = new TriggerPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
   triggerPanel->Hide ();
+
+  rewardPanel = new RewardPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  rewardPanel->Hide ();
 
   tplPanel = new EntityTemplatePanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
   tplPanel->Hide ();
@@ -256,6 +260,7 @@ void EntityMode::Start ()
   view->SetVisible (true);
   pcPanel->Hide ();
   triggerPanel->Hide ();
+  rewardPanel->Hide ();
   tplPanel->Hide ();
   contextMenuNode = "";
 }
@@ -421,7 +426,6 @@ csString EntityMode::GetRewardsLabel (iRewardFactoryArray* rewards)
   csString label;
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
-    iRewardFactory* reward = rewards->Get (j);
     label += csString ("\n    ");// + GetRewardType (reward);
   }
   return label;
@@ -446,7 +450,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
   if (initRewards->GetSize () > 0)
   {
-    csString newKeyKey; newKeyKey.Format ("i:%s", stateKey);
+    csString newKeyKey; newKeyKey.Format ("i:,%s", stateKey);
     csString label = "Oninit:";
     label += GetRewardsLabel (initRewards);
     view->CreateNode (newKeyKey, label, styleResponse);
@@ -456,7 +460,7 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
   if (exitRewards->GetSize () > 0)
   {
-    csString newKeyKey; newKeyKey.Format ("e:%s", stateKey);
+    csString newKeyKey; newKeyKey.Format ("e:,%s", stateKey);
     csString label = "Onexit:";
     label += GetRewardsLabel (exitRewards);
     view->CreateNode (newKeyKey, label, styleResponse);
@@ -537,6 +541,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   currentTemplate = templateName;
   pcPanel->Hide ();
   triggerPanel->Hide ();
+  rewardPanel->Hide ();
   tplPanel->Hide ();
 
   view->StartRefresh ();
@@ -606,6 +611,62 @@ iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
   return questFact;
 }
 
+bool EntityMode::IsOnInit (const char* key)
+{
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op.operator[] (0) == 'i') return true;
+  }
+  return 0;
+}
+
+bool EntityMode::IsOnExit (const char* key)
+{
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op.operator[] (0) == 'e') return true;
+  }
+  return 0;
+}
+
+iRewardFactory* EntityMode::GetSelectedReward (const char* key)
+{
+  iCelPlLayer* pl = aresed3d->GetPL ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (!tpl) return 0;
+
+  csStringArray ops (key, ",");
+  for (size_t i = 0 ; i < ops.GetSize () ; i++)
+  {
+    csString op = ops.Get (i);
+    if (op.operator[] (0) == 'r')
+    {
+      csStringArray tokens (op, ":");
+      csString triggerNum = tokens[1];
+      int num;
+      csScanStr (triggerNum, "%d", &num);
+      if (IsOnInit (key))
+      {
+        iQuestStateFactory* state = GetSelectedState (key);
+	return state->GetInitRewardFactories ()->Get (num);
+      }
+      else if (IsOnExit (key))
+      {
+        iQuestStateFactory* state = GetSelectedState (key);
+	return state->GetExitRewardFactories ()->Get (num);
+      }
+      iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (key);
+      if (!resp) return 0;
+      return resp->GetRewardFactories ()->Get (num);
+    }
+  }
+  return 0;
+}
+
 iQuestTriggerResponseFactory* EntityMode::GetSelectedTriggerResponse (const char* key)
 {
   iCelPlLayer* pl = aresed3d->GetPL ();
@@ -624,7 +685,7 @@ iQuestTriggerResponseFactory* EntityMode::GetSelectedTriggerResponse (const char
       csScanStr (triggerNum, "%d", &num);
       iQuestStateFactory* state = GetSelectedState (key);
       if (!state) return 0;
-      return state->GetTriggerResponseFactories ()->Get (num);;
+      return state->GetTriggerResponseFactories ()->Get (num);
     }
   }
   return 0;
@@ -769,6 +830,7 @@ void EntityMode::ActivateNode (const char* nodeName)
   tplPanel->Hide ();
   pcPanel->Hide ();
   triggerPanel->Hide ();
+  rewardPanel->Hide ();
   if (!nodeName) return;
   csString activeNode = nodeName;
 printf ("node:%s\n", nodeName); fflush (stdout);
@@ -795,6 +857,46 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     triggerPanel->SwitchTrigger (resp);
     triggerPanel->Show ();
   }
+  else if (type == 'r')
+  {
+    iRewardFactory* reward = GetSelectedReward (activeNode);
+    if (!reward) return;
+    rewardPanel->SwitchReward (reward);
+    rewardPanel->Show ();
+  }
+}
+
+void EntityMode::OnCreateReward (int type)
+{
+  if (!GetContextMenuNode ()) return;
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  UIDialog* dialog = ui->CreateDialog ("New Reward");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddChoice ("name", "newstate", "debugprint", "action", "changeproperty",
+      "createentity", "destroyentity", "inventory", "message", "cssequence",
+      "sequence", "sequencefinish", (const char*)0);
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("name", "");
+    iRewardType* rewardType = questMgr->GetRewardType ("cel.rewards."+name);
+    csRef<iRewardFactory> fact = rewardType->CreateRewardFactory ();
+    if (type == 0)
+    {
+      iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (GetContextMenuNode ());
+      if (!resp) return;
+      resp->AddRewardFactory (fact);
+    }
+    else
+    {
+      iQuestStateFactory* state = GetSelectedState (GetContextMenuNode ());
+      if (type == 1) state->AddInitRewardFactory (fact);
+      else state->AddExitRewardFactory (fact);
+    }
+    RefreshView ();
+  }
+  delete dialog;
 }
 
 void EntityMode::OnCreateTrigger ()
@@ -894,6 +996,15 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idCreateTrigger = ui->AllocContextMenuID ();
   frame->Connect (idCreateTrigger, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnCreateTrigger), 0, panel);
+  idCreateReward = ui->AllocContextMenuID ();
+  frame->Connect (idCreateReward, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnCreateReward), 0, panel);
+  idCreateRewardOnInit = ui->AllocContextMenuID ();
+  frame->Connect (idCreateRewardOnInit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnCreateRewardOnInit), 0, panel);
+  idCreateRewardOnExit = ui->AllocContextMenuID ();
+  frame->Connect (idCreateRewardOnExit, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnCreateRewardOnExit), 0, panel);
 }
 
 csString EntityMode::GetContextMenuNode ()
@@ -924,7 +1035,21 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
     if (type == 'S')
     {
       contextMenu->Append (idDefaultState, wxT ("Set default state"));
-      contextMenu->Append (idCreateTrigger, wxT ("Create trigger"));
+      contextMenu->Append (idCreateTrigger, wxT ("Create trigger..."));
+      contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
+      contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
+    }
+    if (type == 'i')
+    {
+      contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
+    }
+    if (type == 'e')
+    {
+      contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
+    }
+    if (type == 't')
+    {
+      contextMenu->Append (idCreateReward, wxT ("Create reward..."));
     }
   }
 }

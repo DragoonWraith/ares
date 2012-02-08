@@ -1374,6 +1374,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("PropertyClassPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("TriggerPanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("RewardPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("EntityTemplatePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("DynfactDialog.xrc", searchPath)) return false;
 

@@ -79,34 +79,6 @@ static csColor ToColor (const char* value)
   return v;
 }
 
-static const char* TypeToString (celDataType type)
-{
-  switch (type)
-  {
-    case CEL_DATA_NONE: return "none";
-    case CEL_DATA_BOOL: return "bool";
-    case CEL_DATA_LONG: return "long";
-    case CEL_DATA_FLOAT: return "float";
-    case CEL_DATA_VECTOR2: return "vector2";
-    case CEL_DATA_VECTOR3: return "vector3";
-    case CEL_DATA_STRING: return "string";
-    case CEL_DATA_COLOR: return "color";
-    default: return "?";
-  }
-}
-
-static celDataType StringToType (const csString& type)
-{
-  if (type == "bool") return CEL_DATA_BOOL;
-  if (type == "long") return CEL_DATA_LONG;
-  if (type == "float") return CEL_DATA_FLOAT;
-  if (type == "string") return CEL_DATA_STRING;
-  if (type == "vector2") return CEL_DATA_VECTOR2;
-  if (type == "vector3") return CEL_DATA_VECTOR3;
-  if (type == "color") return CEL_DATA_COLOR;
-  return CEL_DATA_NONE;
-}
-
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
@@ -373,7 +345,7 @@ public:
     iCelPlLayer* pl = pcPanel->GetPL ();
     csString name = pl->FetchString (nextID);
     csString val = nextPar->GetOriginalExpression ();
-    csString type = TypeToString (nextPar->GetPossibleType ());
+    csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
 
     SearchNext ();
 
@@ -403,7 +375,7 @@ public:
     csString value = row[1];
     csString type = row[2];
 
-    csRef<iParameter> par = pm->GetParameter (value, StringToType (type));
+    csRef<iParameter> par = pm->GetParameter (value, InspectTools::StringToType (type));
     if (!par) return false;
 
     InspectTools::AddActionParameter (pl, pctpl, currentMessage, name, par);
@@ -848,7 +820,7 @@ public:
     iCelPlLayer* pl = pcPanel->GetPL ();
     csString name = pl->FetchString (nextID);
     csString val = nextPar->GetOriginalExpression ();
-    csString type = TypeToString (nextPar->GetPossibleType ());
+    csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
     SearchNext ();
     return Tools::MakeArray (name.GetData (), val.GetData (), type.GetData (), (const char*)0);
   }
@@ -864,7 +836,7 @@ public:
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
 
-    csRef<iParameter> par = pm->GetParameter (row[1], StringToType (row[2]));
+    csRef<iParameter> par = pm->GetParameter (row[1], InspectTools::StringToType (row[2]));
     if (!par) return false;
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", row[0], par);
     return true;
@@ -1126,7 +1098,7 @@ public:
     csString value;
     celParameterTools::ToString (data, value);
     csString name = pcPanel->GetPL ()->FetchString (id);
-    csString type = TypeToString (data.type);
+    csString type = InspectTools::TypeToString (data.type);
     return Tools::MakeArray (name.GetData (), value.GetData (), type.GetData (), (const char*)0);
   }
 

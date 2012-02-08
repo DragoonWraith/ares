@@ -52,31 +52,3 @@ void MeshCollectionValue::UpdateChildren ()
   }
 }
 
-void MeshfactRowModel::ResetIterator ()
-{
-  list = engine->GetMeshFactories ();
-  idx = 0;
-}
-
-bool MeshfactRowModel::HasRows ()
-{
-  return idx < list->GetCount ();
-}
-
-csStringArray MeshfactRowModel::NextRow ()
-{
-  iMeshFactoryWrapper* fact = list->Get (idx);
-  idx++;
-  return Tools::MakeArray (fact->QueryObject ()->GetName (), (const char*)0);
-}
-
-bool MeshfactRowModel::DeleteRow (const csStringArray& row)
-{
-  return false;
-}
-
-bool MeshfactRowModel::AddRow (const csStringArray& row)
-{
-  return false;
-}
-

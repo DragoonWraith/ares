@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2011 by Jorrit Tyberghein
+Copyright (c) 2012 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -192,9 +192,7 @@ void TriggerPanel::UpdatePanel ()
 
 void TriggerPanel::UpdateTrigger ()
 {
-printf ("1:UpdateTrigger\n"); fflush (stdout);
   if (!triggerResp) return;
-printf ("2:UpdateTrigger\n"); fflush (stdout);
   wxChoicebook* book = XRCCTRL (*this, "triggerChoicebook", wxChoicebook);
   int pageSel = book->GetSelection ();
   if (pageSel == wxNOT_FOUND)
@@ -205,8 +203,6 @@ printf ("2:UpdateTrigger\n"); fflush (stdout);
   wxString pageTxt = book->GetPageText (pageSel);
   iQuestManager* questMgr = emode->GetQuestManager ();
   csString type = (const char*)pageTxt.mb_str (wxConvUTF8);
-printf ("Updating for type '%s'\n", type.GetData ());
-fflush (stdout);
   if (type != GetCurrentTriggerType ())
   {
     iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+type);

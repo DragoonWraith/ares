@@ -41,6 +41,7 @@ struct iQuestTriggerResponseFactory;
 
 class PropertyClassPanel;
 class TriggerPanel;
+class RewardPanel;
 class EntityTemplatePanel;
 
 enum
@@ -100,10 +101,11 @@ private:
 
   PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
+  RewardPanel* rewardPanel;
   EntityTemplatePanel* tplPanel;
 
   int idDelete, idCreate, idEditQuest, idNewState, idDefaultState;
-  int idCreateTrigger;
+  int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -117,6 +119,10 @@ private:
 
   // Get the name of the trigger.
   iQuestTriggerResponseFactory* GetSelectedTriggerResponse (const char* key);
+  bool IsOnInit (const char* key);
+  bool IsOnExit (const char* key);
+  // Get the name of the reward.
+  iRewardFactory* GetSelectedReward (const char* key);
 
   csRef<iFont> font;
   csRef<iFont> fontBold;
@@ -154,6 +160,7 @@ public:
   void OnNewState ();
   void OnDefaultState ();
   void OnCreateTrigger ();
+  void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
   void OnContextMenu (wxContextMenuEvent& event);
   void OnTemplateAdd ();
   void OnTemplateDel ();
@@ -174,6 +181,9 @@ public:
     void OnNewState (wxCommandEvent& event) { s->OnNewState (); }
     void OnDefaultState (wxCommandEvent& event) { s->OnDefaultState (); }
     void OnCreateTrigger (wxCommandEvent& event) { s->OnCreateTrigger (); }
+    void OnCreateReward (wxCommandEvent& event) { s->OnCreateReward (0); }
+    void OnCreateRewardOnInit (wxCommandEvent& event) { s->OnCreateReward (1); }
+    void OnCreateRewardOnExit (wxCommandEvent& event) { s->OnCreateReward (2); }
     void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
     void OnTemplateAdd (wxCommandEvent& event) { s->OnTemplateAdd (); }

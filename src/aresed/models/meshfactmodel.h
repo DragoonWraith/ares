@@ -55,29 +55,5 @@ public:
   }
 };
 
-class MeshfactRowModel : public RowModel
-{
-private:
-  iEngine* engine;
-  iMeshFactoryList* list;
-  int idx;
-
-public:
-  MeshfactRowModel (iEngine* engine) : engine (engine),
-    list (0), idx (0) { }
-  virtual ~MeshfactRowModel () { }
-
-  virtual void ResetIterator ();
-  virtual bool HasRows ();
-  virtual csStringArray NextRow ();
-
-  virtual bool DeleteRow (const csStringArray& row);
-  virtual bool AddRow (const csStringArray& row);
-
-  virtual const char* GetColumns () { return "Name"; }
-  virtual bool IsEditAllowed () const { return false; }
-};
-
-
 #endif // __aresed_meshfactmodel_h
 

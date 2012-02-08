@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_triggerpanel_h
-#define __appares_triggerpanel_h
+#ifndef __appares_rewardpanel_h
+#define __appares_rewardpanel_h
 
 #include <crystalspace.h>
 
@@ -33,17 +33,19 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
+#include "../models/model.h"
+
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
+struct iRewardFactory;
 struct iParameter;
-struct iQuestTriggerResponseFactory;
 class UIDialog;
 class UIManager;
 class EntityMode;
 
-class TriggerPanel : public wxPanel
+class RewardPanel : public wxPanel, public Ares::View
 {
 private:
   iCelPlLayer* pl;
@@ -51,31 +53,41 @@ private:
   EntityMode* emode;
   wxSizer* parentSizer;
 
-  iQuestTriggerResponseFactory* triggerResp;
-  csString GetCurrentTriggerType ();
+  iRewardFactory* reward;
+  csString GetCurrentRewardType ();
 
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
 
-  void UpdateTrigger ();
+  void UpdateReward ();
   void UpdatePanel ();
 
+  UIDialog* createentityDialog;
+  UIDialog* messageDialog;
+
+  csRef<Ares::Value> messageParameters;
+  csRef<Ares::Value> actionParameters;
+  csRef<Ares::Value> createentityParameters;
+
 public:
-  TriggerPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
-  ~TriggerPanel();
+  RewardPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
+  ~RewardPanel();
+
+  iCelPlLayer* GetPL () const { return pl; }
 
   /**
-   * Possibly switch the type of the trigger. Do nothing if the trigger is
+   * Possibly switch the type of the reward. Do nothing if the reward is
    * already of the right type. Otherwise clear all properties.
    */
-  void SwitchTrigger (iQuestTriggerResponseFactory* triggerResp);
+  void SwitchReward (iRewardFactory* reward);
+  iRewardFactory* GetCurrentReward () const { return reward; }
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
-  void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
+  void Hide () { reward = 0; wxPanel::Hide (); parentSizer->Layout (); }
   bool IsVisible () const { return IsShown (); }
 
   DECLARE_EVENT_TABLE ();
 };
 
-#endif // __appares_triggerpanel_h
+#endif // __appares_rewardpanel_h
 

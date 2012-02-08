@@ -101,6 +101,34 @@ public:
   static float GetActionParameterValueFloat (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
       bool* valid = 0);
+
+  static const char* TypeToString (celDataType type)
+  {
+    switch (type)
+    {
+      case CEL_DATA_NONE: return "none";
+      case CEL_DATA_BOOL: return "bool";
+      case CEL_DATA_LONG: return "long";
+      case CEL_DATA_FLOAT: return "float";
+      case CEL_DATA_VECTOR2: return "vector2";
+      case CEL_DATA_VECTOR3: return "vector3";
+      case CEL_DATA_STRING: return "string";
+      case CEL_DATA_COLOR: return "color";
+      default: return "?";
+    }
+  }
+
+  static celDataType StringToType (const csString& type)
+  {
+    if (type == "bool") return CEL_DATA_BOOL;
+    if (type == "long") return CEL_DATA_LONG;
+    if (type == "float") return CEL_DATA_FLOAT;
+    if (type == "string") return CEL_DATA_STRING;
+    if (type == "vector2") return CEL_DATA_VECTOR2;
+    if (type == "vector3") return CEL_DATA_VECTOR3;
+    if (type == "color") return CEL_DATA_COLOR;
+    return CEL_DATA_NONE;
+  }
 };
 
 #endif // __appares_inspect_h
