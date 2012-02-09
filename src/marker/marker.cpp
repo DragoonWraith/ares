@@ -435,7 +435,15 @@ void GraphView::FinishRefresh ()
     csString key;
     GraphNode& node = nodesIt.Next (key);
     if (node.maybeDelete) toDelete.Add (key);
-    else node.maybeDelete = false;
+    else
+    {
+      size_t j = 0;
+      while (j < node.subnodes.GetSize ())
+	if (node.subnodes[j].maybeDelete)
+	  RemoveNode (node.subnodes[j].name);
+      	else
+	  j++;
+    }
   }
   csSet<csString>::GlobalIterator delIt = toDelete.GetIterator ();
   while (delIt.HasNext ())
@@ -638,13 +646,46 @@ void GraphView::RemoveNode (const char* name)
   GraphNode node = nodes.Get (name, GraphNode ());
   if (node.marker)
   {
-    nodes.DeleteAll (name);
     if (node.marker == activeMarker) activeMarker = 0;
     if (node.marker == draggingMarker) draggingMarker = 0;
     if (mgr->GetDraggingMarker () == node.marker)
       mgr->StopDrag ();
 
     mgr->DestroyMarker (node.marker);
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+    {
+      SubNode& sn = node.subnodes[i];
+      if (sn.marker == activeMarker) activeMarker = 0;
+      if (sn.marker == draggingMarker) draggingMarker = 0;
+      if (mgr->GetDraggingMarker () == sn.marker)
+	mgr->StopDrag ();
+      mgr->DestroyMarker (sn.marker);
+    }
+    nodes.DeleteAll (name);
+  }
+  else
+  {
+    csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+    while (it.HasNext ())
+    {
+      csString key;
+      GraphNode& n = it.Next (key);
+      for (size_t i = 0 ; i < n.subnodes.GetSize () ; i++)
+      {
+	SubNode& sn = n.subnodes[i];
+	if (sn.name == name)
+	{
+	  if (sn.marker == activeMarker) activeMarker = 0;
+	  if (sn.marker == draggingMarker) draggingMarker = 0;
+	  if (mgr->GetDraggingMarker () == sn.marker)
+	    mgr->StopDrag ();
+
+	  mgr->DestroyMarker (sn.marker);
+	  n.subnodes.DeleteIndex (i);
+	  return;
+	}
+      }
+    }
   }
 }
 
@@ -661,6 +702,8 @@ void GraphView::ChangeSubNode (const char* parentNode, const char* name, const c
     SubNode& sn = node.subnodes[i];
     if (sn.name == name)
     {
+      if (mgr->GetDraggingMarker () == sn.marker)
+        mgr->StopDrag ();
       sn.marker->Clear ();
       sn.marker->ClearHitAreas ();
       UpdateNodeMarker (sn.marker, label, style, w, h);

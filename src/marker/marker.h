@@ -307,6 +307,7 @@ struct SubNode
   csVector2 relpos;	// Relative position (relative to parent node).
   csVector2 size;
   bool maybeDelete;	// Used in smart refresh mode.
+  SubNode () : marker (0), maybeDelete (false) { }
 };
 
 struct GraphNode
