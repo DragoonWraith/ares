@@ -40,10 +40,6 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
 
   EVT_CHECKBOX (XRCID("toggle_Cp_Check"), RewardPanel :: OnUpdateEvent)
 
-  //<object class="wxListCtrl" name="parameters_Ac_List">
-  //<object class="wxListCtrl" name="parameters_Ce_List">
-  //<object class="wxListCtrl" name="parameters_Me_List">
-
   EVT_TEXT_ENTER (XRCID("bool_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("childEntity_In_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("childTag_In_Text"), RewardPanel :: OnUpdateEvent)
@@ -231,7 +227,6 @@ void RewardPanel::UpdateReward ()
   {
     iRewardType* rewardtype = questMgr->GetRewardType ("cel.rewards."+type);
     csRef<iRewardFactory> rewardfact = rewardtype->CreateRewardFactory ();
-    //triggerResp->SetTriggerFactory (triggerfact);
     UpdatePanel ();
   }
   else

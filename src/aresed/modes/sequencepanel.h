@@ -57,8 +57,6 @@ private:
   iCelSequenceFactory* sequence;
   csString GetCurrentSequenceType ();
 
-  void OnChoicebookPageChange (wxChoicebookEvent& event);
-
   void UpdateSequence ();
   void UpdatePanel ();
 
@@ -82,12 +80,11 @@ public:
   iCelSequenceFactory* GetCurrentSequence () const { return sequence; }
   iSeqOpFactory* GetSeqOpFactory ();
   iQuestManager* GetQuestManager () const;
+  long GetSeqOpSelection () const;
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { sequence = 0; wxPanel::Hide (); parentSizer->Layout (); }
   bool IsVisible () const { return IsShown (); }
-
-  DECLARE_EVENT_TABLE ();
 };
 
 #endif // __appares_sequencepanel_h

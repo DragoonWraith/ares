@@ -36,27 +36,15 @@ THE SOFTWARE.
 
 //--------------------------------------------------------------------------
 
-BEGIN_EVENT_TABLE(SequencePanel, wxPanel)
-  // down_Button, up_Button
-  //<object class="wxChoice" name="axis_Tr_Choice">
-  //<object class="wxListCtrl" name="operations_List">
-  //<object class="wxListCtrl" name="path_List">
-  //EVT_CHECKBOX (XRCID("relative_Pr_Check"), SequencePanel :: OnUpdateEvent)
-
-  EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("seqopChoicebook"), SequencePanel :: OnChoicebookPageChange)
-
-END_EVENT_TABLE()
-
-//--------------------------------------------------------------------------
-
-void SequencePanel::OnChoicebookPageChange (wxChoicebookEvent& event)
-{
-  //UpdateSequence ();
-}
-
 iQuestManager* SequencePanel::GetQuestManager () const
 {
   return emode->GetQuestManager ();
+}
+
+long SequencePanel::GetSeqOpSelection () const
+{
+  if (!sequence) return 0;
+  return ListCtrlTools::GetFirstSelectedRow (operationsList);
 }
 
 iSeqOpFactory* SequencePanel::GetSeqOpFactory ()
@@ -77,6 +65,52 @@ void SequencePanel::SwitchSequence (iCelSequenceFactory* sequence)
 
 using namespace Ares;
 
+class SeqOpTypeValue : public Value
+{
+private:
+  size_t idx;
+  SequencePanel* sequencePanel;
+  csString seqopType;
+
+public:
+  SeqOpTypeValue (SequencePanel* sequencePanel, size_t idx) : idx (idx), sequencePanel (sequencePanel) { }
+  virtual ~SeqOpTypeValue () { }
+  virtual ValueType GetType () const { return VALUE_STRING; }
+  virtual void SetStringValue (const char* s)
+  {
+    iQuestManager* questMgr = sequencePanel->GetQuestManager ();
+    iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
+    if (!sequence) return;
+    iSeqOpFactory* seqopFact = sequence->GetSeqOpFactory (idx);
+    if (seqopFact) seqopType = seqopFact->GetSeqOpType ()->GetName ();
+    else seqopType = "delay";
+    if (seqopType.StartsWith ("cel.seqops.")) seqopType = seqopType.Slice (11);
+    printf ("s=%s seqopType=%s\n", s, seqopType.GetData ()); fflush (stdout);
+    if (seqopType != s)
+    {
+      csRef<iSeqOpFactory> seqopFact;
+      if (csString ("delay") != s)
+      {
+        iSeqOpType* seqoptype = questMgr->GetSeqOpType (csString ("cel.seqops.")+s);
+        seqopFact = seqoptype->CreateSeqOpFactory ();
+      }
+      sequence->UpdateSeqOpFactory (idx, seqopFact, sequence->GetSeqOpFactoryDuration (idx));
+      FireValueChanged ();
+    }
+  }
+  virtual const char* GetStringValue ()
+  {
+    iQuestManager* questMgr = sequencePanel->GetQuestManager ();
+    iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
+    if (!sequence) return "";
+    iSeqOpFactory* seqopFact = sequence->GetSeqOpFactory (idx);
+    if (seqopFact) seqopType = seqopFact->GetSeqOpType ()->GetName ();
+    else seqopType = "delay";
+    if (seqopType.StartsWith ("cel.seqops.")) seqopType = seqopType.Slice (11);
+    return seqopType;
+  }
+};
+
 class SeqOpCollectionValue : public StandardCollectionValue
 {
 private:
@@ -85,7 +119,7 @@ private:
   Value* NewChild (const char* type, const char* duration, size_t index)
   {
     csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("type", NEWREF(StringValue,new StringValue(type)));
+    composite->AddChild ("type", NEWREF(SeqOpTypeValue,new SeqOpTypeValue(sequencePanel,index)));
     composite->AddChild ("duration", NEWREF(StringValue,new StringValue(duration)));
     composite->AddChild ("index", NEWREF(LongValue,new LongValue(index)));
     children.Push (composite);
@@ -108,8 +142,7 @@ protected:
       if (seqopFact)
       {
         name = seqopFact->GetSeqOpType ()->GetName ();
-	if (name.StartsWith ("cel.seqops."))
-	  name = name.Slice (11);
+	if (name.StartsWith ("cel.seqops.")) name = name.Slice (11);
       }
       else
 	name = "delay";
@@ -236,6 +269,7 @@ SequencePanel::SequencePanel (wxWindow* parent, UIManager* uiManager,
   operationsSelectedValue->AddChild ("index", NEWREF(MirrorValue,new MirrorValue(VALUE_LONG)));
 
   Bind (operationsSelectedValue->GetChildByName ("type"), "seqopChoicebook");
+  Bind (operationsSelectedValue->GetChildByName ("duration"), "duration_Text");
 
   csRef<Value> v;
   v.AttachNew (new DebugPrintValue (this));

@@ -321,7 +321,7 @@ public:
  */
 class StringValue : public Value
 {
-private:
+protected:
   csString str;
 
 public:
@@ -464,6 +464,11 @@ protected:
   virtual size_t GetChildCount () = 0;
   /// Override this function to return the right name for a given child.
   virtual const char* GetName (size_t idx) = 0;
+
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
 
 public:
   AbstractCompositeValue () { }
