@@ -692,7 +692,9 @@ csRef<iRewardFactoryArray> EntityMode::GetSelectedReward (const char* key,
       csRef<iRewardFactoryArray> array;
       csStringArray tokens (op, ":");
       csString triggerNum = tokens[1];
-      csScanStr (triggerNum, "%d", &idx);
+      int index;
+      csScanStr (triggerNum, "%d", &index);
+      idx = index;
       if (IsOnInit (key))
       {
         iQuestStateFactory* state = GetSelectedState (key);
@@ -867,7 +869,11 @@ void EntityMode::OnDelete ()
   else if (type == 'r')
   {
     // Delete reward.
-    ui->Message ("Not implemented yet!");
+    size_t idx;
+    csRef<iRewardFactoryArray> array = GetSelectedReward (GetContextMenuNode (), idx);
+    if (!array) return;
+    array->DeleteIndex (idx);
+    RefreshView ();
   }
   else if (type == 's')
   {
