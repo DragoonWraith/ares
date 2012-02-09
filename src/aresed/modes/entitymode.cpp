@@ -838,7 +838,11 @@ void EntityMode::OnDelete ()
   else if (type == 'P')
   {
     // Delete property class.
-    ui->Message ("Not implemented yet!");
+    iCelPlLayer* pl = aresed3d->GetPL ();
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
+    tpl->RemovePropertyClassTemplate (pctpl);
+    RefreshView ();
   }
   else if (type == 'S')
   {
