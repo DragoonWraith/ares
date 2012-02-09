@@ -599,7 +599,7 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
   {
     if (!pctpl)
     {
-      if (!GetContextMenuNode ()) return;
+      if (GetContextMenuNode ().IsEmpty ()) return;
       pctpl = GetPCTemplate (GetContextMenuNode ());
     }
     csString questName = GetQuestName (pctpl);
@@ -676,7 +676,8 @@ iCelSequenceFactory* EntityMode::GetSelectedSequence (const char* key)
   return 0;
 }
 
-iRewardFactory* EntityMode::GetSelectedReward (const char* key)
+csRef<iRewardFactoryArray> EntityMode::GetSelectedReward (const char* key,
+    size_t& idx)
 {
   iCelPlLayer* pl = aresed3d->GetPL ();
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
@@ -688,23 +689,26 @@ iRewardFactory* EntityMode::GetSelectedReward (const char* key)
     csString op = ops.Get (i);
     if (op.operator[] (0) == 'r')
     {
+      csRef<iRewardFactoryArray> array;
       csStringArray tokens (op, ":");
       csString triggerNum = tokens[1];
-      int num;
-      csScanStr (triggerNum, "%d", &num);
+      csScanStr (triggerNum, "%d", &idx);
       if (IsOnInit (key))
       {
         iQuestStateFactory* state = GetSelectedState (key);
-	return state->GetInitRewardFactories ()->Get (num);
+	return state->GetInitRewardFactories ();
       }
       else if (IsOnExit (key))
       {
         iQuestStateFactory* state = GetSelectedState (key);
-	return state->GetExitRewardFactories ()->Get (num);
+	return state->GetExitRewardFactories ();
       }
-      iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (key);
-      if (!resp) return 0;
-      return resp->GetRewardFactories ()->Get (num);
+      else
+      {
+        iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (key);
+        if (!resp) return 0;
+        return resp->GetRewardFactories ();
+      }
     }
   }
   return 0;
@@ -823,8 +827,45 @@ void EntityMode::OnTemplateDel ()
 
 void EntityMode::OnDelete ()
 {
+  if (GetContextMenuNode ().IsEmpty ()) return;
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  ui->Message ("Not implemented yet!");
+  const char type = contextMenuNode.operator[] (0);
+  if (type == 'T')
+  {
+    // Delete template.
+    ui->Message ("Not implemented yet!");
+  }
+  else if (type == 'P')
+  {
+    // Delete property class.
+    ui->Message ("Not implemented yet!");
+  }
+  else if (type == 'S')
+  {
+    // Delete state.
+    csString state = GetSelectedStateName (GetContextMenuNode ());
+    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+    questFact->RemoveState (state);
+    RefreshView ();
+  }
+  else if (type == 't')
+  {
+    // Delete trigger.
+    ui->Message ("Not implemented yet!");
+  }
+  else if (type == 'r')
+  {
+    // Delete trigger.
+    ui->Message ("Not implemented yet!");
+  }
+  else if (type == 's')
+  {
+    // Delete sequence.
+    iCelSequenceFactory* sequence = GetSelectedSequence (GetContextMenuNode ());
+    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+    questFact->RemoveSequence (sequence->GetName ());
+    RefreshView ();
+  }
 }
 
 void EntityMode::OnCreatePC ()
@@ -903,9 +944,11 @@ printf ("node:%s\n", nodeName); fflush (stdout);
   }
   else if (type == 'r')
   {
-    iRewardFactory* reward = GetSelectedReward (activeNode);
-    if (!reward) return;
-    rewardPanel->SwitchReward (reward);
+    size_t idx;
+    csRef<iRewardFactoryArray> array = GetSelectedReward (activeNode, idx);
+    if (!array) return;
+    iRewardFactory* reward = array->Get (idx);
+    rewardPanel->SwitchReward (array, idx, reward);
     rewardPanel->Show ();
   }
   else if (type == 's')
@@ -919,7 +962,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
 
 void EntityMode::OnCreateReward (int type)
 {
-  if (!GetContextMenuNode ()) return;
+  if (GetContextMenuNode ().IsEmpty ()) return;
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
   UIDialog* dialog = ui->CreateDialog ("New Reward");
   dialog->AddRow ();
@@ -952,7 +995,7 @@ void EntityMode::OnCreateReward (int type)
 
 void EntityMode::OnCreateTrigger ()
 {
-  if (!GetContextMenuNode ()) return;
+  if (GetContextMenuNode ().IsEmpty ()) return;
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
   UIDialog* dialog = ui->CreateDialog ("New Trigger");
   dialog->AddRow ();
@@ -978,7 +1021,7 @@ void EntityMode::OnCreateTrigger ()
 
 void EntityMode::OnDefaultState ()
 {
-  if (!GetContextMenuNode ()) return;
+  if (GetContextMenuNode ().IsEmpty ()) return;
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
 
   csString questName = GetQuestName (pctpl);
@@ -996,9 +1039,32 @@ void EntityMode::OnDefaultState ()
   RefreshView (pctpl);
 }
 
+void EntityMode::OnNewSequence ()
+{
+  if (GetContextMenuNode ().IsEmpty ()) return;
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return;
+
+  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  csString name = ui->AskDialog ("New Sequence", "Name:");
+  if (name.IsEmpty ()) return;
+
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+  if (!questFact)
+    questFact = questMgr->CreateQuestFactory (questName);
+  if (questFact->GetSequence (name))
+  {
+    ui->Error ("Sequence already exists with this name!");
+    return;
+  }
+  questFact->CreateSequence (name);
+  RefreshView (pctpl);
+}
+
 void EntityMode::OnNewState ()
 {
-  if (!GetContextMenuNode ()) return;
+  if (GetContextMenuNode ().IsEmpty ()) return;
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
@@ -1041,6 +1107,9 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idNewState = ui->AllocContextMenuID ();
   frame->Connect (idNewState, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnNewState), 0, panel);
+  idNewSequence = ui->AllocContextMenuID ();
+  frame->Connect (idNewSequence, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnNewSequence), 0, panel);
   idDefaultState = ui->AllocContextMenuID ();
   frame->Connect (idDefaultState, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnDefaultState), 0, panel);
@@ -1062,7 +1131,9 @@ csString EntityMode::GetContextMenuNode ()
 {
   if (!contextMenuNode) return "";
   if (!view->NodeExists (contextMenuNode))
+  {
     contextMenuNode = "";
+  }
   return contextMenuNode;
 }
 
@@ -1082,6 +1153,7 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
     {
       contextMenu->Append (idEditQuest, wxT ("Edit quest"));
       contextMenu->Append (idNewState, wxT ("New state..."));
+      contextMenu->Append (idNewSequence, wxT ("New sequence..."));
     }
     if (type == 'S')
     {

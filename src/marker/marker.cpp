@@ -555,6 +555,20 @@ void GraphView::UpdateSubNodePositions (GraphNode& node)
   }
 }
 
+bool GraphView::NodeExists (const char* nodeName) const
+{
+  if (nodes.Contains (nodeName)) return true;
+  csHash<GraphNode,csString>::ConstGlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString key;
+    const GraphNode& node = it.Next (key);
+    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+      if (node.subnodes[i].name == nodeName) return true;
+  }
+  return false;
+}
+
 void GraphView::CreateSubNode (const char* parentNode, const char* name, const char* label,
       iGraphNodeStyle* style)
 {

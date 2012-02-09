@@ -401,7 +401,7 @@ public:
   virtual void Clear ();
   virtual void StartRefresh ();
   virtual void FinishRefresh ();
-  virtual bool NodeExists (const char* nodeName) const { return nodes.Contains (nodeName); }
+  virtual bool NodeExists (const char* nodeName) const;
   virtual void CreateSubNode (const char* parentNode, const char* name, const char* label = 0,
       iGraphNodeStyle* style = 0);
   virtual void CreateNode (const char* name, const char* label = 0,

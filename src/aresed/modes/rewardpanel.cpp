@@ -92,6 +92,7 @@ void RewardPanel::OnUpdateEvent (wxCommandEvent& event)
 
 void RewardPanel::OnChoicebookPageChange (wxChoicebookEvent& event)
 {
+  printf ("Update choicebook!\n"); fflush (stdout);
   UpdateReward ();
 }
 
@@ -105,8 +106,11 @@ csString RewardPanel::GetCurrentRewardType ()
   return nameS;
 }
 
-void RewardPanel::SwitchReward (iRewardFactory* reward)
+void RewardPanel::SwitchReward (iRewardFactoryArray* array, size_t idx,
+    iRewardFactory* reward)
 {
+  RewardPanel::rewardArray = array;
+  RewardPanel::rewardIdx = idx;
   RewardPanel::reward = reward;
   UITools::SwitchPage (this, "rewardChoicebook", GetCurrentRewardType ());
   UpdatePanel ();
@@ -227,6 +231,8 @@ void RewardPanel::UpdateReward ()
   {
     iRewardType* rewardtype = questMgr->GetRewardType ("cel.rewards."+type);
     csRef<iRewardFactory> rewardfact = rewardtype->CreateRewardFactory ();
+    rewardArray->Put (rewardIdx, rewardfact);
+    reward = rewardfact;
     UpdatePanel ();
   }
   else
@@ -328,6 +334,54 @@ void RewardPanel::UpdateReward ()
 // -----------------------------------------------------------------------
 
 using namespace Ares;
+
+#if 0
+class RewardTypeValue : public Value
+{
+private:
+  size_t idx;
+  RewardPanel* rewardPanel;
+  csString rewardType;
+
+public:
+  SeqOpTypeValue (SequencePanel* sequencePanel, size_t idx) : idx (idx), sequencePanel (sequencePanel) { }
+  virtual ~SeqOpTypeValue () { }
+  virtual ValueType GetType () const { return VALUE_STRING; }
+  virtual void SetStringValue (const char* s)
+  {
+    iQuestManager* questMgr = sequencePanel->GetQuestManager ();
+    iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
+    if (!sequence) return;
+    csRef<iSeqOpFactory> seqopFact = sequence->GetSeqOpFactory (idx);
+    if (seqopFact) seqopType = seqopFact->GetSeqOpType ()->GetName ();
+    else seqopType = "delay";
+    if (seqopType.StartsWith ("cel.seqops.")) seqopType = seqopType.Slice (11);
+    printf ("s=%s seqopType=%s\n", s, seqopType.GetData ()); fflush (stdout);
+    if (seqopType != s)
+    {
+      if (csString ("delay") != s)
+      {
+        iSeqOpType* seqoptype = questMgr->GetSeqOpType (csString ("cel.seqops.")+s);
+        seqopFact = seqoptype->CreateSeqOpFactory ();
+      }
+      sequence->UpdateSeqOpFactory (idx, seqopFact, sequence->GetSeqOpFactoryDuration (idx));
+      FireValueChanged ();
+    }
+  }
+  virtual const char* GetStringValue ()
+  {
+    iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
+    if (!sequence) return "";
+    iSeqOpFactory* seqopFact = sequence->GetSeqOpFactory (idx);
+    if (seqopFact) seqopType = seqopFact->GetSeqOpType ()->GetName ();
+    else seqopType = "delay";
+    if (seqopType.StartsWith ("cel.seqops.")) seqopType = seqopType.Slice (11);
+    return seqopType;
+  }
+};
+#endif
+
+// -----------------------------------------------------------------------
 
 class CreateEntityParametersCollectionValue : public StandardCollectionValue
 {

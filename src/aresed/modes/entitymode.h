@@ -108,7 +108,7 @@ private:
   SequencePanel* sequencePanel;
   EntityTemplatePanel* tplPanel;
 
-  int idDelete, idCreate, idEditQuest, idNewState, idDefaultState;
+  int idDelete, idCreate, idEditQuest, idNewState, idNewSequence, idDefaultState;
   int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;
 
   // Fetch a property class template from a given graph key.
@@ -125,7 +125,7 @@ private:
   iQuestTriggerResponseFactory* GetSelectedTriggerResponse (const char* key);
   bool IsOnInit (const char* key);
   bool IsOnExit (const char* key);
-  iRewardFactory* GetSelectedReward (const char* key);
+  csRef<iRewardFactoryArray> GetSelectedReward (const char* key, size_t& idx);
   iCelSequenceFactory* GetSelectedSequence (const char* key);
 
   csRef<iFont> font;
@@ -162,6 +162,7 @@ public:
   void OnCreatePC ();
   void OnEditQuest ();
   void OnNewState ();
+  void OnNewSequence ();
   void OnDefaultState ();
   void OnCreateTrigger ();
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
@@ -183,6 +184,7 @@ public:
     void OnCreatePC (wxCommandEvent& event) { s->OnCreatePC (); }
     void OnEditQuest (wxCommandEvent& event) { s->OnEditQuest (); }
     void OnNewState (wxCommandEvent& event) { s->OnNewState (); }
+    void OnNewSequence (wxCommandEvent& event) { s->OnNewSequence (); }
     void OnDefaultState (wxCommandEvent& event) { s->OnDefaultState (); }
     void OnCreateTrigger (wxCommandEvent& event) { s->OnCreateTrigger (); }
     void OnCreateReward (wxCommandEvent& event) { s->OnCreateReward (0); }

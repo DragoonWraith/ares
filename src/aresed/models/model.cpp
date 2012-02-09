@@ -334,7 +334,8 @@ public:
 };
 
 ListSelectedValue::ListSelectedValue (wxListCtrl* listCtrl, Value* collectionValue, ValueType type) :
-  MirrorValue (type), listCtrl (listCtrl), collectionValue (collectionValue)
+  wxEvtHandler (), MirrorValue (type), listCtrl (listCtrl),
+  collectionValue (collectionValue)
 {
   listCtrl->Connect (wxEVT_COMMAND_LIST_ITEM_SELECTED,
 	  wxCommandEventHandler (ListSelectedValue :: OnSelectionChange), 0, this);

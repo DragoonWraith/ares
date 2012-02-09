@@ -206,8 +206,7 @@ void TriggerPanel::UpdateTrigger ()
   if (type != GetCurrentTriggerType ())
   {
     iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+type);
-    csRef<iTriggerFactory> triggerfact = triggertype
-		->CreateTriggerFactory ();
+    csRef<iTriggerFactory> triggerfact = triggertype->CreateTriggerFactory ();
     triggerResp->SetTriggerFactory (triggerfact);
     UpdatePanel ();
   }

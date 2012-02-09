@@ -81,14 +81,13 @@ public:
     iQuestManager* questMgr = sequencePanel->GetQuestManager ();
     iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
     if (!sequence) return;
-    iSeqOpFactory* seqopFact = sequence->GetSeqOpFactory (idx);
+    csRef<iSeqOpFactory> seqopFact = sequence->GetSeqOpFactory (idx);
     if (seqopFact) seqopType = seqopFact->GetSeqOpType ()->GetName ();
     else seqopType = "delay";
     if (seqopType.StartsWith ("cel.seqops.")) seqopType = seqopType.Slice (11);
     printf ("s=%s seqopType=%s\n", s, seqopType.GetData ()); fflush (stdout);
     if (seqopType != s)
     {
-      csRef<iSeqOpFactory> seqopFact;
       if (csString ("delay") != s)
       {
         iSeqOpType* seqoptype = questMgr->GetSeqOpType (csString ("cel.seqops.")+s);
@@ -100,7 +99,6 @@ public:
   }
   virtual const char* GetStringValue ()
   {
-    iQuestManager* questMgr = sequencePanel->GetQuestManager ();
     iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
     if (!sequence) return "";
     iSeqOpFactory* seqopFact = sequence->GetSeqOpFactory (idx);
@@ -108,6 +106,37 @@ public:
     else seqopType = "delay";
     if (seqopType.StartsWith ("cel.seqops.")) seqopType = seqopType.Slice (11);
     return seqopType;
+  }
+};
+
+class DurationValue : public Value
+{
+private:
+  size_t idx;
+  SequencePanel* sequencePanel;
+  csString duration;
+
+public:
+  DurationValue (SequencePanel* sequencePanel, size_t idx) : idx (idx), sequencePanel (sequencePanel) { }
+  virtual ~DurationValue () { }
+  virtual ValueType GetType () const { return VALUE_STRING; }
+  virtual void SetStringValue (const char* s)
+  {
+    iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
+    if (!sequence) return;
+    csString duration = sequence->GetSeqOpFactoryDuration (idx);
+    if (duration != s)
+    {
+      sequence->UpdateSeqOpFactory (idx, sequence->GetSeqOpFactory (idx), s);
+      FireValueChanged ();
+    }
+  }
+  virtual const char* GetStringValue ()
+  {
+    iCelSequenceFactory* sequence = sequencePanel->GetCurrentSequence ();
+    if (!sequence) return "";
+    duration = sequence->GetSeqOpFactoryDuration (idx);
+    return duration;
   }
 };
 
@@ -120,7 +149,7 @@ private:
   {
     csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
     composite->AddChild ("type", NEWREF(SeqOpTypeValue,new SeqOpTypeValue(sequencePanel,index)));
-    composite->AddChild ("duration", NEWREF(StringValue,new StringValue(duration)));
+    composite->AddChild ("duration", NEWREF(DurationValue,new DurationValue(sequencePanel,index)));
     composite->AddChild ("index", NEWREF(LongValue,new LongValue(index)));
     children.Push (composite);
     composite->SetParent (this);
@@ -200,40 +229,272 @@ public:
 // -----------------------------------------------------------------------
 
 /**
- * A composite value representing a debugprint seqop.
+ * A composite value used for representing sequence parameters.
  */
-class DebugPrintValue : public CompositeValue
+template <class T>
+class SequenceValue : public CompositeValue
 {
-private:
-  SequencePanel* sequencePanel;
-
 protected:
-  virtual void ChildChanged (Value* child)
+  SequencePanel* sequencePanel;
+  T* sequence;
+  bool updating;
+
+  T* GetSequence ()
   {
     iSeqOpFactory* seqopFactory = sequencePanel->GetSeqOpFactory ();
-    if (!seqopFactory) return;
-    csRef<iDebugPrintSeqOpFactory> d = scfQueryInterface<iDebugPrintSeqOpFactory> (seqopFactory);
-    if (!d) return;
-    d->SetMessageParameter (GetChildByName ("message")->GetStringValue ());
+    if (!seqopFactory) return 0;
+    csRef<T> s = scfQueryInterface<T> (seqopFactory);
+    sequence = s;
+    return sequence;
+  }
+
+  const bool GetBool (const char* name)
+  {
+    return GetChildByName (name)->GetBoolValue ();
+  }
+  const char* GetStr (const char* name)
+  {
+    return GetChildByName (name)->GetStringValue ();
+  }
+  void SetBool (const char* name, bool value)
+  {
+    GetChildByName (name)->SetBoolValue (value);
+  }
+  void SetStr (const char* name, const char* value)
+  {
+    GetChildByName (name)->SetStringValue (value);
+  }
+
+  void AddStringChildren (const char* n, ...)
+  {
+    AddChild (n, NEWREF(Value,new StringValue ()));
+    va_list args;
+    va_start (args, n);
+    const char* c = va_arg (args, char*);
+    while (c != (const char*)0)
+    {
+      AddChild (c, NEWREF(Value,new StringValue ()));
+      c = va_arg (args, char*);
+    }
+    va_end (args);
   }
 
 public:
-  DebugPrintValue (SequencePanel* sequencePanel) : sequencePanel (sequencePanel)
+  SequenceValue (SequencePanel* sequencePanel) :
+    sequencePanel (sequencePanel), updating (false) { }
+  virtual ~SequenceValue () { }
+};
+
+// -----------------------------------------------------------------------
+
+/**
+ * A composite value representing a debugprint seqop.
+ */
+class DebugPrintValue : public SequenceValue<iDebugPrintSeqOpFactory>
+{
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    if (updating || !GetSequence ()) return;
+    sequence->SetMessageParameter (GetStr ("message"));
+  }
+
+public:
+  DebugPrintValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
   {
     AddChild ("message", NEWREF(Value,new StringValue ()));
   }
   virtual ~DebugPrintValue () { }
   virtual void FireValueChanged ()
   {
-    CompositeValue::FireValueChanged ();
-    iSeqOpFactory* seqopFactory = sequencePanel->GetSeqOpFactory ();
-    if (!seqopFactory) return;
-    csRef<iDebugPrintSeqOpFactory> d = scfQueryInterface<iDebugPrintSeqOpFactory> (seqopFactory);
-    if (!d) return;
-    GetChildByName ("message")->SetStringValue (d->GetMessage ());
+    SequenceValue::FireValueChanged ();
+    if (!GetSequence ()) return;
+    updating = true;
+    SetStr ("message", sequence->GetMessage ());
+    updating = false;
   }
 };
 
+/**
+ * A composite value representing a seqop with color animation.
+ */
+template <class T>
+class ColorAnimValue : public SequenceValue<T>
+{
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    if (this->updating || !this->GetSequence ()) return;
+    this->sequence->SetEntityParameter (this->GetStr ("entity"), this->GetStr ("tag"));
+    this->sequence->SetRelColorParameter (this->GetStr ("relred"), this->GetStr ("relgreen"),
+	this->GetStr ("relblue"));
+    this->sequence->SetAbsColorParameter (this->GetStr ("absred"), this->GetStr ("absgreen"),
+	this->GetStr ("absblue"));
+  }
+
+public:
+  ColorAnimValue (SequencePanel* sequencePanel) : SequenceValue<T> (sequencePanel)
+  {
+    this->AddStringChildren ("entity", "tag", "relred", "relgreen", "relblue",
+	"absred", "absgreen", "absblue", (const char*)0);
+  }
+  virtual ~ColorAnimValue () { }
+  virtual void FireValueChanged ()
+  {
+    SequenceValue<T>::FireValueChanged ();
+    if (!this->GetSequence ()) return;
+    this->updating = true;
+    this->SetStr ("entity", this->sequence->GetEntity ());
+    this->SetStr ("tag", this->sequence->GetTag ());
+    this->SetStr ("relred", this->sequence->GetRelColorRed ());
+    this->SetStr ("relgreen", this->sequence->GetRelColorGreen ());
+    this->SetStr ("relblue", this->sequence->GetRelColorBlue ());
+    this->SetStr ("absred", this->sequence->GetAbsColorRed ());
+    this->SetStr ("absgreen", this->sequence->GetAbsColorGreen ());
+    this->SetStr ("absblue", this->sequence->GetAbsColorBlue ());
+    this->updating = false;
+  }
+};
+
+/**
+ * A composite value representing a ambientmesh seqop.
+ */
+class AmbientMeshValue : public ColorAnimValue<iAmbientMeshSeqOpFactory>
+{
+public:
+  AmbientMeshValue (SequencePanel* sequencePanel) : ColorAnimValue (sequencePanel) { }
+  virtual ~AmbientMeshValue () { }
+};
+
+/**
+ * A composite value representing a light seqop.
+ */
+class LightValue : public ColorAnimValue<iLightSeqOpFactory>
+{
+public:
+  LightValue (SequencePanel* sequencePanel) : ColorAnimValue (sequencePanel) { }
+  virtual ~LightValue () { }
+};
+
+/**
+ * A composite value representing a movepath seqop.
+ */
+class MovePathValue : public SequenceValue<iMovePathSeqOpFactory>
+{
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    if (updating || !GetSequence ()) return;
+    sequence->SetEntityParameter (GetStr ("entity"), GetStr ("tag"));
+    // @@@ Todo path
+  }
+
+public:
+  MovePathValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  {
+    AddStringChildren ("entity", "tag", (const char*)0);
+  }
+  virtual ~MovePathValue () { }
+  virtual void FireValueChanged ()
+  {
+    SequenceValue::FireValueChanged ();
+    if (!GetSequence ()) return;
+    updating = true;
+    SetStr ("entity", sequence->GetEntity ());
+    SetStr ("tag", sequence->GetTag ());
+    updating = false;
+  }
+};
+
+/**
+ * A composite value representing a property seqop.
+ */
+class PropertyValue : public SequenceValue<iPropertySeqOpFactory>
+{
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    if (updating || !GetSequence ()) return;
+    sequence->SetEntityParameter (GetStr ("entity"));
+    sequence->SetPCParameter (GetStr ("pc"), GetStr ("tag"));
+    sequence->SetPropertyParameter (GetStr ("property"));
+    sequence->SetLongParameter (GetStr ("long"));
+    sequence->SetFloatParameter (GetStr ("float"));
+    sequence->SetVector3Parameter (GetStr ("vectorx"), GetStr ("vectory"),
+	GetStr ("vectorz"));
+    sequence->SetRelative (GetBool ("relative"));
+  }
+
+public:
+  PropertyValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  {
+    AddStringChildren ("entity", "pc", "tag", "property", "long", "float",
+	"vectorx", "vectory", "vectorz", (const char*)0);
+    AddChild ("relative", NEWREF(Value,new BoolValue ()));
+  }
+  virtual ~PropertyValue () { }
+  virtual void FireValueChanged ()
+  {
+    SequenceValue::FireValueChanged ();
+    if (!GetSequence ()) return;
+    updating = true;
+    SetStr ("entity", sequence->GetEntity ());
+    SetStr ("pc", sequence->GetPC ());
+    SetStr ("tag", sequence->GetPCTag ());
+    SetStr ("property", sequence->GetProperty ());
+    SetStr ("float", sequence->GetFloat ());
+    SetStr ("long", sequence->GetLong ());
+    SetStr ("vectorx", sequence->GetVectorX ());
+    SetStr ("vectory", sequence->GetVectorY ());
+    SetStr ("vectorz", sequence->GetVectorZ ());
+    SetBool ("relative", sequence->IsRelative ());
+    updating = false;
+  }
+};
+
+/**
+ * A composite value representing a transform seqop.
+ */
+class TransformValue : public SequenceValue<iTransformSeqOpFactory>
+{
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    if (updating || !GetSequence ()) return;
+    sequence->SetEntityParameter (GetStr ("entity"), GetStr ("tag"));
+    sequence->SetVectorParameter (GetStr ("vectorx"), GetStr ("vectory"),
+	GetStr ("vectorz"));
+    csString rotAxis = GetStr ("axis");
+    int axis;
+    if (rotAxis == "x") axis = 0;
+    else if (rotAxis == "y") axis = 1;
+    else axis = 2;
+    sequence->SetRotationParameter (axis, GetStr ("angle"));
+  }
+
+public:
+  TransformValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  {
+    AddStringChildren ("entity", "tag", "axis", "angle",
+	"vectorx", "vectory", "vectorz", (const char*)0);
+  }
+  virtual ~TransformValue () { }
+  virtual void FireValueChanged ()
+  {
+    SequenceValue::FireValueChanged ();
+    if (!GetSequence ()) return;
+    updating = true;
+    SetStr ("entity", sequence->GetEntity ());
+    SetStr ("tag", sequence->GetTag ());
+    SetStr ("vectorx", sequence->GetVectorX ());
+    SetStr ("vectory", sequence->GetVectorY ());
+    SetStr ("vectorz", sequence->GetVectorZ ());
+    static const char* axisStr[] = { "0", "1", "2" };
+    SetStr ("axis", axisStr[sequence->GetRotationAxis ()]);
+    SetStr ("angle", sequence->GetRotationAngle ());
+    updating = false;
+  }
+};
 
 // -----------------------------------------------------------------------
 
@@ -276,6 +537,25 @@ SequencePanel::SequencePanel (wxWindow* parent, UIManager* uiManager,
   Bind (v, "debugprintPanel");
   Signal (operationsSelectedValue, v);
 
+  v.AttachNew (new AmbientMeshValue (this));
+  Bind (v, "ambientmeshPanel");
+  Signal (operationsSelectedValue, v);
+
+  v.AttachNew (new LightValue (this));
+  Bind (v, "lightPanel");
+  Signal (operationsSelectedValue, v);
+
+  v.AttachNew (new MovePathValue (this));
+  Bind (v, "movepathPanel");
+  Signal (operationsSelectedValue, v);
+
+  v.AttachNew (new PropertyValue (this));
+  Bind (v, "propertyPanel");
+  Signal (operationsSelectedValue, v);
+
+  v.AttachNew (new TransformValue (this));
+  Bind (v, "transformPanel");
+  Signal (operationsSelectedValue, v);
 }
 
 SequencePanel::~SequencePanel ()

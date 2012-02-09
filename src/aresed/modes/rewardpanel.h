@@ -40,6 +40,7 @@ struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iRewardFactory;
+struct iRewardFactoryArray;
 struct iParameter;
 class UIDialog;
 class UIManager;
@@ -53,6 +54,8 @@ private:
   EntityMode* emode;
   wxSizer* parentSizer;
 
+  csRef<iRewardFactoryArray> rewardArray;
+  size_t rewardIdx;
   iRewardFactory* reward;
   csString GetCurrentRewardType ();
 
@@ -79,7 +82,7 @@ public:
    * Possibly switch the type of the reward. Do nothing if the reward is
    * already of the right type. Otherwise clear all properties.
    */
-  void SwitchReward (iRewardFactory* reward);
+  void SwitchReward (iRewardFactoryArray* array, size_t idx, iRewardFactory* reward);
   iRewardFactory* GetCurrentReward () const { return reward; }
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
