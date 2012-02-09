@@ -855,11 +855,17 @@ void EntityMode::OnDelete ()
   else if (type == 't')
   {
     // Delete trigger.
-    ui->Message ("Not implemented yet!");
+    csString state = GetSelectedStateName (GetContextMenuNode ());
+    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+    iQuestStateFactory* questState = questFact->GetState (state);
+    csRef<iQuestTriggerResponseFactoryArray> responses = questState->GetTriggerResponseFactories ();
+    iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (GetContextMenuNode ());
+    responses->Delete (resp);
+    RefreshView ();
   }
   else if (type == 'r')
   {
-    // Delete trigger.
+    // Delete reward.
     ui->Message ("Not implemented yet!");
   }
   else if (type == 's')
