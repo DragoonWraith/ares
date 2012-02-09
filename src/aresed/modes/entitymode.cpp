@@ -842,6 +842,7 @@ void EntityMode::OnDelete ()
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
     tpl->RemovePropertyClassTemplate (pctpl);
+    editQuestMode = false;
     RefreshView ();
   }
   else if (type == 'S')
