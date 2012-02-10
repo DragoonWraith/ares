@@ -105,7 +105,7 @@ void PlayMode::Start ()
   iDynamicObject* foundPlayerDynobj = 0;
 
   csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
-  while (!foundPlayerDynobj && cellIt->HasNext ())
+  while (cellIt->HasNext ())
   {
     iDynamicCell* cell = cellIt->NextCell ();
     for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
@@ -116,7 +116,14 @@ void PlayMode::Start ()
 	playerTrans = dynobj->GetTransform ();
 	foundCell = cell;
 	foundPlayerDynobj = dynobj;
-	break;
+      }
+      else
+      {
+	csString tplName = dynobj->GetFactory ()->GetDefaultEntityTemplate ();
+	if (tplName.IsEmpty ())
+	  tplName = dynobj->GetFactory ()->GetName ();
+	printf ("Setting entity %s\n", tplName.GetData ());
+        dynobj->SetEntity (0, tplName, 0);
       }
     }
   }
@@ -161,7 +168,7 @@ void PlayMode::Start ()
     {
       iDynamicObject* dynobj = cell->GetObject (i);
       if (dynobj->GetFactory () != playerFact)
-        dynobj->ForceEntity ();
+	dynobj->ForceEntity ();
     }
   }
 
