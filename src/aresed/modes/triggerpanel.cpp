@@ -48,6 +48,7 @@ BEGIN_EVENT_TABLE(TriggerPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("entity_In_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_In_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("child_In_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("childTemplate_In_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("entity_Ms_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Ms_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("entity_Me_Text"), TriggerPanel :: OnUpdateEvent)
@@ -123,6 +124,7 @@ void TriggerPanel::UpdatePanel ()
     UITools::SetValue (this, "entity_In_Text", tf->GetEntity ());
     UITools::SetValue (this, "tag_In_Text", tf->GetTag ());
     UITools::SetValue (this, "child_In_Text", tf->GetChildEntity ());
+    UITools::SetValue (this, "childTemplate_In_Text", tf->GetChildTemplate ());
   }
   else if (type == "meshselect")
   {
@@ -225,6 +227,7 @@ void TriggerPanel::UpdateTrigger ()
       tf->SetEntityParameter (UITools::GetValue (this, "entity_In_Text"),
 	  UITools::GetValue (this, "tag_In_Text"));
       tf->SetChildEntityParameter (UITools::GetValue (this, "child_In_Text"));
+      tf->SetChildTemplateParameter (UITools::GetValue (this, "childTemplate_In_Text"));
     }
     else if (type == "meshselect")
     {
