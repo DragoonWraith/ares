@@ -105,7 +105,7 @@ void PlayMode::Start ()
   iDynamicObject* foundPlayerDynobj = 0;
 
   csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
-  while (cellIt->HasNext ())
+  while (!foundPlayerDynobj && cellIt->HasNext ())
   {
     iDynamicCell* cell = cellIt->NextCell ();
     for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
@@ -116,10 +116,8 @@ void PlayMode::Start ()
 	playerTrans = dynobj->GetTransform ();
 	foundCell = cell;
 	foundPlayerDynobj = dynobj;
-	continue;
+	break;
       }
-
-      dynobj->ForceEntity ();
     }
   }
 
@@ -154,6 +152,19 @@ void PlayMode::Start ()
 
   iELCM* elcm = aresed3d->GetELCM ();
   elcm->SetPlayer (player);
+
+  cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      if (dynobj->GetFactory () != playerFact)
+        dynobj->ForceEntity ();
+    }
+  }
+
 }
 
 void PlayMode::Stop ()
