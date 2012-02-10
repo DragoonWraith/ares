@@ -323,6 +323,12 @@ struct iGraphLinkStyle : public virtual iBase
   virtual bool IsArrow () const = 0;
 
   /**
+   * Make this link soft.
+   */
+  virtual void SetSoft (bool a) = 0;
+  virtual bool IsSoft () const = 0;
+
+  /**
    * Set the factor with which this links pulls the two
    * nodes to each other. Default is 1.0f. If set to 0.0f
    * this link will not pull at all.
@@ -331,12 +337,28 @@ struct iGraphLinkStyle : public virtual iBase
   virtual float GetLinkStrength () const = 0;
 };
 
+enum GraphNodeConnectorStyle
+{
+  CONNECTOR_CENTER,
+  CONNECTOR_LEFT,
+  CONNECTOR_RIGHT,
+  CONNECTOR_UP,
+  CONNECTOR_DOWN,
+};
+
 /**
  * A style for a given graph node.
  */
 struct iGraphNodeStyle : public virtual iBase
 {
   SCF_INTERFACE(iGraphNodeStyle,0,0,1);
+
+  /**
+   * Set the connector style (for links to and from this node).
+   * CONNECTOR_CENTER is default.
+   */
+  virtual void SetConnectorStyle (GraphNodeConnectorStyle style) = 0;
+  virtual GraphNodeConnectorStyle GetConnectorStyle () const = 0;
 
   /**
    * Set the border color.
@@ -375,6 +397,14 @@ struct iGraphNodeStyle : public virtual iBase
    */
   virtual void SetWeightFactor (float w) = 0;
   virtual float GetWeightFactor () const = 0;
+
+  /**
+   * Set the factor with which this node is affected
+   * by other nodes. Default is 1.0f. If set to 0.0f this node
+   * is not affected by other nodes at all.
+   */
+  virtual void SetExternalInfluenceFactor (float w) = 0;
+  virtual float GetExternalInfluenceFactor () const = 0;
 };
 
 /**

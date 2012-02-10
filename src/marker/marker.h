@@ -307,7 +307,8 @@ struct SubNode
   csVector2 relpos;	// Relative position (relative to parent node).
   csVector2 size;
   bool maybeDelete;	// Used in smart refresh mode.
-  SubNode () : marker (0), maybeDelete (false) { }
+  GraphNodeConnectorStyle conStyle;
+  SubNode () : marker (0), maybeDelete (false), conStyle (CONNECTOR_CENTER) { }
 };
 
 struct GraphNode
@@ -318,9 +319,13 @@ struct GraphNode
   bool frozen;
   csVector2 size;
   float weightFactor;
+  float externalInfluenceFactor;
   bool maybeDelete;	// Used in smart refresh mode.
   csPDelArray<SubNode> subnodes;
-  GraphNode () : marker (0), frozen (false), weightFactor (1.0f), maybeDelete (false) { }
+  GraphNodeConnectorStyle conStyle;
+  GraphNode () : marker (0), frozen (false), weightFactor (1.0f),
+    externalInfluenceFactor (1.0f),
+    maybeDelete (false), conStyle (CONNECTOR_CENTER) { }
 };
 
 struct GraphLink
@@ -328,10 +333,12 @@ struct GraphLink
   csString node1;
   csString node2;
   iMarkerColor* color;
-  bool arrow;
+  bool arrow;		// Line has an arrow.
+  bool soft;		// Soft line.
   float strength;
   bool maybeDelete;	// Used in smart refresh mode.
-  GraphLink () : color (0), arrow (false), strength (1.0f), maybeDelete (false) { }
+  GraphLink () : color (0), arrow (false), soft (false),
+    strength (1.0f), maybeDelete (false) { }
 };
 
 class GraphView : public scfImplementation1<GraphView, iGraphView>
@@ -363,18 +370,65 @@ private:
 
   csString currentNode;	// String as returned to the caller in FindHitNode().
 
+  /**
+   * Handle forces.
+   */
   void HandlePushingForces ();
   void HandlePullingLinks ();
-  // Update the velocities of all nodes and move them according to those
-  // velocities. Returns true if the simulation appears cool enough (not
-  // a lot of movement).
+
+  /**
+   * Update the velocities of all nodes and move them according to those
+   * velocities. Returns true if the simulation appears cool enough (not
+   * a lot of movement).
+   */
   bool MoveNodes (float seconds);
+
+  /// Update the positions of subnodes of a given node.
   void UpdateSubNodePositions (GraphNode* node);
+
+  /**
+   * Return the position at which links from/to this node can start.
+   * Returns false in case the node cannot be found.
+   * Some types of controllers support a secondary position. In that
+   * case 'secondary' will be set to true and 'spos' will be given.
+   * The secondary position is useful for soft links so that they can
+   * start in the right direction.
+   */
+  bool GetNodeLinkPosition (const char* nodeName, csVector2& pos,
+      bool& secondary, csVector2& spos);
 
   float secondsTodo;
 
+  /// Update the marker for a node or subnode based on the style and label.
   void UpdateNodeMarker (iMarker* marker, const char* label,
       iGraphNodeStyle* style, int& w, int& h);
+
+  /**
+   * Check if a given segment intersects with nodes. If so it
+   * tries to calculate a good spot on the segment to cut and
+   * also the location to where it can be moved to get rid of
+   * that intersection. It only calculates this for a single
+   * intersection though.
+   * The function will ignore the source nodes of the segment.
+   * Returns false if there is no intersection.
+   */
+  bool CheckIntersect (const csVector2& pos1, const csVector2& pos2,
+      const char* node1, const char* node2,
+      csVector2& splitPoint, csVector2& newPos);
+
+  /**
+   * Return true if a given point is inside some node.
+   */
+  bool CheckInNode (const csVector2& pos);
+
+  /**
+   * Calculate a curve between two points that tries to avoid nodes.
+   * The resulting curve will be put in 'points'.
+   */
+  void CalculateCurve (
+    const csVector2& pos1, const csVector2& pos2,
+    const char* node1, const char* node2, int maxrecurse,
+    csArray<csVector2>& points);
 
 public:
   GraphView (MarkerManager* mgr);

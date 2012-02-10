@@ -26,7 +26,9 @@ THE SOFTWARE.
 #include "marker.h"
 
 #include "csutil/event.h"
+#include "csgeom/spline.h"
 #include "csgeom/math3d.h"
+#include "csgeom/math2d.h"
 #include "iutil/objreg.h"
 #include "ivideo/graph2d.h"
 #include "ivideo/graph3d.h"
@@ -54,17 +56,20 @@ class GraphLinkStyle : public scfImplementation1<GraphLinkStyle, iGraphLinkStyle
 private:
   iMarkerColor* color;
   bool arrow;
+  bool soft;
   float strength;
 
 public:
   GraphLinkStyle () : scfImplementationType (this),
-    color (0), arrow (false), strength (1.0f) { }
+    color (0), arrow (false), soft (false), strength (1.0f) { }
   virtual ~GraphLinkStyle () { }
 
   virtual void SetColor (iMarkerColor* color) { GraphLinkStyle::color = color; }
   virtual iMarkerColor* GetColor () const { return color; }
   virtual void SetArrow (bool a) { arrow = a; }
   virtual bool IsArrow () const { return arrow; }
+  virtual void SetSoft (bool a) { soft = a; }
+  virtual bool IsSoft () const { return soft; }
   virtual void SetLinkStrength (float w) { strength = w; }
   virtual float GetLinkStrength () const { return strength; }
 };
@@ -80,13 +85,18 @@ private:
   iFont* font;
   int roundness;
   float weightFactor;
+  float externalInfluenceFactor;
+  GraphNodeConnectorStyle conStyle;
 
 public:
   GraphNodeStyle () : scfImplementationType (this),
     fgColor (0), bgColor (0), textColor (0), font (0),
-    roundness (10), weightFactor (1.0f) { }
+    roundness (10), weightFactor (1.0f), externalInfluenceFactor (1.0f),
+    conStyle (CONNECTOR_CENTER) { }
   virtual ~GraphNodeStyle () { }
 
+  virtual void SetConnectorStyle (GraphNodeConnectorStyle style) { conStyle = style; }
+  virtual GraphNodeConnectorStyle GetConnectorStyle () const { return conStyle; }
   virtual void SetBorderColor (iMarkerColor* color) { fgColor = color; }
   virtual iMarkerColor* GetBorderColor () const { return fgColor; }
   virtual void SetBackgroundColor (iMarkerColor* color) { bgColor = color; }
@@ -99,6 +109,8 @@ public:
   virtual int GetRoundness () const { return roundness; }
   virtual void SetWeightFactor (float w) { weightFactor = w; }
   virtual float GetWeightFactor () const { return weightFactor; }
+  virtual void SetExternalInfluenceFactor (float w) { externalInfluenceFactor = w; }
+  virtual float GetExternalInfluenceFactor () const { return externalInfluenceFactor; }
 };
 
 //--------------------------------------------------------------------------------
@@ -244,7 +256,8 @@ void GraphView::HandlePushingForces ()
 	const csVector2& pos2 = node2->marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
 	if (sqdist < .0001) sqdist = .0001;
-	node->netForce += (pos-pos2) * node2->weightFactor * nodeForceFactor / sqdist;
+	node->netForce += (pos-pos2) * node->externalInfluenceFactor *
+	    node2->weightFactor * nodeForceFactor / sqdist;
       }
     }
   }
@@ -329,36 +342,271 @@ void GraphView::UpdateFrame ()
   }
 }
 
+bool GraphView::GetNodeLinkPosition (const char* nodeName, csVector2& pos,
+    bool& secondary, csVector2& spos)
+{
+  GraphNode* node = nodes.Get (nodeName, 0);
+  if (node)
+  {
+    pos = node->marker->GetPosition ();
+    secondary = true;
+    switch (node->conStyle)
+    {
+      case CONNECTOR_CENTER: secondary = false; break;
+      case CONNECTOR_UP:
+	pos.y -= node->size.y / 2.0f;
+	spos = pos;
+	spos.y -= 20;
+	break;
+      case CONNECTOR_DOWN:
+	pos.y += node->size.y / 2.0f;
+	spos = pos;
+	spos.y += 20;
+	break;
+      case CONNECTOR_LEFT:
+	pos.x -= node->size.x / 2.0f;
+	spos = pos;
+	spos.x -= 20;
+	break;
+      case CONNECTOR_RIGHT:
+	pos.x += node->size.x / 2.0f;
+	spos = pos;
+	spos.x += 20;
+	break;
+      default: break;
+    }
+    return true;
+  }
+  SubNode* subnode = subnodes.Get (nodeName, 0);
+  if (subnode)
+  {
+    pos = subnode->marker->GetPosition ();
+    secondary = true;
+    switch (subnode->conStyle)
+    {
+      case CONNECTOR_CENTER: secondary = false; break;
+      case CONNECTOR_UP:
+	pos.y -= subnode->size.y / 2.0f;
+	spos = pos;
+	spos.y -= 10;
+	break;
+      case CONNECTOR_DOWN:
+	pos.y += subnode->size.y / 2.0f;
+	spos = pos;
+	spos.y += 10;
+	break;
+      case CONNECTOR_LEFT:
+	pos.x -= subnode->size.x / 2.0f;
+	spos = pos;
+	spos.x -= 10;
+	break;
+      case CONNECTOR_RIGHT:
+	pos.x += subnode->size.x / 2.0f;
+	spos = pos;
+	spos.x += 10;
+	break;
+      default: break;
+    }
+    return true;
+  }
+  return false;
+}
+
+static bool IntersectNodeSegment (const csVector2& pos, const csVector2& size,
+    csSegment2& seg, csVector2& splitPoint, csVector2& newPos)
+{
+  csBox2 nodeBox (pos.x - size.x / 2, pos.y - size.y / 2,
+      pos.x + size.x / 2, pos.y + size.y / 2);
+  if (csIntersect2::SegmentBox (seg, nodeBox))
+  {
+    const csVector2& pos1 = seg.Start ();
+    const csVector2& pos2 = seg.End ();
+    splitPoint = (pos1 + pos2) / 2.0f;
+    if ((pos1.x < pos2.x && pos1.y < pos2.y) || (pos1.x >= pos2.x && pos1.y >= pos2.y))
+    {
+      csVector2 new1 = nodeBox.GetCorner (CS_BOX_CORNER_Xy);
+      csVector2 new2 = nodeBox.GetCorner (CS_BOX_CORNER_xY);
+      if ((new1-splitPoint).SquaredNorm () < (new2-splitPoint).SquaredNorm ())
+	newPos = new1 + csVector2 (10, -10);
+      else
+	newPos = new2 + csVector2 (-10, 10);
+    }
+    else
+    {
+      csVector2 new1 = nodeBox.GetCorner (CS_BOX_CORNER_xy);
+      csVector2 new2 = nodeBox.GetCorner (CS_BOX_CORNER_XY);
+      if ((new1-splitPoint).SquaredNorm () < (new2-splitPoint).SquaredNorm ())
+	newPos = new1 + csVector2 (-10, -10);
+      else
+	newPos = new2 + csVector2 (10, 10);
+    }
+    return true;
+  }
+  return false;
+}
+
+bool GraphView::CheckIntersect (const csVector2& pos1, const csVector2& pos2,
+      const char* node1, const char* node2,
+      csVector2& splitPoint, csVector2& newPos)
+{
+  csSegment2 seg (pos1, pos2);
+
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    GraphNode* node = it.Next ();
+    if (node->name == node1 || node->name == node2) continue;
+    csVector2 pos = node->marker->GetPosition ();
+    if (IntersectNodeSegment (pos, node->size, seg, splitPoint, newPos))
+      return true;
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+    {
+      SubNode* ns = node->subnodes[i];
+      if (ns->name == node1 || ns->name == node2) continue;
+      pos = ns->marker->GetPosition ();
+      if (IntersectNodeSegment (pos, ns->size, seg, splitPoint, newPos))
+        return true;
+    }
+  }
+  return false;
+}
+
+static bool PointInBox (const csVector2& pos, const csVector2& size,
+    const csVector2& point)
+{
+  csBox2 nodeBox (pos.x - size.x / 2, pos.y - size.y / 2,
+      pos.x + size.x / 2, pos.y + size.y / 2);
+  return nodeBox.In (point);
+}
+
+bool GraphView::CheckInNode (const csVector2& pos)
+{
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
+  while (it.HasNext ())
+  {
+    GraphNode* node = it.Next ();
+    if (PointInBox (node->marker->GetPosition (), node->size, pos))
+      return true;
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+    {
+      SubNode* ns = node->subnodes[i];
+      if (PointInBox (ns->marker->GetPosition (), ns->size, pos))
+        return true;
+    }
+  }
+  return false;
+}
+
+void GraphView::CalculateCurve (
+    const csVector2& pos1, const csVector2& pos2,
+    const char* node1, const char* node2, int maxrecurse,
+    csArray<csVector2>& points)
+{
+  csVector2 splitPoint, newPos;
+  if (maxrecurse > 0 && CheckIntersect (pos1, pos2, node1, node2, splitPoint, newPos))
+  {
+    if (CheckInNode (newPos))
+    {
+      // If the new point is in a node we stop trying since there is not likely
+      // to be a good position anyway.
+      maxrecurse = 0;
+    }
+    CalculateCurve (pos1, newPos, node1, node2, maxrecurse-1, points);
+    CalculateCurve (newPos, pos2, node1, node2, maxrecurse-1, points);
+  }
+  else
+  {
+    points.Push (pos1);
+  }
+}
+
 void GraphView::Render3D ()
 {
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
     GraphLink& l = links[i];
-    GraphNode* node1 = nodes.Get (l.node1, 0);
-    GraphNode* node2 = nodes.Get (l.node2, 0);
-    if ((!node1) || (!node2))
+    csVector2 pos1, pos2;
+    bool secondary1, secondary2;
+    csVector2 spos1, spos2;
+    if (!GetNodeLinkPosition (l.node1, pos1, secondary1, spos1))
     {
-      if (!node1) printf ("Link: node '%s' does not exist!\n", l.node1.GetData ());
-      if (!node2) printf ("Link: node '%s' does not exist!\n", l.node2.GetData ());
-      continue;	// Ignore this link.
+      printf ("Link: node '%s' does not exist!\n", l.node1.GetData ());
+      continue;
     }
-    csVector2 pos1 = node1->marker->GetPosition ();
-    csVector2 pos2 = node2->marker->GetPosition ();
+    if (!GetNodeLinkPosition (l.node2, pos2, secondary2, spos2))
+    {
+      printf ("Link: node '%s' does not exist!\n", l.node2.GetData ());
+      continue;
+    }
     iMarkerColor* color = l.color;
     csPen* pen = static_cast<MarkerColor*> (color)->GetPen (1);
-    pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
 
-    if (l.arrow)
+    if (l.soft)
     {
-      csVector2 c = (pos1+pos2)/2.0f;
-      int dx = pos2.x-pos1.x;
-      int dy = pos2.y-pos1.y;
-      int dxr = -(pos2.y-pos1.y);
-      int dyr = pos2.x-pos1.x;
-      csVector2 r1 (-dx+dxr, -dy+dyr); r1.Normalize (); r1 *= 10.0f;
-      csVector2 r2 (-dx-dxr, -dy-dyr); r2.Normalize (); r2 *= 10.0f;
-      pen->DrawLine (c.x, c.y, c.x+r1.x, c.y+r1.y);
-      pen->DrawLine (c.x, c.y, c.x+r2.x, c.y+r2.y);
+      csArray<csVector2> points;
+      if (secondary1) points.Push (pos1);
+      CalculateCurve (secondary1 ? spos1 : pos1,
+	  secondary2 ? spos2 : pos2,
+	  secondary1 ? "___XXX___" : l.node1,
+	  secondary2 ? "___XXX___" : l.node2, 5, points);
+      if (secondary2) points.Push (spos2);
+      points.Push (pos2);
+
+      csCatmullRomSpline spline (2, points.GetSize ());
+      float totaldist = 0.0f;
+      for (size_t i = 1 ; i < points.GetSize () ; i++)
+	totaldist += (points[i]-points[i-1]).Norm ();
+      float curdist = 0.0f;
+      for (size_t i = 0 ; i < points.GetSize () ; i++)
+      {
+	spline.SetDimensionValue (0, i, points[i].x);
+	spline.SetDimensionValue (1, i, points[i].y);
+	//spline.SetTimeValue (i, float (i) / float (points.GetSize ()-1));
+	spline.SetTimeValue (i, curdist / totaldist);
+	if (i < points.GetSize ()-1)
+	  curdist += (points[i+1]-points[i]).Norm ();
+      }
+      float len = (pos1-pos2).Norm ();
+      float stepsize = 5.0f;
+      int numsteps = int (len / stepsize + 1);
+      spline.Calculate (0.0f);
+      pos1.Set (spline.GetInterpolatedDimension (0), spline.GetInterpolatedDimension (1));
+      for (int i = 1 ; i < numsteps ; i++)
+      {
+	float time = float (i) / float (numsteps-1);
+	spline.Calculate (time);
+        pos2.Set (spline.GetInterpolatedDimension (0), spline.GetInterpolatedDimension (1));
+        pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
+        if (l.arrow && i == numsteps/2)
+	{
+	  csVector2 c = (pos1+pos2)/2.0f;
+	  int dx = pos2.x-pos1.x;
+	  int dy = pos2.y-pos1.y;
+	  int dxr = -(pos2.y-pos1.y);
+	  int dyr = pos2.x-pos1.x;
+	  csVector2 r1 (-dx+dxr, -dy+dyr); r1.Normalize (); r1 *= 10.0f;
+	  csVector2 r2 (-dx-dxr, -dy-dyr); r2.Normalize (); r2 *= 10.0f;
+	  pen->DrawLine (c.x, c.y, c.x+r1.x, c.y+r1.y);
+	  pen->DrawLine (c.x, c.y, c.x+r2.x, c.y+r2.y);
+	}
+	pos1 = pos2;
+      }
+    }
+    else
+    {
+      pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
+      if (l.arrow)
+      {
+	csVector2 c = (pos1+pos2)/2.0f;
+	int dx = pos2.x-pos1.x;
+	int dy = pos2.y-pos1.y;
+	int dxr = -(pos2.y-pos1.y);
+	int dyr = pos2.x-pos1.x;
+	csVector2 r1 (-dx+dxr, -dy+dyr); r1.Normalize (); r1 *= 10.0f;
+	csVector2 r2 (-dx-dxr, -dy-dyr); r2.Normalize (); r2 *= 10.0f;
+	pen->DrawLine (c.x, c.y, c.x+r1.x, c.y+r1.y);
+	pen->DrawLine (c.x, c.y, c.x+r2.x, c.y+r2.y);
+      }
     }
   }
 }
@@ -495,6 +743,7 @@ void GraphView::LinkNode (const char* node1, const char* node2,
     {
       l.color = style->GetColor ();
       l.arrow = style->IsArrow ();
+      l.soft = style->IsSoft ();
       l.strength = style->GetLinkStrength ();
       l.maybeDelete = false;
       return;
@@ -505,6 +754,7 @@ void GraphView::LinkNode (const char* node1, const char* node2,
   l.node2 = node2;
   l.color = style->GetColor ();
   l.arrow = style->IsArrow ();
+  l.soft = style->IsSoft ();
   l.strength = style->GetLinkStrength ();
   links.Push (l);
 }
@@ -592,10 +842,11 @@ void GraphView::CreateSubNode (const char* parentNode, const char* name, const c
   UpdateNodeMarker (marker, label, style, w, h);
   marker->SetSelectionLevel (SELECTION_NONE);
 
-  SubNode* sn = new SubNode ();;
+  SubNode* sn = new SubNode ();
   sn->name = name;
   sn->marker = marker;
   sn->size = csVector2 (w, h);
+  sn->conStyle = style->GetConnectorStyle ();
   node->subnodes.Push (sn);
   subnodes.Put (name, sn);
   UpdateSubNodePositions (node);
@@ -631,6 +882,8 @@ void GraphView::CreateNode (const char* name, const char* label,
   node->velocity.Set (0, 0);
   node->size = csVector2 (w, h);
   node->weightFactor = style->GetWeightFactor ();
+  node->externalInfluenceFactor = style->GetExternalInfluenceFactor ();
+  node->conStyle = style->GetConnectorStyle ();
   nodes.Put (name, node);
 }
 
@@ -703,6 +956,7 @@ void GraphView::ChangeSubNode (const char* parentNode, const char* name, const c
   sn->marker->ClearHitAreas ();
   UpdateNodeMarker (sn->marker, label, style, w, h);
   sn->size = csVector2 (w, h);
+  sn->conStyle = style->GetConnectorStyle ();
   sn->maybeDelete = false;
 }
 
@@ -718,6 +972,9 @@ void GraphView::ChangeNode (const char* name, const char* label,
   node->marker->ClearHitAreas ();
   UpdateNodeMarker (node->marker, label, style, w, h);
   node->size = csVector2 (w, h);
+  node->conStyle = style->GetConnectorStyle ();
+  node->weightFactor = style->GetWeightFactor ();
+  node->externalInfluenceFactor = style->GetExternalInfluenceFactor ();
   node->maybeDelete = false;
 }
 
