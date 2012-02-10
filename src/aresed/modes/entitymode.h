@@ -82,12 +82,10 @@ private:
   csRef<iGraphNodeStyle> styleStateDefault;
   csRef<iGraphNodeStyle> styleResponse;
   csRef<iGraphNodeStyle> styleReward;
-  csRef<iGraphNodeStyle> styleInvisible;
 
   csRef<iGraphLinkStyle> styleThickLink;
   csRef<iGraphLinkStyle> styleThinLink;
   csRef<iGraphLinkStyle> styleArrowLink;
-  csRef<iGraphLinkStyle> styleArrow0Link;
 
   iGraphView* view;
   iMarkerColor* NewColor (const char* name,
