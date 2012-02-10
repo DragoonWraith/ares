@@ -342,6 +342,7 @@ private:
   bool smartRefresh;
 
   csHash<GraphNode*,csString> nodes;
+  csHash<SubNode*,csString> subnodes;
   csArray<GraphLink> links;
   iMarker* draggingMarker;
   iMarker* activeMarker;

@@ -394,6 +394,7 @@ void GraphView::Clear ()
     delete node;
   }
   nodes.DeleteAll ();
+  subnodes.DeleteAll ();
   links.DeleteAll ();
   activeMarker = 0;
 }
@@ -565,14 +566,7 @@ void GraphView::UpdateSubNodePositions (GraphNode* node)
 bool GraphView::NodeExists (const char* nodeName) const
 {
   if (nodes.Contains (nodeName)) return true;
-  csHash<GraphNode*,csString>::ConstGlobalIterator it = nodes.GetIterator ();
-  while (it.HasNext ())
-  {
-    csString key;
-    GraphNode* node = it.Next (key);
-    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
-      if (node->subnodes[i]->name == nodeName) return true;
-  }
+  if (subnodes.Contains (nodeName)) return true;
   return false;
 }
 
@@ -584,12 +578,11 @@ void GraphView::CreateSubNode (const char* parentNode, const char* name, const c
 
   if (smartRefresh)
   {
-    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
-      if (node->subnodes[i]->name == name)
-      {
-	ChangeSubNode (parentNode, name, label, style);
-	return;
-      }
+    if (subnodes.Contains (name))
+    {
+      ChangeSubNode (parentNode, name, label, style);
+      return;
+    }
     // Otherwise just add the node as usual.
   }
 
@@ -604,6 +597,7 @@ void GraphView::CreateSubNode (const char* parentNode, const char* name, const c
   sn->marker = marker;
   sn->size = csVector2 (w, h);
   node->subnodes.Push (sn);
+  subnodes.Put (name, sn);
   UpdateSubNodePositions (node);
 }
 
@@ -659,11 +653,12 @@ void GraphView::RemoveNode (const char* name)
       if (mgr->GetDraggingMarker () == sn->marker)
 	mgr->StopDrag ();
       mgr->DestroyMarker (sn->marker);
+      subnodes.DeleteAll (sn->name);
     }
     nodes.DeleteAll (name);	// @@@ Node names should be unique?
     delete node;
   }
-  else
+  else if (subnodes.Contains (name))
   {
     csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
     while (it.HasNext ())
@@ -682,6 +677,7 @@ void GraphView::RemoveNode (const char* name)
 
 	  mgr->DestroyMarker (sn->marker);
 	  n->subnodes.DeleteIndex (i);
+	  subnodes.DeleteAll (name);
 	  return;
 	}
       }
@@ -697,21 +693,17 @@ void GraphView::ChangeSubNode (const char* parentNode, const char* name, const c
   if (!node) return;	// @@@ Error?
   if (mgr->GetDraggingMarker () == node->marker)
     mgr->StopDrag ();
-  for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
-  {
-    SubNode* sn = node->subnodes[i];
-    if (sn->name == name)
-    {
-      if (mgr->GetDraggingMarker () == sn->marker)
-        mgr->StopDrag ();
-      sn->marker->Clear ();
-      sn->marker->ClearHitAreas ();
-      UpdateNodeMarker (sn->marker, label, style, w, h);
-      sn->size = csVector2 (w, h);
-      sn->maybeDelete = false;
-      return;
-    }
-  }
+
+  SubNode* sn = subnodes.Get (name, 0);
+  if (!sn) return;	// @@@ Error?
+
+  if (mgr->GetDraggingMarker () == sn->marker)
+    mgr->StopDrag ();
+  sn->marker->Clear ();
+  sn->marker->ClearHitAreas ();
+  UpdateNodeMarker (sn->marker, label, style, w, h);
+  sn->size = csVector2 (w, h);
+  sn->maybeDelete = false;
 }
 
 void GraphView::ChangeNode (const char* name, const char* label,
