@@ -319,7 +319,7 @@ struct GraphNode
   csVector2 size;
   float weightFactor;
   bool maybeDelete;	// Used in smart refresh mode.
-  csArray<SubNode> subnodes;
+  csPDelArray<SubNode> subnodes;
   GraphNode () : marker (0), frozen (false), weightFactor (1.0f), maybeDelete (false) { }
 };
 
@@ -341,7 +341,7 @@ private:
   bool visible;
   bool smartRefresh;
 
-  csHash<GraphNode,csString> nodes;
+  csHash<GraphNode*,csString> nodes;
   csArray<GraphLink> links;
   iMarker* draggingMarker;
   iMarker* activeMarker;
@@ -368,7 +368,7 @@ private:
   // velocities. Returns true if the simulation appears cool enough (not
   // a lot of movement).
   bool MoveNodes (float seconds);
-  void UpdateSubNodePositions (GraphNode& node);
+  void UpdateSubNodePositions (GraphNode* node);
 
   float secondsTodo;
 

@@ -123,20 +123,20 @@ GraphView::GraphView (MarkerManager* mgr) :
 
 void GraphView::ActivateNode (const char* name)
 {
-  GraphNode n;
-  const GraphNode& node = nodes.Get (name, n);
-  ActivateMarker (node.marker, name);
+  GraphNode* node = nodes.Get (name, 0);
+  if (node)
+    ActivateMarker (node->marker, name);
 }
 
 const char* GraphView::GetActiveNode () const
 {
   if (!activeMarker) return 0;
-  csHash<GraphNode,csString>::ConstGlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::ConstGlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
     csString key;
-    const GraphNode& node = it.Next (key);
-    if (node.marker == activeMarker) return node.name;
+    GraphNode* node = it.Next (key);
+    if (node->marker == activeMarker) return node->name;
   }
   return 0;
 }
@@ -148,18 +148,18 @@ void GraphView::ActivateMarker (iMarker* marker, const char* node)
   if (activeMarker) activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
   if (activeMarker && !node)
   {
-    csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+    csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
     while (it.HasNext ())
     {
       csString key;
-      const GraphNode& n = it.Next (key);
-      if (marker == n.marker) { node = n.name; break; }
+      GraphNode* n = it.Next (key);
+      if (marker == n->marker) { node = n->name; break; }
       bool found = false;
-      for (size_t i = 0 ; i < n.subnodes.GetSize () ; i++)
-	if (n.subnodes[i].marker == marker)
+      for (size_t i = 0 ; i < n->subnodes.GetSize () ; i++)
+	if (n->subnodes[i]->marker == marker)
 	{
 	  found = true;
-	  node = n.subnodes[i].name;
+	  node = n->subnodes[i]->name;
 	  break;
 	}
       if (found) break;
@@ -176,12 +176,12 @@ void GraphView::AddNodeActivationCallback (iGraphNodeCallback* cb)
 
 void GraphView::ForcePosition (const char* name, const csVector2& pos)
 {
-  GraphNode n;
-  GraphNode& node = nodes.Get (name, n);
-  node.frozen = true;
-  if (node.marker)
+  GraphNode* node = nodes.Get (name, 0);
+  if (!node) return;
+  node->frozen = true;
+  if (node->marker)
   {
-    node.marker->SetPosition (pos);
+    node->marker->SetPosition (pos);
     UpdateSubNodePositions (node);
   }
 }
@@ -190,14 +190,14 @@ const char* GraphView::FindHitNode (int mouseX, int mouseY)
 {
   int data;
   iMarker* marker = mgr->FindHitMarker (mouseX, mouseY, data);
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    GraphNode& node = it.Next (currentNode);
-    if (node.marker == marker) return currentNode;
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
-      if (node.subnodes[i].marker == marker)
-	return node.subnodes[i].name;
+    GraphNode* node = it.Next (currentNode);
+    if (node->marker == marker) return currentNode;
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+      if (node->subnodes[i]->marker == marker)
+	return node->subnodes[i]->name;
   }
   return 0;
 }
@@ -218,33 +218,33 @@ void GraphView::HandlePushingForces ()
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   // Handle all pushing forces.
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
     csString key;
-    GraphNode& node = it.Next (key);
-    if (node.marker == draggingMarker || node.frozen) continue;
+    GraphNode* node = it.Next (key);
+    if (node->marker == draggingMarker || node->frozen) continue;
 
-    const csVector2& pos = node.marker->GetPosition ();
-    node.netForce.Set (0, 0);
+    const csVector2& pos = node->marker->GetPosition ();
+    node->netForce.Set (0, 0);
 
     // The border pushes too.
-    node.netForce += (pos - csVector2 (0, pos.y)) * nodeForceFactor / (pos.x * pos.x);
-    node.netForce += (pos - csVector2 (fw, pos.y)) * nodeForceFactor / ((fw-pos.x) * (fw-pos.x));
-    node.netForce += (pos - csVector2 (pos.x, 0)) * nodeForceFactor / (pos.y * pos.y);
-    node.netForce += (pos - csVector2 (pos.x, fh)) * nodeForceFactor / ((fh-pos.y) * (fh-pos.y));
+    node->netForce += (pos - csVector2 (0, pos.y)) * nodeForceFactor / (pos.x * pos.x);
+    node->netForce += (pos - csVector2 (fw, pos.y)) * nodeForceFactor / ((fw-pos.x) * (fw-pos.x));
+    node->netForce += (pos - csVector2 (pos.x, 0)) * nodeForceFactor / (pos.y * pos.y);
+    node->netForce += (pos - csVector2 (pos.x, fh)) * nodeForceFactor / ((fh-pos.y) * (fh-pos.y));
 
-    csHash<GraphNode,csString>::GlobalIterator it2 = nodes.GetIterator ();
+    csHash<GraphNode*,csString>::GlobalIterator it2 = nodes.GetIterator ();
     while (it2.HasNext ())
     {
       csString key2;
-      GraphNode& node2 = it2.Next (key2);
-      if (node.marker != node2.marker)
+      GraphNode* node2 = it2.Next (key2);
+      if (node->marker != node2->marker)
       {
-	const csVector2& pos2 = node2.marker->GetPosition ();
+	const csVector2& pos2 = node2->marker->GetPosition ();
 	float sqdist = SqDistance2d (pos, pos2);
 	if (sqdist < .0001) sqdist = .0001;
-	node.netForce += (pos-pos2) * node2.weightFactor * nodeForceFactor / sqdist;
+	node->netForce += (pos-pos2) * node2->weightFactor * nodeForceFactor / sqdist;
       }
     }
   }
@@ -253,19 +253,18 @@ void GraphView::HandlePushingForces ()
 void GraphView::HandlePullingLinks ()
 {
   // Handle all links.
-  GraphNode n;
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
     GraphLink& l = links[i];
-    GraphNode& node1 = nodes.Get (l.node1, n);
-    GraphNode& node2 = nodes.Get (l.node2, n);
-    if (node1.marker && node2.marker)
+    GraphNode* node1 = nodes.Get (l.node1, 0);
+    GraphNode* node2 = nodes.Get (l.node2, 0);
+    if (node1 && node2 && node1->marker && node2->marker)
     {
-      const csVector2& pos1 = node1.marker->GetPosition ();
-      const csVector2& pos2 = node2.marker->GetPosition ();
+      const csVector2& pos1 = node1->marker->GetPosition ();
+      const csVector2& pos2 = node2->marker->GetPosition ();
       csVector2 force = (pos2-pos1) * l.strength * linkForceFactor;
-      node1.netForce += force;
-      node2.netForce -= force;
+      node1->netForce += force;
+      node2->netForce -= force;
     }
   }
 }
@@ -275,23 +274,23 @@ bool GraphView::MoveNodes (float seconds)
   int fw = mgr->GetG2D ()->GetWidth ();
   int fh = mgr->GetG2D ()->GetHeight ();
   bool allCool = true;
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
     csString key;
-    GraphNode& node = it.Next (key);
-    if (node.marker == draggingMarker || node.frozen) continue;
+    GraphNode* node = it.Next (key);
+    if (node->marker == draggingMarker || node->frozen) continue;
 
-    node.velocity = (node.velocity + node.netForce) * 0.85f;
-    csVector2 pos = node.marker->GetPosition ();
+    node->velocity = (node->velocity + node->netForce) * 0.85f;
+    csVector2 pos = node->marker->GetPosition ();
     csVector2 oldpos = pos;
-    pos += node.velocity * (seconds * 50.0f);
+    pos += node->velocity * (seconds * 50.0f);
 #   define NODE_MARGIN 10
-    if (pos.x > fw-node.size.x/2-NODE_MARGIN) pos.x = fw-node.size.x/2-NODE_MARGIN;
-    else if (pos.x < node.size.x/2+NODE_MARGIN) pos.x = node.size.x/2+NODE_MARGIN;
-    if (pos.y > fh-node.size.y/2-NODE_MARGIN) pos.y = fh-node.size.y/2-NODE_MARGIN;
-    else if (pos.y < node.size.y/2+NODE_MARGIN) pos.y = node.size.y/2+NODE_MARGIN;
-    node.marker->SetPosition (pos);
+    if (pos.x > fw-node->size.x/2-NODE_MARGIN) pos.x = fw-node->size.x/2-NODE_MARGIN;
+    else if (pos.x < node->size.x/2+NODE_MARGIN) pos.x = node->size.x/2+NODE_MARGIN;
+    if (pos.y > fh-node->size.y/2-NODE_MARGIN) pos.y = fh-node->size.y/2-NODE_MARGIN;
+    else if (pos.y < node->size.y/2+NODE_MARGIN) pos.y = node->size.y/2+NODE_MARGIN;
+    node->marker->SetPosition (pos);
     UpdateSubNodePositions (node);
     if (coolDownPeriod)
     {
@@ -332,20 +331,19 @@ void GraphView::UpdateFrame ()
 
 void GraphView::Render3D ()
 {
-  GraphNode n;
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
     GraphLink& l = links[i];
-    GraphNode& node1 = nodes.Get (l.node1, n);
-    GraphNode& node2 = nodes.Get (l.node2, n);
-    if ((!node1.marker) || (!node2.marker))
+    GraphNode* node1 = nodes.Get (l.node1, 0);
+    GraphNode* node2 = nodes.Get (l.node2, 0);
+    if ((!node1) || (!node2))
     {
-      if (!node1.marker) printf ("Link: node '%s' does not exist!\n", l.node1.GetData ());
-      if (!node2.marker) printf ("Link: node '%s' does not exist!\n", l.node2.GetData ());
+      if (!node1) printf ("Link: node '%s' does not exist!\n", l.node1.GetData ());
+      if (!node2) printf ("Link: node '%s' does not exist!\n", l.node2.GetData ());
       continue;	// Ignore this link.
     }
-    csVector2 pos1 = node1.marker->GetPosition ();
-    csVector2 pos2 = node2.marker->GetPosition ();
+    csVector2 pos1 = node1->marker->GetPosition ();
+    csVector2 pos2 = node2->marker->GetPosition ();
     iMarkerColor* color = l.color;
     csPen* pen = static_cast<MarkerColor*> (color)->GetPen (1);
     pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
@@ -372,27 +370,28 @@ void GraphView::SetVisible (bool v)
   {
     coolDownPeriod = true;
   }
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    GraphNode& node = it.Next ();
-    iMarker* marker = node.marker;
+    GraphNode* node = it.Next ();
+    iMarker* marker = node->marker;
     marker->SetVisible (v);
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
-      node.subnodes[i].marker->SetVisible (v);
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+      node->subnodes[i]->marker->SetVisible (v);
   }
 }
 
 void GraphView::Clear ()
 {
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    GraphNode& node = it.Next ();
-    iMarker* marker = node.marker;
+    GraphNode* node = it.Next ();
+    iMarker* marker = node->marker;
     mgr->DestroyMarker (marker);
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
-      mgr->DestroyMarker (node.subnodes[i].marker);
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+      mgr->DestroyMarker (node->subnodes[i]->marker);
+    delete node;
   }
   nodes.DeleteAll ();
   links.DeleteAll ();
@@ -402,13 +401,13 @@ void GraphView::Clear ()
 void GraphView::StartRefresh ()
 {
   // Mark all nodes and links as 'maybeDelete'.
-  csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
-    GraphNode& node = it.Next ();
-    node.maybeDelete = true;
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
-      node.subnodes[i].maybeDelete = true;
+    GraphNode* node = it.Next ();
+    node->maybeDelete = true;
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+      node->subnodes[i]->maybeDelete = true;
   }
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
@@ -429,18 +428,18 @@ void GraphView::FinishRefresh ()
       i++;
   }
   csSet<csString> toDelete;
-  csHash<GraphNode,csString>::GlobalIterator nodesIt = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::GlobalIterator nodesIt = nodes.GetIterator ();
   while (nodesIt.HasNext ())
   {
     csString key;
-    GraphNode& node = nodesIt.Next (key);
-    if (node.maybeDelete) toDelete.Add (key);
+    GraphNode* node = nodesIt.Next (key);
+    if (node->maybeDelete) toDelete.Add (key);
     else
     {
       size_t j = 0;
-      while (j < node.subnodes.GetSize ())
-	if (node.subnodes[j].maybeDelete)
-	  RemoveNode (node.subnodes[j].name);
+      while (j < node->subnodes.GetSize ())
+	if (node->subnodes[j]->maybeDelete)
+	  RemoveNode (node->subnodes[j]->name);
       	else
 	  j++;
     }
@@ -548,31 +547,31 @@ void GraphView::UpdateNodeMarker (iMarker* marker, const char* label,
   hitArea->DefineDrag (0, 0, MARKER_2D, CONSTRAIN_NONE, cb);
 }
 
-void GraphView::UpdateSubNodePositions (GraphNode& node)
+void GraphView::UpdateSubNodePositions (GraphNode* node)
 {
   csVector2 relpos (20, 30);
-  relpos.y -= node.size.y / 2;
-  for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+  relpos.y -= node->size.y / 2;
+  for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
   {
-    SubNode& sn = node.subnodes[i];
-    sn.relpos = relpos;
-    relpos.y += sn.size.y;
-    csVector2 realpos = node.marker->GetPosition () + sn.relpos;
-    realpos.x -= (node.size.x - sn.size.x) / 2;
-    sn.marker->SetPosition (realpos);
+    SubNode* sn = node->subnodes[i];
+    sn->relpos = relpos;
+    relpos.y += sn->size.y;
+    csVector2 realpos = node->marker->GetPosition () + sn->relpos;
+    realpos.x -= (node->size.x - sn->size.x) / 2;
+    sn->marker->SetPosition (realpos);
   }
 }
 
 bool GraphView::NodeExists (const char* nodeName) const
 {
   if (nodes.Contains (nodeName)) return true;
-  csHash<GraphNode,csString>::ConstGlobalIterator it = nodes.GetIterator ();
+  csHash<GraphNode*,csString>::ConstGlobalIterator it = nodes.GetIterator ();
   while (it.HasNext ())
   {
     csString key;
-    const GraphNode& node = it.Next (key);
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
-      if (node.subnodes[i].name == nodeName) return true;
+    GraphNode* node = it.Next (key);
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+      if (node->subnodes[i]->name == nodeName) return true;
   }
   return false;
 }
@@ -580,13 +579,13 @@ bool GraphView::NodeExists (const char* nodeName) const
 void GraphView::CreateSubNode (const char* parentNode, const char* name, const char* label,
       iGraphNodeStyle* style)
 {
-  // @@@ Error check if parent doesn't exist?
-  GraphNode n;
-  GraphNode& node = nodes.Get (parentNode, n);
+  GraphNode* node = nodes.Get (parentNode, 0);
+  if (!node) return;	// @@@ Error?
+
   if (smartRefresh)
   {
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
-      if (node.subnodes[i].name == name)
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
+      if (node->subnodes[i]->name == name)
       {
 	ChangeSubNode (parentNode, name, label, style);
 	return;
@@ -600,11 +599,11 @@ void GraphView::CreateSubNode (const char* parentNode, const char* name, const c
   UpdateNodeMarker (marker, label, style, w, h);
   marker->SetSelectionLevel (SELECTION_NONE);
 
-  SubNode sn;
-  sn.name = name;
-  sn.marker = marker;
-  sn.size = csVector2 (w, h);
-  node.subnodes.Push (sn);
+  SubNode* sn = new SubNode ();;
+  sn->name = name;
+  sn->marker = marker;
+  sn->size = csVector2 (w, h);
+  node->subnodes.Push (sn);
   UpdateSubNodePositions (node);
 }
 
@@ -632,56 +631,57 @@ void GraphView::CreateNode (const char* name, const char* label,
   marker->SetPosition (csVector2 (w2+rng.Get ()*(fw-w2-w2), h2+rng.Get ()*(fh-h2-h2)));
   marker->SetSelectionLevel (SELECTION_NONE);
 
-  GraphNode node;
-  node.name = name;
-  node.marker = marker;
-  node.velocity.Set (0, 0);
-  node.size = csVector2 (w, h);
-  node.weightFactor = style->GetWeightFactor ();
+  GraphNode* node = new GraphNode ();
+  node->name = name;
+  node->marker = marker;
+  node->velocity.Set (0, 0);
+  node->size = csVector2 (w, h);
+  node->weightFactor = style->GetWeightFactor ();
   nodes.Put (name, node);
 }
 
 void GraphView::RemoveNode (const char* name)
 {
-  GraphNode node = nodes.Get (name, GraphNode ());
-  if (node.marker)
+  GraphNode* node = nodes.Get (name, 0);
+  if (node && node->marker)
   {
-    if (node.marker == activeMarker) activeMarker = 0;
-    if (node.marker == draggingMarker) draggingMarker = 0;
-    if (mgr->GetDraggingMarker () == node.marker)
+    if (node->marker == activeMarker) activeMarker = 0;
+    if (node->marker == draggingMarker) draggingMarker = 0;
+    if (mgr->GetDraggingMarker () == node->marker)
       mgr->StopDrag ();
 
-    mgr->DestroyMarker (node.marker);
-    for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+    mgr->DestroyMarker (node->marker);
+    for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
     {
-      SubNode& sn = node.subnodes[i];
-      if (sn.marker == activeMarker) activeMarker = 0;
-      if (sn.marker == draggingMarker) draggingMarker = 0;
-      if (mgr->GetDraggingMarker () == sn.marker)
+      SubNode* sn = node->subnodes[i];
+      if (sn->marker == activeMarker) activeMarker = 0;
+      if (sn->marker == draggingMarker) draggingMarker = 0;
+      if (mgr->GetDraggingMarker () == sn->marker)
 	mgr->StopDrag ();
-      mgr->DestroyMarker (sn.marker);
+      mgr->DestroyMarker (sn->marker);
     }
-    nodes.DeleteAll (name);
+    nodes.DeleteAll (name);	// @@@ Node names should be unique?
+    delete node;
   }
   else
   {
-    csHash<GraphNode,csString>::GlobalIterator it = nodes.GetIterator ();
+    csHash<GraphNode*,csString>::GlobalIterator it = nodes.GetIterator ();
     while (it.HasNext ())
     {
       csString key;
-      GraphNode& n = it.Next (key);
-      for (size_t i = 0 ; i < n.subnodes.GetSize () ; i++)
+      GraphNode* n = it.Next (key);
+      for (size_t i = 0 ; i < n->subnodes.GetSize () ; i++)
       {
-	SubNode& sn = n.subnodes[i];
-	if (sn.name == name)
+	SubNode* sn = n->subnodes[i];
+	if (sn->name == name)
 	{
-	  if (sn.marker == activeMarker) activeMarker = 0;
-	  if (sn.marker == draggingMarker) draggingMarker = 0;
-	  if (mgr->GetDraggingMarker () == sn.marker)
+	  if (sn->marker == activeMarker) activeMarker = 0;
+	  if (sn->marker == draggingMarker) draggingMarker = 0;
+	  if (mgr->GetDraggingMarker () == sn->marker)
 	    mgr->StopDrag ();
 
-	  mgr->DestroyMarker (sn.marker);
-	  n.subnodes.DeleteIndex (i);
+	  mgr->DestroyMarker (sn->marker);
+	  n->subnodes.DeleteIndex (i);
 	  return;
 	}
       }
@@ -693,22 +693,22 @@ void GraphView::ChangeSubNode (const char* parentNode, const char* name, const c
     iGraphNodeStyle* style)
 {
   int w, h;
-  GraphNode n;
-  GraphNode& node = nodes.Get (parentNode, n);
-  if (mgr->GetDraggingMarker () == node.marker)
+  GraphNode* node = nodes.Get (parentNode, 0);
+  if (!node) return;	// @@@ Error?
+  if (mgr->GetDraggingMarker () == node->marker)
     mgr->StopDrag ();
-  for (size_t i = 0 ; i < node.subnodes.GetSize () ; i++)
+  for (size_t i = 0 ; i < node->subnodes.GetSize () ; i++)
   {
-    SubNode& sn = node.subnodes[i];
-    if (sn.name == name)
+    SubNode* sn = node->subnodes[i];
+    if (sn->name == name)
     {
-      if (mgr->GetDraggingMarker () == sn.marker)
+      if (mgr->GetDraggingMarker () == sn->marker)
         mgr->StopDrag ();
-      sn.marker->Clear ();
-      sn.marker->ClearHitAreas ();
-      UpdateNodeMarker (sn.marker, label, style, w, h);
-      sn.size = csVector2 (w, h);
-      sn.maybeDelete = false;
+      sn->marker->Clear ();
+      sn->marker->ClearHitAreas ();
+      UpdateNodeMarker (sn->marker, label, style, w, h);
+      sn->size = csVector2 (w, h);
+      sn->maybeDelete = false;
       return;
     }
   }
@@ -718,15 +718,15 @@ void GraphView::ChangeNode (const char* name, const char* label,
     iGraphNodeStyle* style)
 {
   int w, h;
-  GraphNode n;
-  GraphNode& node = nodes.Get (name, n);
-  if (mgr->GetDraggingMarker () == node.marker)
+  GraphNode* node = nodes.Get (name, 0);
+  if (!node) return;	// @@@ Error?
+  if (mgr->GetDraggingMarker () == node->marker)
     mgr->StopDrag ();
-  node.marker->Clear ();
-  node.marker->ClearHitAreas ();
-  UpdateNodeMarker (node.marker, label, style, w, h);
-  node.size = csVector2 (w, h);
-  node.maybeDelete = false;
+  node->marker->Clear ();
+  node->marker->ClearHitAreas ();
+  UpdateNodeMarker (node->marker, label, style, w, h);
+  node->size = csVector2 (w, h);
+  node->maybeDelete = false;
 }
 
 void GraphView::ReplaceNode (const char* oldNode, const char* newNode,
@@ -739,17 +739,18 @@ void GraphView::ReplaceNode (const char* oldNode, const char* newNode,
     ChangeNode (oldNode, label, style);
     return;
   }
-  GraphNode n;
-  const GraphNode& nodeOld = nodes.Get (oldNode, n);
+  const GraphNode* nodeOld = nodes.Get (oldNode, 0);
+  if (!nodeOld) return;	// @@@ Error?
   CreateNode (newNode, label, style);
-  GraphNode& nodeNew = nodes.Get (newNode, n);
-  nodeNew.velocity = nodeOld.velocity;
-  nodeNew.netForce = nodeOld.netForce;
-  if (nodeOld.marker)
-    nodeNew.marker->SetPosition (nodeOld.marker->GetPosition ());
-  if (nodeOld.marker == activeMarker)
+  GraphNode* nodeNew = nodes.Get (newNode, 0);
+  if (!nodeNew) return;	// @@@ Error?
+  nodeNew->velocity = nodeOld->velocity;
+  nodeNew->netForce = nodeOld->netForce;
+  if (nodeOld->marker)
+    nodeNew->marker->SetPosition (nodeOld->marker->GetPosition ());
+  if (nodeOld->marker == activeMarker)
   {
-    activeMarker = nodeNew.marker;
+    activeMarker = nodeNew->marker;
     activeMarker->SetSelectionLevel (SELECTION_ACTIVE);
   }
   RemoveNode (oldNode);
