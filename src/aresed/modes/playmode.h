@@ -45,6 +45,7 @@ private:
     bool isStatic;
     csReversibleTransform trans;
     csString entityName;
+    csString templateName;
   };
   csArray<Obj> objects;
 

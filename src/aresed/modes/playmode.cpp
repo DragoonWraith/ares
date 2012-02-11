@@ -49,7 +49,8 @@ DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
       obj.isStatic = dynobj->IsStatic ();
       obj.trans = dynobj->GetTransform ();
       if (dynobj->GetEntityTemplate ())
-        obj.entityName = dynobj->GetEntityTemplate ()->GetName ();
+        obj.templateName = dynobj->GetEntityTemplate ()->GetName ();
+      obj.entityName = dynobj->GetEntityName ();
       objects.Push (obj);
     }
   }
@@ -67,8 +68,8 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
   {
     Obj& obj = objects[i];
     iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
-    if (!obj.entityName.IsEmpty ())
-      dynobj->SetEntity (0, obj.entityName, 0);
+    if (!obj.templateName.IsEmpty ())
+      dynobj->SetEntity (obj.entityName, obj.templateName, 0);
     if (obj.isStatic)
       dynobj->MakeStatic ();
     else
@@ -122,8 +123,8 @@ void PlayMode::Start ()
 	csString tplName = dynobj->GetFactory ()->GetDefaultEntityTemplate ();
 	if (tplName.IsEmpty ())
 	  tplName = dynobj->GetFactory ()->GetName ();
-	printf ("Setting entity %s\n", tplName.GetData ());
-        dynobj->SetEntity (0, tplName, 0);
+	printf ("Setting entity %s with template %s\n", dynobj->GetEntityName (), tplName.GetData ());
+        dynobj->SetEntity (dynobj->GetEntityName (), tplName, 0);
       }
     }
   }
