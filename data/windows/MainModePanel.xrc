@@ -18,14 +18,33 @@
 				<flag>wxEXPAND</flag>
 				<border>5</border>
 				<object class="wxBoxSizer">
-					<orient>wxVERTICAL</orient>
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="m_staticText128">
+							<label>Name:</label>
+							<wrap>-1</wrap>
+						</object>
+					</object>
 					<object class="sizeritem">
 						<option>1</option>
-						<flag>wxALL|wxEXPAND</flag>
+						<flag>wxALL</flag>
 						<border>5</border>
-						<object class="wxCheckBox" name="staticCheckBox">
-							<label>Static</label>
-							<checked>0</checked>
+						<object class="wxTextCtrl" name="objectNameText">
+							<style>wxTE_PROCESS_ENTER</style>
+							<value></value>
+							<maxlength>0</maxlength>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="factoryNameLabel">
+							<label>...</label>
+							<wrap>-1</wrap>
 						</object>
 					</object>
 				</object>
@@ -37,30 +56,42 @@
 				<object class="wxBoxSizer">
 					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
-						<option>1</option>
+						<option>0</option>
 						<flag>wxALL</flag>
 						<border>5</border>
 						<object class="wxButton" name="rotLeftButton">
+							<size>50,-1</size>
 							<label>-</label>
 							<default>0</default>
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>1</option>
+						<option>0</option>
 						<flag>wxALL</flag>
 						<border>5</border>
 						<object class="wxButton" name="rotResetButton">
+							<size>50,-1</size>
 							<label>R</label>
 							<default>0</default>
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>1</option>
+						<option>0</option>
 						<flag>wxALL</flag>
 						<border>5</border>
 						<object class="wxButton" name="rotRightButton">
+							<size>50,-1</size>
 							<label>+</label>
 							<default>0</default>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxCheckBox" name="staticCheckBox">
+							<label>Static</label>
+							<checked>0</checked>
 						</object>
 					</object>
 				</object>
@@ -120,3 +151,4 @@
 		</object>
 	</object>
 </resource>
+

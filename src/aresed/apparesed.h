@@ -366,6 +366,12 @@ public:
   void SetStaticSelectedObjects (bool st);
 
   /**
+   * Set the name of the current selected objects (only works for the first
+   * selected object).
+   */
+  void ChangeNameSelectedObject (const char* name);
+
+  /**
    * Calculate a segment representing a beam that starts from camera
    * position towards a given point on screen.
    */

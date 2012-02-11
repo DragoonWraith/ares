@@ -222,6 +222,12 @@ void AresEdit3DView::SetStaticSelectedObjects (bool st)
   }
 }
 
+void AresEdit3DView::ChangeNameSelectedObject (const char* name)
+{
+  if (selection->GetSize () < 1) return;
+  selection->GetFirst ()->SetEntityName (name);
+}
+
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
   app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
@@ -229,7 +235,8 @@ void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_o
   bool curveTabEnable = false;
   if (selection->GetSize () == 1)
   {
-    csString name = selection->GetFirst ()->GetFactory ()->GetName ();
+    iDynamicObject* dynobj = selection->GetFirst ();
+    csString name = dynobj->GetFactory ()->GetName ();
     if (curvedMeshCreator->GetCurvedFactory (name)) curveTabEnable = true;
   }
   app->SetCurveModeEnabled (curveTabEnable);

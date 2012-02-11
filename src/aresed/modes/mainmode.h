@@ -162,6 +162,7 @@ public:
   void OnStack ();
   void OnSameY ();
   void OnStaticSelected ();
+  void OnObjectNameEntered ();
   void OnTreeSelChanged (wxTreeEvent& event);
 
   void OnSetStatic ();
@@ -190,6 +191,7 @@ public:
     void OnStack (wxCommandEvent& event) { s->OnStack (); }
     void OnSameY (wxCommandEvent& event) { s->OnSameY (); }
     void OnStaticSelected (wxCommandEvent& event) { s->OnStaticSelected (); }
+    void OnObjectNameEntered (wxCommandEvent& event) { s->OnObjectNameEntered (); }
     void OnTreeSelChanged (wxTreeEvent& event) { s->OnTreeSelChanged (event); }
 
     void OnSetStatic (wxCommandEvent& event) { s->OnSetStatic (); }

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "mainmode.h"
 #include "../ui/uimanager.h"
 #include "../ui/treeview.h"
+#include "../ui/uitools.h"
 #include "../models/dynfactmodel.h"
 
 #include <wx/wx.h>
@@ -45,6 +46,7 @@ BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
   EVT_BUTTON (XRCID("stackButton"), MainMode::Panel::OnStack)
   EVT_BUTTON (XRCID("sameYButton"), MainMode::Panel::OnSameY)
   EVT_CHECKBOX (XRCID("staticCheckBox"), MainMode::Panel::OnStaticSelected)
+  EVT_TEXT_ENTER (XRCID("objectNameText"), MainMode::Panel::OnObjectNameEntered)
   EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), MainMode::Panel::OnTreeSelChanged)
 END_EVENT_TABLE()
 
@@ -174,18 +176,30 @@ void MainMode::Refresh ()
 
 void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 {
+  wxTextCtrl* nameText = XRCCTRL (*panel, "objectNameText", wxTextCtrl);
   wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
   if (current.GetSize () > 1)
+  {
     staticCheck->Disable ();
+    nameText->Disable ();
+    UITools::SetValue (panel, "objectNameText", "");
+    UITools::SetValue (panel, "factoryNameLabel", "...");
+  }
   else if (current.GetSize () == 1)
   {
     staticCheck->Enable ();
     staticCheck->SetValue (current[0]->IsStatic ());
+    nameText->Enable ();
+    UITools::SetValue (panel, "objectNameText", current[0]->GetEntityName ());
+    UITools::SetValue (panel, "factoryNameLabel", current[0]->GetFactory ()->GetName ());
   }
   else
   {
-    staticCheck->Enable ();
+    staticCheck->Disable ();
     staticCheck->SetValue (false);
+    nameText->Disable ();
+    UITools::SetValue (panel, "objectNameText", "");
+    UITools::SetValue (panel, "factoryNameLabel", "");
   }
 
   if (current.GetSize () >= 1)
@@ -240,6 +254,12 @@ void MainMode::OnStaticSelected ()
 {
   wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
   aresed3d->SetStaticSelectedObjects (staticCheck->IsChecked ());
+}
+
+void MainMode::OnObjectNameEntered ()
+{
+  csString n = UITools::GetValue (panel, "objectNameText");
+  aresed3d->ChangeNameSelectedObject (n);
 }
 
 void MainMode::OnSetStatic ()
