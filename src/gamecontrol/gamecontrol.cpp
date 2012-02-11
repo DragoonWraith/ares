@@ -413,6 +413,12 @@ bool celPcGameController::StartDrag ()
       dragAnchor = isect;
       dragDistance = (isect - dragOrigin).Norm ();
     }
+    else if (dt == "none")
+    {
+      // No dragging allowed.
+      printf ("Inhibit drag!\n"); fflush (stdout);
+      return true;
+    }
     else
     {
       printf ("Start normal drag!\n"); fflush (stdout);
