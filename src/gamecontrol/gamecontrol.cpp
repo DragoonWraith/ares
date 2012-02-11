@@ -400,7 +400,19 @@ bool celPcGameController::StartDrag ()
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
   {
+    if (obj->GetEntity ())
+    {
+      csRef<iPcProperties> prop = celQueryPropertyClassEntity<iPcProperties> (obj->GetEntity ());
+      if (prop)
+      {
+        size_t idx = prop->GetPropertyIndex ("ares.inhibitdrag");
+        if (idx != csArrayItemNotFound && prop->GetPropertyBool (idx))
+	  return true;	// Don't allow dragging.
+      }
+    }
+
     dragobj = obj;
+
     csString dt = obj->GetFactory ()->GetAttribute (attrDragType);
     if (dt == "roty")
     {
@@ -417,6 +429,7 @@ bool celPcGameController::StartDrag ()
     {
       // No dragging allowed.
       printf ("Inhibit drag!\n"); fflush (stdout);
+      dragobj = 0;
       return true;
     }
     else
