@@ -1,9 +1,21 @@
 <library>
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="Zone" />
+    <factory name="Node" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Player" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
     <factory name="MetalDoor" maxradius="1" imposterradius="0" mass="1">
-      <attr name="category" value="Doors" />
       <attr name="ares.dragtype" value="roty" />
+      <attr name="category" value="Doors" />
       <box>
         <offset x="-0.5" y="1" z="-1.49943e-07" />
         <size x="1" y="2" z="0.050001" />
@@ -14,8 +26,8 @@
         <min x="-1" y="0" z="-0.025" />
         <max x="0" y="2" z="0.025" />
       </logicbox>
-      <attr name="category" value="Doors" />
       <attr name="defaultstatic" value="true" />
+      <attr name="category" value="Doors" />
       <box>
         <offset x="0.05" y="1" z="0" />
         <size x="0.1" y="2" z="0.05" />
