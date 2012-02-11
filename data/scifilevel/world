@@ -1,32 +1,31 @@
-<world>
-  <materials>
-    <material name="Material">
-      <shadervar type="vector4" name="specular">1.000000, 1.000000, 1.000000, 1</shadervar>
-    </material>
-  </materials>
-  <textures>
-  </textures>
+<?xml version="1.0" encoding="UTF-8"?>
+<world xmlns="http://crystalspace3d.org/xml/library">
   <library>factories/Room</library>
+  <start name="Camera">
+    <sector>outside</sector>
+    <position x="5.074326" z="-6.293959" y="2.465084" />
+    <up y="1" x="0" z="0" />
+  </start>
   <sector name="outside">
     <light name="Lamp_003">
       <center x="5.173634" z="-5.302315" y="3.636661" />
       <color red="1.000000" green="1.000000" blue="1.000000" />
-      <radius brightness="1.000000">29.999983</radius>
+      <radius brightness="1.000000">50.000000</radius>
       <attenuation>linear</attenuation>
     </light>
     <light name="Lamp_002">
       <center x="-3.489573" z="-4.799672" y="3.636661" />
       <color red="1.000000" green="1.000000" blue="1.000000" />
-      <radius brightness="1.000000">29.999983</radius>
+      <radius brightness="1.000000">50.000000</radius>
       <attenuation>linear</attenuation>
     </light>
     <light name="Lamp_001">
       <center x="-4.731398" z="4.040940" y="3.636661" />
       <color red="1.000000" green="1.000000" blue="1.000000" />
-      <radius brightness="1.000000">29.999983</radius>
+      <radius brightness="1.000000">50.000000</radius>
       <attenuation>linear</attenuation>
     </light>
-    <meshref name="Room">
+    <meshref name="Room_object">
       <factory>Room</factory>
       <move>
         <v x="0.0" z="0.0" y="0.0" />
@@ -54,8 +53,11 @@
            <colliderbox x=".5" y="5" z="11">
              <move y="2.5" z="3" x="-.25" />
            </colliderbox>
-           <colliderbox x=".5" y="5" z="2">
-             <move y="2.5" z="-7.5" x="-.25" />
+           <colliderbox x=".5" y="5" z="4">
+             <move y="2.5" z="-6.5" x="-.25" />
+           </colliderbox>
+           <colliderbox x=".5" y="1" z="2">
+             <move y="4.5" z="-3.5" x="-.25" />
            </colliderbox>
            <colliderbox x="2" y="5" z=".5">
              <move y="2.5" x="1" z="3.55" />
@@ -72,13 +74,8 @@
     <light name="Lamp">
       <center x="7.268602" z="6.040940" y="3.636661" />
       <color red="1.000000" green="1.000000" blue="1.000000" />
-      <radius brightness="1.000000">29.999983</radius>
+      <radius brightness="1.000000">50.000000</radius>
       <attenuation>linear</attenuation>
     </light>
   </sector>
-  <start name="Camera">
-    <sector>outside</sector>
-    <position x="5.074326" z="-6.293959" y="2.465084" />
-    <up y="1" x="0" z="0" />
-  </start>
 </world>
