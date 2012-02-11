@@ -43,6 +43,7 @@ BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
   EVT_BUTTON (XRCID("rotResetButton"), MainMode::Panel::OnRotReset)
   EVT_BUTTON (XRCID("alignRotButton"), MainMode::Panel::OnAlignR)
   EVT_BUTTON (XRCID("setPosButton"), MainMode::Panel::OnSetPos)
+  EVT_BUTTON (XRCID("snapButton"), MainMode::Panel::OnSnapObjects)
   EVT_BUTTON (XRCID("stackButton"), MainMode::Panel::OnStack)
   EVT_BUTTON (XRCID("sameYButton"), MainMode::Panel::OnSameY)
   EVT_CHECKBOX (XRCID("staticCheckBox"), MainMode::Panel::OnStaticSelected)
@@ -603,6 +604,23 @@ void MainMode::StartPasteSelection (const char* name)
   aresed3d->GetApp ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
 }
 
+void MainMode::OnSnapObjects ()
+{
+  Selection* selection = aresed3d->GetSelection ();
+  if (selection->GetSize () < 2)
+  {
+    aresed3d->GetApp ()->GetUIManager ()->Error ("Select at least two objects to snap together!");
+    return;
+  }
+  csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  for (size_t i = 1 ; i < ob.GetSize () ; i++)
+  {
+    ob[i]->MakeKinematic ();
+    ob[i]->SetTransform (ob[0]->GetTransform ());
+    ob[i]->UndoKinematic ();
+  }
+}
+
 void MainMode::JoinObjects ()
 {
   Selection* selection = aresed3d->GetSelection ();
@@ -617,9 +635,6 @@ void MainMode::JoinObjects ()
     aresed3d->GetApp ()->GetUIManager ()->Error ("The first object has no joints!");
     return;
   }
-  ob[1]->MakeKinematic ();
-  ob[1]->SetTransform (ob[0]->GetTransform ());
-  ob[1]->UndoKinematic ();
   // In this function all joints are connected between the two same objects.
   for (size_t i = 0 ; i < ob[0]->GetFactory ()->GetJointCount () ; i++)
     ob[0]->Connect (i, ob[1]);

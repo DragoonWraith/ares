@@ -120,6 +120,15 @@
 							<default>0</default>
 						</object>
 					</object>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<object class="wxButton" name="snapButton">
+							<label>Snap</label>
+							<default>0</default>
+						</object>
+					</object>
 				</object>
 			</object>
 			<object class="sizeritem">
