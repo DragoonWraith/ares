@@ -20,6 +20,16 @@ RedChair2:
   You can use it for whatever you like (even commercially).
   We recommend you to credit Theo, but you are not required to do so.
 
+StorageBoxLid (military box):
+  Original: http://opengameart.org/content/military-storage-box
+  License: Creative Commons: CC-BY-SA 3.0
+  Author: Rob Walker (ulf)
+
+OldDirtyTable:
+  Original: http://opengameart.org/content/mortis-and-tenon-table
+  License: Creative Commons: CC-BY-SA 3.0
+  Author: Rob Walker (ulf)
+
 MetalDoor:
   Author: Jorrit Tyberghein
   License: Creative Commons 3.0
