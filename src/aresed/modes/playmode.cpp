@@ -51,10 +51,26 @@ DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
       if (dynobj->GetEntityTemplate ())
         obj.templateName = dynobj->GetEntityTemplate ()->GetName ();
       obj.entityName = dynobj->GetEntityName ();
+      for (size_t j = 0 ; j < dynobj->GetFactory ()->GetJointCount () ; j++)
+      {
+	obj.connectedObjects.Push (FindObjIndex (dynobj->GetCell (), dynobj->GetConnectedObject (j)));
+      }
       objects.Push (obj);
     }
   }
 }
+
+size_t DynworldSnapshot::FindObjIndex (iDynamicCell* cell, iDynamicObject* dynobj)
+{
+  if (dynobj == 0) return csArrayItemNotFound;
+  for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+  {
+    if (dynobj == cell->GetObject (i)) return i;
+  }
+  return csArrayItemNotFound;
+}
+
+struct DynIdx { iDynamicObject* dynobj; size_t idx; };
 
 void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
 {
@@ -64,6 +80,7 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
     iDynamicCell* cell = cellIt->NextCell ();
     cell->DeleteObjects ();
   }
+  csArray<DynIdx> dynidx;
   for (size_t i = 0 ; i < objects.GetSize () ; i++)
   {
     Obj& obj = objects[i];
@@ -74,6 +91,22 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
       dynobj->MakeStatic ();
     else
       dynobj->MakeDynamic ();
+    if (obj.connectedObjects.GetSize () > 0)
+    {
+      DynIdx di;
+      di.dynobj = dynobj;
+      di.idx = i;
+      dynidx.Push (di);
+    }
+  }
+  // Connect all joints.
+  for (size_t i = 0 ; i < dynidx.GetSize () ; i++)
+  {
+    for (size_t j = 0 ; j < objects[dynidx[i].idx].connectedObjects.GetSize () ; j++)
+    {
+      size_t idx = objects[dynidx[i].idx].connectedObjects[j];
+      dynidx[i].dynobj->Connect (j, dynidx[i].dynobj->GetCell ()->GetObject (idx));
+    }
   }
 }
 

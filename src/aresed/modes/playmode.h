@@ -46,8 +46,13 @@ private:
     csReversibleTransform trans;
     csString entityName;
     csString templateName;
+    // Indices of connected objects.
+    csArray<size_t> connectedObjects;
   };
   csArray<Obj> objects;
+
+  // Find the index of a given object in this cell.
+  size_t FindObjIndex (iDynamicCell* cell, iDynamicObject* dynobj);
 
 public:
   DynworldSnapshot (iPcDynamicWorld* dynworld);
