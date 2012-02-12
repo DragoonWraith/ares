@@ -534,11 +534,6 @@ void EntityMode::GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& pcKe
 void EntityMode::BuildTemplateGraph (const char* templateName)
 {
   currentTemplate = templateName;
-  pcPanel->Hide ();
-  triggerPanel->Hide ();
-  rewardPanel->Hide ();
-  sequencePanel->Hide ();
-  tplPanel->Hide ();
 
   view->StartRefresh ();
 
