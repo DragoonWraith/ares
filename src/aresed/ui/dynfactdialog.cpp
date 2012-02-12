@@ -972,6 +972,62 @@ Offset2MinMaxValue::~Offset2MinMaxValue ()
 
 //--------------------------------------------------------------------------
 
+/**
+ * This standard action creates a new default child for a collection.
+ * It assumes the collection supports the NewValue() method. It will
+ * call the NewValue() method with an empty suggestion array.
+ */
+class ContainerBoxAction : public Action
+{
+private:
+  DynfactDialog* dialog;
+  Value* collection;
+
+public:
+  ContainerBoxAction (DynfactDialog* dialog, Value* collection)
+    : dialog (dialog), collection (collection) { }
+  virtual ~ContainerBoxAction () { }
+  virtual const char* GetName () const { return "Container Box"; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    iDynamicFactory* fact = dialog->GetCurrentFactory ();
+    if (!fact) return false;
+    csString dimS = dialog->GetUIManager ()->AskDialog ("Thickness of box sides", "Thickness:");
+    if (dimS.IsEmpty ()) return false;
+    float dim;
+    csScanStr (dimS, "%f", &dim);
+    const csBox3& bbox = fact->GetBBox ();
+    csBox3 bottom = bbox;
+    bottom.SetMax (1, bottom.GetMin (1)+dim);
+    fact->AddRigidBox (bottom.GetCenter (), bottom.GetSize (), 1.0);
+    csBox3 left = bbox;
+    left.SetMin (1, bottom.GetMax (1));
+    left.SetMax (0, left.GetMin (0)+dim);
+    fact->AddRigidBox (left.GetCenter (), left.GetSize (), 1.0);
+    csBox3 right = bbox;
+    right.SetMin (1, bottom.GetMax (1));
+    right.SetMin (0, right.GetMax (0)-dim);
+    fact->AddRigidBox (right.GetCenter (), right.GetSize (), 1.0);
+    csBox3 up = bbox;
+    up.SetMin (1, bottom.GetMax (1));
+    up.SetMin (0, left.GetMax (0));
+    up.SetMax (0, right.GetMin (0));
+    up.SetMax (2, right.GetMin (2)+dim);
+    fact->AddRigidBox (up.GetCenter (), up.GetSize (), 1.0);
+    csBox3 down = bbox;
+    down.SetMin (1, bottom.GetMax (1));
+    down.SetMin (0, left.GetMax (0));
+    down.SetMax (0, right.GetMin (0));
+    down.SetMin (2, right.GetMax (2)-dim);
+    fact->AddRigidBox (down.GetCenter (), down.GetSize (), 1.0);
+    collection->Refresh ();
+    dialog->GetColliderSelectedValue ()->Refresh ();
+    return true;
+  }
+};
+
+//--------------------------------------------------------------------------
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
   EndModal (TRUE);
@@ -1150,6 +1206,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   // The actions.
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
+  AddAction (colliderList, NEWREF(Action, new ContainerBoxAction (this, colliders)));
   AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
   AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
   AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
