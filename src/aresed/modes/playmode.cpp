@@ -105,7 +105,8 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
     for (size_t j = 0 ; j < objects[dynidx[i].idx].connectedObjects.GetSize () ; j++)
     {
       size_t idx = objects[dynidx[i].idx].connectedObjects[j];
-      dynidx[i].dynobj->Connect (j, dynidx[i].dynobj->GetCell ()->GetObject (idx));
+      if (idx != csArrayItemNotFound)
+        dynidx[i].dynobj->Connect (j, dynidx[i].dynobj->GetCell ()->GetObject (idx));
     }
   }
 }
