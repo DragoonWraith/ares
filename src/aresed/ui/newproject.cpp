@@ -229,11 +229,6 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
   {
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     assetList->DeleteItem (selIndex);
-    assetList->SetColumnWidth (0, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
-    assetList->SetColumnWidth (1, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
-    assetList->SetColumnWidth (2, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
-    assetList->SetColumnWidth (3, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
-    assetList->SetColumnWidth (4, wxLIST_AUTOSIZE | wxLIST_AUTOSIZE_USEHEADER);
     SetPathFile ("", "", false, false, false);
     selIndex = -1;
   }
@@ -277,11 +272,11 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("NewProjectDialog"));
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (assetList, 0, "Path", 200);
-  ListCtrlTools::SetColumn (assetList, 1, "File", 200);
-  ListCtrlTools::SetColumn (assetList, 2, "Dynfacts", 50);
-  ListCtrlTools::SetColumn (assetList, 3, "Templates", 50);
-  ListCtrlTools::SetColumn (assetList, 4, "Quests", 50);
+  ListCtrlTools::SetColumn (assetList, 0, "Path", 250);
+  ListCtrlTools::SetColumn (assetList, 1, "File", 120);
+  ListCtrlTools::SetColumn (assetList, 2, "Dynf", 50);
+  ListCtrlTools::SetColumn (assetList, 3, "Templ", 50);
+  ListCtrlTools::SetColumn (assetList, 4, "Quest", 50);
 }
 
 NewProjectDialog::~NewProjectDialog ()

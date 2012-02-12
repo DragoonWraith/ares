@@ -73,8 +73,6 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
     value2 = va_arg (args, char*);
   }
   va_end (args);
-  for (int i = 0 ; i < col ; i++)
-    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
   return idx;
 }
 
@@ -102,8 +100,6 @@ void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const char* value, ..
     value2 = va_arg (args, char*);
   }
   va_end (args);
-  for (int i = 0 ; i < col ; i++)
-    list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
 }
 
 void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const csStringArray& values)
