@@ -117,10 +117,13 @@ private:
   csSimplePixmap* iconDot;
   csSimplePixmap* iconCheck;
   void LoadIcons ();
+
+  // ID's
   csStringID classNoteID;
   csStringID classInfoID;
   csStringID classPickUpID;
   csStringID attrDragType;
+  csStringID msgActivate;
 
   csRef<iPcDynamicWorld> dynworld;
   void TryGetDynworld ();

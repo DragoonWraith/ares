@@ -115,6 +115,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   classInfoID = pl->FetchStringID ("ares.info");
   classPickUpID = pl->FetchStringID ("ares.pickup");
   attrDragType = pl->FetchStringID ("ares.dragtype");
+  msgActivate = pl->FetchStringID ("ares.Activate");
 
   LoadIcons ();
 }
@@ -137,7 +138,12 @@ void celPcGameController::Activate ()
   if (obj)
   {
     iCelEntity* ent = obj->GetEntity ();
-    if (ent) printf ("ent=%s\n",ent->GetName ());
+    if (ent)
+    {
+      printf ("ent=%s\n",ent->GetName ());
+      iMessageChannel* channel = ent->QueryMessageChannel ();
+      channel->SendMessage (msgActivate, 0, 0);
+    }
     if (ent && ent->HasClass (classPickUpID))
       PickUpDynObj (obj);
     else StartDrag ();
