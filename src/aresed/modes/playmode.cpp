@@ -51,6 +51,7 @@ DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
       if (dynobj->GetEntityTemplate ())
         obj.templateName = dynobj->GetEntityTemplate ()->GetName ();
       obj.entityName = dynobj->GetEntityName ();
+printf ("snapshotting %d/%s\n", i, obj.entityName.GetData ()); fflush (stdout);
       for (size_t j = 0 ; j < dynobj->GetFactory ()->GetJointCount () ; j++)
       {
 	obj.connectedObjects.Push (FindObjIndex (dynobj->GetCell (), dynobj->GetConnectedObject (j)));
@@ -85,8 +86,12 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
   {
     Obj& obj = objects[i];
     iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
+
     if (!obj.templateName.IsEmpty ())
       dynobj->SetEntity (obj.entityName, obj.templateName, 0);
+    else if (!obj.entityName.IsEmpty ())
+      dynobj->SetEntityName (obj.entityName);
+
     if (obj.isStatic)
       dynobj->MakeStatic ();
     else
@@ -102,11 +107,14 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
   // Connect all joints.
   for (size_t i = 0 ; i < dynidx.GetSize () ; i++)
   {
-    for (size_t j = 0 ; j < objects[dynidx[i].idx].connectedObjects.GetSize () ; j++)
+    DynIdx& dy = dynidx[i];
+    for (size_t j = 0 ; j < objects[dy.idx].connectedObjects.GetSize () ; j++)
     {
-      size_t idx = objects[dynidx[i].idx].connectedObjects[j];
+      size_t idx = objects[dy.idx].connectedObjects[j];
       if (idx != csArrayItemNotFound)
-        dynidx[i].dynobj->Connect (j, dynidx[i].dynobj->GetCell ()->GetObject (idx));
+      {
+        dy.dynobj->Connect (j, dy.dynobj->GetCell ()->GetObject (idx));
+      }
     }
   }
 }

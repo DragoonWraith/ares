@@ -107,7 +107,7 @@ bool MyApp::OnInit (void)
 
   AppPump* p = new AppPump ();
   p->s = aresed;
-  p->Start (20);
+  p->Start (5);
 
   return true;
 }
