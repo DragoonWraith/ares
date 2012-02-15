@@ -181,6 +181,9 @@ public:
   void Show ();
   void Tick ();
 
+  /// Calculate the best-fit for a given collider.
+  void FitCollider (iDynamicFactory* fact, celBodyType type);
+
   UIManager* GetUIManager () const { return uiManager; }
 
   iDynamicFactory* GetCurrentFactory ();

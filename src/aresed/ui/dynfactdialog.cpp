@@ -680,7 +680,10 @@ public:
   {
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return 0;
-    dynfact->AddRigidBox (csVector3 (0, 0, 0), csVector3 (.2, .2, .2), 1.0f);
+    const csBox3& bbox = dynfact->GetBBox ();
+    csVector3 c = bbox.GetCenter ();
+    csVector3 s = bbox.GetSize ();
+    dynfact->AddRigidBox (c, s, 1.0f);
     idx = dynfact->GetBodyCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
@@ -884,49 +887,7 @@ public:
   {
     iDynamicFactory* fact = dialog->GetCurrentFactory ();
     if (!fact) return false;
-    const csBox3& bbox = fact->GetBBox ();
-    csVector3 c = bbox.GetCenter ();
-    csVector3 s = bbox.GetSize ();
-    Value* colliderSelectedValue = dialog->GetColliderSelectedValue ();
-    switch (type)
-    {
-      case BODY_BOX:
-	{
-	  colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
-	  colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
-	  colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
-	  colliderSelectedValue->GetChildByName ("sizeX")->SetFloatValue (s.x);
-	  colliderSelectedValue->GetChildByName ("sizeY")->SetFloatValue (s.y);
-	  colliderSelectedValue->GetChildByName ("sizeZ")->SetFloatValue (s.z);
-	  break;
-	}
-      case BODY_SPHERE:
-	{
-	  float radius = s.x;
-	  if (s.y > radius) radius = s.y;
-	  if (s.z > radius) radius = s.z;
-	  radius /= 2.0f;
-	  colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
-	  colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
-	  colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
-	  colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
-	  break;
-	}
-      case BODY_CYLINDER:
-	{
-	  float radius = s.x;
-	  if (s.z > radius) radius = s.z;
-	  radius /= 2.0f;
-	  float length = s.y;
-	  colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
-	  colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
-	  colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
-	  colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
-	  colliderSelectedValue->GetChildByName ("length")->SetFloatValue (length);
-	  break;
-	}
-      default: CS_ASSERT (false);
-    }
+    dialog->FitCollider (fact, type);
     return true;
   }
 };
@@ -1077,6 +1038,52 @@ long DynfactDialog::GetSelectedJoint ()
 {
   wxListCtrl* list = XRCCTRL (*this, "joints_List", wxListCtrl);
   return ListCtrlTools::GetFirstSelectedRow (list);
+}
+
+void DynfactDialog::FitCollider (iDynamicFactory* fact, celBodyType type)
+{
+  const csBox3& bbox = fact->GetBBox ();
+  csVector3 c = bbox.GetCenter ();
+  csVector3 s = bbox.GetSize ();
+  switch (type)
+  {
+    case BODY_BOX:
+      {
+	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	colliderSelectedValue->GetChildByName ("sizeX")->SetFloatValue (s.x);
+	colliderSelectedValue->GetChildByName ("sizeY")->SetFloatValue (s.y);
+	colliderSelectedValue->GetChildByName ("sizeZ")->SetFloatValue (s.z);
+	break;
+      }
+    case BODY_SPHERE:
+      {
+	float radius = s.x;
+	if (s.y > radius) radius = s.y;
+	if (s.z > radius) radius = s.z;
+	radius /= 2.0f;
+	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
+	break;
+      }
+    case BODY_CYLINDER:
+      {
+	float radius = s.x;
+	if (s.z > radius) radius = s.z;
+	radius /= 2.0f;
+	float length = s.y;
+	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
+	colliderSelectedValue->GetChildByName ("length")->SetFloatValue (length);
+	break;
+      }
+    default: return;
+  }
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
