@@ -1300,7 +1300,7 @@ bool AppAresEditWX::LoadResourceFile (const char* filename, wxString& searchPath
 bool AppAresEditWX::Initialize ()
 {
   if (!celInitializer::SetupConfigManager (object_reg,
-      "/ares/AppAresEdit.cfg", "ares"))
+      "/appdata/AppAresEdit.cfg", "ares"))
     return ReportError ("Failed to setup configmanager!");
 
   if (!celInitializer::RequestPlugins (object_reg,

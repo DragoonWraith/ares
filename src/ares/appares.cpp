@@ -332,7 +332,7 @@ bool AppAres::LoadLibrary (const char* path, const char* file)
 bool AppAres::OnInitialize (int argc, char* argv[])
 {
   if (!celInitializer::SetupConfigManager (object_reg,
-  	"/this/AppAres.cfg"))
+  	"/appdata/AppAres.cfg"))
   {
     return ReportError ("Can't setup config file!");
   }
