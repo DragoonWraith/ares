@@ -418,7 +418,7 @@ static wxTreeItemId TreeFromValue (wxTreeCtrl* tree, wxTreeItemId parent, Value*
     if (treeChild.IsOk ()) return treeChild;
     treeChild = tree->GetNextChild (parent, cookie);
   }
-  return 0;
+  return wxTreeItemId();
 }
 
 /**
@@ -981,7 +981,7 @@ void View::OnRMB (wxContextMenuEvent& event)
     if (!treeCtrl->IsShownOnScreen ()) return;
     int flags = 0;
     wxTreeItemId idx = treeCtrl->HitTest (treeCtrl->ScreenToClient (event.GetPosition ()), flags);
-    if (idx == wxNOT_FOUND)
+    if (!idx.IsOk())
     {
       if (!treeCtrl->GetScreenRect ().Contains (event.GetPosition ()))
         return;
