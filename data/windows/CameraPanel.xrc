@@ -4,9 +4,9 @@
 		<style>wxTAB_TRAVERSAL</style>
 		<size>500,300</size>
 		<object class="wxBoxSizer">
-			<orient>wxVERTICAL</orient>
+			<orient>wxHORIZONTAL</orient>
 			<object class="sizeritem">
-				<option>0</option>
+				<option>1</option>
 				<flag>wxEXPAND</flag>
 				<border>5</border>
 				<object class="wxStaticBoxSizer">
@@ -274,20 +274,20 @@
 						<object class="wxBoxSizer">
 							<orient>wxVERTICAL</orient>
 							<object class="sizeritem">
-								<option>0</option>
-								<flag>wxALL|wxEXPAND</flag>
-								<border>5</border>
-								<object class="wxCheckBox" name="panCheckBox">
-									<label>Pan</label>
-									<checked>0</checked>
-								</object>
-							</object>
-							<object class="sizeritem">
 								<option>1</option>
 								<flag>wxEXPAND</flag>
 								<border>5</border>
 								<object class="wxBoxSizer">
-									<orient>wxHORIZONTAL</orient>
+									<orient>wxVERTICAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxEXPAND</flag>
+										<border>5</border>
+										<object class="wxCheckBox" name="panCheckBox">
+											<label>Pan</label>
+											<checked>0</checked>
+										</object>
+									</object>
 									<object class="sizeritem">
 										<option>0</option>
 										<flag>wxALL</flag>

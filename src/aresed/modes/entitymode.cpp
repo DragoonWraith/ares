@@ -934,7 +934,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     csRef<iRewardFactoryArray> array = GetSelectedReward (activeNode, idx);
     if (!array) return;
     iRewardFactory* reward = array->Get (idx);
-    rewardPanel->SwitchReward (array, idx, reward);
+    rewardPanel->SwitchReward (GetSelectedQuest (activeNode), array, idx, reward);
     rewardPanel->Show ();
   }
   else if (type == 's')

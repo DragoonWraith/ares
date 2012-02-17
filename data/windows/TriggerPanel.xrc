@@ -321,10 +321,10 @@
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxTextCtrl" name="mask_Me_Text">
+											<object class="wxComboBox" name="mask_Me_Combo">
 												<style>wxTE_PROCESS_ENTER</style>
-												<value></value>
-												<maxlength>0</maxlength>
+												<value>Combo!</value>
+												<content />
 											</object>
 										</object>
 									</object>

@@ -47,6 +47,16 @@ public:
   static void ClearControls (wxWindow* parent, ...);
 
   /**
+   * Clear items on a wxControlWithItems.
+   */
+  static void ClearChoices (wxWindow* parent, const char* name);
+
+  /**
+   * Add choices to a wxControlWithItems.
+   */
+  static void AddChoices (wxWindow* parent, const char* name, ...);
+
+  /**
    * Get the value of a specific control as a string.
    */
   static csString GetValue (wxWindow* parent, const char* name);

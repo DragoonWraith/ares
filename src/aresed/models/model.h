@@ -33,6 +33,7 @@ THE SOFTWARE.
 
 class wxWindow;
 class wxTextCtrl;
+class wxComboBox;
 class wxCheckBox;
 class wxListCtrl;
 class wxTreeCtrl;
@@ -1260,6 +1261,14 @@ public:
    * - Value type is not compatible with component type.
    */
   bool Bind (Value* value, wxTextCtrl* component);
+
+  /**
+   * Bind a value directly to a combobox. This works
+   * with all single value types (string, long, bool, float).
+   * Can fail (return false) under the following conditions:
+   * - Value type is not compatible with component type.
+   */
+  bool Bind (Value* value, wxComboBox* component);
 
   /**
    * Bind a value directly to a check box. This works

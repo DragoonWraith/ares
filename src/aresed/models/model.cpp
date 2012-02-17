@@ -614,6 +614,8 @@ bool View::Bind (Value* value, wxWindow* component)
 {
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
     return Bind (value, wxStaticCast (component, wxTextCtrl));
+  if (component->IsKindOf (CLASSINFO (wxComboBox)))
+    return Bind (value, wxStaticCast (component, wxComboBox));
   if (component->IsKindOf (CLASSINFO (wxCheckBox)))
     return Bind (value, wxStaticCast (component, wxCheckBox));
   if (component->IsKindOf (CLASSINFO (wxPanel)))
@@ -680,7 +682,27 @@ bool View::Bind (Value* value, wxTextCtrl* component)
       return false;
   }
 
-  RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED );
+  RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED);
+  ValueChanged (value);
+  return true;
+}
+
+bool View::Bind (Value* value, wxComboBox* component)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+    case VALUE_LONG:
+    case VALUE_BOOL:
+    case VALUE_FLOAT:
+    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
+      break;
+    default:
+      printf ("Unsupported value type for text control!\n");
+      return false;
+  }
+
+  RegisterBinding (value, component, wxEVT_COMMAND_TEXT_UPDATED);
   ValueChanged (value);
   return true;
 }
@@ -700,7 +722,7 @@ bool View::Bind (Value* value, wxCheckBox* component)
       return false;
   }
 
-  RegisterBinding (value, component, wxEVT_COMMAND_CHECKBOX_CLICKED );
+  RegisterBinding (value, component, wxEVT_COMMAND_CHECKBOX_CLICKED);
   ValueChanged (value);
   return true;
 }
@@ -1047,6 +1069,12 @@ void View::OnComponentChanged (wxCommandEvent& event)
     csString text = (const char*)textCtrl->GetValue ().mb_str (wxConvUTF8);
     StringToValue (text, binding->value);
   }
+  else if (component->IsKindOf (CLASSINFO (wxComboBox)))
+  {
+    wxComboBox* combo = wxStaticCast (component, wxComboBox);
+    csString text = (const char*)combo->GetValue ().mb_str (wxConvUTF8);
+    StringToValue (text, binding->value);
+  }
   else if (component->IsKindOf (CLASSINFO (wxCheckBox)))
   {
     wxCheckBox* checkBox = wxStaticCast (component, wxCheckBox);
@@ -1178,6 +1206,14 @@ void View::ValueChanged (Value* value)
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
+	bindings[i]->processing = false;
+      }
+      else if (comp->IsKindOf (CLASSINFO (wxComboBox)))
+      {
+	bindings[i]->processing = true;
+	wxComboBox* combo = wxStaticCast (comp, wxComboBox);
+	csString text = ValueToString (value);
+	combo->SetValue (wxString::FromUTF8 (text));
 	bindings[i]->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (wxCheckBox)))

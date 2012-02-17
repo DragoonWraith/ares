@@ -52,7 +52,8 @@ BEGIN_EVENT_TABLE(TriggerPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("entity_Ms_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Ms_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("entity_Me_Text"), TriggerPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("mask_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("mask_Me_Combo"), TriggerPanel :: OnUpdateEvent)
+  EVT_COMBOBOX (XRCID("mask_Me_Combo"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("entity_Pc_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Pc_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("property_Pc_Text"), TriggerPanel :: OnUpdateEvent)
@@ -136,7 +137,11 @@ void TriggerPanel::UpdatePanel ()
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerResp->GetTriggerFactory ());
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
-    UITools::SetValue (this, "mask_Me_Text", tf->GetMask ());
+    UITools::ClearChoices (this, "mask_Me_Combo");
+    UITools::AddChoices (this, "mask_Me_Combo",
+	"ares.Activate",
+	(const char*)0);
+    UITools::SetValue (this, "mask_Me_Combo", tf->GetMask ());
   }
   else if (type == "operation")
   {
@@ -239,7 +244,7 @@ void TriggerPanel::UpdateTrigger ()
     {
       csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerResp->GetTriggerFactory ());
       tf->SetEntityParameter (UITools::GetValue (this, "entity_Me_Text"));
-      tf->SetMaskParameter (UITools::GetValue (this, "mask_Me_Text"));
+      tf->SetMaskParameter (UITools::GetValue (this, "mask_Me_Combo"));
     }
     else if (type == "operation")
     {

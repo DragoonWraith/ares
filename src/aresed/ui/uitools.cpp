@@ -57,6 +57,11 @@ void UITools::ClearControl (wxWindow* parent, const char* name)
       wxStaticText* text = wxStaticCast (child, wxStaticText);
       text->SetLabel (wxT (""));
     }
+    else if (child->IsKindOf (CLASSINFO (wxComboBox)))
+    {
+      wxComboBox* text = wxStaticCast (child, wxComboBox);
+      text->SetValue (wxT (""));
+    }
     else if (child->IsKindOf (CLASSINFO (wxCheckBox)))
     {
       wxCheckBox* cb = wxStaticCast (child, wxCheckBox);
@@ -83,6 +88,57 @@ void UITools::ClearControls (wxWindow* parent, ...)
   va_end (args);
 }
 
+void UITools::ClearChoices (wxWindow* parent, const char* name)
+{
+  wxString wxname = wxString::FromUTF8 (name);
+  wxWindow* child = parent->FindWindow (wxname);
+  if (!child)
+  {
+    printf ("Error clearing choices for '%s'!\n", name);
+    fflush (stdout);
+  }
+  if (child->IsKindOf (CLASSINFO (wxComboBox)))
+  {
+    wxComboBox* combo = wxStaticCast (child, wxComboBox);
+    combo->Clear ();
+  }
+  else
+  {
+    printf ("Component '%s' is not a control with items!\n", name);
+    fflush (stdout);
+  }
+}
+
+void UITools::AddChoices (wxWindow* parent, const char* name, ...)
+{
+  wxString wxname = wxString::FromUTF8 (name);
+  wxWindow* child = parent->FindWindow (wxname);
+  if (!child)
+  {
+    printf ("Error adding choices for '%s'!\n", name);
+    fflush (stdout);
+  }
+  if (child->IsKindOf (CLASSINFO (wxComboBox)))
+  {
+    wxComboBox* combo = wxStaticCast (child, wxComboBox);
+    va_list args;
+    va_start (args, name);
+    const char* c = va_arg (args, char*);
+    while (c != (const char*)0)
+    {
+      wxString v = wxString::FromUTF8 (c);
+      combo->Append (v);
+      c = va_arg (args, char*);
+    }
+    va_end (args);
+  }
+  else
+  {
+    printf ("Component '%s' is not a control with items!\n", name);
+    fflush (stdout);
+  }
+}
+
 csString UITools::GetValue (wxWindow* parent, const char* name)
 {
   wxString wxname = wxString::FromUTF8 (name);
@@ -102,6 +158,11 @@ csString UITools::GetValue (wxWindow* parent, const char* name)
   {
     wxStaticText* text = wxStaticCast (child, wxStaticText);
     return (const char*)text->GetLabel ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxComboBox)))
+  {
+    wxComboBox* text = wxStaticCast (child, wxComboBox);
+    return (const char*)text->GetValue ().mb_str (wxConvUTF8);
   }
   else if (child->IsKindOf (CLASSINFO (wxButton)))
   {
@@ -156,6 +217,11 @@ void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
     {
       wxStaticText* text = wxStaticCast (child, wxStaticText);
       text->SetLabel (wxvalue);
+    }
+    else if (child->IsKindOf (CLASSINFO (wxComboBox)))
+    {
+      wxComboBox* text = wxStaticCast (child, wxComboBox);
+      text->SetValue (wxvalue);
     }
     else if (child->IsKindOf (CLASSINFO (wxButton)))
     {

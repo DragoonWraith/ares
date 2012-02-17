@@ -43,7 +43,8 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("bool_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("childEntity_In_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("childTag_In_Text"), RewardPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("state_Ns_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("state_Ns_Combo"), RewardPanel :: OnUpdateEvent)
+  EVT_COMBOBOX (XRCID("state_Ns_Combo"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("class_Ac_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("class_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("class_De_Text"), RewardPanel :: OnUpdateEvent)
@@ -62,7 +63,8 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("entity_Sf_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("float_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("id_Ac_Text"), RewardPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("id_Me_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("id_Me_Combo"), RewardPanel :: OnUpdateEvent)
+  EVT_COMBOBOX (XRCID("id_Me_Combo"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("long_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("message_Dp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("name_Ce_Text"), RewardPanel :: OnUpdateEvent)
@@ -106,9 +108,11 @@ csString RewardPanel::GetCurrentRewardType ()
   return nameS;
 }
 
-void RewardPanel::SwitchReward (iRewardFactoryArray* array, size_t idx,
+void RewardPanel::SwitchReward (iQuestFactory* questFact,
+    iRewardFactoryArray* array, size_t idx,
     iRewardFactory* reward)
 {
+  RewardPanel::questFact = questFact;
   RewardPanel::rewardArray = array;
   RewardPanel::rewardIdx = idx;
   RewardPanel::reward = reward;
@@ -123,7 +127,14 @@ void RewardPanel::UpdatePanel ()
   {
     // @@@ Add support for setting states on other entities!
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
-    UITools::SetValue (this, "state_Ns_Text", tf->GetStateParameter ());
+    UITools::ClearChoices (this, "state_Ns_Combo");
+    csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+    while (it->HasNext ())
+    {
+      iQuestStateFactory* state = it->Next ();
+      UITools::AddChoices (this, "state_Ns_Combo", state->GetName (), (const char*)0);
+    }
+    UITools::SetValue (this, "state_Ns_Combo", tf->GetStateParameter ());
   }
   else if (type == "action")
   {
@@ -182,7 +193,18 @@ void RewardPanel::UpdatePanel ()
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
     UITools::SetValue (this, "class_Me_Text", tf->GetClass ());
-    UITools::SetValue (this, "id_Me_Text", tf->GetID ());
+    UITools::ClearChoices (this, "id_Me_Combo");
+    UITools::AddChoices (this, "id_Me_Combo",
+	"ares.controller.Message",
+	"ares.controller.StartDrag",
+	"ares.controller.StopDrag",
+	"ares.controller.Examine",
+	"ares.controller.Pickup",
+	"ares.controller.Activate",
+	"ares.controller.Spawn",
+	"ares.controller.CreateEntity",
+	(const char*)0);
+    UITools::SetValue (this, "id_Me_Combo", tf->GetID ());
     messageParameters->Refresh ();
   }
   else if (type == "cssequence")
@@ -241,7 +263,7 @@ void RewardPanel::UpdateReward ()
     {
       // @@@ Support state for other entities.
       csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
-      tf->SetStateParameter (UITools::GetValue (this, "state_Ns_Text"));
+      tf->SetStateParameter (UITools::GetValue (this, "state_Ns_Combo"));
     }
     else if (type == "action")
     {
@@ -298,7 +320,7 @@ void RewardPanel::UpdateReward ()
       csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
       tf->SetEntityParameter (UITools::GetValue (this, "entity_Me_Text"));
       tf->SetClassParameter (UITools::GetValue (this, "class_Me_Text"));
-      tf->SetIDParameter (UITools::GetValue (this, "id_Me_Text"));
+      tf->SetIDParameter (UITools::GetValue (this, "id_Me_Combo"));
     }
     else if (type == "cssequence")
     {
