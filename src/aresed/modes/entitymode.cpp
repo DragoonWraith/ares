@@ -912,6 +912,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
     pcPanel->SwitchToPC (tpl, pctpl);
+printf ("pcPanel->Show()\n"); fflush (stdout);
     pcPanel->Show ();
   }
   else if (type == 'T')
@@ -920,6 +921,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     tplPanel->SwitchToTpl (tpl);
     tplPanel->Show ();
+printf ("tplPanel->Show()\n"); fflush (stdout);
   }
   else if (type == 't')
   {
@@ -927,6 +929,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     if (!resp || !resp->GetTriggerFactory ()) return;
     triggerPanel->SwitchTrigger (resp);
     triggerPanel->Show ();
+printf ("triggerPanel->Show()\n"); fflush (stdout);
   }
   else if (type == 'r')
   {
@@ -936,6 +939,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     iRewardFactory* reward = array->Get (idx);
     rewardPanel->SwitchReward (GetSelectedQuest (activeNode), array, idx, reward);
     rewardPanel->Show ();
+printf ("rewardPanel->Show()\n"); fflush (stdout);
   }
   else if (type == 's')
   {
@@ -943,6 +947,7 @@ printf ("node:%s\n", nodeName); fflush (stdout);
     if (!sequence) return;
     sequencePanel->SwitchSequence (sequence);
     sequencePanel->Show ();
+printf ("sequencePanel->Show()\n"); fflush (stdout);
   }
 }
 

@@ -567,16 +567,17 @@ void GraphView::Render3D ()
 	  curdist += (points[i+1]-points[i]).Norm ();
       }
       float len = (pos1-pos2).Norm ();
-      float stepsize = 5.0f;
+      float stepsize = 10.0f;
       int numsteps = int (len / stepsize + 1);
       spline.Calculate (0.0f);
+      csArray<csPenCoordinatePair> lines;
       pos1.Set (spline.GetInterpolatedDimension (0), spline.GetInterpolatedDimension (1));
       for (int i = 1 ; i < numsteps ; i++)
       {
 	float time = float (i) / float (numsteps-1);
 	spline.Calculate (time);
         pos2.Set (spline.GetInterpolatedDimension (0), spline.GetInterpolatedDimension (1));
-        pen->DrawLine (pos1.x, pos1.y, pos2.x, pos2.y);
+	lines.Push (csPenCoordinatePair (pos1.x, pos1.y, pos2.x, pos2.y));
         if (l.arrow && i == numsteps/2)
 	{
 	  csVector2 c = (pos1+pos2)/2.0f;
@@ -586,11 +587,12 @@ void GraphView::Render3D ()
 	  int dyr = pos2.x-pos1.x;
 	  csVector2 r1 (-dx+dxr, -dy+dyr); r1.Normalize (); r1 *= 10.0f;
 	  csVector2 r2 (-dx-dxr, -dy-dyr); r2.Normalize (); r2 *= 10.0f;
-	  pen->DrawLine (c.x, c.y, c.x+r1.x, c.y+r1.y);
-	  pen->DrawLine (c.x, c.y, c.x+r2.x, c.y+r2.y);
+	  lines.Push (csPenCoordinatePair (c.x, c.y, c.x+r1.x, c.y+r1.y));
+	  lines.Push (csPenCoordinatePair (c.x, c.y, c.x+r2.x, c.y+r2.y));
 	}
 	pos1 = pos2;
       }
+      pen->DrawLines (lines);
     }
     else
     {
