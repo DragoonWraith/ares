@@ -43,13 +43,14 @@ THE SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-UIDialog::UIDialog (wxWindow* parent, const char* title) :
+UIDialog::UIDialog (wxWindow* parent, const char* title, int width, int height) :
   wxDialog (parent, -1, wxString::FromUTF8 (title)), View (this)
 {
   sizer = new wxBoxSizer (wxVERTICAL);
   SetSizer (sizer);
   lastRowSizer = 0;
   okCancelAdded = false;
+  SetMinSize (wxSize (width, height));
 }
 
 UIDialog::~UIDialog ()
@@ -76,10 +77,10 @@ void UIDialog::AddOkCancel ()
   AddButton ("Cancel");
 }
 
-void UIDialog::AddRow ()
+void UIDialog::AddRow (int proportion)
 {
   lastRowSizer = new wxBoxSizer (wxHORIZONTAL);
-  sizer->Add (lastRowSizer, 0, wxEXPAND, 5);
+  sizer->Add (lastRowSizer, proportion, wxEXPAND, 5);
 }
 
 void UIDialog::AddLabel (const char* str)
@@ -366,6 +367,8 @@ int UIDialog::Show (UIDialogCallback* cb)
     csString name;
     const ValueListInfo& info = itvLst.Next (name);
     info.collectionValue->Refresh ();
+    for (int col = 0 ; col < info.list->GetItemCount () ; col++)
+      info.list->SetColumnWidth (col, wxLIST_AUTOSIZE);
   }
 
   return ShowModal ();

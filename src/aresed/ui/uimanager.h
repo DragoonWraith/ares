@@ -89,11 +89,11 @@ private:
   virtual void OnButtonClicked (wxCommandEvent& event);
 
 public:
-  UIDialog (wxWindow* parent, const char* title);
+  UIDialog (wxWindow* parent, const char* title, int width = 300, int height = 250);
   virtual ~UIDialog ();
 
   /// Add a new row in this dialog.
-  void AddRow ();
+  void AddRow (int proportion = 0);
 
   /// Add a label in the current row.
   void AddLabel (const char* str);
