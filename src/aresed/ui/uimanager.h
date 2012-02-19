@@ -89,7 +89,7 @@ private:
   virtual void OnButtonClicked (wxCommandEvent& event);
 
 public:
-  UIDialog (wxWindow* parent, const char* title, int width = 300, int height = 250);
+  UIDialog (wxWindow* parent, const char* title, int width = -1, int height = -1);
   virtual ~UIDialog ();
 
   /// Add a new row in this dialog.
