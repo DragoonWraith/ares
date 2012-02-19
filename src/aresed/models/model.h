@@ -1433,6 +1433,17 @@ public:
    * is not in this component or the component is not a tree or list).
    */
   bool SetSelectedValue (wxWindow* component, Value* value);
+
+  //----------------------------------------------------------------
+
+  /**
+   * Utility functions to convert values.
+   */
+  bool ValueToBool (Value* value);
+  csString ValueToString (Value* value);
+  void LongToValue (long l, Value* value);
+  void BoolToValue (bool in, Value* value);
+  void StringToValue (const char* str, Value* value);
 };
 
 } // namespace Ares

@@ -320,7 +320,7 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
       if (info.col != csArrayItemNotFound)
       {
         Value* child = compositeValue->GetChild (info.col);
-        value = child->GetStringValue ();
+        value = ValueToString (child);
       }
     }
     fieldContents.Put (name, value);

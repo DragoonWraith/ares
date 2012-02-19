@@ -827,7 +827,7 @@ bool View::Bind (Value* value, wxTreeCtrl* component)
   return true;
 }
 
-static bool ValueToBool (Value* value)
+static bool ValueToBoolStatic (Value* value)
 {
   switch (value->GetType ())
   {
@@ -851,7 +851,12 @@ static bool ValueToBool (Value* value)
   }
 }
 
-static csString ValueToString (Value* value)
+bool View::ValueToBool (Value* value)
+{
+  return ValueToBoolStatic (value);
+}
+
+csString View::ValueToString (Value* value)
 {
   csString val;
   switch (value->GetType ())
@@ -866,7 +871,7 @@ static csString ValueToString (Value* value)
   }
 }
 
-static void LongToValue (long l, Value* value)
+void View::LongToValue (long l, Value* value)
 {
   csString str;
   switch (value->GetType ())
@@ -890,7 +895,7 @@ static void LongToValue (long l, Value* value)
   }
 }
 
-static void BoolToValue (bool in, Value* value)
+void View::BoolToValue (bool in, Value* value)
 {
   switch (value->GetType ())
   {
@@ -912,7 +917,7 @@ static void BoolToValue (bool in, Value* value)
   }
 }
 
-static void StringToValue (const char* str, Value* value)
+void View::StringToValue (const char* str, Value* value)
 {
   switch (value->GetType ())
   {
@@ -1489,7 +1494,7 @@ public:
   virtual void SetBoolValue (bool fl) { }
   virtual bool GetBoolValue ()
   {
-    return !ValueToBool (value);
+    return !ValueToBoolStatic (value);
   }
 };
 
@@ -1514,7 +1519,7 @@ public:
   virtual void SetBoolValue (bool fl) { }
   virtual bool GetBoolValue ()
   {
-    return ValueToBool (value1) && ValueToBool (value2);
+    return ValueToBoolStatic (value1) && ValueToBoolStatic (value2);
   }
 };
 
@@ -1540,7 +1545,7 @@ public:
   virtual void SetBoolValue (bool fl) { }
   virtual bool GetBoolValue ()
   {
-    return ValueToBool (value1) || ValueToBool (value2);
+    return ValueToBoolStatic (value1) || ValueToBoolStatic (value2);
   }
 };
 
