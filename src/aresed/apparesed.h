@@ -432,6 +432,7 @@ enum
   ID_Cells,
   ID_Dynfacts,
   ID_Play,
+  ID_FindObject,
   ID_UpdateObjects,
   ID_Join,
   ID_Unjoin,
@@ -487,6 +488,7 @@ private:
   void OnMenuPaste (wxCommandEvent& event);
   void OnMenuJoin (wxCommandEvent& event);
   void OnMenuUnjoin (wxCommandEvent& event);
+  void OnMenuFindObject (wxCommandEvent& event);
   void OnMenuUpdateObjects (wxCommandEvent& event);
   void OnNotebookChange (wxNotebookEvent& event);
   void OnNotebookChanged (wxNotebookEvent& event);

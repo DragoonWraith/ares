@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2011 by Jorrit Tyberghein
+Copyright (c) 2012 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_meshfactmodel_h
-#define __aresed_meshfactmodel_h
+#ifndef __aresed_objects_h
+#define __aresed_objects_h
 
 #include "rowmodel.h"
 #include "model.h"
@@ -31,7 +31,7 @@ THE SOFTWARE.
 class AppAresEditWX;
 struct iMeshFactoryList;
 
-class MeshCollectionValue : public Ares::StandardCollectionValue
+class ObjectsValue : public Ares::StandardCollectionValue
 {
 private:
   AppAresEditWX* app;
@@ -44,9 +44,9 @@ protected:
   }
 
 public:
-  MeshCollectionValue (AppAresEditWX* app) : app (app) { }
-  virtual ~MeshCollectionValue () { }
+  ObjectsValue (AppAresEditWX* app) : app (app) { }
+  virtual ~ObjectsValue () { }
 };
 
-#endif // __aresed_meshfactmodel_h
+#endif // __aresed_objects_h
 

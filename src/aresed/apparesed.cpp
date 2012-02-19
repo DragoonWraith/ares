@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "selection.h"
 #include "models/dynfactmodel.h"
+#include "models/objects.h"
 #include "common/worldload.h"
 #include "tools/transformtools.h"
 
@@ -1034,6 +1035,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
   EVT_MENU (ID_Join, AppAresEditWX :: OnMenuJoin)
   EVT_MENU (ID_Unjoin, AppAresEditWX :: OnMenuUnjoin)
+  EVT_MENU (ID_FindObject, AppAresEditWX :: OnMenuFindObject)
   EVT_MENU (ID_UpdateObjects, AppAresEditWX :: OnMenuUpdateObjects)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
@@ -1102,6 +1104,34 @@ void AppAresEditWX::OnMenuUnjoin (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
   mainMode->UnjoinObjects ();
+}
+
+void AppAresEditWX::OnMenuFindObject (wxCommandEvent& event)
+{
+  csRef<ObjectsValue> objects;
+  objects.AttachNew (new ObjectsValue (this));
+  UIDialog* dialog = new UIDialog (this, "Select an object", 500, 300);
+  dialog->AddRow (1);
+  dialog->AddList ("objects", objects, 0,
+    "ID,Entity,Factory,X,Y,Z,Distance",
+    "ID,Entity,Factory,X,Y,Z,Distance");
+  if (dialog->Show (0))
+  {
+    const DialogResult& rc = dialog->GetFieldContents ();
+    csString idValue = rc.Get ("objects", (const char*)0);
+    if (!idValue.IsEmpty ())
+    {
+      uint id;
+      csScanStr (idValue, "%d", &id);
+      iDynamicObject* dynobj = aresed3d->GetDynamicWorld ()->FindObject (id);
+      printf ("Find object %p with id %d\n", dynobj, id);
+      if (dynobj)
+      {
+	aresed3d->GetSelection ()->SetCurrentObject (dynobj);
+      }
+    }
+  }
+  delete dialog;
 }
 
 void AppAresEditWX::OnMenuUpdateObjects (wxCommandEvent& event)
@@ -1498,6 +1528,7 @@ void AppAresEditWX::SetupMenuBar ()
   editMenu->Append (ID_Paste, wxT ("&Paste\tCtrl+V"));
   editMenu->Append (ID_Delete, wxT ("&Delete"));
   editMenu->AppendSeparator ();
+  editMenu->Append (ID_FindObject, wxT ("&Find Object..."));
   editMenu->Append (ID_UpdateObjects, wxT ("&Update Objects"));
   editMenu->AppendSeparator ();
   editMenu->Append (ID_Join, wxT ("&Join\tCtrl+J"));

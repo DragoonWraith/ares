@@ -1098,7 +1098,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   // The dialog for editing new factories.
   factoryDialog = new UIDialog (this, "Factory name");
-  factoryDialog->AddRow ();
+  factoryDialog->AddRow (1);
   factoryDialog->AddLabel ("Name:");
   factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue(app)), 0,
       "Name", "name");
