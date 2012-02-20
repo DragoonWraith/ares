@@ -46,11 +46,15 @@ THE SOFTWARE.
 UIDialog::UIDialog (wxWindow* parent, const char* title, int width, int height) :
   wxDialog (parent, -1, wxString::FromUTF8 (title)), View (this)
 {
+  mainPanel = new wxPanel (this, -1, wxDefaultPosition, wxSize (width, height));
+  wxBoxSizer* mainSizer = new wxBoxSizer (wxVERTICAL);
+  SetSizer (mainSizer);
   sizer = new wxBoxSizer (wxVERTICAL);
-  SetSizer (sizer);
+  mainPanel->SetSizer (sizer);
   lastRowSizer = 0;
   okCancelAdded = false;
-  SetMinSize (wxSize (width, height));
+  mainPanel->SetMinSize (wxSize (width, height));
+  mainSizer->Add (mainPanel, 1, wxALL, 5);
 }
 
 UIDialog::~UIDialog ()
@@ -86,7 +90,7 @@ void UIDialog::AddRow (int proportion)
 void UIDialog::AddLabel (const char* str)
 {
   CS_ASSERT (lastRowSizer != 0);
-  wxStaticText* label = new wxStaticText (this, wxID_ANY, wxString::FromUTF8 (str),
+  wxStaticText* label = new wxStaticText (mainPanel, wxID_ANY, wxString::FromUTF8 (str),
       wxDefaultPosition, wxDefaultSize, 0);
   label->Wrap (-1);
   lastRowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
@@ -95,7 +99,7 @@ void UIDialog::AddLabel (const char* str)
 void UIDialog::AddText (const char* name)
 {
   CS_ASSERT (lastRowSizer != 0);
-  wxTextCtrl* text = new wxTextCtrl (this, wxID_ANY, wxEmptyString,
+  wxTextCtrl* text = new wxTextCtrl (mainPanel, wxID_ANY, wxEmptyString,
       wxDefaultPosition, wxDefaultSize, 0);
   lastRowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   textFields.Put (name, text);
@@ -104,7 +108,7 @@ void UIDialog::AddText (const char* name)
 void UIDialog::AddMultiText (const char* name)
 {
   CS_ASSERT (lastRowSizer != 0);
-  wxTextCtrl* text = new wxTextCtrl (this, wxID_ANY, wxEmptyString,
+  wxTextCtrl* text = new wxTextCtrl (mainPanel, wxID_ANY, wxEmptyString,
       wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE);
   text->SetMinSize (wxSize (-1,50));
   lastRowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
@@ -124,7 +128,7 @@ void UIDialog::AddChoice (const char* name, ...)
     c = va_arg (args, char*);
   }
   va_end (args);
-  wxChoice* choice = new wxChoice (this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+  wxChoice* choice = new wxChoice (mainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
       choices.GetSize (), choices.GetArray (), 0);
   choice->SetSelection (0);
   lastRowSizer->Add (choice, 1, wxALL | wxALIGN_CENTER_VERTICAL, 5);
@@ -134,7 +138,7 @@ void UIDialog::AddChoice (const char* name, ...)
 void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
 {
   CS_ASSERT (lastRowSizer != 0);
-  wxListCtrl* list = new wxListCtrl (this, wxID_ANY, wxDefaultPosition,
+  wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
       wxDefaultSize, wxLC_REPORT);
   list->SetMinSize (wxSize (-1,150));
   lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
@@ -151,7 +155,7 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
 {
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
-  wxListCtrl* list = new wxListCtrl (this, wxID_ANY, wxDefaultPosition,
+  wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
       wxDefaultSize, wxLC_REPORT);
   list->SetMinSize (wxSize (-1,150));
   lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
@@ -167,7 +171,7 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
 void UIDialog::AddButton (const char* str)
 {
   CS_ASSERT (lastRowSizer != 0);
-  wxButton* button = new wxButton (this, wxID_ANY, wxString::FromUTF8 (str),
+  wxButton* button = new wxButton (mainPanel, wxID_ANY, wxString::FromUTF8 (str),
       wxDefaultPosition, wxDefaultSize, 0);
   lastRowSizer->Add (button, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
   button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
@@ -350,8 +354,11 @@ int UIDialog::Show (UIDialogCallback* cb)
 {
   callback = cb;
   AddOkCancel ();
+  mainPanel->Layout ();
+  mainPanel->Fit ();
   Layout ();
   Fit ();
+  //sizer->Fit (this);
   Centre (wxBOTH);
 
   csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();

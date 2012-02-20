@@ -70,6 +70,7 @@ struct ValueListInfo
 class UIDialog : public wxDialog, public Ares::View
 {
 private:
+  wxPanel* mainPanel;
   wxBoxSizer* sizer;
   wxBoxSizer* lastRowSizer;
   csHash<wxTextCtrl*,csString> textFields;
