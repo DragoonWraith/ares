@@ -48,7 +48,7 @@ void ObjectsValue::UpdateChildren ()
     const char* entityName = obj->GetEntityName ();
     const char* factName = fact->GetName ();
     const csReversibleTransform& trans = obj->GetTransform ();
-    float dist = csSquaredDist::PointPoint (trans.GetOrigin (), origin);
+    float dist = sqrt (csSquaredDist::PointPoint (trans.GetOrigin (), origin));
 
     csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
     composite->AddChild ("ID", NEWREF(LongValue,new LongValue(id)));
