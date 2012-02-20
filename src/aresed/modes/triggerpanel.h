@@ -56,6 +56,14 @@ private:
 
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
+  void OnSetThisInventory (wxCommandEvent& event);
+  void OnSetThisMeshSelect (wxCommandEvent& event);
+  void OnSetThisProperty (wxCommandEvent& event);
+  void OnSetThisQuest (wxCommandEvent& event);
+  void OnSetThisTrigger (wxCommandEvent& event);
+  void OnSetThisWatch (wxCommandEvent& event);
+  void OnSetThisMeshEnter (wxCommandEvent& event);
+  void OnSetThisSectorEnter (wxCommandEvent& event);
 
   void UpdateTrigger ();
   void UpdatePanel ();

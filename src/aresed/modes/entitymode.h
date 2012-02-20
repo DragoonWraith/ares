@@ -137,6 +137,10 @@ public:
   virtual ~EntityMode ();
 
   iQuestManager* GetQuestManager () const { return questMgr; }
+  iCelPropertyClassTemplate* GetSelectedPC ()
+  {
+    return GetPCTemplate (GetContextMenuNode ());
+  }
 
   /// Refresh the view. The tiven pctpl is optional and will be used if given.
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);

@@ -19508,7 +19508,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the mesh or camera property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -19568,7 +19568,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the mesh or camera property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -19603,6 +19603,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="1">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="1">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Es_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to the mesh or camera of this entity</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
@@ -19880,7 +19937,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the inventory property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -19940,7 +19997,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the inventory property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -19975,6 +20032,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="0">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="0">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_In_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to the inventory of this entity</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
@@ -20379,7 +20493,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the mesh property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -20439,7 +20553,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the mesh property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -20477,15 +20591,72 @@
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
+                                            <object class="sizeritem" expanded="0">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="0">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Ms_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to the mesh of this entity</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
                                         </object>
                                     </object>
                                 </object>
                             </object>
                         </object>
-                        <object class="choicebookpage" expanded="1">
+                        <object class="choicebookpage" expanded="0">
                             <property name="label">message</property>
                             <property name="select">0</property>
-                            <object class="wxPanel" expanded="1">
+                            <object class="wxPanel" expanded="0">
                                 <property name="bg"></property>
                                 <property name="context_help"></property>
                                 <property name="context_menu">1</property>
@@ -20624,7 +20795,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The entity to which we want to send a message</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -20729,11 +20900,11 @@
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
-                                            <object class="sizeritem" expanded="1">
+                                            <object class="sizeritem" expanded="0">
                                                 <property name="border">5</property>
                                                 <property name="flag">wxALL</property>
                                                 <property name="proportion">1</property>
-                                                <object class="wxComboBox" expanded="1">
+                                                <object class="wxComboBox" expanded="0">
                                                     <property name="bg"></property>
                                                     <property name="choices"></property>
                                                     <property name="context_help"></property>
@@ -21049,7 +21220,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the property property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -21109,7 +21280,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the property property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -21144,6 +21315,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="0">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="0">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Pc_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to the property of this entity</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
@@ -21661,7 +21889,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the quest property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -21721,7 +21949,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the quest property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -21756,6 +21984,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="0">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="0">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Sf_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to this quest</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
@@ -22033,7 +22318,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">A timeout value in milliseconds</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -22218,7 +22503,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the trigger property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -22278,7 +22563,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the trigger property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -22313,6 +22598,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="0">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="0">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Tr_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to the trigger of this entity</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
@@ -22531,7 +22873,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the mesh property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -22591,7 +22933,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the mesh property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -22626,6 +22968,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="0">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="0">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Wa_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip">Set to the mesh of this entity</property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>
@@ -22718,7 +23117,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the target mesh property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -22778,7 +23177,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the target mesh property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -23464,7 +23863,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">Entity containing the mesh or camera property class we want to watch (use tag to distinguish)</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -23524,7 +23923,7 @@
                                                     <property name="size"></property>
                                                     <property name="style">wxTE_PROCESS_ENTER</property>
                                                     <property name="subclass"></property>
-                                                    <property name="tooltip"></property>
+                                                    <property name="tooltip">The optional tag to find the mesh or camera property class</property>
                                                     <property name="validator_data_type"></property>
                                                     <property name="validator_style">wxFILTER_NONE</property>
                                                     <property name="validator_type">wxDefaultValidator</property>
@@ -23559,6 +23958,63 @@
                                                     <event name="OnTextEnter"></event>
                                                     <event name="OnTextMaxLen"></event>
                                                     <event name="OnTextURL"></event>
+                                                    <event name="OnUpdateUI"></event>
+                                                </object>
+                                            </object>
+                                            <object class="sizeritem" expanded="1">
+                                                <property name="border">5</property>
+                                                <property name="flag">wxALL</property>
+                                                <property name="proportion">0</property>
+                                                <object class="wxButton" expanded="1">
+                                                    <property name="bg"></property>
+                                                    <property name="context_help"></property>
+                                                    <property name="context_menu">1</property>
+                                                    <property name="default">0</property>
+                                                    <property name="enabled">1</property>
+                                                    <property name="fg"></property>
+                                                    <property name="font"></property>
+                                                    <property name="hidden">0</property>
+                                                    <property name="id">wxID_ANY</property>
+                                                    <property name="label">T</property>
+                                                    <property name="maximum_size">30,-1</property>
+                                                    <property name="minimum_size"></property>
+                                                    <property name="name">this_Me_Button</property>
+                                                    <property name="permission">protected</property>
+                                                    <property name="pos"></property>
+                                                    <property name="size">30,-1</property>
+                                                    <property name="style"></property>
+                                                    <property name="subclass"></property>
+                                                    <property name="tooltip"></property>
+                                                    <property name="validator_data_type"></property>
+                                                    <property name="validator_style">wxFILTER_NONE</property>
+                                                    <property name="validator_type">wxDefaultValidator</property>
+                                                    <property name="validator_variable"></property>
+                                                    <property name="window_extra_style"></property>
+                                                    <property name="window_name"></property>
+                                                    <property name="window_style"></property>
+                                                    <event name="OnButtonClick"></event>
+                                                    <event name="OnChar"></event>
+                                                    <event name="OnEnterWindow"></event>
+                                                    <event name="OnEraseBackground"></event>
+                                                    <event name="OnKeyDown"></event>
+                                                    <event name="OnKeyUp"></event>
+                                                    <event name="OnKillFocus"></event>
+                                                    <event name="OnLeaveWindow"></event>
+                                                    <event name="OnLeftDClick"></event>
+                                                    <event name="OnLeftDown"></event>
+                                                    <event name="OnLeftUp"></event>
+                                                    <event name="OnMiddleDClick"></event>
+                                                    <event name="OnMiddleDown"></event>
+                                                    <event name="OnMiddleUp"></event>
+                                                    <event name="OnMotion"></event>
+                                                    <event name="OnMouseEvents"></event>
+                                                    <event name="OnMouseWheel"></event>
+                                                    <event name="OnPaint"></event>
+                                                    <event name="OnRightDClick"></event>
+                                                    <event name="OnRightDown"></event>
+                                                    <event name="OnRightUp"></event>
+                                                    <event name="OnSetFocus"></event>
+                                                    <event name="OnSize"></event>
                                                     <event name="OnUpdateUI"></event>
                                                 </object>
                                             </object>

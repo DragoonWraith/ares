@@ -45,25 +45,39 @@ BEGIN_EVENT_TABLE(TriggerPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("entity_Es_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Es_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("sector_Es_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Es_Button"), TriggerPanel :: OnSetThisSectorEnter)
+
   EVT_TEXT_ENTER (XRCID("entity_In_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_In_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("child_In_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("childTemplate_In_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_In_Button"), TriggerPanel :: OnSetThisInventory)
+
   EVT_TEXT_ENTER (XRCID("entity_Ms_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Ms_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("entity_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Ms_Button"), TriggerPanel :: OnSetThisMeshSelect)
+
   EVT_TEXT_ENTER (XRCID("mask_Me_Combo"), TriggerPanel :: OnUpdateEvent)
   EVT_COMBOBOX (XRCID("mask_Me_Combo"), TriggerPanel :: OnUpdateEvent)
+
   EVT_TEXT_ENTER (XRCID("entity_Pc_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Pc_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("property_Pc_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("value_Pc_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Pc_Button"), TriggerPanel :: OnSetThisProperty)
+
   EVT_TEXT_ENTER (XRCID("entity_Sf_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Sf_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("sequence_Sf_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Sf_Button"), TriggerPanel :: OnSetThisQuest)
+
   EVT_TEXT_ENTER (XRCID("timeout_To_Text"), TriggerPanel :: OnUpdateEvent)
+
   EVT_TEXT_ENTER (XRCID("entity_Tr_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Tr_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Tr_Button"), TriggerPanel :: OnSetThisTrigger)
+
   EVT_TEXT_ENTER (XRCID("entity_Wa_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Wa_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("target_Wa_Text"), TriggerPanel :: OnUpdateEvent)
@@ -73,9 +87,12 @@ BEGIN_EVENT_TABLE(TriggerPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("offsetX_Wa_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("offsetY_Wa_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("offsetZ_Wa_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Wa_Button"), TriggerPanel :: OnSetThisWatch)
+
   EVT_TEXT_ENTER (XRCID("entity_Me_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("tag_Me_Text"), TriggerPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("sector_Me_Text"), TriggerPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("this_Me_Button"), TriggerPanel :: OnSetThisMeshEnter)
 
 END_EVENT_TABLE()
 
@@ -90,6 +107,54 @@ void TriggerPanel::OnUpdateEvent (wxCommandEvent& event)
 void TriggerPanel::OnChoicebookPageChange (wxChoicebookEvent& event)
 {
   UpdateTrigger ();
+}
+
+void TriggerPanel::OnSetThisInventory (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_In_Text", "$this");
+  UITools::SetValue (this, "tag_In_Text", "");
+}
+
+void TriggerPanel::OnSetThisMeshSelect (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Ms_Text", "$this");
+  UITools::SetValue (this, "tag_Ms_Text", "");
+}
+
+void TriggerPanel::OnSetThisMeshEnter (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Me_Text", "$this");
+  UITools::SetValue (this, "tag_Me_Text", "");
+}
+
+void TriggerPanel::OnSetThisSectorEnter (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Es_Text", "$this");
+  UITools::SetValue (this, "tag_Es_Text", "");
+}
+
+void TriggerPanel::OnSetThisProperty (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Pc_Text", "$this");
+  UITools::SetValue (this, "tag_Pc_Text", "");
+}
+
+void TriggerPanel::OnSetThisTrigger (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Tr_Text", "$this");
+  UITools::SetValue (this, "tag_Tr_Text", "");
+}
+
+void TriggerPanel::OnSetThisWatch (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Wa_Text", "$this");
+  UITools::SetValue (this, "tag_Wa_Text", "");
+}
+
+void TriggerPanel::OnSetThisQuest (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "entity_Sf_Text", "$this");
+  UITools::SetValue (this, "tag_Sf_Text", emode->GetSelectedPC ()->GetTag ());
 }
 
 csString TriggerPanel::GetCurrentTriggerType ()
