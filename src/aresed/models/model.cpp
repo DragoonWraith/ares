@@ -470,11 +470,25 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 // --------------------------------------------------------------------------
 
-bool AbstractNewAction::DoDialog (View* view, wxWindow* component, UIDialog* dialog)
+bool AbstractNewAction::DoDialog (View* view, wxWindow* component, UIDialog* dialog,
+    bool update)
 {
+  Value* origValue = 0;
   if (dialog)
   {
     dialog->Clear ();
+    if (update)
+    {
+      origValue = view->GetSelectedValue (component);
+      if (!origValue)
+        update = false;
+      else
+      {
+	csString d = origValue->Dump (true);
+	printf ("%s\n", d.GetData ()); fflush (stdout);
+	dialog->SetFieldContents (origValue->GetDialogValue ());
+      }
+    }
     if (dialog->Show (0) == 0) return false;
   }
 
@@ -492,10 +506,19 @@ bool AbstractNewAction::DoDialog (View* view, wxWindow* component, UIDialog* dia
   }
   DialogResult dialogResult;
   if (dialog) dialogResult = dialog->GetFieldContents ();
-  Value* value = collection->NewValue (idx, view->GetSelectedValue (component), dialogResult);
-  if (!value) return false;
-
-  view->SetSelectedValue (component, value);
+  if (update)
+  {
+    if (!collection->UpdateValue (idx, origValue, dialogResult))
+      return false;
+    view->SetSelectedValue (component, origValue);
+  }
+  else
+  {
+    Value* value = collection->NewValue (idx, view->GetSelectedValue (component),
+      dialogResult);
+    if (!value) return false;
+    view->SetSelectedValue (component, value);
+  }
   return true;
 }
 
@@ -507,6 +530,11 @@ bool NewChildAction::Do (View* view, wxWindow* component)
 bool NewChildDialogAction::Do (View* view, wxWindow* component)
 {
   return DoDialog (view, component, dialog);
+}
+
+bool EditChildDialogAction::Do (View* view, wxWindow* component)
+{
+  return DoDialog (view, component, dialog, true);
 }
 
 bool DeleteChildAction::Do (View* view, wxWindow* component)

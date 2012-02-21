@@ -296,6 +296,18 @@ public:
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   { return 0; }
 
+  /**
+   * Update a value. Returns false if it failed.
+   * selectedValue is the value to update.
+   */
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  { return false; }
+
+  /**
+   * Get a DialogResult which can be used to show this value in a dialog.
+   */
+  virtual DialogResult GetDialogValue () { return DialogResult (); }
+
   // -----------------------------------------------------------------------------
 
   /**
@@ -491,6 +503,18 @@ public:
     for (size_t i = 0 ; i < GetChildCount () ; i++)
       if (sname == GetName (i)) return GetChild (i);
     return 0;
+  }
+  virtual DialogResult GetDialogValue ()
+  {
+    DialogResult result;
+    ResetIterator ();
+    while (HasNext ())
+    {
+      csString name;
+      Value* value = NextChild (&name);
+      result.Put (name, value->GetStringValue ());
+    }
+    return result;
   }
 };
 
@@ -992,7 +1016,8 @@ protected:
   Value* collection;
 
   /// Do method that has an optional 'dialog' (dialog can be 0).
-  bool DoDialog (View* view, wxWindow* component, UIDialog* dialog);
+  bool DoDialog (View* view, wxWindow* component, UIDialog* dialog,
+      bool update = false);
 
 public:
   AbstractNewAction (Value* collection) : collection (collection) { }
@@ -1028,6 +1053,26 @@ public:
     AbstractNewAction (collection), dialog (dialog) { }
   virtual ~NewChildDialogAction () { }
   virtual const char* GetName () const { return "New..."; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * This standard action edits a child for a collection based
+ * on a suggestion from a dialog.
+ * If nothing is selected in the container then it behaves
+ * the same as NewChildDialogAction.
+ * It assumes the collection supports the NewValue() method.
+ */
+class EditChildDialogAction : public AbstractNewAction
+{
+private:
+  UIDialog* dialog;
+
+public:
+  EditChildDialogAction (Value* collection, UIDialog* dialog) :
+    AbstractNewAction (collection), dialog (dialog) { }
+  virtual ~EditChildDialogAction () { }
+  virtual const char* GetName () const { return "Edit..."; }
   virtual bool Do (View* view, wxWindow* component);
 };
 
