@@ -242,6 +242,21 @@ void UIDialog::SetList (const char* name, const char* value)
   ListCtrlTools::SelectRow (info.list, rowidx);
 }
 
+void UIDialog::SetFieldContents (const DialogResult& result)
+{
+  DialogResult copy = result;
+  Clear ();
+  // Make a copy for safety.
+  DialogResult::GlobalIterator it = copy.GetIterator ();
+  while (it.HasNext ())
+  {
+    csString name;
+    csString value = it.Next (name);
+printf ("SetFieldContents %s %s\n", name.GetData (), value.GetData ()); fflush (stdout);
+    SetValue (name, value);
+  }
+}
+
 void UIDialog::Clear ()
 {
   csHash<wxTextCtrl*,csString>::GlobalIterator itText = textFields.GetIterator ();

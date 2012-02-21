@@ -149,6 +149,11 @@ public:
    * the contents of all text controls and choices.
    */
   const DialogResult& GetFieldContents () const { return fieldContents; }
+
+  /**
+   * Fill this dialog with the DialogResult contents.
+   */
+  void SetFieldContents (const DialogResult& result);
 };
 
 
