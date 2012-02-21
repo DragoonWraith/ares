@@ -63,6 +63,7 @@ private:
 
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
+  void OnUpdateMessageCombo (wxCommandEvent& event);
 
   void UpdateReward ();
   void UpdatePanel ();

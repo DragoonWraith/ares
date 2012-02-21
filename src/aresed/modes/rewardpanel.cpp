@@ -64,7 +64,7 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("float_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("id_Ac_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("id_Me_Combo"), RewardPanel :: OnUpdateEvent)
-  EVT_COMBOBOX (XRCID("id_Me_Combo"), RewardPanel :: OnUpdateEvent)
+  EVT_COMBOBOX (XRCID("id_Me_Combo"), RewardPanel :: OnUpdateMessageCombo)
   EVT_TEXT_ENTER (XRCID("long_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("message_Dp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT_ENTER (XRCID("name_Ce_Text"), RewardPanel :: OnUpdateEvent)
@@ -89,6 +89,38 @@ END_EVENT_TABLE()
 void RewardPanel::OnUpdateEvent (wxCommandEvent& event)
 {
   printf ("Update Reward!\n"); fflush (stdout);
+  UpdateReward ();
+}
+
+void RewardPanel::OnUpdateMessageCombo (wxCommandEvent& event)
+{
+  printf ("Update Message Combo!\n"); fflush (stdout);
+  if (reward)
+  {
+    csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
+    csString msg = UITools::GetValue (this, "id_Me_Combo");
+    if (msg != tf->GetID ())
+    {
+      tf->SetIDParameter (msg);
+      while (tf->GetParameterCount () > 0)
+	tf->RemoveParameter (tf->GetParameterID (0));
+      if (msg == "ares.controller.Message")
+      {
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("message"), "... message ...");
+	tf->AddParameter (CEL_DATA_FLOAT, pl->FetchStringID ("timeout"), "2.0");
+      }
+      else if (msg == "ares.controller.Spawn")
+      {
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("factory"), "... factory ...");
+      }
+      else if (msg == "ares.controller.CreateEntity")
+      {
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("template"), "... template ...");
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("name"), "... name ...");
+      }
+      messageParameters->Refresh ();
+    }
+  }
   UpdateReward ();
 }
 
@@ -565,6 +597,22 @@ public:
     FireValueChanged ();
     return child;
   }
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    csRef<T> tf = GetReward ();
+    if (!tf) return false;
+    csString name = suggestion.Get ("name", (const char*)0);
+    csString value = suggestion.Get ("value", (const char*)0);
+    csString type = suggestion.Get ("type", (const char*)0);
+    csStringID id = rewardPanel->GetPL ()->FetchStringID (name);
+    if (!tf->AddParameter (InspectTools::StringToType (type), id, value))
+      dirty = true;	// Force refresh because we did an update.
+    selectedValue->GetChildByName ("name")->SetStringValue (name);
+    selectedValue->GetChildByName ("value")->SetStringValue (value);
+    selectedValue->GetChildByName ("type")->SetStringValue (type);
+    FireValueChanged ();
+    return true;
+  }
 
   virtual csString Dump (bool verbose = false)
   {
@@ -621,6 +669,7 @@ RewardPanel::RewardPanel (wxWindow* parent, UIManager* uiManager,
       "vector3", "color", (const char*)0);
   wxListCtrl* messageList = XRCCTRL (*this, "parameters_Me_List", wxListCtrl);
   AddAction (messageList, NEWREF(Action, new NewChildDialogAction (messageParameters, messageDialog)));
+  AddAction (messageList, NEWREF(Action, new EditChildDialogAction (messageParameters, messageDialog)));
   AddAction (messageList, NEWREF(Action, new DeleteChildAction (messageParameters)));
 
   // Action parameters.
