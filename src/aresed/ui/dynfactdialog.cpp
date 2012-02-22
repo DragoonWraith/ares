@@ -389,6 +389,164 @@ public:
 //--------------------------------------------------------------------------
 
 /**
+ * A value representing the list of bones for a skeleton factory.
+ */
+class FactoryBoneCollectionValue : public StandardCollectionValue
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+
+  CS::Animation::iSkeletonFactory* GetSkeletonFactory ()
+  {
+    if (!dynfact) return 0;
+    csString itemname = dynfact->GetName ();
+    UIManager* uiManager = dialog->GetUIManager ();
+    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+    CS_ASSERT (meshFact != 0);
+
+    csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+    if (!animFact) return 0;
+
+    CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
+    return skelFact;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (dynfact != dialog->GetCurrentFactory ()) dirty = true;
+    if (!dirty) return;
+    ReleaseChildren ();
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    dirty = false;
+    using namespace CS::Animation;
+    CS::Animation::iSkeletonFactory* skelFact = GetSkeletonFactory ();
+    if (!skelFact) return;
+    const csArray<BoneID>& bones = skelFact->GetBoneOrderList ();
+    for (size_t i = 0 ; i < bones.GetSize () ; i++)
+    {
+      BoneID id = bones[i];
+      csRef<CompositeValue> value;
+      value.AttachNew (new CompositeValue ());
+      value->AddChild ("name", NEWREF(Value,new StringValue(skelFact->GetBoneName (id))));
+      children.Push (value);
+      value->SetParent (this);
+    }
+  }
+
+public:
+  FactoryBoneCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~FactoryBoneCollectionValue () { }
+};
+
+//--------------------------------------------------------------------------
+
+/**
+ * A composite value representing a bone for a dynamic factory.
+ */
+class BoneValue : public CompositeValue
+{
+private:
+  csString boneName;
+  iDynamicFactory* dynfact;
+
+public:
+  BoneValue (const char* boneName, iDynamicFactory* dynfact) : boneName (boneName), dynfact (dynfact)
+  {
+    AddChild ("name", NEWREF(Value,new StringValue (boneName)));
+  }
+  virtual ~BoneValue () { }
+};
+
+/**
+ * A value representing the list of bones for a dynamic factory.
+ * Children of this value are of type BoneValue.
+ */
+class BoneCollectionValue : public StandardCollectionValue
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+
+  // Create a new child and add to the array.
+  Value* NewChild (const char* boneName)
+  {
+    csRef<BoneValue> value;
+    value.AttachNew (new BoneValue (boneName, dynfact));
+    children.Push (value);
+    value->SetParent (this);
+    return value;
+  }
+
+  CS::Animation::iSkeletonFactory* GetSkeletonFactory ()
+  {
+    if (!dynfact) return 0;
+    csString itemname = dynfact->GetName ();
+    UIManager* uiManager = dialog->GetUIManager ();
+    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+    CS_ASSERT (meshFact != 0);
+
+    csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+    if (!animFact) return 0;
+
+    CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
+    return skelFact;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (dynfact != dialog->GetCurrentFactory ()) dirty = true;
+    if (!dirty) return;
+    ReleaseChildren ();
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    dirty = false;
+    using namespace CS::Animation;
+    iBodySkeleton* bodySkel = dialog->GetBodyManager ()
+      ->FindBodySkeleton (dynfact->GetName ());
+    if (!bodySkel) return;
+    CS::Animation::iSkeletonFactory* skelFact = GetSkeletonFactory ();
+    csRef<iBoneIDIterator> it = bodySkel->GetBodyBones ();
+    while (it->HasNext ())
+    {
+      BoneID id = it->Next ();
+      NewChild (skelFact->GetBoneName (id));
+    }
+  }
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  BoneCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~BoneCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    // @@@ Not implemented yet.
+    return false;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return 0;
+    using namespace CS::Animation;
+    csString name = suggestion.Get ("name", (const char*)0);
+    Value* value = NewChild (name);
+    FireValueChanged ();
+    return value;
+  }
+};
+
+//--------------------------------------------------------------------------
+
+/**
  * A composite value representing a pivot joint for a dynamic factory.
  */
 class PivotValue : public CompositeValue
@@ -794,6 +952,7 @@ DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
   AddChild ("pivots", NEWREF(Value,new PivotCollectionValue (dialog)));
   AddChild ("joints", NEWREF(Value,new JointCollectionValue (dialog)));
   AddChild ("attributes", NEWREF(Value,new AttributeCollectionValue (dialog)));
+  AddChild ("bones", NEWREF(Value,new BoneCollectionValue (dialog)));
   AddChild ("maxRadius", NEWREF(Value,new MaxRadiusValue(dialog)));
   AddChild ("imposterRadius", NEWREF(Value,new ImposterRadiusValue(dialog)));
   AddChild ("static", NEWREF(Value,new StaticValue(dialog)));
@@ -808,6 +967,58 @@ void DynfactValue::ChildChanged (Value* child)
     AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
     ares3d->SetupFactorySettings (dynfact);
   }
+}
+
+//--------------------------------------------------------------------------
+
+bool CreateBodySkeletonAction::Do (View* view, wxWindow* component)
+{
+  UIManager* uiManager = dialog->GetUIManager ();
+
+  Value* value = view->GetSelectedValue (component);
+  if (!value)
+  {
+    uiManager->Error ("Please select a valid item!");
+    return false;
+  }
+
+  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  if (!categoryValue || categoryValue == value)
+  {
+    uiManager->Error ("Please select a valid item!");
+    return false;
+  }
+
+  csString itemname = value->GetStringValue ();
+  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+  CS_ASSERT (meshFact != 0);
+
+  csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+  if (!animFact)
+  {
+    uiManager->Error ("This item is not an animesh!");
+    return false;
+  }
+
+  CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
+  if (!skelFact)
+  {
+    uiManager->Error ("This item has no skeleton!");
+    return false;
+  }
+
+  if (dialog->GetBodyManager ()->FindBodySkeleton (itemname))
+  {
+    uiManager->Error ("There is already a body skeleton for this item!");
+    return false;
+  }
+
+  //iBodySkeleton* bodySkel = bodyManager->CreateBodySkeleton (itemname, skelFact);
+  dialog->GetBodyManager ()->CreateBodySkeleton (itemname, skelFact);
+
+  return true;
 }
 
 //--------------------------------------------------------------------------
@@ -1015,6 +1226,7 @@ void DynfactDialog::Tick ()
 
 iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 {
+  if (!factorySelectedValue) return 0;
   csString selectedFactory = factorySelectedValue->GetStringValue ();
   if (selectedFactory.IsEmpty ()) return 0;
   iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
@@ -1092,6 +1304,14 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AppAresEditWX* app = uiManager->GetApp ();
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
 
+  bodyManager = csQueryRegistry<CS::Animation::iBodyManager> (app->GetObjectRegistry ());
+  if (!bodyManager)
+  {
+    printf ("Can't find body manager!\n");
+    fflush (stdout);
+    return;
+  }
+
   // The mesh panel.
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new DynfactMeshView (this, app->GetObjectRegistry (), panel);
@@ -1112,6 +1332,12 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   attributeDialog->AddLabel ("Value:");
   attributeDialog->AddText ("value");
 
+  // The dialog for selecting a bone.
+  selectBoneDialog = new UIDialog (this, "Select Bone");
+  selectBoneDialog->AddRow ();
+  selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0,
+      "Name", "name");
+
   // Setup the dynamic factory tree.
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
   Bind (dynfactCollectionValue, "factoryTree");
@@ -1123,6 +1349,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   DefineHeading ("pivots_List", "x,y,z", "pivotX,pivotY,pivotZ");
   DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
   DefineHeading ("attributes_List", "Name,Value", "attrName,attrValue");
+  DefineHeading ("bones_List", "Name", "name");
 
   // Setup the composite representing the dynamic factory that is selected.
   dynfactValue.AttachNew (new DynfactValue (this));
@@ -1148,6 +1375,13 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   jointsSelectedValue.AttachNew (new ListSelectedValue (jointsList, joints, VALUE_COMPOSITE));
   jointsSelectedValue->SetupComposite (NEWREF(Value,new JointValue(0,0)));
 
+  // Create a selection value that will follow the selection on the bones list.
+  Value* bones = dynfactValue->GetChildByName ("bones");
+  wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
+  csRef<ListSelectedValue> bonesSelectedValue;
+  bonesSelectedValue.AttachNew (new ListSelectedValue (bonesList, bones, VALUE_COMPOSITE));
+  bonesSelectedValue->SetupComposite (NEWREF(Value,new BoneValue("",0)));
+
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
   // view to update itself.
@@ -1156,6 +1390,8 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (pivotsSelectedValue, meshView);
   // Also do this for the selected joint value.
   Bind (jointsSelectedValue, meshView);
+  // Also do this for the selected bone value.
+  Bind (bonesSelectedValue, meshView);
 
   // Connect the selected value from the catetory tree to the dynamic
   // factory value so that the two radius values and the collider list
@@ -1168,6 +1404,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Signal (factorySelectedValue, colliderSelectedValue);
   Signal (factorySelectedValue, pivotsSelectedValue);
   Signal (factorySelectedValue, jointsSelectedValue);
+  Signal (factorySelectedValue, bonesSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
   Bind (colliderSelectedValue->GetChildByName ("type"), "type_colliderChoice");
@@ -1219,10 +1456,12 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
   AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
   AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
+  AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
+  AddAction (factoryTree, NEWREF(Action, new CreateBodySkeletonAction (this)));
   Value* attributes = dynfactValue->GetChildByName ("attributes");
   AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
   AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
@@ -1238,6 +1477,7 @@ DynfactDialog::~DynfactDialog ()
   delete meshView;
   delete factoryDialog;
   delete attributeDialog;
+  delete selectBoneDialog;
 }
 
 

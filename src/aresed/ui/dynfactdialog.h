@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include <wx/treectrl.h>
 #include <wx/xrc/xmlres.h>
 
+#include "imesh/bodymesh.h"
+
 class TreeCtrlView;
 class ListCtrlView;
 class FactoryEditorModel;
@@ -82,6 +84,21 @@ public:
   EditCategoryAction (DynfactDialog* dialog) : dialog (dialog) { }
   virtual ~EditCategoryAction () { }
   virtual const char* GetName () const { return "Edit category..."; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * Action to create a body skeleton.
+ */
+class CreateBodySkeletonAction : public Action
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  CreateBodySkeletonAction (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~CreateBodySkeletonAction () { }
+  virtual const char* GetName () const { return "Create skeleton"; }
   virtual bool Do (View* view, wxWindow* component);
 };
 
@@ -163,6 +180,8 @@ private:
   UIManager* uiManager;
   csRef<iTimerEvent> timerOp;
 
+  csRef<CS::Animation::iBodyManager> bodyManager;
+
   DynfactMeshView* meshView;
   csRef<TreeSelectedValue> factorySelectedValue;
 
@@ -171,6 +190,7 @@ private:
 
   UIDialog* factoryDialog;
   UIDialog* attributeDialog;
+  UIDialog* selectBoneDialog;
 
   void OnOkButton (wxCommandEvent& event);
 
@@ -185,6 +205,7 @@ public:
   void FitCollider (iDynamicFactory* fact, celBodyType type);
 
   UIManager* GetUIManager () const { return uiManager; }
+  CS::Animation::iBodyManager* GetBodyManager () const { return bodyManager; }
 
   iDynamicFactory* GetCurrentFactory ();
   long GetSelectedCollider ();
