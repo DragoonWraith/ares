@@ -183,6 +183,8 @@ private:
   csRef<CS::Animation::iBodyManager> bodyManager;
 
   DynfactMeshView* meshView;
+  csRef<ListSelectedValue> bonesSelectedValue;
+  csRef<ListSelectedValue> bonesColliderSelectedValue;
   csRef<TreeSelectedValue> factorySelectedValue;
 
   csRef<DynfactValue> dynfactValue;
@@ -202,12 +204,13 @@ public:
   void Tick ();
 
   /// Calculate the best-fit for a given collider.
-  void FitCollider (iDynamicFactory* fact, celBodyType type);
+  void FitCollider (iDynamicFactory* fact, csColliderGeometryType type);
 
   UIManager* GetUIManager () const { return uiManager; }
   CS::Animation::iBodyManager* GetBodyManager () const { return bodyManager; }
 
   iDynamicFactory* GetCurrentFactory ();
+  CS::Animation::iBodyBone* GetCurrentBone ();
   long GetSelectedCollider ();
   long GetSelectedPivot ();
   long GetSelectedJoint ();

@@ -121,6 +121,12 @@ public:
       size_t penIdx);
 
   /**
+   * Add a capsule to show in 2D on top of the mesh.
+   */
+  void AddCapsule (const csVector3& center, float radius, float length,
+      size_t penIdx);
+
+  /**
    * Add a mesh (linedraw) to show in 2D on top of the real mesh.
    */
   void AddMesh (const csVector3& center, size_t penIdx);

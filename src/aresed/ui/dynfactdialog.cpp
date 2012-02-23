@@ -82,13 +82,15 @@ void DynfactMeshView::SetupColliderGeometry ()
     {
       size_t pen = i == size_t (idx) ? hilightPen : normalPen;
       celBodyInfo info = fact->GetBody (i);
-      if (info.type == BODY_BOX)
+      if (info.type == BOX_COLLIDER_GEOMETRY)
         AddBox (csBox3 (info.offset - info.size * .5, info.offset + info.size * .5), pen);
-      else if (info.type == BODY_SPHERE)
+      else if (info.type == SPHERE_COLLIDER_GEOMETRY)
 	AddSphere (info.offset, info.radius, pen);
-      else if (info.type == BODY_CYLINDER)
+      else if (info.type == CYLINDER_COLLIDER_GEOMETRY)
 	AddCylinder (info.offset, info.radius, info.length, pen);
-      else if (info.type == BODY_MESH || info.type == BODY_CONVEXMESH)
+      else if (info.type == CAPSULE_COLLIDER_GEOMETRY)
+	AddCapsule (info.offset, info.radius, info.length, pen);
+      else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
 	AddMesh (info.offset, pen);
     }
     idx = dialog->GetSelectedPivot ();
@@ -445,108 +447,6 @@ public:
 //--------------------------------------------------------------------------
 
 /**
- * A composite value representing a bone for a dynamic factory.
- */
-class BoneValue : public CompositeValue
-{
-private:
-  csString boneName;
-  iDynamicFactory* dynfact;
-
-public:
-  BoneValue (const char* boneName, iDynamicFactory* dynfact) : boneName (boneName), dynfact (dynfact)
-  {
-    AddChild ("name", NEWREF(Value,new StringValue (boneName)));
-  }
-  virtual ~BoneValue () { }
-};
-
-/**
- * A value representing the list of bones for a dynamic factory.
- * Children of this value are of type BoneValue.
- */
-class BoneCollectionValue : public StandardCollectionValue
-{
-private:
-  DynfactDialog* dialog;
-  iDynamicFactory* dynfact;
-
-  // Create a new child and add to the array.
-  Value* NewChild (const char* boneName)
-  {
-    csRef<BoneValue> value;
-    value.AttachNew (new BoneValue (boneName, dynfact));
-    children.Push (value);
-    value->SetParent (this);
-    return value;
-  }
-
-  CS::Animation::iSkeletonFactory* GetSkeletonFactory ()
-  {
-    if (!dynfact) return 0;
-    csString itemname = dynfact->GetName ();
-    UIManager* uiManager = dialog->GetUIManager ();
-    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
-    CS_ASSERT (meshFact != 0);
-
-    csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
-    if (!animFact) return 0;
-
-    CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
-    return skelFact;
-  }
-
-protected:
-  virtual void UpdateChildren ()
-  {
-    if (dynfact != dialog->GetCurrentFactory ()) dirty = true;
-    if (!dirty) return;
-    ReleaseChildren ();
-    dynfact = dialog->GetCurrentFactory ();
-    if (!dynfact) return;
-    dirty = false;
-    using namespace CS::Animation;
-    iBodySkeleton* bodySkel = dialog->GetBodyManager ()
-      ->FindBodySkeleton (dynfact->GetName ());
-    if (!bodySkel) return;
-    CS::Animation::iSkeletonFactory* skelFact = GetSkeletonFactory ();
-    csRef<iBoneIDIterator> it = bodySkel->GetBodyBones ();
-    while (it->HasNext ())
-    {
-      BoneID id = it->Next ();
-      NewChild (skelFact->GetBoneName (id));
-    }
-  }
-  virtual void ChildChanged (Value* child)
-  {
-    FireValueChanged ();
-  }
-
-public:
-  BoneCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
-  virtual ~BoneCollectionValue () { }
-
-  virtual bool DeleteValue (Value* child)
-  {
-    // @@@ Not implemented yet.
-    return false;
-  }
-  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
-  {
-    dynfact = dialog->GetCurrentFactory ();
-    if (!dynfact) return 0;
-    using namespace CS::Animation;
-    csString name = suggestion.Get ("name", (const char*)0);
-    Value* value = NewChild (name);
-    FireValueChanged ();
-    return value;
-  }
-};
-
-//--------------------------------------------------------------------------
-
-/**
  * A composite value representing a pivot joint for a dynamic factory.
  */
 class PivotValue : public CompositeValue
@@ -667,10 +567,10 @@ public:
 class ColliderTypeValue : public Value
 {
 private:
-  celBodyType* type;
+  csColliderGeometryType* type;
 
 public:
-  ColliderTypeValue (celBodyType* t) : type (t) { }
+  ColliderTypeValue (csColliderGeometryType* t) : type (t) { }
   virtual ~ColliderTypeValue () { }
 
   virtual ValueType GetType () const { return VALUE_STRING; }
@@ -678,26 +578,28 @@ public:
   {
     switch (*type)
     {
-      case BODY_NONE: return "None";
-      case BODY_BOX: return "Box";
-      case BODY_SPHERE: return "Sphere";
-      case BODY_CYLINDER: return "Cylinder";
-      case BODY_CONVEXMESH: return "Convex mesh";
-      case BODY_MESH: return "Mesh";
+      case NO_GEOMETRY: return "None";
+      case BOX_COLLIDER_GEOMETRY: return "Box";
+      case SPHERE_COLLIDER_GEOMETRY: return "Sphere";
+      case CYLINDER_COLLIDER_GEOMETRY: return "Cylinder";
+      case CAPSULE_COLLIDER_GEOMETRY: return "Capsule";
+      case CONVEXMESH_COLLIDER_GEOMETRY: return "Convex mesh";
+      case TRIMESH_COLLIDER_GEOMETRY: return "Mesh";
       default: return "?";
     }
   }
   virtual void SetStringValue (const char* str)
   {
     csString sstr = str;
-    celBodyType newtype;
-    if (sstr == "None") newtype = BODY_NONE;
-    else if (sstr == "Box") newtype = BODY_BOX;
-    else if (sstr == "Sphere") newtype = BODY_SPHERE;
-    else if (sstr == "Cylinder") newtype = BODY_CYLINDER;
-    else if (sstr == "Convex mesh") newtype = BODY_CONVEXMESH;
-    else if (sstr == "Mesh") newtype = BODY_MESH;
-    else newtype = BODY_NONE;
+    csColliderGeometryType newtype;
+    if (sstr == "None") newtype = NO_GEOMETRY;
+    else if (sstr == "Box") newtype = BOX_COLLIDER_GEOMETRY;
+    else if (sstr == "Sphere") newtype = SPHERE_COLLIDER_GEOMETRY;
+    else if (sstr == "Cylinder") newtype = CYLINDER_COLLIDER_GEOMETRY;
+    else if (sstr == "Capsule") newtype = CAPSULE_COLLIDER_GEOMETRY;
+    else if (sstr == "Convex mesh") newtype = CONVEXMESH_COLLIDER_GEOMETRY;
+    else if (sstr == "Mesh") newtype = TRIMESH_COLLIDER_GEOMETRY;
+    else newtype = NO_GEOMETRY;
     if (newtype == *type) return;
     *type = newtype;
     FireValueChanged ();
@@ -712,36 +614,64 @@ public:
 };
 
 /**
- * A composite value representing a collider for a dynamic factory.
+ * A composite value representing a collider.
  */
-class ColliderValue : public CompositeValue
+template <class T>
+class TypedColliderValue : public CompositeValue
 {
-private:
+protected:
   size_t idx;
-  iDynamicFactory* dynfact;
+  T* parent;
   celBodyInfo info;
 
+public:
+  TypedColliderValue (size_t idx, T* parent) : idx (idx), parent (parent) { }
+
+  void Setup ()
+  {
+    AddChild ("type", NEWREF(Value,new ColliderTypeValue (&TypedColliderValue::info.type)));
+    AddChild ("offsetX", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.offset.x)));
+    AddChild ("offsetY", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.offset.y)));
+    AddChild ("offsetZ", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.offset.z)));
+    AddChild ("mass", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.mass)));
+    AddChild ("radius", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.radius)));
+    AddChild ("length", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.length)));
+    AddChild ("sizeX", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.size.x)));
+    AddChild ("sizeY", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.size.y)));
+    AddChild ("sizeZ", NEWREF(Value,new FloatPointerValue (&TypedColliderValue::info.size.z)));
+  }
+  virtual ~TypedColliderValue () { }
+};
+
+/**
+ * A composite value representing a collider for a dynamic factory.
+ */
+class DynfactColliderValue : public TypedColliderValue<iDynamicFactory>
+{
 protected:
   virtual void ChildChanged (Value* child)
   {
     switch (info.type)
     {
-      case BODY_NONE:
+      case NO_GEOMETRY:
 	break;
-      case BODY_BOX:
-	dynfact->AddRigidBox (info.offset, info.size, info.mass, idx);
+      case BOX_COLLIDER_GEOMETRY:
+	parent->AddRigidBox (info.offset, info.size, info.mass, idx);
 	break;
-      case BODY_SPHERE:
-	dynfact->AddRigidSphere (info.radius, info.offset, info.mass, idx);
+      case SPHERE_COLLIDER_GEOMETRY:
+	parent->AddRigidSphere (info.radius, info.offset, info.mass, idx);
 	break;
-      case BODY_CYLINDER:
-	dynfact->AddRigidCylinder (info.radius, info.length, info.offset, info.mass, idx);
+      case CYLINDER_COLLIDER_GEOMETRY:
+	parent->AddRigidCylinder (info.radius, info.length, info.offset, info.mass, idx);
 	break;
-      case BODY_CONVEXMESH:
-	dynfact->AddRigidConvexMesh (info.offset, info.mass, idx);
+      case CAPSULE_COLLIDER_GEOMETRY:
+	parent->AddRigidCapsule (info.radius, info.length, info.offset, info.mass, idx);
 	break;
-      case BODY_MESH:
-	dynfact->AddRigidMesh (info.offset, info.mass, idx);
+      case CONVEXMESH_COLLIDER_GEOMETRY:
+	parent->AddRigidConvexMesh (info.offset, info.mass, idx);
+	break;
+      case TRIMESH_COLLIDER_GEOMETRY:
+	parent->AddRigidMesh (info.offset, info.mass, idx);
 	break;
       default:
 	printf ("Something is wrong: unknown collider type %d\n", info.type);
@@ -751,33 +681,93 @@ protected:
   }
 
 public:
-  ColliderValue (size_t idx, iDynamicFactory* dynfact) : idx (idx), dynfact (dynfact)
+  DynfactColliderValue (size_t idx, iDynamicFactory* dynfact)
+    : TypedColliderValue<iDynamicFactory> (idx, dynfact)
   {
     if (dynfact) info = dynfact->GetBody (idx);
-    AddChild ("type", NEWREF(Value,new ColliderTypeValue (&ColliderValue::info.type)));
-    AddChild ("offsetX", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.offset.x)));
-    AddChild ("offsetY", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.offset.y)));
-    AddChild ("offsetZ", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.offset.z)));
-    AddChild ("mass", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.mass)));
-    AddChild ("radius", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.radius)));
-    AddChild ("length", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.length)));
-    AddChild ("sizeX", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.size.x)));
-    AddChild ("sizeY", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.size.y)));
-    AddChild ("sizeZ", NEWREF(Value,new FloatPointerValue (&ColliderValue::info.size.z)));
+    Setup ();
   }
-  virtual ~ColliderValue () { }
+  virtual ~DynfactColliderValue () { }
+};
 
-  virtual csString Dump (bool verbose = false)
+/**
+ * A composite value representing a collider for a bone.
+ */
+class BoneColliderValue : public TypedColliderValue<CS::Animation::iBodyBone>
+{
+protected:
+  virtual void ChildChanged (Value* child)
   {
-    csString dump = "[Col]";
-    dump += CompositeValue::Dump (verbose);
-    return dump;
+    CS::Animation::iBodyBoneCollider* collider = parent->GetBoneCollider (idx);
+    collider->SetTransform (csOrthoTransform (csMatrix3 (), info.offset));
+    switch (info.type)
+    {
+      case NO_GEOMETRY:
+	break;
+      case BOX_COLLIDER_GEOMETRY:
+	collider->SetBoxGeometry (info.size);
+	break;
+      case SPHERE_COLLIDER_GEOMETRY:
+	collider->SetSphereGeometry (info.radius);
+	break;
+      case CYLINDER_COLLIDER_GEOMETRY:
+	collider->SetCylinderGeometry (info.length, info.radius);
+	break;
+      case CAPSULE_COLLIDER_GEOMETRY:
+	collider->SetCapsuleGeometry (info.length, info.radius);
+	break;
+      case CONVEXMESH_COLLIDER_GEOMETRY:
+	// @@@ TODO
+	break;
+      case TRIMESH_COLLIDER_GEOMETRY:
+	// @@@ TODO
+	break;
+      default:
+	printf ("Something is wrong: unknown collider type %d\n", info.type);
+	break;
+    }
+    FireValueChanged ();
   }
+
+public:
+  BoneColliderValue (size_t idx, CS::Animation::iBodyBone* bone)
+    : TypedColliderValue<CS::Animation::iBodyBone> (idx, bone)
+  {
+    if (bone)
+    {
+      CS::Animation::iBodyBoneCollider* collider = bone->GetBoneCollider (idx);
+      info.type = collider->GetGeometryType ();
+      info.offset.Set (0, 0, 0);
+      info.size.Set (0, 0, 0);
+      info.mass = 0.0f;
+      info.radius = 0.0f;
+      info.length = 0.0f;
+      switch (info.type)
+      {
+	case BOX_COLLIDER_GEOMETRY:
+	  collider->GetBoxGeometry (info.size);
+	  break;
+	case SPHERE_COLLIDER_GEOMETRY:
+	  collider->GetSphereGeometry (info.radius);
+	  break;
+	case CYLINDER_COLLIDER_GEOMETRY:
+	  collider->GetCylinderGeometry (info.length, info.radius);
+	  break;
+	case CAPSULE_COLLIDER_GEOMETRY:
+	  collider->GetCapsuleGeometry (info.length, info.radius);
+	  break;
+	default:
+	  break;
+      }
+    }
+    Setup ();
+  }
+  virtual ~BoneColliderValue () { }
 };
 
 /**
  * A value representing the list of colliders for a dynamic factory.
- * Children of this value are of type ColliderValue.
+ * Children of this value are of type DynfactColliderValue.
  */
 class ColliderCollectionValue : public StandardCollectionValue
 {
@@ -788,8 +778,8 @@ private:
   // Create a new child and add to the array.
   Value* NewChild (size_t i)
   {
-    csRef<ColliderValue> value;
-    value.AttachNew (new ColliderValue (i, dynfact));
+    csRef<DynfactColliderValue> value;
+    value.AttachNew (new DynfactColliderValue (i, dynfact));
     children.Push (value);
     value->SetParent (this);
     return value;
@@ -853,6 +843,80 @@ public:
     csString dump = "[Col*]";
     dump += StandardCollectionValue::Dump (verbose);
     return dump;
+  }
+};
+
+/**
+ * A value representing the list of colliders for a bone.
+ * Children of this value are of type BoneColliderValue.
+ */
+class BoneColliderCollectionValue : public StandardCollectionValue
+{
+private:
+  DynfactDialog* dialog;
+  CS::Animation::iBodyBone* bone;
+
+  // Create a new child and add to the array.
+  Value* NewChild (size_t i)
+  {
+    csRef<BoneColliderValue> value;
+    value.AttachNew (new BoneColliderValue (i, bone));
+    children.Push (value);
+    value->SetParent (this);
+    return value;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (bone != dialog->GetCurrentBone ()) dirty = true;
+    if (!dirty) return;
+    ReleaseChildren ();
+    bone = dialog->GetCurrentBone ();
+    if (!bone) return;
+    dirty = false;
+    for (size_t i = 0 ; i < bone->GetBoneColliderCount () ; i++)
+      NewChild (i);
+  }
+  //virtual void ChildChanged (Value* child)
+  //{
+    //FireValueChanged ();
+    //UIManager* uiManager = dialog->GetUIManager ();
+    //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    //ares3d->SetupFactorySettings (dialog->GetCurrentFactory ());
+  //}
+
+public:
+  BoneColliderCollectionValue (DynfactDialog* dialog) : dialog (dialog), bone (0) { }
+  virtual ~BoneColliderCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+#if 0
+    bone = dialog->GetCurrentBone ();
+    if (!bone) return false;
+    for (size_t i = 0 ; i < children.GetSize () ; i++)
+      if (children[i] == child)
+      {
+	bone->DeleteBody (i);
+	child->SetParent (0);
+	children.DeleteIndex (i);
+	FireValueChanged ();
+	return true;
+      }
+#endif
+    return false;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    bone = dialog->GetCurrentBone ();
+    if (!bone) return 0;
+    CS::Animation::iBodyBoneCollider* collider = bone->CreateBoneCollider ();
+    collider->SetBoxGeometry (csVector3 (.02, .02, .02));
+    idx = bone->GetBoneColliderCount ()-1;
+    Value* value = NewChild (idx);
+    FireValueChanged ();
+    return value;
   }
 };
 
@@ -927,6 +991,122 @@ public:
   {
     iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
     return dynfact ? dynfact->GetImposterRadius () : 0.0f;
+  }
+};
+
+//--------------------------------------------------------------------------
+
+/**
+ * A composite value representing a bone for a dynamic factory.
+ */
+class BoneValue : public CompositeValue
+{
+private:
+  DynfactDialog* dialog;
+  csString boneName;
+  iDynamicFactory* dynfact;
+
+public:
+  BoneValue (DynfactDialog* dialog, const char* boneName, iDynamicFactory* dynfact)
+    : dialog (dialog), boneName (boneName), dynfact (dynfact)
+  {
+    AddChild ("name", NEWREF(Value,new StringValue (boneName)));
+    AddChild ("boneColliders", NEWREF(Value,new BoneColliderCollectionValue (dialog)));
+  }
+  virtual ~BoneValue () { }
+};
+
+/**
+ * A value representing the list of bones for a dynamic factory.
+ * Children of this value are of type BoneValue.
+ */
+class BoneCollectionValue : public StandardCollectionValue
+{
+private:
+  DynfactDialog* dialog;
+  iDynamicFactory* dynfact;
+
+  // Create a new child and add to the array.
+  Value* NewChild (const char* boneName)
+  {
+    csRef<BoneValue> value;
+    value.AttachNew (new BoneValue (dialog, boneName, dynfact));
+    children.Push (value);
+    value->SetParent (this);
+    return value;
+  }
+
+  CS::Animation::iSkeletonFactory* GetSkeletonFactory ()
+  {
+    if (!dynfact) return 0;
+    csString itemname = dynfact->GetName ();
+    UIManager* uiManager = dialog->GetUIManager ();
+    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+    CS_ASSERT (meshFact != 0);
+
+    csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+    if (!animFact) return 0;
+
+    CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
+    return skelFact;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (dynfact != dialog->GetCurrentFactory ()) dirty = true;
+    if (!dirty) return;
+    ReleaseChildren ();
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return;
+    dirty = false;
+    using namespace CS::Animation;
+    iBodySkeleton* bodySkel = dialog->GetBodyManager ()
+      ->FindBodySkeleton (dynfact->GetName ());
+    if (!bodySkel) return;
+    CS::Animation::iSkeletonFactory* skelFact = GetSkeletonFactory ();
+    csRef<iBoneIDIterator> it = bodySkel->GetBodyBones ();
+    while (it->HasNext ())
+    {
+      BoneID id = it->Next ();
+      NewChild (skelFact->GetBoneName (id));
+    }
+  }
+  virtual void ChildChanged (Value* child)
+  {
+    FireValueChanged ();
+  }
+
+public:
+  BoneCollectionValue (DynfactDialog* dialog) : dialog (dialog), dynfact (0) { }
+  virtual ~BoneCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    // @@@ Not implemented yet.
+    return false;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return 0;
+    using namespace CS::Animation;
+    csString name = suggestion.Get ("name", (const char*)0);
+
+    iBodySkeleton* bodySkel = dialog->GetBodyManager ()
+      ->FindBodySkeleton (dynfact->GetName ());
+    if (!bodySkel) return 0;
+
+    CS::Animation::iSkeletonFactory* skelFact = GetSkeletonFactory ();
+    BoneID id = skelFact->FindBone (name);
+    if (id == InvalidBoneID) return 0;
+
+    bodySkel->CreateBodyBone (id);
+
+    Value* value = NewChild (name);
+    FireValueChanged ();
+    return value;
   }
 };
 
@@ -1087,10 +1267,10 @@ class BestFitAction : public Action
 {
 private:
   DynfactDialog* dialog;
-  celBodyType type;
+  csColliderGeometryType type;
 
 public:
-  BestFitAction (DynfactDialog* dialog, celBodyType type) :
+  BestFitAction (DynfactDialog* dialog, csColliderGeometryType type) :
     dialog (dialog), type (type) { }
   virtual ~BestFitAction () { }
   virtual const char* GetName () const { return "Fit"; }
@@ -1224,6 +1404,18 @@ void DynfactDialog::Tick ()
   meshView->RotateMesh (vc->GetElapsedSeconds ());
 }
 
+CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
+{
+  if (!factorySelectedValue) return 0;
+  csString selectedFactory = factorySelectedValue->GetStringValue ();
+  if (selectedFactory.IsEmpty ()) return 0;
+  CS::Animation::iBodySkeleton* bodySkel = bodyManager
+      ->FindBodySkeleton (selectedFactory);
+  Value* nameValue = bonesSelectedValue->GetChildByName ("name");
+  csString selectedBone = nameValue->GetStringValue ();
+  return bodySkel->FindBodyBone (selectedBone);
+}
+
 iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 {
   if (!factorySelectedValue) return 0;
@@ -1252,14 +1444,14 @@ long DynfactDialog::GetSelectedJoint ()
   return ListCtrlTools::GetFirstSelectedRow (list);
 }
 
-void DynfactDialog::FitCollider (iDynamicFactory* fact, celBodyType type)
+void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType type)
 {
   const csBox3& bbox = fact->GetBBox ();
   csVector3 c = bbox.GetCenter ();
   csVector3 s = bbox.GetSize ();
   switch (type)
   {
-    case BODY_BOX:
+    case BOX_COLLIDER_GEOMETRY:
       {
 	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
 	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
@@ -1269,7 +1461,7 @@ void DynfactDialog::FitCollider (iDynamicFactory* fact, celBodyType type)
 	colliderSelectedValue->GetChildByName ("sizeZ")->SetFloatValue (s.z);
 	break;
       }
-    case BODY_SPHERE:
+    case SPHERE_COLLIDER_GEOMETRY:
       {
 	float radius = s.x;
 	if (s.y > radius) radius = s.y;
@@ -1281,7 +1473,8 @@ void DynfactDialog::FitCollider (iDynamicFactory* fact, celBodyType type)
 	colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
 	break;
       }
-    case BODY_CYLINDER:
+    case CAPSULE_COLLIDER_GEOMETRY:
+    case CYLINDER_COLLIDER_GEOMETRY:
       {
 	float radius = s.x;
 	if (s.z > radius) radius = s.z;
@@ -1346,6 +1539,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   // Setup the lists.
   DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
+  DefineHeading ("boneColliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
   DefineHeading ("pivots_List", "x,y,z", "pivotX,pivotY,pivotZ");
   DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
   DefineHeading ("attributes_List", "Name,Value", "attrName,attrValue");
@@ -1359,7 +1553,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Value* colliders = dynfactValue->GetChildByName ("colliders");
   wxListCtrl* colliderList = XRCCTRL (*this, "colliders_List", wxListCtrl);
   colliderSelectedValue.AttachNew (new ListSelectedValue (colliderList, colliders, VALUE_COMPOSITE));
-  colliderSelectedValue->SetupComposite (NEWREF(Value,new ColliderValue(0,0)));
+  colliderSelectedValue->SetupComposite (NEWREF(Value,new DynfactColliderValue(0,0)));
 
   // Create a selection value that will follow the selection on the pivot list.
   Value* pivots = dynfactValue->GetChildByName ("pivots");
@@ -1378,9 +1572,16 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Create a selection value that will follow the selection on the bones list.
   Value* bones = dynfactValue->GetChildByName ("bones");
   wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
-  csRef<ListSelectedValue> bonesSelectedValue;
   bonesSelectedValue.AttachNew (new ListSelectedValue (bonesList, bones, VALUE_COMPOSITE));
-  bonesSelectedValue->SetupComposite (NEWREF(Value,new BoneValue("",0)));
+  bonesSelectedValue->SetupComposite (NEWREF(Value,new BoneValue(this, "",0)));
+
+  Bind (bonesSelectedValue, "bonesPanel");
+
+  // Create a selection value that will follow the selection on the collider list.
+  Value* boneColliders = bonesSelectedValue->GetChildByName ("boneColliders");
+  wxListCtrl* bonesColliderList = XRCCTRL (*this, "boneColliders_List", wxListCtrl);
+  bonesColliderSelectedValue.AttachNew (new ListSelectedValue (bonesColliderList, boneColliders, VALUE_COMPOSITE));
+  bonesColliderSelectedValue->SetupComposite (NEWREF(Value,new BoneColliderValue(0,0)));
 
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
@@ -1411,6 +1612,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (colliderSelectedValue, "box_ColliderPanel");
   Bind (colliderSelectedValue, "sphere_ColliderPanel");
   Bind (colliderSelectedValue, "cylinder_ColliderPanel");
+  Bind (colliderSelectedValue, "capsule_ColliderPanel");
   Bind (colliderSelectedValue, "mesh_ColliderPanel");
   Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
 
@@ -1452,6 +1654,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
   AddAction (colliderList, NEWREF(Action, new ContainerBoxAction (this, colliders)));
   AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
+  AddAction (bonesColliderList, NEWREF(Action, new NewChildAction (boneColliders)));
   AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
   AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
   AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
@@ -1465,9 +1668,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Value* attributes = dynfactValue->GetChildByName ("attributes");
   AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
   AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
-  AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_BOX)));
-  AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_SPHERE)));
-  AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, BODY_CYLINDER)));
+  AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY)));
+  AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY)));
+  AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY)));
+  AddAction ("capsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY)));
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
