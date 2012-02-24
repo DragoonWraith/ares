@@ -920,7 +920,8 @@ public:
   }
   virtual csString Dump (bool verbose = false)
   {
-    csString dump = "[Mirror]";
+    csString dump;
+    dump.Format ("[Mirror(%s)]", mirroringValue->Dump (false).GetData ());
     dump += Value::Dump (verbose);
     return dump;
   }

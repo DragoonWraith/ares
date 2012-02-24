@@ -119,6 +119,22 @@ public:
 };
 
 /**
+ * The composite value representing the selected bone.
+ */
+class BoneValue : public CompositeValue
+{
+private:
+  DynfactDialog* dialog;
+
+protected:
+  virtual void ChildChanged (Value* child);
+
+public:
+  BoneValue (DynfactDialog* dialog);
+  virtual ~BoneValue () { }
+};
+
+/**
  * A float value that calculates v = offset +- size/2 in both directions.
  */
 class Offset2MinMaxValue : public FloatValue
@@ -185,16 +201,26 @@ private:
   DynfactMeshView* meshView;
   csRef<ListSelectedValue> bonesSelectedValue;
   csRef<ListSelectedValue> bonesColliderSelectedValue;
+  csRef<ListSelectedValue> colliderSelectedValue;
+  csRef<ListSelectedValue> pivotsSelectedValue;
+  csRef<ListSelectedValue> jointsSelectedValue;
   csRef<TreeSelectedValue> factorySelectedValue;
 
   csRef<DynfactValue> dynfactValue;
-  csRef<ListSelectedValue> colliderSelectedValue;
+  csRef<BoneValue> boneValue;
 
   UIDialog* factoryDialog;
   UIDialog* attributeDialog;
   UIDialog* selectBoneDialog;
 
   void OnOkButton (wxCommandEvent& event);
+
+  void SetupDialogs ();
+  void SetupListHeadings ();
+  void SetupColliderEditor (Value* colSelValue, const char* suffix);
+  void SetupJointsEditor (Value* jointsSelValue);
+  void SetupSelectedValues ();
+  void SetupActions ();
 
 public:
   DynfactDialog (wxWindow* parent, UIManager* uiManager);

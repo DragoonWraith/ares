@@ -1282,6 +1282,8 @@ void View::ValueChanged (Value* value)
       }
       else if (comp->IsKindOf (CLASSINFO (wxListCtrl)))
       {
+//csString compName = (const char*)comp->GetName ().mb_str (wxConvUTF8);
+//printf ("ValueChanged for component '%s'\n", compName.GetData ()); fflush (stdout);
 	wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
 	long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
 	listCtrl->DeleteAllItems ();
@@ -1492,20 +1494,27 @@ Value* View::GetSelectedValue (wxWindow* component)
 class SignalChangeListener : public ValueChangeListener
 {
 private:
+  csRef<Value> source;
   csRef<Value> dest;
   bool dochildren;
 
 public:
-  SignalChangeListener (Value* dest, bool dochildren) : dest (dest), dochildren (dochildren) { }
+  SignalChangeListener (Value* source, Value* dest, bool dochildren) :
+    source (source), dest (dest), dochildren (dochildren) { }
   virtual ~SignalChangeListener () { }
   virtual void ValueChanged (Value* value)
   {
+    // printf ("SIGNAL: from %s to %s\n", source->Dump ().GetData (), dest->Dump ().GetData ());
     dest->FireValueChanged ();
     if (dochildren)
     {
       dest->ResetIterator ();
       while (dest->HasNext ())
-	dest->NextChild ()->FireValueChanged ();
+      {
+	Value* child = dest->NextChild ();
+	// printf ("  FIRE: to %s\n", child->Dump ().GetData ());
+	child->FireValueChanged ();
+      }
     }
   }
 };
@@ -1513,7 +1522,7 @@ public:
 void View::Signal (Value* source, Value* dest, bool dochildren)
 {
   csRef<SignalChangeListener> listener;
-  listener.AttachNew (new SignalChangeListener (dest, dochildren));
+  listener.AttachNew (new SignalChangeListener (source, dest, dochildren));
   source->AddValueChangeListener (listener);
 }
 

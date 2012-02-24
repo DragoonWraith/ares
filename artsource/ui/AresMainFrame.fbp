@@ -6102,7 +6102,7 @@
                                                                         <property name="id">wxID_ANY</property>
                                                                         <property name="maximum_size"></property>
                                                                         <property name="minimum_size"></property>
-                                                                        <property name="name">type_colliderChoice</property>
+                                                                        <property name="name">type_ColliderChoice</property>
                                                                         <property name="permission">protected</property>
                                                                         <property name="pos"></property>
                                                                         <property name="size"></property>
@@ -6996,7 +6996,7 @@
                                                                                                     <property name="maximum_size">60,-1</property>
                                                                                                     <property name="maxlength">0</property>
                                                                                                     <property name="minimum_size">60,-1</property>
-                                                                                                    <property name="name">minX_boxText</property>
+                                                                                                    <property name="name">minX_BoxText</property>
                                                                                                     <property name="permission">protected</property>
                                                                                                     <property name="pos"></property>
                                                                                                     <property name="size">60,-1</property>
@@ -7056,7 +7056,7 @@
                                                                                                     <property name="maximum_size">60,-1</property>
                                                                                                     <property name="maxlength">0</property>
                                                                                                     <property name="minimum_size">60,-1</property>
-                                                                                                    <property name="name">minY_boxText</property>
+                                                                                                    <property name="name">minY_BoxText</property>
                                                                                                     <property name="permission">protected</property>
                                                                                                     <property name="pos"></property>
                                                                                                     <property name="size">60,-1</property>
@@ -7116,7 +7116,7 @@
                                                                                                     <property name="maximum_size">60,-1</property>
                                                                                                     <property name="maxlength">0</property>
                                                                                                     <property name="minimum_size">60,-1</property>
-                                                                                                    <property name="name">minZ_boxText</property>
+                                                                                                    <property name="name">minZ_BoxText</property>
                                                                                                     <property name="permission">protected</property>
                                                                                                     <property name="pos"></property>
                                                                                                     <property name="size">60,-1</property>
@@ -7232,7 +7232,7 @@
                                                                                                     <property name="maximum_size">60,-1</property>
                                                                                                     <property name="maxlength">0</property>
                                                                                                     <property name="minimum_size">60,-1</property>
-                                                                                                    <property name="name">maxX_boxText</property>
+                                                                                                    <property name="name">maxX_BoxText</property>
                                                                                                     <property name="permission">protected</property>
                                                                                                     <property name="pos"></property>
                                                                                                     <property name="size">60,-1</property>
@@ -7292,7 +7292,7 @@
                                                                                                     <property name="maximum_size">60,-1</property>
                                                                                                     <property name="maxlength">0</property>
                                                                                                     <property name="minimum_size">60,-1</property>
-                                                                                                    <property name="name">maxY_boxText</property>
+                                                                                                    <property name="name">maxY_BoxText</property>
                                                                                                     <property name="permission">protected</property>
                                                                                                     <property name="pos"></property>
                                                                                                     <property name="size">60,-1</property>
@@ -7352,7 +7352,7 @@
                                                                                                     <property name="maximum_size">60,-1</property>
                                                                                                     <property name="maxlength">0</property>
                                                                                                     <property name="minimum_size">60,-1</property>
-                                                                                                    <property name="name">maxZ_boxText</property>
+                                                                                                    <property name="name">maxZ_BoxText</property>
                                                                                                     <property name="permission">protected</property>
                                                                                                     <property name="pos"></property>
                                                                                                     <property name="size">60,-1</property>
@@ -13929,7 +13929,7 @@
                                                                                             <property name="id">wxID_ANY</property>
                                                                                             <property name="maximum_size"></property>
                                                                                             <property name="minimum_size"></property>
-                                                                                            <property name="name">type_boneColliderChoice</property>
+                                                                                            <property name="name">type_BoneColliderChoice</property>
                                                                                             <property name="permission">protected</property>
                                                                                             <property name="pos"></property>
                                                                                             <property name="size"></property>
@@ -14823,7 +14823,7 @@
                                                                                                                         <property name="maximum_size">50,-1</property>
                                                                                                                         <property name="maxlength">0</property>
                                                                                                                         <property name="minimum_size">50,-1</property>
-                                                                                                                        <property name="name">minX_boneBoxText</property>
+                                                                                                                        <property name="name">minX_BoneBoxText</property>
                                                                                                                         <property name="permission">protected</property>
                                                                                                                         <property name="pos"></property>
                                                                                                                         <property name="size">50,-1</property>
@@ -14883,7 +14883,7 @@
                                                                                                                         <property name="maximum_size">50,-1</property>
                                                                                                                         <property name="maxlength">0</property>
                                                                                                                         <property name="minimum_size">50,-1</property>
-                                                                                                                        <property name="name">minY_boneBoxText</property>
+                                                                                                                        <property name="name">minY_BoneBoxText</property>
                                                                                                                         <property name="permission">protected</property>
                                                                                                                         <property name="pos"></property>
                                                                                                                         <property name="size">50,-1</property>
@@ -14943,7 +14943,7 @@
                                                                                                                         <property name="maximum_size">50,-1</property>
                                                                                                                         <property name="maxlength">0</property>
                                                                                                                         <property name="minimum_size">50,-1</property>
-                                                                                                                        <property name="name">minZ_boneBoxText</property>
+                                                                                                                        <property name="name">minZ_BoneBoxText</property>
                                                                                                                         <property name="permission">protected</property>
                                                                                                                         <property name="pos"></property>
                                                                                                                         <property name="size">50,-1</property>
@@ -15059,7 +15059,7 @@
                                                                                                                         <property name="maximum_size">50,-1</property>
                                                                                                                         <property name="maxlength">0</property>
                                                                                                                         <property name="minimum_size">50,-1</property>
-                                                                                                                        <property name="name">maxX_boneBoxText</property>
+                                                                                                                        <property name="name">maxX_BoneBoxText</property>
                                                                                                                         <property name="permission">protected</property>
                                                                                                                         <property name="pos"></property>
                                                                                                                         <property name="size">50,-1</property>
@@ -15119,7 +15119,7 @@
                                                                                                                         <property name="maximum_size">50,-1</property>
                                                                                                                         <property name="maxlength">0</property>
                                                                                                                         <property name="minimum_size">50,-1</property>
-                                                                                                                        <property name="name">maxY_boneBoxText</property>
+                                                                                                                        <property name="name">maxY_BoneBoxText</property>
                                                                                                                         <property name="permission">protected</property>
                                                                                                                         <property name="pos"></property>
                                                                                                                         <property name="size">50,-1</property>
@@ -15179,7 +15179,7 @@
                                                                                                                         <property name="maximum_size">50,-1</property>
                                                                                                                         <property name="maxlength">0</property>
                                                                                                                         <property name="minimum_size">50,-1</property>
-                                                                                                                        <property name="name">maxZ_boneBoxText</property>
+                                                                                                                        <property name="name">maxZ_BoneBoxText</property>
                                                                                                                         <property name="permission">protected</property>
                                                                                                                         <property name="pos"></property>
                                                                                                                         <property name="size">50,-1</property>

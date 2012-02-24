@@ -159,7 +159,7 @@
 																<option>1</option>
 																<flag>wxEXPAND | wxALL</flag>
 																<border>5</border>
-																<object class="wxChoicebook" name="type_colliderChoice">
+																<object class="wxChoicebook" name="type_ColliderChoice">
 																	<style>wxCHB_DEFAULT</style>
 																	<object class="choicebookpage">
 																		<label>None</label>
@@ -316,7 +316,7 @@
 																							<option>0</option>
 																							<flag>wxALL</flag>
 																							<border>5</border>
-																							<object class="wxTextCtrl" name="minX_boxText">
+																							<object class="wxTextCtrl" name="minX_BoxText">
 																								<size>60,-1</size>
 																								<value></value>
 																								<maxlength>0</maxlength>
@@ -326,7 +326,7 @@
 																							<option>0</option>
 																							<flag>wxALL</flag>
 																							<border>5</border>
-																							<object class="wxTextCtrl" name="minY_boxText">
+																							<object class="wxTextCtrl" name="minY_BoxText">
 																								<size>60,-1</size>
 																								<value></value>
 																								<maxlength>0</maxlength>
@@ -336,7 +336,7 @@
 																							<option>0</option>
 																							<flag>wxALL</flag>
 																							<border>5</border>
-																							<object class="wxTextCtrl" name="minZ_boxText">
+																							<object class="wxTextCtrl" name="minZ_BoxText">
 																								<size>60,-1</size>
 																								<value></value>
 																								<maxlength>0</maxlength>
@@ -355,7 +355,7 @@
 																							<option>0</option>
 																							<flag>wxALL</flag>
 																							<border>5</border>
-																							<object class="wxTextCtrl" name="maxX_boxText">
+																							<object class="wxTextCtrl" name="maxX_BoxText">
 																								<size>60,-1</size>
 																								<value></value>
 																								<maxlength>0</maxlength>
@@ -365,7 +365,7 @@
 																							<option>0</option>
 																							<flag>wxALL</flag>
 																							<border>5</border>
-																							<object class="wxTextCtrl" name="maxY_boxText">
+																							<object class="wxTextCtrl" name="maxY_BoxText">
 																								<size>60,-1</size>
 																								<value></value>
 																								<maxlength>0</maxlength>
@@ -375,7 +375,7 @@
 																							<option>0</option>
 																							<flag>wxALL</flag>
 																							<border>5</border>
-																							<object class="wxTextCtrl" name="maxZ_boxText">
+																							<object class="wxTextCtrl" name="maxZ_BoxText">
 																								<size>60,-1</size>
 																								<value></value>
 																								<maxlength>0</maxlength>
@@ -1516,7 +1516,7 @@
 																					<option>1</option>
 																					<flag>wxALL|wxEXPAND</flag>
 																					<border>5</border>
-																					<object class="wxChoicebook" name="type_boneColliderChoice">
+																					<object class="wxChoicebook" name="type_BoneColliderChoice">
 																						<style>wxCHB_DEFAULT</style>
 																						<object class="choicebookpage">
 																							<label>None</label>
@@ -1673,7 +1673,7 @@
 																												<option>0</option>
 																												<flag>wxALL</flag>
 																												<border>5</border>
-																												<object class="wxTextCtrl" name="minX_boneBoxText">
+																												<object class="wxTextCtrl" name="minX_BoneBoxText">
 																													<size>50,-1</size>
 																													<value></value>
 																													<maxlength>0</maxlength>
@@ -1683,7 +1683,7 @@
 																												<option>0</option>
 																												<flag>wxALL</flag>
 																												<border>5</border>
-																												<object class="wxTextCtrl" name="minY_boneBoxText">
+																												<object class="wxTextCtrl" name="minY_BoneBoxText">
 																													<size>50,-1</size>
 																													<value></value>
 																													<maxlength>0</maxlength>
@@ -1693,7 +1693,7 @@
 																												<option>0</option>
 																												<flag>wxALL</flag>
 																												<border>5</border>
-																												<object class="wxTextCtrl" name="minZ_boneBoxText">
+																												<object class="wxTextCtrl" name="minZ_BoneBoxText">
 																													<size>50,-1</size>
 																													<value></value>
 																													<maxlength>0</maxlength>
@@ -1712,7 +1712,7 @@
 																												<option>0</option>
 																												<flag>wxALL</flag>
 																												<border>5</border>
-																												<object class="wxTextCtrl" name="maxX_boneBoxText">
+																												<object class="wxTextCtrl" name="maxX_BoneBoxText">
 																													<size>50,-1</size>
 																													<value></value>
 																													<maxlength>0</maxlength>
@@ -1722,7 +1722,7 @@
 																												<option>0</option>
 																												<flag>wxALL</flag>
 																												<border>5</border>
-																												<object class="wxTextCtrl" name="maxY_boneBoxText">
+																												<object class="wxTextCtrl" name="maxY_BoneBoxText">
 																													<size>50,-1</size>
 																													<value></value>
 																													<maxlength>0</maxlength>
@@ -1732,7 +1732,7 @@
 																												<option>0</option>
 																												<flag>wxALL</flag>
 																												<border>5</border>
-																												<object class="wxTextCtrl" name="maxZ_boneBoxText">
+																												<object class="wxTextCtrl" name="maxZ_BoneBoxText">
 																													<size>50,-1</size>
 																													<value></value>
 																													<maxlength>0</maxlength>

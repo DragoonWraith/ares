@@ -875,7 +875,6 @@ protected:
     bone = dialog->GetCurrentBone ();
     if (!bone) return;
     dirty = false;
-printf ("bone->GetBoneColliderCount=%d\n", bone->GetBoneColliderCount ());
     for (size_t i = 0 ; i < bone->GetBoneColliderCount () ; i++)
       NewChild (i);
   }
@@ -911,15 +910,20 @@ public:
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
     bone = dialog->GetCurrentBone ();
-printf ("bone:%p\n", bone);
     if (!bone) return 0;
     CS::Animation::iBodyBoneCollider* collider = bone->CreateBoneCollider ();
-printf ("collider:%p\n", collider);
     collider->SetBoxGeometry (csVector3 (.02, .02, .02));
     idx = bone->GetBoneColliderCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
     return value;
+  }
+
+  virtual csString Dump (bool verbose = false)
+  {
+    csString dump = "[BCol*]";
+    dump += StandardCollectionValue::Dump (verbose);
+    return dump;
   }
 };
 
@@ -1000,25 +1004,6 @@ public:
 //--------------------------------------------------------------------------
 
 /**
- * A composite value representing a bone for a dynamic factory.
- */
-class BoneValue : public CompositeValue
-{
-private:
-  DynfactDialog* dialog;
-  csString boneName;
-
-public:
-  BoneValue (DynfactDialog* dialog, const char* boneName)
-    : dialog (dialog), boneName (boneName)
-  {
-    AddChild ("name", NEWREF(Value,new StringValue (boneName)));
-    AddChild ("boneColliders", NEWREF(Value,new BoneColliderCollectionValue (dialog)));
-  }
-  virtual ~BoneValue () { }
-};
-
-/**
  * A value representing the list of bones for a dynamic factory.
  * Children of this value are of type BoneValue.
  */
@@ -1031,8 +1016,9 @@ private:
   // Create a new child and add to the array.
   Value* NewChild (const char* boneName)
   {
-    csRef<BoneValue> value;
-    value.AttachNew (new BoneValue (dialog, boneName));
+    csRef<CompositeValue> value;
+    value.AttachNew (new CompositeValue ());
+    value->AddChild ("name", NEWREF(Value,new StringValue (boneName)));
     children.Push (value);
     value->SetParent (this);
     return value;
@@ -1149,6 +1135,25 @@ void DynfactValue::ChildChanged (Value* child)
     AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
     ares3d->SetupFactorySettings (dynfact);
   }
+}
+
+//--------------------------------------------------------------------------
+
+BoneValue::BoneValue (DynfactDialog* dialog) : dialog (dialog)
+{
+  // Setup the composite representing the dynamic factory that is selected.
+  AddChild ("boneColliders", NEWREF(Value,new BoneColliderCollectionValue (dialog)));
+}
+
+void BoneValue::ChildChanged (Value* child)
+{
+  //iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+  //if (dynfact)
+  //{
+    //UIManager* uiManager = dialog->GetUIManager ();
+    //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+    //ares3d->SetupFactorySettings (dynfact);
+  //}
 }
 
 //--------------------------------------------------------------------------
@@ -1413,6 +1418,7 @@ CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
   if (selectedFactory.IsEmpty ()) return 0;
   CS::Animation::iBodySkeleton* bodySkel = bodyManager
       ->FindBodySkeleton (selectedFactory);
+  if (!bodySkel) return 0;
   Value* nameValue = bonesSelectedValue->GetChildByName ("name");
   csString selectedBone = nameValue->GetStringValue ();
   return bodySkel->FindBodyBone (selectedBone);
@@ -1493,23 +1499,9 @@ void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType t
   }
 }
 
-DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
-  View (this), uiManager (uiManager)
+void DynfactDialog::SetupDialogs ()
 {
   AppAresEditWX* app = uiManager->GetApp ();
-  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
-
-  bodyManager = csQueryRegistry<CS::Animation::iBodyManager> (app->GetObjectRegistry ());
-  if (!bodyManager)
-  {
-    printf ("Can't find body manager!\n");
-    fflush (stdout);
-    return;
-  }
-
-  // The mesh panel.
-  wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
-  meshView = new DynfactMeshView (this, app->GetObjectRegistry (), panel);
 
   // The dialog for editing new factories.
   factoryDialog = new UIDialog (this, "Factory name");
@@ -1532,13 +1524,108 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   selectBoneDialog->AddRow ();
   selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0,
       "Name", "name");
+}
 
-  // Setup the dynamic factory tree.
+static csString C3 (const char* s1, const char* s2, const char* s3)
+{
+  csString s (s1);
+  s += s2;
+  s += s3;
+  return s;
+}
+
+void DynfactDialog::SetupColliderEditor (Value* colSelValue, const char* suffix)
+{
+  // Bind the selection value to the different panels that describe the different
+  // types of colliders.
+  Bind (colSelValue->GetChildByName ("type"), C3 ("type_", suffix, "ColliderChoice"));
+  Bind (colSelValue, C3 ("box_", suffix, "ColliderPanel"));
+  Bind (colSelValue, C3 ("sphere_", suffix, "ColliderPanel"));
+  Bind (colSelValue, C3 ("cylinder_", suffix, "ColliderPanel"));
+  Bind (colSelValue, C3 ("capsule_", suffix, "ColliderPanel"));
+  Bind (colSelValue, C3 ("mesh_", suffix, "ColliderPanel"));
+  Bind (colSelValue, C3 ("convexMesh_", suffix, "ColliderPanel"));
+
+  // Bind calculated value for the box collider so that there are also min/max
+  // controls in addition to offset/size.
+  Bind (NEWREF(Value, new Offset2MinMaxValue (
+	  colSelValue->GetChildByName ("offsetX"),
+	  colSelValue->GetChildByName ("sizeX"), false)), C3 ("minX_", suffix, "BoxText"));
+  Bind (NEWREF(Value, new Offset2MinMaxValue (
+	  colSelValue->GetChildByName ("offsetY"),
+	  colSelValue->GetChildByName ("sizeY"), false)), C3 ("minY_", suffix, "BoxText"));
+  Bind (NEWREF(Value, new Offset2MinMaxValue (
+	  colSelValue->GetChildByName ("offsetZ"),
+	  colSelValue->GetChildByName ("sizeZ"), false)), C3 ("minZ_", suffix, "BoxText"));
+  Bind (NEWREF(Value, new Offset2MinMaxValue (
+	  colSelValue->GetChildByName ("offsetX"),
+	  colSelValue->GetChildByName ("sizeX"), true)), C3 ("maxX_", suffix, "BoxText"));
+  Bind (NEWREF(Value, new Offset2MinMaxValue (
+	  colSelValue->GetChildByName ("offsetY"),
+	  colSelValue->GetChildByName ("sizeY"), true)), C3 ("maxY_", suffix, "BoxText"));
+  Bind (NEWREF(Value, new Offset2MinMaxValue (
+	  colSelValue->GetChildByName ("offsetZ"),
+	  colSelValue->GetChildByName ("sizeZ"), true)), C3 ("maxZ_", suffix, "BoxText"));
+}
+
+void DynfactDialog::SetupJointsEditor (Value* jointsSelectedValue)
+{
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMinTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMaxTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMinTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMaxTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMinTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMaxTrans");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMinRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMaxRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMinRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMaxRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMinRot");
+  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMaxRot");
+}
+
+void DynfactDialog::SetupActions ()
+{
+  Value* colliders = dynfactValue->GetChildByName ("colliders");
+  Value* pivots = dynfactValue->GetChildByName ("pivots");
+  Value* joints = dynfactValue->GetChildByName ("joints");
+  Value* bones = dynfactValue->GetChildByName ("bones");
+  Value* boneColliders = boneValue->GetChildByName ("boneColliders");
   Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
-  Bind (dynfactCollectionValue, "factoryTree");
-  wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
-  factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
 
+  wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
+  wxListCtrl* jointsList = XRCCTRL (*this, "joints_List", wxListCtrl);
+  wxListCtrl* pivotsList = XRCCTRL (*this, "pivots_List", wxListCtrl);
+  wxListCtrl* colliderList = XRCCTRL (*this, "colliders_List", wxListCtrl);
+  wxListCtrl* bonesColliderList = XRCCTRL (*this, "boneColliders_List", wxListCtrl);
+  wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
+
+  // The actions.
+  AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
+  AddAction (colliderList, NEWREF(Action, new ContainerBoxAction (this, colliders)));
+  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
+  AddAction (bonesColliderList, NEWREF(Action, new NewChildAction (boneColliders)));
+  AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
+  AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
+  AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
+  AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
+  AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
+  AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
+  AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
+  AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
+  AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
+  AddAction (factoryTree, NEWREF(Action, new CreateBodySkeletonAction (this)));
+  Value* attributes = dynfactValue->GetChildByName ("attributes");
+  AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
+  AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
+  AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY)));
+  AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY)));
+  AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY)));
+  AddAction ("capsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY)));
+}
+
+void DynfactDialog::SetupListHeadings ()
+{
   // Setup the lists.
   DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
   DefineHeading ("boneColliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
@@ -1546,11 +1633,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
   DefineHeading ("attributes_List", "Name,Value", "attrName,attrValue");
   DefineHeading ("bones_List", "Name", "name");
+}
 
-  // Setup the composite representing the dynamic factory that is selected.
-  dynfactValue.AttachNew (new DynfactValue (this));
-  Bind (dynfactValue, this);
-
+void DynfactDialog::SetupSelectedValues ()
+{
   // Create a selection value that will follow the selection on the collider list.
   Value* colliders = dynfactValue->GetChildByName ("colliders");
   wxListCtrl* colliderList = XRCCTRL (*this, "colliders_List", wxListCtrl);
@@ -1560,14 +1646,12 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Create a selection value that will follow the selection on the pivot list.
   Value* pivots = dynfactValue->GetChildByName ("pivots");
   wxListCtrl* pivotsList = XRCCTRL (*this, "pivots_List", wxListCtrl);
-  csRef<ListSelectedValue> pivotsSelectedValue;
   pivotsSelectedValue.AttachNew (new ListSelectedValue (pivotsList, pivots, VALUE_COMPOSITE));
   pivotsSelectedValue->SetupComposite (NEWREF(Value,new PivotValue(0,0)));
 
   // Create a selection value that will follow the selection on the joint list.
   Value* joints = dynfactValue->GetChildByName ("joints");
   wxListCtrl* jointsList = XRCCTRL (*this, "joints_List", wxListCtrl);
-  csRef<ListSelectedValue> jointsSelectedValue;
   jointsSelectedValue.AttachNew (new ListSelectedValue (jointsList, joints, VALUE_COMPOSITE));
   jointsSelectedValue->SetupComposite (NEWREF(Value,new JointValue(0,0)));
 
@@ -1575,15 +1659,52 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Value* bones = dynfactValue->GetChildByName ("bones");
   wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
   bonesSelectedValue.AttachNew (new ListSelectedValue (bonesList, bones, VALUE_COMPOSITE));
-  bonesSelectedValue->SetupComposite (NEWREF(Value,new BoneValue(this, "")));
-
-  Bind (bonesSelectedValue, "bonesPanel");
+  bonesSelectedValue->AddChild ("name", NEWREF(MirrorValue,new MirrorValue(VALUE_STRING)));
 
   // Create a selection value that will follow the selection on the collider list.
-  Value* boneColliders = bonesSelectedValue->GetChildByName ("boneColliders");
+  Value* boneColliders = boneValue->GetChildByName ("boneColliders");
   wxListCtrl* bonesColliderList = XRCCTRL (*this, "boneColliders_List", wxListCtrl);
   bonesColliderSelectedValue.AttachNew (new ListSelectedValue (bonesColliderList, boneColliders, VALUE_COMPOSITE));
   bonesColliderSelectedValue->SetupComposite (NEWREF(Value,new BoneColliderValue(0,0)));
+}
+
+DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
+  View (this), uiManager (uiManager)
+{
+  AppAresEditWX* app = uiManager->GetApp ();
+  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
+
+  bodyManager = csQueryRegistry<CS::Animation::iBodyManager> (app->GetObjectRegistry ());
+  if (!bodyManager)
+  {
+    printf ("Can't find body manager!\n");
+    fflush (stdout);
+    return;
+  }
+
+  // The mesh panel.
+  wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
+  meshView = new DynfactMeshView (this, app->GetObjectRegistry (), panel);
+
+  SetupDialogs ();
+
+  // Setup the dynamic factory tree.
+  Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
+  Bind (dynfactCollectionValue, "factoryTree");
+  wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
+  factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
+
+  SetupListHeadings ();
+
+  // Setup the composite representing the dynamic factory that is selected.
+  dynfactValue.AttachNew (new DynfactValue (this));
+  Bind (dynfactValue, this);
+
+  // Setup the composite representing the bone that is selected.
+  boneValue.AttachNew (new BoneValue (this));
+  Bind (boneValue, "bonesPanel");
+
+  SetupSelectedValues ();
 
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
@@ -1611,73 +1732,22 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   // When another bone is selected we want to update the selection of the
   // bone collider too.
+  Signal (bonesSelectedValue, boneValue, true);
   Signal (bonesSelectedValue, bonesColliderSelectedValue);
 
-  // Bind the selection value to the different panels that describe the different types of colliders.
-  Bind (colliderSelectedValue->GetChildByName ("type"), "type_colliderChoice");
-  Bind (colliderSelectedValue, "box_ColliderPanel");
-  Bind (colliderSelectedValue, "sphere_ColliderPanel");
-  Bind (colliderSelectedValue, "cylinder_ColliderPanel");
-  Bind (colliderSelectedValue, "capsule_ColliderPanel");
-  Bind (colliderSelectedValue, "mesh_ColliderPanel");
-  Bind (colliderSelectedValue, "convexMesh_ColliderPanel");
+  // Setup the collider editors.
+  SetupColliderEditor (colliderSelectedValue, "");
+  SetupColliderEditor (bonesColliderSelectedValue, "Bone");
 
   Bind (pivotsSelectedValue, "pivotPosition_Panel");
   Bind (jointsSelectedValue, "joints_Panel");
 
-  // Bind calculated value for the box collider so that there are also min/max
-  // controls in addition to offset/size.
-  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetX"),
-	  colliderSelectedValue->GetChildByName ("sizeX"), false)), "minX_boxText");
-  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetY"),
-	  colliderSelectedValue->GetChildByName ("sizeY"), false)), "minY_boxText");
-  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetZ"),
-	  colliderSelectedValue->GetChildByName ("sizeZ"), false)), "minZ_boxText");
-  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetX"),
-	  colliderSelectedValue->GetChildByName ("sizeX"), true)), "maxX_boxText");
-  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetY"),
-	  colliderSelectedValue->GetChildByName ("sizeY"), true)), "maxY_boxText");
-  Bind (NEWREF(Value, new Offset2MinMaxValue (colliderSelectedValue->GetChildByName ("offsetZ"),
-	  colliderSelectedValue->GetChildByName ("sizeZ"), true)), "maxZ_boxText");
-
   // Bind some values to the enabled/disabled state of several components.
   BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
   BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMinTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMaxTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMinTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMaxTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMinTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMaxTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMinRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMaxRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMinRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMaxRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMinRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMaxRot");
+  SetupJointsEditor (jointsSelectedValue);
 
-  // The actions.
-  AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
-  AddAction (colliderList, NEWREF(Action, new ContainerBoxAction (this, colliders)));
-  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
-  AddAction (bonesColliderList, NEWREF(Action, new NewChildAction (boneColliders)));
-  AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
-  AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
-  AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
-  AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
-  AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
-  AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
-  AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
-  AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
-  AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
-  AddAction (factoryTree, NEWREF(Action, new CreateBodySkeletonAction (this)));
-  Value* attributes = dynfactValue->GetChildByName ("attributes");
-  AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
-  AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
-  AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY)));
-  AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY)));
-  AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY)));
-  AddAction ("capsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY)));
+  SetupActions ();
 
   timerOp.AttachNew (new RotMeshTimer (this));
 }
