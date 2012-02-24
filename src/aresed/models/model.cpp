@@ -658,7 +658,8 @@ bool View::Bind (Value* value, wxWindow* component)
     return Bind (value, wxStaticCast (component, wxChoicebook));
   if (component->IsKindOf (CLASSINFO (CustomControl)))
     return Bind (value, wxStaticCast (component, CustomControl));
-  printf ("Bind: Unsupported type for component!\n");
+  csString compName = (const char*)component->GetName ().mb_str (wxConvUTF8);
+  printf ("Bind: Unsupported type for component '%s'!\n", compName.GetData ());
   return false;
 }
 
@@ -791,6 +792,9 @@ bool View::BindContainer (Value* value, wxWindow* component)
     return false;
   }
 
+  csString compName = (const char*)component->GetName ().mb_str (wxConvUTF8);
+  printf ("Bind Container: %s\n", compName.GetData ());
+
   RegisterBinding (value, component, wxEVT_NULL);
 
   value->ResetIterator ();
@@ -805,6 +809,8 @@ bool View::BindContainer (Value* value, wxWindow* component)
     }
     else
     {
+      compName = (const char*)childComp->GetName ().mb_str (wxConvUTF8);
+      printf ("  Sub bind: %s to %s\n", name.GetData (), compName.GetData ());
       if (!Bind (child, childComp))
 	return false;
     }

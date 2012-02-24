@@ -875,6 +875,7 @@ protected:
     bone = dialog->GetCurrentBone ();
     if (!bone) return;
     dirty = false;
+printf ("bone->GetBoneColliderCount=%d\n", bone->GetBoneColliderCount ());
     for (size_t i = 0 ; i < bone->GetBoneColliderCount () ; i++)
       NewChild (i);
   }
@@ -910,8 +911,10 @@ public:
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
     bone = dialog->GetCurrentBone ();
+printf ("bone:%p\n", bone);
     if (!bone) return 0;
     CS::Animation::iBodyBoneCollider* collider = bone->CreateBoneCollider ();
+printf ("collider:%p\n", collider);
     collider->SetBoxGeometry (csVector3 (.02, .02, .02));
     idx = bone->GetBoneColliderCount ()-1;
     Value* value = NewChild (idx);
@@ -1004,11 +1007,10 @@ class BoneValue : public CompositeValue
 private:
   DynfactDialog* dialog;
   csString boneName;
-  iDynamicFactory* dynfact;
 
 public:
-  BoneValue (DynfactDialog* dialog, const char* boneName, iDynamicFactory* dynfact)
-    : dialog (dialog), boneName (boneName), dynfact (dynfact)
+  BoneValue (DynfactDialog* dialog, const char* boneName)
+    : dialog (dialog), boneName (boneName)
   {
     AddChild ("name", NEWREF(Value,new StringValue (boneName)));
     AddChild ("boneColliders", NEWREF(Value,new BoneColliderCollectionValue (dialog)));
@@ -1030,7 +1032,7 @@ private:
   Value* NewChild (const char* boneName)
   {
     csRef<BoneValue> value;
-    value.AttachNew (new BoneValue (dialog, boneName, dynfact));
+    value.AttachNew (new BoneValue (dialog, boneName));
     children.Push (value);
     value->SetParent (this);
     return value;
@@ -1573,7 +1575,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Value* bones = dynfactValue->GetChildByName ("bones");
   wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
   bonesSelectedValue.AttachNew (new ListSelectedValue (bonesList, bones, VALUE_COMPOSITE));
-  bonesSelectedValue->SetupComposite (NEWREF(Value,new BoneValue(this, "",0)));
+  bonesSelectedValue->SetupComposite (NEWREF(Value,new BoneValue(this, "")));
 
   Bind (bonesSelectedValue, "bonesPanel");
 
@@ -1594,7 +1596,7 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Also do this for the selected bone value.
   Bind (bonesSelectedValue, meshView);
 
-  // Connect the selected value from the catetory tree to the dynamic
+  // Connect the selected value from the category tree to the dynamic
   // factory value so that the two radius values and the collider list
   // gets refreshed in case the current dynfact changes. We connect
   // with 'dochildren' equal to true to make sure the children get notified
@@ -1606,6 +1608,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Signal (factorySelectedValue, pivotsSelectedValue);
   Signal (factorySelectedValue, jointsSelectedValue);
   Signal (factorySelectedValue, bonesSelectedValue);
+
+  // When another bone is selected we want to update the selection of the
+  // bone collider too.
+  Signal (bonesSelectedValue, bonesColliderSelectedValue);
 
   // Bind the selection value to the different panels that describe the different types of colliders.
   Bind (colliderSelectedValue->GetChildByName ("type"), "type_colliderChoice");
