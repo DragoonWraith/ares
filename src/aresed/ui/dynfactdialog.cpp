@@ -1421,6 +1421,7 @@ CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
   if (!bodySkel) return 0;
   Value* nameValue = bonesSelectedValue->GetChildByName ("name");
   csString selectedBone = nameValue->GetStringValue ();
+  if (selectedBone.IsEmpty ()) return 0;
   return bodySkel->FindBodyBone (selectedBone);
 }
 
