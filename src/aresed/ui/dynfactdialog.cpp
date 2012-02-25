@@ -55,9 +55,17 @@ DynfactMeshView::DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object
   originXPen = CreatePen (1.0f, 0.0f, 0.0f, 1.0f);
   originYPen = CreatePen (0.0f, 1.0f, 0.0f, 1.0f);
   originZPen = CreatePen (0.0f, 0.0f, 1.0f, 1.0f);
+  bonePen = CreatePen (0.5f, 0.5f, 0.5f, 1.0f);
+  boneActivePen = CreatePen (0.5f, 0.5f, 0.0f, 1.0f);
+  boneHiPen = CreatePen (1.0f, 1.0f, 0.0f, 1.0f);
 }
 
 void DynfactMeshView::SyncValue (Ares::Value* value)
+{
+  Refresh ();
+}
+
+void DynfactMeshView::Refresh ()
 {
   iDynamicFactory* fact = dialog->GetCurrentFactory ();
   if (fact && GetMeshName () != fact->GetName ())
@@ -77,6 +85,7 @@ void DynfactMeshView::SetupColliderGeometry ()
     AddLine (csVector3 (0), csVector3 (0, .1, 0), originYPen);
     AddLine (csVector3 (0), csVector3 (0, 0, .1), originZPen);
 
+    // Render the bodies.
     long idx = dialog->GetSelectedCollider ();
     for (size_t i = 0 ; i < fact->GetBodyCount () ; i++)
     {
@@ -93,6 +102,8 @@ void DynfactMeshView::SetupColliderGeometry ()
       else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
 	AddMesh (info.offset, pen);
     }
+
+    // Render pivot points.
     idx = dialog->GetSelectedPivot ();
     for (size_t i = 0 ; i < fact->GetPivotJointCount () ; i++)
     {
@@ -100,6 +111,8 @@ void DynfactMeshView::SetupColliderGeometry ()
       csVector3 pos = fact->GetPivotJointPosition (i);
       AddSphere (pos, .01, pen);
     }
+
+    // Render joints.
     idx = dialog->GetSelectedJoint ();
     for (size_t i = 0 ; i < fact->GetJointCount () ; i++)
     {
@@ -107,6 +120,37 @@ void DynfactMeshView::SetupColliderGeometry ()
       DynFactJointDefinition& def = fact->GetJoint (i);
       csVector3 pos = def.GetTransform ().GetOrigin ();
       AddSphere (pos, .01, pen);
+    }
+
+    // Render skeleton bones.
+    using namespace CS::Animation;
+    CS::Animation::iSkeletonFactory* skelFact = dialog->GetSkeletonFactory (fact->GetName ());
+    if (skelFact)
+    {
+      size_t pen;
+      iBodySkeleton* bodySkel = dialog->GetBodyManager ()->FindBodySkeleton (fact->GetName ());
+      const csArray<BoneID> bones = skelFact->GetBoneOrderList ();
+      csString selBone = dialog->GetSelectedBone ();
+      for (size_t i = 0 ; i < bones.GetSize () ; i++)
+      {
+        BoneID id = bones[i];
+        if (bodySkel)
+        {
+	  if (selBone == skelFact->GetBoneName (id))
+	    pen = boneHiPen;
+	  else
+	    pen = boneActivePen;
+        }
+        else
+        {
+	  pen = bonePen;
+        }
+	csQuaternion rot;
+	csVector3 offset;
+	skelFact->GetTransformAbsSpace (id, rot, offset);
+        AddSphere (offset, .02, pen);
+        AddLine (offset, offset + rot.Rotate (csVector3 (0, 0, .3)), pen);
+      }
     }
   }
 }
@@ -403,16 +447,7 @@ private:
   {
     if (!dynfact) return 0;
     csString itemname = dynfact->GetName ();
-    UIManager* uiManager = dialog->GetUIManager ();
-    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
-    CS_ASSERT (meshFact != 0);
-
-    csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
-    if (!animFact) return 0;
-
-    CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
-    return skelFact;
+    return dialog->GetSkeletonFactory (itemname);
   }
 
 protected:
@@ -1204,6 +1239,7 @@ bool CreateBodySkeletonAction::Do (View* view, wxWindow* component)
 
   //iBodySkeleton* bodySkel = bodyManager->CreateBodySkeleton (itemname, skelFact);
   dialog->GetBodyManager ()->CreateBodySkeleton (itemname, skelFact);
+  dialog->GetMeshView ()->Refresh ();
 
   return true;
 }
@@ -1411,6 +1447,19 @@ void DynfactDialog::Tick ()
   meshView->RotateMesh (vc->GetElapsedSeconds ());
 }
 
+CS::Animation::iSkeletonFactory* DynfactDialog::GetSkeletonFactory (const char* factName)
+{
+  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (factName);
+  CS_ASSERT (meshFact != 0);
+
+  csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+  if (!animFact) return 0;
+
+  CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
+  return skelFact;
+}
+
 CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
 {
   if (!factorySelectedValue) return 0;
@@ -1451,6 +1500,14 @@ long DynfactDialog::GetSelectedJoint ()
 {
   wxListCtrl* list = XRCCTRL (*this, "joints_List", wxListCtrl);
   return ListCtrlTools::GetFirstSelectedRow (list);
+}
+
+csString DynfactDialog::GetSelectedBone ()
+{
+  wxListCtrl* list = XRCCTRL (*this, "bones_List", wxListCtrl);
+  int row = ListCtrlTools::GetFirstSelectedRow (list);
+  if (row < 0) return "";
+  return ListCtrlTools::ReadRow (list, row)[0];
 }
 
 void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType type)

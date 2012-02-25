@@ -62,6 +62,9 @@ private:
   size_t originXPen;
   size_t originYPen;
   size_t originZPen;
+  size_t bonePen;
+  size_t boneActivePen;
+  size_t boneHiPen;
 
   void SetupColliderGeometry ();
 
@@ -70,6 +73,7 @@ public:
   virtual ~DynfactMeshView () { }
 
   virtual void SyncValue (Ares::Value* value);
+  void Refresh ();
 };
 
 /**
@@ -237,9 +241,13 @@ public:
 
   iDynamicFactory* GetCurrentFactory ();
   CS::Animation::iBodyBone* GetCurrentBone ();
+  CS::Animation::iSkeletonFactory* GetSkeletonFactory (const char* factName);
+  DynfactMeshView* GetMeshView () const { return meshView; }
+
   long GetSelectedCollider ();
   long GetSelectedPivot ();
   long GetSelectedJoint ();
+  csString GetSelectedBone ();
   Value* GetColliderSelectedValue () const { return colliderSelectedValue; }
 
   DECLARE_EVENT_TABLE ();
