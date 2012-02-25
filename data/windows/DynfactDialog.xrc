@@ -32,14 +32,94 @@
 								</object>
 								<object class="sizeritem">
 									<option>0</option>
-									<flag>wxEXPAND | wxALL</flag>
+									<flag>wxEXPAND</flag>
 									<border>5</border>
-									<object class="wxPanel" name="meshPanel">
-										<style>wxTAB_TRAVERSAL</style>
-										<size>260,260</size>
-										<object class="wxBoxSizer">
-											<minsize>260,260</minsize>
-											<orient>wxVERTICAL</orient>
+									<object class="wxBoxSizer">
+										<orient>wxVERTICAL</orient>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxBoxSizer">
+												<orient>wxHORIZONTAL</orient>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxALL</flag>
+													<border>5</border>
+													<object class="wxCheckBox" name="showBodiesCheck">
+														<font>
+															<size>8</size>
+															<family>default</family>
+															<style>normal</style>
+															<weight>normal</weight>
+															<underlined>0</underlined>
+														</font>
+														<label>Bodies</label>
+														<checked>0</checked>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxALL</flag>
+													<border>5</border>
+													<object class="wxCheckBox" name="showOriginCheck">
+														<font>
+															<size>8</size>
+															<family>default</family>
+															<style>normal</style>
+															<weight>normal</weight>
+															<underlined>0</underlined>
+														</font>
+														<label>Origin</label>
+														<checked>0</checked>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxALL</flag>
+													<border>5</border>
+													<object class="wxCheckBox" name="showBonesCheck">
+														<font>
+															<size>8</size>
+															<family>default</family>
+															<style>normal</style>
+															<weight>normal</weight>
+															<underlined>0</underlined>
+														</font>
+														<label>Bones</label>
+														<checked>0</checked>
+													</object>
+												</object>
+												<object class="sizeritem">
+													<option>0</option>
+													<flag>wxALL</flag>
+													<border>5</border>
+													<object class="wxCheckBox" name="showJointsCheck">
+														<font>
+															<size>8</size>
+															<family>default</family>
+															<style>normal</style>
+															<weight>normal</weight>
+															<underlined>0</underlined>
+														</font>
+														<label>Joints</label>
+														<checked>0</checked>
+													</object>
+												</object>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxEXPAND | wxALL</flag>
+											<border>5</border>
+											<object class="wxPanel" name="meshPanel">
+												<style>wxTAB_TRAVERSAL</style>
+												<size>260,260</size>
+												<object class="wxBoxSizer">
+													<minsize>260,260</minsize>
+													<orient>wxVERTICAL</orient>
+												</object>
+											</object>
 										</object>
 									</object>
 								</object>

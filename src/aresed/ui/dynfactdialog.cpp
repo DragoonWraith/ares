@@ -43,6 +43,10 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), DynfactDialog :: OnOkButton)
+  EVT_CHECKBOX (XRCID("showBodiesCheck"), DynfactDialog :: OnShowBodies)
+  EVT_CHECKBOX (XRCID("showOriginCheck"), DynfactDialog :: OnShowOrigin)
+  EVT_CHECKBOX (XRCID("showBonesCheck"), DynfactDialog :: OnShowBones)
+  EVT_CHECKBOX (XRCID("showJointsCheck"), DynfactDialog :: OnShowJoints)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -58,6 +62,10 @@ DynfactMeshView::DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object
   bonePen = CreatePen (0.5f, 0.5f, 0.5f, 1.0f);
   boneActivePen = CreatePen (0.5f, 0.5f, 0.0f, 1.0f);
   boneHiPen = CreatePen (1.0f, 1.0f, 0.0f, 1.0f);
+  showBodies = true;
+  showJoints = true;
+  showBones = true;
+  showOrigin = true;
 }
 
 void DynfactMeshView::SyncValue (Ares::Value* value)
@@ -81,75 +89,89 @@ void DynfactMeshView::SetupColliderGeometry ()
   iDynamicFactory* fact = dialog->GetCurrentFactory ();
   if (fact)
   {
-    AddLine (csVector3 (0), csVector3 (.1, 0, 0), originXPen);
-    AddLine (csVector3 (0), csVector3 (0, .1, 0), originYPen);
-    AddLine (csVector3 (0), csVector3 (0, 0, .1), originZPen);
+    long idx;
+
+    if (showOrigin)
+    {
+      AddLine (csVector3 (0), csVector3 (.1, 0, 0), originXPen);
+      AddLine (csVector3 (0), csVector3 (0, .1, 0), originYPen);
+      AddLine (csVector3 (0), csVector3 (0, 0, .1), originZPen);
+    }
 
     // Render the bodies.
-    long idx = dialog->GetSelectedCollider ();
-    for (size_t i = 0 ; i < fact->GetBodyCount () ; i++)
+    if (showBodies)
     {
-      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
-      celBodyInfo info = fact->GetBody (i);
-      if (info.type == BOX_COLLIDER_GEOMETRY)
-        AddBox (csBox3 (info.offset - info.size * .5, info.offset + info.size * .5), pen);
-      else if (info.type == SPHERE_COLLIDER_GEOMETRY)
-	AddSphere (info.offset, info.radius, pen);
-      else if (info.type == CYLINDER_COLLIDER_GEOMETRY)
-	AddCylinder (info.offset, info.radius, info.length, pen);
-      else if (info.type == CAPSULE_COLLIDER_GEOMETRY)
-	AddCapsule (info.offset, info.radius, info.length, pen);
-      else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
-	AddMesh (info.offset, pen);
+      idx = dialog->GetSelectedCollider ();
+      for (size_t i = 0 ; i < fact->GetBodyCount () ; i++)
+      {
+	size_t pen = i == size_t (idx) ? hilightPen : normalPen;
+	celBodyInfo info = fact->GetBody (i);
+	if (info.type == BOX_COLLIDER_GEOMETRY)
+	  AddBox (csBox3 (info.offset - info.size * .5, info.offset + info.size * .5), pen);
+	else if (info.type == SPHERE_COLLIDER_GEOMETRY)
+	  AddSphere (info.offset, info.radius, pen);
+	else if (info.type == CYLINDER_COLLIDER_GEOMETRY)
+	  AddCylinder (info.offset, info.radius, info.length, pen);
+	else if (info.type == CAPSULE_COLLIDER_GEOMETRY)
+	  AddCapsule (info.offset, info.radius, info.length, pen);
+	else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
+	  AddMesh (info.offset, pen);
+      }
     }
 
     // Render pivot points.
-    idx = dialog->GetSelectedPivot ();
-    for (size_t i = 0 ; i < fact->GetPivotJointCount () ; i++)
+    if (showJoints)
     {
-      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
-      csVector3 pos = fact->GetPivotJointPosition (i);
-      AddSphere (pos, .01, pen);
-    }
+      idx = dialog->GetSelectedPivot ();
+      for (size_t i = 0 ; i < fact->GetPivotJointCount () ; i++)
+      {
+	size_t pen = i == size_t (idx) ? hilightPen : normalPen;
+	csVector3 pos = fact->GetPivotJointPosition (i);
+	AddSphere (pos, .01, pen);
+      }
 
-    // Render joints.
-    idx = dialog->GetSelectedJoint ();
-    for (size_t i = 0 ; i < fact->GetJointCount () ; i++)
-    {
-      size_t pen = i == size_t (idx) ? hilightPen : normalPen;
-      DynFactJointDefinition& def = fact->GetJoint (i);
-      csVector3 pos = def.GetTransform ().GetOrigin ();
-      AddSphere (pos, .01, pen);
+      // Render joints.
+      idx = dialog->GetSelectedJoint ();
+      for (size_t i = 0 ; i < fact->GetJointCount () ; i++)
+      {
+	size_t pen = i == size_t (idx) ? hilightPen : normalPen;
+	DynFactJointDefinition& def = fact->GetJoint (i);
+	csVector3 pos = def.GetTransform ().GetOrigin ();
+	AddSphere (pos, .01, pen);
+      }
     }
 
     // Render skeleton bones.
-    using namespace CS::Animation;
-    CS::Animation::iSkeletonFactory* skelFact = dialog->GetSkeletonFactory (fact->GetName ());
-    if (skelFact)
+    if (showBones)
     {
-      size_t pen;
-      iBodySkeleton* bodySkel = dialog->GetBodyManager ()->FindBodySkeleton (fact->GetName ());
-      const csArray<BoneID> bones = skelFact->GetBoneOrderList ();
-      csString selBone = dialog->GetSelectedBone ();
-      for (size_t i = 0 ; i < bones.GetSize () ; i++)
+      using namespace CS::Animation;
+      CS::Animation::iSkeletonFactory* skelFact = dialog->GetSkeletonFactory (fact->GetName ());
+      if (skelFact)
       {
-        BoneID id = bones[i];
-        if (bodySkel)
-        {
-	  if (selBone == skelFact->GetBoneName (id))
-	    pen = boneHiPen;
+	size_t pen;
+	iBodySkeleton* bodySkel = dialog->GetBodyManager ()->FindBodySkeleton (fact->GetName ());
+	const csArray<BoneID> bones = skelFact->GetBoneOrderList ();
+	csString selBone = dialog->GetSelectedBone ();
+	for (size_t i = 0 ; i < bones.GetSize () ; i++)
+	{
+	  BoneID id = bones[i];
+	  if (bodySkel)
+	  {
+	    if (selBone == skelFact->GetBoneName (id))
+	      pen = boneHiPen;
+	    else
+	      pen = boneActivePen;
+	  }
 	  else
-	    pen = boneActivePen;
-        }
-        else
-        {
-	  pen = bonePen;
-        }
-	csQuaternion rot;
-	csVector3 offset;
-	skelFact->GetTransformAbsSpace (id, rot, offset);
-        AddSphere (offset, .02, pen);
-        AddLine (offset, offset + rot.Rotate (csVector3 (0, 0, .3)), pen);
+	  {
+	    pen = bonePen;
+	  }
+	  csQuaternion rot;
+	  csVector3 offset;
+	  skelFact->GetTransformAbsSpace (id, rot, offset);
+	  AddSphere (offset, .02, pen);
+	  AddLine (offset, offset + rot.Rotate (csVector3 (0, 0, .3)), pen);
+	}
       }
     }
   }
@@ -1428,6 +1450,30 @@ void DynfactDialog::OnOkButton (wxCommandEvent& event)
   EndModal (TRUE);
 }
 
+void DynfactDialog::OnShowBodies (wxCommandEvent& event)
+{
+  wxCheckBox* check = XRCCTRL (*this, "showBodiesCheck", wxCheckBox);
+  meshView->ShowBodies (check->GetValue ());
+}
+
+void DynfactDialog::OnShowBones (wxCommandEvent& event)
+{
+  wxCheckBox* check = XRCCTRL (*this, "showBonesCheck", wxCheckBox);
+  meshView->ShowBones (check->GetValue ());
+}
+
+void DynfactDialog::OnShowOrigin (wxCommandEvent& event)
+{
+  wxCheckBox* check = XRCCTRL (*this, "showOriginCheck", wxCheckBox);
+  meshView->ShowOrigin (check->GetValue ());
+}
+
+void DynfactDialog::OnShowJoints (wxCommandEvent& event)
+{
+  wxCheckBox* check = XRCCTRL (*this, "showJointsCheck", wxCheckBox);
+  meshView->ShowJoints (check->GetValue ());
+}
+
 void DynfactDialog::Show ()
 {
   uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ()->Refresh ();
@@ -1743,6 +1789,16 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // The mesh panel.
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
   meshView = new DynfactMeshView (this, app->GetObjectRegistry (), panel);
+
+  wxCheckBox* check;
+  check = XRCCTRL (*this, "showJointsCheck", wxCheckBox);
+  check->SetValue (true);
+  check = XRCCTRL (*this, "showBonesCheck", wxCheckBox);
+  check->SetValue (true);
+  check = XRCCTRL (*this, "showBodiesCheck", wxCheckBox);
+  check->SetValue (true);
+  check = XRCCTRL (*this, "showOriginCheck", wxCheckBox);
+  check->SetValue (true);
 
   SetupDialogs ();
 

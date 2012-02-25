@@ -68,12 +68,19 @@ private:
 
   void SetupColliderGeometry ();
 
+  bool showBodies, showJoints, showBones, showOrigin;
+
 public:
   DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object_reg, wxWindow* parent);
   virtual ~DynfactMeshView () { }
 
   virtual void SyncValue (Ares::Value* value);
   void Refresh ();
+
+  void ShowBodies (bool s) { showBodies = s; Refresh (); }
+  void ShowJoints (bool s) { showJoints = s; Refresh (); }
+  void ShowBones (bool s) { showBones = s; Refresh (); }
+  void ShowOrigin (bool s) { showOrigin = s; Refresh (); }
 };
 
 /**
@@ -218,6 +225,10 @@ private:
   UIDialog* selectBoneDialog;
 
   void OnOkButton (wxCommandEvent& event);
+  void OnShowBodies (wxCommandEvent& event);
+  void OnShowOrigin (wxCommandEvent& event);
+  void OnShowBones (wxCommandEvent& event);
+  void OnShowJoints (wxCommandEvent& event);
 
   void SetupDialogs ();
   void SetupListHeadings ();
