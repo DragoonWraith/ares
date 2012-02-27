@@ -324,6 +324,59 @@ bool AresEdit3DView::OnMouseUp (iEvent& ev)
 
 //---------------------------------------------------------------------------
 
+void AresEdit3DView::EnableRagdoll ()
+{
+  using namespace CS::Animation;
+  using namespace CS::Mesh;
+
+  csArray<iDynamicObject*> objects = selection->GetObjects ();
+  SelectionIterator it = objects.GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicObject* dynobj = it.Next ();
+    if (!dynobj->GetMesh ()) continue;
+    csString factName = dynobj->GetFactory ()->GetName ();
+    iMeshFactoryWrapper* factory = engine->FindMeshFactory (factName);
+    CS_ASSERT (factory != 0);
+
+    csRef<CS::Mesh::iAnimatedMeshFactory> animeshFactory = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory>
+      (factory->GetMeshObjectFactory ());
+    if (!animeshFactory)
+    {
+      app->GetUIManager ()->Error ("'%s' is not an animesh!", factName.GetData ());
+      return;
+    }
+
+    csRef<iBodyManager> bodyManager = csQueryRegistry<iBodyManager> (object_reg);
+    csRef<iBodySkeleton> bodySkeleton = bodyManager->FindBodySkeleton (factName);
+    if (!bodySkeleton)
+    {
+      app->GetUIManager ()->Error ("'%s' has no body skeleton!", factName.GetData ());
+      return;
+    }
+
+    csRef<iSkeletonAnimPacketFactory> animPacketFactory = animeshFactory->GetSkeletonFactory ()->GetAnimationPacket ();
+
+    csRef<iSkeletonRagdollNodeManager> ragdollManager = csQueryRegistryOrLoad<iSkeletonRagdollNodeManager>
+      (object_reg, "crystalspace.mesh.animesh.animnode.ragdoll");
+
+    csRef<iSkeletonRagdollNodeFactory> ragdollNodeFactory =
+      ragdollManager->CreateAnimNodeFactory ("ragdoll");
+    ragdollNodeFactory->SetBodySkeleton (bodySkeleton);
+
+    animPacketFactory->SetAnimationRoot (ragdollNodeFactory);
+
+    iBodyChain* bodyChain = bodySkeleton->CreateBodyChain ("chain", animeshFactory->GetSkeletonFactory ()->FindBone ("BoneLid"));
+    ragdollNodeFactory->AddBodyChain (bodyChain, CS::Animation::STATE_KINEMATIC);
+
+    csRef<CS::Mesh::iAnimatedMesh> animesh = scfQueryInterface<CS::Mesh::iAnimatedMesh> (dynobj->GetMesh ()->GetMeshObject ());
+    iSkeletonAnimNode* rootNode = animesh->GetSkeleton ()->GetAnimationPacket ()->GetAnimationRoot ();
+    csRef<iSkeletonRagdollNode> ragdollNode =
+      scfQueryInterface<iSkeletonRagdollNode> (rootNode->FindNode ("ragdoll"));
+    ragdollNode->SetDynamicSystem (dynSys);
+  }
+}
+
 void AresEdit3DView::DeleteSelectedObjects ()
 {
   csArray<iDynamicObject*> objects = selection->GetObjects ();
@@ -1035,6 +1088,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
   EVT_MENU (ID_Join, AppAresEditWX :: OnMenuJoin)
   EVT_MENU (ID_Unjoin, AppAresEditWX :: OnMenuUnjoin)
+  EVT_MENU (ID_Ragdoll, AppAresEditWX :: OnMenuRagdoll)
   EVT_MENU (ID_FindObject, AppAresEditWX :: OnMenuFindObject)
   EVT_MENU (ID_UpdateObjects, AppAresEditWX :: OnMenuUpdateObjects)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
@@ -1104,6 +1158,12 @@ void AppAresEditWX::OnMenuUnjoin (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
   mainMode->UnjoinObjects ();
+}
+
+void AppAresEditWX::OnMenuRagdoll (wxCommandEvent& event)
+{
+  if (editMode != mainMode) return;
+  aresed3d->EnableRagdoll ();
 }
 
 void AppAresEditWX::OnMenuFindObject (wxCommandEvent& event)
@@ -1533,6 +1593,7 @@ void AppAresEditWX::SetupMenuBar ()
   editMenu->AppendSeparator ();
   editMenu->Append (ID_Join, wxT ("&Join\tCtrl+J"));
   editMenu->Append (ID_Unjoin, wxT ("&Unjoin"));
+  editMenu->Append (ID_Ragdoll, wxT ("&Ragdoll"));
 
   wxMenuBar* menuBar = new wxMenuBar ();
   menuBar->Append (fileMenu, wxT ("&File"));

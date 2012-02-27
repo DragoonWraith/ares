@@ -356,6 +356,12 @@ public:
   Camera& GetCamera () { return camera; }
 
   /**
+   * Enable ragdoll for the selected object. This is a temporary
+   * function to experiment with this feature.
+   */
+  void EnableRagdoll ();
+
+  /**
    * Delete all currently selected objects.
    */
   void DeleteSelectedObjects ();
@@ -436,6 +442,7 @@ enum
   ID_UpdateObjects,
   ID_Join,
   ID_Unjoin,
+  ID_Ragdoll,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
@@ -488,6 +495,7 @@ private:
   void OnMenuPaste (wxCommandEvent& event);
   void OnMenuJoin (wxCommandEvent& event);
   void OnMenuUnjoin (wxCommandEvent& event);
+  void OnMenuRagdoll (wxCommandEvent& event);
   void OnMenuFindObject (wxCommandEvent& event);
   void OnMenuUpdateObjects (wxCommandEvent& event);
   void OnNotebookChange (wxNotebookEvent& event);
