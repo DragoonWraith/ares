@@ -117,6 +117,46 @@ void DynfactMeshView::SetupColliderGeometry ()
 	else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
 	  AddMesh (info.offset, pen);
       }
+      using namespace CS::Animation;
+      iBodyBone* bone = dialog->GetCurrentBone ();
+      if (bone)
+      {
+        idx = dialog->GetSelectedBoneCollider ();
+        for (size_t i = 0 ; i < bone->GetBoneColliderCount () ; i++)
+	{
+	  size_t pen = i == size_t (idx) ? hilightPen : normalPen;
+          iBodyBoneCollider* collider = bone->GetBoneCollider (i);
+	  csOrthoTransform trans = collider->GetTransform ();
+	  csVector3 offset = trans.GetOrigin ();
+	  csColliderGeometryType type = collider->GetGeometryType ();
+	  if (type == BOX_COLLIDER_GEOMETRY)
+	  {
+	    csVector3 size;
+	    collider->GetBoxGeometry (size);
+	    AddBox (csBox3 (offset - size * .5, offset + size * .5), pen);
+	  }
+	  else if (type == SPHERE_COLLIDER_GEOMETRY)
+	  {
+	    float radius;
+	    collider->GetSphereGeometry (radius);
+	    AddSphere (offset, radius, pen);
+	  }
+	  else if (type == CYLINDER_COLLIDER_GEOMETRY)
+	  {
+	    float length, radius;
+	    collider->GetCylinderGeometry (length, radius);
+	    AddCylinder (offset, radius, length, pen);
+	  }
+	  else if (type == CAPSULE_COLLIDER_GEOMETRY)
+	  {
+	    float length, radius;
+	    collider->GetCapsuleGeometry (length, radius);
+	    AddCapsule (offset, radius, length, pen);
+	  }
+	  //else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
+	    //AddMesh (info.offset, pen);
+	}
+      }
     }
 
     // Render pivot points.
@@ -1536,6 +1576,12 @@ long DynfactDialog::GetSelectedCollider ()
   return ListCtrlTools::GetFirstSelectedRow (list);
 }
 
+long DynfactDialog::GetSelectedBoneCollider ()
+{
+  wxListCtrl* list = XRCCTRL (*this, "boneColliders_List", wxListCtrl);
+  return ListCtrlTools::GetFirstSelectedRow (list);
+}
+
 long DynfactDialog::GetSelectedPivot ()
 {
   wxListCtrl* list = XRCCTRL (*this, "pivots_List", wxListCtrl);
@@ -1830,6 +1876,8 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Bind (jointsSelectedValue, meshView);
   // Also do this for the selected bone value.
   Bind (bonesSelectedValue, meshView);
+  // Also do this for the selected bone collider value.
+  Bind (bonesColliderSelectedValue, meshView);
 
   // Connect the selected value from the category tree to the dynamic
   // factory value so that the two radius values and the collider list

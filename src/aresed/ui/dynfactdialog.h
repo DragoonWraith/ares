@@ -256,6 +256,7 @@ public:
   DynfactMeshView* GetMeshView () const { return meshView; }
 
   long GetSelectedCollider ();
+  long GetSelectedBoneCollider ();
   long GetSelectedPivot ();
   long GetSelectedJoint ();
   csString GetSelectedBone ();
