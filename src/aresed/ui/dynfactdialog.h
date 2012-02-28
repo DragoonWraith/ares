@@ -57,6 +57,7 @@ class DynfactMeshView : public MeshView
 {
 private:
   DynfactDialog* dialog;
+
   size_t normalPen;
   size_t hilightPen;
   size_t originXPen;
@@ -65,6 +66,8 @@ private:
   size_t bonePen;
   size_t boneActivePen;
   size_t boneHiPen;
+
+  csRef<CS::Mesh::iAnimatedMesh> animesh;
 
   void SetupColliderGeometry ();
 
@@ -76,6 +79,8 @@ public:
 
   virtual void SyncValue (Ares::Value* value);
   void Refresh ();
+
+  virtual bool SetMesh (const char* name);
 
   void ShowBodies (bool s) { showBodies = s; Refresh (); }
   void ShowJoints (bool s) { showJoints = s; Refresh (); }

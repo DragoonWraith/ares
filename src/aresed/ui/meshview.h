@@ -53,7 +53,6 @@ private:
   iObjectRegistry* object_reg;
   csRef<iEngine> engine;
   csRef<iGraphics3D> g3d;
-  csRef<iMeshWrapper> mesh;
   csString meshName;
   ImagePanel* imagePanel;
   csMeshOnTexture* meshOnTexture;
@@ -76,6 +75,9 @@ private:
 
   void OnMouseWheel (wxMouseEvent& event);
 
+protected:
+  csRef<iMeshWrapper> mesh;
+
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);
   virtual ~MeshView ();
@@ -89,7 +91,7 @@ public:
   /**
    * Set mesh. Returns false on failure (not reported).
    */
-  bool SetMesh (const char* name);
+  virtual bool SetMesh (const char* name);
 
   /// Get the current mesh name.
   const csString& GetMeshName () const { return meshName; }

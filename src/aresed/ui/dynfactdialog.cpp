@@ -73,6 +73,15 @@ void DynfactMeshView::SyncValue (Ares::Value* value)
   Refresh ();
 }
 
+bool DynfactMeshView::SetMesh (const char* name)
+{
+  animesh = 0;
+  if (!MeshView::SetMesh (name))
+    return false;
+  animesh = scfQueryInterface<CS::Mesh::iAnimatedMesh> (mesh->GetMeshObject ());
+  return true;
+}
+
 void DynfactMeshView::Refresh ()
 {
   iDynamicFactory* fact = dialog->GetCurrentFactory ();
@@ -121,6 +130,11 @@ void DynfactMeshView::SetupColliderGeometry ()
       iBodyBone* bone = dialog->GetCurrentBone ();
       if (bone)
       {
+	CS::Animation::iSkeleton* skeleton = animesh->GetSkeleton ();
+        csQuaternion rotation;
+        csVector3 position;
+        skeleton->GetTransformAbsSpace (bone->GetAnimeshBone (), rotation, position);
+
         idx = dialog->GetSelectedBoneCollider ();
         for (size_t i = 0 ; i < bone->GetBoneColliderCount () ; i++)
 	{
