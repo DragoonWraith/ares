@@ -834,7 +834,8 @@ public:
     {
       CS::Animation::iBodyBoneCollider* collider = bone->GetBoneCollider (idx);
       info.type = collider->GetGeometryType ();
-      info.offset.Set (0, 0, 0);
+      csOrthoTransform trans = collider->GetTransform ();
+      info.offset = trans.GetOrigin ();
       info.size.Set (0, 0, 0);
       info.mass = 0.0f;
       info.radius = 0.0f;
