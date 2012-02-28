@@ -245,7 +245,9 @@ public:
   void Tick ();
 
   /// Calculate the best-fit for a given collider.
+  void FitCollider (Value* colSelValue, const csBox3& bbox, csColliderGeometryType type);
   void FitCollider (iDynamicFactory* fact, csColliderGeometryType type);
+  void FitCollider (CS::Animation::BoneID id, csColliderGeometryType type);
 
   UIManager* GetUIManager () const { return uiManager; }
   CS::Animation::iBodyManager* GetBodyManager () const { return bodyManager; }

@@ -1373,17 +1373,27 @@ class BestFitAction : public Action
 private:
   DynfactDialog* dialog;
   csColliderGeometryType type;
+  bool doBoneColliders;
 
 public:
-  BestFitAction (DynfactDialog* dialog, csColliderGeometryType type) :
-    dialog (dialog), type (type) { }
+  BestFitAction (DynfactDialog* dialog, csColliderGeometryType type, bool doBoneColliders = false) :
+    dialog (dialog), type (type), doBoneColliders (doBoneColliders) { }
   virtual ~BestFitAction () { }
   virtual const char* GetName () const { return "Fit"; }
   virtual bool Do (View* view, wxWindow* component)
   {
     iDynamicFactory* fact = dialog->GetCurrentFactory ();
     if (!fact) return false;
-    dialog->FitCollider (fact, type);
+    if (doBoneColliders)
+    {
+      CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
+      if (!bone) return false;
+      dialog->FitCollider (bone->GetAnimeshBone (), type);
+    }
+    else
+    {
+      dialog->FitCollider (fact, type);
+    }
     return true;
   }
 };
@@ -1602,21 +1612,21 @@ csString DynfactDialog::GetSelectedBone ()
   return ListCtrlTools::ReadRow (list, row)[0];
 }
 
-void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType type)
+void DynfactDialog::FitCollider (Value* colSelValue, const csBox3& bbox,
+    csColliderGeometryType type)
 {
-  const csBox3& bbox = fact->GetBBox ();
   csVector3 c = bbox.GetCenter ();
   csVector3 s = bbox.GetSize ();
   switch (type)
   {
     case BOX_COLLIDER_GEOMETRY:
       {
-	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
-	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
-	colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
-	colliderSelectedValue->GetChildByName ("sizeX")->SetFloatValue (s.x);
-	colliderSelectedValue->GetChildByName ("sizeY")->SetFloatValue (s.y);
-	colliderSelectedValue->GetChildByName ("sizeZ")->SetFloatValue (s.z);
+	colSelValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	colSelValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	colSelValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	colSelValue->GetChildByName ("sizeX")->SetFloatValue (s.x);
+	colSelValue->GetChildByName ("sizeY")->SetFloatValue (s.y);
+	colSelValue->GetChildByName ("sizeZ")->SetFloatValue (s.z);
 	break;
       }
     case SPHERE_COLLIDER_GEOMETRY:
@@ -1625,10 +1635,10 @@ void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType t
 	if (s.y > radius) radius = s.y;
 	if (s.z > radius) radius = s.z;
 	radius /= 2.0f;
-	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
-	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
-	colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
-	colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
+	colSelValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	colSelValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	colSelValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	colSelValue->GetChildByName ("radius")->SetFloatValue (radius);
 	break;
       }
     case CAPSULE_COLLIDER_GEOMETRY:
@@ -1638,15 +1648,33 @@ void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType t
 	if (s.z > radius) radius = s.z;
 	radius /= 2.0f;
 	float length = s.y;
-	colliderSelectedValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
-	colliderSelectedValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
-	colliderSelectedValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
-	colliderSelectedValue->GetChildByName ("radius")->SetFloatValue (radius);
-	colliderSelectedValue->GetChildByName ("length")->SetFloatValue (length);
+	colSelValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
+	colSelValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
+	colSelValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
+	colSelValue->GetChildByName ("radius")->SetFloatValue (radius);
+	colSelValue->GetChildByName ("length")->SetFloatValue (length);
 	break;
       }
     default: return;
   }
+}
+
+void DynfactDialog::FitCollider (iDynamicFactory* fact, csColliderGeometryType type)
+{
+  FitCollider (colliderSelectedValue, fact->GetBBox (), type);
+}
+
+void DynfactDialog::FitCollider (CS::Animation::BoneID id, csColliderGeometryType type)
+{
+  iDynamicFactory* fact = GetCurrentFactory ();
+  if (!fact) return;
+  csString factName = fact->GetName ();
+  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (factName);
+  if (!meshFact) { printf ("Can't find mesh factory '%s'!", factName.GetData ()); return; }
+  csRef<CS::Mesh::iAnimatedMeshFactory> animeshFactory = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory>
+      (meshFact->GetMeshObjectFactory ());
+  FitCollider (bonesColliderSelectedValue, animeshFactory->GetBoneBoundingBox (id), type);
 }
 
 void DynfactDialog::SetupDialogs ()
@@ -1768,10 +1796,16 @@ void DynfactDialog::SetupActions ()
   Value* attributes = dynfactValue->GetChildByName ("attributes");
   AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
   AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
+
   AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY)));
   AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY)));
   AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY)));
   AddAction ("capsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY)));
+
+  AddAction ("boneBoxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY, true)));
+  AddAction ("boneSphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY, true)));
+  AddAction ("boneCylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY, true)));
+  AddAction ("boneCapsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY, true)));
 }
 
 void DynfactDialog::SetupListHeadings ()
