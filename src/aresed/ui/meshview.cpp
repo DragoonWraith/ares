@@ -177,10 +177,17 @@ size_t MeshView::CreatePen (float r, float g, float b, float width)
   return pens.Push (pen);
 }
 
+void MeshView::SetLocal2ObjectTransform (size_t penIdx, const csReversibleTransform& local2object)
+{
+  csPen3D* pen = pens3d[penIdx];
+  pen->SetLocal2ObjectTransform (local2object);
+}
+
 void MeshView::AddSphere (const csVector3& center, float radius, size_t penIdx)
 {
+  csPen3D* pen = pens3d[penIdx];
   MVSphere mvb;
-  mvb.center = center;
+  mvb.center = pen->GetLocal2ObjectTransform () * center;
   mvb.radius = radius;
   mvb.penIdx = penIdx;
   spheres.Push (mvb);
@@ -315,11 +322,9 @@ void MeshView::RenderGeometry ()
   g3d->BeginDraw (CSDRAW_3DGRAPHICS);
   csReversibleTransform oldw2c = g3d->GetWorldToCamera ();
 
-  //csReversibleTransform local2camera = camtrans * local2object;
-  //g3d->SetWorldToCamera (local2camera.GetInverse ());
   g3d->SetWorldToCamera (camtrans.GetInverse ());
 
-  penCache.SetTransform (local2object.GetInverse () * meshtrans);
+  penCache.SetTransform (meshtrans);
   penCache.Render (g3d);
 
   g3d->SetWorldToCamera (oldw2c);

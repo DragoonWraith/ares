@@ -58,7 +58,6 @@ private:
   csMeshOnTexture* meshOnTexture;
   csRef<iTextureHandle> handle;
   float reldist;
-  csReversibleTransform local2object;
 
   csPenCache penCache;
   csArray<MVSphere> spheres;
@@ -94,11 +93,6 @@ public:
    */
   virtual bool SetMesh (const char* name);
 
-  /**
-   * Set a local to object transform.
-   */
-  void SetLocal2Object (const csReversibleTransform& t) { local2object = t; }
-
   /// Get the current mesh name.
   const csString& GetMeshName () const { return meshName; }
 
@@ -106,6 +100,11 @@ public:
    * Create a pen and return the index.
    */
   size_t CreatePen (float r, float g, float b, float width);
+
+  /**
+   * Set a local 2 object transform for a given pen.
+   */
+  void SetLocal2ObjectTransform (size_t penIdx, const csReversibleTransform& local2object);
 
   /**
    * Add a box to show in 2D on top of the mesh.
