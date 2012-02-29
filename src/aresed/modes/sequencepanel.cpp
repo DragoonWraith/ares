@@ -300,14 +300,15 @@ protected:
   }
 
 public:
-  DebugPrintValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  DebugPrintValue (SequencePanel* sequencePanel)
+    : SequenceValue<iDebugPrintSeqOpFactory> (sequencePanel)
   {
     AddChild ("message", NEWREF(Value,new StringValue ()));
   }
   virtual ~DebugPrintValue () { }
   virtual void FireValueChanged ()
   {
-    SequenceValue::FireValueChanged ();
+    SequenceValue<iDebugPrintSeqOpFactory>::FireValueChanged ();
     if (!GetSequence ()) return;
     updating = true;
     SetStr ("message", sequence->GetMessage ());
@@ -362,7 +363,8 @@ public:
 class AmbientMeshValue : public ColorAnimValue<iAmbientMeshSeqOpFactory>
 {
 public:
-  AmbientMeshValue (SequencePanel* sequencePanel) : ColorAnimValue (sequencePanel) { }
+  AmbientMeshValue (SequencePanel* sequencePanel)
+    : ColorAnimValue<iAmbientMeshSeqOpFactory> (sequencePanel) { }
   virtual ~AmbientMeshValue () { }
 };
 
@@ -372,7 +374,8 @@ public:
 class LightValue : public ColorAnimValue<iLightSeqOpFactory>
 {
 public:
-  LightValue (SequencePanel* sequencePanel) : ColorAnimValue (sequencePanel) { }
+  LightValue (SequencePanel* sequencePanel)
+    : ColorAnimValue<iLightSeqOpFactory> (sequencePanel) { }
   virtual ~LightValue () { }
 };
 
@@ -390,14 +393,15 @@ protected:
   }
 
 public:
-  MovePathValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  MovePathValue (SequencePanel* sequencePanel)
+    : SequenceValue<iMovePathSeqOpFactory> (sequencePanel)
   {
     AddStringChildren ("entity", "tag", (const char*)0);
   }
   virtual ~MovePathValue () { }
   virtual void FireValueChanged ()
   {
-    SequenceValue::FireValueChanged ();
+    SequenceValue<iMovePathSeqOpFactory>::FireValueChanged ();
     if (!GetSequence ()) return;
     updating = true;
     SetStr ("entity", sequence->GetEntity ());
@@ -426,7 +430,8 @@ protected:
   }
 
 public:
-  PropertyValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  PropertyValue (SequencePanel* sequencePanel)
+    : SequenceValue<iPropertySeqOpFactory> (sequencePanel)
   {
     AddStringChildren ("entity", "pc", "tag", "property", "long", "float",
 	"vectorx", "vectory", "vectorz", (const char*)0);
@@ -435,7 +440,7 @@ public:
   virtual ~PropertyValue () { }
   virtual void FireValueChanged ()
   {
-    SequenceValue::FireValueChanged ();
+    SequenceValue<iPropertySeqOpFactory>::FireValueChanged ();
     if (!GetSequence ()) return;
     updating = true;
     SetStr ("entity", sequence->GetEntity ());
@@ -473,7 +478,8 @@ protected:
   }
 
 public:
-  TransformValue (SequencePanel* sequencePanel) : SequenceValue (sequencePanel)
+  TransformValue (SequencePanel* sequencePanel)
+    : SequenceValue<iTransformSeqOpFactory> (sequencePanel)
   {
     AddStringChildren ("entity", "tag", "axis", "angle",
 	"vectorx", "vectory", "vectorz", (const char*)0);
@@ -481,7 +487,7 @@ public:
   virtual ~TransformValue () { }
   virtual void FireValueChanged ()
   {
-    SequenceValue::FireValueChanged ();
+    SequenceValue<iTransformSeqOpFactory>::FireValueChanged ();
     if (!GetSequence ()) return;
     updating = true;
     SetStr ("entity", sequence->GetEntity ());
