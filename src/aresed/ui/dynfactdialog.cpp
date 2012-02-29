@@ -131,9 +131,14 @@ void DynfactMeshView::SetupColliderGeometry ()
       if (bone)
       {
 	CS::Animation::iSkeleton* skeleton = animesh->GetSkeleton ();
+
+	// Bone to object space transform
         csQuaternion rotation;
         csVector3 position;
         skeleton->GetTransformAbsSpace (bone->GetAnimeshBone (), rotation, position);
+	csReversibleTransform o2b (csMatrix3 (rotation.GetConjugate ()), position); 
+	csReversibleTransform b2o = o2b.GetInverse ();
+	SetLocal2Object (b2o);
 
         idx = dialog->GetSelectedBoneCollider ();
         for (size_t i = 0 ; i < bone->GetBoneColliderCount () ; i++)
@@ -170,6 +175,8 @@ void DynfactMeshView::SetupColliderGeometry ()
 	  //else if (info.type == TRIMESH_COLLIDER_GEOMETRY || info.type == CONVEXMESH_COLLIDER_GEOMETRY)
 	    //AddMesh (info.offset, pen);
 	}
+	// Restore default local transform.
+	SetLocal2Object (csReversibleTransform ());
       }
     }
 

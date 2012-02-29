@@ -314,9 +314,12 @@ void MeshView::RenderGeometry ()
   // Render the 3D primitives:
   g3d->BeginDraw (CSDRAW_3DGRAPHICS);
   csReversibleTransform oldw2c = g3d->GetWorldToCamera ();
+
+  //csReversibleTransform local2camera = camtrans * local2object;
+  //g3d->SetWorldToCamera (local2camera.GetInverse ());
   g3d->SetWorldToCamera (camtrans.GetInverse ());
 
-  penCache.SetTransform (meshtrans);
+  penCache.SetTransform (local2object.GetInverse () * meshtrans);
   penCache.Render (g3d);
 
   g3d->SetWorldToCamera (oldw2c);

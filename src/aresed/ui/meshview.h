@@ -58,6 +58,7 @@ private:
   csMeshOnTexture* meshOnTexture;
   csRef<iTextureHandle> handle;
   float reldist;
+  csReversibleTransform local2object;
 
   csPenCache penCache;
   csArray<MVSphere> spheres;
@@ -92,6 +93,11 @@ public:
    * Set mesh. Returns false on failure (not reported).
    */
   virtual bool SetMesh (const char* name);
+
+  /**
+   * Set a local to object transform.
+   */
+  void SetLocal2Object (const csReversibleTransform& t) { local2object = t; }
 
   /// Get the current mesh name.
   const csString& GetMeshName () const { return meshName; }
