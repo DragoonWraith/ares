@@ -370,6 +370,7 @@ void AresEdit3DView::EnableRagdoll ()
     ragdollNodeFactory->AddBodyChain (bodyChain, CS::Animation::STATE_KINEMATIC);
 
     csRef<CS::Mesh::iAnimatedMesh> animesh = scfQueryInterface<CS::Mesh::iAnimatedMesh> (dynobj->GetMesh ()->GetMeshObject ());
+    animesh->GetSkeleton ()->RecreateAnimationTree ();
     iSkeletonAnimNode* rootNode = animesh->GetSkeleton ()->GetAnimationPacket ()->GetAnimationRoot ();
     csRef<iSkeletonRagdollNode> ragdollNode =
       scfQueryInterface<iSkeletonRagdollNode> (rootNode->FindNode ("ragdoll"));
