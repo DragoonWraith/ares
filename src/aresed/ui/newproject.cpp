@@ -219,7 +219,7 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
       dynfactsCheck->GetValue () ? "true" : "",
       templatesCheck->GetValue () ? "true" : "",
       questsCheck->GetValue () ? "true" : "",
-      0);
+      (const char*)0);
   SetPathFile ("", "", false, false, false);
 }
 
