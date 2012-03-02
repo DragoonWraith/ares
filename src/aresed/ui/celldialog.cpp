@@ -148,7 +148,7 @@ void CellDialog::UpdateList ()
     }
     if (cell) info.AppendFmt ("%uz objects", cell->GetObjectCount ());
 
-    int idx = ListCtrlTools::AddRow (list, name, (const char*)info, 0);
+    int idx = ListCtrlTools::AddRow (list, name, (const char*)info, (const char*)0);
     if (!cell)
       ListCtrlTools::ColorRow (list, idx, 128, 128, 128);
     else if (cell == dynworld->GetCurrentCell ())

@@ -1030,6 +1030,7 @@ public:
     bone = dialog->GetCurrentBone ();
     if (!bone) return 0;
     CS::Animation::iBodyBoneCollider* collider = bone->CreateBoneCollider ();
+    // @@@ Auto-fit here!
     collider->SetBoxGeometry (csVector3 (.02, .02, .02));
     idx = bone->GetBoneColliderCount ()-1;
     Value* value = NewChild (idx);
