@@ -94,6 +94,7 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("wireInputMaskText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
 END_EVENT_TABLE()

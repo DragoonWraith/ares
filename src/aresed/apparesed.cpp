@@ -367,6 +367,7 @@ void AresEdit3DView::EnableRagdoll ()
     animPacketFactory->SetAnimationRoot (ragdollNodeFactory);
 
     iBodyChain* bodyChain = bodySkeleton->CreateBodyChain ("chain", animeshFactory->GetSkeletonFactory ()->FindBone ("BoneLid"));
+    bodyChain->AddAllSubChains ();
     ragdollNodeFactory->AddBodyChain (bodyChain, CS::Animation::STATE_KINEMATIC);
 
     csRef<CS::Mesh::iAnimatedMesh> animesh = scfQueryInterface<CS::Mesh::iAnimatedMesh> (dynobj->GetMesh ()->GetMeshObject ());
@@ -786,10 +787,8 @@ bool AresEdit3DView::PostLoadMap ()
   // exist.
   if (!pl->FindEntityTemplate ("Player"))
   {
-printf ("1:Loading library player.xml!\n"); fflush (stdout);
     if (!LoadLibrary ("/appdata/", "player.xml"))
       return app->ReportError ("Error loading player library!");
-printf ("2:Loading library player.xml!\n"); fflush (stdout);
   }
   if (!pl->FindEntityTemplate ("World"))
     if (!LoadLibrary ("/appdata/", "world.xml"))

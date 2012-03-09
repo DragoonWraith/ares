@@ -251,7 +251,12 @@ void celPcGameController::TryGetDynworld ()
 {
   if (dynworld) return;
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (entity);
-  if (dynworld) return;
+  if (dynworld)
+  {
+    printf ("Could not find dynamic world!\n");
+    fflush (stdout);
+    return;
+  }
 
   // Not very clean. We should only depend on the dynworld plugin
   // to be in this entity but for the editor we actually have the
@@ -261,6 +266,7 @@ void celPcGameController::TryGetDynworld ()
   if (!zone)
   {
     printf ("Can't find entity 'Zone' and current entity has no dynworld PC!\n");
+    fflush (stdout);
     return;
   }
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zone);
@@ -276,6 +282,7 @@ void celPcGameController::TryGetCamera ()
   if (!player)
   {
     printf ("Can't find entity 'Player'!\n");
+    fflush (stdout);
     return;
   }
   pccamera = celQueryPropertyClassEntity<iPcCamera> (player);

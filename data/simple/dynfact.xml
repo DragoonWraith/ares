@@ -1,216 +1,185 @@
-<?xml version='1.0' encoding='UTF-8'?>
 <library>
-    <addon plugin="cel.addons.questdef" >
-
-    <quest name="findTheSecretNote">
-
-        <state name="init">
-          <oninit>
-            <reward type="message" entity="World" id="ares.logentry">
-              <par name="logid" string="SECNOTE_intro" />
-              <par name="message" string="You must go find a secret note. Perhaps look in the basement?" />
-            </reward>
-            <reward type="newstate" state="watchout" />
-          </oninit>
-        </state>
-
-        <state name="watchout">
-          <trigger type="entersector">
-            <fireon entity="Player" sector="cellBasement" />
-            <reward type="message" entity="World" id="ares.logentry">
-              <par name="logid" string="SECNOTE_enterbasement" />
-              <par name="message" string="As you enter the basement you get the impression that there was a fight recently. Perhaps you will find a clue here?" />
-            </reward>
-              <reward type="newstate" state="watchout" />
-          </trigger>
-          <trigger type="inventory">
-            <fireon entity="Player" child_entity="SecretNote" />
-            <reward type="message" entity="World" id="ares.logentry">
-              <par name="logid" string="SECNOTE_gotnote" />
-              <par name="message" string="You pick up a note. This looks like the secret note you had to find." />
-            </reward>
-            <reward type="newstate" state="finish" />
-          </trigger>
-        </state>
-
-        <state name="finish">
-          <oninit>
-            <reward type="message" entity="World" id="ares.finishquest" />
-          </oninit>
-        </state>
-
-      </quest>
-
-
-      <quest name="clickerObject">
-	<state name="init">
-	  <trigger type="message">
-	    <fireon entity="$this" mask="ares.activate" />
-	    <reward type="debugprint" message="=?counter" />
-	    <reward type="changeproperty" entity="$this" property="counter" diff="1" />
-	    <reward type="newstate" state="init" />
-	  </trigger>
-	</state>
-      </quest>
-
-      <quest name="glowQuest">
-        <state name="init">
-	  <oninit>
-	    <reward sequence='animglow' type='sequence' entity='$this' entity_tag='glow' />
-	  </oninit>
-	  <trigger type="sequencefinish">
-	    <fireon entity="$this" sequence="animglow" entity_tag='glow'/>
-	    <reward type="newstate" state="init2" />
-	  </trigger>
-        </state>
-	<state name="init2">
-	  <oninit>
-	    <reward type="newstate" state="init" />
-	  </oninit>
-	</state>
-        <sequence name="animglow">
-          <op entity="$this" type="ambientmesh" duration="$dur" >
-	    <abscolor red="0" green="0" blue="1" />
-          </op>
-	  <delay time="$dur" />
-          <op entity="$this" type="ambientmesh" duration="$dur" >
-	    <abscolor red="1" green="0" blue="0" />
-          </op>
-	  <delay time="$dur" />
-        </sequence>
-      </quest>
-
-    </addon>
-
-    <addon plugin="cel.addons.celentitytpl" entityname="Base">
-      <propclass name="pcobject.mesh" />
-    </addon>
-    <addon plugin="cel.addons.celentitytpl" entityname="Crate">
-      <propclass name="pcobject.mesh" />
-      <class>ares.info</class>
-      <propclass name="pctools.properties">
-        <property name="ares.info" string="A simple crate" />
-      </propclass>
-    </addon>
-    <addon plugin="cel.addons.celentitytpl" entityname="Barrel">
-      <propclass name="pcobject.mesh" />
-      <class>ares.info</class>
-      <propclass name="pctools.properties">
-        <property name="ares.info" string="This is a barrel. The type of barrel that is overused in almost any 3D game" />
-      </propclass>
-    </addon>
-    <addon plugin="cel.addons.celentitytpl" entityname="Box">
-      <template name="Base" />
-      <propclass name="pctools.properties">
-	<property name="counter" long="1" />
-      </propclass>
-      <propclass name="pclogic.wire">
-	<action name="AddInput">
-	  <par name="mask" string="ares.activate" />
-	</action>
-	<action name="AddOutput">
-	  <par name="msgid" string="ares.teleport" />
-	  <par name="entity" string="World" />
-	  <par name="cell" string="$cell" />
-	  <par name="pos" vector3="$pos" />
-	</action>
-      </propclass>
-      <propclass name="pclogic.spawn">
-        <action name="AddEntityTemplateType">
-	  <par name="template" string="TinyBox" />
-	</action>
-        <action name="SetTiming">
-	  <par name="repeat" bool="true" />
-	  <par name="random" bool="true" />
-	  <par name="mindelay" long="1000" />
-	  <par name="maxdelay" long="5000" />
-	</action>
-        <action name="AddSpawnPosition">
-	  <par name="sector" string="$sector" />
-	  <par name="position" vector3="$pos" />
-	</action>
-	<action name="Inhibit">
-	  <par name="count" long="5" />
-	</action>
-	<property name="spawnunique" bool="true" />
-	<property name="namecounter" bool="false" />
-      </propclass>
-      <propclass name="pctools.inventory">
-	<action name="AddTemplate">
-	  <par name="name" string="SmallBox" />
-	  <par name="amount" long="100" />
-	</action>
-	<action name="AddTemplate">
-	  <par name="name" string="TinyBox" />
-	  <par name="amount" long="1" />
-	</action>
-	<action name="AddTemplate">
-	  <par name="name" string="MicroBox" />
-	  <par name="amount" long="=50*100" />
-	</action>
-      </propclass>
-      <propclass name="pclogic.quest" tag="note">
-        <action name="NewQuest" >
-          <par name="name" string="findTheSecretNote" />
-        </action>
-        <property name="state" string="init" />
-      </propclass>
-      <propclass name="pclogic.quest" tag="glow">
-        <action name="NewQuest" >
-          <par name="name" string="glowQuest" />
-          <par name="dur" string="100" />
-        </action>
-        <property name="state" string="init" />
-      </propclass>
-      <propclass name="pclogic.quest" tag="clicker">
-        <action name="NewQuest" >
-          <par name="name" string="clickerObject" />
-        </action>
-        <property name="state" string="init" />
-      </propclass>
-      <characteristic name="weight" value="50" />
-      <characteristic name="size" value="4" />
-  </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="SmallBox"> <propclass name="pcobject.mesh" /> </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="TinyBox"> <propclass name="pcobject.mesh" /> </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="MicroBox"> <propclass name="pcobject.mesh" /> </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="Sphere"> <propclass name="pcobject.mesh" /> </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="SmallSphere"> <propclass name="pcobject.mesh" /> </addon>
-
   <addon plugin="cel.addons.dynamicworld.loader">
-    <extension plugin="ares.dynworld.loader.factories"/>
     <dynworld name="Zone" />
-    <factory name="Barrel" maxradius="0.5" imposterradius=".3" mass="6">
-      <cylinder />
+    <factory name="Node" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Player" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Barrel" maxradius="0.5" imposterradius="0" mass="6">
       <attr name="category" value="Objects" />
+      <cylinder radius="0.4" length="1.2">
+        <offset x="0" y="0" z="0" />
+      </cylinder>
     </factory>
-    <factory name="Crate" maxradius="0.5" imposterradius=".3" mass="6">
-      <box />
+    <factory name="Crate" maxradius="0.5" imposterradius="0" mass="6">
       <attr name="category" value="Objects" />
+      <box>
+        <offset x="0" y="0.3" z="0" />
+        <size x="1" y="0.6" z="1" />
+      </box>
     </factory>
-    <factory name="Box" maxradius="0.5" imposterradius="-1" mass="4">
-      <box />
+    <factory name="Box" maxradius="0.5" imposterradius="0" mass="4">
       <attr name="category" value="Varia" />
+      <box>
+        <offset x="0" y="0.3" z="0" />
+        <size x="1" y="0.6" z="1" />
+      </box>
     </factory>
-    <factory name="SmallBox" maxradius="0.5" imposterradius="-1" mass="3">
-      <box />
+    <factory name="SmallBox" maxradius="0.5" imposterradius="0" mass="3">
       <attr name="category" value="Varia" />
+      <box>
+        <offset x="0" y="0.15" z="0" />
+        <size x="0.6" y="0.3" z="0.6" />
+      </box>
     </factory>
-    <factory name="TinyBox" maxradius="0.5" imposterradius="-1" mass="2">
-      <box />
+    <factory name="TinyBox" maxradius="0.5" imposterradius="0" mass="2">
       <attr name="category" value="Varia" />
+      <box>
+        <offset x="0" y="0.15" z="0" />
+        <size x="0.3" y="0.3" z="0.3" />
+      </box>
     </factory>
-    <factory name="MicroBox" maxradius="0.5" imposterradius="-1" mass="1">
-      <box />
+    <factory name="MicroBox" maxradius="0.5" imposterradius="0" mass="1">
       <attr name="category" value="Varia" />
+      <box>
+        <offset x="0" y="0.07" z="0" />
+        <size x="0.14" y="0.14" z="0.14" />
+      </box>
     </factory>
-    <factory name="Sphere" maxradius="0.5" imposterradius="-1" mass="6">
-      <sphere />
+    <factory name="Sphere" maxradius="0.5" imposterradius="0" mass="6">
       <attr name="category" value="Varia" />
+      <sphere radius="0.5">
+        <offset x="0" y="0" z="0" />
+      </sphere>
     </factory>
-    <factory name="SmallSphere" maxradius="0.5" imposterradius="-1" mass="3">
-      <sphere />
+    <factory name="SmallSphere" maxradius="0.5" imposterradius="0" mass="3">
       <attr name="category" value="Varia" />
+      <sphere radius="0.25">
+        <offset x="0" y="0" z="7.45058e-009" />
+      </sphere>
     </factory>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Sphere">
+    <propclass name="pcobject.mesh" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Barrel">
+    <propclass name="pcobject.mesh" />
+    <propclass name="pctools.properties">
+      <property name="ares.info" string="This is a barrel. The type of barrel that is overused in almost any 3D game" />
+    </propclass>
+    <class>ares.info</class>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Box">
+    <template name="Base" />
+    <propclass name="pctools.properties">
+      <property name="counter" long="1" />
+    </propclass>
+    <propclass name="pclogic.wire">
+      <action name="AddInput">
+        <par name="mask" string="ares.activate" />
+      </action>
+      <action name="AddOutput">
+        <par name="msgid" string="ares.teleport" />
+        <par name="entity" string="World" />
+        <par name="cell" string="@cell" />
+        <par name="pos" vector3="@pos" />
+      </action>
+    </propclass>
+    <propclass name="pclogic.spawn">
+      <action name="AddEntityTemplateType">
+        <par name="template" string="TinyBox" />
+      </action>
+      <action name="SetTiming">
+        <par name="repeat" bool="true" />
+        <par name="random" bool="true" />
+        <par name="mindelay" long="1000" />
+        <par name="maxdelay" long="5000" />
+      </action>
+      <action name="AddSpawnPosition">
+        <par name="sector" string="@sector" />
+        <par name="position" vector3="@pos" />
+      </action>
+      <action name="Inhibit">
+        <par name="count" long="5" />
+      </action>
+      <property name="spawnunique" bool="1" />
+      <property name="namecounter" bool="0" />
+    </propclass>
+    <propclass name="pctools.inventory">
+      <action name="AddTemplate">
+        <par name="name" string="SmallBox" />
+        <par name="amount" long="100" />
+      </action>
+      <action name="AddTemplate">
+        <par name="name" string="TinyBox" />
+        <par name="amount" long="1" />
+      </action>
+      <action name="AddTemplate">
+        <par name="name" string="MicroBox" />
+        <par name="amount" long="=50*100" />
+      </action>
+    </propclass>
+    <propclass name="pclogic.quest" tag="note">
+      <action name="NewQuest">
+        <par name="name" string="findTheSecretNote" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="glow">
+      <action name="NewQuest">
+        <par name="name" string="glowQuest" />
+        <par name="dur" string="100" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="clicker">
+      <action name="NewQuest">
+        <par name="name" string="clickerObject" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <characteristic name="weight" value="50" />
+    <characteristic name="size" value="4" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="TinyBox">
+    <propclass name="pcobject.mesh" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="MicroBox">
+    <propclass name="pcobject.mesh" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Crate">
+    <propclass name="pcobject.mesh" />
+    <propclass name="pctools.properties">
+      <property name="ares.info" string="A simple crate" />
+    </propclass>
+    <propclass name="pclogic.wire">
+      <action name="AddInput">
+        <par name="mask" string="ares.Activate" />
+      </action>
+      <action name="AddOutput">
+        <par name="type" string="std" />
+        <par name="msgid" string="cel.messenger.action.Message" />
+        <par name="entity" string="World" />
+        <par name="msg1" string="This is a test message." />
+      </action>
+    </propclass>
+    <class>ares.info</class>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="SmallBox">
+    <propclass name="pcobject.mesh" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="SmallSphere">
+    <propclass name="pcobject.mesh" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Base">
+    <propclass name="pcobject.mesh" />
   </addon>
 </library>

@@ -464,6 +464,7 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="wireInputMaskText">
+												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>

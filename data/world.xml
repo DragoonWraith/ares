@@ -1,5 +1,20 @@
 <library>
     <addon plugin="cel.addons.celentitytpl" entityname="World" >
       <propclass name="ares.gamecontrol" />
+      <propclass name="pctools.messenger">
+	<action name="DefineSlot">
+	  <par name="name" string="top" />
+	  <par name="position" vector2="10,10" />
+	  <par name="positionanchor" string="nw" />
+	  <par name="maxsizex" long="800" />
+	  <par name="maxsizey" long="300" />
+	  <par name="queue" bool="true" />
+	  <par name="maxmessages" long="2" />
+	</action>
+	<action name="DefineType">
+	  <par name="type" string="std" />
+	  <par name="slot" string="top" />
+	</action>
+      </propclass>
     </addon>
 </library>
