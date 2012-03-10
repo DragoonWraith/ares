@@ -10,10 +10,14 @@
 	  <par name="maxsizey" long="300" />
 	  <par name="queue" bool="true" />
 	  <par name="maxmessages" long="2" />
+	  <par name="borderwidth" long="1" />
+	  <par name="boxcolor" color4=".2,.2,.2,.7" />
+	  <par name="bordercolor" color4="1,.2,.2,.7" />
 	</action>
 	<action name="DefineType">
 	  <par name="type" string="std" />
 	  <par name="slot" string="top" />
+	  <par name="timeout" long="5000" />
 	</action>
       </propclass>
     </addon>
