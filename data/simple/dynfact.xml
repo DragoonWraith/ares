@@ -13,6 +13,18 @@
         <size x="0.2" y="0.2" z="0.2" />
       </box>
     </factory>
+    <factory name="Node" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Player" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
     <factory name="Barrel" maxradius="0.5" imposterradius="0" mass="6">
       <attr name="category" value="Objects" />
       <cylinder radius="0.4" length="1.2">
@@ -63,7 +75,7 @@
     <factory name="SmallSphere" maxradius="0.5" imposterradius="0" mass="3">
       <attr name="category" value="Varia" />
       <sphere radius="0.25">
-        <offset x="0" y="0" z="7.45058e-009" />
+        <offset x="0" y="0" z="7.45058e-09" />
       </sphere>
     </factory>
   </addon>
@@ -98,14 +110,14 @@
         <par name="template" string="TinyBox" />
       </action>
       <action name="SetTiming">
-        <par name="repeat" bool="true" />
         <par name="random" bool="true" />
         <par name="mindelay" long="1000" />
         <par name="maxdelay" long="5000" />
+        <par name="repeat" bool="true" />
       </action>
       <action name="AddSpawnPosition">
-        <par name="sector" string="@sector" />
         <par name="position" vector3="@pos" />
+        <par name="sector" string="@sector" />
       </action>
       <action name="Inhibit">
         <par name="count" long="5" />
@@ -165,8 +177,8 @@
         <par name="mask" string="ares.Activate" />
       </action>
       <action name="AddOutput">
-        <par name="type" string="std" />
         <par name="msgid" string="cel.messenger.action.Message" />
+        <par name="type" string="std" />
         <par name="entity" string="World" />
         <par name="msg1" string="This is a test message." />
       </action>
