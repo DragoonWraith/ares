@@ -297,10 +297,10 @@ bool celPcGameController::PerformActionIndexed (int idx,
   {
     case action_message:
       {
-        CEL_FETCH_STRING_PAR (msg,params,id_message);
-        if (!p_msg) return false;
-        CEL_FETCH_FLOAT_PAR (timeout,params,id_timeout);
-        if (!p_timeout) timeout = 2.0f;
+	csString msg;
+	if (!Fetch (msg, params, id_message)) return false;
+	float timeout;
+	if (!Fetch (timeout, params, id_timeout, true, 2.0f)) return false;
         Message (msg, timeout);
         return true;
       }
@@ -320,17 +320,16 @@ bool celPcGameController::PerformActionIndexed (int idx,
       return true;
     case action_spawn:
       {
-        CEL_FETCH_STRING_PAR (factory,params,id_factory);
-        if (!p_factory) return false;
+	csString factory;
+	if (!Fetch (factory, params, id_factory)) return false;
         Spawn (factory);
       }
       return true;
     case action_createentity:
       {
-        CEL_FETCH_STRING_PAR (temp,params,id_template);
-        if (!p_temp) return false;
-        CEL_FETCH_STRING_PAR (name,params,id_name);
-        if (!p_name) return false;
+	csString temp, name;
+	if (!Fetch (temp, params, id_template)) return false;
+	if (!Fetch (name, params, id_name)) return false;
         CreateEntity (temp, name);
       }
       return true;
