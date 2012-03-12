@@ -8,10 +8,11 @@
 	  <par name="screenanchor" string="n" />
 	  <par name="boxanchor" string="n" />
 	  <par name="maxsizex" long="800" />
-	  <par name="maxsizey" long="300" />
+	  <par name="maxsizey" long="100" />
 	  <par name="queue" bool="true" />
 	  <par name="maxmessages" long="2" />
-	  <par name="borderwidth" long="1" />
+	  <par name="borderwidth" float=".2" />
+	  <par name="roundness" long="10" />
 	  <par name="boxcolor" color4=".2,.2,.2,.7" />
 	  <par name="bordercolor" color4="1,.2,.2,.7" />
 	</action>

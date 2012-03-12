@@ -56,10 +56,6 @@
 	  <par name="msgid" string="ares.controller.Activate" />
 	  <par name="entity" string="World" />
 	</action>
-	<action name="AddOutput">
-	  <par name="msgid" string="ares.controller.Message" />
-	  <par name="entity" string="World" />
-	</action>
       </propclass>
       <propclass name="pclogic.wire" tag="up">
 	<action name="AddInput">
