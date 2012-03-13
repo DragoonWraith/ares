@@ -297,6 +297,7 @@ public:
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   iEngine* GetEngine () const { return engine; }
+  iDynamicSystem* GetDynamicSystem () const { return dynSys; }
   CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const { return bullet_dynSys; }
   iCamera* GetCsCamera () const { return view->GetCamera (); }
   iCollideSystem* GetCollisionSystem () const { return cdsys; }
@@ -359,7 +360,7 @@ public:
    * Enable ragdoll for the selected object. This is a temporary
    * function to experiment with this feature.
    */
-  void EnableRagdoll ();
+  //void EnableRagdoll ();
 
   /**
    * Delete all currently selected objects.
@@ -442,7 +443,7 @@ enum
   ID_UpdateObjects,
   ID_Join,
   ID_Unjoin,
-  ID_Ragdoll,
+  //ID_Ragdoll,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
@@ -495,7 +496,7 @@ private:
   void OnMenuPaste (wxCommandEvent& event);
   void OnMenuJoin (wxCommandEvent& event);
   void OnMenuUnjoin (wxCommandEvent& event);
-  void OnMenuRagdoll (wxCommandEvent& event);
+  //void OnMenuRagdoll (wxCommandEvent& event);
   void OnMenuFindObject (wxCommandEvent& event);
   void OnMenuUpdateObjects (wxCommandEvent& event);
   void OnNotebookChange (wxNotebookEvent& event);

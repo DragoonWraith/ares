@@ -79,6 +79,20 @@ bool DynfactMeshView::SetMesh (const char* name)
   if (!MeshView::SetMesh (name))
     return false;
   animesh = scfQueryInterface<CS::Mesh::iAnimatedMesh> (mesh->GetMeshObject ());
+
+  // If it's an animesh then cancel the animation
+  if (animesh
+      && animesh->GetSkeleton ()->GetAnimationPacket ())
+  {
+    CS::Animation::iSkeletonAnimNode* root =
+      animesh->GetSkeleton ()->GetAnimationPacket ()->GetAnimationRoot ();
+    if (root)
+    {
+      root->Stop ();
+      animesh->GetSkeleton ()->ResetSkeletonState ();
+    }
+  }
+
   return true;
 }
 
@@ -1032,6 +1046,7 @@ public:
     CS::Animation::iBodyBoneCollider* collider = bone->CreateBoneCollider ();
     // @@@ Auto-fit here!
     collider->SetBoxGeometry (csVector3 (.02, .02, .02));
+    dialog->UpdateRagdoll ();
     idx = bone->GetBoneColliderCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
@@ -1277,7 +1292,7 @@ void BoneValue::ChildChanged (Value* child)
 
 //--------------------------------------------------------------------------
 
-bool CreateBodySkeletonAction::Do (View* view, wxWindow* component)
+bool EnableRagdollAction::Do (View* view, wxWindow* component)
 {
   UIManager* uiManager = dialog->GetUIManager ();
 
@@ -1301,7 +1316,8 @@ bool CreateBodySkeletonAction::Do (View* view, wxWindow* component)
   iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
   CS_ASSERT (meshFact != 0);
 
-  csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+  csRef<CS::Mesh::iAnimatedMeshFactory> animFact =
+    scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
   if (!animFact)
   {
     uiManager->Error ("This item is not an animesh!");
@@ -1321,8 +1337,39 @@ bool CreateBodySkeletonAction::Do (View* view, wxWindow* component)
     return false;
   }
 
-  //iBodySkeleton* bodySkel = bodyManager->CreateBodySkeleton (itemname, skelFact);
-  dialog->GetBodyManager ()->CreateBodySkeleton (itemname, skelFact);
+  CS::Animation::iBodySkeleton* bodySkeleton =
+    dialog->GetBodyManager ()->CreateBodySkeleton (itemname, skelFact);
+
+  // Create the ragdoll animation node
+  csRef<CS::Animation::iSkeletonRagdollNodeManager> ragdollManager =
+    csQueryRegistryOrLoad<CS::Animation::iSkeletonRagdollNodeManager>
+    (uiManager->GetApp ()->GetObjectRegistry (),
+     "crystalspace.mesh.animesh.animnode.ragdoll");
+
+  csRef<CS::Animation::iSkeletonRagdollNodeFactory> ragdollNodeFactory =
+    ragdollManager->CreateAnimNodeFactory ("ragdoll");
+  ragdollNodeFactory->SetBodySkeleton (bodySkeleton);
+  ragdollNodeFactory->SetDynamicSystem (ares3d->GetDynamicSystem ());
+
+  // Set the ragdoll node as the root of the animation tree
+  csRef<CS::Animation::iSkeletonAnimPacketFactory> animPacketFactory =
+    animFact->GetSkeletonFactory ()->GetAnimationPacket ();
+  animPacketFactory->SetAnimationRoot (ragdollNodeFactory);
+
+  // Populate the skeleton with default colliders and chains
+  // TODO: this can probably be made in a separate method, in order to let
+  // the user specify the collider type
+  bodySkeleton->PopulateDefaultColliders (animFact,
+					  CS::Animation::COLLIDER_BOX);
+  bodySkeleton->PopulateDefaultBodyChains ();
+
+  // Setup the state of the body chains
+  for (csRef<CS::Animation::iBodyChainIterator> it = bodySkeleton->GetBodyChains (); it->HasNext (); )
+  {
+    CS::Animation::iBodyChain* bodyChain = it->Next ();
+    ragdollNodeFactory->AddBodyChain (bodyChain, CS::Animation::STATE_DYNAMIC);
+  }
+
   dialog->GetMeshView ()->Refresh ();
 
   return true;
@@ -1592,6 +1639,14 @@ CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
   return bodySkel->FindBodyBone (selectedBone);
 }
 
+CS::Animation::iBodySkeleton* DynfactDialog::GetCurrentBodySkeleton ()
+{
+  if (!factorySelectedValue) return 0;
+  csString selectedFactory = factorySelectedValue->GetStringValue ();
+  if (selectedFactory.IsEmpty ()) return 0;
+  return bodyManager->FindBodySkeleton (selectedFactory);
+}
+
 iDynamicFactory* DynfactDialog::GetCurrentFactory ()
 {
   if (!factorySelectedValue) return 0;
@@ -1656,7 +1711,7 @@ void DynfactDialog::FitCollider (Value* colSelValue, const csBox3& bbox,
 	float radius = s.x;
 	if (s.y > radius) radius = s.y;
 	if (s.z > radius) radius = s.z;
-	radius /= 2.0f;
+	radius *= 0.5f;
 	colSelValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
 	colSelValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
 	colSelValue->GetChildByName ("offsetZ")->SetFloatValue (c.z);
@@ -1668,7 +1723,7 @@ void DynfactDialog::FitCollider (Value* colSelValue, const csBox3& bbox,
       {
 	float radius = s.x;
 	if (s.z > radius) radius = s.z;
-	radius /= 2.0f;
+	radius *= 0.5f;
 	float length = s.y;
 	colSelValue->GetChildByName ("offsetX")->SetFloatValue (c.x);
 	colSelValue->GetChildByName ("offsetY")->SetFloatValue (c.y);
@@ -1814,7 +1869,7 @@ void DynfactDialog::SetupActions ()
   AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
-  AddAction (factoryTree, NEWREF(Action, new CreateBodySkeletonAction (this)));
+  AddAction (factoryTree, NEWREF(Action, new EnableRagdollAction (this)));
   Value* attributes = dynfactValue->GetChildByName ("attributes");
   AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
   AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
@@ -1872,6 +1927,38 @@ void DynfactDialog::SetupSelectedValues ()
   wxListCtrl* bonesColliderList = XRCCTRL (*this, "boneColliders_List", wxListCtrl);
   bonesColliderSelectedValue.AttachNew (new ListSelectedValue (bonesColliderList, boneColliders, VALUE_COMPOSITE));
   bonesColliderSelectedValue->SetupComposite (NEWREF(Value,new BoneColliderValue(0,0)));
+}
+
+void DynfactDialog::UpdateRagdoll ()
+{
+  // Find the ragdoll factory
+  CS::Animation::iBodySkeleton* bodySkeleton = GetCurrentBodySkeleton ();
+  csRef<CS::Animation::iSkeletonRagdollNodeFactory> ragdollNodeFactory =
+    scfQueryInterfaceSafe<CS::Animation::iSkeletonRagdollNodeFactory>
+    (bodySkeleton->GetSkeletonFactory ()->GetAnimationPacket ()
+     ->GetAnimationRoot ()->FindNode ("ragdoll"));
+  if (!ragdollNodeFactory) return;
+
+  // Clear the state of all chains
+  for (csRef<CS::Animation::iBodyChainIterator> it = bodySkeleton->GetBodyChains (); it->HasNext (); )
+  {
+    CS::Animation::iBodyChain* bodyChain = it->Next ();
+    ragdollNodeFactory->RemoveBodyChain (bodyChain);
+  }
+
+  // Populate with new body chains
+  bodySkeleton->ClearBodyChains ();
+  bodySkeleton->PopulateDefaultBodyChains ();
+
+  // Reset the state of all chains
+  for (csRef<CS::Animation::iBodyChainIterator> it = bodySkeleton->GetBodyChains (); it->HasNext (); )
+  {
+    CS::Animation::iBodyChain* bodyChain = it->Next ();
+    ragdollNodeFactory->AddBodyChain (bodyChain, CS::Animation::STATE_DYNAMIC);
+  }
+
+  // TODO: all the instances of animeshes currently in use of the body skeleton should be updated too,
+  // otherwise their ragdoll node will be in an inconsistent state.
 }
 
 DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :

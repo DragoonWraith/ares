@@ -323,7 +323,7 @@ bool AresEdit3DView::OnMouseUp (iEvent& ev)
 }
 
 //---------------------------------------------------------------------------
-
+/*
 void AresEdit3DView::EnableRagdoll ()
 {
   using namespace CS::Animation;
@@ -378,7 +378,7 @@ void AresEdit3DView::EnableRagdoll ()
     ragdollNode->SetDynamicSystem (dynSys);
   }
 }
-
+*/
 void AresEdit3DView::DeleteSelectedObjects ()
 {
   csArray<iDynamicObject*> objects = selection->GetObjects ();
@@ -1088,7 +1088,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
   EVT_MENU (ID_Join, AppAresEditWX :: OnMenuJoin)
   EVT_MENU (ID_Unjoin, AppAresEditWX :: OnMenuUnjoin)
-  EVT_MENU (ID_Ragdoll, AppAresEditWX :: OnMenuRagdoll)
+//EVT_MENU (ID_Ragdoll, AppAresEditWX :: OnMenuRagdoll)
   EVT_MENU (ID_FindObject, AppAresEditWX :: OnMenuFindObject)
   EVT_MENU (ID_UpdateObjects, AppAresEditWX :: OnMenuUpdateObjects)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
@@ -1159,13 +1159,13 @@ void AppAresEditWX::OnMenuUnjoin (wxCommandEvent& event)
   if (editMode != mainMode) return;
   mainMode->UnjoinObjects ();
 }
-
+/*
 void AppAresEditWX::OnMenuRagdoll (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
   aresed3d->EnableRagdoll ();
 }
-
+*/
 void AppAresEditWX::OnMenuFindObject (wxCommandEvent& event)
 {
   csRef<ObjectsValue> objects;
@@ -1593,7 +1593,7 @@ void AppAresEditWX::SetupMenuBar ()
   editMenu->AppendSeparator ();
   editMenu->Append (ID_Join, wxT ("&Join\tCtrl+J"));
   editMenu->Append (ID_Unjoin, wxT ("&Unjoin"));
-  editMenu->Append (ID_Ragdoll, wxT ("&Ragdoll"));
+  //editMenu->Append (ID_Ragdoll, wxT ("&Ragdoll"));
 
   wxMenuBar* menuBar = new wxMenuBar ();
   menuBar->Append (fileMenu, wxT ("&File"));

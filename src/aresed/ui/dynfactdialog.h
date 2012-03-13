@@ -104,17 +104,17 @@ public:
 };
 
 /**
- * Action to create a body skeleton.
+ * Action to enable ragdolls
  */
-class CreateBodySkeletonAction : public Action
+class EnableRagdollAction : public Action
 {
 private:
   DynfactDialog* dialog;
 
 public:
-  CreateBodySkeletonAction (DynfactDialog* dialog) : dialog (dialog) { }
-  virtual ~CreateBodySkeletonAction () { }
-  virtual const char* GetName () const { return "Create skeleton"; }
+  EnableRagdollAction (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~EnableRagdollAction () { }
+  virtual const char* GetName () const { return "Enable ragdoll"; }
   virtual bool Do (View* view, wxWindow* component);
 };
 
@@ -259,6 +259,7 @@ public:
 
   iDynamicFactory* GetCurrentFactory ();
   CS::Animation::iBodyBone* GetCurrentBone ();
+  CS::Animation::iBodySkeleton* GetCurrentBodySkeleton ();
   CS::Animation::iSkeletonFactory* GetSkeletonFactory (const char* factName);
   DynfactMeshView* GetMeshView () const { return meshView; }
 
@@ -268,6 +269,8 @@ public:
   long GetSelectedJoint ();
   csString GetSelectedBone ();
   Value* GetColliderSelectedValue () const { return colliderSelectedValue; }
+
+  void UpdateRagdoll ();
 
   DECLARE_EVENT_TABLE ();
 };
