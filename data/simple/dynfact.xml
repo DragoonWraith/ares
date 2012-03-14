@@ -181,6 +181,8 @@
         <par name="type" string="std" />
         <par name="entity" string="World" />
         <par name="msg1" string="This is a test message." />
+        <par name="msg2" string="This is another somewhat longer test messages for which we might have word wrapping if this line goes beyond the size of the screen." />
+        <par name="msg3" string="And another test message still." />
       </action>
     </propclass>
     <class>ares.info</class>
