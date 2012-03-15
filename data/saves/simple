@@ -1,6 +1,6 @@
 <dynlevel>
   <asset path="/appdata/simple/" file="assets.xml" />
-  <asset path="/appdata/simple/" file="dynfact.xml" dynfacts="true" templates="true" />
+  <asset path="/appdata/simple/" file="dynfact.xml" dynfacts="true" templates="true" quests="true" />
   <asset path="/appdata/simple/" file="level.xml" />
   <asset path="/models/" file="library" />
   <dynworld lastid="1000040000">
