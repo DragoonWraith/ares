@@ -49,18 +49,13 @@ struct iFont;
 struct iEngine;
 struct iVirtualClock;
 struct iPcInventory;
+struct iPcMessenger;
 class csSimplePixmap;
 
 /**
  * Factory for game controller.
  */
 CEL_DECLARE_FACTORY (GameController)
-
-struct TimedMessage
-{
-  csString message;
-  float timeleft;
-};
 
 enum DragType
 {
@@ -76,8 +71,6 @@ class celPcGameController : public scfImplementationExt1<
 {
 private:
   // For SendMessage parameters.
-  static csStringID id_message;
-  static csStringID id_timeout;
   static csStringID id_name;
   static csStringID id_template;
   static csStringID id_factory;
@@ -87,6 +80,7 @@ private:
   csRef<iVirtualClock> vc;
   csRef<iEngine> engine;
   csRef<iCelEntity> player;
+  csRef<iPcMessenger> messenger;
 
   /// Find the object that is pointed at in the center of the screen.
   iDynamicObject* FindCenterObject (iRigidBody*& hitBody,
@@ -103,12 +97,6 @@ private:
   csVector3 dragOrigin; // Only for DRAGTYPE_ROTY
   csVector3 dragAnchor;	// Only for DRAGTYPE_ROTY
   DragType dragType;
-
-  // For messages.
-  csArray<TimedMessage> messages;
-  int messageColor;
-  csRef<iFont> font;
-  int fontW, fontH;
 
   // Icons.
   csSimplePixmap* iconCursor;
@@ -135,8 +123,7 @@ private:
   // For actions.
   enum actionids
   {
-    action_message = 0,
-    action_startdrag,
+    action_startdrag = 0,
     action_stopdrag,
     action_examine,
     action_pickup,
@@ -157,11 +144,12 @@ private:
 
   void PickUpDynObj (iDynamicObject* dynobj);
 
+  void FindSiblingPropertyClasses ();
+
 public:
   celPcGameController (iObjectRegistry* object_reg);
   virtual ~celPcGameController ();
 
-  virtual void Message (const char* message, float timeout = 2.0f);
   virtual void Examine ();
   virtual bool StartDrag ();
   virtual void StopDrag ();

@@ -22,6 +22,14 @@
 	  <par name="slot" string="top" />
 	  <par name="timeout" float="5.0" />
 	</action>
+	<action name="DefineType">
+	  <par name="type" string="error" />
+	  <par name="slot" string="top" />
+	  <par name="timeout" float="5.0" />
+	  <par name="font" string="DejaVuSansBold" />
+	  <par name="fontsize" long="12" />
+	  <par name="textcolor" color4="1,0,0,1" />
+	</action>
       </propclass>
     </addon>
 </library>

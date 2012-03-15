@@ -36,8 +36,6 @@ THE SOFTWARE.
  * This property class supports the following actions (
  * add prefix 'ares.controller.' if you want to access this action through a
  * message):
- * - Message: parameters 'message' (string), 'timeout' (float, default 2 seconds).
- *   Show a message to the user for the specified amount of time.
  * - StartDrag: start dragging the object in the centre of the screen.
  * - StopDrag: stop dragging.
  * - Examine: examine the object in the centre of the screen.
@@ -52,11 +50,6 @@ THE SOFTWARE.
 struct iPcGameController : public virtual iBase
 {
   SCF_INTERFACE(iPcGameController,0,0,1);
-
-  /**
-   * Show a message to the user for a given amount of time.
-   */
-  virtual void Message (const char* message, float timeout = 2.0f) = 0;
 
   /**
    * Examine the object which the player is currently focusing on.

@@ -44,6 +44,7 @@ THE SOFTWARE.
 #include "propclass/dynmove.h"
 #include "propclass/prop.h"
 #include "propclass/inv.h"
+#include "propclass/messenger.h"
 #include "ivaria/dynamics.h"
 
 //---------------------------------------------------------------------------
@@ -52,8 +53,6 @@ CEL_IMPLEMENT_FACTORY (GameController, "ares.gamecontrol")
 
 //---------------------------------------------------------------------------
 
-csStringID celPcGameController::id_message = csInvalidStringID;
-csStringID celPcGameController::id_timeout = csInvalidStringID;
 csStringID celPcGameController::id_name = csInvalidStringID;
 csStringID celPcGameController::id_template = csInvalidStringID;
 csStringID celPcGameController::id_factory = csInvalidStringID;
@@ -64,10 +63,8 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
 	: scfImplementationType (this, object_reg)
 {
   // For SendMessage parameters.
-  if (id_message == csInvalidStringID)
+  if (id_name == csInvalidStringID)
   {
-    id_message = pl->FetchStringID ("message");
-    id_timeout = pl->FetchStringID ("timeout");
     id_name = pl->FetchStringID ("name");
     id_template = pl->FetchStringID ("template");
     id_factory = pl->FetchStringID ("factory");
@@ -79,7 +76,6 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   if (!propinfo.actions_done)
   {
     SetActionMask ("ares.controller.");
-    AddAction (action_message, "Message");
     AddAction (action_startdrag, "StartDrag");
     AddAction (action_stopdrag, "StopDrag");
     AddAction (action_examine, "Examine");
@@ -105,12 +101,6 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   engine = csQueryRegistry<iEngine> (object_reg);
   pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
 
-  messageColor = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
-  iFontServer* fontsrv = g3d->GetDriver2D ()->GetFontServer ();
-  //font = fontsrv->LoadFont (CSFONT_COURIER);
-  font = fontsrv->LoadFont ("DejaVuSansBold", 10);
-  font->GetMaxSize (fontW, fontH);
-
   classNoteID = pl->FetchStringID ("ares.note");
   classInfoID = pl->FetchStringID ("ares.info");
   classPickUpID = pl->FetchStringID ("ares.pickup");
@@ -128,6 +118,14 @@ celPcGameController::~celPcGameController ()
   delete iconBook;
   delete iconDot;
   delete iconCheck;
+}
+
+void celPcGameController::FindSiblingPropertyClasses ()
+{
+  if (HavePropertyClassesChanged ())
+  {
+    messenger = celQueryPropertyClassEntity<iPcMessenger> (entity);
+  }
 }
 
 void celPcGameController::Activate ()
@@ -295,15 +293,6 @@ bool celPcGameController::PerformActionIndexed (int idx,
 {
   switch (idx)
   {
-    case action_message:
-      {
-	csString msg;
-	if (!Fetch (msg, params, id_message)) return false;
-	float timeout;
-	if (!Fetch (timeout, params, id_timeout, true, 2.0f)) return false;
-        Message (msg, timeout);
-        return true;
-      }
     case action_startdrag:
       return StartDrag ();
     case action_stopdrag:
@@ -341,6 +330,7 @@ bool celPcGameController::PerformActionIndexed (int idx,
 
 void celPcGameController::Examine ()
 {
+  FindSiblingPropertyClasses ();
   iRigidBody* hitBody;
   csVector3 start, isect;
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
@@ -352,36 +342,29 @@ void celPcGameController::Examine ()
       csRef<iPcProperties> prop = celQueryPropertyClassEntity<iPcProperties> (ent);
       if (!prop)
       {
-        Message ("ERROR: Entity has no properties!");
+        messenger->Message ("error", 0, "Entity has no properties!",
+	    (const char*)0);
 	return;
       }
       size_t idx = prop->GetPropertyIndex ("ares.info");
       if (idx == csArrayItemNotFound)
       {
-        Message ("ERROR: Entity has no 'ares.info' property!");
+        messenger->Message ("error", 0,
+	    "Entity has no 'ares.info' property!", (const char*)0);
 	return;
       }
-      Message (prop->GetPropertyString (idx));
+      messenger->Message ("std", 0, prop->GetPropertyString (idx),
+	  (const char*)0);
     }
     else
     {
-      Message ("I see nothing special!");
+      messenger->Message ("std", 0, "I see nothing special!", (const char*)0);
     }
   }
   else
   {
-    Message ("Nothing to examine!");
+    messenger->Message ("error", 0, "Nothing to examine!", (const char*)0);
   }
-}
-
-void celPcGameController::Message (const char* message, float timeout)
-{
-  TimedMessage m;
-  m.message = message;
-  m.timeleft = timeout;
-  messages.Push (m);
-  printf ("MSG: %s\n", message);
-  fflush (stdout);
 }
 
 iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
@@ -484,6 +467,8 @@ void celPcGameController::StopDrag ()
 
 void celPcGameController::TickEveryFrame ()
 {
+  FindSiblingPropertyClasses ();
+
   csSimplePixmap* icon = iconDot;
 
   int sw = g2d->GetWidth ();
@@ -549,28 +534,6 @@ void celPcGameController::TickEveryFrame ()
   }
 
   g3d->BeginDraw (CSDRAW_2DGRAPHICS);
-  if (messages.GetSize () > 0)
-  {
-    float elapsed = vc->GetElapsedSeconds ();
-    int y = 20;
-    size_t i = 0;
-    while (i < messages.GetSize ())
-    {
-      TimedMessage& m = messages[i];
-      m.timeleft -= elapsed;
-      if (m.timeleft <= 0)
-	messages.DeleteIndex (i);
-      else
-      {
-	int alpha = 255;
-	if (m.timeleft < 1.0f) alpha = int (255.0f * (m.timeleft));
-	messageColor = g3d->GetDriver2D ()->FindRGB (255, 255, 255, alpha);
-	g2d->Write (font, 20, y, messageColor, -1, m.message.GetData ());
-	y += fontH + 2;
-        i++;
-      }
-    }
-  }
 
   icon->Draw (g3d, sw / 2, sh / 2);
 }
