@@ -1103,8 +1103,8 @@ END_EVENT_TABLE()
 AppAresEditWX* aresed = 0;
 
 AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
-  : wxFrame (0, -1, wxT ("AresEd"), 
-             wxDefaultPosition, wxSize (1000, 600))
+  : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (1000, 600)),
+    config (this)
 {
   AppAresEditWX::object_reg = object_reg;
   aresed3d = 0;
@@ -1445,6 +1445,9 @@ bool AppAresEditWX::Initialize ()
 
   engine = csQueryRegistry<iEngine> (object_reg);
   if (!engine) return ReportError ("Can't find the engine plugin!");
+
+  if (!config.ReadConfig ())
+    return false;
 
   if (!InitWX ())
     return false;

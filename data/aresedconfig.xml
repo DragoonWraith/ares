@@ -1,0 +1,22 @@
+<config>
+    <knownmessages>
+        <message name="cel.messenger.action.Message">
+	    <par name="type" type="string" value="std" />
+	    <par name="id" type="string" value="" />
+	    <par name="msg1" type="string" value="..." />
+	</message>
+        <message name="ares.controller.Spawn">
+	    <par name="factory" type="string" value="... factory ..." />
+	</message>
+        <message name="ares.controller.CreateEntity">
+	    <par name="template" type="string" value="... template ..." />
+	    <par name="name" type="string" value="... name ..." />
+	</message>
+        <message name="ares.controller.StartDrag" />
+        <message name="ares.controller.StopDrag" />
+        <message name="ares.controller.Examine" />
+        <message name="ares.controller.Pickup" />
+        <message name="ares.controller.Activate" />
+    </knownmessages>
+</config>
+

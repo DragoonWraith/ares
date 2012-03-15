@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "aresed.h"
 #include "camera.h"
 #include "selection.h"
+#include "config.h"
 
 #include "propclass/dynworld.h"
 #include "tools/elcm.h"
@@ -458,6 +459,7 @@ private:
   csRef<iWxWindow> wxwindow;
   csRef<FramePrinter> printer;
 
+  AresConfig config;
   AresEdit3DView* aresed3d;
 
   static bool SimpleEventHandler (iEvent& ev);
@@ -547,6 +549,7 @@ public:
   void SwitchToEntityMode ();
   void SetCurveModeEnabled (bool cm);
   MainMode* GetMainMode () const { return mainMode; }
+  const AresConfig& GetConfig () const { return config; }
 
   /**
    * Return true if we are in play mode.

@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
 #include "../apparesed.h"
+#include "../config.h"
 #include "../ui/uitools.h"
 #include "../tools/inspect.h"
 #include "../tools/tools.h"
@@ -104,20 +105,15 @@ void RewardPanel::OnUpdateMessageCombo (wxCommandEvent& event)
       tf->SetIDParameter (msg);
       while (tf->GetParameterCount () > 0)
 	tf->RemoveParameter (tf->GetParameterID (0));
-      if (msg == "cel.messenger.action.Message")
+      const AresConfig& config = uiManager->GetApp ()->GetConfig ();
+      const KnownMessage* message = config.GetKnownMessage (msg);
+      if (message)
       {
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("type"), "std");
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("id"), "");
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("msg1"), "... message ...");
-      }
-      else if (msg == "ares.controller.Spawn")
-      {
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("factory"), "... factory ...");
-      }
-      else if (msg == "ares.controller.CreateEntity")
-      {
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("template"), "... template ...");
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("name"), "... name ...");
+	for (size_t i = 0 ; i < message->parameters.GetSize () ; i++)
+	{
+	  const KnownParameter& par = message->parameters.Get (i);
+	  tf->AddParameter (par.type, pl->FetchStringID (par.name), par.value);
+	}
       }
       messageParameters->Refresh ();
     }
@@ -227,16 +223,13 @@ void RewardPanel::UpdatePanel ()
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
     UITools::SetValue (this, "class_Me_Text", tf->GetClass ());
     UITools::ClearChoices (this, "id_Me_Combo");
-    UITools::AddChoices (this, "id_Me_Combo",
-	"cel.messenger.action.Message",
-	"ares.controller.StartDrag",
-	"ares.controller.StopDrag",
-	"ares.controller.Examine",
-	"ares.controller.Pickup",
-	"ares.controller.Activate",
-	"ares.controller.Spawn",
-	"ares.controller.CreateEntity",
-	(const char*)0);
+    const AresConfig& config = uiManager->GetApp ()->GetConfig ();
+    const csArray<KnownMessage>& messages = config.GetMessages ();
+    for (size_t i = 0 ; i < messages.GetSize () ; i++)
+    {
+      UITools::AddChoices (this, "id_Me_Combo", messages.Get (i).name.GetData (),
+	  (const char*)0);
+    }
     UITools::SetValue (this, "id_Me_Combo", tf->GetID ());
     messageParameters->Refresh ();
   }
