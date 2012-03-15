@@ -7,8 +7,8 @@
 	  <par name="position" vector2="0,20" />
 	  <par name="screenanchor" string="n" />
 	  <par name="boxanchor" string="n" />
-	  <par name="maxsizex" long="400" />
-	  <par name="maxsizey" long="100" />
+	  <par name="maxsizex" string="%60" />
+	  <par name="maxsizey" string="100" />
 	  <par name="queue" bool="true" />
 	  <par name="maxmessages" long="2" />
 	  <par name="borderwidth" float=".2" />
