@@ -104,10 +104,11 @@ void RewardPanel::OnUpdateMessageCombo (wxCommandEvent& event)
       tf->SetIDParameter (msg);
       while (tf->GetParameterCount () > 0)
 	tf->RemoveParameter (tf->GetParameterID (0));
-      if (msg == "ares.controller.Message")
+      if (msg == "cel.messenger.action.Message")
       {
-	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("message"), "... message ...");
-	tf->AddParameter (CEL_DATA_FLOAT, pl->FetchStringID ("timeout"), "2.0");
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("type"), "std");
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("id"), "");
+	tf->AddParameter (CEL_DATA_STRING, pl->FetchStringID ("msg1"), "... message ...");
       }
       else if (msg == "ares.controller.Spawn")
       {
@@ -227,7 +228,7 @@ void RewardPanel::UpdatePanel ()
     UITools::SetValue (this, "class_Me_Text", tf->GetClass ());
     UITools::ClearChoices (this, "id_Me_Combo");
     UITools::AddChoices (this, "id_Me_Combo",
-	"ares.controller.Message",
+	"cel.messenger.action.Message",
 	"ares.controller.StartDrag",
 	"ares.controller.StopDrag",
 	"ares.controller.Examine",
