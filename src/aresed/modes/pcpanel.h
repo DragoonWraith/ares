@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <wx/imaglist.h>
 #include <wx/choicebk.h>
 #include <wx/listctrl.h>
+#include <wx/tooltip.h>
 #include <wx/xrc/xmlres.h>
 
 struct iCelPlLayer;

@@ -1,22 +1,32 @@
 <config>
     <knownmessages>
-        <message name="cel.messenger.action.Message">
+        <message name="cel.messenger.action.Message"
+		description="Usual destination: 'World' entity. This will display an on-screen message to the player">
 	    <par name="type" type="string" value="std" />
 	    <par name="id" type="string" value="" />
 	    <par name="msg1" type="string" value="..." />
 	</message>
-        <message name="ares.controller.Spawn">
+        <message name="ares.controller.Spawn"
+		description="Usual destination: 'World' entity. This will spawn a new dynamic object in front of the camera">
 	    <par name="factory" type="string" value="... factory ..." />
 	</message>
-        <message name="ares.controller.CreateEntity">
+        <message name="ares.controller.CreateEntity"
+		description="Usual destination: 'World' entity. This will create a new entity from an entity template">
 	    <par name="template" type="string" value="... template ..." />
 	    <par name="name" type="string" value="... name ..." />
 	</message>
-        <message name="ares.controller.StartDrag" />
-        <message name="ares.controller.StopDrag" />
-        <message name="ares.controller.Examine" />
-        <message name="ares.controller.Pickup" />
-        <message name="ares.controller.Activate" />
+        <message name="ares.controller.StartDrag"
+		description="Usual destination: 'World' entity. This will start dragging the object in front of the camera" />
+        <message name="ares.controller.StopDrag"
+       		description="Usual destination: 'World' entity. This will stop the current dragging operation" />
+        <message name="ares.controller.Examine"
+		description="Usual destination: 'World' entity. This will show a description of the object in front of the camera if that object has a description" />
+        <message name="ares.controller.Pickup"
+		description="Usual destination: 'World' entity. This will pick up the item in front of the camera if that item can be picked up" />
+        <message name="ares.controller.Activate"
+		description="Usual destination: 'World' entity. This will activate the object in front of the camera. If the object has an assiciated entity then it will get a message of type 'ares.Activate'. If the item can be picked up then it will be picked up. Otherwise the player will start dragging it" />
+        <message name="ares.Activate"
+		description="Usual destination: any entity. This message is typically sent from the game controller when an entity is activated" />
     </knownmessages>
 </config>
 

@@ -44,6 +44,7 @@ bool AresConfig::ParseKnownMessages (iDocumentNode* knownmessagesNode)
     {
       KnownMessage msg;
       msg.name = child->GetAttributeValue ("name");
+      msg.description = child->GetAttributeValue ("description");
       csRef<iDocumentNodeIterator> parit = child->GetNodes ();
       while (parit->HasNext ())
       {

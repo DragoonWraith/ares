@@ -41,6 +41,7 @@ struct KnownParameter
 struct KnownMessage
 {
   csString name;
+  csString description;
   csArray<KnownParameter> parameters;
 };
 
