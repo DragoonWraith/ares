@@ -115,24 +115,61 @@ void UIDialog::AddMultiText (const char* name)
   textFields.Put (name, text);
 }
 
-void UIDialog::AddChoice (const char* name, ...)
+void UIDialog::AddCombo (const char* name, const csStringArray& choiceArray)
 {
   CS_ASSERT (lastRowSizer != 0);
+  csDirtyAccessArray<wxString> choices;
+  for (size_t i = 0 ; i < choiceArray.GetSize () ; i++)
+    choices.Push (wxString::FromUTF8 (choiceArray.Get (i)));
+  wxComboBox* combo = new wxComboBox (mainPanel, wxID_ANY, wxT (""),
+      wxDefaultPosition, wxDefaultSize,
+      choices.GetSize (), choices.GetArray (), 0);
+  //combo->SetSelection (0);
+  lastRowSizer->Add (combo, 1, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  comboFields.Put (name, combo);
+}
+
+void UIDialog::AddCombo (const char* name, ...)
+{
   va_list args;
   va_start (args, name);
-  csDirtyAccessArray<wxString> choices;
+  csStringArray choiceArray;
   const char* c = va_arg (args, char*);
   while (c != (const char*)0)
   {
-    choices.Push (wxString::FromUTF8 (c));
+    choiceArray.Push (c);
     c = va_arg (args, char*);
   }
   va_end (args);
+  AddCombo (name, choiceArray);
+}
+
+void UIDialog::AddChoice (const char* name, const csStringArray& choiceArray)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  csDirtyAccessArray<wxString> choices;
+  for (size_t i = 0 ; i < choiceArray.GetSize () ; i++)
+    choices.Push (wxString::FromUTF8 (choiceArray.Get (i)));
   wxChoice* choice = new wxChoice (mainPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
       choices.GetSize (), choices.GetArray (), 0);
   choice->SetSelection (0);
   lastRowSizer->Add (choice, 1, wxALL | wxALIGN_CENTER_VERTICAL, 5);
   choiceFields.Put (name, choice);
+}
+
+void UIDialog::AddChoice (const char* name, ...)
+{
+  va_list args;
+  va_start (args, name);
+  csStringArray choiceArray;
+  const char* c = va_arg (args, char*);
+  while (c != (const char*)0)
+  {
+    choiceArray.Push (c);
+    c = va_arg (args, char*);
+  }
+  va_end (args);
+  AddChoice (name, choiceArray);
 }
 
 void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
@@ -193,6 +230,12 @@ void UIDialog::SetValue (const char* name, const char* value)
     choice->SetStringSelection (wxString::FromUTF8 (value));
     return;
   }
+  wxComboBox* combo = comboFields.Get (name, 0);
+  if (combo)
+  {
+    combo->SetValue (wxString::FromUTF8 (value));
+    return;
+  }
   SetList (name, value);
 }
 
@@ -208,6 +251,13 @@ void UIDialog::SetChoice (const char* name, const char* value)
   wxChoice* choice = choiceFields.Get (name, 0);
   if (!choice) return;
   choice->SetStringSelection (wxString::FromUTF8 (value));
+}
+
+void UIDialog::SetCombo (const char* name, const char* value)
+{
+  wxComboBox* combo = comboFields.Get (name, 0);
+  if (!combo) return;
+  combo->SetValue (wxString::FromUTF8 (value));
 }
 
 void UIDialog::SetList (const char* name, const char* value)
@@ -266,6 +316,13 @@ void UIDialog::Clear ()
     wxTextCtrl* text = itText.Next (name);
     text->SetValue (wxT (""));
   }
+  csHash<wxComboBox*,csString>::GlobalIterator itCo = comboFields.GetIterator ();
+  while (itCo.HasNext ())
+  {
+    csString name;
+    wxComboBox* combo = itCo.Next (name);
+    combo->SetValue (wxT (""));
+  }
   csHash<wxChoice*,csString>::GlobalIterator itCh = choiceFields.GetIterator ();
   while (itCh.HasNext ())
   {
@@ -301,6 +358,14 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
     csString name;
     wxTextCtrl* text = itText.Next (name);
     csString value = (const char*)text->GetValue ().mb_str (wxConvUTF8);
+    fieldContents.Put (name, value);
+  }
+  csHash<wxComboBox*,csString>::GlobalIterator itCo = comboFields.GetIterator ();
+  while (itCo.HasNext ())
+  {
+    csString name;
+    wxComboBox* combo = itCo.Next (name);
+    csString value = (const char*)combo->GetValue ().mb_str (wxConvUTF8);
     fieldContents.Put (name, value);
   }
   csHash<wxChoice*,csString>::GlobalIterator itCh = choiceFields.GetIterator ();

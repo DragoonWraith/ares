@@ -291,6 +291,19 @@ public:
     if (!par) return false;
     params.Put (pl->FetchStringID ("entity"), par);
 
+    const AresConfig& config = pcPanel->GetUIManager ()->GetApp ()->GetConfig ();
+    const KnownMessage* message = config.GetKnownMessage (msg);
+    if (message)
+    {
+      for (size_t i = 0 ; i < message->parameters.GetSize () ; i++)
+      {
+	const KnownParameter& msgpar = message->parameters.Get (i);
+        par = pm->GetParameter (msgpar.value, msgpar.type);
+        if (!par) return false;
+        params.Put (pl->FetchStringID (msgpar.name), par);
+      }
+    }
+
     pctpl->PerformAction (actionID, params);
     return true;
   }
@@ -439,7 +452,12 @@ UIDialog* PropertyClassPanel::GetWireMsgDialog ()
     wireMsgDialog = uiManager->CreateDialog ("Edit message");
     wireMsgDialog->AddRow ();
     wireMsgDialog->AddLabel ("Message:");
-    wireMsgDialog->AddText ("Message");
+    const AresConfig& config = uiManager->GetApp ()->GetConfig ();
+    csStringArray messageArray;
+    const csArray<KnownMessage>& messages = config.GetMessages ();
+    for (size_t i = 0 ; i < messages.GetSize () ; i++)
+      messageArray.Push (messages.Get (i).name);
+    wireMsgDialog->AddCombo ("Message", messageArray);
     wireMsgDialog->AddRow ();
     wireMsgDialog->AddLabel ("Entity:");
     wireMsgDialog->AddText ("Entity");

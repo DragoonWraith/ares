@@ -75,6 +75,7 @@ private:
   wxBoxSizer* lastRowSizer;
   csHash<wxTextCtrl*,csString> textFields;
   csHash<wxChoice*,csString> choiceFields;
+  csHash<wxComboBox*,csString> comboFields;
 
   csHash<ListInfo,csString> listFields;
   csHash<ValueListInfo,csString> valueListFields;
@@ -104,8 +105,12 @@ public:
   void AddMultiText (const char* name);
   /// Add a button in the current row.
   void AddButton (const char* str);
+  /// Add a combobox control in the current row with the given choices (end with 0).
+  void AddCombo (const char* name, ...);
+  void AddCombo (const char* name, const csStringArray& choiceArray);
   /// Add a choice control in the current row with the given choices (end with 0).
   void AddChoice (const char* name, ...);
+  void AddChoice (const char* name, const csStringArray& choiceArray);
   /// Add a horizontal spacer in the current row.
   void AddSpace ();
   /**
@@ -135,6 +140,8 @@ public:
   void SetText (const char* name, const char* value);
   /// Set the value of the given choice.
   void SetChoice (const char* name, const char* value);
+  /// Set the value of the given combo.
+  void SetCombo (const char* name, const char* value);
   /// Set the vlaue of the given list.
   void SetList (const char* name, const char* value);
 
