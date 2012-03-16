@@ -94,7 +94,8 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_TEXT_ENTER (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("wireInputMaskText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT_ENTER (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_COMBOBOX (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
 END_EVENT_TABLE()
@@ -507,11 +508,11 @@ bool PropertyClassPanel::UpdateWire ()
 
   pctpl->RemoveProperty (pl->FetchStringID ("AddInput"));
 
-  wxTextCtrl* inputMaskText = XRCCTRL (*this, "wireInputMaskText", wxTextCtrl);
+  wxComboBox* inputMaskCombo = XRCCTRL (*this, "wireInputMaskCombo", wxComboBox);
 
   {
     ParHash params;
-    csString mask = (const char*)inputMaskText->GetValue ().mb_str (wxConvUTF8);
+    csString mask = (const char*)inputMaskCombo->GetValue ().mb_str (wxConvUTF8);
     csRef<iParameter> par = pm->GetParameter (mask, CEL_DATA_STRING);
     if (!par) return false;
     params.Put (pl->FetchStringID ("mask"), par);
@@ -528,14 +529,14 @@ void PropertyClassPanel::FillWire ()
   outputList->DeleteAllItems ();
   wxListCtrl* parList = XRCCTRL (*this, "wireParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
-  wxTextCtrl* inputMaskText = XRCCTRL (*this, "wireInputMaskText", wxTextCtrl);
-  inputMaskText->SetValue (wxT (""));
+  wxComboBox* inputMaskCombo = XRCCTRL (*this, "wireInputMaskCombo", wxComboBox);
+  inputMaskCombo->SetValue (wxT (""));
 
   if (!pctpl || csString ("pclogic.wire") != pctpl->GetName ()) return;
 
   csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl,
       "AddInput", "mask");
-  inputMaskText->SetValue (wxString::FromUTF8 (inputMask));
+  inputMaskCombo->SetValue (wxString::FromUTF8 (inputMask));
 
   wireMsgModel->SetPC (pctpl);
   wireMsgView->Refresh ();
@@ -1262,6 +1263,12 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
+
+  wxComboBox* wireInputMaskCombo = XRCCTRL (*this, "wireInputMaskCombo", wxComboBox);
+  const AresConfig& config = uiManager->GetApp ()->GetConfig ();
+  const csArray<KnownMessage>& messages = config.GetMessages ();
+  for (size_t i = 0 ; i < messages.GetSize () ; i++)
+    wireInputMaskCombo->Append (wxString::FromUTF8 (messages.Get (i).name));
 
   wxListCtrl* list;
 

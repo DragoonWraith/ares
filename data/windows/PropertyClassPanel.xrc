@@ -461,12 +461,19 @@
 										</object>
 										<object class="sizeritem">
 											<option>1</option>
-											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxTextCtrl" name="wireInputMaskText">
+											<object class="wxComboBox" name="wireInputMaskCombo">
 												<style>wxTE_PROCESS_ENTER</style>
+												<font>
+													<size>8</size>
+													<family>default</family>
+													<style>normal</style>
+													<weight>normal</weight>
+													<underlined>0</underlined>
+												</font>
 												<value></value>
-												<maxlength>0</maxlength>
+												<content />
 											</object>
 										</object>
 									</object>
