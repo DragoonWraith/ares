@@ -203,8 +203,11 @@ void TriggerPanel::UpdatePanel ()
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerResp->GetTriggerFactory ());
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
     UITools::ClearChoices (this, "mask_Me_Combo");
-    UITools::AddChoices (this, "mask_Me_Combo",
-	"ares.Activate",
+
+    const AresConfig& config = uiManager->GetApp ()->GetConfig ();
+    const csArray<KnownMessage>& messages = config.GetMessages ();
+    for (size_t i = 0 ; i < messages.GetSize () ; i++)
+      UITools::AddChoices (this, "mask_Me_Combo", messages.Get (i).name.GetData (),
 	(const char*)0);
     UITools::SetValue (this, "mask_Me_Combo", tf->GetMask ());
   }
