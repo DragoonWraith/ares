@@ -385,36 +385,16 @@ public:
 //--------------------------------------------------------------------------
 
 /**
- * A composite value representing a joint for a dynamic factory.
+ * A composite value representing a joint.
  */
-class JointValue : public CompositeValue
+class TypedJointValue : public CompositeValue
 {
-private:
-  size_t idx;
-  iDynamicFactory* dynfact;
+protected:
   csVector3 origin;
   DynFactJointDefinition def;
 
-protected:
-  virtual void ChildChanged (Value* child)
+  void SetupChildren ()
   {
-    def.trans.SetOrigin (origin);
-    dynfact->SetJoint (idx, def);
-    FireValueChanged ();
-  }
-
-public:
-  JointValue (size_t idx, iDynamicFactory* dynfact) : idx (idx), dynfact (dynfact)
-  {
-    if (dynfact)
-    {
-      def = dynfact->GetJoint (idx);
-      origin = def.trans.GetOrigin ();
-    }
-    else
-    {
-      origin.Set (0, 0, 0);
-    }
     AddChild ("jointPosX", NEWREF(Value,new FloatPointerValue (&origin.x)));
     AddChild ("jointPosY", NEWREF(Value,new FloatPointerValue (&origin.y)));
     AddChild ("jointPosZ", NEWREF(Value,new FloatPointerValue (&origin.z)));
@@ -443,14 +423,139 @@ public:
     AddChild ("yMaxRot", NEWREF(Value,new FloatPointerValue (&def.maxrot.y)));
     AddChild ("zMaxRot", NEWREF(Value,new FloatPointerValue (&def.maxrot.z)));
   }
-  virtual ~JointValue () { }
 
-  virtual csString Dump (bool verbose = false)
+  void ClearDef ()
   {
-    csString dump = "[Jnt]";
-    dump += CompositeValue::Dump (verbose);
-    return dump;
+    def.trans.Identity ();
+    def.transX = false;
+    def.transY = false;
+    def.transZ = false;
+    def.mindist.Set (0, 0, 0);
+    def.maxdist.Set (0, 0, 0);
+    def.rotX = false;
+    def.rotY = false;
+    def.rotZ = false;
+    def.minrot.Set (0, 0, 0);
+    def.maxrot.Set (0, 0, 0);
+    def.bounce.Set (0, 0, 0);
+    def.maxforce.Set (0, 0, 0);
   }
+
+public:
+  TypedJointValue ()
+  {
+    ClearDef ();
+  }
+  virtual ~TypedJointValue () { }
+};
+
+/**
+ * A composite value representing the joint for a bone.
+ */
+class BoneJointValue : public TypedJointValue
+{
+private:
+  DynfactDialog* dialog;
+
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+printf ("BoneJointValue::ChildChanged\n"); fflush (stdout);
+    def.trans.SetOrigin (origin);
+    CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
+    if (bone && bone->GetBoneJoint ())
+    {
+      CS::Animation::iBodyBoneJoint* joint = bone->GetBoneJoint ();
+      joint->SetTransform (def.trans);
+      joint->SetTransConstraints (def.transX, def.transY, def.transZ);
+      joint->SetMinimumDistance (def.mindist);
+      joint->SetMaximumDistance (def.maxdist);
+      joint->SetRotConstraints (def.rotX, def.rotY, def.rotZ);
+      joint->SetMinimumAngle (def.minrot);
+      joint->SetMaximumAngle (def.maxrot);
+      joint->SetBounce (def.bounce);
+    }
+    FireValueChanged ();
+  }
+
+  void SetBone ()
+  {
+    CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
+    if (bone && bone->GetBoneJoint ())
+    {
+printf ("Yes we have a joint!\n"); fflush (stdout);
+      CS::Animation::iBodyBoneJoint* joint = bone->GetBoneJoint ();
+      def.trans = joint->GetTransform ();
+      def.transX = joint->IsXTransConstrained ();
+      def.transY = joint->IsYTransConstrained ();
+      def.transZ = joint->IsZTransConstrained ();
+      def.mindist = joint->GetMinimumDistance ();
+      def.maxdist = joint->GetMaximumDistance ();
+      def.rotX = joint->IsXRotConstrained ();
+      def.rotY = joint->IsYRotConstrained ();
+      def.rotZ = joint->IsZRotConstrained ();
+      def.minrot = joint->GetMinimumAngle ();
+      def.maxrot = joint->GetMaximumAngle ();
+      def.bounce = joint->GetBounce ();
+      //def.maxforce = joint->GetMaxForce ();
+      def.maxforce.Set (0, 0, 0);
+      origin = def.trans.GetOrigin ();
+    }
+    else
+    {
+printf ("No joint!\n"); fflush (stdout);
+      ClearDef ();
+    }
+  }
+
+public:
+  BoneJointValue (DynfactDialog* dialog) : dialog (dialog)
+  {
+    SetBone ();
+    SetupChildren ();
+  }
+  virtual ~BoneJointValue () { }
+
+  virtual void FireValueChanged ()
+  {
+printf ("BoneJointValue::FireValueChanged\n"); fflush (stdout);
+    SetBone ();
+    TypedJointValue::FireValueChanged ();
+  }
+};
+
+/**
+ * A composite value representing a joint for a dynamic factory.
+ */
+class JointValue : public TypedJointValue
+{
+private:
+  size_t idx;
+  iDynamicFactory* dynfact;
+
+protected:
+  virtual void ChildChanged (Value* child)
+  {
+    def.trans.SetOrigin (origin);
+    dynfact->SetJoint (idx, def);
+    FireValueChanged ();
+  }
+
+public:
+  JointValue (size_t idx, iDynamicFactory* dynfact) : idx (idx), dynfact (dynfact)
+  {
+    if (dynfact)
+    {
+      def = dynfact->GetJoint (idx);
+      origin = def.trans.GetOrigin ();
+    }
+    else
+    {
+      origin.Set (0, 0, 0);
+    }
+    SetupChildren ();
+  }
+  virtual ~JointValue () { }
 };
 
 /**
@@ -1823,20 +1928,20 @@ void DynfactDialog::SetupColliderEditor (Value* colSelValue, const char* suffix)
 	  colSelValue->GetChildByName ("sizeZ"), true)), C3 ("maxZ_", suffix, "BoxText"));
 }
 
-void DynfactDialog::SetupJointsEditor (Value* jointsSelectedValue)
+void DynfactDialog::SetupJointsEditor (Value* jntValue, const char* suffix)
 {
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMinTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockTrans")), "xMaxTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMinTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockTrans")), "yMaxTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMinTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockTrans")), "zMaxTrans");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMinRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("xLockRot")), "xMaxRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMinRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("yLockRot")), "yMaxRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMinRot");
-  BindEnabled (Not (jointsSelectedValue->GetChildByName ("zLockRot")), "zMaxRot");
+  BindEnabled (Not (jntValue->GetChildByName ("xLockTrans")), C3 ("xMinTrans_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("xLockTrans")), C3 ("xMaxTrans_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("yLockTrans")), C3 ("yMinTrans_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("yLockTrans")), C3 ("yMaxTrans_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("zLockTrans")), C3 ("zMinTrans_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("zLockTrans")), C3 ("zMaxTrans_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("xLockRot")), C3 ("xMinRot_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("xLockRot")), C3 ("xMaxRot_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("yLockRot")), C3 ("yMinRot_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("yLockRot")), C3 ("yMaxRot_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("zLockRot")), C3 ("zMinRot_", suffix, "Text"));
+  BindEnabled (Not (jntValue->GetChildByName ("zLockRot")), C3 ("zMaxRot_", suffix, "Text"));
 }
 
 void DynfactDialog::SetupActions ()
@@ -2007,6 +2112,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   boneValue.AttachNew (new BoneValue (this));
   Bind (boneValue, "bonesPanel");
 
+  // Setup the composite representing the joint of the selected bone.
+  boneJointValue.AttachNew (new BoneJointValue (this));
+  Bind (boneJointValue, "boneJointPanel");
+
   SetupSelectedValues ();
 
   // Bind the selected collider value to the mesh view. This value is not actually
@@ -2036,9 +2145,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   Signal (factorySelectedValue, bonesSelectedValue);
 
   // When another bone is selected we want to update the selection of the
-  // bone collider too.
+  // bone collider too and we also want to update the joint.
   Signal (bonesSelectedValue, boneValue, true);
   Signal (bonesSelectedValue, bonesColliderSelectedValue);
+  Signal (bonesSelectedValue, boneJointValue);
 
   // Setup the collider editors.
   SetupColliderEditor (colliderSelectedValue, "");
@@ -2050,7 +2160,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Bind some values to the enabled/disabled state of several components.
   BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
   BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
-  SetupJointsEditor (jointsSelectedValue);
+  BindEnabled (bonesSelectedValue->GetSelectedState (), "boneJointPanel");
+  SetupJointsEditor (jointsSelectedValue, "");
+  SetupJointsEditor (boneJointValue, "Bone");
 
   SetupActions ();
 

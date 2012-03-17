@@ -269,10 +269,10 @@ void UIDialog::SetList (const char* name, const char* value)
     if (info.col == csArrayItemNotFound) return;
     size_t rowidx = 0;
     csString sValue = value;
-    info.collectionValue->ResetIterator ();
-    while (info.collectionValue->HasNext ())
+    csRef<ValueIterator> it = info.collectionValue->GetIterator ();
+    while (it->HasNext ())
     {
-      Value* compositeValue = info.collectionValue->NextChild ();
+      Value* compositeValue = it->NextChild ();
       Value* child = compositeValue->GetChild (rowidx);
       if (sValue == child->GetStringValue ())
       {

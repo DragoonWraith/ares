@@ -67,6 +67,53 @@ class Value;
 class View;
 
 /**
+ * An iterator to iterate over values.
+ */
+struct ValueIterator : public csRefCount
+{
+  /// Reset the iterator.
+  virtual void Reset () = 0;
+
+  /**
+   * Check if there are still children to process.
+   */
+  virtual bool HasNext () = 0;
+
+  /**
+   * Get the next child. If the optional 'name' parameter
+   * is given then it will be filled with the name of the component (if
+   * it has a name). Only components of type VALUE_COMPOSITE support names
+   * for their children.
+   */
+  virtual Value* NextChild (csString* name = 0) = 0;
+};
+
+/**
+ * A standard value iterator that supports an array of children
+ * with optional name.
+ */
+class StandardValueIterator : public ValueIterator
+{
+private:
+  csRefArray<Value> children;
+  csStringArray names;
+  size_t idx;
+
+public:
+  StandardValueIterator () : idx (0) { }
+  StandardValueIterator (const csRefArray<Value>& children) :
+	children (children), idx (0) { }
+  StandardValueIterator (const csRefArray<Value>& children,
+      const csStringArray& names) :
+	children (children), names (names), idx (0) { }
+  virtual ~StandardValueIterator () { }
+  virtual void Reset () { idx = 0; }
+  virtual bool HasNext () { return idx < children.GetSize (); }
+  virtual Value* NextChild (csString* name = 0);
+};
+
+
+/**
  * Listen to changes in a value.
  */
 struct ValueChangeListener : public csRefCount
@@ -233,23 +280,15 @@ public:
 
   /**
    * If the type of this value is VALUE_COLLECTION or VALUE_COMPOSITE,
-   * then you can get the children using ResetIterator(), HasNext(),
-   * and NextChild().
+   * then you can get the children using this iterator. This function is
+   * guaranteed to return an iterator. For values with no children the
+   * iterator will always be empty.
    */
-  virtual void ResetIterator () { }
-
-  /**
-   * Check if there are still children to process.
-   */
-  virtual bool HasNext () { return false; }
-
-  /**
-   * Get the next child. If the optional 'name' parameter
-   * is given then it will be filled with the name of the component (if
-   * it has a name). Only components of type VALUE_COMPOSITE support names
-   * for their children.
-   */
-  virtual Value* NextChild (csString* name = 0) { return 0; }
+  virtual csPtr<ValueIterator> GetIterator ()
+  {
+    // By default this returns an empty iterator.
+    return new StandardValueIterator ();
+  }
 
   /**
    * If the type of this value is VALUE_COMPOSITE or VALUE_COLLECTION then you
@@ -409,9 +448,6 @@ public:
  */
 class StandardCollectionValue : public Value
 {
-private:
-  size_t idx;
-
 protected:
   csRefArray<Value> children;
 
@@ -438,12 +474,10 @@ public:
 
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
 
-  virtual void ResetIterator () { UpdateChildren (); idx = 0; }
-  virtual bool HasNext () { return idx < children.GetSize (); }
-  virtual Value* NextChild (csString* name = 0)
+  virtual csPtr<ValueIterator> GetIterator ()
   {
-    idx++;
-    return children[idx-1];
+    UpdateChildren ();
+    return new StandardValueIterator (children);
   }
   virtual Value* GetChild (size_t idx)
   {
@@ -489,14 +523,6 @@ public:
 
   virtual ValueType GetType () const { return VALUE_COMPOSITE; }
 
-  virtual void ResetIterator () { idx = 0; }
-  virtual bool HasNext () { return idx < GetChildCount (); }
-  virtual Value* NextChild (csString* name = 0)
-  {
-    if (name) *name = GetName (idx);
-    idx++;
-    return GetChild (idx-1);
-  }
   virtual Value* GetChildByName (const char* name)
   {
     csString sname = name;
@@ -507,11 +533,11 @@ public:
   virtual DialogResult GetDialogValue ()
   {
     DialogResult result;
-    ResetIterator ();
-    while (HasNext ())
+    csRef<ValueIterator> it = GetIterator ();
+    while (it->HasNext ())
     {
       csString name;
-      Value* value = NextChild (&name);
+      Value* value = it->NextChild (&name);
       result.Put (name, value->GetStringValue ());
     }
     return result;
@@ -535,6 +561,11 @@ protected:
 public:
   CompositeValue () { }
   virtual ~CompositeValue () { DeleteAll (); }
+
+  virtual csPtr<ValueIterator> GetIterator ()
+  {
+    return new StandardValueIterator (children, names);
+  }
 
   /**
    * Add a child with name to this composite.
@@ -626,181 +657,6 @@ public:
 };
 
 /**
- * A buffered value is a value that is synchronized with another
- * value but is able to keep changes which can be put back into
- * the original value on request (for example when the user presses
- * 'Save' or 'Apply' to copy the contents of the user interface to
- * the real value).
- */
-class BufferedValue : public Value
-{
-protected:
-  csRef<Value> originalValue;
-  bool dirty;
-
-  class BufChangeListener : public ValueChangeListener
-  {
-  private:
-    BufferedValue* value;
-  public:
-    BufChangeListener (BufferedValue* value) : value (value) { }
-    virtual ~BufChangeListener () { }
-    virtual void ValueChanged (Value*) { value->ValueChanged (); }
-  };
-
-  csRef<BufChangeListener> changeListener;
-
-public:
-  BufferedValue (Value* originalValue);
-  virtual ~BufferedValue ();
-
-  /**
-   * Called when the original value changes.
-   * Subclasses of BufferedValue should implement this method
-   * so that they can overwrite the internal buffer they keep.
-   */
-  virtual void ValueChanged () = 0;
-
-  /**
-   * Return true if the buffer is dirty compared to the actual
-   * real original value.
-   */
-  virtual bool IsDirty () const { return dirty; }
-
-  /**
-   * Call this to apply the value in the buffer to the real value.
-   * This will also clear the dirty flag. Subclasses should override
-   * this in order to correctly copy the internal buffer to the original value.
-   * Subclasses can first test for the dirty flag. If dirty is false
-   * they don't have to do anything. Additionaly subclasses should set
-   * this flag to false.
-   */
-  virtual void Apply () = 0;
-
-  /**
-   * Factory method to create buffered values of the appropriate type.
-   */
-  static csRef<BufferedValue> CreateBufferedValue (Value* originalValue);
-
-  virtual ValueType GetType () const { return originalValue->GetType (); }
-
-  virtual csString Dump (bool verbose = false)
-  {
-    csString dump = "[Buf]";
-    dump += Value::Dump (verbose);
-    return dump;
-  }
-};
-
-/**
- * A string buffered value.
- */
-class StringBufferedValue : public BufferedValue
-{
-private:
-  csString buffer;
-
-public:
-  StringBufferedValue (Value* originalValue) : BufferedValue (originalValue)
-  {
-    CS_ASSERT (originalValue->GetType () == VALUE_STRING);
-    ValueChanged ();
-  }
-  virtual ~StringBufferedValue () { }
-
-  virtual void ValueChanged ()
-  {
-#if DO_DEBUG
-    printf ("ValueChanged: %s\n", Dump ().GetData ());
-#endif
-    buffer = originalValue->GetStringValue ();
-    dirty = false;
-  }
-  virtual void Apply ()
-  {
-    if (!dirty) return;
-    dirty = false;
-    originalValue->SetStringValue (buffer);
-  }
-
-  virtual const char* GetStringValue () { return buffer; }
-  virtual void SetStringValue (const char* str)
-  {
-    dirty = (buffer != str);
-    buffer = str;
-    FireValueChanged ();
-  }
-};
-
-/**
- * A composite buffered value.
- */
-class CompositeBufferedValue : public BufferedValue
-{
-private:
-  csStringArray names;
-  csRefArray<BufferedValue> buffer;
-  size_t idx;	// For the iterator.
-
-public:
-  CompositeBufferedValue (Value* originalValue) : BufferedValue (originalValue)
-  {
-    CS_ASSERT (originalValue->GetType () == VALUE_COMPOSITE);
-    ValueChanged ();
-  }
-  virtual ~CompositeBufferedValue () { }
-
-  virtual void ValueChanged ();
-  virtual void Apply ();
-
-  virtual void ResetIterator () { idx = 0; }
-  virtual bool HasNext () { return idx < buffer.GetSize (); }
-  virtual Value* NextChild (csString* name = 0)
-  {
-    if (name) *name = names[idx];
-    idx++;
-    return buffer[idx-1];
-  }
-  virtual Value* GetChild (size_t idx) { return buffer[idx]; }
-  virtual Value* GetChildByName (const char* name);
-};
-
-/**
- * A collection buffered value.
- */
-class CollectionBufferedValue : public BufferedValue
-{
-private:
-  csRefArray<BufferedValue> buffer;
-  csHash<csPtrKey<BufferedValue>,csPtrKey<Value> > originalToBuffered;
-  csHash<csPtrKey<Value>,csPtrKey<BufferedValue> > bufferedToOriginal;
-
-  csRefArray<Value> newvalues;
-  csRefArray<Value> deletedvalues;
-
-  size_t idx;	// For the iterator.
-
-public:
-  CollectionBufferedValue (Value* originalValue) : BufferedValue (originalValue)
-  {
-    CS_ASSERT (originalValue->GetType () == VALUE_COLLECTION);
-    ValueChanged ();
-  }
-  virtual ~CollectionBufferedValue () { }
-
-  virtual void ValueChanged ();
-  virtual void Apply ();
-
-  virtual void ResetIterator () { idx = 0; }
-  virtual bool HasNext () { return idx < buffer.GetSize (); }
-  virtual Value* NextChild (csString* name = 0) { idx++; return buffer[idx-1]; }
-  virtual Value* GetChild (size_t idx) { return buffer[idx]; }
-
-  virtual bool DeleteValue (Value* child);
-  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion);
-};
-
-/**
  * A mirroring value. This value refers to another value and
  * simply passes through the changes in both directions. It is useful
  * in case you want to make a binding between several values and a single
@@ -831,8 +687,10 @@ private:
 
   // The following two are only used in case the MirrorValue represents a composite.
   csStringArray names;
-  csRefArray<MirrorValue> children;
-  size_t idx;
+  //@@@ We can't use MirrorValue here because StandardValueIterator() wants
+  //an array of Value. Perhaps this can be solved in C++?
+  //csRefArray<MirrorValue> children;
+  csRefArray<Value> children;
 
   // Called when the mirrored value changes.
   void ValueChanged ();
@@ -897,13 +755,9 @@ public:
   virtual float GetFloatValue () { return mirroringValue->GetFloatValue (); }
   virtual void SetFloatValue (float v) { mirroringValue->SetFloatValue (v); }
 
-  virtual void ResetIterator () { idx = 0; }
-  virtual bool HasNext () { return idx < children.GetSize (); }
-  virtual Value* NextChild (csString* name = 0)
+  virtual csPtr<ValueIterator> GetIterator ()
   {
-    if (name) *name = names[idx];
-    idx++;
-    return children[idx-1];
+    return new StandardValueIterator (children, names);
   }
   virtual Value* GetChildByName (const char* name)
   {

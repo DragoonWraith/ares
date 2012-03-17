@@ -45,6 +45,15 @@ namespace Ares
 
 // --------------------------------------------------------------------------
 
+Value* StandardValueIterator::NextChild (csString* name)
+{
+  if (name && !names.IsEmpty ()) *name = names[idx];
+  idx++;
+  return children[idx-1];
+}
+
+// --------------------------------------------------------------------------
+
 csString Value::Dump (bool verbose)
 {
   csString dump;
@@ -79,11 +88,11 @@ csString Value::Dump (bool verbose)
   {
     if (GetType () == VALUE_COLLECTION || GetType () == VALUE_COMPOSITE)
     {
-      ResetIterator ();
-      while (HasNext ())
+      csRef<ValueIterator> it = GetIterator ();
+      while (it->HasNext ())
       {
 	csString name;
-	Value* val = NextChild (&name);
+	Value* val = it->NextChild (&name);
 	dump.AppendFmt ("\n    %s", (const char*)val->Dump (false));
       }
     }
@@ -93,170 +102,17 @@ csString Value::Dump (bool verbose)
 
 bool Value::IsChild (Value* value)
 {
-  ResetIterator ();
-  while (HasNext ())
+  csRef<ValueIterator> it = GetIterator ();
+  while (it->HasNext ())
   {
-    if (value == NextChild ()) return true;
+    if (value == it->NextChild ()) return true;
   }
   return false;
 }
 
 // --------------------------------------------------------------------------
 
-BufferedValue::BufferedValue (Value* originalValue) : originalValue (originalValue)
-{
-  changeListener.AttachNew (new BufChangeListener (this));
-  originalValue->AddValueChangeListener (changeListener);
-}
-
-BufferedValue::~BufferedValue ()
-{
-}
-
-csRef<BufferedValue> BufferedValue::CreateBufferedValue (Value* originalValue)
-{
-  csRef<BufferedValue> bufferedValue;
-  switch (originalValue->GetType ())
-  {
-    case VALUE_STRING:
-      bufferedValue.AttachNew (new StringBufferedValue (originalValue));
-      return bufferedValue;
-    case VALUE_COMPOSITE:
-      bufferedValue.AttachNew (new CompositeBufferedValue (originalValue));
-      return bufferedValue;
-    case VALUE_COLLECTION:
-      bufferedValue.AttachNew (new CollectionBufferedValue (originalValue));
-      return bufferedValue;
-    default:
-      printf ("Could not create buffered value for this type!\n");
-      return 0;
-  }
-}
-
-void CompositeBufferedValue::ValueChanged ()
-{
-#if DO_DEBUG
-  printf ("ValueChanged: %s\n", Dump ().GetData ());
-#endif
-  buffer.DeleteAll ();
-  names.DeleteAll ();
-  originalValue->ResetIterator ();
-  while (originalValue->HasNext ())
-  {
-    csString name;
-    Value* value = originalValue->NextChild (&name);
-    buffer.Push (BufferedValue::CreateBufferedValue (value));
-    names.Push (name);
-  }
-  dirty = false;
-}
-
-void CompositeBufferedValue::Apply ()
-{
-  if (!dirty) return;
-  dirty = false;
-  ResetIterator ();
-  while (HasNext ())
-  {
-    BufferedValue* bufferedValue = static_cast<BufferedValue*> (NextChild ());
-    bufferedValue->Apply ();
-  }
-}
-
-Value* CompositeBufferedValue::GetChildByName (const char* name)
-{
-  csString sname = name;
-  for (size_t i = 0 ; i < buffer.GetSize () ; i++)
-  {
-    if (sname == names[i]) return buffer[i];
-  }
-  return 0;
-}
-
-void CollectionBufferedValue::ValueChanged ()
-{
-#if DO_DEBUG
-  printf ("ValueChanged: %s\n", Dump ().GetData ());
-#endif
-  buffer.DeleteAll ();
-  originalToBuffered.DeleteAll ();
-  bufferedToOriginal.DeleteAll ();
-  newvalues.DeleteAll ();
-  deletedvalues.DeleteAll ();
-
-  originalValue->ResetIterator ();
-  while (originalValue->HasNext ())
-  {
-    Value* value = originalValue->NextChild ();
-    csRef<BufferedValue> bufferedValue = BufferedValue::CreateBufferedValue (value);
-    originalToBuffered.Put (value, (BufferedValue*)bufferedValue);
-    bufferedToOriginal.Put ((BufferedValue*)bufferedValue, value);
-    buffer.Push (bufferedValue);
-  }
-  dirty = false;
-}
-
-void CollectionBufferedValue::Apply ()
-{
-  if (!dirty) return;
-  dirty = false;
-  ResetIterator ();
-  while (HasNext ())
-  {
-    BufferedValue* bufferedValue = static_cast<BufferedValue*> (NextChild ());
-    bufferedValue->Apply ();
-  }
-  printf ("Not implemented yet!\n"); fflush (stdout);
-  CS_ASSERT (false);
-
-  //for (size_t i = 0 ; i < newvalues.GetSize () ; i++)
-    //originalValue->AddValue (newvalues[i]);
-  newvalues.DeleteAll ();
-  for (size_t i = 0 ; i < deletedvalues.GetSize () ; i++)
-    originalValue->DeleteValue (deletedvalues[i]);
-  deletedvalues.DeleteAll ();
-}
-
-bool CollectionBufferedValue::DeleteValue (Value* child)
-{
-  if (newvalues.Find (child))
-    newvalues.Delete (child);
-  else
-    deletedvalues.Push (child);
-  dirty = newvalues.GetSize () > 0 || deletedvalues.GetSize () > 0;
-  BufferedValue* bufferedValue = originalToBuffered.Get (child, 0);
-  if (bufferedValue)
-    buffer.Delete (bufferedValue);
-
-  return true;
-}
-
-Value* CollectionBufferedValue::NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
-{
-  printf ("Not implemented yet!\n"); fflush (stdout);
-  CS_ASSERT (false);
-#if 0
-  csRef<BufferedValue> bufferedValue;
-  if (deletedvalues.Find (child))
-    deletedvalues.Delete (child);
-  else
-  {
-    newvalues.Push (child);
-    bufferedValue = BufferedValue::CreateBufferedValue (child);
-    originalToBuffered.Put (child, (BufferedValue*)bufferedValue);
-  }
-  dirty = newvalues.GetSize () > 0 || deletedvalues.GetSize () > 0;
-  bufferedValue = originalToBuffered.Get (child, 0);
-  if (bufferedValue)
-    buffer.Push (bufferedValue);
-  return true;
-#endif
-  return 0;
-}
-
-// --------------------------------------------------------------------------
-
-MirrorValue::MirrorValue (ValueType type) : type (type), idx (0)
+MirrorValue::MirrorValue (ValueType type) : type (type)
 {
   changeListener.AttachNew (new SelChangeListener (this));
   mirroringValue = &nullValue;
@@ -272,11 +128,11 @@ void MirrorValue::SetupComposite (Value* compositeValue)
 {
   CS_ASSERT (compositeValue->GetType () == VALUE_COMPOSITE);
   DeleteAll ();
-  compositeValue->ResetIterator ();
-  while (compositeValue->HasNext ())
+  csRef<ValueIterator> it = compositeValue->GetIterator ();
+  while (it->HasNext ())
   {
     csString name;
-    Value* child = compositeValue->NextChild (&name);
+    Value* child = it->NextChild (&name);
     csRef<MirrorValue> mv;
     mv.AttachNew (new MirrorValue (child->GetType ()));
     AddChild (name, mv);
@@ -291,14 +147,16 @@ void MirrorValue::SetMirrorValue (Value* value)
   {
     mirroringValue->RemoveValueChangeListener (changeListener);
     for (size_t i = 0 ; i < children.GetSize () ; i++)
-      children[i]->SetMirrorValue (0);
+      // @@@ (remove static_cast if children is again an array of MirrorValue
+      (static_cast<MirrorValue*> (children[i]))->SetMirrorValue (0);
   }
   mirroringValue = value;
   if (mirroringValue)
   {
     mirroringValue->AddValueChangeListener (changeListener);
     for (size_t i = 0 ; i < children.GetSize () ; i++)
-      children[i]->SetMirrorValue (value->GetChild (i));
+      // @@@ (remove static_cast if children is again an array of MirrorValue
+      (static_cast<MirrorValue*> (children[i]))->SetMirrorValue (value->GetChild (i));
   }
   else
     mirroringValue = &nullValue;
@@ -409,10 +267,10 @@ static wxTreeItemId TreeFromValue (wxTreeCtrl* tree, wxTreeItemId parent, Value*
 {
   wxTreeItemIdValue cookie;
   wxTreeItemId treeChild = tree->GetFirstChild (parent, cookie);
-  collectionValue->ResetIterator ();
-  while (collectionValue->HasNext ())
+  csRef<ValueIterator> it = collectionValue->GetIterator ();
+  while (it->HasNext ())
   {
-    Value* child = collectionValue->NextChild ();
+    Value* child = it->NextChild ();
     if (value == child) return treeChild;
     treeChild = TreeFromValue (tree, treeChild, child, value);
     if (treeChild.IsOk ()) return treeChild;
@@ -432,10 +290,10 @@ static Value* ValueFromTree (wxTreeCtrl* tree, wxTreeItemId item, Value* collect
     Value* value = ValueFromTree (tree, parent, collectionValue);
     if (!value) return 0;	// Can this happen?
     csString name = (const char*)tree->GetItemText (item).mb_str (wxConvUTF8);
-    value->ResetIterator ();
-    while (value->HasNext ())
+    csRef<ValueIterator> it = value->GetIterator ();
+    while (it->HasNext ())
     {
-      Value* child = value->NextChild ();
+      Value* child = it->NextChild ();
       if (name == child->GetStringValue ())
 	return child;
     }
@@ -797,11 +655,11 @@ bool View::BindContainer (Value* value, wxWindow* component)
 
   RegisterBinding (value, component, wxEVT_NULL);
 
-  value->ResetIterator ();
-  while (value->HasNext ())
+  csRef<ValueIterator> it = value->GetIterator ();
+  while (it->HasNext ())
   {
     csString name;
-    Value* child = value->NextChild (&name);
+    Value* child = it->NextChild (&name);
     wxWindow* childComp = FindComponentByName (component, name);
     if (!childComp)
     {
@@ -810,6 +668,7 @@ bool View::BindContainer (Value* value, wxWindow* component)
     else
     {
       compName = (const char*)childComp->GetName ().mb_str (wxConvUTF8);
+printf ("   ");
       printf ("  Sub bind: %s to %s\n", name.GetData (), compName.GetData ());
       if (!Bind (child, childComp))
 	return false;
@@ -878,8 +737,10 @@ static bool ValueToBoolStatic (Value* value)
       return fabs (value->GetFloatValue ()) > .000001f;
     case VALUE_COLLECTION:
     case VALUE_COMPOSITE:
-      value->ResetIterator ();
-      return value->HasNext ();
+      {
+	csRef<ValueIterator> it = value->GetIterator ();
+        return it->HasNext ();
+      }
     default:
       return false;
   }
@@ -1146,10 +1007,10 @@ void View::OnComponentChanged (wxCommandEvent& event)
 
 void View::BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent)
 {
-  value->ResetIterator ();
-  while (value->HasNext ())
+  csRef<ValueIterator> it = value->GetIterator ();
+  while (it->HasNext ())
   {
-    Value* child = value->NextChild ();
+    Value* child = it->NextChild ();
     wxTreeItemId itemId = treeCtrl->AppendItem (parent, wxString::FromUTF8 (child->GetStringValue ()));
     BuildTree (treeCtrl, child, itemId);
   }
@@ -1188,6 +1049,8 @@ void View::EnableBoundComponents (wxWindow* comp, bool state)
 
 void View::EnableBoundComponentsInt (wxWindow* comp, bool state)
 {
+csString compName = (const char*)comp->GetName ().mb_str (wxConvUTF8);
+printf ("EnableBoundComponentsInt '%s' state=%d\n", compName.GetData (), state); fflush (stdout);
   if (comp->IsKindOf (CLASSINFO (wxPanel)) ||
       comp->IsKindOf (CLASSINFO (wxDialog)))
   {
@@ -1272,10 +1135,10 @@ void View::ValueChanged (Value* value)
 	       comp->IsKindOf (CLASSINFO (wxDialog)))
       {
 	// If the value of a composite changes we update the children.
-	value->ResetIterator ();
-	while (value->HasNext ())
+	csRef<ValueIterator> it = value->GetIterator ();
+	while (it->HasNext ())
 	{
-	  Value* child = value->NextChild ();
+	  Value* child = it->NextChild ();
 	  if (IsValueBound (child))
 	    ValueChanged (child);
 	}
@@ -1289,10 +1152,10 @@ void View::ValueChanged (Value* value)
 	listCtrl->DeleteAllItems ();
 	ListHeading lhdef;
 	const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
-	value->ResetIterator ();
-	while (value->HasNext ())
+	csRef<ValueIterator> it = value->GetIterator ();
+	while (it->HasNext ())
 	{
-	  Value* child = value->NextChild ();
+	  Value* child = it->NextChild ();
 	  ListCtrlTools::AddRow (listCtrl, ConstructListRow (lh, child));
 	}
 	if (idx != -1)
@@ -1431,12 +1294,12 @@ bool View::SetSelectedValue (wxWindow* component, Value* value)
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
   {
     wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
-    binding->value->ResetIterator ();
+    csRef<ValueIterator> it = binding->value->GetIterator ();
     bool found = false;
     size_t idx = 0;
-    while (binding->value->HasNext ())
+    while (it->HasNext ())
     {
-      Value* child = binding->value->NextChild ();
+      Value* child = it->NextChild ();
       if (child == value) { found = true; break; }
       idx++;
     }
@@ -1508,10 +1371,10 @@ public:
     dest->FireValueChanged ();
     if (dochildren)
     {
-      dest->ResetIterator ();
-      while (dest->HasNext ())
+      csRef<ValueIterator> it = dest->GetIterator ();
+      while (it->HasNext ())
       {
-	Value* child = dest->NextChild ();
+	Value* child = it->NextChild ();
 	// printf ("  FIRE: to %s\n", child->Dump ().GetData ());
 	child->FireValueChanged ();
       }

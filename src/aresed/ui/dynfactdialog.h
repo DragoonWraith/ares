@@ -224,6 +224,7 @@ private:
 
   csRef<DynfactValue> dynfactValue;
   csRef<BoneValue> boneValue;
+  csRef<Value> boneJointValue;
 
   UIDialog* factoryDialog;
   UIDialog* attributeDialog;
@@ -238,7 +239,7 @@ private:
   void SetupDialogs ();
   void SetupListHeadings ();
   void SetupColliderEditor (Value* colSelValue, const char* suffix);
-  void SetupJointsEditor (Value* jointsSelValue);
+  void SetupJointsEditor (Value* jointsSelValue, const char* suffix);
   void SetupSelectedValues ();
   void SetupActions ();
 
