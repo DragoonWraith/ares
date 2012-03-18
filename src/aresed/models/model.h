@@ -860,6 +860,14 @@ public:
    * It gets the view and the component on which the action was set as parameters.
    */
   virtual bool Do (View* view, wxWindow* component) = 0;
+
+  /**
+   * Return true if this action is active.
+   */
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    return true;
+  }
 };
 
 /**
@@ -929,6 +937,7 @@ public:
   virtual ~EditChildDialogAction () { }
   virtual const char* GetName () const { return "Edit..."; }
   virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
 };
 
 /**
@@ -945,6 +954,7 @@ public:
   virtual ~DeleteChildAction () { }
   virtual const char* GetName () const { return "Delete"; }
   virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
 };
 
 /**

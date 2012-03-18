@@ -101,6 +101,7 @@ public:
   virtual ~EditCategoryAction () { }
   virtual const char* GetName () const { return "Edit category..."; }
   virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
 };
 
 /**
@@ -116,6 +117,7 @@ public:
   virtual ~CreateJointAction () { }
   virtual const char* GetName () const { return "Create joint"; }
   virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
 };
 
 /**
@@ -131,6 +133,7 @@ public:
   virtual ~EnableRagdollAction () { }
   virtual const char* GetName () const { return "Enable ragdoll"; }
   virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
 };
 
 /**

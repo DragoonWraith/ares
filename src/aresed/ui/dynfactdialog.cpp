@@ -1415,6 +1415,14 @@ bool CreateJointAction::Do (View* view, wxWindow* component)
   return true;
 }
 
+bool CreateJointAction::IsActive (View* view, wxWindow* component)
+{
+  CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
+  if (!bone) return false;
+  if (bone->GetBoneJoint ()) return false;
+  return true;
+}
+
 //--------------------------------------------------------------------------
 
 bool EnableRagdollAction::Do (View* view, wxWindow* component)
@@ -1495,6 +1503,35 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   return true;
 }
 
+bool EnableRagdollAction::IsActive (View* view, wxWindow* component)
+{
+  Value* value = view->GetSelectedValue (component);
+  if (!value) return false;
+
+  UIManager* uiManager = dialog->GetUIManager ();
+  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  if (!categoryValue || categoryValue == value)
+    return false;
+
+  csString itemname = value->GetStringValue ();
+  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+  CS_ASSERT (meshFact != 0);
+
+  csRef<CS::Mesh::iAnimatedMeshFactory> animFact =
+    scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
+  if (!animFact)
+    return false;
+
+  CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
+  if (!skelFact)
+    return false;
+  if (dialog->GetBodyManager ()->FindBodySkeleton (itemname))
+    return false;
+  return true;
+}
+
 //--------------------------------------------------------------------------
 
 bool EditCategoryAction::Do (View* view, wxWindow* component)
@@ -1548,6 +1585,21 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
   return true;
 }
 
+bool EditCategoryAction::IsActive (View* view, wxWindow* component)
+{
+  Value* value = view->GetSelectedValue (component);
+  if (!value) return false;
+
+  UIManager* uiManager = dialog->GetUIManager ();
+  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  if (!categoryValue || categoryValue == value)
+    return false;
+
+  return true;
+}
+
 //--------------------------------------------------------------------------
 
 /**
@@ -1579,6 +1631,18 @@ public:
     else
     {
       dialog->FitCollider (fact, type);
+    }
+    return true;
+  }
+
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    iDynamicFactory* fact = dialog->GetCurrentFactory ();
+    if (!fact) return false;
+    if (doBoneColliders)
+    {
+      CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
+      if (!bone) return false;
     }
     return true;
   }

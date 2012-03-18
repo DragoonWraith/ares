@@ -395,12 +395,23 @@ bool EditChildDialogAction::Do (View* view, wxWindow* component)
   return DoDialog (view, component, dialog, true);
 }
 
+bool EditChildDialogAction::IsActive (View* view, wxWindow* component)
+{
+  return view->GetSelectedValue (component) != 0;
+}
+
 bool DeleteChildAction::Do (View* view, wxWindow* component)
 {
   Value* value = view->GetSelectedValue (component);
   if (!value) return false;	// Nothing to do.
   return collection->DeleteValue (value);
 }
+
+bool DeleteChildAction::IsActive (View* view, wxWindow* component)
+{
+  return view->GetSelectedValue (component) != 0;
+}
+
 
 // --------------------------------------------------------------------------
 
@@ -914,7 +925,13 @@ void View::OnRMB (wxContextMenuEvent& event)
   const RmbContext& lc = rmbContexts[idx];
   wxMenu contextMenu;
   for (size_t j = 0 ; j < lc.actionDefs.GetSize () ; j++)
-    contextMenu.Append(lc.actionDefs[j].id, wxString::FromUTF8 (lc.actionDefs[j].action->GetName ()));
+  {
+    Action* action = lc.actionDefs[j].action;
+    wxMenuItem* item = contextMenu.Append (lc.actionDefs[j].id,
+	wxString::FromUTF8 (action->GetName ()));
+    bool active = action->IsActive (this, component);
+    item->Enable (active);
+  }
   component->PopupMenu (&contextMenu);
 }
 
