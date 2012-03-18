@@ -10,5 +10,5 @@ Application aresed :
 ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEL ;
 ExternalLibs aresed : WX ;
-LinkWith aresed : common ;
+LinkWith aresed : common edcommon ;
 

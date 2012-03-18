@@ -31,8 +31,8 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../config.h"
 #include "../ui/uitools.h"
-#include "../tools/inspect.h"
-#include "../tools/tools.h"
+#include "edcommon/inspect.h"
+#include "edcommon/tools.h"
 
 //--------------------------------------------------------------------------
 

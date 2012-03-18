@@ -26,13 +26,14 @@ THE SOFTWARE.
 #define __appares_inspect_h
 
 #include <crystalspace.h>
+#include "aresextern.h"
 #include "physicallayer/datatype.h"
 
 struct iCelPropertyClassTemplate;
 struct iCelPlLayer;
 struct iParameter;
 
-class InspectTools
+class ARES_EXPORT InspectTools
 {
 public:
   static celData GetPropertyValue (iCelPlLayer* pl,

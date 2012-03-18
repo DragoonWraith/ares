@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "../ui/listctrltools.h"
 #include "../ui/listview.h"
 #include "../models/rowmodel.h"
-#include "../tools/tools.h"
+#include "edcommon/tools.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"

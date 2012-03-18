@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include "dirtyhelper.h"
 #include "../models/dynfactmodel.h"
 #include "../models/meshfactmodel.h"
-#include "../tools/tools.h"
+#include "edcommon/tools.h"
 
 #include "physicallayer/pl.h"
 

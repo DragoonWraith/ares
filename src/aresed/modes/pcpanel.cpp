@@ -33,8 +33,8 @@ THE SOFTWARE.
 #include "../ui/listview.h"
 #include "../ui/uitools.h"
 #include "../models/rowmodel.h"
-#include "../tools/inspect.h"
-#include "../tools/tools.h"
+#include "edcommon/inspect.h"
+#include "edcommon/tools.h"
 
 //--------------------------------------------------------------------------
 

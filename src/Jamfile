@@ -9,3 +9,4 @@ SubInclude TOP src dynworldload ;
 SubInclude TOP src nature ;
 SubInclude TOP src marker ;
 SubInclude TOP src common ;
+SubInclude TOP src edcommon ;

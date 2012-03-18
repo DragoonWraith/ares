@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "model.h"
-#include "../tools/tools.h"
+#include "edcommon/tools.h"
 #include "../ui/uitools.h"
 #include "../ui/listctrltools.h"
 #include "../ui/customcontrol.h"

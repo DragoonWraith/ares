@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "meshfactmodel.h"
-#include "../tools/tools.h"
+#include "edcommon/tools.h"
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
 

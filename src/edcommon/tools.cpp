@@ -23,7 +23,7 @@ THE SOFTWARE.
  */
 
 #include <crystalspace.h>
-#include "tools.h"
+#include "edcommon/tools.h"
 
 csStringArray Tools::MakeArray (const char* value, ...)
 {

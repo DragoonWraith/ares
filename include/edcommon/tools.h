@@ -25,11 +25,10 @@ THE SOFTWARE.
 #ifndef __tools_h
 #define __tools_h
 
+#include "aresextern.h"
 #include "csutil/stringarray.h"
 
-class Selection;
-
-class Tools
+class ARES_EXPORT Tools
 {
 public:
   /**

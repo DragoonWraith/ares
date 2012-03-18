@@ -1,0 +1,8 @@
+SubDir TOP src edcommon ;
+
+Description edcommon : "AresEd common library" ;
+Library edcommon :
+  [ Wildcard *.cpp *.h ] :
+  shared ;
+ExternalLibs edcommon : CRYSTAL CEL WX ;
+
