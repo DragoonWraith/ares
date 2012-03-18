@@ -2374,7 +2374,7 @@
 															<object class="notebookpage">
 																<label>Joint</label>
 																<selected>0</selected>
-																<object class="wxPanel" name="boneJointPanel">
+																<object class="wxPanel" name="boneJoint_Panel">
 																	<style>wxTAB_TRAVERSAL</style>
 																	<object class="wxBoxSizer">
 																		<orient>wxHORIZONTAL</orient>

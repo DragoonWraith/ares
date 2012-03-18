@@ -1091,17 +1091,18 @@ void View::ValueChanged (Value* value)
     return;
   }
   for (size_t i = 0 ; i < bindings.GetSize () ; i++)
+  {
+    wxWindow* comp = bindings[i]->component;
+    if (bindings[i]->changeEnabled)
+    {
+      // Modify disabled/enabled state instead of value.
+      bool state = ValueToBool (value);
+      EnableBoundComponents (comp, state);
+      continue;
+    }
+
     if (!bindings[i]->processing)
     {
-      wxWindow* comp = bindings[i]->component;
-      if (bindings[i]->changeEnabled)
-      {
-	// Modify disabled/enabled state instead of value.
-	bool state = ValueToBool (value);
-	EnableBoundComponents (comp, state);
-	continue;
-      }
-
       if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
 	bindings[i]->processing = true;
@@ -1195,6 +1196,7 @@ void View::ValueChanged (Value* value)
 	printf ("ValueChanged: this type of component not yet supported!\n");
       }
     }
+  }
 }
 
 bool View::DefineHeading (const char* listName, const char* heading,

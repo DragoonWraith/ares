@@ -184,7 +184,7 @@ public:
   AppAresEditWX* GetApp () const { return app; }
 
   void Message (const char* description, ...);
-  void Error (const char* description, ...);
+  bool Error (const char* description, ...);
   bool Ask (const char* description, ...);
   csString AskDialog (const char* description, const char* label);
 

@@ -104,6 +104,21 @@ public:
 };
 
 /**
+ * Action to create a joint for a bone.
+ */
+class CreateJointAction : public Action
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  CreateJointAction (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~CreateJointAction () { }
+  virtual const char* GetName () const { return "Create joint"; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
  * Action to enable ragdolls
  */
 class EnableRagdollAction : public Action
@@ -224,7 +239,6 @@ private:
 
   csRef<DynfactValue> dynfactValue;
   csRef<BoneValue> boneValue;
-  csRef<Value> boneJointValue;
 
   UIDialog* factoryDialog;
   UIDialog* attributeDialog;

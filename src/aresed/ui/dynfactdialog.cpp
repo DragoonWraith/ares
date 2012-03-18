@@ -1382,6 +1382,7 @@ BoneValue::BoneValue (DynfactDialog* dialog) : dialog (dialog)
 {
   // Setup the composite representing the dynamic factory that is selected.
   AddChild ("boneColliders", NEWREF(Value,new BoneColliderCollectionValue (dialog)));
+  AddChild ("boneJoint", NEWREF(Value,new BoneJointValue (dialog)));
 }
 
 void BoneValue::ChildChanged (Value* child)
@@ -1397,6 +1398,25 @@ void BoneValue::ChildChanged (Value* child)
 
 //--------------------------------------------------------------------------
 
+bool CreateJointAction::Do (View* view, wxWindow* component)
+{
+  UIManager* uiManager = dialog->GetUIManager ();
+
+  CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
+  if (!bone)
+  {
+    return uiManager->Error ("No bone selected!");
+  }
+  if (bone->GetBoneJoint ())
+  {
+    return uiManager->Error ("This bone already has a joint!");
+  }
+  bone->CreateBoneJoint ();
+  return true;
+}
+
+//--------------------------------------------------------------------------
+
 bool EnableRagdollAction::Do (View* view, wxWindow* component)
 {
   UIManager* uiManager = dialog->GetUIManager ();
@@ -1404,8 +1424,7 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   Value* value = view->GetSelectedValue (component);
   if (!value)
   {
-    uiManager->Error ("Please select a valid item!");
-    return false;
+    return uiManager->Error ("Please select a valid item!");
   }
 
   AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
@@ -1413,8 +1432,7 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
   {
-    uiManager->Error ("Please select a valid item!");
-    return false;
+    return uiManager->Error ("Please select a valid item!");
   }
 
   csString itemname = value->GetStringValue ();
@@ -1425,21 +1443,18 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
     scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
   if (!animFact)
   {
-    uiManager->Error ("This item is not an animesh!");
-    return false;
+    return uiManager->Error ("This item is not an animesh!");
   }
 
   CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
   if (!skelFact)
   {
-    uiManager->Error ("This item has no skeleton!");
-    return false;
+    return uiManager->Error ("This item has no skeleton!");
   }
 
   if (dialog->GetBodyManager ()->FindBodySkeleton (itemname))
   {
-    uiManager->Error ("There is already a body skeleton for this item!");
-    return false;
+    return uiManager->Error ("There is already a body skeleton for this item!");
   }
 
   CS::Animation::iBodySkeleton* bodySkeleton =
@@ -1489,8 +1504,7 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
   Value* value = view->GetSelectedValue (component);
   if (!value)
   {
-    uiManager->Error ("Please select a valid item!");
-    return false;
+    return uiManager->Error ("Please select a valid item!");
   }
 
   AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
@@ -1498,8 +1512,7 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
   {
-    uiManager->Error ("Please select a valid item!");
-    return false;
+    return uiManager->Error ("Please select a valid item!");
   }
 
   UIDialog dia (dialog, "Edit category");
@@ -1515,8 +1528,7 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     csString newCategory = rc.Get ("category", oldCategory);
     if (newCategory.IsEmpty ())
     {
-      uiManager->Error ("The category cannot be empty!");
-      return false;
+      return uiManager->Error ("The category cannot be empty!");
     }
     if (newCategory != oldCategory)
     {
@@ -1970,6 +1982,7 @@ void DynfactDialog::SetupActions ()
   AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
   AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
   AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
+  AddAction (bonesList, NEWREF(Action, new CreateJointAction (this)));
   AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
   AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
@@ -2112,10 +2125,6 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   boneValue.AttachNew (new BoneValue (this));
   Bind (boneValue, "bonesPanel");
 
-  // Setup the composite representing the joint of the selected bone.
-  boneJointValue.AttachNew (new BoneJointValue (this));
-  Bind (boneJointValue, "boneJointPanel");
-
   SetupSelectedValues ();
 
   // Bind the selected collider value to the mesh view. This value is not actually
@@ -2148,7 +2157,6 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // bone collider too and we also want to update the joint.
   Signal (bonesSelectedValue, boneValue, true);
   Signal (bonesSelectedValue, bonesColliderSelectedValue);
-  Signal (bonesSelectedValue, boneJointValue);
 
   // Setup the collider editors.
   SetupColliderEditor (colliderSelectedValue, "");
@@ -2160,9 +2168,10 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   // Bind some values to the enabled/disabled state of several components.
   BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
   BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
-  BindEnabled (bonesSelectedValue->GetSelectedState (), "boneJointPanel");
+  BindEnabled (bonesSelectedValue->GetSelectedState (), "boneJoint_Panel");
   SetupJointsEditor (jointsSelectedValue, "");
-  SetupJointsEditor (boneJointValue, "Bone");
+  // @@@ Bug: doesn't work for the first time when a bone is selected.
+  SetupJointsEditor (boneValue->GetChildByName ("boneJoint"), "Bone");
 
   SetupActions ();
 

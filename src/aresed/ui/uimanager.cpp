@@ -511,7 +511,7 @@ void UIManager::Message (const char* description, ...)
   va_end (args);
 }
 
-void UIManager::Error (const char* description, ...)
+bool UIManager::Error (const char* description, ...)
 {
   va_list args;
   va_start (args, description);
@@ -520,6 +520,7 @@ void UIManager::Error (const char* description, ...)
   wxMessageBox (wxString::FromUTF8 (msg), wxT("Error!"),
       wxICON_ERROR, parent);
   va_end (args);
+  return false;
 }
 
 bool UIManager::Ask (const char* description, ...)
