@@ -8,3 +8,4 @@ SubInclude TOP src rooms ;
 SubInclude TOP src dynworldload ;
 SubInclude TOP src nature ;
 SubInclude TOP src marker ;
+SubInclude TOP src common ;

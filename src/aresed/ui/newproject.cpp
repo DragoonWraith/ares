@@ -27,7 +27,7 @@ THE SOFTWARE.
 #include "filereq.h"
 #include "listctrltools.h"
 #include "../apparesed.h"
-#include "../../common/worldload.h"
+#include "common/worldload.h"
 
 //--------------------------------------------------------------------------
 

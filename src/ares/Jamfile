@@ -2,9 +2,9 @@ SubDir TOP src ares ;
 
 Description ares : "The Ares Project Editor" ;
 Application ares :
-  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ]
-  [ Wildcard [ ConcatDirs ../common ] : *.cpp *.h ] ;
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
 ExternalLibs ares : CRYSTAL ;
 ExternalLibs ares : CEGUI ;
 ExternalLibs ares : CEL ;
+LinkWith ares : common ;
 

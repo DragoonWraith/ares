@@ -25,12 +25,13 @@ THE SOFTWARE.
 #ifndef __aresed_worldload_h
 #define __aresed_worldload_h
 
+#include "aresextern.h"
 #include "propclass/dynworld.h"
 
 struct iCurvedMeshCreator;
 struct iRoomMeshCreator;
 
-class Asset
+class ARES_EXPORT Asset
 {
 private:
   csString path;
@@ -54,7 +55,7 @@ public:
   bool IsQuestSaveFile () const { return saveQuests; }
 };
 
-class WorldLoader
+class ARES_EXPORT WorldLoader
 {
 private:
   iObjectRegistry* object_reg;

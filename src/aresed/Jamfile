@@ -6,9 +6,9 @@ Application aresed :
   [ Wildcard [ ConcatDirs ui ] : *.cpp *.h ]
   [ Wildcard [ ConcatDirs modes ] : *.cpp *.h ]
   [ Wildcard [ ConcatDirs models ] : *.cpp *.h ]
-  [ Wildcard [ ConcatDirs tools ] : *.cpp *.h ]
-  [ Wildcard [ ConcatDirs ../common ] : *.cpp *.h ] ;
+  [ Wildcard [ ConcatDirs tools ] : *.cpp *.h ] ;
 ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEL ;
 ExternalLibs aresed : WX ;
+LinkWith aresed : common ;
 

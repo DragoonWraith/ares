@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
-#include "worldload.h"
+#include "common/worldload.h"
 
 #include "propclass/dynworld.h"
 #include "physicallayer/pl.h"
