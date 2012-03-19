@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "listctrltools.h"
+#include "edcommon/listctrltools.h"
 
 //-----------------------------------------------------------------------------
 

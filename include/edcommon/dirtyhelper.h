@@ -25,6 +25,7 @@ THE SOFTWARE.
 #ifndef __appares_dirtyhelper_h
 #define __appares_dirtyhelper_h
 
+#include "aresextern.h"
 #include <wx/wx.h>
 
 class wxWindow;
@@ -40,7 +41,7 @@ struct DirtyListener;
  * components. It remembers the current value of components and registers
  * listeners so that it knows when values change.
  */
-class DirtyHelper : public wxEvtHandler
+class ARES_EXPORT DirtyHelper : public wxEvtHandler
 {
 private:
   csArray<wxCheckBox*> checkBoxes;

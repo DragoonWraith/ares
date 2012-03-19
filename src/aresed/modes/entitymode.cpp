@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../camerawin.h"
 #include "../ui/uimanager.h"
-#include "../ui/listctrltools.h"
+#include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
 #include "entitymode.h"
 #include "templatepanel.h"

@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include "tools/questmanager.h"
 #include "../apparesed.h"
 #include "../config.h"
-#include "../ui/uitools.h"
+#include "edcommon/uitools.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
 

@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "celldialog.h"
 #include "dynfactdialog.h"
-#include "listctrltools.h"
+#include "edcommon/listctrltools.h"
 #include "listview.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report

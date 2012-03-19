@@ -26,8 +26,8 @@ THE SOFTWARE.
 
 #include "model.h"
 #include "edcommon/tools.h"
-#include "../ui/uitools.h"
-#include "../ui/listctrltools.h"
+#include "edcommon/uitools.h"
+#include "edcommon/listctrltools.h"
 #include "../ui/customcontrol.h"
 #include "../ui/uimanager.h"
 

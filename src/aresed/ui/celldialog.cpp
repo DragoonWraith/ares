@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "celldialog.h"
 #include "uimanager.h"
-#include "listctrltools.h"
+#include "edcommon/listctrltools.h"
 
 //--------------------------------------------------------------------------
 

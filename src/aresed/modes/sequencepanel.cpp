@@ -29,8 +29,8 @@ THE SOFTWARE.
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
 #include "../apparesed.h"
-#include "../ui/uitools.h"
-#include "../ui/listctrltools.h"
+#include "edcommon/uitools.h"
+#include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
 

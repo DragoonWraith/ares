@@ -26,9 +26,9 @@ THE SOFTWARE.
 #include "entitymode.h"
 #include "../apparesed.h"
 #include "../ui/uimanager.h"
-#include "../ui/listctrltools.h"
+#include "edcommon/listctrltools.h"
 #include "../ui/listview.h"
-#include "../models/rowmodel.h"
+#include "edcommon/rowmodel.h"
 #include "edcommon/tools.h"
 
 #include "physicallayer/pl.h"

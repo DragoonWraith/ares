@@ -26,13 +26,14 @@ THE SOFTWARE.
 #define __appares_uitools_h
 
 #include <csutil/stringarray.h>
+#include "aresextern.h"
 
 class wxWindow;
 
 /**
  * Various tools for UI.
  */
-class UITools
+class ARES_EXPORT UITools
 {
 public:
   /**

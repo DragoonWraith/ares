@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "uimanager.h"
 #include "filereq.h"
-#include "listctrltools.h"
+#include "edcommon/listctrltools.h"
 #include "../apparesed.h"
 #include "common/worldload.h"
 

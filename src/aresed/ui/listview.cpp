@@ -24,9 +24,9 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "listctrltools.h"
+#include "edcommon/listctrltools.h"
 #include "listview.h"
-#include "../models/rowmodel.h"
+#include "edcommon/rowmodel.h"
 #include "uimanager.h"
 
 //-----------------------------------------------------------------------------

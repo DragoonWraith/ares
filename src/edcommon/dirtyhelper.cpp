@@ -24,9 +24,9 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "uitools.h"
-#include "dirtyhelper.h"
-#include "../models/rowmodel.h"
+#include "edcommon/uitools.h"
+#include "edcommon/dirtyhelper.h"
+#include "edcommon/rowmodel.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

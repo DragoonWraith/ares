@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __appares_rowmodel_h
 
 #include <csutil/stringarray.h>
+#include "aresextern.h"
 
 class UIDialog;
 class EditorModel;
@@ -34,7 +35,7 @@ class EditorModel;
  * This class represents a row model. Instances of this interface
  * can be used by supporting views (like ListCtrlView).
  */
-class RowModel : public csRefCount
+class ARES_EXPORT RowModel : public csRefCount
 {
 public:
   /**
@@ -127,7 +128,7 @@ public:
 /**
  * Listen to dirty changes.
  */
-struct DirtyListener : public csRefCount
+struct ARES_EXPORT DirtyListener : public csRefCount
 {
   virtual void DirtyChanged (bool dirty) = 0;
 };
@@ -138,7 +139,7 @@ struct DirtyListener : public csRefCount
  * that automatically updates whenever the selected row in the view
  * changes.
  */
-class EditorModel : public csRefCount
+class ARES_EXPORT EditorModel : public csRefCount
 {
 public:
   /**

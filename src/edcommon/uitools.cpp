@@ -24,7 +24,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "uitools.h"
+#include "edcommon/uitools.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

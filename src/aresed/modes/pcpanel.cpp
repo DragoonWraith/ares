@@ -29,10 +29,10 @@ THE SOFTWARE.
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
 #include "../apparesed.h"
-#include "../ui/listctrltools.h"
+#include "edcommon/listctrltools.h"
 #include "../ui/listview.h"
-#include "../ui/uitools.h"
-#include "../models/rowmodel.h"
+#include "edcommon/uitools.h"
+#include "edcommon/rowmodel.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
 

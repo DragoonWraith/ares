@@ -25,7 +25,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "treeview.h"
-#include "../models/rowmodel.h"
+#include "edcommon/rowmodel.h"
 #include "uimanager.h"
 
 //-----------------------------------------------------------------------------

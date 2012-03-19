@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <wx/treectrl.h>
 #include <wx/xrc/xmlres.h>
 
-#include "../models/rowmodel.h"
+#include "edcommon/rowmodel.h"
 
 class UIDialog;
 

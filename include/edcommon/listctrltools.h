@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __appares_listctrltools_h
 
 #include <csutil/stringarray.h>
+#include "aresextern.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -36,7 +37,7 @@ THE SOFTWARE.
 /**
  * Various tools for lists.
  */
-class ListCtrlTools
+class ARES_EXPORT ListCtrlTools
 {
 public:
   /**
