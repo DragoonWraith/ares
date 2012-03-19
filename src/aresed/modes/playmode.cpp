@@ -121,10 +121,11 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
 
 //---------------------------------------------------------------------------
 
-PlayMode::PlayMode (AresEdit3DView* aresed3d)
-  : EditingMode (aresed3d, "Play")
+PlayMode::PlayMode (i3DView* view3d, iObjectRegistry* object_reg)
+  : EditingMode (view3d, object_reg, "Play")
 {
   snapshot = 0;
+  pl = csQueryRegistry<iCelPlLayer> (object_reg);
 }
 
 PlayMode::~PlayMode ()
@@ -134,9 +135,9 @@ PlayMode::~PlayMode ()
 
 void PlayMode::Start ()
 {
-  aresed3d->GetSelection ()->SetCurrentObject (0);
+  view3d->GetSelection ()->SetCurrentObject (0);
   delete snapshot;
-  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
   dynworld->InhibitEntities (false);
   dynworld->EnableGameMode (true);
   snapshot = new DynworldSnapshot (dynworld);
@@ -181,8 +182,6 @@ void PlayMode::Start ()
     playerTrans.SetOrigin (csVector3 (0, 3, 0));
   }
 
-  iCelPlLayer* pl = aresed3d->GetPL ();
-
   iCelEntity* zoneEntity = pl->FindEntity ("Zone");
   csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (zoneEntity);
   mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
@@ -200,7 +199,7 @@ void PlayMode::Start ()
   pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
   body->SetTransform (playerTrans);
 
-  iELCM* elcm = aresed3d->GetELCM ();
+  iELCM* elcm = view3d->GetELCM ();
   elcm->SetPlayer (player);
 
   cellIt = dynworld->GetCells ();
@@ -221,28 +220,29 @@ void PlayMode::Stop ()
 {
   if (!snapshot) return;
 
-  iCelPlLayer* pl = aresed3d->GetPL ();
   pl->RemoveEntity (world);
   world = 0;
   pl->RemoveEntity (player);
   player = 0;
-  iELCM* elcm = aresed3d->GetELCM ();
+  iELCM* elcm = view3d->GetELCM ();
   elcm->SetPlayer (0);
 
-  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
   dynworld->InhibitEntities (true);
   dynworld->EnableGameMode (false);
   snapshot->Restore (dynworld);
   delete snapshot;
   snapshot = 0;
 
-  aresed3d->GetG2D ()->SetMouseCursor (csmcArrow);
+  g3d->GetDriver2D ()->SetMouseCursor (csmcArrow);
 }
 
 bool PlayMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
   if (code == CSKEY_ESC)
   {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
     aresed3d->GetApp ()->SwitchToMainMode ();
     return true;
   }

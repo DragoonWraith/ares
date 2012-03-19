@@ -86,7 +86,7 @@ private:
   void UpdateMarkerSelection ();
 
 public:
-  CurveMode (wxWindow* parent, AresEdit3DView* aresed3d);
+  CurveMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
   virtual ~CurveMode () { }
 
   virtual void Start ();

@@ -1,3 +1,5 @@
+SubDir TOP src editorplugins ;
+
 SubDir TOP src ;
 
 SubInclude TOP src ares ;
@@ -10,3 +12,4 @@ SubInclude TOP src nature ;
 SubInclude TOP src marker ;
 SubInclude TOP src common ;
 SubInclude TOP src edcommon ;
+SubInclude TOP src editorplugins ;

@@ -36,12 +36,14 @@ END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
 
-FoliageMode::FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d)
-  : ViewMode (aresed3d, "Foliage")
+FoliageMode::FoliageMode (wxWindow* parent, i3DView* view,
+    iObjectRegistry* object_reg)
+  : ViewMode (view, object_reg, "Foliage")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("FoliageModePanel"));
+  nature = csQueryRegistry<iNature> (object_reg);
 }
 
 void FoliageMode::UpdateTypeList ()
@@ -50,7 +52,6 @@ void FoliageMode::UpdateTypeList ()
   foliageList->Clear ();
   wxArrayString foliage;
 
-  iNature* nature = aresed3d->GetNature ();
   for (size_t i = 0 ; i < nature->GetFoliageDensityMapCount () ; i++)
   {
     wxString name = wxString::FromUTF8 (nature->GetFoliageDensityMapName (i));
@@ -71,7 +72,7 @@ void FoliageMode::Start ()
   ViewMode::Start ();
   UpdateTypeList ();
   // @@@ Hardcoded!
-  iSector* sector = aresed3d->GetCsCamera ()->GetSector ();
+  iSector* sector = view3d->GetCsCamera ()->GetSector ();
   meshgen = sector->GetMeshGeneratorByName ("grass");
 }
 
@@ -119,9 +120,9 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   if (ViewMode::OnMouseDown (ev, but, mouseX, mouseY))
     return true;
 
-  csSegment3 seg = aresed3d->GetMouseBeam ();
+  csSegment3 seg = view3d->GetMouseBeam ();
   csVector3 isect;
-  if (aresed3d->TraceBeamTerrain (seg.Start (), seg.End (), isect))
+  if (view3d->TraceBeamTerrain (seg.Start (), seg.End (), isect))
   {
 #if 0
     CEGUI::ListboxItem* item = typeList->getFirstSelectedItem ();
@@ -132,7 +133,6 @@ bool FoliageMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
     int height = meshgen->GetDensityFactorMapHeight (factorMapID);
     isect.y = 0;
     csVector4 mapCoord (world2map * csVector4 (isect));
-    iNature* nature = aresed3d->GetNature ();
     iImage* image = nature->GetFoliageDensityMapImage (factorMapID);
     csRef<iDataBuffer> buf = image->GetRawData ();
     char* mapPtr = buf->GetData ();

@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __aresed_playmode_h
 
 #include "csutil/csstring.h"
+#include "csutil/scfstr.h"
 #include "editmodes.h"
 
 struct iPcDynamicWorld;
@@ -66,12 +67,18 @@ private:
   DynworldSnapshot* snapshot;
   csRef<iCelEntity> world;
   csRef<iCelEntity> player;
+  csRef<iCelPlLayer> pl;
 
 public:
-  PlayMode (AresEdit3DView* aresed3d);
+  PlayMode (i3DView* view3d, iObjectRegistry* object_reg);
   virtual ~PlayMode ();
 
-  virtual csString GetStatusLine () { return csString ("Playtest mode, press escape to exit"); }
+  virtual csRef<iString> GetStatusLine ()
+  {
+    csRef<iString> str;
+    str.AttachNew (new scfString ("Playtest mode, press escape to exit"));
+    return str;
+  }
 
   virtual void Start ();
   virtual void Stop ();

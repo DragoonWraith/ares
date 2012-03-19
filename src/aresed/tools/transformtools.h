@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __transformtools_h
 #define __transformtools_h
 
-class Selection;
+struct iSelection;
 
 class TransformTools
 {
@@ -33,45 +33,45 @@ public:
   /**
    * Align all selected objects based on the first selected object.
    */
-  static void AlignSelectedObjects (Selection* selection);
+  static void AlignSelectedObjects (iSelection* selection);
 
   /**
    * Stack all selected objects on top of each other.
    */
-  static void StackSelectedObjects (Selection* selection);
+  static void StackSelectedObjects (iSelection* selection);
 
   /**
    * Move all selected objects to the same heigh.
    */
-  static void SameYSelectedObjects (Selection* selection);
+  static void SameYSelectedObjects (iSelection* selection);
 
   /**
    * Set the position of the selected objects so that the
    * are adjacent to each other along the best matching axis.
    */
-  static void SetPosSelectedObjects (Selection* selection);
+  static void SetPosSelectedObjects (iSelection* selection);
 
   /**
    * Reset the rotation of all selected objects.
    */
-  static void RotResetSelectedObjects (Selection* selection);
+  static void RotResetSelectedObjects (iSelection* selection);
 
   /**
    * Rotate the selected objects with the given base angle.
    */
-  static void Rotate (Selection* selection, float baseAngle,
+  static void Rotate (iSelection* selection, float baseAngle,
       bool slow, bool fast);
 
   /**
    * Move the selection with the given base vector.
    */
-  static void Move (Selection* selection, const csVector3& baseVector,
+  static void Move (iSelection* selection, const csVector3& baseVector,
       bool slow, bool fast);
 
   /**
    * Return the center of all selected objects.
    */
-  static csVector3 GetCenterSelected (Selection* selection);
+  static csVector3 GetCenterSelected (iSelection* selection);
 };
 
 #endif // __transformtools_h

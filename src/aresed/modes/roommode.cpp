@@ -27,8 +27,8 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-RoomMode::RoomMode (AresEdit3DView* aresed3d)
-  : EditingMode (aresed3d, "Room")
+RoomMode::RoomMode (i3DView* view, iObjectRegistry* object_reg)
+  : EditingMode (view, object_reg, "Room")
 {
   editingRoomFactory = 0;
 

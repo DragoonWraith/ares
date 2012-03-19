@@ -466,6 +466,7 @@ int UIDialog::Show (iUIDialogCallback* cb)
 //------------------------------------------------------------------------------
 
 UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
+  scfImplementationType (this),
   app (app), parent (parent)
 {
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");

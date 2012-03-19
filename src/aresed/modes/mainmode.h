@@ -25,6 +25,7 @@ THE SOFTWARE.
 #ifndef __aresed_mainmodes_h
 #define __aresed_mainmodes_h
 
+#include "csutil/scfstr.h"
 #include "viewmode.h"
 
 #include <wx/wx.h>
@@ -108,17 +109,17 @@ private:
   void StopPasteMode ();
 
 public:
-  MainMode (wxWindow* parent, AresEdit3DView* aresed3d);
+  MainMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
   virtual ~MainMode ();
 
   virtual void Start ();
   virtual void Stop ();
 
-  virtual csString GetStatusLine ()
+  virtual csRef<iString> GetStatusLine ()
   {
-    csString v = ViewMode::GetStatusLine ();
-    v += ", LMB: select objects (shift to add to selection)";
-    return v;
+    csRef<iString> str = ViewMode::GetStatusLine ();
+    str->Append (", LMB: select objects (shift to add to selection)");
+    return str;
   }
 
   void Refresh ();

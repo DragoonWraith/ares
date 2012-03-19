@@ -9,6 +9,6 @@ Application aresed :
   [ Wildcard [ ConcatDirs tools ] : *.cpp *.h ] ;
 ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEL ;
-ExternalLibs aresed : WX ;
 LinkWith aresed : common edcommon ;
+ExternalLibs aresed : WX ;
 

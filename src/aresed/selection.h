@@ -25,10 +25,28 @@ THE SOFTWARE.
 #ifndef __aresed_selection_h
 #define __aresed_selection_h
 
+#include "editor/iselection.h"
+
 class iDynamicObject;
 class AresEdit3DView;
 
 typedef csArray<iDynamicObject*>::Iterator SelectionIterator;
+
+class SelectionIteratorImp : public scfImplementation1<SelectionIteratorImp,
+  iSelectionIterator>
+{
+private:
+  SelectionIterator it;
+
+public:
+  SelectionIteratorImp (const SelectionIterator& it) :
+    scfImplementationType (this), it (it) { }
+  virtual ~SelectionIteratorImp () { }
+
+  virtual bool HasNext () { return it.HasNext (); }
+  virtual iDynamicObject* Next () { return it.Next (); }
+};
+
 
 class SelectionListener : public csRefCount
 {
@@ -37,7 +55,7 @@ public:
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects) = 0;
 };
 
-class Selection
+class Selection : public scfImplementation1<Selection, iSelection>
 {
 private:
   AresEdit3DView* aresed3d;
@@ -49,15 +67,23 @@ private:
 
 public:
   Selection (AresEdit3DView* aresed3d);
+  virtual ~Selection () { }
 
-  SelectionIterator GetIterator () { return current_objects.GetIterator (); }
+  SelectionIterator GetIteratorInt () { return current_objects.GetIterator (); }
+
+  virtual csPtr<iSelectionIterator> GetIterator ()
+  {
+    iSelectionIterator* it = new SelectionIteratorImp (current_objects.GetIterator ());
+    return it;
+  }
   csArray<iDynamicObject*>& GetObjects () { return current_objects; }
-  int GetSize () const { return current_objects.GetSize (); }
-  iDynamicObject* GetFirst () const { return current_objects[0]; }
-  bool HasSelection () const { return GetSize () > 0; }
+  virtual const csArray<iDynamicObject*>& GetObjects () const { return current_objects; }
+  virtual size_t GetSize () const { return current_objects.GetSize (); }
+  virtual iDynamicObject* GetFirst () const { return current_objects[0]; }
+  virtual bool HasSelection () const { return GetSize () > 0; }
 
-  void SetCurrentObject (iDynamicObject* dynobj);
-  void AddCurrentObject (iDynamicObject* dynobj);
+  virtual void SetCurrentObject (iDynamicObject* dynobj);
+  virtual void AddCurrentObject (iDynamicObject* dynobj);
 
   void AddSelectionListener (SelectionListener* listener)
   {

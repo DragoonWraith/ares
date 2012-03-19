@@ -53,19 +53,19 @@ END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
 
-MainMode::MainMode (wxWindow* parent, AresEdit3DView* aresed3d) :
-  ViewMode (aresed3d, "Main")
+MainMode::MainMode (wxWindow* parent, i3DView* view3d, iObjectRegistry* object_reg) :
+  ViewMode (view3d, object_reg, "Main")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));
-  SetParent (panel);
+  view.SetParent (panel);
   do_dragging = false;
   do_kinematic_dragging = false;
 
   transformationMarker = 0;
   pasteMarker = 0;
-  Bind (aresed3d->GetDynfactCollectionValue (), "factoryTree");
+  view.Bind (view3d->GetDynfactCollectionValue (), "factoryTree");
 }
 
 MainMode::~MainMode ()
@@ -76,11 +76,11 @@ void MainMode::CreateMarkers ()
 {
   if (!transformationMarker)
   {
-    transformationMarker = aresed3d->GetMarkerManager ()->CreateMarker ();
-    iMarkerColor* red = aresed3d->GetMarkerManager ()->FindMarkerColor ("red");
-    iMarkerColor* green = aresed3d->GetMarkerManager ()->FindMarkerColor ("green");
-    iMarkerColor* blue = aresed3d->GetMarkerManager ()->FindMarkerColor ("blue");
-    iMarkerColor* yellow = aresed3d->GetMarkerManager ()->FindMarkerColor ("yellow");
+    transformationMarker = markerMgr->CreateMarker ();
+    iMarkerColor* red = markerMgr->FindMarkerColor ("red");
+    iMarkerColor* green = markerMgr->FindMarkerColor ("green");
+    iMarkerColor* blue = markerMgr->FindMarkerColor ("blue");
+    iMarkerColor* yellow = markerMgr->FindMarkerColor ("yellow");
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
     transformationMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
@@ -110,8 +110,8 @@ void MainMode::CreateMarkers ()
   }
   if (!pasteMarker)
   {
-    pasteMarker = aresed3d->GetMarkerManager ()->CreateMarker ();
-    iMarkerColor* white = aresed3d->GetMarkerManager ()->FindMarkerColor ("white");
+    pasteMarker = markerMgr->CreateMarker ();
+    iMarkerColor* white = markerMgr->FindMarkerColor ("white");
     pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
     pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
     pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
@@ -124,10 +124,10 @@ void MainMode::Start ()
   ViewMode::Start ();
   CreateMarkers ();
 
-  if (aresed3d->GetSelection ()->GetSize () >= 1)
+  if (view3d->GetSelection ()->GetSize () >= 1)
   {
     transformationMarker->SetVisible (true);
-    transformationMarker->AttachMesh (aresed3d->GetSelection ()->GetFirst ()->GetMesh ());
+    transformationMarker->AttachMesh (view3d->GetSelection ()->GetFirst ()->GetMesh ());
   }
   else
     transformationMarker->SetVisible (false);
@@ -145,6 +145,8 @@ void MainMode::Stop ()
 
 void MainMode::AllocContextHandlers (wxFrame* frame)
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
 
   idSetStatic = ui->AllocContextMenuID ();
@@ -157,7 +159,7 @@ void MainMode::AllocContextHandlers (wxFrame* frame)
 
 void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
-  if (aresed3d->GetSelection ()->HasSelection ())
+  if (view3d->GetSelection ()->HasSelection ())
   {
     contextMenu->AppendSeparator ();
 
@@ -168,7 +170,7 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 
 void MainMode::Refresh ()
 {
-  aresed3d->GetDynfactCollectionValue ()->Refresh ();
+  view3d->GetDynfactCollectionValue ()->Refresh ();
   wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
   wxTreeItemId rootId = tree->GetRootItem ();
   tree->SelectItem (rootId);
@@ -214,65 +216,65 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 
 void MainMode::OnRotLeft ()
 {
-  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
-  TransformTools::Rotate (aresed3d->GetSelection (), PI, slow, fast);
+  bool slow = kbd->GetKeyState (CSKEY_CTRL);
+  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
+  TransformTools::Rotate (view3d->GetSelection (), PI, slow, fast);
 }
 
 void MainMode::OnRotRight ()
 {
-  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
-  TransformTools::Rotate (aresed3d->GetSelection (), -PI, slow, fast);
+  bool slow = kbd->GetKeyState (CSKEY_CTRL);
+  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
+  TransformTools::Rotate (view3d->GetSelection (), -PI, slow, fast);
 }
 
 void MainMode::OnRotReset ()
 {
-  TransformTools::RotResetSelectedObjects (aresed3d->GetSelection ());
+  TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
 }
 
 void MainMode::OnAlignR ()
 {
-  TransformTools::AlignSelectedObjects (aresed3d->GetSelection ());
+  TransformTools::AlignSelectedObjects (view3d->GetSelection ());
 }
 
 void MainMode::OnStack ()
 {
-  TransformTools::StackSelectedObjects (aresed3d->GetSelection ());
+  TransformTools::StackSelectedObjects (view3d->GetSelection ());
 }
 
 void MainMode::OnSameY ()
 {
-  TransformTools::SameYSelectedObjects (aresed3d->GetSelection ());
+  TransformTools::SameYSelectedObjects (view3d->GetSelection ());
 }
 
 void MainMode::OnSetPos ()
 {
-  TransformTools::SetPosSelectedObjects (aresed3d->GetSelection ());
+  TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
 }
 
 void MainMode::OnStaticSelected ()
 {
   wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
-  aresed3d->SetStaticSelectedObjects (staticCheck->IsChecked ());
+  view3d->SetStaticSelectedObjects (staticCheck->IsChecked ());
 }
 
 void MainMode::OnObjectNameEntered ()
 {
   csString n = UITools::GetValue (panel, "objectNameText");
-  aresed3d->ChangeNameSelectedObject (n);
+  view3d->ChangeNameSelectedObject (n);
 }
 
 void MainMode::OnSetStatic ()
 {
-  aresed3d->SetStaticSelectedObjects (true);
+  view3d->SetStaticSelectedObjects (true);
   wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
   staticCheck->SetValue (true);
 }
 
 void MainMode::OnClearStatic ()
 {
-  aresed3d->SetStaticSelectedObjects (false);
+  view3d->SetStaticSelectedObjects (false);
   wxCheckBox* staticCheck = XRCCTRL (*panel, "staticCheckBox", wxCheckBox);
   staticCheck->SetValue (false);
 }
@@ -285,10 +287,10 @@ void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
     const csVector3& pos, uint button, uint32 modifiers)
 {
   //printf ("START: %g,%g,%g\n", pos.x, pos.y, pos.z); fflush (stdout);
-  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
@@ -336,10 +338,10 @@ void MainMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
 {
   dragObjects.DeleteAll ();
   do_kinematic_dragging = false;
-  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     dynobj->UndoKinematic ();
     dynobj->RecreatePivotJoints ();
   }
@@ -359,16 +361,16 @@ void MainMode::StopDrag ()
     csBody->SetRollingDampener (angularDampening);
 
     // Remove the drag joint
-    aresed3d->GetBulletSystem ()->RemovePivotJoint (dragJoint);
+    view3d->GetBulletSystem ()->RemovePivotJoint (dragJoint);
     dragJoint = 0;
   }
   if (do_kinematic_dragging)
   {
     do_kinematic_dragging = false;
-    SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-    while (it.HasNext ())
+    csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
+    while (it->HasNext ())
     {
-      iDynamicObject* dynobj = it.Next ();
+      iDynamicObject* dynobj = it->Next ();
       dynobj->UndoKinematic ();
       dynobj->RecreatePivotJoints ();
       if (kinematicFirstOnly) break;
@@ -378,7 +380,7 @@ void MainMode::StopDrag ()
 
 void MainMode::HandleKinematicDragging ()
 {
-  csSegment3 beam = aresed3d->GetMouseBeam (1000.0f);
+  csSegment3 beam = view3d->GetMouseBeam (1000.0f);
   csVector3 newPosition;
   if (doDragRestrictY)
   {
@@ -394,7 +396,7 @@ void MainMode::HandleKinematicDragging ()
   }
   else
   {
-    iCamera* camera = aresed3d->GetCsCamera ();
+    iCamera* camera = view3d->GetCsCamera ();
     newPosition = beam.End () - beam.Start ();
     newPosition.Normalize ();
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
@@ -416,8 +418,8 @@ void MainMode::HandleKinematicDragging ()
 void MainMode::HandlePhysicalDragging ()
 {
   // Keep the drag joint at the same distance to the camera
-  iCamera* camera = aresed3d->GetCsCamera ();
-  csSegment3 beam = aresed3d->GetMouseBeam ();
+  iCamera* camera = view3d->GetCsCamera ();
+  csSegment3 beam = view3d->GetMouseBeam ();
   csVector3 newPosition = beam.End () - beam.Start ();
   newPosition.Normalize ();
   newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
@@ -464,26 +466,26 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   if (ViewMode::OnKeyboard (ev, code))
     return true;
 
-  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  bool slow = kbd->GetKeyState (CSKEY_CTRL);
+  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
   if (code == '2')
   {
-    SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-    while (it.HasNext ())
+    csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
+    while (it->HasNext ())
     {
-      iDynamicObject* dynobj = it.Next ();
+      iDynamicObject* dynobj = it->Next ();
       if (dynobj->IsStatic ())
 	dynobj->MakeDynamic ();
       else
 	dynobj->MakeStatic ();
     }
-    CurrentObjectsChanged (aresed3d->GetSelection ()->GetObjects ());
+    CurrentObjectsChanged (view3d->GetSelection ()->GetObjects ());
   }
   else if (code == 'h')
   {
     if (holdJoint)
     {
-      aresed3d->GetBulletSystem ()->RemovePivotJoint (holdJoint);
+      view3d->GetBulletSystem ()->RemovePivotJoint (holdJoint);
       holdJoint = 0;
     }
     if (do_dragging)
@@ -507,27 +509,27 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   }
   else if (code == CSKEY_UP)
   {
-    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, 0, 1), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 0, 1), slow, fast);
   }
   else if (code == CSKEY_DOWN)
   {
-    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, 0, -1), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 0, -1), slow, fast);
   }
   else if (code == CSKEY_LEFT)
   {
-    TransformTools::Move (aresed3d->GetSelection (), csVector3 (-1, 0, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (-1, 0, 0), slow, fast);
   }
   else if (code == CSKEY_RIGHT)
   {
-    TransformTools::Move (aresed3d->GetSelection (), csVector3 (1, 0, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (1, 0, 0), slow, fast);
   }
   else if (code == '<' || code == ',')
   {
-    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, -1, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, -1, 0), slow, fast);
   }
   else if (code == '>' || code == '.')
   {
-    TransformTools::Move (aresed3d->GetSelection (), csVector3 (0, 1, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 1, 0), slow, fast);
   }
 
   return false;
@@ -536,10 +538,10 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
 void MainMode::CopySelection ()
 {
   pastebuffer.Empty ();
-  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     iDynamicFactory* dynfact = dynobj->GetFactory ();
     AresPasteContents apc;
     apc.useTransform = true;	// Use the transform defined in this paste buffer.
@@ -563,7 +565,7 @@ void MainMode::PasteSelection ()
       tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
       transPtr = &tr;
     }
-    iDynamicObject* dynobj = aresed3d->SpawnItem (todoSpawn[i].dynfactName, transPtr);
+    iDynamicObject* dynobj = view3d->SpawnItem (todoSpawn[i].dynfactName, transPtr);
     if (todoSpawn[i].useTransform)
     {
       if (todoSpawn[i].isStatic)
@@ -579,7 +581,7 @@ void MainMode::PlacePasteMarker ()
   pasteMarker->SetVisible (true);
   csReversibleTransform tr = todoSpawn[0].trans;
   tr.SetOrigin (csVector3 (0));
-  tr = aresed3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
+  tr = view3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
   pasteMarker->SetTransform (tr);
 }
 
@@ -588,8 +590,8 @@ void MainMode::StartPasteSelection ()
   todoSpawn = pastebuffer;
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
-  aresed3d->GetApp ()->SetMenuState ();
-  aresed3d->GetApp ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
+  view3d->GetApplication ()->SetMenuState ();
+  view3d->GetApplication ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
 }
 
 void MainMode::StartPasteSelection (const char* name)
@@ -600,19 +602,19 @@ void MainMode::StartPasteSelection (const char* name)
   apc.dynfactName = name;
   todoSpawn.Push (apc);
   PlacePasteMarker ();
-  aresed3d->GetApp ()->SetMenuState ();
-  aresed3d->GetApp ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
+  view3d->GetApplication ()->SetMenuState ();
+  view3d->GetApplication ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
 }
 
 void MainMode::OnSnapObjects ()
 {
-  Selection* selection = aresed3d->GetSelection ();
+  iSelection* selection = view3d->GetSelection ();
   if (selection->GetSize () < 2)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("Select at least two objects to snap together!");
+    view3d->GetApplication ()->GetUI ()->Error ("Select at least two objects to snap together!");
     return;
   }
-  csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
   for (size_t i = 1 ; i < ob.GetSize () ; i++)
   {
     ob[i]->MakeKinematic ();
@@ -623,16 +625,16 @@ void MainMode::OnSnapObjects ()
 
 void MainMode::JoinObjects ()
 {
-  Selection* selection = aresed3d->GetSelection ();
+  iSelection* selection = view3d->GetSelection ();
   if (selection->GetSize () != 2)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("Select two objects to join!");
+    view3d->GetApplication ()->GetUI ()->Error ("Select two objects to join!");
     return;
   }
-  csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
   if (ob[0]->GetFactory ()->GetJointCount () == 0)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("The first object has no joints!");
+    view3d->GetApplication ()->GetUI ()->Error ("The first object has no joints!");
     return;
   }
   // In this function all joints are connected between the two same objects.
@@ -642,17 +644,17 @@ void MainMode::JoinObjects ()
 
 void MainMode::UnjoinObjects ()
 {
-  Selection* selection = aresed3d->GetSelection ();
+  iSelection* selection = view3d->GetSelection ();
   if (selection->GetSize () == 0)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("Select at least one object to unjoin!");
+    view3d->GetApplication ()->GetUI ()->Error ("Select at least one object to unjoin!");
     return;
   }
-  csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
   size_t count = ob[0]->GetFactory ()->GetJointCount ();
   if (count == 0)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("The first object has no joints!");
+    view3d->GetApplication ()->GetUI ()->Error ("The first object has no joints!");
     return;
   }
   if (selection->GetSize () == 1)
@@ -664,7 +666,7 @@ void MainMode::UnjoinObjects ()
 	ob[0]->Connect (i, 0);
 	removed++;
       }
-    aresed3d->GetApp ()->GetUIManager ()->Message ("Disconnected %d objects.", removed);
+    view3d->GetApplication ()->GetUI ()->Message ("Disconnected %d objects.", removed);
   }
   else
   {
@@ -675,7 +677,7 @@ void MainMode::UnjoinObjects ()
 	if (ob[0]->GetConnectedObject (j) == ob[i]) { found = true; break; }
       if (!found)
       {
-        aresed3d->GetApp ()->GetUIManager ()->Error ("Some of the objects are not connected!");
+        view3d->GetApplication ()->GetUI ()->Error ("Some of the objects are not connected!");
         return;
       }
     }
@@ -693,8 +695,8 @@ void MainMode::UnjoinObjects ()
 
 void MainMode::UpdateObjects ()
 {
-  if (!aresed3d->GetApp ()->GetUIManager ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
-  iDynamicCell* cell = aresed3d->GetDynamicCell ();
+  if (!view3d->GetApplication ()->GetUI ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
+  iDynamicCell* cell = view3d->GetDynamicCell ();
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
@@ -709,10 +711,10 @@ void MainMode::StartKinematicDragging (bool restrictY,
   do_kinematic_dragging = true;
   kinematicFirstOnly = firstOnly;
 
-  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     // First remove all pivot joints before starting to drag.
     dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
@@ -737,7 +739,7 @@ void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
     const csSegment3& beam, const csVector3& isect)
 {
   // Create a pivot joint at the point clicked
-  dragJoint = aresed3d->GetBulletSystem ()->CreatePivotJoint ();
+  dragJoint = view3d->GetBulletSystem ()->CreatePivotJoint ();
   dragJoint->Attach (hitBody, isect);
 
   do_dragging = true;
@@ -769,8 +771,8 @@ void MainMode::StopPasteMode ()
 {
   todoSpawn.Empty ();
   pasteMarker->SetVisible (false);
-  aresed3d->GetApp ()->SetMenuState ();
-  aresed3d->GetApp ()->ClearStatus ();
+  view3d->GetApplication ()->SetMenuState ();
+  view3d->GetApplication ()->ClearStatus ();
 }
 
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
@@ -780,8 +782,8 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   if (!(but == csmbLeft || but == csmbMiddle)) return false;
 
-  if (mouseX > aresed3d->GetViewWidth ()) return false;
-  if (mouseY > aresed3d->GetViewHeight ()) return false;
+  if (mouseX > view3d->GetViewWidth ()) return false;
+  if (mouseY > view3d->GetViewHeight ()) return false;
 
   uint32 mod = csMouseEventHelper::GetModifiers (&ev);
   bool shift = (mod & CSMASK_SHIFT) != 0;
@@ -803,12 +805,11 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
 
   int data;
-  iMarker* hitMarker = aresed3d->GetMarkerManager ()
-    ->FindHitMarker (mouseX, mouseY, data);
+  iMarker* hitMarker = markerMgr->FindHitMarker (mouseX, mouseY, data);
   if (hitMarker == transformationMarker)
   {
-    iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
-    iCamera* camera = aresed3d->GetCsCamera ();
+    iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
+    iCamera* camera = view3d->GetCsCamera ();
     csVector3 isect = mesh->GetMovable ()->GetTransform ().GetOrigin ();
     StartKinematicDragging (alt, csSegment3 (camera->GetTransform ().GetOrigin (),
 	  isect), isect, true);
@@ -817,18 +818,18 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
   // Compute the end beam points
   csVector3 isect;
-  csSegment3 beam = aresed3d->GetBeam (mouseX, mouseY);
-  iRigidBody* hitBody = aresed3d->TraceBeam (beam, isect);
+  csSegment3 beam = view3d->GetBeam (mouseX, mouseY);
+  iRigidBody* hitBody = view3d->TraceBeam (beam, isect);
   if (!hitBody)
   {
-    if (but == csmbLeft) aresed3d->GetSelection ()->SetCurrentObject (0);
+    if (but == csmbLeft) view3d->GetSelection ()->SetCurrentObject (0);
     return false;
   }
 
-  iDynamicObject* newobj = aresed3d->GetDynamicWorld ()->FindObject (hitBody);
+  iDynamicObject* newobj = view3d->GetDynamicWorld ()->FindObject (hitBody);
   if (!newobj && but == csmbLeft)
   {
-    aresed3d->GetSelection ()->SetCurrentObject (0);
+    view3d->GetSelection ()->SetCurrentObject (0);
     return true;
   }
   if (!newobj) return false;
@@ -836,9 +837,9 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   if (but == csmbLeft)
   {
     if (shift)
-      aresed3d->GetSelection ()->AddCurrentObject (newobj);
+      view3d->GetSelection ()->AddCurrentObject (newobj);
     else
-      aresed3d->GetSelection ()->SetCurrentObject (newobj);
+      view3d->GetSelection ()->SetCurrentObject (newobj);
 
     StopDrag ();
 

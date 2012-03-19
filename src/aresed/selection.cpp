@@ -27,7 +27,8 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-Selection::Selection (AresEdit3DView* aresed3d) : aresed3d (aresed3d)
+Selection::Selection (AresEdit3DView* aresed3d) :
+  scfImplementationType (this), aresed3d (aresed3d)
 {
 }
 

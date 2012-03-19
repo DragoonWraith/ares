@@ -26,13 +26,13 @@ THE SOFTWARE.
 #include "transformtools.h"
 #include "../selection.h"
 
-csVector3 TransformTools::GetCenterSelected (Selection* selection)
+csVector3 TransformTools::GetCenterSelected (iSelection* selection)
 {
   csVector3 center (0);
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     const csBox3& box = dynobj->GetFactory ()->GetBBox ();
     const csReversibleTransform& tr = dynobj->GetTransform ();
     center += tr.This2Other (box.GetCenter ());
@@ -41,17 +41,17 @@ csVector3 TransformTools::GetCenterSelected (Selection* selection)
   return center;
 }
 
-void TransformTools::Move (Selection* selection,
+void TransformTools::Move (iSelection* selection,
     const csVector3& baseVector, bool slow, bool fast)
 {
   csVector3 vector = baseVector;
   if (slow) vector *= 0.01f;
   else if (!fast) vector *= 0.1f;
 
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
@@ -65,7 +65,7 @@ void TransformTools::Move (Selection* selection,
   }
 }
 
-void TransformTools::Rotate (Selection* selection, float baseAngle,
+void TransformTools::Rotate (iSelection* selection, float baseAngle,
     bool slow, bool fast)
 {
   float angle = baseAngle;
@@ -73,10 +73,10 @@ void TransformTools::Rotate (Selection* selection, float baseAngle,
   else if (fast) angle /= 2.0;
   else angle /= 8.0;
 
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 
@@ -153,17 +153,17 @@ static void FindBestAlignedTransform (const csReversibleTransform& masterTrans,
   }
 }
 
-void TransformTools::AlignSelectedObjects (Selection* selection)
+void TransformTools::AlignSelectedObjects (iSelection* selection)
 {
   if (selection->GetSize () <= 1) return;
   if (!selection->GetFirst ()->GetMesh ()) return;
 
   const csReversibleTransform& trans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
 
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
@@ -177,7 +177,7 @@ void TransformTools::AlignSelectedObjects (Selection* selection)
   }
 }
 
-void TransformTools::StackSelectedObjects (Selection* selection)
+void TransformTools::StackSelectedObjects (iSelection* selection)
 {
   if (selection->GetSize () <= 1) return;
   if (!selection->GetFirst ()->GetMesh ()) return;
@@ -185,10 +185,10 @@ void TransformTools::StackSelectedObjects (Selection* selection)
   csReversibleTransform firstTrans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
   csBox3 firstBbox = selection->GetFirst ()->GetFactory ()->GetPhysicsBBox ();
 
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
@@ -209,7 +209,7 @@ void TransformTools::StackSelectedObjects (Selection* selection)
   }
 }
 
-void TransformTools::SameYSelectedObjects (Selection* selection)
+void TransformTools::SameYSelectedObjects (iSelection* selection)
 {
   if (selection->GetSize () <= 1) return;
   if (!selection->GetFirst ()->GetMesh ()) return;
@@ -217,10 +217,10 @@ void TransformTools::SameYSelectedObjects (Selection* selection)
   csReversibleTransform trans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
   float y = trans.GetOrigin ().y;
 
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
@@ -236,7 +236,7 @@ void TransformTools::SameYSelectedObjects (Selection* selection)
   }
 }
 
-void TransformTools::SetPosSelectedObjects (Selection* selection)
+void TransformTools::SetPosSelectedObjects (iSelection* selection)
 {
   if (selection->GetSize () <= 1) return;
   if (!selection->GetFirst ()->GetMesh ()) return;
@@ -245,10 +245,10 @@ void TransformTools::SetPosSelectedObjects (Selection* selection)
     ->GetTransform ();
   csBox3 firstBbox = selection->GetFirst ()->GetFactory ()->GetPhysicsBBox ();
 
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     if (dynobj == selection->GetFirst ()) continue;
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
@@ -269,12 +269,12 @@ void TransformTools::SetPosSelectedObjects (Selection* selection)
   }
 }
 
-void TransformTools::RotResetSelectedObjects (Selection* selection)
+void TransformTools::RotResetSelectedObjects (iSelection* selection)
 {
-  SelectionIterator it = selection->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     iMeshWrapper* mesh = dynobj->GetMesh ();
     if (!mesh) continue;
 

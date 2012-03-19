@@ -55,6 +55,8 @@ enum
 class EntityMode : public EditingMode
 {
 private:
+  csRef<iCelPlLayer> pl;
+
   void SetupItems ();
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -87,7 +89,7 @@ private:
   csRef<iGraphLinkStyle> styleThinLink;
   csRef<iGraphLinkStyle> styleArrowLink;
 
-  iGraphView* view;
+  iGraphView* graphView;
   iMarkerColor* NewColor (const char* name,
     float r0, float g0, float b0, float r1, float g1, float b1, bool fill);
   iMarkerColor* NewColor (const char* name,
@@ -133,7 +135,7 @@ private:
   csRef<iQuestManager> questMgr;
 
 public:
-  EntityMode (wxWindow* parent, AresEdit3DView* aresed3d);
+  EntityMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
   virtual ~EntityMode ();
 
   iQuestManager* GetQuestManager () const { return questMgr; }

@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins roommode ;
+
+Description roommode : "AresEd Room Mode Plugin" ;
+Plugin roommode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs roommode : CRYSTAL ;
+ExternalLibs roommode : CEL ;
+ExternalLibs roommode : WX ;
+LinkWith roommode : edcommon ;
+

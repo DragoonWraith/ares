@@ -1436,7 +1436,7 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   }
 
   AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
   {
@@ -1510,7 +1510,7 @@ bool EnableRagdollAction::IsActive (View* view, wxWindow* component)
 
   UIManager* uiManager = dialog->GetUIManager ();
   AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
     return false;
@@ -1545,7 +1545,7 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
   }
 
   AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
   {
@@ -1592,7 +1592,7 @@ bool EditCategoryAction::IsActive (View* view, wxWindow* component)
 
   UIManager* uiManager = dialog->GetUIManager ();
   AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValue ();
+  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
   Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
   if (!categoryValue || categoryValue == value)
     return false;

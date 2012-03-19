@@ -39,8 +39,8 @@ END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
 
-CurveMode::CurveMode (wxWindow* parent, AresEdit3DView* aresed3d)
-  : ViewMode (aresed3d, "Curve")
+CurveMode::CurveMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg)
+  : ViewMode (view, object_reg, "Curve")
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
@@ -55,21 +55,21 @@ CurveMode::CurveMode (wxWindow* parent, AresEdit3DView* aresed3d)
 void CurveMode::UpdateMarkers ()
 {
   if (!editingCurveFactory) return;
-  iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+  iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
   if (editingCurveFactory->GetPointCount () != markers.GetSize ())
   {
     Stop ();
     for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
     {
-      iMarker* marker = aresed3d->GetMarkerManager ()->CreateMarker ();
+      iMarker* marker = markerMgr->CreateMarker ();
       markers.Push (marker);
       marker->AttachMesh (mesh);
     }
   }
 
-  iMarkerColor* red = aresed3d->GetMarkerManager ()->FindMarkerColor ("red");
-  iMarkerColor* green = aresed3d->GetMarkerManager ()->FindMarkerColor ("green");
-  iMarkerColor* yellow = aresed3d->GetMarkerManager ()->FindMarkerColor ("yellow");
+  iMarkerColor* red = markerMgr->FindMarkerColor ("red");
+  iMarkerColor* green = markerMgr->FindMarkerColor ("green");
+  iMarkerColor* yellow = markerMgr->FindMarkerColor ("yellow");
 
   for (size_t i = 0 ; i < editingCurveFactory->GetPointCount () ; i++)
   {
@@ -106,9 +106,11 @@ void CurveMode::UpdateMarkerSelection ()
 void CurveMode::Start ()
 {
   ViewMode::Start ();
-  if (!aresed3d->GetSelection ()->HasSelection ()) return;
-  iDynamicObject* dynobj = aresed3d->GetSelection ()->GetFirst ();
+  if (!view3d->GetSelection ()->HasSelection ()) return;
+  iDynamicObject* dynobj = view3d->GetSelection ()->GetFirst ();
   csString name = dynobj->GetFactory ()->GetName ();
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   editingCurveFactory = aresed3d->GetCurvedMeshCreator ()->GetCurvedFactory (name);
   if (editingCurveFactory)
     ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
@@ -124,7 +126,7 @@ void CurveMode::Stop ()
 {
   ViewMode::Stop ();
   for (size_t i = 0 ; i < markers.GetSize () ; i++)
-    aresed3d->GetMarkerManager ()->DestroyMarker (markers[i]);
+    markerMgr->DestroyMarker (markers[i]);
   markers.Empty ();
 }
 
@@ -154,7 +156,7 @@ void CurveMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
 void CurveMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos)
 {
-  iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+  iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
   for (size_t i = 0 ; i < dragPoints.GetSize () ; i++)
   {
@@ -169,7 +171,7 @@ void CurveMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
   }
   if (autoSmooth) DoAutoSmooth ();
   ggen->GenerateGeometry (mesh);
-  aresed3d->GetSelection ()->GetFirst ()->RefreshColliders ();
+  view3d->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
 void CurveMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
@@ -223,9 +225,9 @@ void CurveMode::DoAutoSmooth ()
   if (editingCurveFactory->GetPointCount () <= 2) return;
   for (size_t i = 1 ; i < editingCurveFactory->GetPointCount ()-1 ; i++)
     SmoothPoint (i, false);
-  iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+  iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
   ggen->GenerateGeometry (mesh);
-  aresed3d->GetSelection ()->GetFirst ()->RefreshColliders ();
+  view3d->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
 void CurveMode::SmoothPoint (size_t idx, bool regen)
@@ -243,15 +245,15 @@ void CurveMode::SmoothPoint (size_t idx, bool regen)
   UpdateMarkers ();
   if (regen)
   {
-    iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+    iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
     ggen->GenerateGeometry (mesh);
-    aresed3d->GetSelection ()->GetFirst ()->RefreshColliders ();
+    view3d->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
 
 csVector3 CurveMode::GetWorldPosPoint (size_t idx)
 {
-  iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+  iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
   const csVector3& pos = editingCurveFactory->GetPosition (idx);
   return meshtrans.This2Other (pos);
@@ -260,7 +262,7 @@ csVector3 CurveMode::GetWorldPosPoint (size_t idx)
 size_t CurveMode::FindCurvePoint (int mouseX, int mouseY)
 {
   int data;
-  iMarker* marker = aresed3d->GetMarkerManager ()->FindHitMarker (mouseX, mouseY, data);
+  iMarker* marker = markerMgr->FindHitMarker (mouseX, mouseY, data);
   if (!marker) return csArrayItemNotFound;
   size_t idx = 0;
   while (idx < markers.GetSize ())
@@ -271,8 +273,8 @@ size_t CurveMode::FindCurvePoint (int mouseX, int mouseY)
 
 void CurveMode::RotateCurrent (float baseAngle)
 {
-  bool slow = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_CTRL);
-  bool fast = aresed3d->GetKeyboardDriver ()->GetKeyState (CSKEY_SHIFT);
+  bool slow = kbd->GetKeyState (CSKEY_CTRL);
+  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
   float angle = baseAngle;
   if (slow) angle /= 180.0;
   else if (fast) angle /= 2.0;
@@ -293,22 +295,22 @@ void CurveMode::RotateCurrent (float baseAngle)
     editingCurveFactory->ChangePoint (id, pos, tr.GetFront (), u);
     UpdateMarkers ();
   }
-  iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+  iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
   ggen->GenerateGeometry (mesh);
-  aresed3d->GetSelection ()->GetFirst ()->RefreshColliders ();
+  view3d->GetSelection ()->GetFirst ()->RefreshColliders ();
 }
 
 void CurveMode::FlatPoint (size_t idx)
 {
   float sideHeight = editingCurveFactory->GetSideHeight ();
-  iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+  iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
   const csReversibleTransform& meshtrans = mesh->GetMovable ()->GetTransform ();
   csVector3 pos = editingCurveFactory->GetPosition (idx);
   pos = meshtrans.This2Other (pos);
   const csVector3& f = editingCurveFactory->GetFront (idx);
   const csVector3& u = editingCurveFactory->GetUp (idx);
   pos.y += 100.0;
-  iSector* sector = aresed3d->GetCsCamera ()->GetSector ();
+  iSector* sector = view3d->GetCsCamera ()->GetSector ();
 
   csFlags oldFlags = mesh->GetFlags ();
   mesh->GetFlags ().Set (CS_ENTITY_NOHITBEAM);
@@ -326,7 +328,7 @@ void CurveMode::FlatPoint (size_t idx)
       DoAutoSmooth ();
     else
       ggen->GenerateGeometry (mesh);
-    aresed3d->GetSelection ()->GetFirst ()->RefreshColliders ();
+    view3d->GetSelection ()->GetFirst ()->RefreshColliders ();
   }
 }
 
@@ -388,9 +390,9 @@ bool CurveMode::OnKeyboard (iEvent& ev, utf32_char code)
     editingCurveFactory->AddPoint (pos + front, front, up);
     if (autoSmooth) DoAutoSmooth ();
 
-    iMeshWrapper* mesh = aresed3d->GetSelection ()->GetFirst ()->GetMesh ();
+    iMeshWrapper* mesh = view3d->GetSelection ()->GetFirst ()->GetMesh ();
     ggen->GenerateGeometry (mesh);
-    aresed3d->GetSelection ()->GetFirst ()->RefreshColliders ();
+    view3d->GetSelection ()->GetFirst ()->RefreshColliders ();
     UpdateMarkers ();
   }
   return false;

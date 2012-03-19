@@ -29,13 +29,15 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-ViewMode::ViewMode (AresEdit3DView* aresed3d, const char* name)
-  : EditingMode (aresed3d, name)
+ViewMode::ViewMode (i3DView* view, iObjectRegistry* object_reg, const char* name)
+  : EditingMode (view, object_reg, name)
 {
 }
 
 void ViewMode::Start ()
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   aresed3d->GetApp ()->GetCameraWindow ()->Show ();
 }
 
@@ -45,11 +47,15 @@ void ViewMode::Stop ()
 
 void ViewMode::FramePre()
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   aresed3d->Do3DPreFrameStuff ();
 }
 
 void ViewMode::Frame3D()
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   iView* view = aresed3d->GetView ();
   view->Draw ();
   if (aresed3d->IsDebugMode ())
@@ -58,6 +64,8 @@ void ViewMode::Frame3D()
 
 void ViewMode::Frame2D()
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   csString buf;
   iView* view = aresed3d->GetView ();
   const csOrthoTransform& trans = view->GetCamera ()->GetTransform ();
@@ -68,6 +76,8 @@ void ViewMode::Frame2D()
 
 bool ViewMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   if (code == '1')
   {
     aresed3d->SetDebugMode (!aresed3d->IsDebugMode ());
@@ -108,6 +118,8 @@ bool ViewMode::OnKeyboard(iEvent& ev, utf32_char code)
 
 bool ViewMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   if (aresed3d->GetCamera ().OnMouseDown (ev, but, mouseX, mouseY))
     return true;
   return false;
@@ -115,6 +127,8 @@ bool ViewMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool ViewMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   if (aresed3d->GetCamera ().OnMouseUp (ev, but, mouseX, mouseY))
     return true;
   return false;
@@ -122,6 +136,8 @@ bool ViewMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
 
 bool ViewMode::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   if (aresed3d->GetCamera ().OnMouseMove (ev, mouseX, mouseY))
     return true;
   return false;
@@ -129,6 +145,8 @@ bool ViewMode::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
 
 void ViewMode::OnFocusLost ()
 {
+  // @@@ DIRTY and temporary
+  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
   aresed3d->GetCamera ().OnFocusLost ();
 }
 

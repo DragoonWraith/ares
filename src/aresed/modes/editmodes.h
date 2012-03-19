@@ -26,12 +26,14 @@ THE SOFTWARE.
 #define __aresed_editmodes_h
 
 #include "csutil/csstring.h"
+#include "csutil/scfstr.h"
 #include "imarker.h"
 #include "propclass/dynworld.h"
 
 #include "edcommon/model.h"
+#include "editor/imode.h"
 
-class AresEdit3DView;
+class i3DView;
 
 class EditingMode;
 
@@ -53,15 +55,19 @@ public:
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
-class EditingMode : public Ares::View
+class EditingMode : public scfImplementation1<EditingMode, iEditingMode>
 {
 protected:
-  AresEdit3DView* aresed3d;
+  Ares::View view;
+  iObjectRegistry* object_reg;
+  i3DView* view3d;
+  csRef<iMarkerManager> markerMgr;
+  csRef<iGraphics3D> g3d;
+  csRef<iKeyboardDriver> kbd;
   csString name;
 
 public:
-  EditingMode (AresEdit3DView* aresed3d, const char* name) :
-    aresed3d (aresed3d), name (name) { }
+  EditingMode (i3DView* view, iObjectRegistry* object_reg, const char* name);
   virtual ~EditingMode () { }
 
   virtual void AllocContextHandlers (wxFrame* frame) { }
@@ -70,7 +76,12 @@ public:
   virtual void Start () { }
   virtual void Stop () { }
 
-  virtual csString GetStatusLine () { return csString (""); }
+  virtual csRef<iString> GetStatusLine ()
+  {
+    csRef<iString> str;
+    str.AttachNew (new scfString (""));
+    return str;
+  }
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current) { }
 

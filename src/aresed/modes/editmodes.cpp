@@ -52,3 +52,14 @@ void MarkerCallback::StopDragging (iMarker* marker, iMarkerHitArea* area)
 
 //---------------------------------------------------------------------------
 
+EditingMode::EditingMode (i3DView* view, iObjectRegistry* object_reg,
+    const char* name) :
+  scfImplementationType (this), object_reg (object_reg), view3d (view), name (name)
+{
+  markerMgr = csQueryRegistry<iMarkerManager> (object_reg);
+  g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  kbd = csQueryRegistry<iKeyboardDriver> (object_reg);
+}
+
+//---------------------------------------------------------------------------
+

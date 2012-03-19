@@ -144,10 +144,10 @@ void CameraWindow::OnR4Button ()
 csBox3 CameraWindow::GetBoxSelected ()
 {
   csBox3 totalbox;
-  SelectionIterator it = aresed3d->GetSelection ()->GetIterator ();
-  while (it.HasNext ())
+  csRef<iSelectionIterator> it = aresed3d->GetSelection ()->GetIterator ();
+  while (it->HasNext ())
   {
-    iDynamicObject* dynobj = it.Next ();
+    iDynamicObject* dynobj = it->Next ();
     const csBox3& box = dynobj->GetFactory ()->GetBBox ();
     const csReversibleTransform& tr = dynobj->GetTransform ();
     totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (0)));

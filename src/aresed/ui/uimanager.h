@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include "edcommon/model.h"
 #include "editor/iuidialog.h"
+#include "editor/iuimanager.h"
 
 class AppAresEditWX;
 class FileReq;
@@ -163,7 +164,7 @@ public:
 };
 
 
-class UIManager
+class UIManager : public scfImplementation1<UIManager, iUIManager>
 {
 private:
   AppAresEditWX* app;
@@ -178,13 +179,13 @@ private:
 
 public:
   UIManager (AppAresEditWX* app, wxWindow* parent);
-  ~UIManager ();
+  virtual ~UIManager ();
 
   AppAresEditWX* GetApp () const { return app; }
 
-  void Message (const char* description, ...);
-  bool Error (const char* description, ...);
-  bool Ask (const char* description, ...);
+  virtual void Message (const char* description, ...);
+  virtual bool Error (const char* description, ...);
+  virtual bool Ask (const char* description, ...);
   csString AskDialog (const char* description, const char* label);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }

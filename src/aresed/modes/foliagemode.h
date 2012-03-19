@@ -34,12 +34,13 @@ class FoliageMode : public ViewMode
 {
 private:
   iMeshGenerator* meshgen;
+  csRef<iNature> nature;
 
   /// Update the list of types.
   void UpdateTypeList ();
 
 public:
-  FoliageMode (wxWindow* parent, AresEdit3DView* aresed3d);
+  FoliageMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
   virtual ~FoliageMode () { }
 
   virtual void Start ();
@@ -62,7 +63,7 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel(wxWindow* parent, FoliageMode* s)
+    Panel (wxWindow* parent, FoliageMode* s)
       : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
     {}
 

@@ -110,6 +110,7 @@ struct SaveCallback : public OKCallback
 // =========================================================================
 
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
+  scfImplementationType (this),
   app (app), object_reg (object_reg), camera (this)
 {
   do_debug = false;
@@ -206,7 +207,7 @@ bool AresEdit3DView::OnMouseMove (iEvent& ev)
 
 void AresEdit3DView::SetStaticSelectedObjects (bool st)
 {
-  SelectionIterator it = selection->GetIterator ();
+  SelectionIterator it = selection->GetIteratorInt ();
   while (it.HasNext ())
   {
     iDynamicObject* dynobj = it.Next ();
@@ -482,6 +483,11 @@ void AresEdit3DView::OnExit ()
 {
 }
 
+Ares::Value* AresEdit3DView::GetDynfactCollectionValue () const
+{
+  return dynfactCollectionValue;
+}
+
 void AresEdit3DView::AddItem (const char* category, const char* itemname)
 {
   if (!categories.In (category))
@@ -536,6 +542,11 @@ void AresEdit3DView::ResizeView (int width, int height)
   view_height = height;
   //view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
   view->SetRectangle (0, 0, view_width, view_height);
+}
+
+iAresEditor* AresEdit3DView::GetApplication  ()
+{
+  return static_cast<iAresEditor*> (app);
 }
 
 bool AresEdit3DView::Setup ()
@@ -1104,10 +1115,10 @@ AppAresEditWX* aresed = 0;
 
 AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (1000, 600)),
+    scfImplementationType (this),
     config (this)
 {
   AppAresEditWX::object_reg = object_reg;
-  aresed3d = 0;
   camwin = 0;
   editMode = 0;
   mainMode = 0;
@@ -1115,7 +1126,6 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   roomMode = 0;
   foliageMode = 0;
   entityMode = 0;
-  uiManager = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
 }
@@ -1129,8 +1139,11 @@ AppAresEditWX::~AppAresEditWX ()
   delete roomMode;
   delete foliageMode;
   delete entityMode;
-  delete aresed3d;
-  delete uiManager;
+}
+
+iUIManager* AppAresEditWX::GetUI () const
+{
+  return static_cast<iUIManager*> (uiManager);
 }
 
 void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
@@ -1512,27 +1525,29 @@ bool AppAresEditWX::InitWX ()
   aresed3d = new AresEdit3DView (this, object_reg);
   if (!aresed3d->Setup ())
     return false;
- 
-  uiManager = new UIManager (this, wxwindow->GetWindow ());
 
-  playMode = new PlayMode (aresed3d);
+  i3DView* view3d = static_cast<i3DView*> (aresed3d);
+ 
+  uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
+
+  playMode = new PlayMode (view3d, object_reg);
 
   wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
-  mainMode = new MainMode (mainModeTabPanel, aresed3d);
+  mainMode = new MainMode (mainModeTabPanel, view3d, object_reg);
   mainMode->AllocContextHandlers (this);
 
   wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
-  curveMode = new CurveMode (curveModeTabPanel, aresed3d);
+  curveMode = new CurveMode (curveModeTabPanel, view3d, object_reg);
   curveMode->AllocContextHandlers (this);
 
-  roomMode = new RoomMode (aresed3d);
+  roomMode = new RoomMode (view3d, object_reg);
 
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
-  foliageMode = new FoliageMode (foliageModeTabPanel, aresed3d);
+  foliageMode = new FoliageMode (foliageModeTabPanel, view3d, object_reg);
   foliageMode->AllocContextHandlers (this);
 
   wxPanel* entityModeTabPanel = XRCCTRL (*this, "entityModeTabPanel", wxPanel);
-  entityMode = new EntityMode (entityModeTabPanel, aresed3d);
+  entityMode = new EntityMode (entityModeTabPanel, view3d, object_reg);
   entityMode->AllocContextHandlers (this);
 
   editMode = 0;
@@ -1543,7 +1558,7 @@ bool AppAresEditWX::InitWX ()
   camwin->AllocContextHandlers (this);
 
   SelectionListener* listener = new AppSelectionListener (this);
-  aresed3d->GetSelection ()->AddSelectionListener (listener);
+  aresed3d->GetSelectionInt ()->AddSelectionListener (listener);
 
   mainMode->Refresh ();
 
@@ -1568,7 +1583,9 @@ void AppAresEditWX::SetStatus (const char* statusmsg, ...)
 void AppAresEditWX::ClearStatus ()
 {
   if (editMode)
-    SetStatus ("%s", editMode->GetStatusLine ().GetData ());
+  {
+    SetStatus ("%s", editMode->GetStatusLine ()->GetData ());
+  }
   else
     SetStatus ("");
 }
@@ -1625,7 +1642,7 @@ void AppAresEditWX::SetMenuState ()
   menuBar->EnableTop (0, true);
 
   // Is there a selection?
-  csArray<iDynamicObject*> objects = aresed3d->GetSelection ()->GetObjects ();
+  csArray<iDynamicObject*> objects = aresed3d->GetSelectionInt ()->GetObjects ();
   bool sel = objects.GetSize () > 0;
 
   if (editMode == mainMode)

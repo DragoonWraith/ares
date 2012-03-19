@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2011 by Jorrit Tyberghein
+Copyright (c) 2012 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,43 +22,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_viewmode_h
-#define __aresed_viewmode_h
+#ifndef __iapp_h__
+#define __iapp_h__
 
-#include "csutil/csstring.h"
-#include "csutil/scfstr.h"
-#include "editmodes.h"
+#include "csutil/scf.h"
+#include <wx/wx.h>
 
-struct iGeometryGenerator;
+struct iUIManager;
 
 /**
- * Superclass for all modes that require the general 3D view.
+ * The editor application.
  */
-class ViewMode : public EditingMode
+struct iAresEditor : public virtual iBase
 {
-public:
-  ViewMode (i3DView* view, iObjectRegistry* object_reg, const char* name);
-  virtual ~ViewMode () { }
+  SCF_INTERFACE(iAresEditor,0,0,1);
 
-  virtual void Start ();
-  virtual void Stop ();
+  virtual iUIManager* GetUI () const = 0;
 
-  virtual void FramePre();
-  virtual void Frame3D();
-  virtual void Frame2D();
-  virtual bool OnKeyboard(iEvent& ev, utf32_char code);
-  virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY);
-  virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
-  virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
-  virtual void OnFocusLost ();
+  /// Set the state of the menus correctly depending on context.
+  virtual void SetMenuState () = 0;
 
-  virtual csRef<iString> GetStatusLine ()
-  {
-    csRef<iString> str;
-    str.AttachNew (new scfString ("MMB: rotate camera, shift-MMB: pan camera, RMB: context menu"));
-    return str;
-  }
+  /// Set the help status message at the bottom of the frame.
+  virtual void SetStatus (const char* statusmsg, ...) = 0;
+  /// Clear the help status message (go back to default).
+  virtual void ClearStatus () = 0;
+
 };
 
-#endif // __aresed_viewmode_h
+
+#endif // __iapp_h__
 

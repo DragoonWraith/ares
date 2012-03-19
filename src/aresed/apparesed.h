@@ -26,9 +26,12 @@ THE SOFTWARE.
 #define __apparesed_h
 
 #include <crystalspace.h>
-#include "include/icurvemesh.h"
-#include "include/irooms.h"
-#include "include/inature.h"
+#include "icurvemesh.h"
+#include "irooms.h"
+#include "inature.h"
+#include "editor/i3dview.h"
+#include "editor/iapp.h"
+#include "common/worldload.h"
 
 #include "aresed.h"
 #include "camera.h"
@@ -48,7 +51,6 @@ THE SOFTWARE.
 #define USE_DECAL 0
 
 class CameraWindow;
-class WorldLoader;
 class AppAresEditWX;
 class AresEdit3DView;
 class Asset;
@@ -109,7 +111,7 @@ public:
 /**
  * The main logic behind the Ares Editor 3D view.
  */
-class AresEdit3DView
+class AresEdit3DView : public scfImplementation1<AresEdit3DView, i3DView>
 {
 private:
   AppAresEditWX* app;
@@ -255,9 +257,11 @@ public:
   /**
    * Destructor.
    */
-  ~AresEdit3DView ();
+  virtual ~AresEdit3DView ();
 
   AppAresEditWX* GetApp () const { return app; }
+
+  virtual iAresEditor* GetApplication  ();
 
   /**
    * Setup the 3D view.
@@ -299,33 +303,39 @@ public:
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   iEngine* GetEngine () const { return engine; }
   iDynamicSystem* GetDynamicSystem () const { return dynSys; }
-  CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const { return bullet_dynSys; }
-  iCamera* GetCsCamera () const { return view->GetCamera (); }
+  virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const
+  { return bullet_dynSys; }
+  virtual iCamera* GetCsCamera () const { return view->GetCamera (); }
   iCollideSystem* GetCollisionSystem () const { return cdsys; }
   iCurvedMeshCreator* GetCurvedMeshCreator () const { return curvedMeshCreator; }
   iRoomMeshCreator* GetRoomMeshCreator () const { return roomMeshCreator; }
-  iPcDynamicWorld* GetDynamicWorld () const { return dynworld; }
-  iDynamicCell* GetDynamicCell () const { return dyncell; }
+  virtual iPcDynamicWorld* GetDynamicWorld () const { return dynworld; }
+  virtual iDynamicCell* GetDynamicCell () const { return dyncell; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }
   iCelPlLayer* GetPL () const { return pl; }
   iParameterManager* GetPM ();
-  iELCM* GetELCM () const { return elcm; }
+  virtual iELCM* GetELCM () const { return elcm; }
 
   int GetMouseX () const { return mouseX; }
   int GetMouseY () const { return mouseY; }
-  int GetViewWidth () const { return view_width; }
-  int GetViewHeight () const { return view_height; }
+  virtual int GetViewWidth () const { return view_width; }
+  virtual int GetViewHeight () const { return view_height; }
   iView* GetView () const { return view; }
 
-  Selection* GetSelection () const { return selection; }
+  virtual iSelection* GetSelection () const { return selection; }
+  virtual Selection* GetSelectionInt () const { return selection; }
   void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
   /// Get the dynamic factory value.
-  DynfactCollectionValue* GetDynfactCollectionValue () const { return dynfactCollectionValue; }
+  virtual Ares::Value* GetDynfactCollectionValue () const;
+  virtual DynfactCollectionValue* GetDynfactCollectionValueInt () const
+  {
+    return dynfactCollectionValue;
+  }
 
   /// Clear all items and categories.
   void ClearItems () { categories.DeleteAll (); }
@@ -340,7 +350,8 @@ public:
   void ChangeCategory (const char* newCategory, const char* itemname);
 
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
-  iDynamicObject* SpawnItem (const csString& name, csReversibleTransform* trans = 0);
+  virtual iDynamicObject* SpawnItem (const csString& name,
+      csReversibleTransform* trans = 0);
 
   /**
    * When the physical properties of a factory change or a new factory is created
@@ -352,7 +363,8 @@ public:
   void WarpCell (iDynamicCell* cell);
 
   /// Return where an item would be spawned if we were to spawn it now.
-  csReversibleTransform GetSpawnTransformation (const csString& name, csReversibleTransform* trans = 0);
+  virtual csReversibleTransform GetSpawnTransformation (
+      const csString& name, csReversibleTransform* trans = 0);
 
   /// Get the camera.
   Camera& GetCamera () { return camera; }
@@ -371,35 +383,35 @@ public:
   /**
    * Set the static state of the current selected objects.
    */
-  void SetStaticSelectedObjects (bool st);
+  virtual void SetStaticSelectedObjects (bool st);
 
   /**
    * Set the name of the current selected objects (only works for the first
    * selected object).
    */
-  void ChangeNameSelectedObject (const char* name);
+  virtual void ChangeNameSelectedObject (const char* name);
 
   /**
    * Calculate a segment representing a beam that starts from camera
    * position towards a given point on screen.
    */
-  csSegment3 GetBeam (int x, int y, float maxdist = 1000.0f);
+  virtual csSegment3 GetBeam (int x, int y, float maxdist = 1000.0f);
   
   /**
    * Calculate a segment representing a beam that starts from camera
    * position towards a given point on screen as pointed to by the mouse.
    */
-  csSegment3 GetMouseBeam (float maxdist = 1000.0f);
+  virtual csSegment3 GetMouseBeam (float maxdist = 1000.0f);
   
   /**
    * Given a beam, calculate the rigid body at that position.
    */
-  iRigidBody* TraceBeam (const csSegment3& beam, csVector3& isect);
+  virtual iRigidBody* TraceBeam (const csSegment3& beam, csVector3& isect);
 
   /**
    * Hit a beam with the terrain and return the intersection point.
    */
-  bool TraceBeamTerrain (const csVector3& start, const csVector3& end,
+  virtual bool TraceBeamTerrain (const csVector3& start, const csVector3& end,
       csVector3& isect);
 
   /**
@@ -448,7 +460,8 @@ enum
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
-class AppAresEditWX : public wxFrame
+class AppAresEditWX : public wxFrame, public scfImplementation1<AppAresEditWX,
+  iAresEditor>
 {
 private:
   iObjectRegistry* object_reg;
@@ -460,7 +473,7 @@ private:
   csRef<FramePrinter> printer;
 
   AresConfig config;
-  AresEdit3DView* aresed3d;
+  csRef<AresEdit3DView> aresed3d;
 
   static bool SimpleEventHandler (iEvent& ev);
   bool HandleEvent (iEvent& ev);
@@ -472,7 +485,7 @@ private:
   csEventID KeyboardDown;
   csEventID FocusLost;
 
-  UIManager* uiManager;
+  csRef<UIManager> uiManager;
 
   NewProjectDialog* newprojectDialog;
   PlayMode* playMode;
@@ -506,7 +519,7 @@ private:
 
 public:
   AppAresEditWX (iObjectRegistry* object_reg);
-  ~AppAresEditWX ();
+  virtual ~AppAresEditWX ();
 
   /**
    * Display an error notification.
@@ -526,9 +539,9 @@ public:
   }
 
   /// Set the help status message at the bottom of the frame.
-  void SetStatus (const char* statusmsg, ...);
+  virtual void SetStatus (const char* statusmsg, ...);
   /// Clear the help status message (go back to default).
-  void ClearStatus ();
+  virtual void ClearStatus ();
 
   bool Initialize ();
   bool InitWX ();
@@ -563,10 +576,11 @@ public:
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
   iGraphics3D* GetG3D () const { return g3d; }
 
-  void SetMenuState ();
+  virtual void SetMenuState ();
 
   CameraWindow* GetCameraWindow () const { return camwin; }
   UIManager* GetUIManager () const { return uiManager; }
+  virtual iUIManager* GetUI () const;
   iVirtualClock* GetVC () const { return vc; }
   iEngine* GetEngine () const { return engine; }
 
