@@ -68,7 +68,11 @@ protected:
 
 public:
   EditingMode (i3DView* view, iObjectRegistry* object_reg, const char* name);
+  EditingMode (iBase* parent);
   virtual ~EditingMode () { }
+
+  virtual void Set3DView (i3DView* view3d) { EditingMode::view3d = view3d; }
+  virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual void AllocContextHandlers (wxFrame* frame) { }
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY) { }

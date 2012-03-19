@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- roommode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.room</name>
+        <implementation>RoomMode</implementation>
+        <description>AresEd Room Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

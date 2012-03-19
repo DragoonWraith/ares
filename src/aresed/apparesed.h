@@ -60,6 +60,7 @@ class DynfactCollectionValue;
 class NewProjectDialog;
 class UIManager;
 
+struct iEditingMode;
 class EditingMode;
 class PlayMode;
 class MainMode;
@@ -491,7 +492,7 @@ private:
   PlayMode* playMode;
   MainMode* mainMode;
   CurveMode* curveMode;
-  RoomMode* roomMode;
+  csRef<iEditingMode> roomMode;
   FoliageMode* foliageMode;
   EntityMode* entityMode;
   EditingMode* editMode;

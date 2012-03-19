@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __aresed_entitymode_h
 
 #include "csutil/csstring.h"
-#include "editmodes.h"
+#include "edcommon/editmodes.h"
 
 struct iGeometryGenerator;
 struct iCelEntityTemplate;

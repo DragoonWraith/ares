@@ -26,19 +26,22 @@ THE SOFTWARE.
 #define __aresed_roommode_h
 
 #include "csutil/csstring.h"
-#include "editmodes.h"
+#include "irooms.h"
+#include "edcommon/editmodes.h"
 
 struct iGeometryGenerator;
 
-class RoomMode : public EditingMode
+class RoomMode : public scfImplementationExt1<RoomMode, EditingMode, iComponent>
 {
 private:
   iRoomFactory* editingRoomFactory;
   csRef<iGeometryGenerator> ggen;
 
 public:
-  RoomMode (i3DView* view, iObjectRegistry* object_reg);
+  RoomMode (iBase* parent);
   virtual ~RoomMode () { }
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual void Start ();
   virtual void Stop ();

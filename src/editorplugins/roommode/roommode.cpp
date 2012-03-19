@@ -22,44 +22,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
-#include "editmodes.h"
+#include <crystalspace.h>
+#include "roommode.h"
+
+SCF_IMPLEMENT_FACTORY (RoomMode)
 
 //---------------------------------------------------------------------------
 
-void MarkerCallback::StartDragging (iMarker* marker, iMarkerHitArea* area,
+RoomMode::RoomMode (iBase* parent) : scfImplementationType (this, parent)
+{
+  editingRoomFactory = 0;
+  name = "room";
+}
+
+bool RoomMode::Initialize (iObjectRegistry* object_reg)
+{
+  return EditingMode::Initialize (object_reg);
+}
+
+void RoomMode::Start ()
+{
+}
+
+void RoomMode::Stop ()
+{
+}
+
+void RoomMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
     const csVector3& pos, uint button, uint32 modifiers)
 {
-  editmode->MarkerStartDragging (marker, area, pos, button, modifiers);
 }
 
-void MarkerCallback::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
+void RoomMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos)
 {
-  editmode->MarkerWantsMove (marker, area, pos);
 }
 
-void MarkerCallback::MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
-      const csReversibleTransform& transform)
+void RoomMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
 {
-  editmode->MarkerWantsRotate (marker, area, transform);
 }
 
-void MarkerCallback::StopDragging (iMarker* marker, iMarkerHitArea* area)
+void RoomMode::FramePre()
 {
-  editmode->MarkerStopDragging (marker, area);
 }
 
-//---------------------------------------------------------------------------
-
-EditingMode::EditingMode (i3DView* view, iObjectRegistry* object_reg,
-    const char* name) :
-  scfImplementationType (this), object_reg (object_reg), view3d (view), name (name)
+void RoomMode::Frame3D()
 {
-  markerMgr = csQueryRegistry<iMarkerManager> (object_reg);
-  g3d = csQueryRegistry<iGraphics3D> (object_reg);
-  kbd = csQueryRegistry<iKeyboardDriver> (object_reg);
 }
 
-//---------------------------------------------------------------------------
+void RoomMode::Frame2D()
+{
+}
+
+bool RoomMode::OnKeyboard(iEvent& ev, utf32_char code)
+{
+  return false;
+}
+
+bool RoomMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
+{
+  return false;
+}
+
+bool RoomMode::OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)
+{
+  return false;
+}
+
+bool RoomMode::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
+{
+  return false;
+}
 

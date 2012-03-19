@@ -1,3 +1,3 @@
 SubDir TOP src editorplugins ;
 
-#SubInclude TOP src editorplugins roommode ;
+SubInclude TOP src editorplugins roommode ;

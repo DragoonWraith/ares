@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 
 struct iDynamicObject;
+struct i3DView;
 
 /**
  * An 'editor' mode.
@@ -36,6 +37,11 @@ struct iDynamicObject;
 struct iEditingMode : public virtual iBase
 {
   SCF_INTERFACE(iEditingMode,0,0,1);
+
+  /**
+   * Set the 3D View.
+   */
+  virtual void Set3DView (i3DView* view3d) = 0;
 
   /**
    * The name of this mode.

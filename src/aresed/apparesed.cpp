@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "modes/playmode.h"
 #include "modes/mainmode.h"
 #include "modes/curvemode.h"
-#include "modes/roommode.h"
 #include "modes/foliagemode.h"
 #include "modes/entitymode.h"
 #include "camera.h"
@@ -1123,7 +1122,6 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   editMode = 0;
   mainMode = 0;
   curveMode = 0;
-  roomMode = 0;
   foliageMode = 0;
   entityMode = 0;
   //oldPageIdx = csArrayItemNotFound;
@@ -1136,7 +1134,6 @@ AppAresEditWX::~AppAresEditWX ()
   delete playMode;
   delete mainMode;
   delete curveMode;
-  delete roomMode;
   delete foliageMode;
   delete entityMode;
 }
@@ -1540,7 +1537,9 @@ bool AppAresEditWX::InitWX ()
   curveMode = new CurveMode (curveModeTabPanel, view3d, object_reg);
   curveMode->AllocContextHandlers (this);
 
-  roomMode = new RoomMode (view3d, object_reg);
+  roomMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,
+      "ares.editor.modes.room");
+  roomMode->Set3DView (view3d);
 
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
   foliageMode = new FoliageMode (foliageModeTabPanel, view3d, object_reg);
