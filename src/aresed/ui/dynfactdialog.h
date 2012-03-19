@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "../models/model.h"
+#include "edcommon/model.h"
 #include "meshview.h"
 
 #include <wx/wx.h>

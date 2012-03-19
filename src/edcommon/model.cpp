@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "model.h"
+#include "edcommon/model.h"
 #include "edcommon/tools.h"
 #include "edcommon/uitools.h"
 #include "edcommon/listctrltools.h"
-#include "../ui/customcontrol.h"
-#include "../ui/uimanager.h"
+#include "edcommon/customcontrol.h"
+#include "editor/iuidialog.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -328,7 +328,7 @@ void TreeSelectedValue::OnSelectionChange (wxCommandEvent& event)
 
 // --------------------------------------------------------------------------
 
-bool AbstractNewAction::DoDialog (View* view, wxWindow* component, UIDialog* dialog,
+bool AbstractNewAction::DoDialog (View* view, wxWindow* component, iUIDialog* dialog,
     bool update)
 {
   Value* origValue = 0;

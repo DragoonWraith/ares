@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __aresed_dynfactmodel_h
 #define __aresed_dynfactmodel_h
 
-#include "model.h"
+#include "edcommon/model.h"
 
 class AresEdit3DView;
 

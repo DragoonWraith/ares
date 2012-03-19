@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __aresed_meshfactmodel_h
 
 #include "edcommon/rowmodel.h"
-#include "model.h"
+#include "edcommon/model.h"
 
 class AppAresEditWX;
 struct iMeshFactoryList;

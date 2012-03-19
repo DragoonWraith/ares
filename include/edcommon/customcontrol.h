@@ -22,13 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include <crystalspace.h>
+#ifndef __appares_custromcontrol_h
+#define __appares_custromcontrol_h
 
-#include "../models/model.h"
-#include "customcontrol.h"
+#include <wx/wx.h>
+#include <wx/xrc/xmlres.h>
+#include "aresextern.h"
 
-IMPLEMENT_DYNAMIC_CLASS(CustomControl, wxWindow)
+namespace Ares { class Value; }
+using namespace Ares;
 
-//-----------------------------------------------------------------------------
+/**
+ * Base class for custom controls in Ares.
+ */
+class ARES_EXPORT CustomControl : public wxWindow
+{
+DECLARE_DYNAMIC_CLASS(CustomControl)
 
+public:
+  virtual ~CustomControl () { }
+
+  /**
+   * Synchronize this control with the given value.
+   */
+  virtual void SyncValue (Ares::Value* value) { }
+};
+
+#endif // __appares_custromcontrol_h
 

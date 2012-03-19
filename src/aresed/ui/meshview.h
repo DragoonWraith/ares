@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 #include "edcommon/rowmodel.h"
-#include "customcontrol.h"
+#include "edcommon/customcontrol.h"
 
 struct iEngine;
 struct iSector;

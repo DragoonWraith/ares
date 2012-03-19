@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
-#include "../models/model.h"
+#include "edcommon/model.h"
 
 struct iCelPlLayer;
 struct iCelEntityTemplate;

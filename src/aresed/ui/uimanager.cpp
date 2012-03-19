@@ -44,7 +44,8 @@ THE SOFTWARE.
 //------------------------------------------------------------------------------
 
 UIDialog::UIDialog (wxWindow* parent, const char* title, int width, int height) :
-  wxDialog (parent, -1, wxString::FromUTF8 (title)), View (this)
+  scfImplementationType (this),
+  wxDialog (parent, -1, wxString::FromUTF8 (title)), view (this)
 {
   mainPanel = new wxPanel (this, -1, wxDefaultPosition, wxSize (width, height));
   wxBoxSizer* mainSizer = new wxBoxSizer (wxVERTICAL);
@@ -201,8 +202,8 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
   info.col = valueColumn;
   info.collectionValue = collectionValue;
   valueListFields.Put (name, info);
-  DefineHeading (list, heading, names);
-  Bind (collectionValue, list);
+  view.DefineHeading (list, heading, names);
+  view.Bind (collectionValue, list);
 }
 
 void UIDialog::AddButton (const char* str)
@@ -404,7 +405,7 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
       if (info.col != csArrayItemNotFound)
       {
         Value* child = compositeValue->GetChild (info.col);
-        value = ValueToString (child);
+        value = view.ValueToString (child);
       }
     }
     fieldContents.Put (name, value);
@@ -430,7 +431,7 @@ void UIDialog::AddSpace ()
   lastRowSizer->Add (0, 0, 1, wxEXPAND, 5);
 }
 
-int UIDialog::Show (UIDialogCallback* cb)
+int UIDialog::Show (iUIDialogCallback* cb)
 {
   callback = cb;
   AddOkCancel ();

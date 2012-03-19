@@ -29,7 +29,7 @@ THE SOFTWARE.
 #include "imarker.h"
 #include "propclass/dynworld.h"
 
-#include "../models/model.h"
+#include "edcommon/model.h"
 
 class AresEdit3DView;
 

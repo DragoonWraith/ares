@@ -43,7 +43,7 @@ class wxChoicebook;
 class wxPanel;
 class wxDialog;
 class CustomControl;
-class UIDialog;
+class iUIDialog;
 
 // @@@ Ugly: we can't include uimanager.h because of circular includes.
 typedef csHash<csString,csString> DialogResult;
@@ -879,7 +879,7 @@ protected:
   Value* collection;
 
   /// Do method that has an optional 'dialog' (dialog can be 0).
-  bool DoDialog (View* view, wxWindow* component, UIDialog* dialog,
+  bool DoDialog (View* view, wxWindow* component, iUIDialog* dialog,
       bool update = false);
 
 public:
@@ -909,10 +909,10 @@ public:
 class NewChildDialogAction : public AbstractNewAction
 {
 private:
-  UIDialog* dialog;
+  iUIDialog* dialog;
 
 public:
-  NewChildDialogAction (Value* collection, UIDialog* dialog) :
+  NewChildDialogAction (Value* collection, iUIDialog* dialog) :
     AbstractNewAction (collection), dialog (dialog) { }
   virtual ~NewChildDialogAction () { }
   virtual const char* GetName () const { return "New..."; }
@@ -929,10 +929,10 @@ public:
 class EditChildDialogAction : public AbstractNewAction
 {
 private:
-  UIDialog* dialog;
+  iUIDialog* dialog;
 
 public:
-  EditChildDialogAction (Value* collection, UIDialog* dialog) :
+  EditChildDialogAction (Value* collection, iUIDialog* dialog) :
     AbstractNewAction (collection), dialog (dialog) { }
   virtual ~EditChildDialogAction () { }
   virtual const char* GetName () const { return "Edit..."; }

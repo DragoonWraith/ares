@@ -26,7 +26,8 @@ THE SOFTWARE.
 #define __uimanager_h
 
 #include <wx/wx.h>
-#include "../models/model.h"
+#include "edcommon/model.h"
+#include "editor/iuidialog.h"
 
 class AppAresEditWX;
 class FileReq;
@@ -47,11 +48,6 @@ class wxListCtrl;
 
 typedef csHash<csString,csString> DialogResult;
 
-struct UIDialogCallback : public csRefCount
-{
-  virtual void ButtonPressed (UIDialog* dialog, const char* button) = 0;
-};
-
 struct ListInfo
 {
   wxListCtrl* list;
@@ -67,9 +63,12 @@ struct ValueListInfo
   csRef<Ares::Value> collectionValue;
 };
 
-class UIDialog : public wxDialog, public Ares::View
+class UIDialog : public scfImplementation1<UIDialog, iUIDialog>,
+  public wxDialog
 {
 private:
+  Ares::View view;
+
   wxPanel* mainPanel;
   wxBoxSizer* sizer;
   wxBoxSizer* lastRowSizer;
@@ -81,7 +80,7 @@ private:
   csHash<ValueListInfo,csString> valueListFields;
 
   csArray<wxButton*> buttons;
-  csRef<UIDialogCallback> callback;
+  csRef<iUIDialogCallback> callback;
 
   DialogResult fieldContents;
 
@@ -95,72 +94,72 @@ public:
   virtual ~UIDialog ();
 
   /// Add a new row in this dialog.
-  void AddRow (int proportion = 0);
+  virtual void AddRow (int proportion = 0);
 
   /// Add a label in the current row.
-  void AddLabel (const char* str);
+  virtual void AddLabel (const char* str);
   /// Add a single line text control in the current row.
-  void AddText (const char* name);
+  virtual void AddText (const char* name);
   /// Add a multi line text control in the current row.
-  void AddMultiText (const char* name);
+  virtual void AddMultiText (const char* name);
   /// Add a button in the current row.
-  void AddButton (const char* str);
+  virtual void AddButton (const char* str);
   /// Add a combobox control in the current row with the given choices (end with 0).
-  void AddCombo (const char* name, ...);
-  void AddCombo (const char* name, const csStringArray& choiceArray);
+  virtual void AddCombo (const char* name, ...);
+  virtual void AddCombo (const char* name, const csStringArray& choiceArray);
   /// Add a choice control in the current row with the given choices (end with 0).
-  void AddChoice (const char* name, ...);
-  void AddChoice (const char* name, const csStringArray& choiceArray);
+  virtual void AddChoice (const char* name, ...);
+  virtual void AddChoice (const char* name, const csStringArray& choiceArray);
   /// Add a horizontal spacer in the current row.
-  void AddSpace ();
+  virtual void AddSpace ();
   /**
    * Add a list. The given column index is used as the 'value'
    * from the model.
    */
-  void AddList (const char* name, RowModel* model, size_t valueColumn);
+  virtual void AddList (const char* name, RowModel* model, size_t valueColumn);
   /**
    * Add a list. The given column index is used as the 'value'
    * from the model. The value should be a collection with composites
    * as children and the requested value out of the composite should
    * be a string.
    */
-  void AddList (const char* name, Ares::Value* collectionValue, size_t valueColumn,
-      const char* heading, const char* names);
+  virtual void AddList (const char* name, Ares::Value* collectionValue,
+      size_t valueColumn, const char* heading, const char* names);
 
   // Clear all input fields to empty or default values.
-  void Clear ();
+  virtual void Clear ();
 
   /**
    * Set the value of a given control. This will do the right thing depending
    * on the type of the control.
    */
-  void SetValue (const char* name, const char* value);
+  virtual void SetValue (const char* name, const char* value);
 
   /// Set the value of the given text control.
-  void SetText (const char* name, const char* value);
+  virtual void SetText (const char* name, const char* value);
   /// Set the value of the given choice.
-  void SetChoice (const char* name, const char* value);
+  virtual void SetChoice (const char* name, const char* value);
   /// Set the value of the given combo.
-  void SetCombo (const char* name, const char* value);
+  virtual void SetCombo (const char* name, const char* value);
   /// Set the vlaue of the given list.
-  void SetList (const char* name, const char* value);
+  virtual void SetList (const char* name, const char* value);
 
   /**
    * Show the dialog in a modal manner.
    * Returns 1 if Ok was pressed and 0 otherwise.
    */
-  int Show (UIDialogCallback* cb);
+  virtual int Show (iUIDialogCallback* cb);
 
   /**
    * When any button is pressed (including Ok and Cancel) this will return
    * the contents of all text controls and choices.
    */
-  const DialogResult& GetFieldContents () const { return fieldContents; }
+  virtual const DialogResult& GetFieldContents () const { return fieldContents; }
 
   /**
    * Fill this dialog with the DialogResult contents.
    */
-  void SetFieldContents (const DialogResult& result);
+  virtual void SetFieldContents (const DialogResult& result);
 };
 
 
