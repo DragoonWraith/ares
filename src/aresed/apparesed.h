@@ -64,7 +64,6 @@ struct iEditingMode;
 class EditingMode;
 class PlayMode;
 class MainMode;
-class CurveMode;
 class EntityMode;
 
 struct iCelPlLayer;
@@ -487,7 +486,7 @@ private:
   NewProjectDialog* newprojectDialog;
   PlayMode* playMode;
   MainMode* mainMode;
-  CurveMode* curveMode;
+  csRef<iEditingMode> curveMode;
   csRef<iEditingMode> roomMode;
   csRef<iEditingMode> foliageMode;
   EntityMode* entityMode;

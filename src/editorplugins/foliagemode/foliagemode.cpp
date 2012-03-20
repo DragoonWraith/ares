@@ -36,6 +36,8 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(FoliageMode::Panel, wxPanel)
 END_EVENT_TABLE()
 
+SCF_IMPLEMENT_FACTORY (FoliageMode)
+
 //---------------------------------------------------------------------------
 
 FoliageMode::FoliageMode (iBase* parent) : scfImplementationType (this, parent)
@@ -48,12 +50,13 @@ void FoliageMode::SetParent (wxWindow* parent)
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("FoliageModePanel"));
-  nature = csQueryRegistry<iNature> (object_reg);
 }
 
 bool FoliageMode::Initialize (iObjectRegistry* object_reg)
 {
-  return ViewMode::Initialize (object_reg);
+  if (!ViewMode::Initialize (object_reg)) return false;
+  nature = csQueryRegistry<iNature> (object_reg);
+  return true;
 }
 
 void FoliageMode::UpdateTypeList ()

@@ -29,6 +29,9 @@ THE SOFTWARE.
 #include "edcommon/viewmode.h"
 
 struct iGeometryGenerator;
+struct iCurvedFactory;
+struct iCurvedMeshCreator;
+struct i3DView;
 
 struct DragPoint
 {
@@ -36,11 +39,12 @@ struct DragPoint
   csVector3 kineOffset;
 };
 
-class CurveMode : public ViewMode
+class CurveMode : public scfImplementationExt1<CurveMode, ViewMode, iComponent>
 {
 private:
   iCurvedFactory* editingCurveFactory;
   csRef<iGeometryGenerator> ggen;
+  csRef<iCurvedMeshCreator> curvedMeshCreator;
 
   /**
    * Find the curve point closest to the mouse position.
@@ -86,8 +90,11 @@ private:
   void UpdateMarkerSelection ();
 
 public:
-  CurveMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
+  CurveMode (iBase* parent);
   virtual ~CurveMode () { }
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
+  virtual void SetParent (wxWindow* parent);
 
   virtual void Start ();
   virtual void Stop ();

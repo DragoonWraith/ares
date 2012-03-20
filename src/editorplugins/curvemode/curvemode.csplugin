@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- curvemode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.curve</name>
+        <implementation>CurveMode</implementation>
+        <description>AresEd Curve Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

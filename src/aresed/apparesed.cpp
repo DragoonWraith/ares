@@ -31,7 +31,6 @@ THE SOFTWARE.
 #include "ui/dynfactdialog.h"
 #include "modes/playmode.h"
 #include "modes/mainmode.h"
-#include "modes/curvemode.h"
 #include "modes/entitymode.h"
 #include "camera.h"
 
@@ -1101,8 +1100,6 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   camwin = 0;
   editMode = 0;
   mainMode = 0;
-  curveMode = 0;
-  foliageMode = 0;
   entityMode = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
@@ -1113,8 +1110,6 @@ AppAresEditWX::~AppAresEditWX ()
   delete camwin;
   delete playMode;
   delete mainMode;
-  delete curveMode;
-  delete foliageMode;
   delete entityMode;
 }
 
@@ -1514,7 +1509,10 @@ bool AppAresEditWX::InitWX ()
   mainMode->AllocContextHandlers (this);
 
   wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
-  curveMode = new CurveMode (curveModeTabPanel, view3d, object_reg);
+  curveMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,
+      "ares.editor.modes.curve");
+  curveMode->Set3DView (view3d);
+  curveMode->SetParent (curveModeTabPanel);
   curveMode->AllocContextHandlers (this);
 
   roomMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,

@@ -22,8 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
+#include <crystalspace.h>
 #include "curvemode.h"
+#include "icurvemesh.h"
+#include "inature.h"
+#include "editor/i3dview.h"
+#include "editor/iselection.h"
 
 #include <wx/xrc/xmlres.h>
 
@@ -37,17 +41,39 @@ BEGIN_EVENT_TABLE(CurveMode::Panel, wxPanel)
   EVT_CHECKBOX (XRCID("autoSmoothCheckBox"), CurveMode::Panel::OnAutoSmoothSelected)
 END_EVENT_TABLE()
 
+SCF_IMPLEMENT_FACTORY (CurveMode)
+
 //---------------------------------------------------------------------------
 
-CurveMode::CurveMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg)
-  : ViewMode (view, object_reg, "Curve")
+CurveMode::CurveMode (iBase* parent) : scfImplementationType (this, parent)
+{
+  editingCurveFactory = 0;
+  name = "Curve";
+}
+
+bool CurveMode::Initialize (iObjectRegistry* object_reg)
+{
+  if (!ViewMode::Initialize (object_reg)) return false;
+
+  autoSmooth = true;
+
+  curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
+  if (!curvedMeshCreator)
+  {
+    printf ("Can't find the curved mesh creator plugin!\n");
+    fflush (stdout);
+    return false;
+  }
+
+  return true;
+}
+
+void CurveMode::SetParent (wxWindow* parent)
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CurveModePanel"));
 
-  editingCurveFactory = 0;
-  autoSmooth = true;
   wxCheckBox* autoSmoothCheckBox = XRCCTRL (*panel, "autoSmoothCheckBox", wxCheckBox);
   autoSmoothCheckBox->SetValue (autoSmooth);
 }
@@ -109,9 +135,7 @@ void CurveMode::Start ()
   if (!view3d->GetSelection ()->HasSelection ()) return;
   iDynamicObject* dynobj = view3d->GetSelection ()->GetFirst ();
   csString name = dynobj->GetFactory ()->GetName ();
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  editingCurveFactory = aresed3d->GetCurvedMeshCreator ()->GetCurvedFactory (name);
+  editingCurveFactory = curvedMeshCreator->GetCurvedFactory (name);
   if (editingCurveFactory)
     ggen = scfQueryInterface<iGeometryGenerator> (editingCurveFactory);
   else

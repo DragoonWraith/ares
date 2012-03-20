@@ -1,4 +1,5 @@
 SubDir TOP src editorplugins ;
 
 SubInclude TOP src editorplugins roommode ;
+SubInclude TOP src editorplugins curvemode ;
 SubInclude TOP src editorplugins foliagemode ;

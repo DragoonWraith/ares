@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins curvemode ;
+
+Description curvemode : "AresEd Curve Mode Plugin" ;
+Plugin curvemode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs curvemode : CRYSTAL ;
+ExternalLibs curvemode : CEL ;
+ExternalLibs curvemode : WX ;
+LinkWith curvemode : edcommon ;
+
