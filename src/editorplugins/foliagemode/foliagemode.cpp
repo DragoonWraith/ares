@@ -53,7 +53,7 @@ void FoliageMode::SetParent (wxWindow* parent)
 
 bool FoliageMode::Initialize (iObjectRegistry* object_reg)
 {
-  return EditingMode::Initialize (object_reg);
+  return ViewMode::Initialize (object_reg);
 }
 
 void FoliageMode::UpdateTypeList ()
