@@ -22,10 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
+#include <crystalspace.h>
 #include "foliagemode.h"
 #include "iengine/sector.h"
 #include "iengine/meshgen.h"
+#include "inature.h"
+#include "editor/i3dview.h"
 
 #include <wx/xrc/xmlres.h>
 
@@ -36,14 +38,22 @@ END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
 
-FoliageMode::FoliageMode (wxWindow* parent, i3DView* view,
-    iObjectRegistry* object_reg)
-  : ViewMode (view, object_reg, "Foliage")
+FoliageMode::FoliageMode (iBase* parent) : scfImplementationType (this, parent)
+{
+  name = "Foliage";
+}
+
+void FoliageMode::SetParent (wxWindow* parent)
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("FoliageModePanel"));
   nature = csQueryRegistry<iNature> (object_reg);
+}
+
+bool FoliageMode::Initialize (iObjectRegistry* object_reg)
+{
+  return EditingMode::Initialize (object_reg);
 }
 
 void FoliageMode::UpdateTypeList ()

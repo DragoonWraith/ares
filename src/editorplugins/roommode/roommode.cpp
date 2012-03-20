@@ -32,7 +32,7 @@ SCF_IMPLEMENT_FACTORY (RoomMode)
 RoomMode::RoomMode (iBase* parent) : scfImplementationType (this, parent)
 {
   editingRoomFactory = 0;
-  name = "room";
+  name = "Room";
 }
 
 bool RoomMode::Initialize (iObjectRegistry* object_reg)

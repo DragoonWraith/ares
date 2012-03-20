@@ -65,6 +65,8 @@ protected:
   csRef<iGraphics3D> g3d;
   csRef<iKeyboardDriver> kbd;
   csString name;
+  int mouseX, mouseY;
+  int colorWhite;
 
 public:
   EditingMode (i3DView* view, iObjectRegistry* object_reg, const char* name);
@@ -72,6 +74,7 @@ public:
   virtual ~EditingMode () { }
 
   virtual void Set3DView (i3DView* view3d) { EditingMode::view3d = view3d; }
+  virtual void SetParent (wxWindow* parent) { }
   virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual void AllocContextHandlers (wxFrame* frame) { }
@@ -93,10 +96,15 @@ public:
   virtual void FramePre() { }
   virtual void Frame3D() { }
   virtual void Frame2D() { }
-  virtual bool OnKeyboard(iEvent& ev, utf32_char code) { return false; }
-  virtual bool OnMouseDown(iEvent& ev, uint but, int mouseX, int mouseY)  { return false; }
-  virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY)  { return false; }
-  virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY)  { return false; }
+  virtual bool OnKeyboard (iEvent& ev, utf32_char code) { return false; }
+  virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY) { return false; }
+  virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY) { return false; }
+  virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY)
+  {
+    EditingMode::mouseX = mouseX;
+    EditingMode::mouseY = mouseY;
+    return false;
+  }
   virtual void OnFocusLost () { }
 
   virtual void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,

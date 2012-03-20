@@ -22,37 +22,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __iapp_h__
-#define __iapp_h__
+#ifndef __icamera_h__
+#define __icamera_h__
 
 #include "csutil/scf.h"
-#include <wx/wx.h>
-
-struct iUIManager;
 
 /**
- * The editor application.
+ * The camera.
  */
-struct iAresEditor : public virtual iBase
+struct iEditorCamera : public virtual iBase
 {
-  SCF_INTERFACE(iAresEditor,0,0,1);
+  SCF_INTERFACE(iEditorCamera,0,0,1);
 
-  virtual iUIManager* GetUI () const = 0;
+  /**
+   * Handle a frame for the editor camera.
+   */
+  virtual void Frame (float elapsed, int mouseX, int mouseY) = 0;
 
-  /// Set the state of the menus correctly depending on context.
-  virtual void SetMenuState () = 0;
+  /**
+   * Various event functions.
+   */
+  virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY) = 0;
+  virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY) = 0;
+  virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY) = 0;
+  virtual void OnFocusLost () = 0;
 
-  /// Set the help status message at the bottom of the frame.
-  virtual void SetStatus (const char* statusmsg, ...) = 0;
-  /// Clear the help status message (go back to default).
-  virtual void ClearStatus () = 0;
-
-  /// Show the camera window. @@@ Temporary!
-  virtual void ShowCameraWindow () = 0;
-  /// Hide the camera window. @@@ Temporary!
-  virtual void HideCameraWindow () = 0;
+  /**
+   * Camera panning control.
+   */
+  virtual bool IsPanningEnabled () const = 0;
+  virtual void EnablePanning (const csVector3& center) = 0;
+  virtual void DisablePanning () = 0;
 };
 
 
-#endif // __iapp_h__
+#endif // __icamera_h__
 

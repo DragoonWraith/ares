@@ -22,37 +22,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __iapp_h__
-#define __iapp_h__
+#ifndef __icamerawin_h__
+#define __icamerawin_h__
 
 #include "csutil/scf.h"
-#include <wx/wx.h>
-
-struct iUIManager;
 
 /**
- * The editor application.
+ * The camera window.
  */
-struct iAresEditor : public virtual iBase
+struct iCameraWindow : public virtual iBase
 {
-  SCF_INTERFACE(iAresEditor,0,0,1);
-
-  virtual iUIManager* GetUI () const = 0;
-
-  /// Set the state of the menus correctly depending on context.
-  virtual void SetMenuState () = 0;
-
-  /// Set the help status message at the bottom of the frame.
-  virtual void SetStatus (const char* statusmsg, ...) = 0;
-  /// Clear the help status message (go back to default).
-  virtual void ClearStatus () = 0;
-
-  /// Show the camera window. @@@ Temporary!
-  virtual void ShowCameraWindow () = 0;
-  /// Hide the camera window. @@@ Temporary!
-  virtual void HideCameraWindow () = 0;
+  SCF_INTERFACE(iCameraWindow,0,0,1);
 };
 
 
-#endif // __iapp_h__
+#endif // __icamerawin_h__
 

@@ -30,15 +30,24 @@ THE SOFTWARE.
 #include "edcommon/editmodes.h"
 
 struct iGeometryGenerator;
+struct iNature;
 
 /**
  * Superclass for all modes that require the general 3D view.
  */
 class ViewMode : public EditingMode
 {
+private:
+  csRef<iFont> font;
+  csRef<iNature> nature;
+  csRef<iVirtualClock> vc;
+  csRef<iDynamics> dyn;
+
 public:
   ViewMode (i3DView* view, iObjectRegistry* object_reg, const char* name);
+  ViewMode (iBase* parent);
   virtual ~ViewMode () { }
+  virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual void Start ();
   virtual void Stop ();

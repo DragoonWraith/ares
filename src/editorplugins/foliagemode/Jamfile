@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins foliagemode ;
+
+Description foliagemode : "AresEd Foliage Mode Plugin" ;
+Plugin foliagemode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs foliagemode : CRYSTAL ;
+ExternalLibs foliagemode : CEL ;
+ExternalLibs foliagemode : WX ;
+LinkWith foliagemode : edcommon ;
+

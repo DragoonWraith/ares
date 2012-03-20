@@ -28,11 +28,12 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "apparesed.h"
+#include "editor/icamerawin.h"
 
 class AresEdit3DView;
 struct iDynamicObject;
 
-class CameraWindow
+class CameraWindow : public scfImplementation1<CameraWindow, iCameraWindow>
 {
 private:
   AresEdit3DView* aresed3d;
@@ -70,7 +71,7 @@ private:
 
 public:
   CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d);
-  ~CameraWindow();
+  virtual ~CameraWindow();
 
   void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 

@@ -23,7 +23,7 @@ THE SOFTWARE.
  */
 
 #include "camerawin.h"
-#include "tools/transformtools.h"
+#include "edcommon/transformtools.h"
 #include "ui/uimanager.h"
 
 #include <wx/xrc/xmlres.h>
@@ -58,27 +58,27 @@ END_EVENT_TABLE()
 
 void CameraWindow::OnNorthButton ()
 {
-  aresed3d->GetCamera ().CamLookAt (csVector3 (0, 0, 0));
+  aresed3d->GetCamera ()->CamLookAt (csVector3 (0, 0, 0));
 }
 
 void CameraWindow::OnSouthButton ()
 {
-  aresed3d->GetCamera ().CamLookAt (csVector3 (0, PI, 0));
+  aresed3d->GetCamera ()->CamLookAt (csVector3 (0, PI, 0));
 }
 
 void CameraWindow::OnWestButton ()
 {
-  aresed3d->GetCamera ().CamLookAt (csVector3 (0, -PI/2, 0));
+  aresed3d->GetCamera ()->CamLookAt (csVector3 (0, -PI/2, 0));
 }
 
 void CameraWindow::OnEastButton ()
 {
-  aresed3d->GetCamera ().CamLookAt (csVector3 (0, PI/2, 0));
+  aresed3d->GetCamera ()->CamLookAt (csVector3 (0, PI/2, 0));
 }
 
 void CameraWindow::OnTopDownButton ()
 {
-  aresed3d->GetCamera ().CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
+  aresed3d->GetCamera ()->CamMoveAndLookAt (csVector3 (0, 200, 0), csVector3 (-PI/2, 0, 0));
 }
 
 void CameraWindow::StoreTrans (int idx)
@@ -92,13 +92,13 @@ void CameraWindow::StoreTrans (int idx)
     case 3: recallButton = XRCCTRL (*panel, "recall4Button", wxButton); break;
   }
   recallButton->Enable ();
-  CamLocation loc = aresed3d->GetCamera ().GetCameraLocation ();
+  CamLocation loc = aresed3d->GetCamera ()->GetCameraLocation ();
   trans[idx] = loc;
 }
 
 void CameraWindow::RecallTrans (int idx)
 {
-  aresed3d->GetCamera ().SetCameraLocation (trans[idx]);
+  aresed3d->GetCamera ()->SetCameraLocation (trans[idx]);
 }
 
 void CameraWindow::OnS1Button ()
@@ -190,7 +190,7 @@ void CameraWindow::OnTopDownSelButton ()
   float xdim = box.MaxX ()-box.MinX ();
   float zdim = box.MaxZ ()-box.MinZ ();
   csVector3 origin = box.GetCenter () + csVector3 (0, csMax(xdim,zdim), 0);
-  aresed3d->GetCamera ().CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
+  aresed3d->GetCamera ()->CamMoveAndLookAt (origin, csVector3 (-PI/2, 0, 0));
 }
 
 void CameraWindow::OnLookAtButton ()
@@ -198,7 +198,7 @@ void CameraWindow::OnLookAtButton ()
   if (aresed3d->GetSelection ()->HasSelection ())
   {
     csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
-    aresed3d->GetCamera ().CamLookAtPosition (center);
+    aresed3d->GetCamera ()->CamLookAtPosition (center);
   }
 }
 
@@ -207,7 +207,7 @@ void CameraWindow::OnMoveToButton ()
   csBox3 box = GetBoxSelected ();
   csVector3 center = box.GetCenter ();
   center.y = box.MaxY () + 2.0;
-  aresed3d->GetCamera ().CamMove (center);
+  aresed3d->GetCamera ()->CamMove (center);
 }
 
 void CameraWindow::OnPanSelected ()
@@ -218,12 +218,12 @@ void CameraWindow::OnPanSelected ()
     if (aresed3d->GetSelection ()->HasSelection ())
     {
       csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
-      aresed3d->GetCamera ().EnablePanning (center);
+      aresed3d->GetCamera ()->EnablePanning (center);
     }
   }
   else
   {
-    aresed3d->GetCamera ().DisablePanning ();
+    aresed3d->GetCamera ()->DisablePanning ();
   }
 }
 
@@ -231,13 +231,13 @@ void CameraWindow::OnGravitySelected ()
 {
   wxCheckBox* gravityCheck = XRCCTRL (*panel, "gravityCheckBox", wxCheckBox);
   if (gravityCheck->IsChecked ())
-    aresed3d->GetCamera ().EnableGravity ();
+    aresed3d->GetCamera ()->EnableGravity ();
   else
-    aresed3d->GetCamera ().DisableGravity ();
+    aresed3d->GetCamera ()->DisableGravity ();
 }
 
 CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
-  : aresed3d (aresed3d)
+  : scfImplementationType (this), aresed3d (aresed3d)
 {
   panel = new Panel (parent, this);
   parentSizer = parent->GetSizer (); 

@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __aresed_mainmodes_h
 
 #include "csutil/scfstr.h"
-#include "viewmode.h"
+#include "edcommon/viewmode.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- foliagemode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.foliage</name>
+        <implementation>FoliageMode</implementation>
+        <description>AresEd Foliage Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __aresed_curvemodes_h
 
 #include "csutil/csstring.h"
-#include "viewmode.h"
+#include "edcommon/viewmode.h"
 
 struct iGeometryGenerator;
 

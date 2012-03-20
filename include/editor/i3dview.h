@@ -34,6 +34,7 @@ struct iDynamicCell;
 struct iPcDynamicWorld;
 struct iAresEditor;
 struct iELCM;
+struct iEditorCamera;
 
 namespace Ares
 {
@@ -49,6 +50,26 @@ struct i3DView : public virtual iBase
 
   /// Get the CS camera for the view.
   virtual iCamera* GetCsCamera () const = 0;
+
+  /// Get the view.
+  virtual iView* GetView () const = 0;
+
+  /// Get the editor camera.
+  virtual iEditorCamera* GetEditorCamera () const = 0;
+
+  /// Get the light that moves with the camera.
+  virtual iLight* GetCameraLight () const = 0;
+
+  /// Return true if we're in debug mode.
+  virtual bool IsDebugMode () const = 0;
+  virtual void SetDebugMode (bool b) = 0;
+
+  /// Time settings.
+  virtual bool IsAutoTime () const = 0;
+  virtual void SetAutoTime (bool a) = 0;
+  virtual void ModifyCurrentTime (csTicks t) = 0;
+  virtual csTicks GetCurrentTime () const = 0;
+  virtual bool IsSimulation () const = 0;
 
   /**
    * Calculate a segment representing a beam that starts from camera

@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "modes/playmode.h"
 #include "modes/mainmode.h"
 #include "modes/curvemode.h"
-#include "modes/foliagemode.h"
 #include "modes/entitymode.h"
 #include "camera.h"
 
@@ -49,7 +48,7 @@ THE SOFTWARE.
 #include "models/dynfactmodel.h"
 #include "models/objects.h"
 #include "common/worldload.h"
-#include "tools/transformtools.h"
+#include "edcommon/transformtools.h"
 
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
@@ -110,7 +109,7 @@ struct SaveCallback : public OKCallback
 
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
   scfImplementationType (this),
-  app (app), object_reg (object_reg), camera (this)
+  app (app), object_reg (object_reg)
 {
   do_debug = false;
   do_simulation = true;
@@ -122,6 +121,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
+  camera.AttachNew (new Camera (this));
 }
 
 AresEdit3DView::~AresEdit3DView()
@@ -130,32 +130,7 @@ AresEdit3DView::~AresEdit3DView()
   delete selection;
 }
 
-void AresEdit3DView::Do3DPreFrameStuff ()
-{
-  // First get elapsed time from the virtual clock.
-  float elapsed_time = vc->GetElapsedSeconds ();
-  nature->UpdateTime (currentTime, GetCsCamera ());
-  if (do_auto_time)
-    currentTime += csTicks (elapsed_time * 1000);
-
-  camera.Frame (elapsed_time, mouseX, mouseY);
-
-  csReversibleTransform tc = GetCsCamera ()->GetTransform ();
-  //csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (0, 0, .5);
-  csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (2, 0, 2);
-  camlight->GetMovable ()->GetTransform ().SetOrigin (pos);
-  camlight->GetMovable ()->UpdateMove ();
-
-  if (do_simulation)
-  {
-    float dynamicSpeed = 1.0f;
-    dyn->Step (elapsed_time / dynamicSpeed);
-  }
-
-  dynworld->PrepareView (GetCsCamera (), elapsed_time);
-}
-
-void AresEdit3DView::Frame (EditingMode* editMode)
+void AresEdit3DView::Frame (iEditingMode* editMode)
 {
   g3d->BeginDraw( CSDRAW_3DGRAPHICS);
   editMode->Frame3D ();
@@ -227,6 +202,11 @@ void AresEdit3DView::ChangeNameSelectedObject (const char* name)
 {
   if (selection->GetSize () < 1) return;
   selection->GetFirst ()->SetEntityName (name);
+}
+
+iEditorCamera* AresEdit3DView::GetEditorCamera () const
+{
+  return static_cast<iEditorCamera*> (camera);
 }
 
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
@@ -787,7 +767,7 @@ bool AresEdit3DView::PostLoadMap ()
   //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
 
   // Setup the camera.
-  camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
+  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
 
   // Force the update of the clock.
   nature->UpdateTime (currentTime+100, GetCsCamera ());
@@ -820,7 +800,7 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
   iLightList* lightList = sector->GetLights ();
   lightList->Add (camlight);
 
-  camera.Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
+  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
 }
 
 bool AresEdit3DView::SetupWorld ()
@@ -1283,7 +1263,7 @@ void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
   int pageIdx = event.GetSelection ();
   wxString pageName = notebook->GetPageText (pageIdx);
 
-  EditingMode* newMode = 0;
+  csRef<iEditingMode> newMode;
   if (pageName == wxT ("Main")) newMode = mainMode;
   else if (pageName == wxT ("Curve")) newMode = curveMode;
   else if (pageName == wxT ("Foliage")) newMode = foliageMode;
@@ -1542,7 +1522,10 @@ bool AppAresEditWX::InitWX ()
   roomMode->Set3DView (view3d);
 
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
-  foliageMode = new FoliageMode (foliageModeTabPanel, view3d, object_reg);
+  foliageMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,
+      "ares.editor.modes.foliage");
+  foliageMode->Set3DView (view3d);
+  foliageMode->SetParent (foliageModeTabPanel);
   foliageMode->AllocContextHandlers (this);
 
   wxPanel* entityModeTabPanel = XRCCTRL (*this, "entityModeTabPanel", wxPanel);
@@ -1622,6 +1605,16 @@ void AppAresEditWX::SetupMenuBar ()
 
   CreateStatusBar ();
   SetMenuState ();
+}
+
+void AppAresEditWX::ShowCameraWindow ()
+{
+  camwin->Show ();
+}
+
+void AppAresEditWX::HideCameraWindow ()
+{
+  camwin->Hide ();
 }
 
 void AppAresEditWX::SetMenuState ()

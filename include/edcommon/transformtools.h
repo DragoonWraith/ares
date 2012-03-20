@@ -25,9 +25,12 @@ THE SOFTWARE.
 #ifndef __transformtools_h
 #define __transformtools_h
 
-struct iSelection;
+#include "aresextern.h"
 
-class TransformTools
+struct iSelection;
+class csVector3;
+
+class ARES_EXPORT TransformTools
 {
 public:
   /**

@@ -44,6 +44,11 @@ struct iEditingMode : public virtual iBase
   virtual void Set3DView (i3DView* view3d) = 0;
 
   /**
+   * Set the wxWindow parent for the panel of this mode.
+   */
+  virtual void SetParent (wxWindow* parent) = 0;
+
+  /**
    * The name of this mode.
    */
   virtual const char* GetName () const = 0;

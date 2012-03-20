@@ -27,7 +27,8 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-Camera::Camera (AresEdit3DView* aresed3d) : aresed3d (aresed3d)
+Camera::Camera (AresEdit3DView* aresed3d) : scfImplementationType (this),
+  aresed3d (aresed3d)
 {
   do_panning = false;
   do_mouse_panning = false;

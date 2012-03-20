@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __aresed_camera_h
 
 #include "iengine/camera.h"
+#include "editor/icamera.h"
 
 class AresEdit3DView;
 
@@ -36,7 +37,7 @@ struct CamLocation
   csQuaternion rot;
 };
 
-class Camera
+class Camera : public scfImplementation1<Camera, iEditorCamera>
 {
 protected:
   AresEdit3DView* aresed3d;
@@ -71,18 +72,19 @@ protected:
 
 public:
   Camera (AresEdit3DView* aresed3d);
+  virtual ~Camera () { }
 
   void Init (iCamera* camera, iSector* sector, const csVector3& pos);
 
-  bool IsPanningEnabled () const { return do_panning; }
-  void EnablePanning (const csVector3& center);
-  void DisablePanning ();
+  virtual bool IsPanningEnabled () const { return do_panning; }
+  virtual void EnablePanning (const csVector3& center);
+  virtual void DisablePanning ();
 
-  void Frame (float elapsed, int mouseX, int mouseY);
-  bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
-  bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
-  bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
-  void OnFocusLost ();
+  virtual void Frame (float elapsed, int mouseX, int mouseY);
+  virtual bool OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY);
+  virtual bool OnMouseUp (iEvent& ev, uint but, int mouseX, int mouseY);
+  virtual bool OnMouseMove (iEvent& ev, int mouseX, int mouseY);
+  virtual void OnFocusLost ();
 
   /**
    * Move the camera.

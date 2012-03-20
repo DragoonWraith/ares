@@ -26,11 +26,11 @@ THE SOFTWARE.
 #define __aresed_foliagemode_h
 
 #include "csutil/csstring.h"
-#include "viewmode.h"
+#include "edcommon/viewmode.h"
 
 struct iMeshGenerator;
 
-class FoliageMode : public ViewMode
+class FoliageMode : public scfImplementationExt1<FoliageMode, ViewMode, iComponent>
 {
 private:
   iMeshGenerator* meshgen;
@@ -40,8 +40,11 @@ private:
   void UpdateTypeList ();
 
 public:
-  FoliageMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
+  FoliageMode (iBase* parent);
   virtual ~FoliageMode () { }
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
+  virtual void SetParent (wxWindow* parent);
 
   virtual void Start ();
   virtual void Stop ();

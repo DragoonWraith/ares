@@ -64,9 +64,7 @@ struct iEditingMode;
 class EditingMode;
 class PlayMode;
 class MainMode;
-class FoliageMode;
 class CurveMode;
-class RoomMode;
 class EntityMode;
 
 struct iCelPlLayer;
@@ -177,7 +175,7 @@ private:
   iMeshWrapper* terrainMesh;
 
   /// Camera.
-  Camera camera;
+  csRef<Camera> camera;
 
   /**
    * A list with all curved factories which are generated indirectly through
@@ -275,12 +273,6 @@ public:
   void ResizeView (int width, int height);
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
-  
-  /**
-   * Handle all the 3D related stuff like nature, camera, camera light,
-   * physics simulation, ...
-   */
-  void Do3DPreFrameStuff ();
 
   void WriteText (const char* buf)
   {
@@ -288,17 +280,19 @@ public:
     g2d->Write (font, 200, g2d->GetHeight ()-20, colorWhite, -1, buf);
   }
 
-  void Frame (EditingMode* editMode);
+  void Frame (iEditingMode* editMode);
   bool OnMouseDown(iEvent&);
   bool OnMouseUp(iEvent&);
   bool OnMouseMove (iEvent&);
 
-  bool IsDebugMode () const { return do_debug; }
-  void SetDebugMode (bool b) { do_debug = b; }
+  virtual bool IsDebugMode () const { return do_debug; }
+  virtual void SetDebugMode (bool b) { do_debug = b; }
 
-  bool IsAutoTime () const { return do_auto_time; }
-  void SetAutoTime (bool a) { do_auto_time = a; }
-  void ModifyCurrentTime (csTicks t) { currentTime += t; }
+  virtual bool IsAutoTime () const { return do_auto_time; }
+  virtual void SetAutoTime (bool a) { do_auto_time = a; }
+  virtual void ModifyCurrentTime (csTicks t) { currentTime += t; }
+  virtual csTicks GetCurrentTime () const { return currentTime; }
+  virtual bool IsSimulation () const { return do_simulation; }
 
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
@@ -323,7 +317,9 @@ public:
   int GetMouseY () const { return mouseY; }
   virtual int GetViewWidth () const { return view_width; }
   virtual int GetViewHeight () const { return view_height; }
-  iView* GetView () const { return view; }
+  virtual iView* GetView () const { return view; }
+  virtual iEditorCamera* GetEditorCamera () const;
+  virtual iLight* GetCameraLight () const { return camlight; }
 
   virtual iSelection* GetSelection () const { return selection; }
   virtual Selection* GetSelectionInt () const { return selection; }
@@ -368,7 +364,7 @@ public:
       const csString& name, csReversibleTransform* trans = 0);
 
   /// Get the camera.
-  Camera& GetCamera () { return camera; }
+  Camera* GetCamera () { return camera; }
 
   /**
    * Enable ragdoll for the selected object. This is a temporary
@@ -493,9 +489,9 @@ private:
   MainMode* mainMode;
   CurveMode* curveMode;
   csRef<iEditingMode> roomMode;
-  FoliageMode* foliageMode;
+  csRef<iEditingMode> foliageMode;
   EntityMode* entityMode;
-  EditingMode* editMode;
+  iEditingMode* editMode;
   CameraWindow* camwin;
 
   void SetupMenuBar ();
@@ -580,6 +576,9 @@ public:
   virtual void SetMenuState ();
 
   CameraWindow* GetCameraWindow () const { return camwin; }
+  virtual void ShowCameraWindow ();
+  virtual void HideCameraWindow ();
+
   UIManager* GetUIManager () const { return uiManager; }
   virtual iUIManager* GetUI () const;
   iVirtualClock* GetVC () const { return vc; }
