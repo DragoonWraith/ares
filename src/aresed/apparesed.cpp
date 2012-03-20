@@ -1508,23 +1508,23 @@ bool AppAresEditWX::InitWX ()
   mainMode = new MainMode (mainModeTabPanel, view3d, object_reg);
   mainMode->AllocContextHandlers (this);
 
-  wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
-  curveMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,
-      "ares.editor.modes.curve");
-  curveMode->Set3DView (view3d);
-  curveMode->SetParent (curveModeTabPanel);
-  curveMode->AllocContextHandlers (this);
-
-  roomMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,
+  roomMode = csLoadPluginCheck<iEditingMode> (object_reg,
       "ares.editor.modes.room");
   roomMode->Set3DView (view3d);
 
   wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
-  foliageMode = csQueryRegistryOrLoad<iEditingMode> (object_reg,
+  foliageMode = csLoadPluginCheck<iEditingMode> (object_reg,
       "ares.editor.modes.foliage");
   foliageMode->Set3DView (view3d);
   foliageMode->SetParent (foliageModeTabPanel);
   foliageMode->AllocContextHandlers (this);
+
+  wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
+  curveMode = csLoadPluginCheck<iEditingMode> (object_reg,
+      "ares.editor.modes.curve");
+  curveMode->Set3DView (view3d);
+  curveMode->SetParent (curveModeTabPanel);
+  curveMode->AllocContextHandlers (this);
 
   wxPanel* entityModeTabPanel = XRCCTRL (*this, "entityModeTabPanel", wxPanel);
   entityMode = new EntityMode (entityModeTabPanel, view3d, object_reg);

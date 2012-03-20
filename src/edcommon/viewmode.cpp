@@ -39,7 +39,7 @@ ViewMode::ViewMode (i3DView* view, iObjectRegistry* object_reg, const char* name
   Initialize (object_reg);
 }
 
-ViewMode::ViewMode (iBase* parent) : EditingMode (this)
+ViewMode::ViewMode (iBase* parent) : EditingMode (parent)
 {
 }
 
