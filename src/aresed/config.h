@@ -25,36 +25,31 @@ THE SOFTWARE.
 #ifndef __aresed_config_h
 #define __aresed_config_h
 
-#include "physicallayer/datatype.h"
+#include "editor/iconfig.h"
 
 class AppAresEditWX;
 struct iDocumentNode;
 
-struct KnownParameter
+struct ModeConfig
 {
-  csString name;
-  celDataType type;
-  csString value;
+  csString plugin;
+  csString tooltip;
+  bool mainMode;
 };
 
-
-struct KnownMessage
-{
-  csString name;
-  csString description;
-  csArray<KnownParameter> parameters;
-};
-
-class AresConfig
+class AresConfig : public scfImplementation1<AresConfig, iEditorConfig>
 {
 private:
   AppAresEditWX* app;
   csArray<KnownMessage> messages;
+  csArray<ModeConfig> modes;
 
   bool ParseKnownMessages (iDocumentNode* knownmessagesNode);
+  bool ParseEditorModes (iDocumentNode* editormodesNode);
 
 public:
   AresConfig (AppAresEditWX* app);
+  virtual ~AresConfig () { }
 
   /**
    * Read the configuration file. Returns false on failure.
@@ -63,10 +58,13 @@ public:
   bool ReadConfig ();
 
   /// Get all known messages.
-  const csArray<KnownMessage>& GetMessages () const { return messages; }
+  virtual const csArray<KnownMessage>& GetMessages () const { return messages; }
 
   /// Get a known message by name.
-  const KnownMessage* GetKnownMessage (const char* name) const;
+  virtual const KnownMessage* GetKnownMessage (const char* name) const;
+
+  /// Get all modes.
+  const csArray<ModeConfig>& GetModes () const { return modes; }
 };
 
 #endif // __aresed_config_h

@@ -45,6 +45,7 @@ class TriggerPanel;
 class RewardPanel;
 class SequencePanel;
 class EntityTemplatePanel;
+class iAresEditor;
 
 enum
 {
@@ -52,7 +53,7 @@ enum
   ID_Template_Delete,
 };
 
-class EntityMode : public EditingMode
+class EntityMode : public scfImplementationExt1<EntityMode, EditingMode, iComponent>
 {
 private:
   csRef<iCelPlLayer> pl;
@@ -135,8 +136,15 @@ private:
   csRef<iQuestManager> questMgr;
 
 public:
-  EntityMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
+  EntityMode (iBase* parent);
   virtual ~EntityMode ();
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
+  virtual void SetParent (wxWindow* parent);
+
+  iAresEditor* GetApplication () const;
+  iObjectRegistry* GetObjectRegistry () const { return object_reg; }
+  iCelPlLayer* GetPL () const { return pl; }
 
   iQuestManager* GetQuestManager () const { return questMgr; }
   iCelPropertyClassTemplate* GetSelectedPC ()

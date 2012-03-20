@@ -74,6 +74,7 @@ public:
   virtual ~EditingMode () { }
 
   virtual void Set3DView (i3DView* view3d) { EditingMode::view3d = view3d; }
+  i3DView* Get3DView () const { return view3d; }
   virtual void SetParent (wxWindow* parent) { }
   virtual bool Initialize (iObjectRegistry* object_reg);
 
@@ -82,6 +83,7 @@ public:
 
   virtual void Start () { }
   virtual void Stop () { }
+  virtual void Refresh () { }
 
   virtual csRef<iString> GetStatusLine ()
   {

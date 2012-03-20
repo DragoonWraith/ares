@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins entitymode ;
+
+Description entitymode : "AresEd Entity Mode Plugin" ;
+Plugin entitymode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs entitymode : CRYSTAL ;
+ExternalLibs entitymode : CEL ;
+ExternalLibs entitymode : WX ;
+LinkWith entitymode : edcommon ;
+

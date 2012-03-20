@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins playmode ;
+
+Description playmode : "AresEd Play Mode Plugin" ;
+Plugin playmode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs playmode : CRYSTAL ;
+ExternalLibs playmode : CEL ;
+ExternalLibs playmode : WX ;
+LinkWith playmode : edcommon ;
+

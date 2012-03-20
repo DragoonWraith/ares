@@ -25,9 +25,9 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "edcommon/listctrltools.h"
-#include "listview.h"
+#include "edcommon/listview.h"
 #include "edcommon/rowmodel.h"
-#include "uimanager.h"
+#include "editor/iuidialog.h"
 
 //-----------------------------------------------------------------------------
 
@@ -245,13 +245,11 @@ void ListCtrlView::SetupContextMenu ()
 
 ListCtrlView::~ListCtrlView ()
 {
-  if (forcedDialog && ownForcedDialog)
-    delete forcedDialog;
 }
 
 csStringArray ListCtrlView::DialogEditRow (const csStringArray& origRow)
 {
-  UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
+  iUIDialog* dialog = forcedDialog ? (iUIDialog*)forcedDialog : model->GetEditorDialog ();
   dialog->Clear ();
   if (origRow.GetSize () >= columns.GetSize ())
     for (size_t i = 0 ; i < columns.GetSize () ; i++)
@@ -273,11 +271,9 @@ csStringArray ListCtrlView::DoDialog (const csStringArray& origRow)
   return model->EditRow (origRow);
 }
 
-void ListCtrlView::SetEditorDialog (UIDialog* dialog, bool own)
+void ListCtrlView::SetEditorDialog (iUIDialog* dialog)
 {
-  if (forcedDialog && ownForcedDialog && forcedDialog != dialog) delete forcedDialog;
   forcedDialog = dialog;
-  ownForcedDialog = own;
 }
 
 void ListCtrlView::OnAdd (wxCommandEvent& event)

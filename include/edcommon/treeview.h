@@ -34,21 +34,20 @@ THE SOFTWARE.
 
 #include "edcommon/rowmodel.h"
 
-class UIDialog;
+struct iUIDialog;
 
 
 /**
  * A view based on a tree control on top of a RowModel.
  */
-class TreeCtrlView : public wxEvtHandler
+class ARES_EXPORT TreeCtrlView : public wxEvtHandler
 {
 private:
   wxTreeCtrl* tree;
   csRef<RowModel> model;
   csRef<EditorModel> editorModel;
   csStringArray columns;
-  UIDialog* forcedDialog;
-  bool ownForcedDialog;
+  csRef<iUIDialog> forcedDialog;
   csString rootName;
 
   void UnbindModel ();
@@ -69,8 +68,8 @@ private:
   csStringArray DoDialog (const csStringArray& origRow);
 
 public:
-  TreeCtrlView (wxTreeCtrl* tree) : tree (tree), forcedDialog (0), ownForcedDialog (false) { }
-  TreeCtrlView (wxTreeCtrl* tree, RowModel* model) : tree (tree), forcedDialog (0), ownForcedDialog (false)
+  TreeCtrlView (wxTreeCtrl* tree) : tree (tree)  { }
+  TreeCtrlView (wxTreeCtrl* tree, RowModel* model) : tree (tree)
   {
     BindModel (model);
   }
@@ -96,11 +95,9 @@ public:
   void SetRootName (const char* rootName) { TreeCtrlView::rootName = rootName; }
 
   /**
-   * Manually force an editor dialog to use. If 'own' is true
-   * this view will assume ownership of the dialog and remove the
-   * dialog in the destructor.
+   * Manually force an editor dialog to use.
    */
-  void SetEditorDialog (UIDialog* dialog, bool own = false);
+  void SetEditorDialog (iUIDialog* dialog);
 
   /**
    * Refresh the tree from the data in the model.

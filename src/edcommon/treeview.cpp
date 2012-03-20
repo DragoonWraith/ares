@@ -24,9 +24,10 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "treeview.h"
+#include "edcommon/treeview.h"
 #include "edcommon/rowmodel.h"
-#include "uimanager.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
 
 //-----------------------------------------------------------------------------
 
@@ -74,8 +75,6 @@ TreeCtrlView::~TreeCtrlView ()
 {
   UnbindModel ();
   SetEditorModel (0);
-  if (forcedDialog && ownForcedDialog)
-    delete forcedDialog;
 }
 
 void TreeCtrlView::UpdateEditor ()
@@ -162,7 +161,7 @@ void TreeCtrlView::Refresh ()
 
 csStringArray TreeCtrlView::DialogEditRow (const csStringArray& origRow)
 {
-  UIDialog* dialog = forcedDialog ? forcedDialog : model->GetEditorDialog ();
+  iUIDialog* dialog = forcedDialog ? (iUIDialog*)forcedDialog : model->GetEditorDialog ();
   dialog->Clear ();
   if (origRow.GetSize () >= columns.GetSize ())
     for (size_t i = 0 ; i < columns.GetSize () ; i++)
@@ -184,11 +183,9 @@ csStringArray TreeCtrlView::DoDialog (const csStringArray& origRow)
   return model->EditRow (origRow);
 }
 
-void TreeCtrlView::SetEditorDialog (UIDialog* dialog, bool own)
+void TreeCtrlView::SetEditorDialog (iUIDialog* dialog)
 {
-  if (forcedDialog && ownForcedDialog && forcedDialog != dialog) delete forcedDialog;
   forcedDialog = dialog;
-  ownForcedDialog = own;
 }
 
 /**

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
+#include <crystalspace.h>
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"
 #include "physicallayer/entitytpl.h"
@@ -30,7 +30,14 @@ THE SOFTWARE.
 #include "propclass/camera.h"
 #include "propclass/mesh.h"
 #include "propclass/mechsys.h"
+#include "tools/elcm.h"
+
 #include "playmode.h"
+#include "editor/i3dview.h"
+#include "editor/iapp.h"
+#include "editor/iselection.h"
+
+SCF_IMPLEMENT_FACTORY (PlayMode)
 
 //---------------------------------------------------------------------------
 
@@ -121,11 +128,17 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
 
 //---------------------------------------------------------------------------
 
-PlayMode::PlayMode (i3DView* view3d, iObjectRegistry* object_reg)
-  : EditingMode (view3d, object_reg, "Play")
+PlayMode::PlayMode (iBase* parent) : scfImplementationType (this, parent)
 {
+  name = "Play";
   snapshot = 0;
+}
+
+bool PlayMode::Initialize (iObjectRegistry* object_reg)
+{
+  if (!EditingMode::Initialize (object_reg)) return false;
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  return true;
 }
 
 PlayMode::~PlayMode ()
@@ -241,9 +254,7 @@ bool PlayMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
   if (code == CSKEY_ESC)
   {
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-    aresed3d->GetApp ()->SwitchToMainMode ();
+    view3d->GetApplication ()->SwitchToMainMode ();
     return true;
   }
   return false;

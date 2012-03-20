@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- entitymode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.entity</name>
+        <implementation>EntityMode</implementation>
+        <description>AresEd Entity Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

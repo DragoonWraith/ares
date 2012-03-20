@@ -74,6 +74,12 @@ struct iEditingMode : public virtual iBase
   virtual void Stop () = 0;
 
   /**
+   * Refresh the mode in case something big changes (new file
+   * is loaded, new dynamic factories are created, ...)
+   */
+  virtual void Refresh () = 0;
+
+  /**
    * Get the current status line for this mode.
    */
   virtual csRef<iString> GetStatusLine () = 0;

@@ -24,14 +24,15 @@ THE SOFTWARE.
 
 #include "triggerpanel.h"
 #include "entitymode.h"
-#include "../ui/uimanager.h"
 #include "physicallayer/entitytpl.h"
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
-#include "../apparesed.h"
 #include "edcommon/uitools.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
+#include "editor/iconfig.h"
+#include "editor/iapp.h"
+#include "editor/iuimanager.h"
 
 //--------------------------------------------------------------------------
 
@@ -204,8 +205,8 @@ void TriggerPanel::UpdatePanel ()
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
     UITools::ClearChoices (this, "mask_Me_Combo");
 
-    const AresConfig& config = uiManager->GetApp ()->GetConfig ();
-    const csArray<KnownMessage>& messages = config.GetMessages ();
+    iEditorConfig* config = emode->GetApplication ()->GetConfig ();
+    const csArray<KnownMessage>& messages = config->GetMessages ();
     for (size_t i = 0 ; i < messages.GetSize () ; i++)
       UITools::AddChoices (this, "mask_Me_Combo", messages.Get (i).name.GetData (),
 	(const char*)0);
@@ -372,12 +373,12 @@ void TriggerPanel::UpdateTrigger ()
 
 // -----------------------------------------------------------------------
 
-TriggerPanel::TriggerPanel (wxWindow* parent, UIManager* uiManager,
+TriggerPanel::TriggerPanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode)
 {
   triggerResp = 0;
-  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
+  pl = emode->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("TriggerPanel"));

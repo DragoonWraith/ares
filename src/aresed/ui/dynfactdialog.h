@@ -243,9 +243,9 @@ private:
   csRef<DynfactValue> dynfactValue;
   csRef<BoneValue> boneValue;
 
-  UIDialog* factoryDialog;
-  UIDialog* attributeDialog;
-  UIDialog* selectBoneDialog;
+  csRef<iUIDialog> factoryDialog;
+  csRef<iUIDialog> attributeDialog;
+  csRef<iUIDialog> selectBoneDialog;
 
   void OnOkButton (wxCommandEvent& event);
   void OnShowBodies (wxCommandEvent& event);

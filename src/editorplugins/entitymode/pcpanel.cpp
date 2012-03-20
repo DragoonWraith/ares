@@ -24,17 +24,19 @@ THE SOFTWARE.
 
 #include "pcpanel.h"
 #include "entitymode.h"
-#include "../ui/uimanager.h"
 #include "physicallayer/entitytpl.h"
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
-#include "../apparesed.h"
 #include "edcommon/listctrltools.h"
-#include "../ui/listview.h"
+#include "edcommon/listview.h"
 #include "edcommon/uitools.h"
 #include "edcommon/rowmodel.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
+#include "editor/iconfig.h"
+#include "editor/iapp.h"
 
 //--------------------------------------------------------------------------
 
@@ -292,8 +294,8 @@ public:
     if (!par) return false;
     params.Put (pl->FetchStringID ("entity"), par);
 
-    const AresConfig& config = pcPanel->GetUIManager ()->GetApp ()->GetConfig ();
-    const KnownMessage* message = config.GetKnownMessage (msg);
+    iEditorConfig* config = pcPanel->GetEntityMode ()->GetApplication ()->GetConfig ();
+    const KnownMessage* message = config->GetKnownMessage (msg);
     if (message)
     {
       for (size_t i = 0 ; i < message->parameters.GetSize () ; i++)
@@ -315,7 +317,7 @@ public:
   }
 
   virtual const char* GetColumns () { return "Message,Entity,Parameters"; }
-  virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
+  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetWireMsgDialog (); }
 };
 
 class WireParRowModel : public PcParRowModel
@@ -403,7 +405,7 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual UIDialog* GetEditorDialog () { return pcPanel->GetWireParDialog (); }
+  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetWireParDialog (); }
 };
 
 /**
@@ -430,7 +432,7 @@ public:
 };
 
 
-UIDialog* PropertyClassPanel::GetWireParDialog ()
+iUIDialog* PropertyClassPanel::GetWireParDialog ()
 {
   if (!wireParDialog)
   {
@@ -446,16 +448,16 @@ UIDialog* PropertyClassPanel::GetWireParDialog ()
   return wireParDialog;
 }
 
-UIDialog* PropertyClassPanel::GetWireMsgDialog ()
+iUIDialog* PropertyClassPanel::GetWireMsgDialog ()
 {
   if (!wireMsgDialog)
   {
     wireMsgDialog = uiManager->CreateDialog ("Edit message");
     wireMsgDialog->AddRow ();
     wireMsgDialog->AddLabel ("Message:");
-    const AresConfig& config = uiManager->GetApp ()->GetConfig ();
+    iEditorConfig* config = emode->GetApplication ()->GetConfig ();
     csStringArray messageArray;
-    const csArray<KnownMessage>& messages = config.GetMessages ();
+    const csArray<KnownMessage>& messages = config->GetMessages ();
     for (size_t i = 0 ; i < messages.GetSize () ; i++)
       messageArray.Push (messages.Get (i).name);
     wireMsgDialog->AddCombo ("Message", messageArray);
@@ -658,10 +660,10 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name"; }
-  virtual UIDialog* GetEditorDialog () { return pcPanel->GetSpawnTemplateDialog (); }
+  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetSpawnTemplateDialog (); }
 };
 
-UIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
+iUIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
 {
   if (!spawnTempDialog)
   {
@@ -863,10 +865,10 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual UIDialog* GetEditorDialog () { return pcPanel->GetQuestDialog (); }
+  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetQuestDialog (); }
 };
 
-UIDialog* PropertyClassPanel::GetQuestDialog ()
+iUIDialog* PropertyClassPanel::GetQuestDialog ()
 {
   if (!questParDialog)
   {
@@ -917,8 +919,7 @@ void PropertyClassPanel::FillQuest ()
   if (!pctpl || csString ("pclogic.quest") != pctpl->GetName ()) return;
 
   csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
-    uiManager->GetApp ()->GetObjectRegistry (),
-    "cel.manager.quests");
+    emode->GetObjectRegistry (), "cel.manager.quests");
 
   iQuestFactory* questFact = 0;
   csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
@@ -1041,10 +1042,10 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Amount"; }
-  virtual UIDialog* GetEditorDialog () { return pcPanel->GetInventoryTemplateDialog (); }
+  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetInventoryTemplateDialog (); }
 };
 
-UIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
+iUIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
 {
   if (!invTempDialog)
   {
@@ -1151,10 +1152,10 @@ public:
   }
 
   virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual UIDialog* GetEditorDialog () { return pcPanel->GetPropertyDialog (); }
+  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetPropertyDialog (); }
 };
 
-UIDialog* PropertyClassPanel::GetPropertyDialog ()
+iUIDialog* PropertyClassPanel::GetPropertyDialog ()
 {
   if (!propDialog)
   {
@@ -1254,19 +1255,20 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
   FillOldCamera ();
 }
 
-PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
+PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
 {
-  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
-  pm = uiManager->GetApp ()->GetAresView ()->GetPM ();
+  pl = emode->GetPL ();
+  pm = csQueryRegistryOrLoad<iParameterManager> (emode->GetObjectRegistry (),
+      "cel.parameters.manager");
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
 
   wxComboBox* wireInputMaskCombo = XRCCTRL (*this, "wireInputMaskCombo", wxComboBox);
-  const AresConfig& config = uiManager->GetApp ()->GetConfig ();
-  const csArray<KnownMessage>& messages = config.GetMessages ();
+  iEditorConfig* config = emode->GetApplication ()->GetConfig ();
+  const csArray<KnownMessage>& messages = config->GetMessages ();
   for (size_t i = 0 ; i < messages.GetSize () ; i++)
     wireInputMaskCombo->Append (wxString::FromUTF8 (messages.Get (i).name));
 
@@ -1297,24 +1299,10 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, UIManager* uiManager,
   wireParView = new ListCtrlView (list, wireParModel);
   wireParEditorModel.AttachNew (new WireParEditorModel (wireParView));
   wireMsgView->SetEditorModel (wireParEditorModel);
-
-  propDialog = 0;
-  invTempDialog = 0;
-  spawnTempDialog = 0;
-  questParDialog = 0;
-  wireParDialog = 0;
-  wireMsgDialog = 0;
 }
 
 PropertyClassPanel::~PropertyClassPanel ()
 {
-  delete propDialog;
-  delete invTempDialog;
-  delete spawnTempDialog;
-  delete questParDialog;
-  delete wireParDialog;
-  delete wireMsgDialog;
-
   delete propertyView;
   delete inventoryView;
   delete questView;

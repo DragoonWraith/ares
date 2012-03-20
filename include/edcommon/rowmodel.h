@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <csutil/stringarray.h>
 #include "aresextern.h"
 
-class UIDialog;
+class iUIDialog;
 class EditorModel;
 
 /**
@@ -111,7 +111,7 @@ public:
    * for more controlled editing. The dialog should support the fields
    * with the same name as the columns in the model.
    */
-  virtual UIDialog* GetEditorDialog () { return 0; }
+  virtual iUIDialog* GetEditorDialog () { return 0; }
 
   /**
    * Edit a given row and return the updated row.

@@ -61,7 +61,7 @@ public:
 };
 
 
-class PlayMode : public EditingMode
+class PlayMode : public scfImplementationExt1<PlayMode, EditingMode, iComponent>
 {
 private:
   DynworldSnapshot* snapshot;
@@ -70,8 +70,10 @@ private:
   csRef<iCelPlLayer> pl;
 
 public:
-  PlayMode (i3DView* view3d, iObjectRegistry* object_reg);
+  PlayMode (iBase* parent);
   virtual ~PlayMode ();
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual csRef<iString> GetStatusLine ()
   {

@@ -22,9 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
-#include "../camerawin.h"
-#include "../ui/uimanager.h"
+#include <crystalspace.h>
 #include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
 #include "entitymode.h"
@@ -33,6 +31,10 @@ THE SOFTWARE.
 #include "triggerpanel.h"
 #include "rewardpanel.h"
 #include "sequencepanel.h"
+#include "editor/i3dview.h"
+#include "editor/iapp.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -49,6 +51,8 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_MENU (ID_Template_Add, EntityMode::Panel :: OnTemplateAdd)
   EVT_MENU (ID_Template_Delete, EntityMode::Panel :: OnTemplateDel)
 END_EVENT_TABLE()
+
+SCF_IMPLEMENT_FACTORY (EntityMode)
 
 //---------------------------------------------------------------------------
 
@@ -68,13 +72,14 @@ public:
 
 //---------------------------------------------------------------------------
 
-EntityMode::EntityMode (wxWindow* parent, i3DView* view,
-    iObjectRegistry* object_reg)
-  : EditingMode (view, object_reg, "Entity")
+EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
 {
-  panel = new Panel (parent, this);
-  parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
-  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
+  name = "Entity";
+}
+
+bool EntityMode::Initialize (iObjectRegistry* object_reg)
+{
+  if (!EditingMode::Initialize (object_reg)) return false;
 
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
   iGraphics2D* g2d = g3d->GetDriver2D ();
@@ -85,21 +90,28 @@ EntityMode::EntityMode (wxWindow* parent, i3DView* view,
   questMgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
       "cel.manager.quests");
 
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  pcPanel = new PropertyClassPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  return true;
+}
+
+void EntityMode::SetParent (wxWindow* parent)
+{
+  panel = new Panel (parent, this);
+  parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
+  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
+
+  pcPanel = new PropertyClassPanel (panel, view3d->GetApplication ()->GetUI (), this);
   pcPanel->Hide ();
 
-  triggerPanel = new TriggerPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  triggerPanel = new TriggerPanel (panel, view3d->GetApplication ()->GetUI (), this);
   triggerPanel->Hide ();
 
-  rewardPanel = new RewardPanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  rewardPanel = new RewardPanel (panel, view3d->GetApplication ()->GetUI (), this);
   rewardPanel->Hide ();
 
-  sequencePanel = new SequencePanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  sequencePanel = new SequencePanel (panel, view3d->GetApplication ()->GetUI (), this);
   sequencePanel->Hide ();
 
-  tplPanel = new EntityTemplatePanel (panel, aresed3d->GetApp ()->GetUIManager (), this);
+  tplPanel = new EntityTemplatePanel (panel, view3d->GetApplication ()->GetUI (), this);
   tplPanel->Hide ();
 
   graphView = markerMgr->CreateGraphView ();
@@ -117,6 +129,11 @@ EntityMode::EntityMode (wxWindow* parent, i3DView* view,
 EntityMode::~EntityMode ()
 {
   markerMgr->DestroyGraphView (graphView);
+}
+
+iAresEditor* EntityMode::GetApplication () const
+{
+  return view3d->GetApplication ();
 }
 
 iMarkerColor* EntityMode::NewColor (const char* name,
@@ -259,9 +276,7 @@ void EntityMode::SetupItems ()
 
 void EntityMode::Start ()
 {
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  aresed3d->GetApp ()->GetCameraWindow ()->Hide ();
+  view3d->GetApplication ()->HideCameraWindow ();
   SetupItems ();
   graphView->SetVisible (true);
   pcPanel->Hide ();
@@ -763,19 +778,17 @@ void EntityMode::OnTemplateSelect ()
 
 void EntityMode::OnTemplateAdd ()
 {
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  csString name = ui->AskDialog ("New Template", "Name:");
-  if (!name.IsEmpty ())
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iString> name = ui->AskDialog ("New Template", "Name:");
+  if (!name->IsEmpty ())
   {
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (name);
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (name->GetData ());
     if (tpl)
       ui->Error ("A template with this name already exists!");
     else
     {
-      tpl = pl->CreateEntityTemplate (name);
-      currentTemplate = name;
+      tpl = pl->CreateEntityTemplate (name->GetData ());
+      currentTemplate = name->GetData ();
       editQuestMode = false;
       BuildTemplateGraph (currentTemplate);
       SetupItems ();
@@ -848,10 +861,8 @@ void EntityMode::OnDelete ()
 
 void EntityMode::OnCreatePC ()
 {
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  UIDialog* dialog = ui->CreateDialog ("New PropertyClass");
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New PropertyClass");
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "pcobject.mesh", "pctools.properties",
@@ -880,7 +891,6 @@ void EntityMode::OnCreatePC ()
     }
 
   }
-  delete dialog;
 }
 
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
@@ -940,10 +950,8 @@ printf ("node:%s\n", nodeName); fflush (stdout);
 void EntityMode::OnCreateReward (int type)
 {
   if (GetContextMenuNode ().IsEmpty ()) return;
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  UIDialog* dialog = ui->CreateDialog ("New Reward");
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Reward");
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "newstate", "debugprint", "action", "changeproperty",
@@ -969,16 +977,13 @@ void EntityMode::OnCreateReward (int type)
     }
     RefreshView ();
   }
-  delete dialog;
 }
 
 void EntityMode::OnCreateTrigger ()
 {
   if (GetContextMenuNode ().IsEmpty ()) return;
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  UIDialog* dialog = ui->CreateDialog ("New Trigger");
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Trigger");
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "entersector", "meshentersector", "inventory",
@@ -997,7 +1002,6 @@ void EntityMode::OnCreateTrigger ()
     resp->SetTriggerFactory (triggerFact);
     RefreshView ();
   }
-  delete dialog;
 }
 
 void EntityMode::OnDefaultState ()
@@ -1026,21 +1030,19 @@ void EntityMode::OnNewSequence ()
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  csString name = ui->AskDialog ("New Sequence", "Name:");
-  if (name.IsEmpty ()) return;
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iString> name = ui->AskDialog ("New Sequence", "Name:");
+  if (name->IsEmpty ()) return;
 
   iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
   if (!questFact)
     questFact = questMgr->CreateQuestFactory (questName);
-  if (questFact->GetSequence (name))
+  if (questFact->GetSequence (name->GetData ()))
   {
     ui->Error ("Sequence already exists with this name!");
     return;
   }
-  questFact->CreateSequence (name);
+  questFact->CreateSequence (name->GetData ());
   RefreshView (pctpl);
 }
 
@@ -1051,21 +1053,19 @@ void EntityMode::OnNewState ()
   csString questName = GetQuestName (pctpl);
   if (questName.IsEmpty ()) return;
 
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
-  csString name = ui->AskDialog ("New State", "Name:");
-  if (name.IsEmpty ()) return;
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iString> name = ui->AskDialog ("New State", "Name:");
+  if (name->IsEmpty ()) return;
 
   iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
   if (!questFact)
     questFact = questMgr->CreateQuestFactory (questName);
-  if (questFact->GetState (name))
+  if (questFact->GetState (name->GetData ()))
   {
     ui->Error ("State already exists with this name!");
     return;
   }
-  questFact->CreateState (name);
+  questFact->CreateState (name->GetData ());
   RefreshView (pctpl);
 }
 
@@ -1077,9 +1077,7 @@ void EntityMode::OnEditQuest ()
 
 void EntityMode::AllocContextHandlers (wxFrame* frame)
 {
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
   idDelete = ui->AllocContextMenuID ();
   frame->Connect (idDelete, wxEVT_COMMAND_MENU_SELECTED,

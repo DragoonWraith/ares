@@ -29,10 +29,8 @@ THE SOFTWARE.
 #include "ui/newproject.h"
 #include "ui/celldialog.h"
 #include "ui/dynfactdialog.h"
-#include "modes/playmode.h"
-#include "modes/mainmode.h"
-#include "modes/entitymode.h"
 #include "camera.h"
+#include "editor/imode.h"
 
 #include "celtool/initapp.h"
 #include "cstool/simplestaticlighter.h"
@@ -121,6 +119,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
   camera.AttachNew (new Camera (this));
+  pasteMarker = 0;
 }
 
 AresEdit3DView::~AresEdit3DView()
@@ -131,6 +130,8 @@ AresEdit3DView::~AresEdit3DView()
 
 void AresEdit3DView::Frame (iEditingMode* editMode)
 {
+  if (IsPasteSelectionActive ()) PlacePasteMarker ();
+
   g3d->BeginDraw( CSDRAW_3DGRAPHICS);
   editMode->Frame3D ();
   markerMgr->Frame3D ();
@@ -222,6 +223,85 @@ void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_o
   app->SetCurveModeEnabled (curveTabEnable);
 }
 
+void AresEdit3DView::StopPasteMode ()
+{
+  todoSpawn.Empty ();
+  pasteMarker->SetVisible (false);
+  app->SetMenuState ();
+  app->ClearStatus ();
+}
+
+void AresEdit3DView::CopySelection ()
+{
+  pastebuffer.Empty ();
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
+  {
+    iDynamicObject* dynobj = it->Next ();
+    iDynamicFactory* dynfact = dynobj->GetFactory ();
+    AresPasteContents apc;
+    apc.useTransform = true;	// Use the transform defined in this paste buffer.
+    apc.dynfactName = dynfact->GetName ();
+    apc.trans = dynobj->GetTransform ();
+    apc.isStatic = dynobj->IsStatic ();
+    pastebuffer.Push (apc);
+  }
+}
+
+void AresEdit3DView::PasteSelection ()
+{
+  if (todoSpawn.GetSize () <= 0) return;
+  csReversibleTransform trans = todoSpawn[0].trans;
+  for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
+  {
+    csReversibleTransform tr = todoSpawn[i].trans;
+    csReversibleTransform* transPtr = 0;
+    if (todoSpawn[i].useTransform)
+    {
+      tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
+      transPtr = &tr;
+    }
+    iDynamicObject* dynobj = SpawnItem (todoSpawn[i].dynfactName, transPtr);
+    if (todoSpawn[i].useTransform)
+    {
+      if (todoSpawn[i].isStatic)
+        dynobj->MakeStatic ();
+      else
+        dynobj->MakeDynamic ();
+    }
+  }
+}
+
+void AresEdit3DView::PlacePasteMarker ()
+{
+  pasteMarker->SetVisible (true);
+  csReversibleTransform tr = todoSpawn[0].trans;
+  tr.SetOrigin (csVector3 (0));
+  tr = GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
+  pasteMarker->SetTransform (tr);
+}
+
+void AresEdit3DView::StartPasteSelection ()
+{
+  todoSpawn = pastebuffer;
+  if (IsPasteSelectionActive ())
+    PlacePasteMarker ();
+  app->SetMenuState ();
+  app->SetStatus ("Left mouse to place objects. Middle button to cancel");
+}
+
+void AresEdit3DView::StartPasteSelection (const char* name)
+{
+  todoSpawn.Empty ();
+  AresPasteContents apc;
+  apc.useTransform = false;
+  apc.dynfactName = name;
+  todoSpawn.Push (apc);
+  PlacePasteMarker ();
+  app->SetMenuState ();
+  app->SetStatus ("Left mouse to place objects. Middle button to cancel");
+}
+
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
     const csVector3& end, csVector3& isect)
 {
@@ -282,6 +362,20 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
   uint but = csMouseEventHelper::GetButton (&ev);
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
+
+  if (IsPasteSelectionActive ())
+  {
+    if (but == csmbLeft)
+    {
+      PasteSelection ();
+      StopPasteMode ();
+    }
+    else if (but == csmbMiddle)
+    {
+      StopPasteMode ();
+    }
+    return true;
+  }
 
   if (markerMgr->OnMouseDown (ev, but, mouseX, mouseY))
     return true;
@@ -632,6 +726,12 @@ bool AresEdit3DView::Setup ()
   white->SetPenWidth (SELECTION_NONE, 1.2f);
   white->SetPenWidth (SELECTION_SELECTED, 2.0f);
   white->SetPenWidth (SELECTION_ACTIVE, 2.0f);
+
+  pasteMarker = markerMgr->CreateMarker ();
+  pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
+  pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
+  pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
+  pasteMarker->SetVisible (false);
 
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
@@ -1013,9 +1113,9 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   selection->SetCurrentObject (dynobj);
 
   if (curvedFactory)
-    app->SwitchToCurveMode ();
+    app->SwitchToMode ("Curve");
   else if (roomFactory)
-    app->SwitchToRoomMode ();
+    app->SwitchToMode ("Room");
   return dynobj;
 }
 
@@ -1060,6 +1160,85 @@ iParameterManager* AresEdit3DView::GetPM ()
   return pm;
 }
 
+void AresEdit3DView::JoinObjects ()
+{
+  if (selection->GetSize () != 2)
+  {
+    app->GetUIManager ()->Error ("Select two objects to join!");
+    return;
+  }
+  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  if (ob[0]->GetFactory ()->GetJointCount () == 0)
+  {
+    app->GetUIManager ()->Error ("The first object has no joints!");
+    return;
+  }
+  // In this function all joints are connected between the two same objects.
+  for (size_t i = 0 ; i < ob[0]->GetFactory ()->GetJointCount () ; i++)
+    ob[0]->Connect (i, ob[1]);
+}
+
+void AresEdit3DView::UnjoinObjects ()
+{
+  if (selection->GetSize () == 0)
+  {
+    app->GetUIManager ()->Error ("Select at least one object to unjoin!");
+    return;
+  }
+  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
+  size_t count = ob[0]->GetFactory ()->GetJointCount ();
+  if (count == 0)
+  {
+    app->GetUIManager ()->Error ("The first object has no joints!");
+    return;
+  }
+  if (selection->GetSize () == 1)
+  {
+    int removed = 0;
+    for (size_t i = 0 ; i < count ; i++)
+      if (ob[0]->GetConnectedObject (i))
+      {
+	ob[0]->Connect (i, 0);
+	removed++;
+      }
+    app->GetUIManager ()->Message ("Disconnected %d objects.", removed);
+  }
+  else
+  {
+    for (size_t i = 1 ; i < ob.GetSize () ; i++)
+    {
+      bool found = false;
+      for (size_t j = 0 ; j < ob[0]->GetFactory ()->GetJointCount () ; j++)
+	if (ob[0]->GetConnectedObject (j) == ob[i]) { found = true; break; }
+      if (!found)
+      {
+        app->GetUIManager ()->Error ("Some of the objects are not connected!");
+        return;
+      }
+    }
+    for (size_t i = 1 ; i < ob.GetSize () ; i++)
+    {
+      for (size_t j = 0 ; j < ob[0]->GetFactory ()->GetJointCount () ; j++)
+	if (ob[0]->GetConnectedObject (j) == ob[i])
+	{
+	  ob[0]->Connect (j, 0);
+	  break;
+	}
+    }
+  }
+}
+
+void AresEdit3DView::UpdateObjects ()
+{
+  if (!app->GetUIManager ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
+  for (size_t i = 0 ; i < dyncell->GetObjectCount () ; i++)
+  {
+    iDynamicObject* obj = dyncell->GetObject (i);
+    obj->RefreshColliders ();
+    obj->RecreateJoints ();
+  }
+}
+
 // =========================================================================
 
 BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
@@ -1093,24 +1272,19 @@ AppAresEditWX* aresed = 0;
 
 AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
   : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (1000, 600)),
-    scfImplementationType (this),
-    config (this)
+    scfImplementationType (this)
 {
   AppAresEditWX::object_reg = object_reg;
   camwin = 0;
   editMode = 0;
-  mainMode = 0;
-  entityMode = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
+  config.AttachNew (new AresConfig (this));
 }
 
 AppAresEditWX::~AppAresEditWX ()
 {
   delete camwin;
-  delete playMode;
-  delete mainMode;
-  delete entityMode;
 }
 
 iUIManager* AppAresEditWX::GetUI () const
@@ -1120,12 +1294,12 @@ iUIManager* AppAresEditWX::GetUI () const
 
 void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
 {
-  if (editMode == mainMode) mainMode->CopySelection ();
+  aresed3d->CopySelection ();
 }
 
 void AppAresEditWX::OnMenuPaste (wxCommandEvent& event)
 {
-  if (editMode == mainMode) mainMode->StartPasteSelection ();
+  aresed3d->StartPasteSelection ();
 }
 
 void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
@@ -1136,13 +1310,13 @@ void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
 void AppAresEditWX::OnMenuJoin (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
-  mainMode->JoinObjects ();
+  aresed3d->JoinObjects ();
 }
 
 void AppAresEditWX::OnMenuUnjoin (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
-  mainMode->UnjoinObjects ();
+  aresed3d->UnjoinObjects ();
 }
 /*
 void AppAresEditWX::OnMenuRagdoll (wxCommandEvent& event)
@@ -1182,19 +1356,23 @@ void AppAresEditWX::OnMenuFindObject (wxCommandEvent& event)
 void AppAresEditWX::OnMenuUpdateObjects (wxCommandEvent& event)
 {
   if (editMode != mainMode) return;
-  mainMode->UpdateObjects ();
+  aresed3d->UpdateObjects ();
 }
 
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
 {
   aresed3d->NewProject (assets);
+  // @@@ Loop over all modes:
   mainMode->Refresh ();
+  editMode->Refresh ();
 }
 
 void AppAresEditWX::LoadFile (const char* filename)
 {
   aresed3d->LoadFile (filename);
+  // @@@ Loop over all modes:
   mainMode->Refresh ();
+  editMode->Refresh ();
 }
 
 void AppAresEditWX::SaveFile (const char* filename)
@@ -1259,10 +1437,9 @@ void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
   wxString pageName = notebook->GetPageText (pageIdx);
 
   csRef<iEditingMode> newMode;
-  if (pageName == wxT ("Main")) newMode = mainMode;
-  else if (pageName == wxT ("Curve")) newMode = curveMode;
-  else if (pageName == wxT ("Foliage")) newMode = foliageMode;
-  else if (pageName == wxT ("Entity")) newMode = entityMode;
+  newMode = FindMode (pageName.mb_str (wxConvUTF8));
+  if (!newMode) return;
+
   if (editMode != newMode)
   {
     if (editMode) editMode->Stop ();
@@ -1431,7 +1608,7 @@ bool AppAresEditWX::Initialize ()
   engine = csQueryRegistry<iEngine> (object_reg);
   if (!engine) return ReportError ("Can't find the engine plugin!");
 
-  if (!config.ReadConfig ())
+  if (!config->ReadConfig ())
     return false;
 
   if (!InitWX ())
@@ -1502,33 +1679,41 @@ bool AppAresEditWX::InitWX ()
  
   uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
 
-  playMode = new PlayMode (view3d, object_reg);
+  playMode = csLoadPluginCheck<iEditingMode> (object_reg,
+      "ares.editor.modes.play");
+  playMode->Set3DView (view3d);
 
-  wxPanel* mainModeTabPanel = XRCCTRL (*this, "mainModeTabPanel", wxPanel);
-  mainMode = new MainMode (mainModeTabPanel, view3d, object_reg);
-  mainMode->AllocContextHandlers (this);
+  //roomMode = csLoadPluginCheck<iEditingMode> (object_reg,
+      //"ares.editor.modes.room");
+  //roomMode->Set3DView (view3d);
 
-  roomMode = csLoadPluginCheck<iEditingMode> (object_reg,
-      "ares.editor.modes.room");
-  roomMode->Set3DView (view3d);
+  const csArray<ModeConfig>& configmodes = config->GetModes ();
+  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  for (size_t i = 0 ; i < configmodes.GetSize () ; i++)
+  {
+    csString plugin = configmodes.Get (i).plugin;
+    printf ("Loading mode plugin %s\n", plugin.GetData ());
+    fflush (stdout);
+    csRef<iEditingMode> mode = csLoadPluginCheck<iEditingMode> (object_reg, plugin);
+    if (!mode)
+    {
+      return ReportError ("Could not load plugin '%s'!", plugin.GetData ());
+    }
+    wxPanel* panel = new wxPanel (notebook, wxID_ANY, wxDefaultPosition,
+	wxDefaultSize, wxTAB_TRAVERSAL);
+    notebook->AddPage (panel, wxString::FromUTF8 (mode->GetName ()), false);
+    panel->SetToolTip (wxString::FromUTF8 (configmodes.Get (i).tooltip));
+    wxBoxSizer* sizer = new wxBoxSizer (wxVERTICAL);
+    panel->SetSizer (sizer);
+    panel->Layout ();
 
-  wxPanel* foliageModeTabPanel = XRCCTRL (*this, "foliageModeTabPanel", wxPanel);
-  foliageMode = csLoadPluginCheck<iEditingMode> (object_reg,
-      "ares.editor.modes.foliage");
-  foliageMode->Set3DView (view3d);
-  foliageMode->SetParent (foliageModeTabPanel);
-  foliageMode->AllocContextHandlers (this);
-
-  wxPanel* curveModeTabPanel = XRCCTRL (*this, "curveModeTabPanel", wxPanel);
-  curveMode = csLoadPluginCheck<iEditingMode> (object_reg,
-      "ares.editor.modes.curve");
-  curveMode->Set3DView (view3d);
-  curveMode->SetParent (curveModeTabPanel);
-  curveMode->AllocContextHandlers (this);
-
-  wxPanel* entityModeTabPanel = XRCCTRL (*this, "entityModeTabPanel", wxPanel);
-  entityMode = new EntityMode (entityModeTabPanel, view3d, object_reg);
-  entityMode->AllocContextHandlers (this);
+    mode->Set3DView (view3d);
+    mode->SetParent (panel);
+    mode->AllocContextHandlers (this);
+    if (configmodes.Get (i).mainMode)
+      mainMode = mode;
+    modes.Push (mode);
+  }
 
   editMode = 0;
 
@@ -1540,7 +1725,9 @@ bool AppAresEditWX::InitWX ()
   SelectionListener* listener = new AppSelectionListener (this);
   aresed3d->GetSelectionInt ()->AddSelectionListener (listener);
 
+  // @@@ Loop over all modes:
   mainMode->Refresh ();
+  if (editMode) editMode->Refresh ();
 
   SetupMenuBar ();
 
@@ -1622,7 +1809,7 @@ void AppAresEditWX::SetMenuState ()
   if (!menuBar) return;
 
   // Should menus be globally disabled?
-  bool dis = mainMode ? mainMode->IsPasteSelectionActive () : true;
+  bool dis = aresed3d ? aresed3d->IsPasteSelectionActive () : true;
   if (IsPlaying ()) dis = true;
   if (dis)
   {
@@ -1637,7 +1824,7 @@ void AppAresEditWX::SetMenuState ()
 
   if (editMode == mainMode)
   {
-    menuBar->Enable (ID_Paste, mainMode->IsPasteBufferFull ());
+    menuBar->Enable (ID_Paste, aresed3d->IsPasteBufferFull ());
     menuBar->Enable (ID_Delete, sel);
     menuBar->Enable (ID_Copy, sel);
     menuBar->Enable (ID_Join, objects.GetSize () == 2);
@@ -1702,6 +1889,11 @@ void AppAresEditWX::OnShow (wxShowEvent& event)
   csPrintf("got show %d\n", (int) event.GetShow ());
 }
 
+iEditorConfig* AppAresEditWX::GetConfig () const
+{
+  return static_cast<iEditorConfig*> (config);
+}
+
 static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
 {
   wxString iname = wxString::FromUTF8 (name);
@@ -1723,13 +1915,7 @@ void AppAresEditWX::SwitchToPlayMode ()
 
 void AppAresEditWX::SwitchToMainMode ()
 {
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-  size_t pageIdx = FindNotebookPage (notebook, "Main");
-  notebook->ChangeSelection (pageIdx);
-  if (editMode) editMode->Stop ();
-  editMode = mainMode;
-  editMode->Start ();
-  SetMenuState ();
+  SwitchToMode (mainMode->GetName ());
 }
 
 void AppAresEditWX::SetCurveModeEnabled (bool cm)
@@ -1741,41 +1927,38 @@ void AppAresEditWX::SetCurveModeEnabled (bool cm)
   else page->Disable ();
 }
 
-void AppAresEditWX::SwitchToCurveMode ()
+iEditingMode* AppAresEditWX::FindMode (const char* name)
 {
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-  size_t pageIdx = FindNotebookPage (notebook, "Curve");
-  notebook->ChangeSelection (pageIdx);
-  if (editMode) editMode->Stop ();
-  editMode = curveMode;
-  editMode->Start ();
-  SetMenuState ();
+  csString n = name;
+  for (size_t i = 0 ; i < modes.GetSize () ; i++)
+  {
+printf ("%d n=%s name=%s\n", i,n.GetData (), modes.Get (i)->GetName()); fflush (stdout);
+    if (n == modes.Get (i)->GetName ())
+      return modes.Get (i);
+  }
+  return 0;
 }
 
-void AppAresEditWX::SwitchToRoomMode ()
+void AppAresEditWX::SwitchToMode (const char* name)
 {
-  SetMenuState ();
+printf ("SwitchToMode %s\n", name); fflush (stdout);
+  iEditingMode* mode = FindMode (name);
+  if (mode)
+  {
+    wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+    size_t pageIdx = FindNotebookPage (notebook, name);
+    notebook->ChangeSelection (pageIdx);
+    if (editMode) editMode->Stop ();
+    editMode = mode;
+    editMode->Start ();
+    SetMenuState ();
+  }
+  else
+  {
+    CS_ASSERT (false);
+    printf ("Can't find mode '%s'!\n", name);
+    fflush (stdout);
+  }
 }
 
-void AppAresEditWX::SwitchToFoliageMode ()
-{
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-  size_t pageIdx = FindNotebookPage (notebook, "Foliage");
-  notebook->ChangeSelection (pageIdx);
-  if (editMode) editMode->Stop ();
-  editMode = foliageMode;
-  editMode->Start ();
-  SetMenuState ();
-}
-
-void AppAresEditWX::SwitchToEntityMode ()
-{
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-  size_t pageIdx = FindNotebookPage (notebook, "Entity");
-  notebook->ChangeSelection (pageIdx);
-  if (editMode) editMode->Stop ();
-  editMode = entityMode;
-  editMode->Start ();
-  SetMenuState ();
-}
 

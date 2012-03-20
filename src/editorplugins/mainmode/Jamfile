@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins mainmode ;
+
+Description mainmode : "AresEd Main Mode Plugin" ;
+Plugin mainmode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs mainmode : CRYSTAL ;
+ExternalLibs mainmode : CEL ;
+ExternalLibs mainmode : WX ;
+LinkWith mainmode : edcommon ;
+

@@ -24,15 +24,15 @@ THE SOFTWARE.
 
 #include "sequencepanel.h"
 #include "entitymode.h"
-#include "../ui/uimanager.h"
 #include "physicallayer/entitytpl.h"
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
-#include "../apparesed.h"
 #include "edcommon/uitools.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
 
 //--------------------------------------------------------------------------
 
@@ -504,17 +504,17 @@ public:
 
 // -----------------------------------------------------------------------
 
-SequencePanel::SequencePanel (wxWindow* parent, UIManager* uiManager,
+SequencePanel::SequencePanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
   View (this), uiManager (uiManager), emode (emode)
 {
   sequence = 0;
-  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
+  pl = emode->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("SequencePanel"));
 
-  newopDialog = new UIDialog (this, "New Operation");
+  newopDialog = uiManager->CreateDialog (this, "New Operation");
   newopDialog->AddRow ();
   newopDialog->AddLabel ("Type:");
   newopDialog->AddChoice ("type", "delay", "debugprint", "ambientmesh", "light", "movepath", "transform",
@@ -566,7 +566,6 @@ SequencePanel::SequencePanel (wxWindow* parent, UIManager* uiManager,
 
 SequencePanel::~SequencePanel ()
 {
-  delete newopDialog;
 }
 
 

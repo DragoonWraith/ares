@@ -28,8 +28,33 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-AresConfig::AresConfig (AppAresEditWX* app) : app (app)
+AresConfig::AresConfig (AppAresEditWX* app) :
+  scfImplementationType (this), app (app)
 {
+}
+
+bool AresConfig::ParseEditorModes (iDocumentNode* editormodesNode)
+{
+  csRef<iDocumentNodeIterator> it = editormodesNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "mode")
+    {
+      ModeConfig mc;
+      mc.plugin = child->GetAttributeValue ("plugin");
+      mc.tooltip = child->GetAttributeValue ("tooltip");
+      mc.mainMode = child->GetAttributeValueAsBool ("main");
+      modes.Push (mc);
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
 }
 
 bool AresConfig::ParseKnownMessages (iDocumentNode* knownmessagesNode)
@@ -116,6 +141,12 @@ bool AresConfig::ReadConfig ()
   if (knownmessagesNode)
   {
     if (!ParseKnownMessages (knownmessagesNode))
+      return false;
+  }
+  csRef<iDocumentNode> editormodesNode = configNode->GetNode ("editormodes");
+  if (editormodesNode)
+  {
+    if (!ParseEditorModes (editormodesNode))
       return false;
   }
   return true;

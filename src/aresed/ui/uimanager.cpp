@@ -30,7 +30,7 @@ THE SOFTWARE.
 #include "celldialog.h"
 #include "dynfactdialog.h"
 #include "edcommon/listctrltools.h"
-#include "listview.h"
+#include "edcommon/listview.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
  * missing csMouseEventHelper symbols. */
@@ -486,19 +486,19 @@ UIManager::~UIManager ()
   delete cellDialog;
 }
 
-csString UIManager::AskDialog (const char* description, const char* label)
+csRef<iString> UIManager::AskDialog (const char* description, const char* label)
 {
-  UIDialog* dialog = CreateDialog (description);
+  csRef<iString> result;
+  result.AttachNew (new scfString (""));
+  csRef<iUIDialog> dialog = CreateDialog (description);
   dialog->AddRow ();
   dialog->AddLabel (label);
   dialog->AddText ("name");
-  csString result;
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
-    result = fields.Get ("name", "");
+    result->Replace (fields.Get ("name", ""));
   }
-  delete dialog;
   return result;
 }
 
@@ -537,10 +537,15 @@ bool UIManager::Ask (const char* description, ...)
   return answer == wxYES;
 }
 
-UIDialog* UIManager::CreateDialog (const char* title)
+csPtr<iUIDialog> UIManager::CreateDialog (const char* title)
 {
   UIDialog* dialog = new UIDialog (parent, title);
-  return dialog;
+  return static_cast<iUIDialog*> (dialog);
 }
 
+csPtr<iUIDialog> UIManager::CreateDialog (wxWindow* par, const char* title)
+{
+  UIDialog* dialog = new UIDialog (par, title);
+  return static_cast<iUIDialog*> (dialog);
+}
 

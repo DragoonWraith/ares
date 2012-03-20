@@ -24,15 +24,16 @@ THE SOFTWARE.
 
 #include "rewardpanel.h"
 #include "entitymode.h"
-#include "../ui/uimanager.h"
 #include "physicallayer/entitytpl.h"
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
-#include "../apparesed.h"
-#include "../config.h"
 #include "edcommon/uitools.h"
 #include "edcommon/inspect.h"
 #include "edcommon/tools.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
+#include "editor/iconfig.h"
+#include "editor/iapp.h"
 
 //--------------------------------------------------------------------------
 
@@ -105,8 +106,8 @@ void RewardPanel::OnUpdateMessageCombo (wxCommandEvent& event)
       tf->SetIDParameter (msg);
       while (tf->GetParameterCount () > 0)
 	tf->RemoveParameter (tf->GetParameterID (0));
-      const AresConfig& config = uiManager->GetApp ()->GetConfig ();
-      const KnownMessage* message = config.GetKnownMessage (msg);
+      iEditorConfig* config = emode->GetApplication ()->GetConfig ();
+      const KnownMessage* message = config->GetKnownMessage (msg);
       if (message)
       {
 	for (size_t i = 0 ; i < message->parameters.GetSize () ; i++)
@@ -223,8 +224,8 @@ void RewardPanel::UpdatePanel ()
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
     UITools::SetValue (this, "class_Me_Text", tf->GetClass ());
     UITools::ClearChoices (this, "id_Me_Combo");
-    const AresConfig& config = uiManager->GetApp ()->GetConfig ();
-    const csArray<KnownMessage>& messages = config.GetMessages ();
+    iEditorConfig* config = emode->GetApplication ()->GetConfig ();
+    const csArray<KnownMessage>& messages = config->GetMessages ();
     for (size_t i = 0 ; i < messages.GetSize () ; i++)
     {
       UITools::AddChoices (this, "id_Me_Combo", messages.Get (i).name.GetData (),
@@ -636,12 +637,12 @@ public:
 
 // -----------------------------------------------------------------------
 
-RewardPanel::RewardPanel (wxWindow* parent, UIManager* uiManager,
+RewardPanel::RewardPanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
   View (this), uiManager (uiManager), emode (emode)
 {
   reward = 0;
-  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
+  pl = emode->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("RewardPanel"));
@@ -650,7 +651,7 @@ RewardPanel::RewardPanel (wxWindow* parent, UIManager* uiManager,
   DefineHeading ("parameters_Me_List", "Name,Value,Type", "name,value,type");
   messageParameters.AttachNew (new MessageParametersCollectionValue (this));
   Bind (messageParameters, "parameters_Me_List");
-  messageDialog = new UIDialog (this, "Create Parameter");
+  messageDialog = uiManager->CreateDialog (this, "Create Parameter");
   messageDialog->AddRow ();
   messageDialog->AddLabel ("Name:");
   messageDialog->AddText ("name");
@@ -678,7 +679,7 @@ RewardPanel::RewardPanel (wxWindow* parent, UIManager* uiManager,
   DefineHeading ("parameters_Ce_List", "Name,Value", "name,value");
   createentityParameters.AttachNew (new CreateEntityParametersCollectionValue (this));
   Bind (createentityParameters, "parameters_Ce_List");
-  createentityDialog = new UIDialog (this, "Create Entity Parameter");
+  createentityDialog = uiManager->CreateDialog (this, "Create Entity Parameter");
   createentityDialog->AddRow ();
   createentityDialog->AddLabel ("Name:");
   createentityDialog->AddText ("name");
@@ -692,8 +693,6 @@ RewardPanel::RewardPanel (wxWindow* parent, UIManager* uiManager,
 
 RewardPanel::~RewardPanel ()
 {
-  delete createentityDialog;
-  delete messageDialog;
 }
 
 

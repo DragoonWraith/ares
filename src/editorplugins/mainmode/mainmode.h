@@ -33,7 +33,6 @@ THE SOFTWARE.
 #include <wx/treectrl.h>
 #include <wx/xrc/xmlres.h>
 
-class MainMode;
 class TreeCtrlView;
 
 struct AresDragObject
@@ -42,15 +41,7 @@ struct AresDragObject
   csVector3 kineOffset;
 };
 
-struct AresPasteContents
-{
-  csString dynfactName;
-  bool useTransform;
-  csReversibleTransform trans;
-  bool isStatic;
-};
-
-class MainMode : public ViewMode
+class MainMode : public scfImplementationExt1<MainMode, ViewMode, iComponent>
 {
 private:
   // Dragging related
@@ -71,7 +62,6 @@ private:
 
   void CreateMarkers ();
   iMarker* transformationMarker;
-  iMarker* pasteMarker;
 
   void StartKinematicDragging (bool restrictY,
       const csSegment3& beam, const csVector3& isect, bool firstOnly);
@@ -86,31 +76,12 @@ private:
 
   csString GetSelectedItem ();
 
-  /// A paste buffer.
-  csArray<AresPasteContents> pastebuffer;
-
-  /// When there are items in this array we are waiting to spawn stuff.
-  csArray<AresPasteContents> todoSpawn;
-
-  /**
-   * Paste the current paste buffer at the mouse position. Usually you
-   * would not use this but use StartPasteSelection() instead.
-   */
-  void PasteSelection ();
-
-  /**
-   * Make sure the paste marker is at the correct spot and active.
-   */
-  void PlacePasteMarker ();
-
-  /**
-   * Stop paste mode.
-   */
-  void StopPasteMode ();
-
 public:
-  MainMode (wxWindow* parent, i3DView* view, iObjectRegistry* object_reg);
+  MainMode (iBase* parent);
   virtual ~MainMode ();
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
+  virtual void SetParent (wxWindow* parent);
 
   virtual void Start ();
   virtual void Stop ();
@@ -122,25 +93,7 @@ public:
     return str;
   }
 
-  void Refresh ();
-
-  /// Copy the current selection to the paste buffer.
-  void CopySelection ();
-  /// Start paste mode.
-  void StartPasteSelection ();
-  /// Start paste mode for a specific object.
-  void StartPasteSelection (const char* name);
-  /// Paste mode active.
-  bool IsPasteSelectionActive () { return todoSpawn.GetSize () > 0; }
-  /// Is there something in the paste buffer?
-  bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
-
-  /// Join two selected objects.
-  void JoinObjects ();
-  void UnjoinObjects ();
-
-  /// Update all objects (after factory changes).
-  void UpdateObjects ();
+  virtual void Refresh ();
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);

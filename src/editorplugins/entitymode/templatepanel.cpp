@@ -24,12 +24,12 @@ THE SOFTWARE.
 
 #include "templatepanel.h"
 #include "entitymode.h"
-#include "../apparesed.h"
-#include "../ui/uimanager.h"
 #include "edcommon/listctrltools.h"
-#include "../ui/listview.h"
+#include "edcommon/listview.h"
 #include "edcommon/rowmodel.h"
 #include "edcommon/tools.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
@@ -198,17 +198,17 @@ public:
 
 //--------------------------------------------------------------------------
 
-EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager,
+EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
   uiManager (uiManager), emode (emode), tpl (0)
 {
-  pl = uiManager->GetApp ()->GetAresView ()->GetPL ();
+  pl = emode->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("EntityTemplatePanel"));
 
   wxListCtrl* list;
-  UIDialog* dialog;
+  csRef<iUIDialog> dialog;
 
   list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
   parentsModel.AttachNew (new ParentsRowModel (this));
@@ -217,7 +217,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
   dialog->AddRow ();
   dialog->AddLabel ("Template:");
   dialog->AddText ("Template");
-  parentsView->SetEditorDialog (dialog, true);
+  parentsView->SetEditorDialog (dialog);
 
   list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
   characteristicsModel.AttachNew (new CharacteristicsRowModel (this));
@@ -229,7 +229,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
   dialog->AddRow ();
   dialog->AddLabel ("Value:");
   dialog->AddText ("Value");
-  characteristicsView->SetEditorDialog (dialog, true);
+  characteristicsView->SetEditorDialog (dialog);
 
   list = XRCCTRL (*this, "templateClassList", wxListCtrl);
   classesModel.AttachNew (new ClassesRowModel (this));
@@ -238,7 +238,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, UIManager* uiManager
   dialog->AddRow ();
   dialog->AddLabel ("Class:");
   dialog->AddText ("Class");
-  classesView->SetEditorDialog (dialog, true);
+  classesView->SetEditorDialog (dialog);
 }
 
 EntityTemplatePanel::~EntityTemplatePanel ()

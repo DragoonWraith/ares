@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- playmode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.play</name>
+        <implementation>PlayMode</implementation>
+        <description>AresEd Play Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

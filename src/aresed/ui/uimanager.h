@@ -186,7 +186,7 @@ public:
   virtual void Message (const char* description, ...);
   virtual bool Error (const char* description, ...);
   virtual bool Ask (const char* description, ...);
-  csString AskDialog (const char* description, const char* label);
+  virtual csRef<iString> AskDialog (const char* description, const char* label);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
@@ -194,9 +194,10 @@ public:
   DynfactDialog* GetDynfactDialog () const { return dynfactDialog; }
 
   /// Create a dynamically buildable dialog.
-  UIDialog* CreateDialog (const char* title);
+  virtual csPtr<iUIDialog> CreateDialog (const char* title);
+  virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title);
 
-  int AllocContextMenuID () { contextMenuID++; return contextMenuID; }
+  virtual int AllocContextMenuID () { contextMenuID++; return contextMenuID; }
 };
 
 #endif // __uimanager_h

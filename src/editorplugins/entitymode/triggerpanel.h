@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_sequencepanel_h
-#define __appares_sequencepanel_h
+#ifndef __appares_triggerpanel_h
+#define __appares_triggerpanel_h
 
 #include <crystalspace.h>
 
@@ -33,59 +33,57 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
-#include "edcommon/model.h"
-
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
-struct iCelSequenceFactory;
-struct iSeqOpFactory;
-struct iQuestManager;
-class UIDialog;
-class UIManager;
+struct iParameter;
+struct iQuestTriggerResponseFactory;
+struct iUIDialog;
+struct iUIManager;
 class EntityMode;
 
-class SequencePanel : public wxPanel, public Ares::View
+class TriggerPanel : public wxPanel
 {
 private:
   iCelPlLayer* pl;
-  UIManager* uiManager;
+  iUIManager* uiManager;
   EntityMode* emode;
   wxSizer* parentSizer;
 
-  iCelSequenceFactory* sequence;
-  csString GetCurrentSequenceType ();
+  iQuestTriggerResponseFactory* triggerResp;
+  csString GetCurrentTriggerType ();
 
-  void UpdateSequence ();
+  void OnChoicebookPageChange (wxChoicebookEvent& event);
+  void OnUpdateEvent (wxCommandEvent& event);
+  void OnSetThisInventory (wxCommandEvent& event);
+  void OnSetThisMeshSelect (wxCommandEvent& event);
+  void OnSetThisProperty (wxCommandEvent& event);
+  void OnSetThisQuest (wxCommandEvent& event);
+  void OnSetThisTrigger (wxCommandEvent& event);
+  void OnSetThisWatch (wxCommandEvent& event);
+  void OnSetThisMeshEnter (wxCommandEvent& event);
+  void OnSetThisSectorEnter (wxCommandEvent& event);
+
+  void UpdateTrigger ();
   void UpdatePanel ();
 
-  UIDialog* newopDialog;
-
-  csRef<Ares::ListSelectedValue> operationsSelectedValue;
-  wxListCtrl* operationsList;
-  csRef<Ares::Value> operations;
-
 public:
-  SequencePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
-  ~SequencePanel();
-
-  iCelPlLayer* GetPL () const { return pl; }
+  TriggerPanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
+  ~TriggerPanel();
 
   /**
-   * Possibly switch the type of the sequence. Do nothing if the sequence is
+   * Possibly switch the type of the trigger. Do nothing if the trigger is
    * already of the right type. Otherwise clear all properties.
    */
-  void SwitchSequence (iCelSequenceFactory* sequence);
-  iCelSequenceFactory* GetCurrentSequence () const { return sequence; }
-  iSeqOpFactory* GetSeqOpFactory ();
-  iQuestManager* GetQuestManager () const;
-  long GetSeqOpSelection () const;
+  void SwitchTrigger (iQuestTriggerResponseFactory* triggerResp);
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
-  void Hide () { sequence = 0; wxPanel::Hide (); parentSizer->Layout (); }
+  void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
   bool IsVisible () const { return IsShown (); }
+
+  DECLARE_EVENT_TABLE ();
 };
 
-#endif // __appares_sequencepanel_h
+#endif // __appares_triggerpanel_h
 

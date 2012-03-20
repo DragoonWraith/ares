@@ -1,4 +1,10 @@
 <config>
+    <editormodes>
+      <mode plugin="ares.editor.modes.main" main="True" tooltip="Main 3D object manipulation mode" />
+      <mode plugin="ares.editor.modes.entity" tooltip="Editing of game logic, quests, and entities" />
+      <mode plugin="ares.editor.modes.curve" tooltip="Editing of curved streets" />
+      <mode plugin="ares.editor.modes.foliage" tooltip="Foliage painter" />
+    </editormodes>
     <knownmessages>
         <message name="cel.messenger.action.Message"
 		description="Usual destination: 'World' entity. This will display an on-screen message to the player">

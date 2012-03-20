@@ -158,6 +158,11 @@ struct i3DView : public virtual iBase
    * Get the ELCM.
    */
   virtual iELCM* GetELCM () const = 0;
+
+  /// Start paste mode.
+  virtual void StartPasteSelection () = 0;
+  /// Start paste mode for a specific object.
+  virtual void StartPasteSelection (const char* name) = 0;
 };
 
 

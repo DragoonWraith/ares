@@ -28,8 +28,8 @@ THE SOFTWARE.
 #include "edcommon/listctrltools.h"
 #include "edcommon/uitools.h"
 #include "meshview.h"
-#include "treeview.h"
-#include "listview.h"
+#include "edcommon/treeview.h"
+#include "edcommon/listview.h"
 #include "edcommon/dirtyhelper.h"
 #include "../models/dynfactmodel.h"
 #include "../models/meshfactmodel.h"
@@ -1709,10 +1709,10 @@ public:
   {
     iDynamicFactory* fact = dialog->GetCurrentFactory ();
     if (!fact) return false;
-    csString dimS = dialog->GetUIManager ()->AskDialog ("Thickness of box sides", "Thickness:");
-    if (dimS.IsEmpty ()) return false;
+    csRef<iString> dimS = dialog->GetUIManager ()->AskDialog ("Thickness of box sides", "Thickness:");
+    if (dimS->IsEmpty ()) return false;
     float dim;
-    csScanStr (dimS, "%f", &dim);
+    csScanStr (dimS->GetData (), "%f", &dim);
     const csBox3& bbox = fact->GetBBox ();
     csBox3 bottom = bbox;
     bottom.SetMax (1, bottom.GetMin (1)+dim);
@@ -1940,14 +1940,14 @@ void DynfactDialog::SetupDialogs ()
   AppAresEditWX* app = uiManager->GetApp ();
 
   // The dialog for editing new factories.
-  factoryDialog = new UIDialog (this, "Factory name");
+  factoryDialog.AttachNew (new UIDialog (this, "Factory name"));
   factoryDialog->AddRow (1);
   factoryDialog->AddLabel ("Name:");
   factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue(app)), 0,
       "Name", "name");
 
   // The dialog for editing new attributes.
-  attributeDialog = new UIDialog (this, "Attribute");
+  attributeDialog.AttachNew (new UIDialog (this, "Attribute"));
   attributeDialog->AddRow ();
   attributeDialog->AddLabel ("Name:");
   attributeDialog->AddText ("name");
@@ -1956,7 +1956,7 @@ void DynfactDialog::SetupDialogs ()
   attributeDialog->AddText ("value");
 
   // The dialog for selecting a bone.
-  selectBoneDialog = new UIDialog (this, "Select Bone");
+  selectBoneDialog.AttachNew (new UIDialog (this, "Select Bone"));
   selectBoneDialog->AddRow ();
   selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0,
       "Name", "name");
@@ -2245,9 +2245,6 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 DynfactDialog::~DynfactDialog ()
 {
   delete meshView;
-  delete factoryDialog;
-  delete attributeDialog;
-  delete selectBoneDialog;
 }
 
 

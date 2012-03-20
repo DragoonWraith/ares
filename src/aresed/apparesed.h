@@ -61,15 +61,12 @@ class NewProjectDialog;
 class UIManager;
 
 struct iEditingMode;
-class EditingMode;
-class PlayMode;
-class MainMode;
-class EntityMode;
 
 struct iCelPlLayer;
 struct iCelEntity;
 struct iMarkerManager;
 struct iParameterManager;
+struct iMarker;
 
 class CurvedFactoryCreator
 {
@@ -104,6 +101,14 @@ public:
   AppSelectionListener (AppAresEditWX* app) : app (app) { }
   virtual ~AppSelectionListener () { }
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
+};
+
+struct AresPasteContents
+{
+  csString dynfactName;
+  bool useTransform;
+  csReversibleTransform trans;
+  bool isStatic;
 };
 
 /**
@@ -246,6 +251,30 @@ private:
    */
   bool InitPhysics ();
 
+  iMarker* pasteMarker;
+
+  /// A paste buffer.
+  csArray<AresPasteContents> pastebuffer;
+
+  /// When there are items in this array we are waiting to spawn stuff.
+  csArray<AresPasteContents> todoSpawn;
+
+  /**
+   * Paste the current paste buffer at the mouse position. Usually you
+   * would not use this but use StartPasteSelection() instead.
+   */
+  void PasteSelection ();
+
+  /**
+   * Make sure the paste marker is at the correct spot and active.
+   */
+  void PlacePasteMarker ();
+
+  /**
+   * Stop paste mode.
+   */
+  void StopPasteMode ();
+
 public:
   /**
    * Constructor.
@@ -332,6 +361,14 @@ public:
   {
     return dynfactCollectionValue;
   }
+
+  /// Join two selected objects.
+  void JoinObjects ();
+  void UnjoinObjects ();
+
+  /// Update all objects (after factory changes).
+  void UpdateObjects ();
+
 
   /// Clear all items and categories.
   void ClearItems () { categories.DeleteAll (); }
@@ -434,6 +471,17 @@ public:
    * Create a new project with the given assets.
    */
   void NewProject (const csArray<Asset>& assets);
+
+  /// Copy the current selection to the paste buffer.
+  void CopySelection ();
+  /// Start paste mode.
+  virtual void StartPasteSelection ();
+  /// Start paste mode for a specific object.
+  virtual void StartPasteSelection (const char* name);
+  /// Paste mode active.
+  bool IsPasteSelectionActive () { return todoSpawn.GetSize () > 0; }
+  /// Is there something in the paste buffer?
+  bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
 };
 
 enum
@@ -468,7 +516,7 @@ private:
   csRef<iWxWindow> wxwindow;
   csRef<FramePrinter> printer;
 
-  AresConfig config;
+  csRef<AresConfig> config;
   csRef<AresEdit3DView> aresed3d;
 
   static bool SimpleEventHandler (iEvent& ev);
@@ -484,14 +532,12 @@ private:
   csRef<UIManager> uiManager;
 
   NewProjectDialog* newprojectDialog;
-  PlayMode* playMode;
-  MainMode* mainMode;
-  csRef<iEditingMode> curveMode;
-  csRef<iEditingMode> roomMode;
-  csRef<iEditingMode> foliageMode;
-  EntityMode* entityMode;
+  csRef<iEditingMode> playMode;
+  csRefArray<iEditingMode> modes;
+  csRef<iEditingMode> mainMode;
   iEditingMode* editMode;
   CameraWindow* camwin;
+  iEditingMode* FindMode (const char* name);
 
   void SetupMenuBar ();
 
@@ -550,15 +596,12 @@ public:
   void LoadFile (const char* filename);
   void NewProject (const csArray<Asset>& assets);
 
+  void SwitchToMode (const char* name);
   void SwitchToPlayMode ();
-  void SwitchToMainMode ();
-  void SwitchToCurveMode ();
-  void SwitchToRoomMode ();
-  void SwitchToFoliageMode ();
-  void SwitchToEntityMode ();
+  virtual void SwitchToMainMode ();
   void SetCurveModeEnabled (bool cm);
-  MainMode* GetMainMode () const { return mainMode; }
-  const AresConfig& GetConfig () const { return config; }
+  iEditingMode* GetMainMode () const { return mainMode; }
+  iEditorConfig* GetConfig () const;
 
   /**
    * Return true if we are in play mode.

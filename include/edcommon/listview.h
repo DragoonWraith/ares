@@ -35,14 +35,14 @@ THE SOFTWARE.
 
 #include "edcommon/rowmodel.h"
 
-class UIDialog;
+struct iUIDialog;
 
 
 /**
  * A simple view based on a list control on top of a RowModel.
  * This version doesn't allow any editing.
  */
-class SimpleListCtrlView : public wxEvtHandler
+class ARES_EXPORT SimpleListCtrlView : public wxEvtHandler
 {
 protected:
   wxListCtrl* list;
@@ -130,8 +130,7 @@ public:
 class ListCtrlView : public SimpleListCtrlView
 {
 private:
-  UIDialog* forcedDialog;
-  bool ownForcedDialog;
+  csRef<iUIDialog> forcedDialog;
 
   void OnContextMenu (wxContextMenuEvent& event);
   void OnAdd (wxCommandEvent& event);
@@ -148,25 +147,20 @@ private:
   void ClearContextMenu ();
 
 public:
-  ListCtrlView (wxListCtrl* list) : SimpleListCtrlView (list), forcedDialog (0),
-    ownForcedDialog (false)
+  ListCtrlView (wxListCtrl* list) : SimpleListCtrlView (list)
   {
     SetupContextMenu ();
   }
-  ListCtrlView (wxListCtrl* list, RowModel* model) :
-    SimpleListCtrlView (list,  model),
-    forcedDialog (0), ownForcedDialog (false)
+  ListCtrlView (wxListCtrl* list, RowModel* model) : SimpleListCtrlView (list,  model)
   {
     SetupContextMenu ();
   }
   ~ListCtrlView ();
 
   /**
-   * Manually force an editor dialog to use. If 'own' is true
-   * this view will assume ownership of the dialog and remove the
-   * dialog in the destructor.
+   * Manually force an editor dialog to use.
    */
-  void SetEditorDialog (UIDialog* dialog, bool own = false);
+  void SetEditorDialog (iUIDialog* dialog);
 };
 
 #endif // __appares_listview_h

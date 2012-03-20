@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
-class UIManager;
+struct iUIManager;
 class EntityMode;
 struct iCelPlLayer;
 struct iCelEntityTemplate;
@@ -46,7 +46,7 @@ class ClassesRowModel;
 class EntityTemplatePanel : public wxPanel
 {
 private:
-  UIManager* uiManager;
+  iUIManager* uiManager;
   iCelPlLayer* pl;
   EntityMode* emode;
   wxSizer* parentSizer;
@@ -60,11 +60,11 @@ private:
   csRef<ClassesRowModel> classesModel;
 
 public:
-  EntityTemplatePanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
+  EntityTemplatePanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
   ~EntityTemplatePanel();
 
   iCelPlLayer* GetPL () const { return pl; }
-  UIManager* GetUIManager () const { return uiManager; }
+  iUIManager* GetUIManager () const { return uiManager; }
 
   // Switch this dialog to editing of a template.
   void SwitchToTpl (iCelEntityTemplate* tpl);

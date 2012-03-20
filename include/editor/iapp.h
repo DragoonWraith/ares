@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 
 struct iUIManager;
+struct iEditorConfig;
 
 /**
  * The editor application.
@@ -51,6 +52,14 @@ struct iAresEditor : public virtual iBase
   virtual void ShowCameraWindow () = 0;
   /// Hide the camera window. @@@ Temporary!
   virtual void HideCameraWindow () = 0;
+
+  /// Get the editor configuration object.
+  virtual iEditorConfig* GetConfig () const = 0;
+
+  /**
+   * Switch to the main default mode.
+   */
+  virtual void SwitchToMainMode () = 0;
 };
 
 

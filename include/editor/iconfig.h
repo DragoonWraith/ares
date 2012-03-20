@@ -22,40 +22,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __iuimanager_h__
-#define __iuimanager_h__
+#ifndef __iconfig_h__
+#define __iconfig_h__
 
 #include "csutil/scf.h"
+#include "physicallayer/datatype.h"
+
 #include <wx/wx.h>
 
-/**
- * The UI Manager.
- */
-struct iUIManager : public virtual iBase
+struct KnownParameter
 {
-  SCF_INTERFACE(iUIManager,0,0,1);
-
-  virtual void Message (const char* description, ...) = 0;
-  virtual bool Error (const char* description, ...) = 0;
-  virtual bool Ask (const char* description, ...) = 0;
-
-  /**
-   * Ask a question to the user and return the answer as a string.
-   */
-  virtual csRef<iString> AskDialog (const char* description, const char* label) = 0;
-
-  /**
-   * Create a dynamically buildable dialog.
-   */
-  virtual csPtr<iUIDialog> CreateDialog (const char* title) = 0;
-  virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title) = 0;
-
-  /**
-   * Allocate a new Id for a context menu.
-   */
-  virtual int AllocContextMenuID () = 0;
+  csString name;
+  celDataType type;
+  csString value;
 };
 
 
-#endif // __iuimanager_h__
+struct KnownMessage
+{
+  csString name;
+  csString description;
+  csArray<KnownParameter> parameters;
+};
+
+/**
+ * The Ares Editor configuration interface.
+ */
+struct iEditorConfig : public virtual iBase
+{
+  SCF_INTERFACE(iEditorConfig,0,0,1);
+
+  /// Get all known messages.
+  virtual const csArray<KnownMessage>& GetMessages () const = 0;
+
+  /// Get a known message by name.
+  virtual const KnownMessage* GetKnownMessage (const char* name) const = 0;
+};
+
+
+#endif // __iconfig_h__
 

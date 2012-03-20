@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- mainmode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.main</name>
+        <implementation>MainMode</implementation>
+        <description>AresEd Main Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

@@ -43,15 +43,15 @@ struct iRewardFactory;
 struct iRewardFactoryArray;
 struct iParameter;
 struct iQuestFactory;
-class UIDialog;
-class UIManager;
+struct iUIDialog;
+struct iUIManager;
 class EntityMode;
 
 class RewardPanel : public wxPanel, public Ares::View
 {
 private:
   iCelPlLayer* pl;
-  UIManager* uiManager;
+  iUIManager* uiManager;
   EntityMode* emode;
   wxSizer* parentSizer;
 
@@ -68,15 +68,15 @@ private:
   void UpdateReward ();
   void UpdatePanel ();
 
-  UIDialog* createentityDialog;
-  UIDialog* messageDialog;
+  csRef<iUIDialog> createentityDialog;
+  csRef<iUIDialog> messageDialog;
 
   csRef<Ares::Value> messageParameters;
   csRef<Ares::Value> actionParameters;
   csRef<Ares::Value> createentityParameters;
 
 public:
-  RewardPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
+  RewardPanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
   ~RewardPanel();
 
   iCelPlLayer* GetPL () const { return pl; }

@@ -40,8 +40,8 @@ struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iParameter;
 struct iParameterManager;
-class UIDialog;
-class UIManager;
+struct iUIDialog;
+struct iUIManager;
 class EntityMode;
 
 class PropertyRowModel;
@@ -59,8 +59,8 @@ class PropertyClassPanel : public wxPanel
 {
 private:
   iCelPlLayer* pl;
-  iParameterManager* pm;
-  UIManager* uiManager;
+  csRef<iParameterManager> pm;
+  iUIManager* uiManager;
   EntityMode* emode;
   wxSizer* parentSizer;
   iCelEntityTemplate* tpl;
@@ -82,28 +82,28 @@ private:
   // Properties.
   ListCtrlView* propertyView;
   csRef<PropertyRowModel> propertyModel;
-  UIDialog* propDialog;
+  csRef<iUIDialog> propDialog;
   bool UpdateProperties ();
   void FillProperties ();
 
   // Inventory.
   ListCtrlView* inventoryView;
   csRef<InventoryRowModel> inventoryModel;
-  UIDialog* invTempDialog;
+  csRef<iUIDialog> invTempDialog;
   bool UpdateInventory ();
   void FillInventory ();
 
   // Quest.
   ListCtrlView* questView;
   csRef<QuestRowModel> questModel;
-  UIDialog* questParDialog;
+  csRef<iUIDialog> questParDialog;
   bool UpdateQuest ();
   void FillQuest ();
 
   // Spawn.
   ListCtrlView* spawnView;
   csRef<SpawnRowModel> spawnModel;
-  UIDialog* spawnTempDialog;
+  csRef<iUIDialog> spawnTempDialog;
   bool UpdateSpawn ();
   void FillSpawn ();
 
@@ -113,8 +113,8 @@ private:
   ListCtrlView* wireParView;
   csRef<WireParEditorModel> wireParEditorModel;
   csRef<WireParRowModel> wireParModel;
-  UIDialog* wireParDialog;
-  UIDialog* wireMsgDialog;
+  csRef<iUIDialog> wireParDialog;
+  csRef<iUIDialog> wireMsgDialog;
   bool UpdateWire ();
   void FillWire ();
   bool UpdateCurrentWireParams ();
@@ -123,12 +123,12 @@ private:
   bool UpdatePC ();
 
 public:
-  PropertyClassPanel (wxWindow* parent, UIManager* uiManager, EntityMode* emode);
+  PropertyClassPanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
   ~PropertyClassPanel();
 
   // Switch this dialog to editing of a PC.
   void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
-  UIManager* GetUIManager () const { return uiManager; }
+  iUIManager* GetUIManager () const { return uiManager; }
   iCelPlLayer* GetPL () const { return pl; }
   iParameterManager* GetPM () const { return pm; }
   EntityMode* GetEntityMode () const { return emode; }
@@ -137,12 +137,12 @@ public:
   /// Return the property index of the currently selected message.
   size_t GetMessagePropertyIndex ();
 
-  UIDialog* GetPropertyDialog ();
-  UIDialog* GetInventoryTemplateDialog ();
-  UIDialog* GetQuestDialog ();
-  UIDialog* GetSpawnTemplateDialog ();
-  UIDialog* GetWireParDialog ();
-  UIDialog* GetWireMsgDialog ();
+  iUIDialog* GetPropertyDialog ();
+  iUIDialog* GetInventoryTemplateDialog ();
+  iUIDialog* GetQuestDialog ();
+  iUIDialog* GetSpawnTemplateDialog ();
+  iUIDialog* GetWireParDialog ();
+  iUIDialog* GetWireMsgDialog ();
   ListCtrlView* GetWireParView () const { return wireParView; }
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }

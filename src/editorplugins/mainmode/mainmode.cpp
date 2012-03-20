@@ -22,13 +22,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
+#include <crystalspace.h>
 #include "edcommon/transformtools.h"
 #include "mainmode.h"
-#include "../ui/uimanager.h"
-#include "../ui/treeview.h"
+#include "inature.h"
+#include "edcommon/treeview.h"
 #include "edcommon/uitools.h"
-#include "../models/dynfactmodel.h"
+#include "editor/i3dview.h"
+#include "editor/iselection.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
+#include "editor/iapp.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -51,20 +55,31 @@ BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
   EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), MainMode::Panel::OnTreeSelChanged)
 END_EVENT_TABLE()
 
+SCF_IMPLEMENT_FACTORY (MainMode)
+
 //---------------------------------------------------------------------------
 
-MainMode::MainMode (wxWindow* parent, i3DView* view3d, iObjectRegistry* object_reg) :
-  ViewMode (view3d, object_reg, "Main")
+MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
+{
+  name = "Main";
+  do_dragging = false;
+  do_kinematic_dragging = false;
+  transformationMarker = 0;
+}
+
+bool MainMode::Initialize (iObjectRegistry* object_reg)
+{
+  if (!ViewMode::Initialize (object_reg)) return false;
+  return true;
+}
+
+void MainMode::SetParent (wxWindow* parent)
 {
   panel = new Panel (parent, this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));
   view.SetParent (panel);
-  do_dragging = false;
-  do_kinematic_dragging = false;
 
-  transformationMarker = 0;
-  pasteMarker = 0;
   view.Bind (view3d->GetDynfactCollectionValue (), "factoryTree");
 }
 
@@ -108,15 +123,6 @@ void MainMode::CreateMarkers ()
     hitArea->DefineDrag (0, CSMASK_SHIFT, MARKER_OBJECT, CONSTRAIN_XPLANE+CONSTRAIN_ROTATEZ, cb);
     transformationMarker->SetVisible (false);
   }
-  if (!pasteMarker)
-  {
-    pasteMarker = markerMgr->CreateMarker ();
-    iMarkerColor* white = markerMgr->FindMarkerColor ("white");
-    pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
-    pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
-    pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
-    pasteMarker->SetVisible (false);
-  }
 }
 
 void MainMode::Start ()
@@ -140,14 +146,12 @@ void MainMode::Stop ()
   ViewMode::Stop ();
   transformationMarker->SetVisible (false);
   transformationMarker->AttachMesh (0);
-  pasteMarker->SetVisible (false);
+  //pasteMarker->SetVisible (false);
 }
 
 void MainMode::AllocContextHandlers (wxFrame* frame)
 {
-  // @@@ DIRTY and temporary
-  AresEdit3DView* aresed3d = static_cast<AresEdit3DView*> (view3d);
-  UIManager* ui = aresed3d->GetApp ()->GetUIManager ();
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
   idSetStatic = ui->AllocContextMenuID ();
   frame->Connect (idSetStatic, wxEVT_COMMAND_MENU_SELECTED,
@@ -437,10 +441,6 @@ void MainMode::FramePre()
   {
     HandleKinematicDragging ();
   }
-  if (IsPasteSelectionActive ())
-  {
-    PlacePasteMarker ();
-  }
 }
 
 void MainMode::Frame3D()
@@ -504,7 +504,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     csString itemName = GetSelectedItem ();
     if (!itemName.IsEmpty ())
     {
-      StartPasteSelection (itemName);
+      view3d->StartPasteSelection (itemName);
     }
   }
   else if (code == CSKEY_UP)
@@ -535,77 +535,6 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   return false;
 }
 
-void MainMode::CopySelection ()
-{
-  pastebuffer.Empty ();
-  csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
-  while (it->HasNext ())
-  {
-    iDynamicObject* dynobj = it->Next ();
-    iDynamicFactory* dynfact = dynobj->GetFactory ();
-    AresPasteContents apc;
-    apc.useTransform = true;	// Use the transform defined in this paste buffer.
-    apc.dynfactName = dynfact->GetName ();
-    apc.trans = dynobj->GetTransform ();
-    apc.isStatic = dynobj->IsStatic ();
-    pastebuffer.Push (apc);
-  }
-}
-
-void MainMode::PasteSelection ()
-{
-  if (todoSpawn.GetSize () <= 0) return;
-  csReversibleTransform trans = todoSpawn[0].trans;
-  for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
-  {
-    csReversibleTransform tr = todoSpawn[i].trans;
-    csReversibleTransform* transPtr = 0;
-    if (todoSpawn[i].useTransform)
-    {
-      tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
-      transPtr = &tr;
-    }
-    iDynamicObject* dynobj = view3d->SpawnItem (todoSpawn[i].dynfactName, transPtr);
-    if (todoSpawn[i].useTransform)
-    {
-      if (todoSpawn[i].isStatic)
-        dynobj->MakeStatic ();
-      else
-        dynobj->MakeDynamic ();
-    }
-  }
-}
-
-void MainMode::PlacePasteMarker ()
-{
-  pasteMarker->SetVisible (true);
-  csReversibleTransform tr = todoSpawn[0].trans;
-  tr.SetOrigin (csVector3 (0));
-  tr = view3d->GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
-  pasteMarker->SetTransform (tr);
-}
-
-void MainMode::StartPasteSelection ()
-{
-  todoSpawn = pastebuffer;
-  if (IsPasteSelectionActive ())
-    PlacePasteMarker ();
-  view3d->GetApplication ()->SetMenuState ();
-  view3d->GetApplication ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
-}
-
-void MainMode::StartPasteSelection (const char* name)
-{
-  todoSpawn.Empty ();
-  AresPasteContents apc;
-  apc.useTransform = false;
-  apc.dynfactName = name;
-  todoSpawn.Push (apc);
-  PlacePasteMarker ();
-  view3d->GetApplication ()->SetMenuState ();
-  view3d->GetApplication ()->SetStatus ("Left mouse to place objects. Middle button to cancel");
-}
-
 void MainMode::OnSnapObjects ()
 {
   iSelection* selection = view3d->GetSelection ();
@@ -620,88 +549,6 @@ void MainMode::OnSnapObjects ()
     ob[i]->MakeKinematic ();
     ob[i]->SetTransform (ob[0]->GetTransform ());
     ob[i]->UndoKinematic ();
-  }
-}
-
-void MainMode::JoinObjects ()
-{
-  iSelection* selection = view3d->GetSelection ();
-  if (selection->GetSize () != 2)
-  {
-    view3d->GetApplication ()->GetUI ()->Error ("Select two objects to join!");
-    return;
-  }
-  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
-  if (ob[0]->GetFactory ()->GetJointCount () == 0)
-  {
-    view3d->GetApplication ()->GetUI ()->Error ("The first object has no joints!");
-    return;
-  }
-  // In this function all joints are connected between the two same objects.
-  for (size_t i = 0 ; i < ob[0]->GetFactory ()->GetJointCount () ; i++)
-    ob[0]->Connect (i, ob[1]);
-}
-
-void MainMode::UnjoinObjects ()
-{
-  iSelection* selection = view3d->GetSelection ();
-  if (selection->GetSize () == 0)
-  {
-    view3d->GetApplication ()->GetUI ()->Error ("Select at least one object to unjoin!");
-    return;
-  }
-  const csArray<iDynamicObject*>& ob = selection->GetObjects ();
-  size_t count = ob[0]->GetFactory ()->GetJointCount ();
-  if (count == 0)
-  {
-    view3d->GetApplication ()->GetUI ()->Error ("The first object has no joints!");
-    return;
-  }
-  if (selection->GetSize () == 1)
-  {
-    int removed = 0;
-    for (size_t i = 0 ; i < count ; i++)
-      if (ob[0]->GetConnectedObject (i))
-      {
-	ob[0]->Connect (i, 0);
-	removed++;
-      }
-    view3d->GetApplication ()->GetUI ()->Message ("Disconnected %d objects.", removed);
-  }
-  else
-  {
-    for (size_t i = 1 ; i < ob.GetSize () ; i++)
-    {
-      bool found = false;
-      for (size_t j = 0 ; j < ob[0]->GetFactory ()->GetJointCount () ; j++)
-	if (ob[0]->GetConnectedObject (j) == ob[i]) { found = true; break; }
-      if (!found)
-      {
-        view3d->GetApplication ()->GetUI ()->Error ("Some of the objects are not connected!");
-        return;
-      }
-    }
-    for (size_t i = 1 ; i < ob.GetSize () ; i++)
-    {
-      for (size_t j = 0 ; j < ob[0]->GetFactory ()->GetJointCount () ; j++)
-	if (ob[0]->GetConnectedObject (j) == ob[i])
-	{
-	  ob[0]->Connect (j, 0);
-	  break;
-	}
-    }
-  }
-}
-
-void MainMode::UpdateObjects ()
-{
-  if (!view3d->GetApplication ()->GetUI ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
-  iDynamicCell* cell = view3d->GetDynamicCell ();
-  for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
-  {
-    iDynamicObject* obj = cell->GetObject (i);
-    obj->RefreshColliders ();
-    obj->RecreateJoints ();
   }
 }
 
@@ -767,14 +614,6 @@ void MainMode::AddForce (iRigidBody* hitBody, bool pull,
   hitBody->AddForceAtPos (force, isect);
 }
 
-void MainMode::StopPasteMode ()
-{
-  todoSpawn.Empty ();
-  pasteMarker->SetVisible (false);
-  view3d->GetApplication ()->SetMenuState ();
-  view3d->GetApplication ()->ClearStatus ();
-}
-
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
   if (ViewMode::OnMouseDown (ev, but, mouseX, mouseY))
@@ -789,20 +628,6 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   bool shift = (mod & CSMASK_SHIFT) != 0;
   bool ctrl = (mod & CSMASK_CTRL) != 0;
   bool alt = (mod & CSMASK_ALT) != 0;
-
-  if (IsPasteSelectionActive ())
-  {
-    if (but == csmbLeft)
-    {
-      PasteSelection ();
-      StopPasteMode ();
-    }
-    else if (but == csmbMiddle)
-    {
-      StopPasteMode ();
-    }
-    return true;
-  }
 
   int data;
   iMarker* hitMarker = markerMgr->FindHitMarker (mouseX, mouseY, data);
