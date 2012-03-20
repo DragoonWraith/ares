@@ -47,6 +47,22 @@ bool AresConfig::ParseEditorModes (iDocumentNode* editormodesNode)
       mc.plugin = child->GetAttributeValue ("plugin");
       mc.tooltip = child->GetAttributeValue ("tooltip");
       mc.mainMode = child->GetAttributeValueAsBool ("main");
+      csRef<iDocumentNodeIterator> childit = child->GetNodes ();
+      while (childit->HasNext ())
+      {
+	csRef<iDocumentNode> resourceChild = childit->Next ();
+	if (resourceChild->GetType () != CS_NODE_ELEMENT) continue;
+        csString resourceValue = resourceChild->GetValue ();
+        if (resourceValue == "resource")
+	{
+	  csString file = resourceChild->GetAttributeValue ("file");
+	  mc.resources.Push (file);
+	}
+        else
+        {
+          return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", resourceValue.GetData ());
+        }
+      }
       modes.Push (mc);
     }
     else

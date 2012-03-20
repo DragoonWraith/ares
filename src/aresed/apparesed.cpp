@@ -1627,18 +1627,9 @@ bool AppAresEditWX::InitWX ()
   wxString searchPath (wxT ("data/windows"));
   if (!LoadResourceFile ("AresMainFrame.xrc", searchPath)) return false;
   if (!LoadResourceFile ("FileRequester.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("MainModePanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("CurveModePanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("FoliageModePanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("EntityModePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("PropertyClassPanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("TriggerPanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("RewardPanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("SequencePanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("EntityTemplatePanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("DynfactDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
@@ -1694,11 +1685,20 @@ bool AppAresEditWX::InitWX ()
     csString plugin = configmodes.Get (i).plugin;
     printf ("Loading mode plugin %s\n", plugin.GetData ());
     fflush (stdout);
+
+    wxString searchPath (wxT ("data/windows"));
+    for (size_t j = 0 ; j < configmodes.Get (i).resources.GetSize () ; j++)
+    {
+      if (!LoadResourceFile (configmodes.Get (i).resources.Get (j),
+	    searchPath)) return false;
+    }
+
     csRef<iEditingMode> mode = csLoadPluginCheck<iEditingMode> (object_reg, plugin);
     if (!mode)
     {
       return ReportError ("Could not load plugin '%s'!", plugin.GetData ());
     }
+
     wxPanel* panel = new wxPanel (notebook, wxID_ANY, wxDefaultPosition,
 	wxDefaultSize, wxTAB_TRAVERSAL);
     notebook->AddPage (panel, wxString::FromUTF8 (mode->GetName ()), false);

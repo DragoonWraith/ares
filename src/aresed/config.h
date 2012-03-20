@@ -35,6 +35,7 @@ struct ModeConfig
   csString plugin;
   csString tooltip;
   bool mainMode;
+  csStringArray resources;
 };
 
 class AresConfig : public scfImplementation1<AresConfig, iEditorConfig>
