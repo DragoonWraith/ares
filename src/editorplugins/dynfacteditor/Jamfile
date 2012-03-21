@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins dynfacteditor ;
+
+Description dynfacteditor : "AresEd Dynamic Factory Editor Plugin" ;
+Plugin dynfacteditor :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs dynfacteditor : CRYSTAL ;
+ExternalLibs dynfacteditor : CEL ;
+ExternalLibs dynfacteditor : WX ;
+LinkWith dynfacteditor : edcommon ;
+

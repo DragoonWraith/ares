@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "edcommon/model.h"
+#include "editor/idialog.h"
+#include "editor/iapp.h"
 #include "meshview.h"
 
 #include <wx/wx.h>
@@ -45,7 +47,10 @@ class FactoryEditorModel;
 class DynfactDialog;
 class ColliderCollectionValue;
 
-class UIManager;
+struct iUIManager;
+struct iAresEditor;
+struct iDynamicFactory;
+struct iCelPlLayer;
 
 using namespace Ares;
 
@@ -213,9 +218,12 @@ public:
  */
 class NewInvisibleChildAction : public AbstractNewAction
 {
+private:
+  DynfactDialog* dialog;
+
 public:
-  NewInvisibleChildAction (Value* collection) :
-    AbstractNewAction (collection) { }
+  NewInvisibleChildAction (DynfactDialog* dialog, Value* collection) :
+    AbstractNewAction (collection), dialog (dialog) { }
   virtual ~NewInvisibleChildAction () { }
   virtual const char* GetName () const { return "New Invisible..."; }
   virtual bool Do (View* view, wxWindow* component);
@@ -224,11 +232,17 @@ public:
 /**
  * The dialog for editing dynamic factories.
  */
-class DynfactDialog : public wxDialog, public View
+class DynfactDialog : public wxDialog,
+  public scfImplementation2<DynfactDialog, iDialogPlugin, iComponent>
 {
 private:
-  UIManager* uiManager;
+  View view;
+  iAresEditor* app;
+  iObjectRegistry* object_reg;
   csRef<iTimerEvent> timerOp;
+  csRef<iCelPlLayer> pl;
+  csRef<iEngine> engine;
+  csRef<iVirtualClock> vc;
 
   csRef<CS::Animation::iBodyManager> bodyManager;
 
@@ -261,8 +275,21 @@ private:
   void SetupActions ();
 
 public:
-  DynfactDialog (wxWindow* parent, UIManager* uiManager);
-  ~DynfactDialog ();
+  DynfactDialog (iBase* parent);
+  virtual ~DynfactDialog ();
+
+  virtual bool Initialize (iObjectRegistry* object_reg);
+
+  virtual void SetApplication (iAresEditor* app);
+  virtual void SetParent (wxWindow* parent);
+  virtual const char* GetDialogName () const { return "DynfactEditor"; }
+  virtual void ShowDialog () { Show (); }
+
+  iObjectRegistry* GetObjectRegistry () const { return object_reg; }
+  iCelPlLayer* GetPL () const { return pl; }
+  iEngine* GetEngine () const { return engine; }
+  iAresEditor* GetApplication () const { return app; }
+  iUIManager* GetUIManager () const { return app->GetUI (); }
 
   void Show ();
   void Tick ();
@@ -272,7 +299,6 @@ public:
   void FitCollider (iDynamicFactory* fact, csColliderGeometryType type);
   void FitCollider (CS::Animation::BoneID id, csColliderGeometryType type);
 
-  UIManager* GetUIManager () const { return uiManager; }
   CS::Animation::iBodyManager* GetBodyManager () const { return bodyManager; }
 
   iDynamicFactory* GetCurrentFactory ();

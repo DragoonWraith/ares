@@ -1,4 +1,9 @@
 <config>
+    <dialogs>
+      <dialog plugin="ares.editor.dynfacteditor">
+	  <resource file="DynfactDialog.xrc" />
+      </dialog>
+    </dialogs>
     <editormodes>
       <mode plugin="ares.editor.modes.main" main="True"
       		tooltip="Main 3D object manipulation mode">

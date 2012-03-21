@@ -25,12 +25,13 @@ THE SOFTWARE.
 #ifndef __aresed_config_h
 #define __aresed_config_h
 
+#include "csutil/stringarray.h"
 #include "editor/iconfig.h"
 
 class AppAresEditWX;
 struct iDocumentNode;
 
-struct ModeConfig
+struct PluginConfig
 {
   csString plugin;
   csString tooltip;
@@ -43,10 +44,12 @@ class AresConfig : public scfImplementation1<AresConfig, iEditorConfig>
 private:
   AppAresEditWX* app;
   csArray<KnownMessage> messages;
-  csArray<ModeConfig> modes;
+  csArray<PluginConfig> modes;
+  csArray<PluginConfig> dialogs;
 
   bool ParseKnownMessages (iDocumentNode* knownmessagesNode);
   bool ParseEditorModes (iDocumentNode* editormodesNode);
+  bool ParseDialogPlugins (iDocumentNode* dialogsNode);
 
 public:
   AresConfig (AppAresEditWX* app);
@@ -65,7 +68,9 @@ public:
   virtual const KnownMessage* GetKnownMessage (const char* name) const;
 
   /// Get all modes.
-  const csArray<ModeConfig>& GetModes () const { return modes; }
+  const csArray<PluginConfig>& GetModes () const { return modes; }
+  /// Get all dialogs.
+  const csArray<PluginConfig>& GetDialogs () const { return dialogs; }
 };
 
 #endif // __aresed_config_h

@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "ui/filereq.h"
 #include "ui/newproject.h"
 #include "ui/celldialog.h"
-#include "ui/dynfactdialog.h"
 #include "camera.h"
 #include "editor/imode.h"
 
@@ -778,7 +777,7 @@ bool AresEdit3DView::Setup ()
   return true;
 }
 
-void AresEdit3DView::SetupFactorySettings (iDynamicFactory* fact)
+void AresEdit3DView::RefreshFactorySettings (iDynamicFactory* fact)
 {
   csBox3 bbox = fact->GetPhysicsBBox ();
   factory_to_origin_offset.PutUnique (fact->GetName (), bbox.MinY ());
@@ -798,7 +797,7 @@ bool AresEdit3DView::SetupDynWorld ()
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
-    SetupFactorySettings (fact);
+    RefreshFactorySettings (fact);
     const char* category = fact->GetAttribute ("category");
     AddItem (category, fact->GetName ());
   }
@@ -1292,6 +1291,11 @@ iUIManager* AppAresEditWX::GetUI () const
   return static_cast<iUIManager*> (uiManager);
 }
 
+i3DView* AppAresEditWX::Get3DView () const
+{
+  return static_cast<i3DView*> (aresed3d);
+}
+
 void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
 {
   aresed3d->CopySelection ();
@@ -1394,7 +1398,7 @@ void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
 {
-  uiManager->GetDynfactDialog ()->Show ();
+  dynfactDialog->ShowDialog ();
 }
 
 void AppAresEditWX::OnMenuPlay (wxCommandEvent& event)
@@ -1619,57 +1623,42 @@ bool AppAresEditWX::Initialize ()
   return true;
 }
 
-bool AppAresEditWX::InitWX ()
+bool AppAresEditWX::InitDialogPlugins ()
 {
-  // Load the frame from an XRC file
-  wxXmlResource::Get ()->InitAllHandlers ();
+  const csArray<PluginConfig>& configdia = config->GetDialogs ();
+  for (size_t i = 0 ; i < configdia.GetSize () ; i++)
+  {
+    csString plugin = configdia.Get (i).plugin;
+    printf ("Loading dialog plugin %s\n", plugin.GetData ());
+    fflush (stdout);
 
-  wxString searchPath (wxT ("data/windows"));
-  if (!LoadResourceFile ("AresMainFrame.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("FileRequester.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("DynfactDialog.xrc", searchPath)) return false;
+    wxString searchPath (wxT ("data/windows"));
+    for (size_t j = 0 ; j < configdia.Get (i).resources.GetSize () ; j++)
+    {
+      if (!LoadResourceFile (configdia.Get (i).resources.Get (j),
+	    searchPath)) return false;
+    }
 
-  wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
-  if (!mainPanel) return ReportError ("Can't find main panel!");
+    csRef<iDialogPlugin> dialog = csLoadPluginCheck<iDialogPlugin> (object_reg, plugin);
+    if (!dialog)
+    {
+      return ReportError ("Could not load plugin '%s'!", plugin.GetData ());
+    }
 
-  // Find the panel where to place the wxgl canvas
-  wxPanel* panel = XRCCTRL (*this, "main3DPanel", wxPanel);
-  if (!panel) return ReportError ("Can't find main3DPanel!");
-  panel->DragAcceptFiles (false);
+    dialog->SetApplication (static_cast<iAresEditor*> (this));
+    dialog->SetParent (this);
 
-  // Create the wxgl canvas
-  iGraphics2D* g2d = g3d->GetDriver2D ();
-  g2d->AllowResize (true);
-  wxwindow = scfQueryInterface<iWxWindow> (g2d);
-  if (!wxwindow) return ReportError ("Canvas is no iWxWindow plugin!");
+    csString name = dialog->GetDialogName ();
+    if (name == "DynfactEditor")
+      dynfactDialog = dialog;
+  }
 
-  wxPanel* panel1 = new AppAresEditWX::Panel (panel, this);
-  panel->GetSizer ()->Add (panel1, 1, wxALL | wxEXPAND);
-  wxwindow->SetParent (panel1);
+  return true;
+}
 
-  Show (true);
-
-  // Open the main system. This will open all the previously loaded plug-ins.
-  if (!csInitializer::OpenApplication (object_reg))
-    return ReportError ("Error opening system!");
-
-  /* Manually focus the GL canvas.
-     This is so it receives keyboard events (and conveniently translate these
-     into CS keyboard events/update the CS keyboard state).
-   */
-  wxwindow->GetWindow ()->SetFocus ();
-
-  aresed3d = new AresEdit3DView (this, object_reg);
-  if (!aresed3d->Setup ())
-    return false;
-
+bool AppAresEditWX::InitModePlugins ()
+{
   i3DView* view3d = static_cast<i3DView*> (aresed3d);
- 
-  uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
-
   playMode = csLoadPluginCheck<iEditingMode> (object_reg,
       "ares.editor.modes.play");
   playMode->Set3DView (view3d);
@@ -1678,7 +1667,7 @@ bool AppAresEditWX::InitWX ()
       //"ares.editor.modes.room");
   //roomMode->Set3DView (view3d);
 
-  const csArray<ModeConfig>& configmodes = config->GetModes ();
+  const csArray<PluginConfig>& configmodes = config->GetModes ();
   wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
   for (size_t i = 0 ; i < configmodes.GetSize () ; i++)
   {
@@ -1716,6 +1705,59 @@ bool AppAresEditWX::InitWX ()
   }
 
   editMode = 0;
+  return true;
+}
+
+bool AppAresEditWX::InitWX ()
+{
+  // Load the frame from an XRC file
+  wxXmlResource::Get ()->InitAllHandlers ();
+
+  wxString searchPath (wxT ("data/windows"));
+  if (!LoadResourceFile ("AresMainFrame.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("FileRequester.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
+
+  wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
+  if (!mainPanel) return ReportError ("Can't find main panel!");
+
+  // Find the panel where to place the wxgl canvas
+  wxPanel* panel = XRCCTRL (*this, "main3DPanel", wxPanel);
+  if (!panel) return ReportError ("Can't find main3DPanel!");
+  panel->DragAcceptFiles (false);
+
+  // Create the wxgl canvas
+  iGraphics2D* g2d = g3d->GetDriver2D ();
+  g2d->AllowResize (true);
+  wxwindow = scfQueryInterface<iWxWindow> (g2d);
+  if (!wxwindow) return ReportError ("Canvas is no iWxWindow plugin!");
+
+  wxPanel* panel1 = new AppAresEditWX::Panel (panel, this);
+  panel->GetSizer ()->Add (panel1, 1, wxALL | wxEXPAND);
+  wxwindow->SetParent (panel1);
+
+  Show (true);
+
+  // Open the main system. This will open all the previously loaded plug-ins.
+  if (!csInitializer::OpenApplication (object_reg))
+    return ReportError ("Error opening system!");
+
+  /* Manually focus the GL canvas.
+     This is so it receives keyboard events (and conveniently translate these
+     into CS keyboard events/update the CS keyboard state).
+   */
+  wxwindow->GetWindow ()->SetFocus ();
+
+  aresed3d = new AresEdit3DView (this, object_reg);
+  if (!aresed3d->Setup ())
+    return false;
+
+  uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
+
+  if (!InitDialogPlugins ()) return false;
+  if (!InitModePlugins ()) return false;
 
   wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   leftPanePanel->SetMinSize (wxSize (270,-1));

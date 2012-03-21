@@ -28,9 +28,9 @@ THE SOFTWARE.
 #include "filereq.h"
 #include "newproject.h"
 #include "celldialog.h"
-#include "dynfactdialog.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/listview.h"
+#include "edcommon/model.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
  * missing csMouseEventHelper symbols. */
@@ -187,6 +187,8 @@ void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
   info.view = new SimpleListCtrlView (list, model);
   listFields.Put (name, info);
 }
+
+using namespace Ares;
 
 void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn,
     const char* heading, const char* names)
@@ -472,11 +474,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
   newprojectDialog = new NewProjectDialog (parent, this, app->GetVFS ());
   cellDialog = new CellDialog (parent, this);
-  dynfactDialog.AttachNew (new DynfactDialog (parent, this));
   contextMenuID = ID_FirstContextItem;
-
-  dynfactDialog->Layout ();
-  dynfactDialog->Fit ();
 }
 
 UIManager::~UIManager ()

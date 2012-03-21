@@ -60,6 +60,7 @@ class DynfactCollectionValue;
 class NewProjectDialog;
 class UIManager;
 
+class iDialogPlugin;
 struct iEditingMode;
 
 struct iCelPlLayer;
@@ -325,7 +326,7 @@ public:
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   iEngine* GetEngine () const { return engine; }
-  iDynamicSystem* GetDynamicSystem () const { return dynSys; }
+  virtual iDynamicSystem* GetDynamicSystem () const { return dynSys; }
   virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const
   { return bullet_dynSys; }
   virtual iCamera* GetCsCamera () const { return view->GetCamera (); }
@@ -357,10 +358,6 @@ public:
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
   /// Get the dynamic factory value.
   virtual Ares::Value* GetDynfactCollectionValue () const;
-  virtual DynfactCollectionValue* GetDynfactCollectionValueInt () const
-  {
-    return dynfactCollectionValue;
-  }
 
   /// Join two selected objects.
   void JoinObjects ();
@@ -376,11 +373,12 @@ public:
   void AddItem (const char* category, const char* itemname);
   /// Remove an item.
   void RemoveItem (const char* category, const char* itemname);
+
   /**
    * Move an item to another category. If the item doesn't already exist
    * then this is equivalent to calling AddItem().
    */
-  void ChangeCategory (const char* newCategory, const char* itemname);
+  virtual void ChangeCategory (const char* newCategory, const char* itemname);
 
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   virtual iDynamicObject* SpawnItem (const csString& name,
@@ -390,7 +388,7 @@ public:
    * When the physical properties of a factory change or a new factory is created
    * we need to change various internal settings for this.
    */
-  void SetupFactorySettings (iDynamicFactory* fact);
+  virtual void RefreshFactorySettings (iDynamicFactory* fact);
 
   /// Warp the camera to another cell.
   void WarpCell (iDynamicCell* cell);
@@ -518,6 +516,7 @@ private:
 
   csRef<AresConfig> config;
   csRef<AresEdit3DView> aresed3d;
+  csRef<iDialogPlugin> dynfactDialog;
 
   static bool SimpleEventHandler (iEvent& ev);
   bool HandleEvent (iEvent& ev);
@@ -586,6 +585,8 @@ public:
   virtual void ClearStatus ();
 
   bool Initialize ();
+  bool InitDialogPlugins ();
+  bool InitModePlugins ();
   bool InitWX ();
   void PushFrame ();
   void OnClose (wxCloseEvent& event);
@@ -623,6 +624,7 @@ public:
 
   UIManager* GetUIManager () const { return uiManager; }
   virtual iUIManager* GetUI () const;
+  virtual i3DView* Get3DView () const;
   iVirtualClock* GetVC () const { return vc; }
   iEngine* GetEngine () const { return engine; }
 

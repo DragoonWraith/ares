@@ -33,6 +33,44 @@ AresConfig::AresConfig (AppAresEditWX* app) :
 {
 }
 
+bool AresConfig::ParseDialogPlugins (iDocumentNode* dialogsNode)
+{
+  csRef<iDocumentNodeIterator> it = dialogsNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "dialog")
+    {
+      PluginConfig mc;
+      mc.plugin = child->GetAttributeValue ("plugin");
+      csRef<iDocumentNodeIterator> childit = child->GetNodes ();
+      while (childit->HasNext ())
+      {
+	csRef<iDocumentNode> resourceChild = childit->Next ();
+	if (resourceChild->GetType () != CS_NODE_ELEMENT) continue;
+        csString resourceValue = resourceChild->GetValue ();
+        if (resourceValue == "resource")
+	{
+	  csString file = resourceChild->GetAttributeValue ("file");
+	  mc.resources.Push (file);
+	}
+        else
+        {
+          return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", resourceValue.GetData ());
+        }
+      }
+      dialogs.Push (mc);
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
+}
+
 bool AresConfig::ParseEditorModes (iDocumentNode* editormodesNode)
 {
   csRef<iDocumentNodeIterator> it = editormodesNode->GetNodes ();
@@ -43,7 +81,7 @@ bool AresConfig::ParseEditorModes (iDocumentNode* editormodesNode)
     csString value = child->GetValue ();
     if (value == "mode")
     {
-      ModeConfig mc;
+      PluginConfig mc;
       mc.plugin = child->GetAttributeValue ("plugin");
       mc.tooltip = child->GetAttributeValue ("tooltip");
       mc.mainMode = child->GetAttributeValueAsBool ("main");
@@ -163,6 +201,12 @@ bool AresConfig::ReadConfig ()
   if (editormodesNode)
   {
     if (!ParseEditorModes (editormodesNode))
+      return false;
+  }
+  csRef<iDocumentNode> dialogsNode = configNode->GetNode ("dialogs");
+  if (dialogsNode)
+  {
+    if (!ParseDialogPlugins (dialogsNode))
       return false;
   }
   return true;

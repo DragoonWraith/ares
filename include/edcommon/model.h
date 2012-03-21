@@ -1349,11 +1349,20 @@ public:
   /**
    * Utility functions to convert values.
    */
-  bool ValueToBool (Value* value);
-  csString ValueToString (Value* value);
-  void LongToValue (long l, Value* value);
-  void BoolToValue (bool in, Value* value);
-  void StringToValue (const char* str, Value* value);
+  static bool ValueToBool (Value* value);
+  static csString ValueToString (Value* value);
+  static void LongToValue (long l, Value* value);
+  static void BoolToValue (bool in, Value* value);
+  static void StringToValue (const char* str, Value* value);
+
+  //----------------------------------------------------------------
+
+  /**
+   * General utility function to find a child in a collection or composite
+   * which has a string representation (as returned by ValueToString) equal
+   * to the given string.
+   */
+  static Value* FindChild (Value* collection, const char* str);
 };
 
 } // namespace Ares

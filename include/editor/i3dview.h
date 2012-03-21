@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 
 struct iDynamicObject;
+struct iDynamicFactory;
 struct iSelection;
 struct iDynamicCell;
 struct iPcDynamicWorld;
@@ -116,6 +117,11 @@ struct i3DView : public virtual iBase
   virtual void ChangeNameSelectedObject (const char* name) = 0;
 
   /**
+   * Get the dynamics system.
+   */
+  virtual iDynamicSystem* GetDynamicSystem () const = 0;
+
+  /**
    * Get the physics bullet system.
    */
   virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const = 0;
@@ -163,6 +169,18 @@ struct i3DView : public virtual iBase
   virtual void StartPasteSelection () = 0;
   /// Start paste mode for a specific object.
   virtual void StartPasteSelection (const char* name) = 0;
+
+  /**
+   * Move an item to another category. If the item doesn't already exist
+   * then this is equivalent to calling AddItem().
+   */
+  virtual void ChangeCategory (const char* newCategory, const char* itemname) = 0;
+
+  /**
+   * When the physical properties of a factory change or a new factory is created
+   * we need to change various internal settings for this.
+   */
+  virtual void RefreshFactorySettings (iDynamicFactory* fact) = 0;
 };
 
 

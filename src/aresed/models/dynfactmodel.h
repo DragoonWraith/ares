@@ -53,7 +53,6 @@ public:
 
   void AddChild (Value* child) { children.Push (child); child->SetParent (this); dirty = true; }
   void RemoveChild (Value* child) { children.Delete (child); child->SetParent (0); dirty = true; }
-  Value* FindChild (const char* name);
 
   virtual const char* GetStringValue () { return category; }
 
@@ -95,11 +94,6 @@ public:
    * the given value.
    */
   Value* GetCategoryForValue (Value* value);
-
-  /**
-   * Find the value corresponding with a given item.
-   */
-  Value* FindValueForItem (const char* itemname);
 
   virtual csString Dump (bool verbose = false)
   {

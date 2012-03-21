@@ -22,31 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_meshfactmodel_h
-#define __aresed_meshfactmodel_h
+#include <crystalspace.h>
 
-#include "edcommon/rowmodel.h"
-#include "edcommon/model.h"
+#include "meshfactmodel.h"
+#include "edcommon/tools.h"
+#include "propclass/dynworld.h"
 
-class AppAresEditWX;
-struct iMeshFactoryList;
+using namespace Ares;
 
-class MeshCollectionValue : public Ares::StandardCollectionValue
+void MeshCollectionValue::UpdateChildren ()
 {
-private:
-  AppAresEditWX* app;
-
-protected:
-  virtual void UpdateChildren ();
-  virtual void ChildChanged (Value* child)
+  if (!dirty) return;
+  dirty = false;
+  ReleaseChildren ();
+  iMeshFactoryList* list = engine->GetMeshFactories ();
+  for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
   {
-    FireValueChanged ();
+    iMeshFactoryWrapper* fact = list->Get (i);
+    const char* name = fact->QueryObject ()->GetName ();
+    if (!dynworld->FindFactory (name))
+    {
+      csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
+      composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
+      children.Push (composite);
+      composite->SetParent (this);
+    }
   }
-
-public:
-  MeshCollectionValue (AppAresEditWX* app) : app (app) { }
-  virtual ~MeshCollectionValue () { }
-};
-
-#endif // __aresed_meshfactmodel_h
+}
 

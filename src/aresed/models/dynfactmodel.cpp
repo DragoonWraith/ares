@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "dynfactmodel.h"
-#include "meshfactmodel.h"
 #include "edcommon/tools.h"
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
@@ -46,15 +45,6 @@ void CategoryCollectionValue::UpdateChildren ()
     children.Push (strValue);
     strValue->SetParent (this);
   }
-}
-
-Value* CategoryCollectionValue::FindChild (const char* name)
-{
-  csString sName = name;
-  for (size_t i = 0 ; i < children.GetSize () ; i++)
-    if (sName == children[i]->GetStringValue ())
-      return children[i];
-  return 0;
 }
 
 void DynfactCollectionValue::UpdateChildren ()
@@ -150,12 +140,11 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
   }
 
   fact->SetAttribute ("category", categoryValue->GetStringValue ());
-  aresed3d->SetupFactorySettings (fact);
+  aresed3d->RefreshFactorySettings (fact);
 
-  CategoryCollectionValue* categoryCollectionValue = static_cast<CategoryCollectionValue*> (categoryValue);
-  categoryCollectionValue->Refresh ();
+  categoryValue->Refresh ();
   FireValueChanged ();
-  return categoryCollectionValue->FindChild (newname);
+  return View::FindChild (categoryValue, newname);
 }
 
 Value* DynfactCollectionValue::GetCategoryForValue (Value* value)
@@ -163,18 +152,6 @@ Value* DynfactCollectionValue::GetCategoryForValue (Value* value)
   for (size_t i = 0 ; i < children.GetSize () ; i++)
     if (children[i] == value) return value;
     else if (children[i]->IsChild (value)) return children[i];
-  return 0;
-}
-
-Value* DynfactCollectionValue::FindValueForItem (const char* itemname)
-{
-  for (size_t i = 0 ; i < children.GetSize () ; i++)
-  {
-    CategoryCollectionValue* cvalue = static_cast<CategoryCollectionValue*> (
-	children[i]);
-    Value* value = cvalue->FindChild (itemname);
-    if (value) return value;
-  }
   return 0;
 }
 

@@ -22,22 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "../apparesed.h"
+#include <crystalspace.h>
 #include "dynfactdialog.h"
-#include "uimanager.h"
+#include "editor/iuimanager.h"
+#include "editor/iuidialog.h"
+#include "editor/iapp.h"
+#include "editor/i3dview.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/uitools.h"
 #include "meshview.h"
+#include "meshfactmodel.h"
 #include "edcommon/treeview.h"
 #include "edcommon/listview.h"
 #include "edcommon/dirtyhelper.h"
-#include "../models/dynfactmodel.h"
-#include "../models/meshfactmodel.h"
 #include "edcommon/tools.h"
 
 #include "physicallayer/pl.h"
+#include "propclass/dynworld.h"
 
 #include <wx/choicebk.h>
+
+SCF_IMPLEMENT_FACTORY (DynfactDialog)
 
 //--------------------------------------------------------------------------
 
@@ -325,12 +330,12 @@ protected:
     dynfact = dialog->GetCurrentFactory ();
     if (!dynfact) return;
     dirty = false;
-    AresEdit3DView* ares3d = dialog->GetUIManager ()->GetApp ()->GetAresView ();
+    iCelPlLayer* pl = dialog->GetPL ();
     csRef<iAttributeIterator> it = dynfact->GetAttributes ();
     while (it->HasNext ())
     {
       csStringID nameID = it->Next ();
-      csString name = ares3d->GetPL ()->FetchString (nameID);
+      csString name = pl->FetchString (nameID);
       if (name != "category" && name != "defaultstatic")
         NewChild (nameID, name);
     }
@@ -366,8 +371,8 @@ public:
     if (!dynfact) return 0;
     csString name = suggestion.Get ("name", (const char*)0);
     csString value = suggestion.Get ("value", (const char*)0);
-    AresEdit3DView* ares3d = dialog->GetUIManager ()->GetApp ()->GetAresView ();
-    csStringID nameID = ares3d->GetPL ()->FetchStringID (name);
+    iCelPlLayer* pl = dialog->GetPL ();
+    csStringID nameID = pl->FetchStringID (name);
     dynfact->SetAttribute (nameID, value);
     Value* child = NewChild (nameID, name);
     FireValueChanged ();
@@ -752,9 +757,8 @@ protected:
   virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
-    //UIManager* uiManager = dialog->GetUIManager ();
-    //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    //ares3d->SetupFactorySettings (dialog->GetCurrentFactory ());
+    //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    //view3d->RefreshFactorySettings (dialog->GetCurrentFactory ());
   }
 
 public:
@@ -1037,9 +1041,8 @@ protected:
   virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
-    UIManager* uiManager = dialog->GetUIManager ();
-    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    ares3d->SetupFactorySettings (dialog->GetCurrentFactory ());
+    i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    view3d->RefreshFactorySettings (dialog->GetCurrentFactory ());
   }
 
 public:
@@ -1118,9 +1121,8 @@ protected:
   //virtual void ChildChanged (Value* child)
   //{
     //FireValueChanged ();
-    //UIManager* uiManager = dialog->GetUIManager ();
-    //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    //ares3d->SetupFactorySettings (dialog->GetCurrentFactory ());
+    //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    //view3d->RefreshFactorySettings (dialog->GetCurrentFactory ());
   //}
 
 public:
@@ -1204,9 +1206,8 @@ public:
     if (dynfact)
     {
       dynfact->SetAttribute ("defaultstatic", f ? "true" : "false");
-      //UIManager* uiManager = dialog->GetUIManager ();
-      //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-      //ares3d->SetupFactorySettings (dynfact);
+      //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+      //view3d->RefreshFactorySettings (dynfact);
       FireValueChanged ();
     }
   }
@@ -1267,9 +1268,8 @@ private:
   {
     if (!dynfact) return 0;
     csString itemname = dynfact->GetName ();
-    UIManager* uiManager = dialog->GetUIManager ();
-    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+    iEngine* engine = dialog->GetEngine ();
+    iMeshFactoryWrapper* meshFact = engine->FindMeshFactory (itemname);
     CS_ASSERT (meshFact != 0);
 
     csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
@@ -1370,9 +1370,8 @@ void DynfactValue::ChildChanged (Value* child)
   iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
   if (dynfact)
   {
-    UIManager* uiManager = dialog->GetUIManager ();
-    AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    ares3d->SetupFactorySettings (dynfact);
+    i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    view3d->RefreshFactorySettings (dynfact);
   }
 }
 
@@ -1390,9 +1389,8 @@ void BoneValue::ChildChanged (Value* child)
   //iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
   //if (dynfact)
   //{
-    //UIManager* uiManager = dialog->GetUIManager ();
-    //AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-    //ares3d->SetupFactorySettings (dynfact);
+    //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    //view3d->RefreshFactorySettings (dynfact);
   //}
 }
 
@@ -1400,7 +1398,7 @@ void BoneValue::ChildChanged (Value* child)
 
 bool CreateJointAction::Do (View* view, wxWindow* component)
 {
-  UIManager* uiManager = dialog->GetUIManager ();
+  iUIManager* uiManager = dialog->GetUIManager ();
 
   CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
   if (!bone)
@@ -1425,9 +1423,35 @@ bool CreateJointAction::IsActive (View* view, wxWindow* component)
 
 //--------------------------------------------------------------------------
 
+static Value* FindValueForItem (Value* collectionValue, const char* itemname)
+{
+  csRef<ValueIterator> it = collectionValue->GetIterator ();
+  while (it->HasNext ())
+  {
+    Value* child = it->NextChild ();
+    Value* value = View::FindChild (child, itemname);
+    if (value) return value;
+  }
+  return 0;
+}
+
+static Value* GetCategoryForValue (Value* collectionValue, Value* value)
+{
+  csRef<ValueIterator> it = collectionValue->GetIterator ();
+  while (it->HasNext ())
+  {
+    Value* child = it->NextChild ();
+    if (child == value) return value;
+    else if (child->IsChild (value)) return child;
+  }
+  return 0;
+}
+
+//--------------------------------------------------------------------------
+
 bool EnableRagdollAction::Do (View* view, wxWindow* component)
 {
-  UIManager* uiManager = dialog->GetUIManager ();
+  iUIManager* uiManager = dialog->GetUIManager ();
 
   Value* value = view->GetSelectedValue (component);
   if (!value)
@@ -1435,16 +1459,16 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
     return uiManager->Error ("Please select a valid item!");
   }
 
-  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
-  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
+    ->GetDynfactCollectionValue ();
+  Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
   {
     return uiManager->Error ("Please select a valid item!");
   }
 
   csString itemname = value->GetStringValue ();
-  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+  iMeshFactoryWrapper* meshFact = dialog->GetEngine ()->FindMeshFactory (itemname);
   CS_ASSERT (meshFact != 0);
 
   csRef<CS::Mesh::iAnimatedMeshFactory> animFact =
@@ -1471,13 +1495,14 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   // Create the ragdoll animation node
   csRef<CS::Animation::iSkeletonRagdollNodeManager> ragdollManager =
     csQueryRegistryOrLoad<CS::Animation::iSkeletonRagdollNodeManager>
-    (uiManager->GetApp ()->GetObjectRegistry (),
+    (dialog->GetObjectRegistry (),
      "crystalspace.mesh.animesh.animnode.ragdoll");
 
   csRef<CS::Animation::iSkeletonRagdollNodeFactory> ragdollNodeFactory =
     ragdollManager->CreateAnimNodeFactory ("ragdoll");
   ragdollNodeFactory->SetBodySkeleton (bodySkeleton);
-  ragdollNodeFactory->SetDynamicSystem (ares3d->GetDynamicSystem ());
+  i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+  ragdollNodeFactory->SetDynamicSystem (view3d->GetDynamicSystem ());
 
   // Set the ragdoll node as the root of the animation tree
   csRef<CS::Animation::iSkeletonAnimPacketFactory> animPacketFactory =
@@ -1508,15 +1533,14 @@ bool EnableRagdollAction::IsActive (View* view, wxWindow* component)
   Value* value = view->GetSelectedValue (component);
   if (!value) return false;
 
-  UIManager* uiManager = dialog->GetUIManager ();
-  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
-  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
+    ->GetDynfactCollectionValue ();
+  Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
     return false;
 
   csString itemname = value->GetStringValue ();
-  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (itemname);
+  iMeshFactoryWrapper* meshFact = dialog->GetEngine ()->FindMeshFactory (itemname);
   CS_ASSERT (meshFact != 0);
 
   csRef<CS::Mesh::iAnimatedMeshFactory> animFact =
@@ -1536,7 +1560,7 @@ bool EnableRagdollAction::IsActive (View* view, wxWindow* component)
 
 bool EditCategoryAction::Do (View* view, wxWindow* component)
 {
-  UIManager* uiManager = dialog->GetUIManager ();
+  iUIManager* uiManager = dialog->GetUIManager ();
 
   Value* value = view->GetSelectedValue (component);
   if (!value)
@@ -1544,24 +1568,24 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     return uiManager->Error ("Please select a valid item!");
   }
 
-  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
-  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
+    ->GetDynfactCollectionValue ();
+  Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
   {
     return uiManager->Error ("Please select a valid item!");
   }
 
-  UIDialog dia (dialog, "Edit category");
-  dia.AddRow ();
-  dia.AddLabel ("Category:");
-  dia.AddText ("category");
+  csRef<iUIDialog> dia = uiManager->CreateDialog (dialog, "Edit category");
+  dia->AddRow ();
+  dia->AddLabel ("Category:");
+  dia->AddText ("category");
 
   csString oldCategory = categoryValue->GetStringValue ();
-  dia.SetText ("category", categoryValue->GetStringValue ());
-  if (dia.Show (0))
+  dia->SetText ("category", categoryValue->GetStringValue ());
+  if (dia->Show (0))
   {
-    const DialogResult& rc = dia.GetFieldContents ();
+    const DialogResult& rc = dia->GetFieldContents ();
     csString newCategory = rc.Get ("category", oldCategory);
     if (newCategory.IsEmpty ())
     {
@@ -1570,13 +1594,14 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     if (newCategory != oldCategory)
     {
       csString itemname = value->GetStringValue ();
-      ares3d->ChangeCategory (newCategory, itemname);
-      iPcDynamicWorld* dynworld = ares3d->GetDynamicWorld ();
+      i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+      view3d->ChangeCategory (newCategory, itemname);
+      iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
       iDynamicFactory* fact = dynworld->FindFactory (itemname);
       CS_ASSERT (fact != 0);
       fact->SetAttribute ("category", newCategory);
       dynfactCollectionValue->Refresh ();
-      Value* itemValue = dynfactCollectionValue->FindValueForItem (itemname);
+      Value* itemValue = FindValueForItem (dynfactCollectionValue, itemname);
       if (itemValue)
 	view->SetSelectedValue (component, itemValue);
     }
@@ -1590,10 +1615,9 @@ bool EditCategoryAction::IsActive (View* view, wxWindow* component)
   Value* value = view->GetSelectedValue (component);
   if (!value) return false;
 
-  UIManager* uiManager = dialog->GetUIManager ();
-  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  DynfactCollectionValue* dynfactCollectionValue = ares3d->GetDynfactCollectionValueInt ();
-  Value* categoryValue = dynfactCollectionValue->GetCategoryForValue (value);
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
+    ->GetDynfactCollectionValue ();
+  Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
     return false;
 
@@ -1652,22 +1676,21 @@ public:
 
 bool NewInvisibleChildAction::Do (View* view, wxWindow* component)
 {
-  UIDialog* dialog = new UIDialog (component, "Factory name");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("name");
-  dialog->AddRow ();
-  dialog->AddLabel ("Min corner:");
-  dialog->AddText ("minx");
-  dialog->AddText ("miny");
-  dialog->AddText ("minz");
-  dialog->AddRow ();
-  dialog->AddLabel ("Max corner:");
-  dialog->AddText ("maxx");
-  dialog->AddText ("maxy");
-  dialog->AddText ("maxz");
-  bool d = DoDialog (view, component, dialog);
-  delete dialog;
+  csRef<iUIDialog> dia = dialog->GetUIManager ()->CreateDialog (component, "Factory name");
+  dia->AddRow ();
+  dia->AddLabel ("Name:");
+  dia->AddText ("name");
+  dia->AddRow ();
+  dia->AddLabel ("Min corner:");
+  dia->AddText ("minx");
+  dia->AddText ("miny");
+  dia->AddText ("minz");
+  dia->AddRow ();
+  dia->AddLabel ("Max corner:");
+  dia->AddText ("maxx");
+  dia->AddText ("maxy");
+  dia->AddText ("maxz");
+  bool d = DoDialog (view, component, dia);
   return d;
 }
 
@@ -1776,9 +1799,9 @@ void DynfactDialog::OnShowJoints (wxCommandEvent& event)
 
 void DynfactDialog::Show ()
 {
-  uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ()->Refresh ();
+  app->Get3DView ()->GetDynfactCollectionValue ()->Refresh ();
 
-  csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (uiManager->GetApp ()->GetObjectRegistry ());
+  csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (object_reg);
   timer->AddTimerEvent (timerOp, 25);
 
   ShowModal ();
@@ -1789,14 +1812,12 @@ void DynfactDialog::Show ()
 
 void DynfactDialog::Tick ()
 {
-  iVirtualClock* vc = uiManager->GetApp ()->GetVC ();
   meshView->RotateMesh (vc->GetElapsedSeconds ());
 }
 
 CS::Animation::iSkeletonFactory* DynfactDialog::GetSkeletonFactory (const char* factName)
 {
-  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (factName);
+  iMeshFactoryWrapper* meshFact = engine->FindMeshFactory (factName);
   CS_ASSERT (meshFact != 0);
 
   csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
@@ -1833,7 +1854,7 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
   if (!factorySelectedValue) return 0;
   csString selectedFactory = factorySelectedValue->GetStringValue ();
   if (selectedFactory.IsEmpty ()) return 0;
-  iPcDynamicWorld* dynworld = uiManager->GetApp ()->GetAresView ()->GetDynamicWorld ();
+  iPcDynamicWorld* dynworld = app->Get3DView ()->GetDynamicWorld ();
   iDynamicFactory* dynfact = dynworld->FindFactory (selectedFactory);
   return dynfact;
 }
@@ -1927,8 +1948,7 @@ void DynfactDialog::FitCollider (CS::Animation::BoneID id, csColliderGeometryTyp
   iDynamicFactory* fact = GetCurrentFactory ();
   if (!fact) return;
   csString factName = fact->GetName ();
-  AresEdit3DView* ares3d = uiManager->GetApp ()->GetAresView ();
-  iMeshFactoryWrapper* meshFact = ares3d->GetEngine ()->FindMeshFactory (factName);
+  iMeshFactoryWrapper* meshFact = engine->FindMeshFactory (factName);
   if (!meshFact) { printf ("Can't find mesh factory '%s'!", factName.GetData ()); return; }
   csRef<CS::Mesh::iAnimatedMeshFactory> animeshFactory = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory>
       (meshFact->GetMeshObjectFactory ());
@@ -1937,17 +1957,16 @@ void DynfactDialog::FitCollider (CS::Animation::BoneID id, csColliderGeometryTyp
 
 void DynfactDialog::SetupDialogs ()
 {
-  AppAresEditWX* app = uiManager->GetApp ();
-
   // The dialog for editing new factories.
-  factoryDialog.AttachNew (new UIDialog (this, "Factory name"));
+  factoryDialog = app->GetUI ()->CreateDialog (this, "Factory name");
   factoryDialog->AddRow (1);
   factoryDialog->AddLabel ("Name:");
-  factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue(app)), 0,
+  factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue (engine,
+	  app->Get3DView ()->GetDynamicWorld ())), 0,
       "Name", "name");
 
   // The dialog for editing new attributes.
-  attributeDialog.AttachNew (new UIDialog (this, "Attribute"));
+  attributeDialog = app->GetUI ()->CreateDialog (this, "Attribute");
   attributeDialog->AddRow ();
   attributeDialog->AddLabel ("Name:");
   attributeDialog->AddText ("name");
@@ -1956,7 +1975,7 @@ void DynfactDialog::SetupDialogs ()
   attributeDialog->AddText ("value");
 
   // The dialog for selecting a bone.
-  selectBoneDialog.AttachNew (new UIDialog (this, "Select Bone"));
+  selectBoneDialog = app->GetUI ()->CreateDialog (this, "Select Bone");
   selectBoneDialog->AddRow ();
   selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0,
       "Name", "name");
@@ -1974,50 +1993,50 @@ void DynfactDialog::SetupColliderEditor (Value* colSelValue, const char* suffix)
 {
   // Bind the selection value to the different panels that describe the different
   // types of colliders.
-  Bind (colSelValue->GetChildByName ("type"), C3 ("type_", suffix, "ColliderChoice"));
-  Bind (colSelValue, C3 ("box_", suffix, "ColliderPanel"));
-  Bind (colSelValue, C3 ("sphere_", suffix, "ColliderPanel"));
-  Bind (colSelValue, C3 ("cylinder_", suffix, "ColliderPanel"));
-  Bind (colSelValue, C3 ("capsule_", suffix, "ColliderPanel"));
-  Bind (colSelValue, C3 ("mesh_", suffix, "ColliderPanel"));
-  Bind (colSelValue, C3 ("convexMesh_", suffix, "ColliderPanel"));
+  view.Bind (colSelValue->GetChildByName ("type"), C3 ("type_", suffix, "ColliderChoice"));
+  view.Bind (colSelValue, C3 ("box_", suffix, "ColliderPanel"));
+  view.Bind (colSelValue, C3 ("sphere_", suffix, "ColliderPanel"));
+  view.Bind (colSelValue, C3 ("cylinder_", suffix, "ColliderPanel"));
+  view.Bind (colSelValue, C3 ("capsule_", suffix, "ColliderPanel"));
+  view.Bind (colSelValue, C3 ("mesh_", suffix, "ColliderPanel"));
+  view.Bind (colSelValue, C3 ("convexMesh_", suffix, "ColliderPanel"));
 
   // Bind calculated value for the box collider so that there are also min/max
   // controls in addition to offset/size.
-  Bind (NEWREF(Value, new Offset2MinMaxValue (
+  view.Bind (NEWREF(Value, new Offset2MinMaxValue (
 	  colSelValue->GetChildByName ("offsetX"),
 	  colSelValue->GetChildByName ("sizeX"), false)), C3 ("minX_", suffix, "BoxText"));
-  Bind (NEWREF(Value, new Offset2MinMaxValue (
+  view.Bind (NEWREF(Value, new Offset2MinMaxValue (
 	  colSelValue->GetChildByName ("offsetY"),
 	  colSelValue->GetChildByName ("sizeY"), false)), C3 ("minY_", suffix, "BoxText"));
-  Bind (NEWREF(Value, new Offset2MinMaxValue (
+  view.Bind (NEWREF(Value, new Offset2MinMaxValue (
 	  colSelValue->GetChildByName ("offsetZ"),
 	  colSelValue->GetChildByName ("sizeZ"), false)), C3 ("minZ_", suffix, "BoxText"));
-  Bind (NEWREF(Value, new Offset2MinMaxValue (
+  view.Bind (NEWREF(Value, new Offset2MinMaxValue (
 	  colSelValue->GetChildByName ("offsetX"),
 	  colSelValue->GetChildByName ("sizeX"), true)), C3 ("maxX_", suffix, "BoxText"));
-  Bind (NEWREF(Value, new Offset2MinMaxValue (
+  view.Bind (NEWREF(Value, new Offset2MinMaxValue (
 	  colSelValue->GetChildByName ("offsetY"),
 	  colSelValue->GetChildByName ("sizeY"), true)), C3 ("maxY_", suffix, "BoxText"));
-  Bind (NEWREF(Value, new Offset2MinMaxValue (
+  view.Bind (NEWREF(Value, new Offset2MinMaxValue (
 	  colSelValue->GetChildByName ("offsetZ"),
 	  colSelValue->GetChildByName ("sizeZ"), true)), C3 ("maxZ_", suffix, "BoxText"));
 }
 
 void DynfactDialog::SetupJointsEditor (Value* jntValue, const char* suffix)
 {
-  BindEnabled (Not (jntValue->GetChildByName ("xLockTrans")), C3 ("xMinTrans_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("xLockTrans")), C3 ("xMaxTrans_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("yLockTrans")), C3 ("yMinTrans_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("yLockTrans")), C3 ("yMaxTrans_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("zLockTrans")), C3 ("zMinTrans_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("zLockTrans")), C3 ("zMaxTrans_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("xLockRot")), C3 ("xMinRot_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("xLockRot")), C3 ("xMaxRot_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("yLockRot")), C3 ("yMinRot_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("yLockRot")), C3 ("yMaxRot_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("zLockRot")), C3 ("zMinRot_", suffix, "Text"));
-  BindEnabled (Not (jntValue->GetChildByName ("zLockRot")), C3 ("zMaxRot_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("xLockTrans")), C3 ("xMinTrans_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("xLockTrans")), C3 ("xMaxTrans_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("yLockTrans")), C3 ("yMinTrans_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("yLockTrans")), C3 ("yMaxTrans_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("zLockTrans")), C3 ("zMinTrans_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("zLockTrans")), C3 ("zMaxTrans_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("xLockRot")), C3 ("xMinRot_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("xLockRot")), C3 ("xMaxRot_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("yLockRot")), C3 ("yMinRot_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("yLockRot")), C3 ("yMaxRot_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("zLockRot")), C3 ("zMinRot_", suffix, "Text"));
+  view.BindEnabled (view.Not (jntValue->GetChildByName ("zLockRot")), C3 ("zMaxRot_", suffix, "Text"));
 }
 
 void DynfactDialog::SetupActions ()
@@ -2027,7 +2046,7 @@ void DynfactDialog::SetupActions ()
   Value* joints = dynfactValue->GetChildByName ("joints");
   Value* bones = dynfactValue->GetChildByName ("bones");
   Value* boneColliders = boneValue->GetChildByName ("boneColliders");
-  Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = app->Get3DView ()->GetDynfactCollectionValue ();
 
   wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
   wxListCtrl* jointsList = XRCCTRL (*this, "joints_List", wxListCtrl);
@@ -2037,45 +2056,45 @@ void DynfactDialog::SetupActions ()
   wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
 
   // The actions.
-  AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
-  AddAction (colliderList, NEWREF(Action, new ContainerBoxAction (this, colliders)));
-  AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
-  AddAction (bonesColliderList, NEWREF(Action, new NewChildAction (boneColliders)));
-  AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
-  AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
-  AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
-  AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
-  AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
-  AddAction (bonesList, NEWREF(Action, new CreateJointAction (this)));
-  AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
-  AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (dynfactCollectionValue)));
-  AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
-  AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
-  AddAction (factoryTree, NEWREF(Action, new EnableRagdollAction (this)));
+  view.AddAction (colliderList, NEWREF(Action, new NewChildAction (colliders)));
+  view.AddAction (colliderList, NEWREF(Action, new ContainerBoxAction (this, colliders)));
+  view.AddAction (colliderList, NEWREF(Action, new DeleteChildAction (colliders)));
+  view.AddAction (bonesColliderList, NEWREF(Action, new NewChildAction (boneColliders)));
+  view.AddAction (pivotsList, NEWREF(Action, new NewChildAction (pivots)));
+  view.AddAction (pivotsList, NEWREF(Action, new DeleteChildAction (pivots)));
+  view.AddAction (jointsList, NEWREF(Action, new NewChildAction (joints)));
+  view.AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
+  view.AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
+  view.AddAction (bonesList, NEWREF(Action, new CreateJointAction (this)));
+  view.AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
+  view.AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (this, dynfactCollectionValue)));
+  view.AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
+  view.AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
+  view.AddAction (factoryTree, NEWREF(Action, new EnableRagdollAction (this)));
   Value* attributes = dynfactValue->GetChildByName ("attributes");
-  AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
-  AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
+  view.AddAction ("attributes_List", NEWREF(Action, new NewChildDialogAction (attributes, attributeDialog)));
+  view.AddAction ("attributes_List", NEWREF(Action, new DeleteChildAction (attributes)));
 
-  AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY)));
-  AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY)));
-  AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY)));
-  AddAction ("capsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY)));
+  view.AddAction ("boxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY)));
+  view.AddAction ("sphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY)));
+  view.AddAction ("cylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY)));
+  view.AddAction ("capsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY)));
 
-  AddAction ("boneBoxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY, true)));
-  AddAction ("boneSphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY, true)));
-  AddAction ("boneCylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY, true)));
-  AddAction ("boneCapsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY, true)));
+  view.AddAction ("boneBoxFitOffsetButton", NEWREF(Action, new BestFitAction(this, BOX_COLLIDER_GEOMETRY, true)));
+  view.AddAction ("boneSphereFitOffsetButton", NEWREF(Action, new BestFitAction(this, SPHERE_COLLIDER_GEOMETRY, true)));
+  view.AddAction ("boneCylinderFitOffsetButton", NEWREF(Action, new BestFitAction(this, CYLINDER_COLLIDER_GEOMETRY, true)));
+  view.AddAction ("boneCapsuleFitOffsetButton", NEWREF(Action, new BestFitAction(this, CAPSULE_COLLIDER_GEOMETRY, true)));
 }
 
 void DynfactDialog::SetupListHeadings ()
 {
   // Setup the lists.
-  DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
-  DefineHeading ("boneColliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
-  DefineHeading ("pivots_List", "x,y,z", "pivotX,pivotY,pivotZ");
-  DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
-  DefineHeading ("attributes_List", "Name,Value", "attrName,attrValue");
-  DefineHeading ("bones_List", "Name", "name");
+  view.DefineHeading ("colliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
+  view.DefineHeading ("boneColliders_List", "Type,Mass,x,y,z", "type,mass,offsetX,offsetY,offsetZ");
+  view.DefineHeading ("pivots_List", "x,y,z", "pivotX,pivotY,pivotZ");
+  view.DefineHeading ("joints_List", "x,y,z,tx,ty,tz,rx,ry,rz", "jointPosX,jointPosY,jointPosZ,xLockTrans,yLockTrans,zLockTrans,xLockRot,yLockRot,zLockRot");
+  view.DefineHeading ("attributes_List", "Name,Value", "attrName,attrValue");
+  view.DefineHeading ("bones_List", "Name", "name");
 }
 
 void DynfactDialog::SetupSelectedValues ()
@@ -2143,23 +2162,47 @@ void DynfactDialog::UpdateRagdoll ()
   // otherwise their ragdoll node will be in an inconsistent state.
 }
 
-DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
-  View (this), uiManager (uiManager)
+DynfactDialog::DynfactDialog (iBase* parent) :
+  scfImplementationType (this, parent), view (this)
 {
-  AppAresEditWX* app = uiManager->GetApp ();
-  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
+}
 
-  bodyManager = csQueryRegistry<CS::Animation::iBodyManager> (app->GetObjectRegistry ());
+bool DynfactDialog::Initialize (iObjectRegistry* object_reg)
+{
+  DynfactDialog::object_reg = object_reg;
+
+  bodyManager = csQueryRegistry<CS::Animation::iBodyManager> (object_reg);
   if (!bodyManager)
   {
     printf ("Can't find body manager!\n");
     fflush (stdout);
-    return;
+    return false;
   }
+  pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  if (!pl)
+  {
+    printf ("Can't find physical layer!\n");
+    fflush (stdout);
+    return false;
+  }
+  engine = csQueryRegistry<iEngine> (object_reg);
+  vc = csQueryRegistry<iVirtualClock> (object_reg);
+
+  return true;
+}
+
+void DynfactDialog::SetApplication (iAresEditor* app)
+{
+  DynfactDialog::app = app;
+}
+
+void DynfactDialog::SetParent (wxWindow* parent)
+{
+  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
 
   // The mesh panel.
   wxPanel* panel = XRCCTRL (*this, "meshPanel", wxPanel);
-  meshView = new DynfactMeshView (this, app->GetObjectRegistry (), panel);
+  meshView = new DynfactMeshView (this, object_reg, panel);
 
   wxCheckBox* check;
   check = XRCCTRL (*this, "showJointsCheck", wxCheckBox);
@@ -2174,8 +2217,8 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   SetupDialogs ();
 
   // Setup the dynamic factory tree.
-  Value* dynfactCollectionValue = uiManager->GetApp ()->GetAresView ()->GetDynfactCollectionValue ();
-  Bind (dynfactCollectionValue, "factoryTree");
+  Value* dynfactCollectionValue = app->Get3DView ()->GetDynfactCollectionValue ();
+  view.Bind (dynfactCollectionValue, "factoryTree");
   wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));
 
@@ -2183,56 +2226,56 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
 
   // Setup the composite representing the dynamic factory that is selected.
   dynfactValue.AttachNew (new DynfactValue (this));
-  Bind (dynfactValue, this);
+  view.Bind (dynfactValue, this);
 
   // Setup the composite representing the bone that is selected.
   boneValue.AttachNew (new BoneValue (this));
-  Bind (boneValue, "bonesPanel");
+  view.Bind (boneValue, "bonesPanel");
 
   SetupSelectedValues ();
 
   // Bind the selected collider value to the mesh view. This value is not actually
   // used by the mesh view but this binding only serves as a signal for the mesh
   // view to update itself.
-  Bind (colliderSelectedValue, meshView);
+  view.Bind (colliderSelectedValue, meshView);
   // Also do this for the selected pivot value.
-  Bind (pivotsSelectedValue, meshView);
+  view.Bind (pivotsSelectedValue, meshView);
   // Also do this for the selected joint value.
-  Bind (jointsSelectedValue, meshView);
+  view.Bind (jointsSelectedValue, meshView);
   // Also do this for the selected bone value.
-  Bind (bonesSelectedValue, meshView);
+  view.Bind (bonesSelectedValue, meshView);
   // Also do this for the selected bone collider value.
-  Bind (bonesColliderSelectedValue, meshView);
+  view.Bind (bonesColliderSelectedValue, meshView);
 
   // Connect the selected value from the category tree to the dynamic
   // factory value so that the two radius values and the collider list
   // gets refreshed in case the current dynfact changes. We connect
   // with 'dochildren' equal to true to make sure the children get notified
   // as well (i.e. the list for example).
-  Signal (factorySelectedValue, dynfactValue, true);
+  view.Signal (factorySelectedValue, dynfactValue, true);
   // Also connect it to the selected values so that a new mesh is rendered
   // when the current dynfact changes.
-  Signal (factorySelectedValue, colliderSelectedValue);
-  Signal (factorySelectedValue, pivotsSelectedValue);
-  Signal (factorySelectedValue, jointsSelectedValue);
-  Signal (factorySelectedValue, bonesSelectedValue);
+  view.Signal (factorySelectedValue, colliderSelectedValue);
+  view.Signal (factorySelectedValue, pivotsSelectedValue);
+  view.Signal (factorySelectedValue, jointsSelectedValue);
+  view.Signal (factorySelectedValue, bonesSelectedValue);
 
   // When another bone is selected we want to update the selection of the
   // bone collider too and we also want to update the joint.
-  Signal (bonesSelectedValue, boneValue, true);
-  Signal (bonesSelectedValue, bonesColliderSelectedValue);
+  view.Signal (bonesSelectedValue, boneValue, true);
+  view.Signal (bonesSelectedValue, bonesColliderSelectedValue);
 
   // Setup the collider editors.
   SetupColliderEditor (colliderSelectedValue, "");
   SetupColliderEditor (bonesColliderSelectedValue, "Bone");
 
-  Bind (pivotsSelectedValue, "pivotPosition_Panel");
-  Bind (jointsSelectedValue, "joints_Panel");
+  view.Bind (pivotsSelectedValue, "pivotPosition_Panel");
+  view.Bind (jointsSelectedValue, "joints_Panel");
 
   // Bind some values to the enabled/disabled state of several components.
-  BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
-  BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
-  BindEnabled (bonesSelectedValue->GetSelectedState (), "boneJoint_Panel");
+  view.BindEnabled (pivotsSelectedValue->GetSelectedState (), "pivotPosition_Panel");
+  view.BindEnabled (jointsSelectedValue->GetSelectedState (), "joints_Panel");
+  view.BindEnabled (bonesSelectedValue->GetSelectedState (), "boneJoint_Panel");
   SetupJointsEditor (jointsSelectedValue, "");
   // @@@ Bug: doesn't work for the first time when a bone is selected.
   SetupJointsEditor (boneValue->GetChildByName ("boneJoint"), "Bone");
@@ -2240,6 +2283,9 @@ DynfactDialog::DynfactDialog (wxWindow* parent, UIManager* uiManager) :
   SetupActions ();
 
   timerOp.AttachNew (new RotMeshTimer (this));
+
+  Layout ();
+  Fit ();
 }
 
 DynfactDialog::~DynfactDialog ()

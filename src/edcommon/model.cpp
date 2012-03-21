@@ -857,6 +857,18 @@ void View::StringToValue (const char* str, Value* value)
   }
 }
 
+Value* View::FindChild (Value* collection, const char* str)
+{
+  csRef<ValueIterator> it = collection->GetIterator ();
+  while (it->HasNext ())
+  {
+    Value* child = it->NextChild ();
+    if (ValueToString (child) == str)
+      return child;
+  }
+  return 0;
+}
+
 csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)
 {
   csStringArray row;

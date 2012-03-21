@@ -29,13 +29,13 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "editor/iuidialog.h"
 #include "editor/iuimanager.h"
+#include "editor/idialog.h"
 
 class AppAresEditWX;
 class FileReq;
 class NewProjectDialog;
 class CellDialog;
 class UIDialog;
-class DynfactDialog;
 class RowModel;
 class SimpleListCtrlView;
 
@@ -173,7 +173,6 @@ private:
   FileReq* filereqDialog;
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
-  csRef<DynfactDialog> dynfactDialog;
 
   int contextMenuID;
 
@@ -191,7 +190,6 @@ public:
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
-  DynfactDialog* GetDynfactDialog () const { return dynfactDialog; }
 
   /// Create a dynamically buildable dialog.
   virtual csPtr<iUIDialog> CreateDialog (const char* title);

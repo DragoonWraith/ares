@@ -22,33 +22,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include <crystalspace.h>
+#ifndef __aresed_meshfactmodel_h
+#define __aresed_meshfactmodel_h
 
-#include "meshfactmodel.h"
-#include "edcommon/tools.h"
-#include "../ui/uimanager.h"
-#include "../apparesed.h"
+#include "edcommon/rowmodel.h"
+#include "edcommon/model.h"
 
-using namespace Ares;
+struct iMeshFactoryList;
+struct iEngine;
+struct iPcDynamicWorld;
 
-void MeshCollectionValue::UpdateChildren ()
+class MeshCollectionValue : public Ares::StandardCollectionValue
 {
-  if (!dirty) return;
-  dirty = false;
-  ReleaseChildren ();
-  iPcDynamicWorld* dynworld = app->GetAresView ()->GetDynamicWorld ();
-  iMeshFactoryList* list = app->GetEngine ()->GetMeshFactories ();
-  for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
+private:
+  iEngine* engine;
+  iPcDynamicWorld* dynworld;
+
+protected:
+  virtual void UpdateChildren ();
+  virtual void ChildChanged (Value* child)
   {
-    iMeshFactoryWrapper* fact = list->Get (i);
-    const char* name = fact->QueryObject ()->GetName ();
-    if (!dynworld->FindFactory (name))
-    {
-      csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-      composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
-      children.Push (composite);
-      composite->SetParent (this);
-    }
+    FireValueChanged ();
   }
-}
+
+public:
+  MeshCollectionValue (iEngine* engine, iPcDynamicWorld* dynworld) :
+    engine (engine), dynworld (dynworld) { }
+  virtual ~MeshCollectionValue () { }
+};
+
+#endif // __aresed_meshfactmodel_h
 

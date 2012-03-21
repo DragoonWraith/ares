@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- dynfacteditor.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.dynfacteditor</name>
+        <implementation>DynfactDialog</implementation>
+        <description>AresEd Dynamic Factory Editor</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>
