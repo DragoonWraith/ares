@@ -25,7 +25,6 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "meshview.h"
-#include "uimanager.h"
 #include "imagepanel.h"
 
 //-----------------------------------------------------------------------------

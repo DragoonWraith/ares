@@ -30,6 +30,7 @@ THE SOFTWARE.
 
 struct iUIManager;
 struct iEditorConfig;
+struct i3DView;
 
 /**
  * The editor application.
@@ -39,6 +40,7 @@ struct iAresEditor : public virtual iBase
   SCF_INTERFACE(iAresEditor,0,0,1);
 
   virtual iUIManager* GetUI () const = 0;
+  virtual i3DView* Get3DView () const = 0;
 
   /// Set the state of the menus correctly depending on context.
   virtual void SetMenuState () = 0;

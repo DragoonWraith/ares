@@ -6,3 +6,4 @@ SubInclude TOP src editorplugins foliagemode ;
 SubInclude TOP src editorplugins entitymode ;
 SubInclude TOP src editorplugins mainmode ;
 SubInclude TOP src editorplugins playmode ;
+SubInclude TOP src editorplugins dynfacteditor ;
