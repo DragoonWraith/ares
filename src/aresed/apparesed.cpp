@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "ui/celldialog.h"
 #include "camera.h"
 #include "editor/imode.h"
+#include "editor/iplugin.h"
 
 #include "celtool/initapp.h"
 #include "cstool/simplestaticlighter.h"
@@ -1363,20 +1364,26 @@ void AppAresEditWX::OnMenuUpdateObjects (wxCommandEvent& event)
   aresed3d->UpdateObjects ();
 }
 
+void AppAresEditWX::RefreshModes ()
+{
+  for (size_t i = 0 ; i < plugins.GetSize () ; i++)
+  {
+    csRef<iEditingMode> mode = scfQueryInterface<iEditingMode> (plugins.Get (i));
+    if (mode)
+      mode->Refresh ();
+  }
+}
+
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
 {
   aresed3d->NewProject (assets);
-  // @@@ Loop over all modes:
-  mainMode->Refresh ();
-  editMode->Refresh ();
+  RefreshModes ();
 }
 
 void AppAresEditWX::LoadFile (const char* filename)
 {
   aresed3d->LoadFile (filename);
-  // @@@ Loop over all modes:
-  mainMode->Refresh ();
-  editMode->Refresh ();
+  RefreshModes ();
 }
 
 void AppAresEditWX::SaveFile (const char* filename)
@@ -1398,12 +1405,12 @@ void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
 
 void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
 {
-  dynfactDialog->ShowDialog ();
+  dynfactDialog->Command ("Show", csStringArray ());
 }
 
 void AppAresEditWX::OnMenuPlay (wxCommandEvent& event)
 {
-  SwitchToPlayMode ();
+  SwitchToMode ("Play");
 }
 
 bool AppAresEditWX::IsPlaying () const
@@ -1441,7 +1448,9 @@ void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
   wxString pageName = notebook->GetPageText (pageIdx);
 
   csRef<iEditingMode> newMode;
-  newMode = FindMode (pageName.mb_str (wxConvUTF8));
+  csRef<iEditorPlugin> plugin = FindPlugin (pageName.mb_str (wxConvUTF8));
+  if (!plugin) return;
+  newMode = scfQueryInterface<iEditingMode> (plugin);
   if (!newMode) return;
 
   if (editMode != newMode)
@@ -1623,88 +1632,66 @@ bool AppAresEditWX::Initialize ()
   return true;
 }
 
-bool AppAresEditWX::InitDialogPlugins ()
+bool AppAresEditWX::InitPlugins ()
 {
-  const csArray<PluginConfig>& configdia = config->GetDialogs ();
-  for (size_t i = 0 ; i < configdia.GetSize () ; i++)
-  {
-    csString plugin = configdia.Get (i).plugin;
-    printf ("Loading dialog plugin %s\n", plugin.GetData ());
-    fflush (stdout);
-
-    wxString searchPath (wxT ("data/windows"));
-    for (size_t j = 0 ; j < configdia.Get (i).resources.GetSize () ; j++)
-    {
-      if (!LoadResourceFile (configdia.Get (i).resources.Get (j),
-	    searchPath)) return false;
-    }
-
-    csRef<iDialogPlugin> dialog = csLoadPluginCheck<iDialogPlugin> (object_reg, plugin);
-    if (!dialog)
-    {
-      return ReportError ("Could not load plugin '%s'!", plugin.GetData ());
-    }
-
-    dialog->SetApplication (static_cast<iAresEditor*> (this));
-    dialog->SetParent (this);
-
-    csString name = dialog->GetDialogName ();
-    if (name == "DynfactEditor")
-      dynfactDialog = dialog;
-  }
-
-  return true;
-}
-
-bool AppAresEditWX::InitModePlugins ()
-{
-  i3DView* view3d = static_cast<i3DView*> (aresed3d);
-  playMode = csLoadPluginCheck<iEditingMode> (object_reg,
-      "ares.editor.modes.play");
-  playMode->Set3DView (view3d);
-
-  //roomMode = csLoadPluginCheck<iEditingMode> (object_reg,
-      //"ares.editor.modes.room");
-  //roomMode->Set3DView (view3d);
-
-  const csArray<PluginConfig>& configmodes = config->GetModes ();
+  const csArray<PluginConfig>& configplug = config->GetPlugins ();
   wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-  for (size_t i = 0 ; i < configmodes.GetSize () ; i++)
+  for (size_t i = 0 ; i < configplug.GetSize () ; i++)
   {
-    csString plugin = configmodes.Get (i).plugin;
-    printf ("Loading mode plugin %s\n", plugin.GetData ());
+    const PluginConfig& pc = configplug.Get (i);
+    csString plugin = pc.plugin;
+    printf ("Loading editor plugin %s\n", plugin.GetData ());
     fflush (stdout);
 
     wxString searchPath (wxT ("data/windows"));
-    for (size_t j = 0 ; j < configmodes.Get (i).resources.GetSize () ; j++)
+    for (size_t j = 0 ; j < pc.resources.GetSize () ; j++)
     {
-      if (!LoadResourceFile (configmodes.Get (i).resources.Get (j),
-	    searchPath)) return false;
+      if (!LoadResourceFile (pc.resources.Get (j), searchPath)) return false;
     }
 
-    csRef<iEditingMode> mode = csLoadPluginCheck<iEditingMode> (object_reg, plugin);
-    if (!mode)
+    csRef<iEditorPlugin> plug = csLoadPluginCheck<iEditorPlugin> (object_reg, plugin);
+    if (!plug)
     {
       return ReportError ("Could not load plugin '%s'!", plugin.GetData ());
     }
+    csString pluginName = plug->GetPluginName ();
 
-    wxPanel* panel = new wxPanel (notebook, wxID_ANY, wxDefaultPosition,
+    plug->SetApplication (static_cast<iAresEditor*> (this));
+
+    if (pc.addToNotebook)
+    {
+      wxPanel* panel = new wxPanel (notebook, wxID_ANY, wxDefaultPosition,
 	wxDefaultSize, wxTAB_TRAVERSAL);
-    notebook->AddPage (panel, wxString::FromUTF8 (mode->GetName ()), false);
-    panel->SetToolTip (wxString::FromUTF8 (configmodes.Get (i).tooltip));
-    wxBoxSizer* sizer = new wxBoxSizer (wxVERTICAL);
-    panel->SetSizer (sizer);
-    panel->Layout ();
+      notebook->AddPage (panel, wxString::FromUTF8 (pluginName), false);
+      panel->SetToolTip (wxString::FromUTF8 (pc.tooltip));
+      wxBoxSizer* sizer = new wxBoxSizer (wxVERTICAL);
+      panel->SetSizer (sizer);
+      panel->Layout ();
+      plug->SetParent (panel);
+    }
+    else
+    {
+      plug->SetParent (this);
+    }
 
-    mode->Set3DView (view3d);
-    mode->SetParent (panel);
-    mode->AllocContextHandlers (this);
-    if (configmodes.Get (i).mainMode)
-      mainMode = mode;
-    modes.Push (mode);
+    csRef<iEditingMode> emode = scfQueryInterface<iEditingMode> (plug);
+    if (emode)
+    {
+      emode->AllocContextHandlers (this);
+      if (pc.mainMode)
+      {
+	mainMode = emode;
+	mainModeName = pluginName;
+      }
+      else if (pluginName == "Play")
+	playMode = emode;
+    }
+    if (pluginName == "DynfactEditor")
+      dynfactDialog = plug;
+
+    plugins.Push (plug);
   }
 
-  editMode = 0;
   return true;
 }
 
@@ -1756,8 +1743,8 @@ bool AppAresEditWX::InitWX ()
 
   uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
 
-  if (!InitDialogPlugins ()) return false;
-  if (!InitModePlugins ()) return false;
+  if (!InitPlugins ()) return false;
+  editMode = 0;
 
   wxPanel* leftPanePanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   leftPanePanel->SetMinSize (wxSize (270,-1));
@@ -1767,9 +1754,7 @@ bool AppAresEditWX::InitWX ()
   SelectionListener* listener = new AppSelectionListener (this);
   aresed3d->GetSelectionInt ()->AddSelectionListener (listener);
 
-  // @@@ Loop over all modes:
-  mainMode->Refresh ();
-  if (editMode) editMode->Refresh ();
+  RefreshModes ();
 
   SetupMenuBar ();
 
@@ -1947,17 +1932,9 @@ static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
   return csArrayItemNotFound;
 }
 
-void AppAresEditWX::SwitchToPlayMode ()
-{
-  if (editMode) editMode->Stop ();
-  editMode = playMode;
-  editMode->Start ();
-  SetMenuState ();
-}
-
 void AppAresEditWX::SwitchToMainMode ()
 {
-  SwitchToMode (mainMode->GetName ());
+  SwitchToMode (mainModeName);
 }
 
 void AppAresEditWX::SetCurveModeEnabled (bool cm)
@@ -1969,27 +1946,29 @@ void AppAresEditWX::SetCurveModeEnabled (bool cm)
   else page->Disable ();
 }
 
-iEditingMode* AppAresEditWX::FindMode (const char* name)
+iEditorPlugin* AppAresEditWX::FindPlugin (const char* name)
 {
   csString n = name;
-  for (size_t i = 0 ; i < modes.GetSize () ; i++)
+  for (size_t i = 0 ; i < plugins.GetSize () ; i++)
   {
-printf ("%d n=%s name=%s\n", i,n.GetData (), modes.Get (i)->GetName()); fflush (stdout);
-    if (n == modes.Get (i)->GetName ())
-      return modes.Get (i);
+    if (n == plugins.Get (i)->GetPluginName ())
+      return plugins.Get (i);
   }
   return 0;
 }
 
 void AppAresEditWX::SwitchToMode (const char* name)
 {
-printf ("SwitchToMode %s\n", name); fflush (stdout);
-  iEditingMode* mode = FindMode (name);
+  printf ("SwitchToMode %s\n", name); fflush (stdout);
+  iEditorPlugin* plugin = FindPlugin (name);
+  csRef<iEditingMode> mode;
+  if (plugin) mode = scfQueryInterface<iEditingMode> (plugin);
   if (mode)
   {
     wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
     size_t pageIdx = FindNotebookPage (notebook, name);
-    notebook->ChangeSelection (pageIdx);
+    if (pageIdx != csArrayItemNotFound)
+      notebook->ChangeSelection (pageIdx);
     if (editMode) editMode->Stop ();
     editMode = mode;
     editMode->Start ();

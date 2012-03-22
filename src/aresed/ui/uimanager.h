@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "editor/iuidialog.h"
 #include "editor/iuimanager.h"
-#include "editor/idialog.h"
 
 class AppAresEditWX;
 class FileReq;

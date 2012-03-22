@@ -33,58 +33,21 @@ AresConfig::AresConfig (AppAresEditWX* app) :
 {
 }
 
-bool AresConfig::ParseDialogPlugins (iDocumentNode* dialogsNode)
+bool AresConfig::ParsePlugins (iDocumentNode* pluginsNode)
 {
-  csRef<iDocumentNodeIterator> it = dialogsNode->GetNodes ();
+  csRef<iDocumentNodeIterator> it = pluginsNode->GetNodes ();
   while (it->HasNext ())
   {
     csRef<iDocumentNode> child = it->Next ();
     if (child->GetType () != CS_NODE_ELEMENT) continue;
     csString value = child->GetValue ();
-    if (value == "dialog")
-    {
-      PluginConfig mc;
-      mc.plugin = child->GetAttributeValue ("plugin");
-      csRef<iDocumentNodeIterator> childit = child->GetNodes ();
-      while (childit->HasNext ())
-      {
-	csRef<iDocumentNode> resourceChild = childit->Next ();
-	if (resourceChild->GetType () != CS_NODE_ELEMENT) continue;
-        csString resourceValue = resourceChild->GetValue ();
-        if (resourceValue == "resource")
-	{
-	  csString file = resourceChild->GetAttributeValue ("file");
-	  mc.resources.Push (file);
-	}
-        else
-        {
-          return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", resourceValue.GetData ());
-        }
-      }
-      dialogs.Push (mc);
-    }
-    else
-    {
-      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
-    }
-  }
-  return true;
-}
-
-bool AresConfig::ParseEditorModes (iDocumentNode* editormodesNode)
-{
-  csRef<iDocumentNodeIterator> it = editormodesNode->GetNodes ();
-  while (it->HasNext ())
-  {
-    csRef<iDocumentNode> child = it->Next ();
-    if (child->GetType () != CS_NODE_ELEMENT) continue;
-    csString value = child->GetValue ();
-    if (value == "mode")
+    if (value == "plugin")
     {
       PluginConfig mc;
       mc.plugin = child->GetAttributeValue ("plugin");
       mc.tooltip = child->GetAttributeValue ("tooltip");
       mc.mainMode = child->GetAttributeValueAsBool ("main");
+      mc.addToNotebook = child->GetAttributeValueAsBool ("notebook");
       csRef<iDocumentNodeIterator> childit = child->GetNodes ();
       while (childit->HasNext ())
       {
@@ -101,7 +64,7 @@ bool AresConfig::ParseEditorModes (iDocumentNode* editormodesNode)
           return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", resourceValue.GetData ());
         }
       }
-      modes.Push (mc);
+      plugins.Push (mc);
     }
     else
     {
@@ -197,16 +160,10 @@ bool AresConfig::ReadConfig ()
     if (!ParseKnownMessages (knownmessagesNode))
       return false;
   }
-  csRef<iDocumentNode> editormodesNode = configNode->GetNode ("editormodes");
-  if (editormodesNode)
+  csRef<iDocumentNode> pluginsNode = configNode->GetNode ("plugins");
+  if (pluginsNode)
   {
-    if (!ParseEditorModes (editormodesNode))
-      return false;
-  }
-  csRef<iDocumentNode> dialogsNode = configNode->GetNode ("dialogs");
-  if (dialogsNode)
-  {
-    if (!ParseDialogPlugins (dialogsNode))
+    if (!ParsePlugins (pluginsNode))
       return false;
   }
   return true;

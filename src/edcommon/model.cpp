@@ -1078,8 +1078,6 @@ void View::EnableBoundComponents (wxWindow* comp, bool state)
 
 void View::EnableBoundComponentsInt (wxWindow* comp, bool state)
 {
-csString compName = (const char*)comp->GetName ().mb_str (wxConvUTF8);
-printf ("EnableBoundComponentsInt '%s' state=%d\n", compName.GetData (), state); fflush (stdout);
   if (comp->IsKindOf (CLASSINFO (wxPanel)) ||
       comp->IsKindOf (CLASSINFO (wxDialog)))
   {

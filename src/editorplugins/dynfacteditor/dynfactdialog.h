@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "edcommon/model.h"
-#include "editor/idialog.h"
+#include "editor/iplugin.h"
 #include "editor/iapp.h"
 #include "meshview.h"
 
@@ -233,7 +233,7 @@ public:
  * The dialog for editing dynamic factories.
  */
 class DynfactDialog : public wxDialog,
-  public scfImplementation2<DynfactDialog, iDialogPlugin, iComponent>
+  public scfImplementation2<DynfactDialog, iEditorPlugin, iComponent>
 {
 private:
   View view;
@@ -282,8 +282,13 @@ public:
 
   virtual void SetApplication (iAresEditor* app);
   virtual void SetParent (wxWindow* parent);
-  virtual const char* GetDialogName () const { return "DynfactEditor"; }
-  virtual void ShowDialog () { Show (); }
+  virtual const char* GetPluginName () const { return "DynfactEditor"; }
+  virtual bool Command (const char* name, const csStringArray& args)
+  {
+    csString c = name;
+    if (c == "Show") { Show (); return true; }
+    return false;
+  }
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
   iCelPlLayer* GetPL () const { return pl; }

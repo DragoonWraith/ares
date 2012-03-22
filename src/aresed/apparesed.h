@@ -60,7 +60,7 @@ class DynfactCollectionValue;
 class NewProjectDialog;
 class UIManager;
 
-class iDialogPlugin;
+struct iEditorPlugin;
 struct iEditingMode;
 
 struct iCelPlLayer;
@@ -516,7 +516,7 @@ private:
 
   csRef<AresConfig> config;
   csRef<AresEdit3DView> aresed3d;
-  csRef<iDialogPlugin> dynfactDialog;
+  csRef<iEditorPlugin> dynfactDialog;
 
   static bool SimpleEventHandler (iEvent& ev);
   bool HandleEvent (iEvent& ev);
@@ -531,12 +531,15 @@ private:
   csRef<UIManager> uiManager;
 
   NewProjectDialog* newprojectDialog;
-  csRef<iEditingMode> playMode;
-  csRefArray<iEditingMode> modes;
+
+  csRefArray<iEditorPlugin> plugins;
   csRef<iEditingMode> mainMode;
+  csString mainModeName;
+  csRef<iEditingMode> playMode;
   iEditingMode* editMode;
   CameraWindow* camwin;
-  iEditingMode* FindMode (const char* name);
+  iEditorPlugin* FindPlugin (const char* name);
+  void RefreshModes ();
 
   void SetupMenuBar ();
 
@@ -585,8 +588,7 @@ public:
   virtual void ClearStatus ();
 
   bool Initialize ();
-  bool InitDialogPlugins ();
-  bool InitModePlugins ();
+  bool InitPlugins ();
   bool InitWX ();
   void PushFrame ();
   void OnClose (wxCloseEvent& event);
@@ -598,7 +600,6 @@ public:
   void NewProject (const csArray<Asset>& assets);
 
   void SwitchToMode (const char* name);
-  void SwitchToPlayMode ();
   virtual void SwitchToMainMode ();
   void SetCurveModeEnabled (bool cm);
   iEditingMode* GetMainMode () const { return mainMode; }

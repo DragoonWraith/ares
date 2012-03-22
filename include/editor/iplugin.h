@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __idialog_h__
-#define __idialog_h__
+#ifndef __iplugin_h__
+#define __iplugin_h__
 
 #include "csutil/scf.h"
 #include <wx/wx.h>
@@ -33,11 +33,11 @@ struct i3DView;
 struct iAresEditor;
 
 /**
- * A dialog plugin for the editor.
+ * A plugin for the editor.
  */
-struct iDialogPlugin : public virtual iBase
+struct iEditorPlugin : public virtual iBase
 {
-  SCF_INTERFACE(iDialogPlugin,0,0,1);
+  SCF_INTERFACE(iEditorPlugin,0,0,1);
 
   /**
    * Set the application.
@@ -46,20 +46,22 @@ struct iDialogPlugin : public virtual iBase
 
   /**
    * Set the wxWindow parent for the panel of this mode.
+   * (optional, not every plugin needs to have a panel).
    */
   virtual void SetParent (wxWindow* parent) = 0;
 
   /**
-   * The name of this panel.
+   * The name of this plugin.
    */
-  virtual const char* GetDialogName () const = 0;
+  virtual const char* GetPluginName () const = 0;
 
   /**
-   * Open the dialog.
+   * Accept a general command. Return false if command is not
+   * understood.
    */
-  virtual void ShowDialog () = 0;
+  virtual bool Command (const char* name, const csStringArray& args) = 0;
 };
 
 
-#endif // __idialog_h__
+#endif // __iplugin_h__
 

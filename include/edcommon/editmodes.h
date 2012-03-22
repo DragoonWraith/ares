@@ -55,11 +55,13 @@ public:
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
-class EditingMode : public scfImplementation1<EditingMode, iEditingMode>
+class EditingMode : public scfImplementation2<EditingMode, iEditingMode,
+  iEditorPlugin>
 {
 protected:
   Ares::View view;
   iObjectRegistry* object_reg;
+  iAresEditor* app;
   i3DView* view3d;
   csRef<iMarkerManager> markerMgr;
   csRef<iGraphics3D> g3d;
@@ -73,10 +75,15 @@ public:
   EditingMode (iBase* parent);
   virtual ~EditingMode () { }
 
-  virtual void Set3DView (i3DView* view3d) { EditingMode::view3d = view3d; }
+  virtual void SetApplication (iAresEditor* app);
   i3DView* Get3DView () const { return view3d; }
   virtual void SetParent (wxWindow* parent) { }
   virtual bool Initialize (iObjectRegistry* object_reg);
+
+  virtual bool Command (const char* name, const csStringArray& args)
+  {
+    return false;
+  }
 
   virtual void AllocContextHandlers (wxFrame* frame) { }
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY) { }
@@ -94,7 +101,7 @@ public:
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current) { }
 
-  const char* GetName () const { return name; }
+  virtual const char* GetPluginName () const { return name; }
   virtual void FramePre() { }
   virtual void Frame3D() { }
   virtual void Frame2D() { }

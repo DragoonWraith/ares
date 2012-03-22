@@ -36,7 +36,10 @@ struct PluginConfig
   csString plugin;
   csString tooltip;
   bool mainMode;
+  bool addToNotebook;
   csStringArray resources;
+
+  PluginConfig () : mainMode (false), addToNotebook (false) { }
 };
 
 class AresConfig : public scfImplementation1<AresConfig, iEditorConfig>
@@ -44,12 +47,10 @@ class AresConfig : public scfImplementation1<AresConfig, iEditorConfig>
 private:
   AppAresEditWX* app;
   csArray<KnownMessage> messages;
-  csArray<PluginConfig> modes;
-  csArray<PluginConfig> dialogs;
+  csArray<PluginConfig> plugins;
 
   bool ParseKnownMessages (iDocumentNode* knownmessagesNode);
-  bool ParseEditorModes (iDocumentNode* editormodesNode);
-  bool ParseDialogPlugins (iDocumentNode* dialogsNode);
+  bool ParsePlugins (iDocumentNode* pluginsNode);
 
 public:
   AresConfig (AppAresEditWX* app);
@@ -67,10 +68,8 @@ public:
   /// Get a known message by name.
   virtual const KnownMessage* GetKnownMessage (const char* name) const;
 
-  /// Get all modes.
-  const csArray<PluginConfig>& GetModes () const { return modes; }
-  /// Get all dialogs.
-  const csArray<PluginConfig>& GetDialogs () const { return dialogs; }
+  /// Get all plugins.
+  const csArray<PluginConfig>& GetPlugins () const { return plugins; }
 };
 
 #endif // __aresed_config_h

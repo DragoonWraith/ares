@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 #include <wx/wx.h>
 
+#include "iplugin.h"
+
 struct iDynamicObject;
 struct i3DView;
 
@@ -37,21 +39,6 @@ struct i3DView;
 struct iEditingMode : public virtual iBase
 {
   SCF_INTERFACE(iEditingMode,0,0,1);
-
-  /**
-   * Set the 3D View.
-   */
-  virtual void Set3DView (i3DView* view3d) = 0;
-
-  /**
-   * Set the wxWindow parent for the panel of this mode.
-   */
-  virtual void SetParent (wxWindow* parent) = 0;
-
-  /**
-   * The name of this mode.
-   */
-  virtual const char* GetName () const = 0;
 
   /**
    * Allocate context handlers for the context menu of this mode.

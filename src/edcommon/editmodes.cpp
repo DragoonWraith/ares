@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 #include "edcommon/editmodes.h"
+#include "editor/iapp.h"
 
 //---------------------------------------------------------------------------
 
@@ -70,6 +71,12 @@ bool EditingMode::Initialize (iObjectRegistry* object_reg)
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
   kbd = csQueryRegistry<iKeyboardDriver> (object_reg);
   return true;
+}
+
+void EditingMode::SetApplication (iAresEditor* app)
+{
+  EditingMode::app = app;
+  view3d = app->Get3DView ();
 }
 
 //---------------------------------------------------------------------------
