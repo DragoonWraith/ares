@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "inature.h"
 #include "editor/i3dview.h"
 #include "editor/iapp.h"
+#include "editor/icommand.h"
 #include "common/worldload.h"
 
 #include "aresed.h"
@@ -62,6 +63,7 @@ class UIManager;
 
 struct iEditorPlugin;
 struct iEditingMode;
+struct iCommandHandler;
 
 struct iCelPlLayer;
 struct iCelEntity;
@@ -484,26 +486,18 @@ public:
 
 enum
 {
-  ID_Quit = wxID_EXIT,
-  ID_Open = wxID_OPEN,
-  ID_Save = wxID_SAVE,
-  ID_New = wxID_NEW,
-  ID_Copy = wxID_COPY,
-  ID_Paste = wxID_PASTE,
-  ID_Delete = wxID_DELETE,
-  ID_Cells = wxID_HIGHEST + 1000,
-  ID_Dynfacts,
-  ID_Play,
-  ID_FindObject,
-  ID_UpdateObjects,
-  ID_Join,
-  ID_Unjoin,
-  //ID_Ragdoll,
   ID_FirstContextItem = wxID_HIGHEST + 10000,
 };
 
-class AppAresEditWX : public wxFrame, public scfImplementation1<AppAresEditWX,
-  iAresEditor>
+struct MenuCommand
+{
+  csRef<iCommandHandler> target;
+  csString command;
+  csString args;
+};
+
+class AppAresEditWX : public wxFrame, public scfImplementation2<AppAresEditWX,
+  iAresEditor,iCommandHandler>
 {
 private:
   iObjectRegistry* object_reg;
@@ -541,23 +535,16 @@ private:
   iEditorPlugin* FindPlugin (const char* name);
   void RefreshModes ();
 
-  void SetupMenuBar ();
+  csHash<MenuCommand,int> menuCommands;
+  bool SetupMenuBar ();
+  void OnMenuItem (wxCommandEvent& event);
 
-  void OnMenuNew (wxCommandEvent& event);
-  void OnMenuCells (wxCommandEvent& event);
-  void OnMenuDynfacts (wxCommandEvent& event);
-  void OnMenuPlay (wxCommandEvent& event);
-  void OnMenuOpen (wxCommandEvent& event);
-  void OnMenuSave (wxCommandEvent& event);
-  void OnMenuQuit (wxCommandEvent& event);
-  void OnMenuDelete (wxCommandEvent& event);
-  void OnMenuCopy (wxCommandEvent& event);
-  void OnMenuPaste (wxCommandEvent& event);
-  void OnMenuJoin (wxCommandEvent& event);
-  void OnMenuUnjoin (wxCommandEvent& event);
-  //void OnMenuRagdoll (wxCommandEvent& event);
-  void OnMenuFindObject (wxCommandEvent& event);
-  void OnMenuUpdateObjects (wxCommandEvent& event);
+  void NewProject ();
+  void OpenFile ();
+  void SaveFile ();
+  void Quit ();
+  void FindObject ();
+
   void OnNotebookChange (wxNotebookEvent& event);
   void OnNotebookChanged (wxNotebookEvent& event);
 
@@ -586,6 +573,10 @@ public:
   virtual void SetStatus (const char* statusmsg, ...);
   /// Clear the help status message (go back to default).
   virtual void ClearStatus ();
+
+  /// Append a menu item.
+  void AppendMenuItem (wxMenu* menu, int id, const char* label,
+       const char* targetName, const char* command, const char* args);
 
   bool Initialize ();
   bool InitPlugins ();
@@ -618,6 +609,12 @@ public:
   iGraphics3D* GetG3D () const { return g3d; }
 
   virtual void SetMenuState ();
+
+  /// Command handler functions.
+  virtual bool Command (const char* name, const char* args);
+  virtual bool IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste,
+      const char* currentmode);
 
   CameraWindow* GetCameraWindow () const { return camwin; }
   virtual void ShowCameraWindow ();

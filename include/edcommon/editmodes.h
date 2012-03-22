@@ -55,8 +55,8 @@ public:
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
-class EditingMode : public scfImplementation2<EditingMode, iEditingMode,
-  iEditorPlugin>
+class EditingMode : public scfImplementation3<EditingMode, iEditingMode,
+  iEditorPlugin, iCommandHandler>
 {
 protected:
   Ares::View view;
@@ -80,9 +80,15 @@ public:
   virtual void SetParent (wxWindow* parent) { }
   virtual bool Initialize (iObjectRegistry* object_reg);
 
-  virtual bool Command (const char* name, const csStringArray& args)
+  virtual bool Command (const char* name, const char* args)
   {
     return false;
+  }
+  virtual bool IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste,
+      const char* currentmode)
+  {
+    return true;
   }
 
   virtual void AllocContextHandlers (wxFrame* frame) { }

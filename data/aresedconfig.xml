@@ -29,25 +29,27 @@
 
     <menus>
     	<menu name="&amp;File">
-	    <item name="&amp;New project..." id="New" />
-	    <item name="&amp;Manage Cells..." target="CellDialog" command="Show" />
+	    <item name="&amp;New project..." id="New" command="NewProject" />
+	    <!-- <item name="&amp;Manage Cells..." target="CellDialog" command="Show" />-->
+	    <item name="&amp;Manage Cells..." command="ManageCells" />
 	    <item name="&amp;Manage Dynamic Factories..." target="DynfactEditor" command="Show" />
 	    <sep />
-	    <item name="&amp;Play" command="SwitchMode" args="Play" />
+	    <item name="&amp;Play	Ctrl+P" command="SwitchMode" args="Play" />
 	    <sep />
-	    <item name="&amp;Open..." id="Open" />
-	    <item name="&amp;Save..." id="Save" />
-	    <item name="&amp;Exit..." id="Exit" />
+	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" />
+	    <item name="&amp;Save...	Ctrl+S" id="Save" command="Save" />
+	    <item name="&amp;Exit..." id="Exit" command="Exit" />
 	</menu>
-	<menu> name="&amp;Edit">
-	    <item name="&amp;Copy\tCtrl+C" id="Copy" />
-	    <item name="&amp;Paste\tCtrl+V" id="Paste" />
-	    <item name="&amp;Delete" id="Delete" />
+	<menu name="&amp;Edit">
+	    <item name="&amp;Copy	Ctrl+C" id="Copy" command="Copy" />
+	    <item name="&amp;Paste	Ctrl+V" id="Paste" command="Paste" />
+	    <item name="&amp;Delete" id="Delete" command="Delete" />
 	    <sep />
-	    <item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />
+	    <!--<item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />-->
+	    <item name="&amp;Find Object..." command="FindObjectDialog" />
 	    <item name="&amp;Update Objects" command="UpdateObjects" />
 	    <sep />
-	    <item name="&amp;Join\tCtrl+J" command="Join" />
+	    <item name="&amp;Join	Ctrl+J" command="Join" />
 	    <item name="&amp;Unjoin" command="Unjoin" />
 	</menu>
     </menus>

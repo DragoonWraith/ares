@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "editor/iplugin.h"
 #include "editor/iapp.h"
+#include "editor/icommand.h"
 #include "meshview.h"
 
 #include <wx/wx.h>
@@ -233,7 +234,8 @@ public:
  * The dialog for editing dynamic factories.
  */
 class DynfactDialog : public wxDialog,
-  public scfImplementation2<DynfactDialog, iEditorPlugin, iComponent>
+  public scfImplementation3<DynfactDialog, iEditorPlugin, iComponent,
+	iCommandHandler>
 {
 private:
   View view;
@@ -283,11 +285,16 @@ public:
   virtual void SetApplication (iAresEditor* app);
   virtual void SetParent (wxWindow* parent);
   virtual const char* GetPluginName () const { return "DynfactEditor"; }
-  virtual bool Command (const char* name, const csStringArray& args)
+  virtual bool Command (const char* name, const char* args)
   {
     csString c = name;
     if (c == "Show") { Show (); return true; }
     return false;
+  }
+  virtual bool IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste, const char* currentmode)
+  {
+    return true;
   }
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }

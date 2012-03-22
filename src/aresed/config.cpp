@@ -24,7 +24,10 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 #include "apparesed.h"
+#include "ui/uimanager.h"
 #include "config.h"
+
+#include <wx/wx.h>
 
 //---------------------------------------------------------------------------
 
@@ -128,7 +131,7 @@ bool AresConfig::ParseKnownMessages (iDocumentNode* knownmessagesNode)
   return true;
 }
 
-bool AresConfig::ReadConfig ()
+csRef<iDocument> AresConfig::ReadConfigDocument ()
 {
   csRef<iVFS> vfs = csQueryRegistry<iVFS> (app->GetObjectRegistry ());
   csRef<iDocumentSystem> docsys;
@@ -140,20 +143,26 @@ bool AresConfig::ReadConfig ()
   csRef<iDataBuffer> buf = vfs->ReadFile ("/appdata/aresedconfig.xml");
   if (!buf)
   {
-    return app->ReportError ("Could not open config file '/appdata/aresedconfig.xml'!");
+    app->ReportError ("Could not open config file '/appdata/aresedconfig.xml'!");
+    return 0;
   }
   const char* error = doc->Parse (buf->GetData ());
   if (error)
   {
-    return app->ReportError ("Error parsing 'aresedconfig.xml': %s!", error);
+    app->ReportError ("Error parsing 'aresedconfig.xml': %s!", error);
+    return 0;
   }
+  return doc;
+}
 
+bool AresConfig::ReadConfig ()
+{
+  csRef<iDocument> doc = ReadConfigDocument ();
+  if (!doc) return false;
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> configNode = root->GetNode ("config");
   if (!configNode)
-  {
     return app->ReportError ("Error 'aresedconfig.xml' is missing a 'config' node!");
-  }
   csRef<iDocumentNode> knownmessagesNode = configNode->GetNode ("knownmessages");
   if (knownmessagesNode)
   {
@@ -178,4 +187,102 @@ const KnownMessage* AresConfig::GetKnownMessage (const char* name) const
   }
   return 0;
 }
+
+static int StringToId (csString s)
+{
+  s.Downcase ();
+  if (s == "new") return wxID_NEW;
+  if (s == "copy") return wxID_COPY;
+  if (s == "quit") return wxID_EXIT;
+  if (s == "open") return wxID_OPEN;
+  if (s == "save") return wxID_SAVE;
+  if (s == "paste") return wxID_PASTE;
+  if (s == "delete") return wxID_DELETE;
+  return wxID_ANY;
+}
+
+bool AresConfig::ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode)
+{
+  csRef<iDocumentNodeIterator> it = itemsNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "item")
+    {
+      csString name = child->GetAttributeValue ("name");
+      csString idString = child->GetAttributeValue ("id");
+      csString target = child->GetAttributeValue ("target");
+      csString command = child->GetAttributeValue ("command");
+      csString args = child->GetAttributeValue ("args");
+      int id = StringToId (idString);
+      if (id == wxID_ANY)
+	id = app->GetUIManager ()->AllocContextMenuID ();
+      app->AppendMenuItem (menu, id, name, target, command, args);
+    }
+    else if (value == "sep")
+    {
+      menu->AppendSeparator ();
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
+}
+
+bool AresConfig::ParseMenus (wxMenuBar* menuBar, iDocumentNode* menusNode)
+{
+  csRef<iDocumentNodeIterator> it = menusNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "menu")
+    {
+      csString name = child->GetAttributeValue ("name");
+      wxMenu* menu = new wxMenu ();
+      if (!ParseMenuItems (menu, child))
+      {
+	delete menu;
+	return false;
+      }
+      menuBar->Append (menu, wxString::FromUTF8 (name));
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
+}
+
+wxMenuBar* AresConfig::BuildMenuBar ()
+{
+  csRef<iDocument> doc = ReadConfigDocument ();
+  if (!doc) return 0;
+  csRef<iDocumentNode> root = doc->GetRoot ();
+  csRef<iDocumentNode> configNode = root->GetNode ("config");
+  if (!configNode)
+  {
+    app->ReportError ("Error 'aresedconfig.xml' is missing a 'config' node!");
+    return 0;
+  }
+  csRef<iDocumentNode> menusNode = configNode->GetNode ("menus");
+  if (menusNode)
+  {
+    wxMenuBar* menuBar = new wxMenuBar ();
+    if (!ParseMenus (menuBar, menusNode))
+    {
+      delete menuBar;
+      return 0;
+    }
+    return menuBar;
+  }
+  return 0;
+}
+
 

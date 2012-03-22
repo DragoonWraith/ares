@@ -1244,21 +1244,7 @@ void AresEdit3DView::UpdateObjects ()
 BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_SHOW (AppAresEditWX::OnShow)
   EVT_ICONIZE (AppAresEditWX::OnIconize)
-  EVT_MENU (ID_New, AppAresEditWX :: OnMenuNew)
-  EVT_MENU (ID_Cells, AppAresEditWX :: OnMenuCells)
-  EVT_MENU (ID_Dynfacts, AppAresEditWX :: OnMenuDynfacts)
-  EVT_MENU (ID_Play, AppAresEditWX :: OnMenuPlay)
-  EVT_MENU (ID_Open, AppAresEditWX :: OnMenuOpen)
-  EVT_MENU (ID_Save, AppAresEditWX :: OnMenuSave)
-  EVT_MENU (ID_Quit, AppAresEditWX :: OnMenuQuit)
-  EVT_MENU (ID_Delete, AppAresEditWX :: OnMenuDelete)
-  EVT_MENU (ID_Copy, AppAresEditWX :: OnMenuCopy)
-  EVT_MENU (ID_Paste, AppAresEditWX :: OnMenuPaste)
-  EVT_MENU (ID_Join, AppAresEditWX :: OnMenuJoin)
-  EVT_MENU (ID_Unjoin, AppAresEditWX :: OnMenuUnjoin)
-//EVT_MENU (ID_Ragdoll, AppAresEditWX :: OnMenuRagdoll)
-  EVT_MENU (ID_FindObject, AppAresEditWX :: OnMenuFindObject)
-  EVT_MENU (ID_UpdateObjects, AppAresEditWX :: OnMenuUpdateObjects)
+  EVT_MENU (wxID_ANY, AppAresEditWX :: OnMenuItem)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
 END_EVENT_TABLE()
@@ -1297,40 +1283,7 @@ i3DView* AppAresEditWX::Get3DView () const
   return static_cast<i3DView*> (aresed3d);
 }
 
-void AppAresEditWX::OnMenuCopy (wxCommandEvent& event)
-{
-  aresed3d->CopySelection ();
-}
-
-void AppAresEditWX::OnMenuPaste (wxCommandEvent& event)
-{
-  aresed3d->StartPasteSelection ();
-}
-
-void AppAresEditWX::OnMenuDelete (wxCommandEvent& event)
-{
-  aresed3d->DeleteSelectedObjects ();
-}
-
-void AppAresEditWX::OnMenuJoin (wxCommandEvent& event)
-{
-  if (editMode != mainMode) return;
-  aresed3d->JoinObjects ();
-}
-
-void AppAresEditWX::OnMenuUnjoin (wxCommandEvent& event)
-{
-  if (editMode != mainMode) return;
-  aresed3d->UnjoinObjects ();
-}
-/*
-void AppAresEditWX::OnMenuRagdoll (wxCommandEvent& event)
-{
-  if (editMode != mainMode) return;
-  aresed3d->EnableRagdoll ();
-}
-*/
-void AppAresEditWX::OnMenuFindObject (wxCommandEvent& event)
+void AppAresEditWX::FindObject ()
 {
   csRef<ObjectsValue> objects;
   objects.AttachNew (new ObjectsValue (this));
@@ -1356,12 +1309,6 @@ void AppAresEditWX::OnMenuFindObject (wxCommandEvent& event)
     }
   }
   delete dialog;
-}
-
-void AppAresEditWX::OnMenuUpdateObjects (wxCommandEvent& event)
-{
-  if (editMode != mainMode) return;
-  aresed3d->UpdateObjects ();
 }
 
 void AppAresEditWX::RefreshModes ()
@@ -1391,26 +1338,11 @@ void AppAresEditWX::SaveFile (const char* filename)
   aresed3d->SaveFile (filename);
 }
 
-void AppAresEditWX::OnMenuNew (wxCommandEvent& event)
+void AppAresEditWX::NewProject ()
 {
   csRef<NewProjectCallbackImp> cb;
   cb.AttachNew (new NewProjectCallbackImp (this));
   uiManager->GetNewProjectDialog ()->Show (cb);
-}
-
-void AppAresEditWX::OnMenuCells (wxCommandEvent& event)
-{
-  uiManager->GetCellDialog ()->Show ();
-}
-
-void AppAresEditWX::OnMenuDynfacts (wxCommandEvent& event)
-{
-  dynfactDialog->Command ("Show", csStringArray ());
-}
-
-void AppAresEditWX::OnMenuPlay (wxCommandEvent& event)
-{
-  SwitchToMode ("Play");
 }
 
 bool AppAresEditWX::IsPlaying () const
@@ -1418,21 +1350,21 @@ bool AppAresEditWX::IsPlaying () const
   return editMode == playMode;
 }
 
-void AppAresEditWX::OnMenuOpen (wxCommandEvent& event)
+void AppAresEditWX::OpenFile ()
 {
   csRef<LoadCallback> cb;
   cb.AttachNew (new LoadCallback (this));
   uiManager->GetFileReqDialog ()->Show (cb);
 }
 
-void AppAresEditWX::OnMenuSave (wxCommandEvent& event)
+void AppAresEditWX::SaveFile ()
 {
   csRef<SaveCallback> cb;
   cb.AttachNew (new SaveCallback (this));
   uiManager->GetFileReqDialog ()->Show (cb);
 }
 
-void AppAresEditWX::OnMenuQuit (wxCommandEvent& event)
+void AppAresEditWX::Quit ()
 {
 }
 
@@ -1509,7 +1441,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
 	if (camwinVis)
 	{
 	  if (aresed3d->GetSelection ()->HasSelection ())
-	    contextMenu.Append (ID_Delete, wxT ("&Delete"));
+	    contextMenu.Append (wxID_DELETE, wxT ("&Delete"));
 	  camwin->AddContextMenu (&contextMenu, mouseX, mouseY);
 	}
 	editMode->AddContextMenu (&contextMenu, mouseX, mouseY);
@@ -1756,7 +1688,8 @@ bool AppAresEditWX::InitWX ()
 
   RefreshModes ();
 
-  SetupMenuBar ();
+  if (!SetupMenuBar ())
+    return false;
 
   SwitchToMainMode ();
 
@@ -1784,39 +1717,86 @@ void AppAresEditWX::ClearStatus ()
     SetStatus ("");
 }
 
-void AppAresEditWX::SetupMenuBar ()
+bool AppAresEditWX::Command (const char* name, const char* args)
 {
-  wxMenu* fileMenu = new wxMenu ();
-  fileMenu->Append (ID_New, wxT ("&New project..."));
-  fileMenu->Append (ID_Cells, wxT ("&Manage Cells..."));
-  fileMenu->Append (ID_Dynfacts, wxT ("&Manage Dynamic Factories..."));
-  fileMenu->AppendSeparator ();
-  fileMenu->Append (ID_Play, wxT ("&Play"));
-  fileMenu->AppendSeparator ();
-  fileMenu->Append (ID_Open, wxT ("&Open...\tCtrl+O"));
-  fileMenu->Append (ID_Save, wxT ("&Save...\tCtrl+S"));
-  fileMenu->Append (ID_Quit, wxT ("&Exit..."));
+  csString c = name;
+  if (c == "NewProject") NewProject ();
+  else if (c == "Open") OpenFile ();
+  else if (c == "Save") SaveFile ();
+  else if (c == "Exit") Quit ();
+  else if (c == "Copy") aresed3d->CopySelection ();
+  else if (c == "Paste") aresed3d->StartPasteSelection ();
+  else if (c == "Delete") aresed3d->DeleteSelectedObjects ();
+  else if (c == "UpdateObjects") aresed3d->UpdateObjects ();
+  else if (c == "FindObjectDialog") FindObject ();
+  else if (c == "Join") aresed3d->JoinObjects ();
+  else if (c == "Unjoin") aresed3d->UnjoinObjects ();
+  else if (c == "ManageCells") uiManager->GetCellDialog ()->Show ();
+  else if (c == "SwitchMode") SwitchToMode (args);
+  else return false;
+  return true;
+}
 
-  wxMenu* editMenu = new wxMenu ();
-  editMenu->Append (ID_Copy, wxT ("&Copy\tCtrl+C"));
-  editMenu->Append (ID_Paste, wxT ("&Paste\tCtrl+V"));
-  editMenu->Append (ID_Delete, wxT ("&Delete"));
-  editMenu->AppendSeparator ();
-  editMenu->Append (ID_FindObject, wxT ("&Find Object..."));
-  editMenu->Append (ID_UpdateObjects, wxT ("&Update Objects"));
-  editMenu->AppendSeparator ();
-  editMenu->Append (ID_Join, wxT ("&Join\tCtrl+J"));
-  editMenu->Append (ID_Unjoin, wxT ("&Unjoin"));
-  //editMenu->Append (ID_Ragdoll, wxT ("&Ragdoll"));
+bool AppAresEditWX::IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste,
+      const char* currentmode)
+{
+  size_t selsize = selection->GetSize ();
+  csString mode = currentmode;
+  csString c = name;
+  if (c == "Copy") return selsize > 0 && mode == "Main";
+  if (c == "Paste") return haspaste && mode == "Main";
+  if (c == "Delete") return selsize > 0 && mode == "Main";
+  if (c == "Join") return selsize == 2 && mode == "Main";
+  if (c == "Unjoin") return selsize > 0 && mode == "Main";
+  return true;
+}
 
-  wxMenuBar* menuBar = new wxMenuBar ();
-  menuBar->Append (fileMenu, wxT ("&File"));
-  menuBar->Append (editMenu, wxT ("&Edit"));
+void AppAresEditWX::OnMenuItem (wxCommandEvent& event)
+{
+  int id = event.GetId ();
+  MenuCommand mc = menuCommands.Get (id, MenuCommand ());
+  if (mc.command.IsEmpty ())
+  {
+    printf ("Unhandled menu item %d!\n", id);
+    fflush (stdout);
+    return;
+  }
+  mc.target->Command (mc.command, mc.args);
+}
+
+void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
+    const char* targetName, const char* command, const char* args)
+{
+  csRef<iCommandHandler> target;
+  if (targetName && *targetName)
+  {
+    iEditorPlugin* plug = FindPlugin (targetName);
+    target = scfQueryInterface<iCommandHandler> (plug);
+    if (!target)
+      ReportError ("Target '%s' has no command handler!", targetName);
+  }
+  if (!target) target = static_cast<iCommandHandler*> (this);
+
+  menu->Append (id, wxString::FromUTF8 (label));
+  MenuCommand mc;
+  mc.target = target;
+  mc.command = command;
+  mc.args = args;
+
+  menuCommands.Put (id, mc);
+}
+
+bool AppAresEditWX::SetupMenuBar ()
+{
+  wxMenuBar* menuBar = config->BuildMenuBar ();
+  if (!menuBar) return false;
   SetMenuBar (menuBar);
   menuBar->Reparent (this);
 
   CreateStatusBar ();
   SetMenuState ();
+  return true;
 }
 
 void AppAresEditWX::ShowCameraWindow ()
@@ -1845,27 +1825,21 @@ void AppAresEditWX::SetMenuState ()
   }
   menuBar->EnableTop (0, true);
 
-  // Is there a selection?
-  csArray<iDynamicObject*> objects = aresed3d->GetSelectionInt ()->GetObjects ();
-  bool sel = objects.GetSize () > 0;
-
-  if (editMode == mainMode)
+  csString n;
+  if (editMode)
   {
-    menuBar->Enable (ID_Paste, aresed3d->IsPasteBufferFull ());
-    menuBar->Enable (ID_Delete, sel);
-    menuBar->Enable (ID_Copy, sel);
-    menuBar->Enable (ID_Join, objects.GetSize () == 2);
-    menuBar->Enable (ID_Unjoin, objects.GetSize () >= 1);
-    menuBar->Enable (ID_UpdateObjects, true);
+    csRef<iEditorPlugin> plug = scfQueryInterface<iEditorPlugin> (editMode);
+    n = plug->GetPluginName ();
   }
-  else
+
+  csHash<MenuCommand,int>::GlobalIterator it = menuCommands.GetIterator ();
+  while (it.HasNext ())
   {
-    menuBar->Enable (ID_Paste, false);
-    menuBar->Enable (ID_Delete, false);
-    menuBar->Enable (ID_Copy, false);
-    menuBar->Enable (ID_Join, false);
-    menuBar->Enable (ID_Unjoin, false);
-    menuBar->Enable (ID_UpdateObjects, false);
+    int id;
+    const MenuCommand& mc = it.Next (id);
+    bool enabled = mc.target->IsCommandValid (mc.command, mc.args,
+	aresed3d->GetSelection (), aresed3d->IsPasteBufferFull (), n);
+    menuBar->Enable (id, enabled);
   }
 }
 

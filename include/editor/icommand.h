@@ -22,42 +22,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __iplugin_h__
-#define __iplugin_h__
+#ifndef __icommand_h__
+#define __icommand_h__
 
 #include "csutil/scf.h"
 #include <wx/wx.h>
 
-#include "editor/icommand.h"
-
 struct iDynamicObject;
 struct i3DView;
 struct iAresEditor;
+struct iSelection;
 
 /**
- * A plugin for the editor.
+ * A command handler.
  */
-struct iEditorPlugin : public virtual iBase
+struct iCommandHandler : public virtual iBase
 {
-  SCF_INTERFACE(iEditorPlugin,0,0,1);
+  SCF_INTERFACE(iCommandHandler,0,0,1);
 
   /**
-   * Set the application.
+   * Accept a general command. Return false if command is not
+   * understood.
    */
-  virtual void SetApplication (iAresEditor* app) = 0;
+  virtual bool Command (const char* name, const char* args) = 0;
 
   /**
-   * Set the wxWindow parent for the panel of this mode.
-   * (optional, not every plugin needs to have a panel).
+   * Check if the command is valid right now.
    */
-  virtual void SetParent (wxWindow* parent) = 0;
-
-  /**
-   * The name of this plugin.
-   */
-  virtual const char* GetPluginName () const = 0;
+  virtual bool IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste,
+      const char* currentmode) = 0;
 };
 
 
-#endif // __iplugin_h__
+#endif // __icommand_h__
 

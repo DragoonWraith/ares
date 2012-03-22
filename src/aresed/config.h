@@ -49,8 +49,11 @@ private:
   csArray<KnownMessage> messages;
   csArray<PluginConfig> plugins;
 
+  csRef<iDocument> ReadConfigDocument ();
   bool ParseKnownMessages (iDocumentNode* knownmessagesNode);
   bool ParsePlugins (iDocumentNode* pluginsNode);
+  bool ParseMenus (wxMenuBar* menuBar, iDocumentNode* menusNode);
+  bool ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode);
 
 public:
   AresConfig (AppAresEditWX* app);
@@ -70,6 +73,11 @@ public:
 
   /// Get all plugins.
   const csArray<PluginConfig>& GetPlugins () const { return plugins; }
+
+  /**
+   * Build the menu bar out of the config.
+   */
+  wxMenuBar* BuildMenuBar ();
 };
 
 #endif // __aresed_config_h
