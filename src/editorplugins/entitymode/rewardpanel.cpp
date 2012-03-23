@@ -447,12 +447,7 @@ private:
 
   Value* NewChild (const char* name, const char* value)
   {
-    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
-    composite->AddChild ("value", NEWREF(StringValue,new StringValue(value)));
-    children.Push (composite);
-    composite->SetParent (this);
-    return composite;
+    return NewCompositeChild ("name,value", name, value);
   }
 
 protected:
@@ -528,13 +523,7 @@ private:
 
   Value* NewChild (const char* name, const char* value, const char* type)
   {
-    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
-    composite->AddChild ("value", NEWREF(StringValue,new StringValue(value)));
-    composite->AddChild ("type", NEWREF(StringValue,new StringValue(type)));
-    children.Push (composite);
-    composite->SetParent (this);
-    return composite;
+    return NewCompositeChild ("name,value,type", name, value, type);
   }
 
 protected:

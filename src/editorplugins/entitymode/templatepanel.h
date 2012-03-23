@@ -40,10 +40,9 @@ class EntityMode;
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 
-class ListCtrlView;
 class ParentsCollectionValue;
-class CharacteristicsRowModel;
-class ClassesRowModel;
+class CharacteristicsCollectionValue;
+class ClassesCollectionValue;
 
 class EntityTemplatePanel : public wxPanel, public Ares::View
 {
@@ -55,13 +54,8 @@ private:
   iCelEntityTemplate* tpl;
 
   csRef<ParentsCollectionValue> parentsCollectionValue;
-
-  //ListCtrlView* parentsView;
-  //csRef<ParentsRowModel> parentsModel;
-  ListCtrlView* characteristicsView;
-  csRef<CharacteristicsRowModel> characteristicsModel;
-  ListCtrlView* classesView;
-  csRef<ClassesRowModel> classesModel;
+  csRef<CharacteristicsCollectionValue> characteristicsCollectionValue;
+  csRef<ClassesCollectionValue> classesCollectionValue;
 
 public:
   EntityTemplatePanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);

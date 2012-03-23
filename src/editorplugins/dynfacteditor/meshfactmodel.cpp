@@ -41,12 +41,7 @@ void MeshCollectionValue::UpdateChildren ()
     iMeshFactoryWrapper* fact = list->Get (i);
     const char* name = fact->QueryObject ()->GetName ();
     if (!dynworld->FindFactory (name))
-    {
-      csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-      composite->AddChild ("name", NEWREF(StringValue,new StringValue(name)));
-      children.Push (composite);
-      composite->SetParent (this);
-    }
+      NewCompositeChild ("name", name);
   }
 }
 

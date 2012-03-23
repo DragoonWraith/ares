@@ -672,11 +672,7 @@ protected:
     for (size_t i = 0 ; i < bones.GetSize () ; i++)
     {
       BoneID id = bones[i];
-      csRef<CompositeValue> value;
-      value.AttachNew (new CompositeValue ());
-      value->AddChild ("name", NEWREF(Value,new StringValue(skelFact->GetBoneName (id))));
-      children.Push (value);
-      value->SetParent (this);
+      NewCompositeChild ("name", skelFact->GetBoneName (id));
     }
   }
 
@@ -1253,17 +1249,6 @@ private:
   DynfactDialog* dialog;
   iDynamicFactory* dynfact;
 
-  // Create a new child and add to the array.
-  Value* NewChild (const char* boneName)
-  {
-    csRef<CompositeValue> value;
-    value.AttachNew (new CompositeValue ());
-    value->AddChild ("name", NEWREF(Value,new StringValue (boneName)));
-    children.Push (value);
-    value->SetParent (this);
-    return value;
-  }
-
   CS::Animation::iSkeletonFactory* GetSkeletonFactory ()
   {
     if (!dynfact) return 0;
@@ -1297,7 +1282,7 @@ protected:
     while (it->HasNext ())
     {
       BoneID id = it->Next ();
-      NewChild (skelFact->GetBoneName (id));
+      NewCompositeChild ("name", skelFact->GetBoneName (id));
     }
   }
   virtual void ChildChanged (Value* child)
@@ -1331,7 +1316,7 @@ public:
 
     bodySkel->CreateBodyBone (id);
 
-    Value* value = NewChild (name);
+    Value* value = NewCompositeChild ("name", name.GetData ());
     FireValueChanged ();
     return value;
   }

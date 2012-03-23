@@ -112,6 +112,52 @@ bool Value::IsChild (Value* value)
 
 // --------------------------------------------------------------------------
 
+DialogResult AbstractCompositeValue::GetDialogValue ()
+{
+  DialogResult result;
+  csRef<ValueIterator> it = GetIterator ();
+  while (it->HasNext ())
+  {
+    csString name;
+    Value* value = it->NextChild (&name);
+    result.Put (name, View::ValueToString (value));
+  }
+  return result;
+}
+
+void CompositeValue::AddChildren (const char* names, ...)
+{
+  va_list args;
+  va_start (args, names);
+  AddChildren (names, args);
+  va_end (args);
+}
+
+void CompositeValue::AddChildren (const char* names, va_list args)
+{
+  csStringArray n (names, ",");
+  for (size_t i = 0 ; i < n.GetSize () ; i++)
+  {
+    const char* v = va_arg (args, char*);
+    AddChild (n.Get (i), NEWREF(StringValue,new StringValue(v)));
+  }
+}
+
+// --------------------------------------------------------------------------
+
+CompositeValue* StandardCollectionValue::NewCompositeChild (const char* names, ...)
+{
+  va_list args;
+  va_start (args, names);
+  csRef<CompositeValue> composite = View::CreateComposite (names, args);
+  va_end (args);
+  children.Push (composite);
+  composite->SetParent (this);
+  return composite;
+}
+
+// --------------------------------------------------------------------------
+
 MirrorValue::MirrorValue (ValueType type) : type (type)
 {
   changeListener.AttachNew (new SelChangeListener (this));
@@ -397,6 +443,15 @@ NewChildDialogAction::~NewChildDialogAction ()
 bool NewChildDialogAction::Do (View* view, wxWindow* component)
 {
   return DoDialog (view, component, dialog);
+}
+
+EditChildDialogAction::EditChildDialogAction (Value* collection, iUIDialog* dialog) :
+    AbstractNewAction (collection), dialog (dialog)
+{
+}
+
+EditChildDialogAction::~EditChildDialogAction ()
+{
 }
 
 bool EditChildDialogAction::Do (View* view, wxWindow* component)
@@ -876,6 +931,22 @@ Value* View::FindChild (Value* collection, const char* str)
       return child;
   }
   return 0;
+}
+
+csRef<CompositeValue> View::CreateComposite (const char* names, va_list args)
+{
+  csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
+  composite->AddChildren (names, args);
+  return composite;
+}
+
+csRef<CompositeValue> View::CreateComposite (const char* names, ...)
+{
+  va_list args;
+  va_start (args, names);
+  csRef<CompositeValue> value = CreateComposite (names, args);
+  va_end (args);
+  return value;
 }
 
 csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)

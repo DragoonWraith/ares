@@ -65,6 +65,7 @@ namespace Ares
 
 class Value;
 class View;
+class CompositeValue;
 
 /**
  * An iterator to iterate over values.
@@ -474,6 +475,12 @@ public:
 
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
 
+  /**
+   * Conveniance function to add a composite child which has itself
+   * children made out of strings.
+   */
+  CompositeValue* NewCompositeChild (const char* names, ...);
+
   virtual csPtr<ValueIterator> GetIterator ()
   {
     UpdateChildren ();
@@ -530,18 +537,7 @@ public:
       if (sname == GetName (i)) return GetChild (i);
     return 0;
   }
-  virtual DialogResult GetDialogValue ()
-  {
-    DialogResult result;
-    csRef<ValueIterator> it = GetIterator ();
-    while (it->HasNext ())
-    {
-      csString name;
-      Value* value = it->NextChild (&name);
-      result.Put (name, value->GetStringValue ());
-    }
-    return result;
-  }
+  virtual DialogResult GetDialogValue ();
 };
 
 /**
@@ -576,6 +572,14 @@ public:
     children.Push (value);
     value->SetParent (this);
   }
+
+  /**
+   * Add a series of children to this composite (all with
+   * type string).
+   */
+  void AddChildren (const char* names, ...);
+  void AddChildren (const char* names, va_list arg);
+
   /**
    * Remove all children from this composite.
    */
@@ -928,12 +932,11 @@ public:
 class EditChildDialogAction : public AbstractNewAction
 {
 private:
-  iUIDialog* dialog;
+  csRef<iUIDialog> dialog;
 
 public:
-  EditChildDialogAction (Value* collection, iUIDialog* dialog) :
-    AbstractNewAction (collection), dialog (dialog) { }
-  virtual ~EditChildDialogAction () { }
+  EditChildDialogAction (Value* collection, iUIDialog* dialog);
+  virtual ~EditChildDialogAction ();
   virtual const char* GetName () const { return "Edit..."; }
   virtual bool Do (View* view, wxWindow* component);
   virtual bool IsActive (View* view, wxWindow* component);
@@ -1362,6 +1365,16 @@ public:
    * to the given string.
    */
   static Value* FindChild (Value* collection, const char* str);
+
+  /**
+   * Conveniance function to create a composite value with serveral
+   * string values as children.
+   * 'names' is a ',' separated string of names. There should be
+   * exactly as many strings after the 'names' parameter as there
+   * are names in the 'names' variable.
+   */
+  static csRef<CompositeValue> CreateComposite (const char* names, ...);
+  static csRef<CompositeValue> CreateComposite (const char* names, va_list arg);
 };
 
 } // namespace Ares

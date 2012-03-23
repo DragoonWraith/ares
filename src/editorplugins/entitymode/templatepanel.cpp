@@ -25,8 +25,6 @@ THE SOFTWARE.
 #include "templatepanel.h"
 #include "entitymode.h"
 #include "edcommon/listctrltools.h"
-#include "edcommon/listview.h"
-#include "edcommon/rowmodel.h"
 #include "edcommon/tools.h"
 #include "editor/iuimanager.h"
 #include "editor/iuidialog.h"
@@ -37,30 +35,30 @@ THE SOFTWARE.
 
 //--------------------------------------------------------------------------
 
-class EntParRowModel : public RowModel
+using namespace Ares;
+
+class AbstractTplCollectionValue : public StandardCollectionValue
 {
 protected:
   EntityTemplatePanel* entPanel;
   iCelEntityTemplate* tpl;
 
 public:
-  EntParRowModel (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
-  virtual ~EntParRowModel () { }
+  AbstractTplCollectionValue (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  virtual ~AbstractTplCollectionValue () { }
 
   void SetTemplate (iCelEntityTemplate* tpl)
   {
-    EntParRowModel::tpl = tpl;
+    AbstractTplCollectionValue::tpl = tpl;
+    dirty = true;
   }
 };
 
-using namespace Ares;
+//--------------------------------------------------------------------------
 
-class ParentsCollectionValue : public StandardCollectionValue
+class ParentsCollectionValue : public AbstractTplCollectionValue
 {
 private:
-  EntityTemplatePanel* entPanel;
-  iCelEntityTemplate* tpl;
-
   iCelEntityTemplate* FindTemplate (const char* name)
   {
     iCelPlLayer* pl = entPanel->GetPL ();
@@ -71,15 +69,6 @@ private:
       return 0;
     }
     return t;
-  }
-
-  Value* NewChild (const char* name)
-  {
-    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("Template", NEWREF(StringValue,new StringValue(name)));
-    children.Push (composite);
-    composite->SetParent (this);
-    return composite;
   }
 
 protected:
@@ -94,28 +83,22 @@ protected:
     {
       iCelEntityTemplate* parent = it->Next ();
       csString name = parent->GetName ();
-      NewChild (name);
+      NewCompositeChild ("Template", name.GetData ());
     }
   }
 
 public:
-  ParentsCollectionValue (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  ParentsCollectionValue (EntityTemplatePanel* entPanel) : AbstractTplCollectionValue (entPanel) { }
   virtual ~ParentsCollectionValue () { }
-
-  void SetTemplate (iCelEntityTemplate* tpl)
-  {
-    ParentsCollectionValue::tpl = tpl;
-    dirty = true;
-  }
 
   virtual bool DeleteValue (Value* child)
   {
     if (!tpl) return false;
     Value* nameValue = child->GetChildByName ("Template");
-    csString name = nameValue->GetStringValue ();
-    iCelEntityTemplate* t = FindTemplate (name);
+    iCelEntityTemplate* t = FindTemplate (nameValue->GetStringValue ());
     if (!t) return false;
     tpl->RemoveParent (t);
+    Refresh ();
     return true;
   }
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
@@ -125,156 +108,131 @@ public:
     iCelEntityTemplate* t = FindTemplate (name);
     if (!t) return 0;
     tpl->AddParent (t);
-    Value* value = NewChild (name);
+    Value* value = NewCompositeChild ("Template", name.GetData ());
     FireValueChanged ();
     return value;
   }
 };
 
-#if 0
-class ParentsRowModel : public EntParRowModel
-{
-private:
-  csRef<iCelEntityTemplateIterator> it;
-
-  iCelEntityTemplate* FindTemplate (const csStringArray& row)
-  {
-    iCelPlLayer* pl = entPanel->GetPL ();
-    csString name = row[0];
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (!t)
-    {
-      entPanel->GetUIManager ()->Error ("Can't find template '%s'!", name.GetData ());
-      return 0;
-    }
-    return t;
-  }
-
-public:
-  ParentsRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
-  virtual ~ParentsRowModel () { }
-
-  virtual void ResetIterator ()
-  {
-    it = tpl->GetParents ();
-  }
-  virtual bool HasRows () { return it->HasNext (); }
-  virtual csStringArray NextRow ()
-  {
-    iCelEntityTemplate* parent = it->Next ();
-    return Tools::MakeArray (parent->GetName (), (const char*)0);
-  }
-
-  virtual bool DeleteRow (const csStringArray& row)
-  {
-    iCelEntityTemplate* t = FindTemplate (row);
-    if (!t) return false;
-    tpl->RemoveParent (t);
-    return true;
-  }
-  virtual bool AddRow (const csStringArray& row)
-  {
-    iCelEntityTemplate* t = FindTemplate (row);
-    if (!t) return false;
-    tpl->AddParent (t);
-    return true;
-  }
-
-  virtual const char* GetColumns () { return "Template"; }
-  virtual bool IsEditAllowed () const { return false; }
-};
-#endif
-
 //--------------------------------------------------------------------------
 
-class CharacteristicsRowModel : public EntParRowModel
+class CharacteristicsCollectionValue : public AbstractTplCollectionValue
 {
 private:
-  csRef<iCharacteristicsIterator> it;
+  Value* NewChild (const char* name, float f)
+  {
+    CompositeValue* composite = NewCompositeChild ("Name",name);
+    composite->AddChild ("Value", NEWREF(FloatValue,new FloatValue(f)));
+    return composite;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!tpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    csRef<iCharacteristicsIterator> it = tpl->GetCharacteristics ()->GetAllCharacteristics ();
+    while (it->HasNext ())
+    {
+      float f;
+      csString name = it->Next (f);
+      NewChild (name, f);
+    }
+  }
 
 public:
-  CharacteristicsRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
-  virtual ~CharacteristicsRowModel () { }
+  CharacteristicsCollectionValue (EntityTemplatePanel* entPanel) : AbstractTplCollectionValue (entPanel) { }
+  virtual ~CharacteristicsCollectionValue () { }
 
-  virtual void ResetIterator ()
+  virtual bool DeleteValue (Value* child)
   {
-    it = tpl->GetCharacteristics ()->GetAllCharacteristics ();
-  }
-  virtual bool HasRows () { return it->HasNext (); }
-  virtual csStringArray NextRow ()
-  {
-    float f;
-    csString name = it->Next (f);
-    csString value; value.Format ("%g", f);
-    return Tools::MakeArray (name.GetData (), value.GetData (), (const char*)0);
-  }
-
-  virtual bool DeleteRow (const csStringArray& row)
-  {
+    if (!tpl) return false;
+    Value* nameValue = child->GetChildByName ("Name");
     iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
-    csString name = row[0];
-    chars->ClearCharacteristic (name);
+    chars->ClearCharacteristic (nameValue->GetStringValue ());
+    Refresh ();
     return true;
   }
-  virtual bool AddRow (const csStringArray& row)
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
+    if (!tpl) return 0;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString value = suggestion.Get ("Value", (const char*)0);
     iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
-    csString name = row[0];
-    csString value = row[1];
     float f;
     csScanStr (value, "%f", &f);
     chars->SetCharacteristic (name, f);
+    Value* child = NewChild (name, f);
+    FireValueChanged ();
+    return child;
+  }
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!tpl) return 0;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString value = suggestion.Get ("Value", (const char*)0);
+    float f;
+    csScanStr (value, "%f", &f);
+    iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
+    chars->SetCharacteristic (name, f);
+    selectedValue->GetChildByName ("Name")->SetStringValue (name);
+    selectedValue->GetChildByName ("Value")->SetFloatValue (f);
+    FireValueChanged ();
     return true;
   }
-
-  virtual const char* GetColumns () { return "Name,Value"; }
 };
 
 //--------------------------------------------------------------------------
 
-class ClassesRowModel : public EntParRowModel
+class ClassesCollectionValue : public AbstractTplCollectionValue
 {
-private:
-  csSet<csStringID>::GlobalIterator it;
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!tpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    iCelPlLayer* pl = entPanel->GetPL ();
+    const csSet<csStringID>& classes = tpl->GetClasses ();
+    csSet<csStringID>::GlobalIterator it = classes.GetIterator ();
+    while (it.HasNext ())
+    {
+      csStringID classID = it.Next ();
+      csString className = pl->FetchString (classID);
+      NewCompositeChild ("Class", className.GetData ());
+    }
+  }
 
 public:
-  ClassesRowModel (EntityTemplatePanel* entPanel) : EntParRowModel (entPanel) { }
-  virtual ~ClassesRowModel () { }
+  ClassesCollectionValue (EntityTemplatePanel* entPanel) : AbstractTplCollectionValue (entPanel) { }
+  virtual ~ClassesCollectionValue () { }
 
-  virtual void ResetIterator ()
+  virtual bool DeleteValue (Value* child)
   {
-    const csSet<csStringID>& classes = tpl->GetClasses ();
-    it = classes.GetIterator ();
-  }
-  virtual bool HasRows () { return it.HasNext (); }
-  virtual csStringArray NextRow ()
-  {
+    if (!tpl) return false;
     iCelPlLayer* pl = entPanel->GetPL ();
-    csStringID classID = it.Next ();
-    csString className = pl->FetchString (classID);
-    return Tools::MakeArray (className.GetData (), (const char*)0);
-  }
-
-  virtual bool DeleteRow (const csStringArray& row)
-  {
-    iCelPlLayer* pl = entPanel->GetPL ();
-    csString name = row[0];
-    csStringID id = pl->FetchStringID (name);
+    Value* nameValue = child->GetChildByName ("Class");
+    csStringID id = pl->FetchStringID (nameValue->GetStringValue ());
     tpl->RemoveClass (id);
+    Refresh ();
     return true;
   }
-  virtual bool AddRow (const csStringArray& row)
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
+    if (!tpl) return 0;
     iCelPlLayer* pl = entPanel->GetPL ();
-    csString name = row[0];
+    csString name = suggestion.Get ("Class", (const char*)0);
     csStringID id = pl->FetchStringID (name);
     tpl->AddClass (id);
-    return true;
+    Value* value = NewCompositeChild ("Class", name.GetData ());
+    FireValueChanged ();
+    return value;
   }
-
-  virtual const char* GetColumns () { return "Class"; }
-  virtual bool IsEditAllowed () const { return false; }
 };
+
 
 //--------------------------------------------------------------------------
 
@@ -294,19 +252,17 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
   parentsCollectionValue.AttachNew (new ParentsCollectionValue (this));
   Bind (parentsCollectionValue, "templateParentsList");
   list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-  //parentsModel.AttachNew (new ParentsRowModel (this));
-  //parentsView = new ListCtrlView (list, parentsModel);
   dialog = uiManager->CreateDialog ("Add template");
   dialog->AddRow ();
   dialog->AddLabel ("Template:");
   dialog->AddText ("Template");
-  //parentsView->SetEditorDialog (dialog);
   AddAction (list, NEWREF(Action, new NewChildDialogAction (parentsCollectionValue, dialog)));
   AddAction (list, NEWREF(Action, new DeleteChildAction (parentsCollectionValue)));
 
+  DefineHeading ("templateCharacteristicsList", "Name,Value", "Name,Value");
+  characteristicsCollectionValue.AttachNew (new CharacteristicsCollectionValue (this));
+  Bind (characteristicsCollectionValue, "templateCharacteristicsList");
   list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
-  characteristicsModel.AttachNew (new CharacteristicsRowModel (this));
-  characteristicsView = new ListCtrlView (list, characteristicsModel);
   dialog = uiManager->CreateDialog ("Add characteristic property");
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
@@ -314,23 +270,24 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
   dialog->AddRow ();
   dialog->AddLabel ("Value:");
   dialog->AddText ("Value");
-  characteristicsView->SetEditorDialog (dialog);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (characteristicsCollectionValue, dialog)));
+  AddAction (list, NEWREF(Action, new EditChildDialogAction (characteristicsCollectionValue, dialog)));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (characteristicsCollectionValue)));
 
+  DefineHeading ("templateClassList", "Class", "Class");
+  classesCollectionValue.AttachNew (new ClassesCollectionValue (this));
+  Bind (classesCollectionValue, "templateClassList");
   list = XRCCTRL (*this, "templateClassList", wxListCtrl);
-  classesModel.AttachNew (new ClassesRowModel (this));
-  classesView = new ListCtrlView (list, classesModel);
   dialog = uiManager->CreateDialog ("Add class");
   dialog->AddRow ();
   dialog->AddLabel ("Class:");
   dialog->AddText ("Class");
-  classesView->SetEditorDialog (dialog);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (classesCollectionValue, dialog)));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (classesCollectionValue)));
 }
 
 EntityTemplatePanel::~EntityTemplatePanel ()
 {
-  //delete parentsView;
-  delete characteristicsView;
-  delete classesView;
 }
 
 // ----------------------------------------------------------------------
@@ -340,13 +297,13 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
   EntityTemplatePanel::tpl = tpl;
 
   parentsCollectionValue->SetTemplate (tpl);
-  //parentsView->Refresh ();
+  parentsCollectionValue->Refresh ();
 
-  characteristicsModel->SetTemplate (tpl);
-  characteristicsView->Refresh ();
+  characteristicsCollectionValue->SetTemplate (tpl);
+  characteristicsCollectionValue->Refresh ();
 
-  classesModel->SetTemplate (tpl);
-  classesView->Refresh ();
+  classesCollectionValue->SetTemplate (tpl);
+  classesCollectionValue->Refresh ();
 }
 
 
