@@ -53,6 +53,85 @@ public:
   }
 };
 
+using namespace Ares;
+
+class ParentsCollectionValue : public StandardCollectionValue
+{
+private:
+  EntityTemplatePanel* entPanel;
+  iCelEntityTemplate* tpl;
+
+  iCelEntityTemplate* FindTemplate (const char* name)
+  {
+    iCelPlLayer* pl = entPanel->GetPL ();
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      entPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
+      return 0;
+    }
+    return t;
+  }
+
+  Value* NewChild (const char* name)
+  {
+    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
+    composite->AddChild ("Template", NEWREF(StringValue,new StringValue(name)));
+    children.Push (composite);
+    composite->SetParent (this);
+    return composite;
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!tpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
+    while (it->HasNext ())
+    {
+      iCelEntityTemplate* parent = it->Next ();
+      csString name = parent->GetName ();
+      NewChild (name);
+    }
+  }
+
+public:
+  ParentsCollectionValue (EntityTemplatePanel* entPanel) : entPanel (entPanel), tpl (0) { }
+  virtual ~ParentsCollectionValue () { }
+
+  void SetTemplate (iCelEntityTemplate* tpl)
+  {
+    ParentsCollectionValue::tpl = tpl;
+    dirty = true;
+  }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!tpl) return false;
+    Value* nameValue = child->GetChildByName ("Template");
+    csString name = nameValue->GetStringValue ();
+    iCelEntityTemplate* t = FindTemplate (name);
+    if (!t) return false;
+    tpl->RemoveParent (t);
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!tpl) return 0;
+    csString name = suggestion.Get ("Template", (const char*)0);
+    iCelEntityTemplate* t = FindTemplate (name);
+    if (!t) return 0;
+    tpl->AddParent (t);
+    Value* value = NewChild (name);
+    FireValueChanged ();
+    return value;
+  }
+};
+
+#if 0
 class ParentsRowModel : public EntParRowModel
 {
 private:
@@ -104,6 +183,7 @@ public:
   virtual const char* GetColumns () { return "Template"; }
   virtual bool IsEditAllowed () const { return false; }
 };
+#endif
 
 //--------------------------------------------------------------------------
 
@@ -200,7 +280,7 @@ public:
 
 EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
-  uiManager (uiManager), emode (emode), tpl (0)
+  View (this), uiManager (uiManager), emode (emode), tpl (0)
 {
   pl = emode->GetPL ();
   parentSizer = parent->GetSizer (); 
@@ -210,14 +290,19 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
   wxListCtrl* list;
   csRef<iUIDialog> dialog;
 
+  DefineHeading ("templateParentsList", "Template", "Template");
+  parentsCollectionValue.AttachNew (new ParentsCollectionValue (this));
+  Bind (parentsCollectionValue, "templateParentsList");
   list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
-  parentsModel.AttachNew (new ParentsRowModel (this));
-  parentsView = new ListCtrlView (list, parentsModel);
+  //parentsModel.AttachNew (new ParentsRowModel (this));
+  //parentsView = new ListCtrlView (list, parentsModel);
   dialog = uiManager->CreateDialog ("Add template");
   dialog->AddRow ();
   dialog->AddLabel ("Template:");
   dialog->AddText ("Template");
-  parentsView->SetEditorDialog (dialog);
+  //parentsView->SetEditorDialog (dialog);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (parentsCollectionValue, dialog)));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (parentsCollectionValue)));
 
   list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
   characteristicsModel.AttachNew (new CharacteristicsRowModel (this));
@@ -243,7 +328,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
 
 EntityTemplatePanel::~EntityTemplatePanel ()
 {
-  delete parentsView;
+  //delete parentsView;
   delete characteristicsView;
   delete classesView;
 }
@@ -254,8 +339,8 @@ void EntityTemplatePanel::SwitchToTpl (iCelEntityTemplate* tpl)
 {
   EntityTemplatePanel::tpl = tpl;
 
-  parentsModel->SetTemplate (tpl);
-  parentsView->Refresh ();
+  parentsCollectionValue->SetTemplate (tpl);
+  //parentsView->Refresh ();
 
   characteristicsModel->SetTemplate (tpl);
   characteristicsView->Refresh ();

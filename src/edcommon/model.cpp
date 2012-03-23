@@ -385,6 +385,15 @@ bool NewChildAction::Do (View* view, wxWindow* component)
   return DoDialog (view, component, 0);
 }
 
+NewChildDialogAction::NewChildDialogAction (Value* collection, iUIDialog* dialog) :
+    AbstractNewAction (collection), dialog (dialog)
+{
+}
+
+NewChildDialogAction::~NewChildDialogAction ()
+{
+}
+
 bool NewChildDialogAction::Do (View* view, wxWindow* component)
 {
   return DoDialog (view, component, dialog);

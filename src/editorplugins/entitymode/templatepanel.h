@@ -33,17 +33,19 @@ THE SOFTWARE.
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
+#include "edcommon/model.h"
+
 struct iUIManager;
 class EntityMode;
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 
 class ListCtrlView;
-class ParentsRowModel;
+class ParentsCollectionValue;
 class CharacteristicsRowModel;
 class ClassesRowModel;
 
-class EntityTemplatePanel : public wxPanel
+class EntityTemplatePanel : public wxPanel, public Ares::View
 {
 private:
   iUIManager* uiManager;
@@ -52,8 +54,10 @@ private:
   wxSizer* parentSizer;
   iCelEntityTemplate* tpl;
 
-  ListCtrlView* parentsView;
-  csRef<ParentsRowModel> parentsModel;
+  csRef<ParentsCollectionValue> parentsCollectionValue;
+
+  //ListCtrlView* parentsView;
+  //csRef<ParentsRowModel> parentsModel;
   ListCtrlView* characteristicsView;
   csRef<CharacteristicsRowModel> characteristicsModel;
   ListCtrlView* classesView;

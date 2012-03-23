@@ -43,7 +43,7 @@ class wxChoicebook;
 class wxPanel;
 class wxDialog;
 class CustomControl;
-class iUIDialog;
+struct iUIDialog;
 
 // @@@ Ugly: we can't include uimanager.h because of circular includes.
 typedef csHash<csString,csString> DialogResult;
@@ -909,12 +909,11 @@ public:
 class NewChildDialogAction : public AbstractNewAction
 {
 private:
-  iUIDialog* dialog;
+  csRef<iUIDialog> dialog;
 
 public:
-  NewChildDialogAction (Value* collection, iUIDialog* dialog) :
-    AbstractNewAction (collection), dialog (dialog) { }
-  virtual ~NewChildDialogAction () { }
+  NewChildDialogAction (Value* collection, iUIDialog* dialog);
+  virtual ~NewChildDialogAction ();
   virtual const char* GetName () const { return "New..."; }
   virtual bool Do (View* view, wxWindow* component);
 };
