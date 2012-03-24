@@ -41,7 +41,7 @@ void MeshCollectionValue::UpdateChildren ()
     iMeshFactoryWrapper* fact = list->Get (i);
     const char* name = fact->QueryObject ()->GetName ();
     if (!dynworld->FindFactory (name))
-      NewCompositeChild ("name", name);
+      NewCompositeChild (VALUE_STRING, "name", name, VALUE_NONE);
   }
 }
 

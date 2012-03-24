@@ -447,7 +447,10 @@ private:
 
   Value* NewChild (const char* name, const char* value)
   {
-    return NewCompositeChild ("name,value", name, value);
+    return NewCompositeChild (
+	VALUE_STRING, "name", name,
+	VALUE_STRING, "value", value,
+	VALUE_NONE);
   }
 
 protected:
@@ -523,7 +526,11 @@ private:
 
   Value* NewChild (const char* name, const char* value, const char* type)
   {
-    return NewCompositeChild ("name,value,type", name, value, type);
+    return NewCompositeChild (
+	VALUE_STRING, "name", name,
+	VALUE_STRING, "value", value,
+	VALUE_STRING, "type", type,
+	VALUE_NONE);
   }
 
 protected:

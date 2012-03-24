@@ -476,10 +476,13 @@ public:
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
 
   /**
-   * Conveniance function to add a composite child which has itself
-   * children made out of strings.
+   * Conveniance function to add a composite value with several
+   * values as children.
+   * The parameters given should be a 3-tuple of ValueType, const char* name
+   * and a value of the appropriate type. To end the paremeters VALUE_NONE
+   * should be used.
    */
-  CompositeValue* NewCompositeChild (const char* names, ...);
+  CompositeValue* NewCompositeChild (ValueType type, ...);
 
   virtual csPtr<ValueIterator> GetIterator ()
   {
@@ -577,8 +580,14 @@ public:
    * Add a series of children to this composite (all with
    * type string).
    */
-  void AddChildren (const char* names, ...);
-  void AddChildren (const char* names, va_list arg);
+  /**
+   * Add a series of children to this composite.
+   * The parameters given should be a 3-tuple of ValueType, const char* name
+   * and a value of the appropriate type. To end the paremeters VALUE_NONE
+   * should be used.
+   */
+  void AddChildren (ValueType type, ...);
+  void AddChildren (ValueType type, va_list arg);
 
   /**
    * Remove all children from this composite.
@@ -1367,14 +1376,14 @@ public:
   static Value* FindChild (Value* collection, const char* str);
 
   /**
-   * Conveniance function to create a composite value with serveral
-   * string values as children.
-   * 'names' is a ',' separated string of names. There should be
-   * exactly as many strings after the 'names' parameter as there
-   * are names in the 'names' variable.
+   * Conveniance function to create a composite value with several
+   * values as children.
+   * The parameters given should be a 3-tuple of ValueType, const char* name
+   * and a value of the appropriate type. To end the paremeters VALUE_NONE
+   * should be used.
    */
-  static csRef<CompositeValue> CreateComposite (const char* names, ...);
-  static csRef<CompositeValue> CreateComposite (const char* names, va_list arg);
+  static csRef<CompositeValue> CreateComposite (ValueType type, ...);
+  static csRef<CompositeValue> CreateComposite (ValueType type, va_list arg);
 };
 
 } // namespace Ares

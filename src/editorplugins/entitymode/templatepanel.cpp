@@ -83,7 +83,7 @@ protected:
     {
       iCelEntityTemplate* parent = it->Next ();
       csString name = parent->GetName ();
-      NewCompositeChild ("Template", name.GetData ());
+      NewCompositeChild (VALUE_STRING, "Template", name.GetData (), VALUE_NONE);
     }
   }
 
@@ -108,7 +108,7 @@ public:
     iCelEntityTemplate* t = FindTemplate (name);
     if (!t) return 0;
     tpl->AddParent (t);
-    Value* value = NewCompositeChild ("Template", name.GetData ());
+    Value* value = NewCompositeChild (VALUE_STRING, "Template", name.GetData (), VALUE_NONE);
     FireValueChanged ();
     return value;
   }
@@ -121,9 +121,10 @@ class CharacteristicsCollectionValue : public AbstractTplCollectionValue
 private:
   Value* NewChild (const char* name, float f)
   {
-    CompositeValue* composite = NewCompositeChild ("Name",name);
-    composite->AddChild ("Value", NEWREF(FloatValue,new FloatValue(f)));
-    return composite;
+    return NewCompositeChild (
+	VALUE_STRING, "Name", name,
+	VALUE_FLOAT, "Value", f,
+	VALUE_NONE);
   }
 
 protected:
@@ -202,7 +203,7 @@ protected:
     {
       csStringID classID = it.Next ();
       csString className = pl->FetchString (classID);
-      NewCompositeChild ("Class", className.GetData ());
+      NewCompositeChild (VALUE_STRING, "Class", className.GetData (), VALUE_NONE);
     }
   }
 
@@ -227,7 +228,7 @@ public:
     csString name = suggestion.Get ("Class", (const char*)0);
     csStringID id = pl->FetchStringID (name);
     tpl->AddClass (id);
-    Value* value = NewCompositeChild ("Class", name.GetData ());
+    Value* value = NewCompositeChild (VALUE_STRING, "Class", name.GetData (), VALUE_NONE);
     FireValueChanged ();
     return value;
   }

@@ -125,31 +125,66 @@ DialogResult AbstractCompositeValue::GetDialogValue ()
   return result;
 }
 
-void CompositeValue::AddChildren (const char* names, ...)
+void CompositeValue::AddChildren (ValueType type, ...)
 {
   va_list args;
-  va_start (args, names);
-  AddChildren (names, args);
+  va_start (args, type);
+  AddChildren (type, args);
   va_end (args);
 }
 
-void CompositeValue::AddChildren (const char* names, va_list args)
+void CompositeValue::AddChildren (ValueType type, va_list args)
 {
-  csStringArray n (names, ",");
-  for (size_t i = 0 ; i < n.GetSize () ; i++)
+  while (type != VALUE_NONE)
   {
-    const char* v = va_arg (args, char*);
-    AddChild (n.Get (i), NEWREF(StringValue,new StringValue(v)));
+    const char* name = va_arg (args, char*);
+    switch (type)
+    {
+      case VALUE_STRING:
+	{
+	  const char* value = va_arg (args, char*);
+	  AddChild (name, NEWREF(StringValue,new StringValue(value)));
+	  break;
+	}
+      case VALUE_LONG:
+	{
+	  long value = va_arg (args, long);
+	  AddChild (name, NEWREF(LongValue,new LongValue(value)));
+	  break;
+	}
+      case VALUE_FLOAT:
+	{
+	  float value = va_arg (args, double);
+	  AddChild (name, NEWREF(FloatValue,new FloatValue(value)));
+	  break;
+	}
+      case VALUE_BOOL:
+	{
+	  bool value = va_arg (args, int);
+	  AddChild (name, NEWREF(BoolValue,new BoolValue(value)));
+	  break;
+	}
+      case VALUE_COLLECTION:
+      case VALUE_COMPOSITE:
+	{
+	  Value* value = va_arg (args, Value*);
+	  AddChild (name, value);
+	  break;
+	}
+      default:
+	break;
+    }
+    type = (ValueType) va_arg (args, int);
   }
 }
 
 // --------------------------------------------------------------------------
 
-CompositeValue* StandardCollectionValue::NewCompositeChild (const char* names, ...)
+CompositeValue* StandardCollectionValue::NewCompositeChild (ValueType type, ...)
 {
   va_list args;
-  va_start (args, names);
-  csRef<CompositeValue> composite = View::CreateComposite (names, args);
+  va_start (args, type);
+  csRef<CompositeValue> composite = View::CreateComposite (type, args);
   va_end (args);
   children.Push (composite);
   composite->SetParent (this);
@@ -933,18 +968,18 @@ Value* View::FindChild (Value* collection, const char* str)
   return 0;
 }
 
-csRef<CompositeValue> View::CreateComposite (const char* names, va_list args)
+csRef<CompositeValue> View::CreateComposite (ValueType type, va_list args)
 {
   csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-  composite->AddChildren (names, args);
+  composite->AddChildren (type, args);
   return composite;
 }
 
-csRef<CompositeValue> View::CreateComposite (const char* names, ...)
+csRef<CompositeValue> View::CreateComposite (ValueType type, ...)
 {
   va_list args;
-  va_start (args, names);
-  csRef<CompositeValue> value = CreateComposite (names, args);
+  va_start (args, type);
+  csRef<CompositeValue> value = CreateComposite (type, args);
   va_end (args);
   return value;
 }

@@ -672,7 +672,7 @@ protected:
     for (size_t i = 0 ; i < bones.GetSize () ; i++)
     {
       BoneID id = bones[i];
-      NewCompositeChild ("name", skelFact->GetBoneName (id));
+      NewCompositeChild (VALUE_STRING, "name", skelFact->GetBoneName (id), VALUE_NONE);
     }
   }
 
@@ -1282,7 +1282,7 @@ protected:
     while (it->HasNext ())
     {
       BoneID id = it->Next ();
-      NewCompositeChild ("name", skelFact->GetBoneName (id));
+      NewCompositeChild (VALUE_STRING, "name", skelFact->GetBoneName (id), VALUE_NONE);
     }
   }
   virtual void ChildChanged (Value* child)
@@ -1316,7 +1316,7 @@ public:
 
     bodySkel->CreateBodyBone (id);
 
-    Value* value = NewCompositeChild ("name", name.GetData ());
+    Value* value = NewCompositeChild (VALUE_STRING, "name", name.GetData (), VALUE_NONE);
     FireValueChanged ();
     return value;
   }

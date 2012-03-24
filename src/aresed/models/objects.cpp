@@ -50,16 +50,15 @@ void ObjectsValue::UpdateChildren ()
     const csReversibleTransform& trans = obj->GetTransform ();
     float dist = sqrt (csSquaredDist::PointPoint (trans.GetOrigin (), origin));
 
-    csRef<CompositeValue> composite = NEWREF(CompositeValue,new CompositeValue());
-    composite->AddChild ("ID", NEWREF(LongValue,new LongValue(id)));
-    composite->AddChild ("Entity", NEWREF(StringValue,new StringValue(entityName)));
-    composite->AddChild ("Factory", NEWREF(StringValue,new StringValue(factName)));
-    composite->AddChild ("X", NEWREF(FloatValue,new FloatValue(trans.GetOrigin ().x)));
-    composite->AddChild ("Y", NEWREF(FloatValue,new FloatValue(trans.GetOrigin ().y)));
-    composite->AddChild ("Z", NEWREF(FloatValue,new FloatValue(trans.GetOrigin ().z)));
-    composite->AddChild ("Distance", NEWREF(FloatValue,new FloatValue(dist)));
-    children.Push (composite);
-    composite->SetParent (this);
+    NewCompositeChild (
+	VALUE_LONG, "ID", id,
+	VALUE_STRING, "Entity", entityName,
+	VALUE_STRING, "Factory", factName,
+	VALUE_FLOAT, "X", trans.GetOrigin ().x,
+	VALUE_FLOAT, "Y", trans.GetOrigin ().y,
+	VALUE_FLOAT, "Z", trans.GetOrigin ().z,
+	VALUE_FLOAT, "Distance", dist,
+	VALUE_NONE);
   }
 }
 
