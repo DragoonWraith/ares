@@ -1179,7 +1179,7 @@ public:
     Value* nameValue = child->GetChildByName ("Name");
     iCelPlLayer* pl = pcPanel->GetPL ();
     pctpl->RemoveProperty (pl->FetchStringID (nameValue->GetStringValue ()));
-    Refresh ();
+    RemoveChild (child);
     return true;
   }
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
@@ -1203,7 +1203,7 @@ public:
     selectedValue->GetChildByName ("Name")->SetStringValue (name);
     selectedValue->GetChildByName ("Value")->SetStringValue (value);
     selectedValue->GetChildByName ("Type")->SetStringValue (type);
-    Refresh ();
+    FireValueChanged ();
     return true;
   }
 };

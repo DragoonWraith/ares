@@ -476,6 +476,11 @@ public:
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
 
   /**
+   * Remove a value from this collection.
+   */
+  virtual void RemoveChild (Value* child);
+
+  /**
    * Conveniance function to add a composite value with several
    * values as children.
    * The parameters given should be a 3-tuple of ValueType, const char* name

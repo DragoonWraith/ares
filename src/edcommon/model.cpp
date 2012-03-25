@@ -191,6 +191,12 @@ CompositeValue* StandardCollectionValue::NewCompositeChild (ValueType type, ...)
   return composite;
 }
 
+void StandardCollectionValue::RemoveChild (Value* child)
+{
+  children.Delete (child);
+  FireValueChanged ();
+}
+
 // --------------------------------------------------------------------------
 
 MirrorValue::MirrorValue (ValueType type) : type (type)
