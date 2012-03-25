@@ -126,6 +126,24 @@ void PropertyClassPanel::SwitchPCType (const char* pcType)
 
 // -----------------------------------------------------------------------
 
+using namespace Ares;
+
+class PcParCollectionValue : public StandardCollectionValue
+{
+protected:
+  PropertyClassPanel* pcPanel;
+  iCelPropertyClassTemplate* pctpl;
+
+public:
+  PcParCollectionValue (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0) { }
+  virtual ~PcParCollectionValue () { }
+
+  void SetPC (iCelPropertyClassTemplate* pctpl)
+  {
+    PcParCollectionValue::pctpl = pctpl;
+  }
+};
+
 class PcParRowModel : public RowModel
 {
 protected:
@@ -1099,43 +1117,23 @@ void PropertyClassPanel::FillInventory ()
 
 // -----------------------------------------------------------------------
 
-class PropertyRowModel : public PcParRowModel
+class PropertyCollectionValue : public PcParCollectionValue
 {
 private:
-  size_t idx;
-
-public:
-  PropertyRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
-  virtual ~PropertyRowModel () { }
-
-  virtual void ResetIterator () { idx = 0; }
-  virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
-  virtual csStringArray NextRow ()
+  Value* NewChild (const char* name, const char* value, const char* type)
   {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
-    idx++;
-    csString value;
-    celParameterTools::ToString (data, value);
-    csString name = pcPanel->GetPL ()->FetchString (id);
-    csString type = InspectTools::TypeToString (data.type);
-    return Tools::MakeArray (name.GetData (), value.GetData (), type.GetData (), (const char*)0);
+    return NewCompositeChild (
+	  VALUE_STRING, "Name", name,
+	  VALUE_STRING, "Value", value,
+	  VALUE_STRING, "Type", type,
+	  VALUE_NONE);
   }
 
-  virtual bool DeleteRow (const csStringArray& row)
+  bool SetProperty (const csString& type, const char* name, csString& value)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    pctpl->RemoveProperty (pl->FetchStringID (row[0]));
-    return true;
-  }
-  virtual bool AddRow (const csStringArray& row)
-  {
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    csString name = row[0];
-    csString value = row[1];
-    csString type = row[2];
     csStringID nameID = pl->FetchStringID (name);
+    pctpl->RemoveProperty (nameID);
     if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
     else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
     else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
@@ -1151,8 +1149,63 @@ public:
     return true;
   }
 
-  virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetPropertyDialog (); }
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!pctpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString value;
+      celParameterTools::ToString (data, value);
+      csString name = pcPanel->GetPL ()->FetchString (id);
+      csString type = InspectTools::TypeToString (data.type);
+      NewChild (name, value, type);
+    }
+  }
+
+public:
+  PropertyCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  virtual ~PropertyCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!pctpl) return false;
+    Value* nameValue = child->GetChildByName ("Name");
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    pctpl->RemoveProperty (pl->FetchStringID (nameValue->GetStringValue ()));
+    Refresh ();
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return false;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString value = suggestion.Get ("Value", (const char*)0);
+    csString type = suggestion.Get ("Type", (const char*)0);
+    if (!SetProperty (type, name, value)) return 0;
+    Value* child = NewChild (name, value, type);
+    FireValueChanged ();
+    return child;
+  }
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return false;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString value = suggestion.Get ("Value", (const char*)0);
+    csString type = suggestion.Get ("Type", (const char*)0);
+    if (!SetProperty (type, name, value)) return false;
+    selectedValue->GetChildByName ("Name")->SetStringValue (name);
+    selectedValue->GetChildByName ("Value")->SetStringValue (value);
+    selectedValue->GetChildByName ("Type")->SetStringValue (type);
+    Refresh ();
+    return true;
+  }
 };
 
 iUIDialog* PropertyClassPanel::GetPropertyDialog ()
@@ -1184,8 +1237,8 @@ void PropertyClassPanel::FillProperties ()
 
   if (!pctpl || csString ("pctools.properties") != pctpl->GetName ()) return;
 
-  propertyModel->SetPC (pctpl);
-  propertyView->Refresh ();
+  propertyCollectionValue->SetPC (pctpl);
+  propertyCollectionValue->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -1257,7 +1310,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
 
 PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
-  uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
+  View (this), uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
 {
   pl = emode->GetPL ();
   pm = csQueryRegistryOrLoad<iParameterManager> (emode->GetObjectRegistry (),
@@ -1274,9 +1327,13 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
   wxListCtrl* list;
 
+  DefineHeading ("propertyListCtrl", "Name,Value,Type", "Name,Value,Type");
+  propertyCollectionValue.AttachNew (new PropertyCollectionValue (this));
+  Bind (propertyCollectionValue, "propertyListCtrl");
   list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  propertyModel.AttachNew (new PropertyRowModel (this));
-  propertyView = new ListCtrlView (list, propertyModel);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (propertyCollectionValue, GetPropertyDialog ())));
+  AddAction (list, NEWREF(Action, new EditChildDialogAction (propertyCollectionValue, GetPropertyDialog ())));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (propertyCollectionValue)));
 
   list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
   inventoryModel.AttachNew (new InventoryRowModel (this));
@@ -1303,7 +1360,6 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
 PropertyClassPanel::~PropertyClassPanel ()
 {
-  delete propertyView;
   delete inventoryView;
   delete questView;
   delete spawnView;

@@ -34,6 +34,8 @@ THE SOFTWARE.
 #include <wx/tooltip.h>
 #include <wx/xrc/xmlres.h>
 
+#include "edcommon/model.h"
+
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
@@ -44,7 +46,9 @@ struct iUIDialog;
 struct iUIManager;
 class EntityMode;
 
-class PropertyRowModel;
+class PropertyCollectionValue;
+//class PropertyRowModel;
+
 class InventoryRowModel;
 class QuestRowModel;
 class SpawnRowModel;
@@ -55,7 +59,7 @@ class ListCtrlView;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
-class PropertyClassPanel : public wxPanel
+class PropertyClassPanel : public wxPanel, public Ares::View
 {
 private:
   iCelPlLayer* pl;
@@ -80,8 +84,7 @@ private:
   void FillOldCamera ();
 
   // Properties.
-  ListCtrlView* propertyView;
-  csRef<PropertyRowModel> propertyModel;
+  csRef<PropertyCollectionValue> propertyCollectionValue;
   csRef<iUIDialog> propDialog;
   bool UpdateProperties ();
   void FillProperties ();

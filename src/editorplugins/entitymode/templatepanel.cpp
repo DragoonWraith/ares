@@ -171,7 +171,7 @@ public:
   }
   virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
-    if (!tpl) return 0;
+    if (!tpl) return false;
     csString name = suggestion.Get ("Name", (const char*)0);
     csString value = suggestion.Get ("Value", (const char*)0);
     float f;
