@@ -47,9 +47,8 @@ struct iUIManager;
 class EntityMode;
 
 class PropertyCollectionValue;
-//class PropertyRowModel;
+class InventoryCollectionValue;
 
-class InventoryRowModel;
 class QuestRowModel;
 class SpawnRowModel;
 class WireMsgRowModel;
@@ -90,8 +89,7 @@ private:
   void FillProperties ();
 
   // Inventory.
-  ListCtrlView* inventoryView;
-  csRef<InventoryRowModel> inventoryModel;
+  csRef<InventoryCollectionValue> inventoryCollectionValue;
   csRef<iUIDialog> invTempDialog;
   bool UpdateInventory ();
   void FillInventory ();

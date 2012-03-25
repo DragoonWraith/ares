@@ -966,6 +966,132 @@ void PropertyClassPanel::FillQuest ()
 
 // -----------------------------------------------------------------------
 
+class InventoryCollectionValue : public PcParCollectionValue
+{
+private:
+  Value* NewChild (const char* name, const char* amount)
+  {
+    return NewCompositeChild (
+	  VALUE_STRING, "Name", name,
+	  VALUE_STRING, "Amount", amount,
+	  VALUE_NONE);
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!pctpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddTemplate")
+      {
+        iCelPlLayer* pl = pcPanel->GetPL ();
+        csStringID nameID = pl->FetchStringID ("name");
+        csStringID amountID = pl->FetchStringID ("amount");
+        csString parName;
+        csString parAmount;
+        while (params->HasNext ())
+        {
+          csStringID parid;
+          iParameter* par = params->Next (parid);
+          if (parid == nameID) parName = par->GetOriginalExpression ();
+          else if (parid == amountID) parAmount = par->GetOriginalExpression ();
+        }
+	NewChild (parName, parAmount);
+      }
+    }
+  }
+
+  bool RemoveActionWithName (const char* name)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
+	"AddTemplate", "name", name);
+    if (idx == csArrayItemNotFound) return false;
+    pctpl->RemovePropertyByIndex (idx);
+    return true;
+  }
+
+  bool UpdateAction (const char* name, const char* amount)
+  {
+    ParHash params;
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csStringID actionID = pl->FetchStringID ("AddTemplate");
+    csStringID nameID = pl->FetchStringID ("name");
+    csStringID amountID = pl->FetchStringID ("amount");
+
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
+      return false;
+    }
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (name, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (nameID, par);
+
+    par = pm->GetParameter (amount, CEL_DATA_LONG);
+    if (!par) return false;
+    params.Put (amountID, par);
+
+    RemoveActionWithName (name);
+    pctpl->PerformAction (actionID, params);
+    return true;
+  }
+
+
+public:
+  InventoryCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  virtual ~InventoryCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!pctpl) return false;
+    Value* nameValue = child->GetChildByName ("Name");
+    if (!RemoveActionWithName (nameValue->GetStringValue ()))
+      return false;
+    RemoveChild (child);
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return 0;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString amount = suggestion.Get ("Amount", (const char*)0);
+    if (!UpdateAction (name, amount))
+      return 0;
+
+    Value* child = NewChild (name, amount);
+    FireValueChanged ();
+    return child;
+  }
+
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return false;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString amount = suggestion.Get ("Amount", (const char*)0);
+    if (!UpdateAction (name, amount))
+      return false;
+    selectedValue->GetChildByName ("Name")->SetStringValue (name);
+    selectedValue->GetChildByName ("Amount")->SetStringValue (amount);
+    FireValueChanged ();
+    return true;
+  }
+};
+
+#if 0
 class InventoryRowModel : public PcParRowModel
 {
 private:
@@ -1062,6 +1188,7 @@ public:
   virtual const char* GetColumns () { return "Name,Amount"; }
   virtual iUIDialog* GetEditorDialog () { return pcPanel->GetInventoryTemplateDialog (); }
 };
+#endif
 
 iUIDialog* PropertyClassPanel::GetInventoryTemplateDialog ()
 {
@@ -1107,8 +1234,8 @@ void PropertyClassPanel::FillInventory ()
 
   if (!pctpl || csString ("pctools.inventory") != pctpl->GetName ()) return;
 
-  inventoryModel->SetPC (pctpl);
-  inventoryView->Refresh ();
+  inventoryCollectionValue->SetPC (pctpl);
+  inventoryCollectionValue->Refresh ();
 
   csString lootName = InspectTools::GetActionParameterValueString (pl, pctpl,
       "SetLootGenerator", "name");
@@ -1335,9 +1462,13 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   AddAction (list, NEWREF(Action, new EditChildDialogAction (propertyCollectionValue, GetPropertyDialog ())));
   AddAction (list, NEWREF(Action, new DeleteChildAction (propertyCollectionValue)));
 
+  DefineHeading ("inventoryTemplateListCtrl", "Name,Amount", "Name,Amount");
+  inventoryCollectionValue.AttachNew (new InventoryCollectionValue (this));
+  Bind (inventoryCollectionValue, "inventoryTemplateListCtrl");
   list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  inventoryModel.AttachNew (new InventoryRowModel (this));
-  inventoryView = new ListCtrlView (list, inventoryModel);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (inventoryCollectionValue, GetInventoryTemplateDialog ())));
+  AddAction (list, NEWREF(Action, new EditChildDialogAction (inventoryCollectionValue, GetInventoryTemplateDialog ())));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (inventoryCollectionValue)));
 
   list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
   spawnModel.AttachNew (new SpawnRowModel (this));
@@ -1360,7 +1491,6 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
 PropertyClassPanel::~PropertyClassPanel ()
 {
-  delete inventoryView;
   delete questView;
   delete spawnView;
   delete wireMsgView;
