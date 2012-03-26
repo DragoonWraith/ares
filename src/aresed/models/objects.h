@@ -25,7 +25,6 @@ THE SOFTWARE.
 #ifndef __aresed_objects_h
 #define __aresed_objects_h
 
-#include "edcommon/rowmodel.h"
 #include "edcommon/model.h"
 
 class AppAresEditWX;

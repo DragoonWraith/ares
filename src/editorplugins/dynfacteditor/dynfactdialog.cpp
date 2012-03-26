@@ -32,9 +32,6 @@ THE SOFTWARE.
 #include "edcommon/uitools.h"
 #include "meshview.h"
 #include "meshfactmodel.h"
-#include "edcommon/treeview.h"
-#include "edcommon/listview.h"
-#include "edcommon/dirtyhelper.h"
 #include "edcommon/tools.h"
 
 #include "physicallayer/pl.h"

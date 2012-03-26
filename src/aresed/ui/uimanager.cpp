@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "celldialog.h"
 #include "edcommon/listctrltools.h"
-#include "edcommon/listview.h"
 #include "edcommon/model.h"
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
@@ -63,13 +62,6 @@ UIDialog::~UIDialog ()
   for (size_t i = 0 ; i < buttons.GetSize () ; i++)
     buttons[i]->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
 	wxCommandEventHandler (UIDialog::OnButtonClicked), 0, this);
-  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
-  while (itLst.HasNext ())
-  {
-    csString name;
-    const ListInfo& info = itLst.Next (name);
-    delete info.view;
-  }
 }
 
 void UIDialog::AddOkCancel ()
@@ -173,21 +165,6 @@ void UIDialog::AddChoice (const char* name, ...)
   AddChoice (name, choiceArray);
 }
 
-void UIDialog::AddList (const char* name, RowModel* model, size_t valueColumn)
-{
-  CS_ASSERT (lastRowSizer != 0);
-  wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
-      wxDefaultSize, wxLC_REPORT);
-  list->SetMinSize (wxSize (-1,150));
-  lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
-  ListInfo info;
-  info.list = list;
-  info.col = valueColumn;
-  info.model = model;
-  info.view = new SimpleListCtrlView (list, model);
-  listFields.Put (name, info);
-}
-
 using namespace Ares;
 
 void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn,
@@ -265,34 +242,24 @@ void UIDialog::SetCombo (const char* name, const char* value)
 
 void UIDialog::SetList (const char* name, const char* value)
 {
-  if (valueListFields.Contains (name))
-  {
-    ValueListInfo info = valueListFields.Get (name, ValueListInfo());
-    ListCtrlTools::ClearSelection (info.list);
-    if (info.col == csArrayItemNotFound) return;
-    size_t rowidx = 0;
-    csString sValue = value;
-    csRef<ValueIterator> it = info.collectionValue->GetIterator ();
-    while (it->HasNext ())
-    {
-      Value* compositeValue = it->NextChild ();
-      Value* child = compositeValue->GetChild (rowidx);
-      if (sValue == child->GetStringValue ())
-      {
-        ListCtrlTools::SelectRow (info.list, rowidx);
-	break;
-      }
-      rowidx++;
-    }
-    return;
-  }
-  if (!listFields.Contains (name)) return;
-  ListInfo info = listFields.Get (name, ListInfo());
+  if (!valueListFields.Contains (name)) return;
+  ValueListInfo info = valueListFields.Get (name, ValueListInfo());
   ListCtrlTools::ClearSelection (info.list);
   if (info.col == csArrayItemNotFound) return;
-  long rowidx = ListCtrlTools::FindRow (info.list, info.col, value);
-  if (rowidx == -1) return;
-  ListCtrlTools::SelectRow (info.list, rowidx);
+  size_t rowidx = 0;
+  csString sValue = value;
+  csRef<ValueIterator> it = info.collectionValue->GetIterator ();
+  while (it->HasNext ())
+  {
+    Value* compositeValue = it->NextChild ();
+    Value* child = compositeValue->GetChild (rowidx);
+    if (sValue == child->GetStringValue ())
+    {
+      ListCtrlTools::SelectRow (info.list, rowidx);
+      break;
+    }
+    rowidx++;
+  }
 }
 
 void UIDialog::SetFieldContents (const DialogResult& result)
@@ -333,13 +300,6 @@ void UIDialog::Clear ()
     wxChoice* choice = itCh.Next (name);
     choice->SetSelection (0);
   }
-  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
-  while (itLst.HasNext ())
-  {
-    csString name;
-    const ListInfo& info = itLst.Next (name);
-    ListCtrlTools::ClearSelection (info.list);
-  }
   csHash<ValueListInfo,csString>::GlobalIterator itvLst = valueListFields.GetIterator ();
   while (itvLst.HasNext ())
   {
@@ -377,21 +337,6 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
     csString name;
     wxChoice* choice = itCh.Next (name);
     csString value = (const char*)choice->GetStringSelection ().mb_str (wxConvUTF8);
-    fieldContents.Put (name, value);
-  }
-  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
-  while (itLst.HasNext ())
-  {
-    csString name;
-    const ListInfo& info = itLst.Next (name);
-    long rowidx = ListCtrlTools::GetFirstSelectedRow (info.list);
-    csString value;
-    if (rowidx != -1)
-    {
-      csStringArray row = ListCtrlTools::ReadRow (info.list, rowidx);
-      if (info.col != csArrayItemNotFound && info.col < row.GetSize ())
-        value = row[info.col];
-    }
     fieldContents.Put (name, value);
   }
   csHash<ValueListInfo,csString>::GlobalIterator itvLst = valueListFields.GetIterator ();
@@ -444,13 +389,6 @@ int UIDialog::Show (iUIDialogCallback* cb)
   //sizer->Fit (this);
   Centre (wxBOTH);
 
-  csHash<ListInfo,csString>::GlobalIterator itLst = listFields.GetIterator ();
-  while (itLst.HasNext ())
-  {
-    csString name;
-    const ListInfo& info = itLst.Next (name);
-    info.view->Refresh ();
-  }
   csHash<ValueListInfo,csString>::GlobalIterator itvLst = valueListFields.GetIterator ();
   while (itvLst.HasNext ())
   {

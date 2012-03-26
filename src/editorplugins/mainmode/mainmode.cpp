@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include "edcommon/transformtools.h"
 #include "mainmode.h"
 #include "inature.h"
-#include "edcommon/treeview.h"
 #include "edcommon/uitools.h"
 #include "editor/i3dview.h"
 #include "editor/iselection.h"

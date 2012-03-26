@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <wx/imaglist.h>
 #include <wx/xrc/xmlres.h>
 
-#include "edcommon/rowmodel.h"
 #include "edcommon/customcontrol.h"
 
 struct iEngine;

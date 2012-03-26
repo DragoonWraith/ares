@@ -56,7 +56,6 @@ class AppAresEditWX;
 class AresEdit3DView;
 class Asset;
 
-class DynfactRowModel;
 class DynfactCollectionValue;
 class NewProjectDialog;
 class UIManager;

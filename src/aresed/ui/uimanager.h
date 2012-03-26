@@ -35,7 +35,6 @@ class FileReq;
 class NewProjectDialog;
 class CellDialog;
 class UIDialog;
-class RowModel;
 class SimpleListCtrlView;
 
 class wxBoxSizer;
@@ -47,14 +46,6 @@ class wxWindow;
 class wxListCtrl;
 
 typedef csHash<csString,csString> DialogResult;
-
-struct ListInfo
-{
-  wxListCtrl* list;
-  size_t col;
-  csRef<RowModel> model;
-  SimpleListCtrlView* view;
-};
 
 struct ValueListInfo
 {
@@ -76,7 +67,6 @@ private:
   csHash<wxChoice*,csString> choiceFields;
   csHash<wxComboBox*,csString> comboFields;
 
-  csHash<ListInfo,csString> listFields;
   csHash<ValueListInfo,csString> valueListFields;
 
   csArray<wxButton*> buttons;
@@ -112,11 +102,6 @@ public:
   virtual void AddChoice (const char* name, const csStringArray& choiceArray);
   /// Add a horizontal spacer in the current row.
   virtual void AddSpace ();
-  /**
-   * Add a list. The given column index is used as the 'value'
-   * from the model.
-   */
-  virtual void AddList (const char* name, RowModel* model, size_t valueColumn);
   /**
    * Add a list. The given column index is used as the 'value'
    * from the model. The value should be a collection with composites

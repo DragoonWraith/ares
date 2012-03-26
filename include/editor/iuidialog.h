@@ -71,11 +71,6 @@ struct iUIDialog : public virtual iBase
   virtual void AddSpace () = 0;
   /**
    * Add a list. The given column index is used as the 'value'
-   * from the model.
-   */
-  virtual void AddList (const char* name, RowModel* model, size_t valueColumn) = 0;
-  /**
-   * Add a list. The given column index is used as the 'value'
    * from the model. The value should be a collection with composites
    * as children and the requested value out of the composite should
    * be a string.

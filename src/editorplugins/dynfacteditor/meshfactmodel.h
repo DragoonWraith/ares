@@ -25,7 +25,6 @@ THE SOFTWARE.
 #ifndef __aresed_meshfactmodel_h
 #define __aresed_meshfactmodel_h
 
-#include "edcommon/rowmodel.h"
 #include "edcommon/model.h"
 
 struct iMeshFactoryList;
