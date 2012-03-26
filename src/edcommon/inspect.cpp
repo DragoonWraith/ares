@@ -161,13 +161,14 @@ void InspectTools::DeleteActionParameter (iCelPlLayer* pl,
   pctpl->ReplaceActionParameters (idx, newParams);
 }
 
-void InspectTools::DeleteActionParameter (iCelPlLayer* pl,
+bool InspectTools::DeleteActionParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName)
 {
   csStringID actionID = pl->FetchStringID (actionName);
   size_t idx = pctpl->FindProperty (actionID);
-  if (idx == csArrayItemNotFound) return;
+  if (idx == csArrayItemNotFound) return false;
   DeleteActionParameter (pl, pctpl, idx, parName);
+  return true;
 }
 
 void InspectTools::AddActionParameter (iCelPlLayer* pl,

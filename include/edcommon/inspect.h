@@ -64,8 +64,9 @@ public:
 
   /**
    * Delete a given parameter from an action.
+   * Returns true on success.
    */
-  static void DeleteActionParameter (iCelPlLayer* pl,
+  static bool DeleteActionParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName);
 
   /**

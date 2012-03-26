@@ -48,8 +48,8 @@ class EntityMode;
 
 class PropertyCollectionValue;
 class InventoryCollectionValue;
+class QuestCollectionValue;
 
-class QuestRowModel;
 class SpawnRowModel;
 class WireMsgRowModel;
 class WireParEditorModel;
@@ -95,8 +95,7 @@ private:
   void FillInventory ();
 
   // Quest.
-  ListCtrlView* questView;
-  csRef<QuestRowModel> questModel;
+  csRef<QuestCollectionValue> questCollectionValue;
   csRef<iUIDialog> questParDialog;
   bool UpdateQuest ();
   void FillQuest ();

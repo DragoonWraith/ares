@@ -815,75 +815,135 @@ void PropertyClassPanel::FillSpawn ()
 
 // -----------------------------------------------------------------------
 
-class QuestRowModel : public PcParRowModel
+class QuestCollectionValue : public PcParCollectionValue
 {
 private:
-  csRef<iCelParameterIterator> it;
-  csStringID nextID;
-  iParameter* nextPar;
-
-  void SearchNext ()
+  Value* NewChild (const char* name, const char* value, const char* type)
   {
-    nextID = csInvalidStringID;
-    while (it->HasNext ())
-    {
-      nextPar = it->Next (nextID);
-      iCelPlLayer* pl = pcPanel->GetPL ();
-      csString name = pl->FetchString (nextID);
-      if (name != "name") return;
-      nextID = csInvalidStringID;
-    }
+    return NewCompositeChild (
+	  VALUE_STRING, "Name", name,
+	  VALUE_STRING, "Value", value,
+	  VALUE_STRING, "Type", type,
+	  VALUE_NONE);
   }
 
-public:
-  QuestRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel),
-    nextID (csInvalidStringID) { }
-  virtual ~QuestRowModel () { }
-
-  virtual void ResetIterator ()
+protected:
+  virtual void UpdateChildren ()
   {
+    if (!pctpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
     iCelPlLayer* pl = pcPanel->GetPL ();
     size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
-    if (nqIdx != csArrayItemNotFound)
+    if (nqIdx == csArrayItemNotFound) return;
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> it = pctpl->GetProperty (nqIdx, id, data);
+    while (it->HasNext ())
     {
-      csStringID id;
-      celData data;
-      it = pctpl->GetProperty (nqIdx, id, data);
-      SearchNext ();
+      csStringID nextID;
+      iParameter* nextPar = it->Next (nextID);
+      csString name = pl->FetchString (nextID);
+      if (name == "name") continue;
+      csString val = nextPar->GetOriginalExpression ();
+      csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
+      NewChild (name, val, type);
     }
-    else
-      it = 0;
-  }
-  virtual bool HasRows () { return nextID != csInvalidStringID; }
-  virtual csStringArray NextRow ()
-  {
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    csString name = pl->FetchString (nextID);
-    csString val = nextPar->GetOriginalExpression ();
-    csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
-    SearchNext ();
-    return Tools::MakeArray (name.GetData (), val.GetData (), type.GetData (), (const char*)0);
   }
 
-  virtual bool DeleteRow (const csStringArray& row)
+  bool RemoveActionWithName (const char* name)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", row[0]);
+    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
+	"AddTemplate", "name", name);
+    if (idx == csArrayItemNotFound) return false;
+    pctpl->RemovePropertyByIndex (idx);
     return true;
   }
-  virtual bool AddRow (const csStringArray& row)
+
+  bool UpdateAction (const char* name, const char* amount)
   {
+    ParHash params;
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
+    csStringID actionID = pl->FetchStringID ("AddTemplate");
+    csStringID nameID = pl->FetchStringID ("name");
+    csStringID amountID = pl->FetchStringID ("amount");
 
-    csRef<iParameter> par = pm->GetParameter (row[1], InspectTools::StringToType (row[2]));
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
+      return false;
+    }
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (name, CEL_DATA_STRING);
     if (!par) return false;
-    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", row[0], par);
+    params.Put (nameID, par);
+
+    par = pm->GetParameter (amount, CEL_DATA_LONG);
+    if (!par) return false;
+    params.Put (amountID, par);
+
+    RemoveActionWithName (name);
+    pctpl->PerformAction (actionID, params);
     return true;
   }
 
-  virtual const char* GetColumns () { return "Name,Value,Type"; }
-  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetQuestDialog (); }
+
+public:
+  QuestCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  virtual ~QuestCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!pctpl) return false;
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    Value* nameValue = child->GetChildByName ("Name");
+    if (!InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", nameValue->GetStringValue ()))
+      return false;
+    RemoveChild (child);
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return 0;
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString value = suggestion.Get ("Value", (const char*)0);
+    csString type = suggestion.Get ("Type", (const char*)0);
+
+    csRef<iParameter> par = pm->GetParameter (value, InspectTools::StringToType (type));
+    if (!par) return 0;
+    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
+    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+
+    Value* child = NewChild (name, value, type);
+    FireValueChanged ();
+    return child;
+  }
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return false;
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csString name = suggestion.Get ("Name", (const char*)0);
+    csString value = suggestion.Get ("Value", (const char*)0);
+    csString type = suggestion.Get ("Type", (const char*)0);
+
+    csRef<iParameter> par = pm->GetParameter (value, InspectTools::StringToType (type));
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
+    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+    selectedValue->GetChildByName ("Name")->SetStringValue (name);
+    selectedValue->GetChildByName ("Value")->SetStringValue (value);
+    selectedValue->GetChildByName ("Type")->SetStringValue (type);
+    FireValueChanged ();
+    return true;
+  }
 };
 
 iUIDialog* PropertyClassPanel::GetQuestDialog ()
@@ -960,8 +1020,8 @@ void PropertyClassPanel::FillQuest ()
     }
   }
 
-  questModel->SetPC (pctpl);
-  questView->Refresh ();
+  questCollectionValue->SetPC (pctpl);
+  questCollectionValue->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -1375,9 +1435,13 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   spawnModel.AttachNew (new SpawnRowModel (this));
   spawnView = new ListCtrlView (list, spawnModel);
 
+  DefineHeading ("questParameterListCtrl", "Name,Value,Type", "Name,Value,Type");
+  questCollectionValue.AttachNew (new QuestCollectionValue (this));
+  Bind (questCollectionValue, "questParameterListCtrl");
   list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  questModel.AttachNew (new QuestRowModel (this));
-  questView = new ListCtrlView (list, questModel);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (questCollectionValue, GetQuestDialog ())));
+  AddAction (list, NEWREF(Action, new EditChildDialogAction (questCollectionValue, GetQuestDialog ())));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (questCollectionValue)));
 
   list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
   wireMsgModel.AttachNew (new WireMsgRowModel (this));
@@ -1392,7 +1456,6 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
 PropertyClassPanel::~PropertyClassPanel ()
 {
-  delete questView;
   delete spawnView;
   delete wireMsgView;
   delete wireParView;
