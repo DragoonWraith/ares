@@ -121,6 +121,10 @@ private:
   // Update the property class. Returns false on error.
   bool UpdatePC ();
 
+  // Setup a list.
+  void SetupList (const char* listName, const char* heading, const char* names,
+      Ares::Value* collectionValue, iUIDialog* dialog, bool do_edit = true);
+
 public:
   PropertyClassPanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
   ~PropertyClassPanel();

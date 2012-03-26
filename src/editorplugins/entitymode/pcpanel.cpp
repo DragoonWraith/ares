@@ -1369,6 +1369,19 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
   FillOldCamera ();
 }
 
+void PropertyClassPanel::SetupList (const char* listName, const char* heading, const char* names,
+      Value* collectionValue, iUIDialog* dialog, bool do_edit)
+{
+  DefineHeading (listName, heading, names);
+  Bind (collectionValue, listName);
+  wxWindow* comp = FindComponentByName (this, listName);
+  wxListCtrl* list = wxStaticCast (comp, wxListCtrl);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (collectionValue, dialog)));
+  if (do_edit)
+    AddAction (list, NEWREF(Action, new EditChildDialogAction (collectionValue, dialog)));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (collectionValue)));
+}
+
 PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
   View (this), uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
@@ -1388,36 +1401,21 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
   wxListCtrl* list;
 
-  DefineHeading ("propertyListCtrl", "Name,Value,Type", "Name,Value,Type");
   propertyCollectionValue.AttachNew (new PropertyCollectionValue (this));
-  Bind (propertyCollectionValue, "propertyListCtrl");
-  list = XRCCTRL (*this, "propertyListCtrl", wxListCtrl);
-  AddAction (list, NEWREF(Action, new NewChildDialogAction (propertyCollectionValue, GetPropertyDialog ())));
-  AddAction (list, NEWREF(Action, new EditChildDialogAction (propertyCollectionValue, GetPropertyDialog ())));
-  AddAction (list, NEWREF(Action, new DeleteChildAction (propertyCollectionValue)));
+  SetupList ("propertyListCtrl", "Name,Value,Type", "Name,Value,Type",
+      propertyCollectionValue, GetPropertyDialog ());
 
-  DefineHeading ("inventoryTemplateListCtrl", "Name,Amount", "Name,Amount");
   inventoryCollectionValue.AttachNew (new InventoryCollectionValue (this));
-  Bind (inventoryCollectionValue, "inventoryTemplateListCtrl");
-  list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
-  AddAction (list, NEWREF(Action, new NewChildDialogAction (inventoryCollectionValue, GetInventoryTemplateDialog ())));
-  AddAction (list, NEWREF(Action, new EditChildDialogAction (inventoryCollectionValue, GetInventoryTemplateDialog ())));
-  AddAction (list, NEWREF(Action, new DeleteChildAction (inventoryCollectionValue)));
+  SetupList ("inventoryTemplateListCtrl", "Name,Amount", "Name,Amount",
+      inventoryCollectionValue, GetInventoryTemplateDialog ());
 
-  DefineHeading ("spawnTemplateListCtrl", "Template", "Name");
   spawnCollectionValue.AttachNew (new SpawnCollectionValue (this));
-  Bind (spawnCollectionValue, "spawnTemplateListCtrl");
-  list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-  AddAction (list, NEWREF(Action, new NewChildDialogAction (spawnCollectionValue, GetSpawnTemplateDialog ())));
-  AddAction (list, NEWREF(Action, new DeleteChildAction (spawnCollectionValue)));
+  SetupList ("spawnTemplateListCtrl", "Template", "Name",
+      spawnCollectionValue, GetSpawnTemplateDialog (), false);
 
-  DefineHeading ("questParameterListCtrl", "Name,Value,Type", "Name,Value,Type");
   questCollectionValue.AttachNew (new QuestCollectionValue (this));
-  Bind (questCollectionValue, "questParameterListCtrl");
-  list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
-  AddAction (list, NEWREF(Action, new NewChildDialogAction (questCollectionValue, GetQuestDialog ())));
-  AddAction (list, NEWREF(Action, new EditChildDialogAction (questCollectionValue, GetQuestDialog ())));
-  AddAction (list, NEWREF(Action, new DeleteChildAction (questCollectionValue)));
+  SetupList ("questParameterListCtrl", "Name,Value,Type", "Name,Value,Type",
+      questCollectionValue, GetQuestDialog ());
 
   list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
   wireMsgModel.AttachNew (new WireMsgRowModel (this));

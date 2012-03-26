@@ -1111,12 +1111,6 @@ private:
 
   // --------------------------------------------
 
-  /**
-   * Recursively find a component by name. Also supports the '_' notation
-   * in the name of the components.
-   */
-  wxWindow* FindComponentByName (wxWindow* container, const char* name);
-
   /// Register a binding for a given component and eventtype.
   void RegisterBinding (Value* value, wxWindow* component, wxEventType eventType,
       bool changeEnabled = false);
@@ -1379,6 +1373,12 @@ public:
    * to the given string.
    */
   static Value* FindChild (Value* collection, const char* str);
+
+  /**
+   * Recursively find a component by name. Also supports the '_' notation
+   * in the name of the components.
+   */
+  wxWindow* FindComponentByName (wxWindow* container, const char* name);
 
   /**
    * Conveniance function to create a composite value with several
