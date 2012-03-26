@@ -58,8 +58,9 @@ public:
   /**
    * Delete a given parameter from an action.
    * 'idx' is the index of the action.
+   * Returns true on success.
    */
-  static void DeleteActionParameter (iCelPlLayer* pl,
+  static bool DeleteActionParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName);
 
   /**

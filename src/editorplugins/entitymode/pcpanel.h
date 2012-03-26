@@ -50,11 +50,9 @@ class PropertyCollectionValue;
 class InventoryCollectionValue;
 class QuestCollectionValue;
 class SpawnCollectionValue;
-
-class WireMsgRowModel;
-class WireParEditorModel;
-class WireParRowModel;
-class ListCtrlView;
+class WireMsgCollectionValue;
+class WireParCollectionValue;
+class ListSelectedValue;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
@@ -107,11 +105,9 @@ private:
   void FillSpawn ();
 
   // Wire.
-  ListCtrlView* wireMsgView;
-  csRef<WireMsgRowModel> wireMsgModel;
-  ListCtrlView* wireParView;
-  csRef<WireParEditorModel> wireParEditorModel;
-  csRef<WireParRowModel> wireParModel;
+  csRef<WireMsgCollectionValue> wireMsgCollectionValue;
+  csRef<WireParCollectionValue> wireParCollectionValue;
+  csRef<Ares::ListSelectedValue> wireMsgSelectedValue;
   csRef<iUIDialog> wireParDialog;
   csRef<iUIDialog> wireMsgDialog;
   bool UpdateWire ();
@@ -146,7 +142,6 @@ public:
   iUIDialog* GetSpawnTemplateDialog ();
   iUIDialog* GetWireParDialog ();
   iUIDialog* GetWireMsgDialog ();
-  ListCtrlView* GetWireParView () const { return wireParView; }
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }

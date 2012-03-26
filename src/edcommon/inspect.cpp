@@ -143,7 +143,7 @@ float InspectTools::GetActionParameterValueFloat (iCelPlLayer* pl,
   return 0.0f;
 }
 
-void InspectTools::DeleteActionParameter (iCelPlLayer* pl,
+bool InspectTools::DeleteActionParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName)
 {
   csStringID parID = pl->FetchStringID (parName);
@@ -151,14 +151,18 @@ void InspectTools::DeleteActionParameter (iCelPlLayer* pl,
   celData data;
   csRef<iCelParameterIterator> it = pctpl->GetProperty (idx, id, data);
   csHash<csRef<iParameter>,csStringID> newParams;
+  bool removed = false;
   while (it->HasNext ())
   {
     csStringID parid;
     iParameter* par = it->Next (parid);
     if (parid != parID)
       newParams.Put (parid, par);
+    else
+      removed = true;
   }
   pctpl->ReplaceActionParameters (idx, newParams);
+  return removed;
 }
 
 bool InspectTools::DeleteActionParameter (iCelPlLayer* pl,
@@ -167,8 +171,7 @@ bool InspectTools::DeleteActionParameter (iCelPlLayer* pl,
   csStringID actionID = pl->FetchStringID (actionName);
   size_t idx = pctpl->FindProperty (actionID);
   if (idx == csArrayItemNotFound) return false;
-  DeleteActionParameter (pl, pctpl, idx, parName);
-  return true;
+  return DeleteActionParameter (pl, pctpl, idx, parName);
 }
 
 void InspectTools::AddActionParameter (iCelPlLayer* pl,
