@@ -594,91 +594,105 @@ void PropertyClassPanel::FillOldCamera ()
 
 // -----------------------------------------------------------------------
 
-class SpawnRowModel : public PcParRowModel
+class SpawnCollectionValue : public PcParCollectionValue
 {
 private:
-  size_t idx;
-
-  void SearchNext ()
+  Value* NewChild (const char* name)
   {
+    return NewCompositeChild (
+	  VALUE_STRING, "Name", name,
+	  VALUE_NONE);
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!pctpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
     iCelPlLayer* pl = pcPanel->GetPL ();
-    while (idx < pctpl->GetPropertyCount ())
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
     {
       csStringID id;
       celData data;
       csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
       csString name = pl->FetchString (id);
       if (name == "AddEntityTemplateType")
-	return;
-      idx++;
+      {
+        iCelPlLayer* pl = pcPanel->GetPL ();
+        csStringID nameID = pl->FetchStringID ("template");
+        csString parName;
+        while (params->HasNext ())
+        {
+          csStringID parid;
+          iParameter* par = params->Next (parid);
+          if (parid == nameID) parName = par->GetOriginalExpression ();
+        }
+	NewChild (parName);
+      }
     }
   }
 
-public:
-  SpawnRowModel (PropertyClassPanel* pcPanel) : PcParRowModel (pcPanel), idx (0) { }
-  virtual ~SpawnRowModel () { }
-
-  virtual void ResetIterator ()
-  {
-    idx = 0;
-    SearchNext ();
-  }
-  virtual bool HasRows () { return idx < pctpl->GetPropertyCount (); }
-  virtual csStringArray NextRow ()
-  {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
-    idx++;
-    SearchNext ();
-
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    csStringID nameID = pl->FetchStringID ("template");
-    csString parName;
-    while (params->HasNext ())
-    {
-      csStringID parid;
-      iParameter* par = params->Next (parid);
-      if (parid == nameID) parName = par->GetOriginalExpression ();
-    }
-    return Tools::MakeArray (parName.GetData (), (const char*)0);
-  }
-
-  virtual bool DeleteRow (const csStringArray& row)
+  bool RemoveActionWithName (const char* name)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
     size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
-	"AddEntityTemplateType", "template", row[0]);
+	"AddEntityTemplateType", "template", name);
     if (idx == csArrayItemNotFound) return false;
     pctpl->RemovePropertyByIndex (idx);
     return true;
   }
-  virtual bool AddRow (const csStringArray& row)
+
+  bool UpdateAction (const char* name)
   {
+    ParHash params;
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
     csStringID actionID = pl->FetchStringID ("AddEntityTemplateType");
     csStringID nameID = pl->FetchStringID ("template");
-    csString name = row[0];
+
     iCelEntityTemplate* t = pl->FindEntityTemplate (name);
     if (!t)
     {
-      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name.GetData ());
+      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
       return false;
     }
-    ParHash params;
 
     csRef<iParameter> par;
     par = pm->GetParameter (name, CEL_DATA_STRING);
     if (!par) return false;
     params.Put (nameID, par);
 
+    RemoveActionWithName (name);
     pctpl->PerformAction (actionID, params);
     return true;
   }
 
-  virtual const char* GetColumns () { return "Name"; }
-  virtual iUIDialog* GetEditorDialog () { return pcPanel->GetSpawnTemplateDialog (); }
+public:
+  SpawnCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  virtual ~SpawnCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!pctpl) return false;
+    Value* nameValue = child->GetChildByName ("Name");
+    if (!RemoveActionWithName (nameValue->GetStringValue ()))
+      return false;
+    RemoveChild (child);
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return 0;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    if (!UpdateAction (name))
+      return 0;
+
+    Value* child = NewChild (name);
+    FireValueChanged ();
+    return child;
+  }
 };
 
 iUIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
@@ -809,8 +823,8 @@ void PropertyClassPanel::FillSpawn ()
     inhibitText->SetValue (wxString::FromUTF8 (s));
   }
 
-  spawnModel->SetPC (pctpl);
-  spawnView->Refresh ();
+  spawnCollectionValue->SetPC (pctpl);
+  spawnCollectionValue->Refresh ();
 }
 
 // -----------------------------------------------------------------------
@@ -851,47 +865,6 @@ protected:
       NewChild (name, val, type);
     }
   }
-
-  bool RemoveActionWithName (const char* name)
-  {
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
-	"AddTemplate", "name", name);
-    if (idx == csArrayItemNotFound) return false;
-    pctpl->RemovePropertyByIndex (idx);
-    return true;
-  }
-
-  bool UpdateAction (const char* name, const char* amount)
-  {
-    ParHash params;
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    iParameterManager* pm = pcPanel->GetPM ();
-    csStringID actionID = pl->FetchStringID ("AddTemplate");
-    csStringID nameID = pl->FetchStringID ("name");
-    csStringID amountID = pl->FetchStringID ("amount");
-
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (!t)
-    {
-      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
-      return false;
-    }
-
-    csRef<iParameter> par;
-    par = pm->GetParameter (name, CEL_DATA_STRING);
-    if (!par) return false;
-    params.Put (nameID, par);
-
-    par = pm->GetParameter (amount, CEL_DATA_LONG);
-    if (!par) return false;
-    params.Put (amountID, par);
-
-    RemoveActionWithName (name);
-    pctpl->PerformAction (actionID, params);
-    return true;
-  }
-
 
 public:
   QuestCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
@@ -1431,9 +1404,12 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   AddAction (list, NEWREF(Action, new EditChildDialogAction (inventoryCollectionValue, GetInventoryTemplateDialog ())));
   AddAction (list, NEWREF(Action, new DeleteChildAction (inventoryCollectionValue)));
 
+  DefineHeading ("spawnTemplateListCtrl", "Template", "Name");
+  spawnCollectionValue.AttachNew (new SpawnCollectionValue (this));
+  Bind (spawnCollectionValue, "spawnTemplateListCtrl");
   list = XRCCTRL (*this, "spawnTemplateListCtrl", wxListCtrl);
-  spawnModel.AttachNew (new SpawnRowModel (this));
-  spawnView = new ListCtrlView (list, spawnModel);
+  AddAction (list, NEWREF(Action, new NewChildDialogAction (spawnCollectionValue, GetSpawnTemplateDialog ())));
+  AddAction (list, NEWREF(Action, new DeleteChildAction (spawnCollectionValue)));
 
   DefineHeading ("questParameterListCtrl", "Name,Value,Type", "Name,Value,Type");
   questCollectionValue.AttachNew (new QuestCollectionValue (this));
@@ -1456,7 +1432,6 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
 PropertyClassPanel::~PropertyClassPanel ()
 {
-  delete spawnView;
   delete wireMsgView;
   delete wireParView;
 }

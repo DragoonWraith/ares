@@ -49,8 +49,8 @@ class EntityMode;
 class PropertyCollectionValue;
 class InventoryCollectionValue;
 class QuestCollectionValue;
+class SpawnCollectionValue;
 
-class SpawnRowModel;
 class WireMsgRowModel;
 class WireParEditorModel;
 class WireParRowModel;
@@ -101,8 +101,7 @@ private:
   void FillQuest ();
 
   // Spawn.
-  ListCtrlView* spawnView;
-  csRef<SpawnRowModel> spawnModel;
+  csRef<SpawnCollectionValue> spawnCollectionValue;
   csRef<iUIDialog> spawnTempDialog;
   bool UpdateSpawn ();
   void FillSpawn ();
