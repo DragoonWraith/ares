@@ -83,6 +83,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     AddAction (action_activate, "Activate");
     AddAction (action_spawn, "Spawn");
     AddAction (action_createentity, "CreateEntity");
+    AddAction (action_inventory, "Inventory");
   }
 
   // For properties.
@@ -108,6 +109,21 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   msgActivate = pl->FetchStringID ("ares.Activate");
 
   LoadIcons ();
+
+  uiInventory = csQueryRegistryOrLoad<iUIInventory> (object_reg,
+      "cel.ui.inventory.grid");
+  if (!uiInventory)
+  {
+    printf ("Can't find UI grid inventory plugin!\n");
+    return;
+  }
+
+  uiInventory->SetStyleOption ("backgroundImage", "/appdata/textures/buttonback.png");
+  uiInventory->SetStyleOption ("backgroundHilightImage", "/appdata/textures/buttonback_hi.png");
+  uiInventory->SetStyleOption ("font", "DejaVuSans");
+  uiInventory->SetStyleOption ("fontSize", "10");
+  uiInventory->Bind ("MouseButton0", "select", INVENTORY_CLOSE | INVENTORY_NEEDSITEM);
+  uiInventory->Bind ("i", "cancel", INVENTORY_CLOSE);
 }
 
 celPcGameController::~celPcGameController ()
@@ -126,6 +142,13 @@ void celPcGameController::FindSiblingPropertyClasses ()
   {
     messenger = celQueryPropertyClassEntity<iPcMessenger> (entity);
   }
+}
+
+void celPcGameController::Inventory ()
+{
+  csRef<iPcInventory> inventory = celQueryPropertyClassEntity<iPcInventory> (
+	  player);
+  uiInventory->Open ("Inventory for player", inventory);
 }
 
 void celPcGameController::Activate ()
@@ -303,6 +326,9 @@ bool celPcGameController::PerformActionIndexed (int idx,
       return true;
     case action_pickup:
       PickUp ();
+      return true;
+    case action_inventory:
+      Inventory ();
       return true;
     case action_activate:
       Activate ();

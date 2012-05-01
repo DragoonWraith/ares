@@ -42,6 +42,7 @@ THE SOFTWARE.
  * - PickUp: pick up the object in the centre of the screen.
  * - Activate: if the object can be picked up (has class 'ares.pickup') then it will
  *   be picked up. Else it will try to drag it.
+ * - Inventory: no parameters. Open the inventory.
  * - Spawn: parameters 'factory' (string). Spawn a new object in front of the player.
  * - CreateEntity: parameters 'template' (string), 'name' (string). Create an entity.
  *
@@ -79,6 +80,11 @@ struct iPcGameController : public virtual iBase
    * then this will call PickUp(). Otherwise it calls StartDrag().
    */
   virtual void Activate () = 0;
+
+  /**
+   * Open the inventory.
+   */
+  virtual void Inventory () = 0;
 
   /**
    * Spawn a dynamic object in front of the player.

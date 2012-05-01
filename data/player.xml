@@ -47,6 +47,19 @@
 	  <par name="trigger" string="space" />
 	  <par name="command" string="jump" />
 	</action>
+	<action name="Bind">
+	  <par name="trigger" string="i" />
+	  <par name="command" string="inventory" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="inventory">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.inventory.down" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.Inventory" />
+	  <par name="entity" string="World" />
+	</action>
       </propclass>
       <propclass name="pclogic.wire" tag="down">
 	<action name="AddInput">

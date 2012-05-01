@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "cstypes.h"
 #include "iutil/comp.h"
+#include "iutil/plugin.h"
 #include "csutil/scf.h"
 #include "physicallayer/propclas.h"
 #include "physicallayer/propfact.h"
@@ -35,6 +36,7 @@ THE SOFTWARE.
 #include "celtool/stdparams.h"
 #include "include/igamecontrol.h"
 #include "ivaria/bullet.h"
+#include "tools/uitools/inventory.h"
 
 struct iCelEntity;
 struct iObjectRegistry;
@@ -81,6 +83,7 @@ private:
   csRef<iEngine> engine;
   csRef<iCelEntity> player;
   csRef<iPcMessenger> messenger;
+  csRef<iUIInventory> uiInventory;
 
   /// Find the object that is pointed at in the center of the screen.
   iDynamicObject* FindCenterObject (iRigidBody*& hitBody,
@@ -130,6 +133,7 @@ private:
     action_activate,
     action_spawn,
     action_createentity,
+    action_inventory,
   };
 
   // For properties.
@@ -155,6 +159,7 @@ public:
   virtual void StopDrag ();
   virtual void PickUp ();
   virtual void Activate ();
+  virtual void Inventory ();
   virtual void Spawn (const char* factname);
   virtual void CreateEntity (const char* tmpname, const char* name);
 
