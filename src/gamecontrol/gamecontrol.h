@@ -154,6 +154,9 @@ public:
   celPcGameController (iObjectRegistry* object_reg);
   virtual ~celPcGameController ();
 
+  void SelectEntity (iCelEntity* entity, const char* command);
+  void SelectTemplate (iCelEntityTemplate* tpl, const char* command);
+
   virtual void Examine ();
   virtual bool StartDrag ();
   virtual void StopDrag ();

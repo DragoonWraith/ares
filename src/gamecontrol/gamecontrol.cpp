@@ -39,6 +39,7 @@ THE SOFTWARE.
 #include "gamecontrol.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"
+#include "physicallayer/entitytpl.h"
 #include "propclass/camera.h"
 #include "propclass/dynworld.h"
 #include "propclass/dynmove.h"
@@ -50,6 +51,61 @@ THE SOFTWARE.
 //---------------------------------------------------------------------------
 
 CEL_IMPLEMENT_FACTORY (GameController, "ares.gamecontrol")
+
+//-----------------------------------------------------------------------
+
+class GameTestDefaultInfo : public scfImplementation1<GameTestDefaultInfo,iUIInventoryInfo>
+{
+private:
+  iCelPlLayer* pl;
+  iEngine* engine;
+  csRef<iUIInventoryInfo> pInfo;
+
+public:
+  GameTestDefaultInfo (iCelPlLayer* pl, iEngine* engine, iUIInventoryInfo* pInfo) :
+    scfImplementationType (this), pl (pl), engine (engine),
+    pInfo( pInfo) { }
+  virtual ~GameTestDefaultInfo () { }
+
+  virtual csRef<iString> GetName (iCelEntity* entity) { return pInfo->GetName (entity); }
+  virtual csRef<iString> GetName (iCelEntityTemplate* tpl, int count) { return pInfo->GetName (tpl, count); }
+
+  virtual csRef<iString> GetDescription (iCelEntity* entity) { return pInfo->GetDescription (entity); }
+  virtual csRef<iString> GetDescription (iCelEntityTemplate* tpl, int count) { return pInfo->GetDescription (tpl, count); }
+
+  virtual iMeshFactoryWrapper* GetMeshFactory (iCelEntity* entity) { return pInfo->GetMeshFactory (entity); }
+  virtual iMeshFactoryWrapper* GetMeshFactory (iCelEntityTemplate* tpl, int count)
+  {
+    return engine->FindMeshFactory (tpl->GetName ());
+  }
+
+  virtual iTextureHandle* GetTexture (iCelEntity* entity) { return pInfo->GetTexture (entity); }
+  virtual iTextureHandle* GetTexture (iCelEntityTemplate* tpl, int count) { return pInfo->GetTexture (tpl, count); }
+};
+
+//-----------------------------------------------------------------------
+
+class GameSelectionCallback : public scfImplementation1<GameSelectionCallback,
+  iUIInventorySelectionCallback>
+{
+private:
+  celPcGameController* game;
+
+public:
+  GameSelectionCallback (celPcGameController* game) :
+    scfImplementationType (this), game (game) { }
+  virtual ~GameSelectionCallback () { }
+
+  virtual void SelectEntity (iCelEntity* entity, const char* command)
+  {
+    game->SelectEntity (entity, command);
+  }
+
+  virtual void SelectTemplate (iCelEntityTemplate* tpl, const char* command)
+  {
+    game->SelectTemplate (tpl, command);
+  }
+};
 
 //---------------------------------------------------------------------------
 
@@ -124,6 +180,14 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   uiInventory->SetStyleOption ("fontSize", "10");
   uiInventory->Bind ("MouseButton0", "select", INVENTORY_CLOSE | INVENTORY_NEEDSITEM);
   uiInventory->Bind ("i", "cancel", INVENTORY_CLOSE);
+
+  csRef<GameSelectionCallback> cb;
+  cb.AttachNew (new GameSelectionCallback (this));
+  uiInventory->AddSelectionListener (cb);
+
+  csRef<GameTestDefaultInfo> info;
+  info.AttachNew (new GameTestDefaultInfo (pl, engine, uiInventory->GetInfo ()));
+  uiInventory->SetInfo (info);
 }
 
 celPcGameController::~celPcGameController ()
@@ -134,6 +198,24 @@ celPcGameController::~celPcGameController ()
   delete iconBook;
   delete iconDot;
   delete iconCheck;
+}
+
+void celPcGameController::SelectEntity (iCelEntity* entity, const char* command)
+{
+  //csString cmd = "cancel";
+  //if (command && cmd == command)
+    //return;
+  //iPcInventory* inv = uiInventory->GetInventory ();
+  //if (!inv) return;
+}
+
+void celPcGameController::SelectTemplate (iCelEntityTemplate* entity, const char* command)
+{
+  //csString cmd = "cancel";
+  //if (command && cmd == command)
+    //return;
+  //iPcInventory* inv = uiInventory->GetInventory ();
+  //if (!inv) return;
 }
 
 void celPcGameController::FindSiblingPropertyClasses ()
