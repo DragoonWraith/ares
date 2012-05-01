@@ -78,6 +78,8 @@
 		description="Usual destination: 'World' entity. This will show a description of the object in front of the camera if that object has a description" />
         <message name="ares.controller.Pickup"
 		description="Usual destination: 'World' entity. This will pick up the item in front of the camera if that item can be picked up" />
+        <message name="ares.controller.Inventory"
+		description="Usual destination: 'World' entity. This will open the player inventory" />
         <message name="ares.controller.Activate"
 		description="Usual destination: 'World' entity. This will activate the object in front of the camera. If the object has an assiciated entity then it will get a message of type 'ares.Activate'. If the item can be picked up then it will be picked up. Otherwise the player will start dragging it" />
         <message name="ares.Activate"
