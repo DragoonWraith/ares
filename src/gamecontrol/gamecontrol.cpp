@@ -174,10 +174,10 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     return;
   }
 
-  uiInventory->SetStyleOption ("backgroundImage", "/appdata/textures/buttonback.png");
-  uiInventory->SetStyleOption ("backgroundHilightImage", "/appdata/textures/buttonback_hi.png");
-  uiInventory->SetStyleOption ("font", "DejaVuSans");
-  uiInventory->SetStyleOption ("fontSize", "10");
+  uiInventory->SetStyleOption ("background.image", "/appdata/textures/buttonback.png");
+  uiInventory->SetStyleOption ("background.image.hi", "/appdata/textures/buttonback_hi.png");
+  uiInventory->SetStyleOption ("name.font", "DejaVuSans");
+  uiInventory->SetStyleOption ("name.font.size", "10");
   uiInventory->Bind ("MouseButton0", "select", 0);
   uiInventory->Bind ("i", "cancel", 0);
 
