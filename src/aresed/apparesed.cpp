@@ -791,10 +791,11 @@ bool AresEdit3DView::SetupDynWorld ()
 {
   csString playerName = "Player";
   csString nodeName = "Node";
+  csString lightName = "Light";
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
-    if (playerName == fact->GetName () || nodeName == fact->GetName ()) continue;
+    if (playerName == fact->GetName () || nodeName == fact->GetName () || lightName == fact->GetName ()) continue;
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
@@ -927,6 +928,17 @@ bool AresEdit3DView::SetupWorld ()
     iDynamicFactory* fact = dynworld->AddFactory ("Player", 1.0, -1);
     fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
     AddItem ("Nodes", "Player");
+  }
+  if (!dynworld->FindFactory ("Light"))
+  {
+    iLightFactory* f = engine->FindLightFactory ("Light");
+    if (!f)
+    {
+      f = engine->CreateLightFactory ("Light");
+    }
+    iDynamicFactory* fact = dynworld->AddLightFactory ("Light", 1.0);
+    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
+    AddItem ("Nodes", "Light");
   }
 
   return true;
