@@ -935,6 +935,8 @@ bool AresEdit3DView::SetupWorld ()
     if (!f)
     {
       f = engine->CreateLightFactory ("Light");
+      f->SetDynamicType (CS_LIGHT_DYNAMICTYPE_DYNAMIC);
+      f->SetCutoffDistance (10.0f);
     }
     iDynamicFactory* fact = dynworld->AddLightFactory ("Light", 1.0);
     fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
