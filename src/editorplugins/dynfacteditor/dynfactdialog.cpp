@@ -1845,7 +1845,7 @@ void DynfactDialog::Tick ()
 CS::Animation::iSkeletonFactory* DynfactDialog::GetSkeletonFactory (const char* factName)
 {
   iMeshFactoryWrapper* meshFact = engine->FindMeshFactory (factName);
-  CS_ASSERT (meshFact != 0);
+  if (!meshFact) return 0;
 
   csRef<CS::Mesh::iAnimatedMeshFactory> animFact = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory> (meshFact->GetMeshObjectFactory ());
   if (!animFact) return 0;
