@@ -213,9 +213,7 @@ public:
 };
 
 /**
- * This standard action creates a new child for a collection based
- * on a suggestion from a dialog.
- * It assumes the collection supports the NewValue() method.
+ * Create an invisible dynamic factory.
  */
 class NewInvisibleChildAction : public AbstractNewAction
 {
@@ -228,6 +226,41 @@ public:
   virtual ~NewInvisibleChildAction () { }
   virtual const char* GetName () const { return "New Invisible..."; }
   virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * Create a light dynamic factory.
+ */
+class NewLightChildAction : public Action
+{
+private:
+  Value* collection;
+  DynfactDialog* dialog;
+
+public:
+  NewLightChildAction (DynfactDialog* dialog, Value* collection) :
+    collection (collection), dialog (dialog) { }
+  virtual ~NewLightChildAction () { }
+  virtual const char* GetName () const { return "New Light..."; }
+  virtual bool Do (View* view, wxWindow* component);
+};
+
+/**
+ * Edit a light dynamic factory.
+ */
+class EditLightChildAction : public Action
+{
+private:
+  Value* collection;
+  DynfactDialog* dialog;
+
+public:
+  EditLightChildAction (DynfactDialog* dialog, Value* collection) :
+    collection (collection), dialog (dialog) { }
+  virtual ~EditLightChildAction () { }
+  virtual const char* GetName () const { return "Edit Light..."; }
+  virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
 };
 
 /**

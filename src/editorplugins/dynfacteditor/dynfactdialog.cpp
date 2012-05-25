@@ -37,6 +37,8 @@ THE SOFTWARE.
 #include "physicallayer/pl.h"
 #include "propclass/dynworld.h"
 
+#include "lightdialog.h"
+
 #include <wx/choicebk.h>
 
 SCF_IMPLEMENT_FACTORY (DynfactDialog)
@@ -1678,6 +1680,49 @@ bool NewInvisibleChildAction::Do (View* view, wxWindow* component)
 
 //--------------------------------------------------------------------------
 
+bool NewLightChildAction::Do (View* view, wxWindow* component)
+{
+  LightDialog* dia = new LightDialog (component, dialog);
+  iLightFactory* newFactory = dia->Show (0);
+  if (newFactory)
+  {
+    size_t idx = csArrayItemNotFound;
+    DialogResult dialogResult;
+    dialogResult.Put ("name", newFactory->QueryObject ()->GetName ());
+    Value* value = collection->NewValue (idx, view->GetSelectedValue (component),
+      dialogResult);
+    if (!value) return false;	// @@@ Clean up factory?
+    view->SetSelectedValue (component, value);
+  }
+
+  delete dia;
+  return true;
+}
+
+//--------------------------------------------------------------------------
+
+bool EditLightChildAction::Do (View* view, wxWindow* component)
+{
+  LightDialog* dia = new LightDialog (component, dialog);
+  // @@@ TODO
+  if (dia->Show (0))
+  {
+    // @@@ TODO
+  }
+  delete dia;
+  return true;
+}
+
+bool EditLightChildAction::IsActive (View* view, wxWindow* component)
+{
+  Value* value = view->GetSelectedValue (component);
+  if (value == 0) return false;
+  // @@@ TODO
+  return true;
+}
+
+//--------------------------------------------------------------------------
+
 Offset2MinMaxValue::Offset2MinMaxValue (Value* offset, Value* size, bool operatorPlus)
   : offset (offset), size (size), operatorPlus (operatorPlus)
 {
@@ -2050,6 +2095,8 @@ void DynfactDialog::SetupActions ()
   view.AddAction (bonesList, NEWREF(Action, new CreateJointAction (this)));
   view.AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
   view.AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (this, dynfactCollectionValue)));
+  view.AddAction (factoryTree, NEWREF(Action, new NewLightChildAction (this, dynfactCollectionValue)));
+  view.AddAction (factoryTree, NEWREF(Action, new EditLightChildAction (this, dynfactCollectionValue)));
   view.AddAction (factoryTree, NEWREF(Action, new DeleteChildAction (dynfactCollectionValue)));
   view.AddAction (factoryTree, NEWREF(Action, new EditCategoryAction (this)));
   view.AddAction (factoryTree, NEWREF(Action, new EnableRagdollAction (this)));

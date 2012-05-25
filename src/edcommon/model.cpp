@@ -616,6 +616,8 @@ bool View::Bind (Value* value, wxWindow* component)
 {
   if (component->IsKindOf (CLASSINFO (wxTextCtrl)))
     return Bind (value, wxStaticCast (component, wxTextCtrl));
+  if (component->IsKindOf (CLASSINFO (wxChoice)))
+    return Bind (value, wxStaticCast (component, wxChoice));
   if (component->IsKindOf (CLASSINFO (wxComboBox)))
     return Bind (value, wxStaticCast (component, wxComboBox));
   if (component->IsKindOf (CLASSINFO (wxCheckBox)))
@@ -668,6 +670,26 @@ void View::RegisterBinding (Value* value, wxWindow* component, wxEventType event
   if (eventType != wxEVT_NULL)
     component->Connect (eventType, wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
   value->AddValueChangeListener (changeListener);
+}
+
+bool View::Bind (Value* value, wxChoice* component)
+{
+  switch (value->GetType ())
+  {
+    case VALUE_STRING:
+    case VALUE_LONG:
+    case VALUE_BOOL:
+    case VALUE_FLOAT:
+    case VALUE_NONE:	// Supported too in case the type is as of yet unknown.
+      break;
+    default:
+      printf ("Unsupported value type for choice control!\n");
+      return false;
+  }
+
+  RegisterBinding (value, component, wxEVT_COMMAND_CHOICE_SELECTED);
+  ValueChanged (value);
+  return true;
 }
 
 bool View::Bind (Value* value, wxTextCtrl* component)
@@ -1119,6 +1141,12 @@ void View::OnComponentChanged (wxCommandEvent& event)
     csString text = (const char*)textCtrl->GetValue ().mb_str (wxConvUTF8);
     StringToValue (text, binding->value);
   }
+  else if (component->IsKindOf (CLASSINFO (wxChoice)))
+  {
+    wxChoice* choiceCtrl = wxStaticCast (component, wxChoice);
+    csString text = (const char*)choiceCtrl->GetStringSelection ().mb_str (wxConvUTF8);
+    StringToValue (text, binding->value);
+  }
   else if (component->IsKindOf (CLASSINFO (wxComboBox)))
   {
     wxComboBox* combo = wxStaticCast (component, wxComboBox);
@@ -1257,6 +1285,14 @@ void View::ValueChanged (Value* value)
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
+	bindings[i]->processing = false;
+      }
+      else if (comp->IsKindOf (CLASSINFO (wxChoice)))
+      {
+	bindings[i]->processing = true;
+	wxChoice* choiceCtrl = wxStaticCast (comp, wxChoice);
+	csString text = ValueToString (value);
+	choiceCtrl->SetStringSelection (wxString::FromUTF8 (text));
 	bindings[i]->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (wxComboBox)))

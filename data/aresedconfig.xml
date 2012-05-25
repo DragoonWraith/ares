@@ -2,6 +2,7 @@
     <plugins>
       <plugin plugin="ares.editor.dynfacteditor">
 	  <resource file="DynfactDialog.xrc" />
+	  <resource file="LightEditorDialog.xrc" />
       </plugin>
       <plugin plugin="ares.editor.modes.play" />
       <plugin plugin="ares.editor.modes.main" main="True" notebook="True"
