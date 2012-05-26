@@ -1689,6 +1689,7 @@ bool NewLightChildAction::Do (View* view, wxWindow* component)
     size_t idx = csArrayItemNotFound;
     DialogResult dialogResult;
     dialogResult.Put ("name", newFactory->QueryObject ()->GetName ());
+    dialogResult.Put ("light", "true");
     Value* value = collection->NewValue (idx, view->GetSelectedValue (component),
       dialogResult);
     if (!value) return false;	// @@@ Clean up factory?

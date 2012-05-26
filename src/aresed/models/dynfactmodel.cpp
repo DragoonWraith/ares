@@ -134,6 +134,10 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
 	Gf (suggestion, "maxx"), Gf (suggestion, "maxy"), Gf (suggestion, "maxz"));
     fact = dynworld->AddLogicFactory (newname, 1.0f, 1.0f, logicBox);
   }
+  else if (suggestion.Contains ("light"))
+  {
+    fact = dynworld->AddLightFactory (newname, 1.0f);
+  }
   else
   {
     fact = dynworld->AddFactory (newname, 1.0f, 1.0f);
