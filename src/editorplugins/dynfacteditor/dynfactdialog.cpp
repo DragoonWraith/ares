@@ -1692,7 +1692,12 @@ bool NewLightChildAction::Do (View* view, wxWindow* component)
     dialogResult.Put ("light", "true");
     Value* value = collection->NewValue (idx, view->GetSelectedValue (component),
       dialogResult);
-    if (!value) return false;	// @@@ Clean up factory?
+    if (!value)
+    {
+      dialog->GetEngine ()->RemoveObject (newFactory);
+      delete dia;
+      return false;
+    }
     view->SetSelectedValue (component, value);
   }
 
@@ -1704,11 +1709,14 @@ bool NewLightChildAction::Do (View* view, wxWindow* component)
 
 bool EditLightChildAction::Do (View* view, wxWindow* component)
 {
+  iDynamicFactory* fact = dialog->GetCurrentFactory ();
+  if (!fact) return false;
+  iLightFactory* lf = dialog->GetEngine ()->FindLightFactory (fact->GetName ());
+  if (!lf) return false;
+
   LightDialog* dia = new LightDialog (component, dialog);
-  // @@@ TODO
-  if (dia->Show (0))
+  if (dia->Show (lf))
   {
-    // @@@ TODO
   }
   delete dia;
   return true;
@@ -1718,7 +1726,10 @@ bool EditLightChildAction::IsActive (View* view, wxWindow* component)
 {
   Value* value = view->GetSelectedValue (component);
   if (value == 0) return false;
-  // @@@ TODO
+  iDynamicFactory* fact = dialog->GetCurrentFactory ();
+  if (!fact) return false;
+  iLightFactory* lf = dialog->GetEngine ()->FindLightFactory (fact->GetName ());
+  if (!lf) return false;
   return true;
 }
 

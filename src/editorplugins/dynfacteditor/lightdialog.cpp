@@ -82,8 +82,8 @@ LightFactoryValue::LightFactoryValue ()
 
   specularColor.AttachNew (new ColorValue ());
   color.AttachNew (new ColorValue ());
-  AddChild ("specularColor", specularColor);
-  AddChild ("color", color);
+  AddChild ("specColor", specularColor);
+  AddChild ("normColor", color);
 }
 
 //--------------------------------------------------------------------------
@@ -118,7 +118,6 @@ iLightFactory* LightDialog::Show (iLightFactory* factory)
 {
   if (factory)
   {
-    // @@@ Setup value from existing factory
     factoryValue->GetChildByName ("name")->SetStringValue (
 	factory->QueryObject ()->GetName ());
     csLightType type = factory->GetType ();
@@ -227,7 +226,7 @@ LightDialog::LightDialog (wxWindow* parent, DynfactDialog* dialog) : View (this)
 
   factoryValue.AttachNew (new LightFactoryValue ());
   Bind (factoryValue, this);
-  BindEnabled (factoryValue->GetChildByName ("specular"), "specularColor");
+  BindEnabled (factoryValue->GetChildByName ("specular"), "specularColor_Picker");
 
   Layout ();
   Fit ();
