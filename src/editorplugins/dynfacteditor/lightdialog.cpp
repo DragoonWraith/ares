@@ -173,15 +173,16 @@ iLightFactory* LightDialog::Show (iLightFactory* factory)
 
   if (ShowModal ())
   {
+    csString n = factoryValue->GetChildByName ("name")->GetStringValue ();
     if (!factory)
     {
-      factory = dialog->GetEngine ()->CreateLightFactory (
-	  factoryValue->GetChildByName ("name")->GetStringValue ());
+      factory = dialog->GetEngine ()->FindLightFactory (n);
+      if (!factory)
+        factory = dialog->GetEngine ()->CreateLightFactory (n);
     }
     else
     {
-      factory->QueryObject ()->SetName (factoryValue->GetChildByName ("name")
-	  ->GetStringValue ());
+      factory->QueryObject ()->SetName (n);
     }
     csString type = factoryValue->GetChildByName ("type")->GetStringValue ();
     if (type == "point") factory->SetType (CS_LIGHT_POINTLIGHT);

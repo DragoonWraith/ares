@@ -305,6 +305,42 @@ void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
   }
 }
 
+void MainMode::SetDynObjOrigin (iDynamicObject* dynobj, const csVector3& pos)
+{
+  iMeshWrapper* mesh = dynobj->GetMesh ();
+  if (mesh)
+  {
+    iMovable* mov = mesh->GetMovable ();
+    mov->GetTransform ().SetOrigin (pos);
+    mov->UpdateMove ();
+  }
+  iLight* light = dynobj->GetLight ();
+  if (light)
+  {
+    iMovable* mov = light->GetMovable ();
+    mov->GetTransform ().SetOrigin (pos);
+    mov->UpdateMove ();
+  }
+}
+
+void MainMode::SetDynObjTransform (iDynamicObject* dynobj, const csReversibleTransform& trans)
+{
+  iMeshWrapper* mesh = dynobj->GetMesh ();
+  if (mesh)
+  {
+    iMovable* mov = mesh->GetMovable ();
+    mov->SetTransform (trans);
+    mov->UpdateMove ();
+  }
+  iLight* light = dynobj->GetLight ();
+  if (light)
+  {
+    iMovable* mov = light->GetMovable ();
+    mov->SetTransform (trans);
+    mov->UpdateMove ();
+  }
+}
+
 void MainMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos)
 {
@@ -312,13 +348,7 @@ void MainMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
   for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
   {
     csVector3 np = pos - dragObjects[i].kineOffset;
-    iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
-    if (mesh)
-    {
-      iMovable* mov = mesh->GetMovable ();
-      mov->GetTransform ().SetOrigin (np);
-      mov->UpdateMove ();
-    }
+    SetDynObjOrigin (dragObjects[i].dynobj, np);
   }
 }
 
@@ -327,13 +357,7 @@ void MainMode::MarkerWantsRotate (iMarker* marker, iMarkerHitArea* area,
 {
   for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
   {
-    iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
-    if (mesh)
-    {
-      iMovable* mov = mesh->GetMovable ();
-      mov->SetTransform (transform);
-      mov->UpdateMove ();
-    }
+    SetDynObjTransform (dragObjects[i].dynobj, transform);
   }
 }
 
@@ -407,13 +431,7 @@ void MainMode::HandleKinematicDragging ()
   for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
   {
     csVector3 np = newPosition - dragObjects[i].kineOffset;
-    iMeshWrapper* mesh = dragObjects[i].dynobj->GetMesh ();
-    if (mesh)
-    {
-      iMovable* mov = mesh->GetMovable ();
-      mov->GetTransform ().SetOrigin (np);
-      mov->UpdateMove ();
-    }
+    SetDynObjOrigin (dragObjects[i].dynobj, np);
     if (kinematicFirstOnly) break;
   }
 }

@@ -123,6 +123,9 @@ public:
   void OnSetStatic ();
   void OnClearStatic ();
 
+  void SetDynObjOrigin (iDynamicObject* dynobj, const csVector3& pos);
+  void SetDynObjTransform (iDynamicObject* dynobj, const csReversibleTransform& trans);
+
   void MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers);
   void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,

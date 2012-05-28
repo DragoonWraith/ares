@@ -1250,6 +1250,7 @@ void AresEdit3DView::UpdateObjects ()
     iDynamicObject* obj = dyncell->GetObject (i);
     obj->RefreshColliders ();
     obj->RecreateJoints ();
+    dynworld->ForceInvisible (obj);
   }
 }
 
