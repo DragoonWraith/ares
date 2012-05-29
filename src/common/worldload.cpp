@@ -280,6 +280,8 @@ csRef<iDocument> WorldLoader::SaveDoc ()
       assetNode->SetAttribute ("dynfacts", "true");
     if (asset.IsTemplateSavefile ())
       assetNode->SetAttribute ("templates", "true");
+    if (asset.IsQuestSaveFile ())
+      assetNode->SetAttribute ("quests", "true");
   }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
