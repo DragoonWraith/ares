@@ -1717,6 +1717,9 @@ bool EditLightChildAction::Do (View* view, wxWindow* component)
   LightDialog* dia = new LightDialog (component, dialog);
   if (dia->Show (lf))
   {
+    i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+    dynworld->UpdateObjects (fact);
   }
   delete dia;
   return true;

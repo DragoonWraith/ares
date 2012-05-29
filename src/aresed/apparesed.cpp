@@ -1253,13 +1253,7 @@ void AresEdit3DView::UnjoinObjects ()
 void AresEdit3DView::UpdateObjects ()
 {
   if (!app->GetUIManager ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
-  for (size_t i = 0 ; i < dyncell->GetObjectCount () ; i++)
-  {
-    iDynamicObject* obj = dyncell->GetObject (i);
-    obj->RefreshColliders ();
-    obj->RecreateJoints ();
-    dynworld->ForceInvisible (obj);
-  }
+  dynworld->UpdateObjects (dyncell);
 }
 
 // =========================================================================
