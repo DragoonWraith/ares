@@ -342,6 +342,7 @@ protected:
   virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
   }
 
 public:
@@ -360,6 +361,7 @@ public:
 	child->SetParent (0);
 	children.DeleteIndex (i);
 	FireValueChanged ();
+	dialog->AddDirtyFactory (dynfact);
 	return true;
       }
     return false;
@@ -375,6 +377,7 @@ public:
     dynfact->SetAttribute (nameID, value);
     Value* child = NewChild (nameID, name);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
     return child;
   }
 
@@ -480,6 +483,7 @@ printf ("BoneJointValue::ChildChanged\n"); fflush (stdout);
       joint->SetBounce (def.bounce);
     }
     FireValueChanged ();
+    dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
   }
 
   void SetBone ()
@@ -597,6 +601,7 @@ protected:
   virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
   }
 
 public:
@@ -614,6 +619,7 @@ public:
 	child->SetParent (0);
 	children.DeleteIndex (i);
 	FireValueChanged ();
+	dialog->AddDirtyFactory (dynfact);
 	return true;
       }
     return false;
@@ -626,6 +632,7 @@ public:
     idx = dynfact->GetJointCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
     return value;
   }
 
@@ -754,6 +761,7 @@ protected:
     FireValueChanged ();
     //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
     //view3d->RefreshFactorySettings (dialog->GetCurrentFactory ());
+    dialog->AddDirtyFactory (dynfact);
   }
 
 public:
@@ -771,6 +779,7 @@ public:
 	child->SetParent (0);
 	children.DeleteIndex (i);
 	FireValueChanged ();
+        dialog->AddDirtyFactory (dynfact);
 	return true;
       }
     return false;
@@ -783,6 +792,7 @@ public:
     idx = dynfact->GetPivotJointCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
     return value;
   }
 
@@ -1038,6 +1048,7 @@ protected:
     FireValueChanged ();
     i3DView* view3d = dialog->GetApplication ()->Get3DView ();
     view3d->RefreshFactorySettings (dialog->GetCurrentFactory ());
+    dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
   }
 
 public:
@@ -1070,6 +1081,7 @@ public:
     idx = dynfact->GetBodyCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
     return value;
   }
 
@@ -1152,6 +1164,7 @@ public:
     idx = bone->GetBoneColliderCount ()-1;
     Value* value = NewChild (idx);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
     return value;
   }
 
@@ -1228,6 +1241,7 @@ public:
     iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
     if (dynfact) dynfact->SetImposterRadius (f);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
   }
   virtual float GetFloatValue ()
   {
@@ -1317,6 +1331,7 @@ public:
 
     Value* value = NewCompositeChild (VALUE_STRING, "name", name.GetData (), VALUE_NONE);
     FireValueChanged ();
+    dialog->AddDirtyFactory (dynfact);
     return value;
   }
 };
@@ -1356,6 +1371,7 @@ void DynfactValue::ChildChanged (Value* child)
   {
     i3DView* view3d = dialog->GetApplication ()->Get3DView ();
     view3d->RefreshFactorySettings (dynfact);
+    dialog->AddDirtyFactory (dynfact);
   }
 }
 
@@ -1508,6 +1524,7 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   }
 
   dialog->GetMeshView ()->Refresh ();
+  dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
 
   return true;
 }
@@ -1640,6 +1657,7 @@ public:
     {
       dialog->FitCollider (fact, type);
     }
+    dialog->AddDirtyFactory (fact);
     return true;
   }
 
@@ -1717,9 +1735,7 @@ bool EditLightChildAction::Do (View* view, wxWindow* component)
   LightDialog* dia = new LightDialog (component, dialog);
   if (dia->Show (lf))
   {
-    i3DView* view3d = dialog->GetApplication ()->Get3DView ();
-    iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
-    dynworld->UpdateObjects (fact);
+    dialog->AddDirtyFactory (fact);
   }
   delete dia;
   return true;
@@ -1804,6 +1820,7 @@ public:
     fact->AddRigidBox (down.GetCenter (), down.GetSize (), 1.0);
     collection->Refresh ();
     dialog->GetColliderSelectedValue ()->Refresh ();
+    dialog->AddDirtyFactory (fact);
     return true;
   }
 };
@@ -1812,6 +1829,16 @@ public:
 
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
+  i3DView* view3d = GetApplication ()->Get3DView ();
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+  csSet<iDynamicFactory*>::GlobalIterator it = dirtyFactories.GetIterator ();
+  while (it.HasNext ())
+  {
+    iDynamicFactory* fact = it.Next ();
+    printf ("Updating factory '%s'\n", fact->GetName ());
+    dynworld->UpdateObjects (fact);
+  }
+  dirtyFactories.DeleteAll ();
   EndModal (TRUE);
 }
 
@@ -1995,6 +2022,7 @@ void DynfactDialog::FitCollider (CS::Animation::BoneID id, csColliderGeometryTyp
   csRef<CS::Mesh::iAnimatedMeshFactory> animeshFactory = scfQueryInterface<CS::Mesh::iAnimatedMeshFactory>
       (meshFact->GetMeshObjectFactory ());
   FitCollider (bonesColliderSelectedValue, animeshFactory->GetBoneBoundingBox (id), type);
+  AddDirtyFactory (fact);
 }
 
 void DynfactDialog::SetupDialogs ()

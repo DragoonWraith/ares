@@ -281,6 +281,8 @@ private:
 
   csRef<CS::Animation::iBodyManager> bodyManager;
 
+  csSet<iDynamicFactory*> dirtyFactories;
+
   DynfactMeshView* meshView;
   csRef<ListSelectedValue> bonesSelectedValue;
   csRef<ListSelectedValue> bonesColliderSelectedValue;
@@ -335,6 +337,17 @@ public:
   iEngine* GetEngine () const { return engine; }
   iAresEditor* GetApplication () const { return app; }
   iUIManager* GetUIManager () const { return app->GetUI (); }
+
+  void AddDirtyFactory (iDynamicFactory* fact)
+  {
+    if (fact)
+      dirtyFactories.Add (fact);
+  }
+  void RemoveDirtyFactory (iDynamicFactory* fact)
+  {
+    if (fact)
+      dirtyFactories.Delete (fact);
+  }
 
   void Show ();
   void Tick ();

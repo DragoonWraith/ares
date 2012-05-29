@@ -80,7 +80,7 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
   }
   if (categoryValue == child)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("Can't delete an entire category at once!");
+    aresed3d->GetApp ()->GetUIManager ()->Error ("You can't delete an entire category at once!");
     return false;
   }
 
@@ -89,6 +89,9 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
   CS_ASSERT (factory != 0);
   dynworld->RemoveFactory (factory);
   aresed3d->RemoveItem (categoryValue->GetStringValue (), child->GetStringValue ());
+
+  // @@@ Remove all items using this factory!
+  // @@@ Add confirmation
 
   dirty = true;
   FireValueChanged ();
