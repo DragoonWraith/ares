@@ -326,6 +326,39 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
   return GetBeam (mouseX, mouseY, maxdist);
 }
 
+bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
+{
+  csVector3 isect1, isect2;
+  iDynamicObject* obj1 = 0, * obj2 = 0;
+
+  // Trace the physical beam
+  CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (
+      beam.Start (), beam.End ());
+  if (result.body)
+    isect1 = result.isect;
+
+  csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
+      beam.Start (), beam.End ());
+  if (result2.mesh)
+    isect2 = result2.isect;
+
+  if (!result2.mesh && !result.body) return false;
+  if (!result2.mesh) { isect = isect1; return true; }
+  if (!result.body) { isect = isect2; return true; }
+  float sqdist1 = csSquaredDist::PointPoint (beam.Start (), isect1);
+  float sqdist2 = csSquaredDist::PointPoint (beam.Start (), isect2);
+  if (sqdist1 < sqdist2)
+  {
+    isect = isect1;
+    return true;
+  }
+  else
+  {
+    isect = isect2;
+    return true;
+  }
+}
+
 iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 {
   csVector3 isect1, isect2;
@@ -349,8 +382,8 @@ iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& is
     isect2 = result2.isect;
   }
 
-  if (!obj1) { isect = isect2; return obj2; }
   if (!obj2) { isect = isect1; return obj1; }
+  if (!obj1) { isect = isect2; return obj2; }
   float sqdist1 = csSquaredDist::PointPoint (beam.Start (), isect1);
   float sqdist2 = csSquaredDist::PointPoint (beam.Start (), isect2);
   if (sqdist1 < sqdist2)

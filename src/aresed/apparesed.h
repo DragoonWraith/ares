@@ -441,6 +441,12 @@ public:
   virtual iDynamicObject* TraceBeam (const csSegment3& beam, csVector3& isect);
 
   /**
+   * Given a beam, see if something is selected at the position.
+   * This can be a dynamic object but also static geometry.
+   */
+  virtual bool TraceBeamHit (const csSegment3& beam, csVector3& isect);
+
+  /**
    * Hit a beam with the terrain and return the intersection point.
    */
   virtual bool TraceBeamTerrain (const csVector3& start, const csVector3& end,

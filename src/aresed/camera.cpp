@@ -251,7 +251,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       do_mouse_panning = false;
       if (!do_mouse_dragging)
       {
-        if (!aresed3d->TraceBeam (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
+        if (!aresed3d->TraceBeamHit (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
 	  return false;
         do_mouse_dragging = true;
       }
@@ -261,7 +261,7 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       do_mouse_dragging = false;
       if (!do_mouse_panning)
       {
-        if (!aresed3d->TraceBeam (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
+        if (!aresed3d->TraceBeamHit (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
 	  return false;
         CamLookAtPosition (panningCenter);
         panningDistance = sqrt (csSquaredDist::PointPoint (
@@ -463,7 +463,7 @@ void Camera::CamZoom (int x, int y, bool forward)
   // that we are focusing on. If we are close enough we slow down
   // the movement a bit to make it more precise.
   csVector3 isect;
-  aresed3d->TraceBeam (aresed3d->GetBeam (x, y), isect);
+  aresed3d->TraceBeamHit (aresed3d->GetBeam (x, y), isect);
   float camdist = sqrt (csSquaredDist::PointPoint (isect, camera->GetTransform ().GetOrigin ()));
   if (camdist < 20)
   {
