@@ -1,4 +1,13 @@
 <library>
+  <lightfact name="Light">
+    <radius>10</radius>
+    <color red="1" green="1" blue="1" />
+    <dynamic />
+    <attenuation c="1e+006" l="0" q="0">linear</attenuation>
+    <type>point</type>
+    <spotlightfalloff inner="0.999848" outer="1" />
+  </lightfact>
+  <addon plugin="cel.addons.questdef" />
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="Zone" />
     <factory name="Node" maxradius="1" imposterradius="0" mass="1">
@@ -13,11 +22,42 @@
         <size x="0.2" y="0.2" z="0.2" />
       </box>
     </factory>
-    <factory name="MetalDoor" maxradius="1" imposterradius="0" mass="1">
-      <attr name="ares.dragtype" value="roty" />
-      <attr name="category" value="Doors" />
+    <factory name="Node" maxradius="1" imposterradius="0" mass="1">
       <box>
-        <offset x="-0.5" y="1" z="-1.49943e-07" />
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Player" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Light" maxradius="1" imposterradius="0" light="true" mass="1">
+      <attr name="category" value="Nodes" />
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Node" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="Player" maxradius="1" imposterradius="0" mass="1">
+      <box>
+        <offset x="0" y="0" z="0" />
+        <size x="0.2" y="0.2" z="0.2" />
+      </box>
+    </factory>
+    <factory name="MetalDoor" maxradius="1" imposterradius="0" mass="1">
+      <attr name="category" value="Doors" />
+      <attr name="ares.dragtype" value="roty" />
+      <box>
+        <offset x="-0.5" y="1" z="-1.49943e-007" />
         <size x="1" y="2" z="0.050001" />
       </box>
     </factory>
@@ -26,8 +66,8 @@
         <min x="-1" y="0" z="-0.025" />
         <max x="0" y="2" z="0.025" />
       </logicbox>
-      <attr name="defaultstatic" value="true" />
       <attr name="category" value="Doors" />
+      <attr name="defaultstatic" value="true" />
       <box>
         <offset x="0.05" y="1" z="0" />
         <size x="0.1" y="2" z="0.05" />
@@ -47,14 +87,14 @@
     <factory name="MetalDesk" maxradius="1" imposterradius="0" mass="40">
       <attr name="category" value="Furniture" />
       <box>
-        <offset x="0" y="0.459502" z="-5.96046e-08" />
+        <offset x="0" y="0.459502" z="-5.96046e-008" />
         <size x="0.885924" y="0.91844" z="2.05786" />
       </box>
     </factory>
     <factory name="RedChair2" maxradius="1" imposterradius="0" mass="1">
       <attr name="category" value="Furniture" />
       <box>
-        <offset x="0" y="0.531461" z="3.12924e-07" />
+        <offset x="0" y="0.531461" z="3.12924e-007" />
         <size x="0.797796" y="1.05978" z="0.607153" />
       </box>
     </factory>

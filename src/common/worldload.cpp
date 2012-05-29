@@ -74,6 +74,7 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
       bool saveTemplates = child->GetAttributeValueAsBool ("templates");
       bool saveQuests = child->GetAttributeValueAsBool ("quests");
+      bool saveLights = child->GetAttributeValueAsBool ("lights");
       vfs->PushDir (path);
       // If the file doesn't exist we don't try to load it. That's not an error
       // as it might be saved later.
@@ -82,7 +83,8 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       if (exists)
         if (!LoadLibrary (path, file))
 	  return false;
-      assets.Push (Asset (path, file, saveDynfacts, saveTemplates, saveQuests));
+      assets.Push (Asset (path, file, saveDynfacts, saveTemplates, saveQuests,
+	    saveLights));
     }
     // Ignore the other tags. These are processed below.
   }
@@ -204,6 +206,32 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
   csRef<iDocumentNode> root = docasset->CreateRoot ();
   csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
   rootNode->SetValue ("library");
+  if (asset.IsLightFactSaveFile ())
+  {
+    csRef<iSaver> saver = csQueryRegistryOrLoad<iSaver> (object_reg,
+    	"crystalspace.level.saver");
+    if (!saver)
+    {
+      printf ("ERROR! Saver plugin is missing. Cannot save!\n");
+      return false;
+    }
+    if (!saver->SaveLightFactories (0, rootNode))
+    {
+      printf ("ERROR! Error saving light factories!\n");
+      return false;
+    }
+  }
+  if (asset.IsQuestSavefile ())
+  {
+    csRef<iQuestManager> questmgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
+    	"cel.manager.quests");
+    if (!questmgr) return false;
+    csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+    addonNode->SetValue ("addon");
+    addonNode->SetAttribute ("plugin", "cel.addons.questdef");
+    if (!questmgr->Save (addonNode))
+      return false;
+  }
   if (asset.IsDynfactSavefile ())
   {
     csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
@@ -238,17 +266,6 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
       }
     }
   }
-  if (asset.IsQuestSaveFile ())
-  {
-    csRef<iQuestManager> questmgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
-    	"cel.manager.quests");
-    if (!questmgr) return false;
-    csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-    addonNode->SetValue ("addon");
-    addonNode->SetAttribute ("plugin", "cel.addons.questdef");
-    if (!questmgr->Save (addonNode))
-      return false;
-  }
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   docasset->Write (xml);
@@ -280,8 +297,10 @@ csRef<iDocument> WorldLoader::SaveDoc ()
       assetNode->SetAttribute ("dynfacts", "true");
     if (asset.IsTemplateSavefile ())
       assetNode->SetAttribute ("templates", "true");
-    if (asset.IsQuestSaveFile ())
+    if (asset.IsQuestSavefile ())
       assetNode->SetAttribute ("quests", "true");
+    if (asset.IsLightFactSaveFile ())
+      assetNode->SetAttribute ("lights", "true");
   }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
@@ -301,7 +320,8 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     const Asset& asset = assets[i];
-    if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile () || asset.IsQuestSaveFile ())
+    if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile ()
+	|| asset.IsQuestSavefile () || asset.IsLightFactSaveFile ())
     {
       // @@@ Todo: proper error reporting.
       if (!SaveAsset (docsys, asset))

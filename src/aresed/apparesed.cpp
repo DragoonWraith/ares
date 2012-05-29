@@ -329,7 +329,6 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
 bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 {
   csVector3 isect1, isect2;
-  iDynamicObject* obj1 = 0, * obj2 = 0;
 
   // Trace the physical beam
   CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (
@@ -832,11 +831,10 @@ bool AresEdit3DView::SetupDynWorld ()
 {
   csString playerName = "Player";
   csString nodeName = "Node";
-  csString lightName = "Light";
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
-    if (playerName == fact->GetName () || nodeName == fact->GetName () || lightName == fact->GetName ()) continue;
+    if (playerName == fact->GetName () || nodeName == fact->GetName ()) continue;
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
@@ -969,19 +967,6 @@ bool AresEdit3DView::SetupWorld ()
     iDynamicFactory* fact = dynworld->AddFactory ("Player", 1.0, -1);
     fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
     AddItem ("Nodes", "Player");
-  }
-  if (!dynworld->FindFactory ("Light"))
-  {
-    iLightFactory* f = engine->FindLightFactory ("Light");
-    if (!f)
-    {
-      f = engine->CreateLightFactory ("Light");
-      f->SetDynamicType (CS_LIGHT_DYNAMICTYPE_DYNAMIC);
-      f->SetCutoffDistance (10.0f);
-    }
-    iDynamicFactory* fact = dynworld->AddLightFactory ("Light", 1.0);
-    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
-    AddItem ("Nodes", "Light");
   }
 
   return true;

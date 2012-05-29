@@ -39,20 +39,23 @@ private:
   bool saveDynfacts;
   bool saveTemplates;
   bool saveQuests;
+  bool saveLightFacts;
 
 public:
   Asset (const char* path, const char* file,
-      bool saveDynfacts, bool saveTemplates, bool saveQuests) :
+      bool saveDynfacts, bool saveTemplates, bool saveQuests,
+      bool saveLightFacts) :
     path (path), file (file),
     saveDynfacts (saveDynfacts), saveTemplates (saveTemplates),
-    saveQuests (saveQuests)
+    saveQuests (saveQuests), saveLightFacts (saveLightFacts)
   { }
 
   const csString& GetPath () const { return path; }
   const csString& GetFile () const { return file; }
   bool IsDynfactSavefile () const { return saveDynfacts; }
   bool IsTemplateSavefile () const { return saveTemplates; }
-  bool IsQuestSaveFile () const { return saveQuests; }
+  bool IsQuestSavefile () const { return saveQuests; }
+  bool IsLightFactSaveFile () const { return saveLightFacts; }
 };
 
 class ARES_EXPORT WorldLoader
