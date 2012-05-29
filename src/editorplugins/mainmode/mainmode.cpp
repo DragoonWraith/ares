@@ -661,20 +661,12 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   // Compute the end beam points
   csVector3 isect;
   csSegment3 beam = view3d->GetBeam (mouseX, mouseY);
-  iRigidBody* hitBody = view3d->TraceBeam (beam, isect);
-  if (!hitBody)
+  iDynamicObject* newobj = view3d->TraceBeam (beam, isect);
+  if (!newobj)
   {
     if (but == csmbLeft) view3d->GetSelection ()->SetCurrentObject (0);
     return false;
   }
-
-  iDynamicObject* newobj = view3d->GetDynamicWorld ()->FindObject (hitBody);
-  if (!newobj && but == csmbLeft)
-  {
-    view3d->GetSelection ()->SetCurrentObject (0);
-    return true;
-  }
-  if (!newobj) return false;
 
   if (but == csmbLeft)
   {
@@ -687,8 +679,8 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
     if (ctrl || alt)
       StartKinematicDragging (alt, beam, isect, false);
-    else if (!newobj->IsStatic ())
-      StartPhysicalDragging (hitBody, beam, isect);
+    else if (!newobj->IsStatic () && newobj->GetBody ())
+      StartPhysicalDragging (newobj->GetBody (), beam, isect);
 
     return true;
   }

@@ -326,35 +326,43 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
   return GetBeam (mouseX, mouseY, maxdist);
 }
 
-iRigidBody* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
+iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 {
+  csVector3 isect1, isect2;
+  iDynamicObject* obj1 = 0, * obj2 = 0;
+
   // Trace the physical beam
-  iRigidBody* hitBody = 0;
   CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (
       beam.Start (), beam.End ());
   if (result.body)
   {
-    hitBody = result.body->QueryRigidBody ();
-    isect = result.isect;
+    iRigidBody* hitBody = result.body->QueryRigidBody ();
+    isect1 = result.isect;
+    obj1 = dynworld->FindObject (hitBody);
+  }
+
+  csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
+      beam.Start (), beam.End ());
+  if (result2.mesh)
+  {
+    obj2 = dynworld->FindObject (result2.mesh);
+    isect2 = result2.isect;
+  }
+
+  if (!obj1) { isect = isect2; return obj2; }
+  if (!obj2) { isect = isect1; return obj1; }
+  float sqdist1 = csSquaredDist::PointPoint (beam.Start (), isect1);
+  float sqdist2 = csSquaredDist::PointPoint (beam.Start (), isect2);
+  if (sqdist1 < sqdist2)
+  {
+    isect = isect1;
+    return obj1;
   }
   else
   {
-    printf ("Work around needed!\n"); fflush (stdout);
-    // @@@ This is a workaround for the fact that bullet->HitBeam() doesn't appear to work
-    // on mesh colliders.
-    csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
-	beam.Start (), beam.End ());
-    if (result2.mesh)
-    {
-      iDynamicObject* dynobj = dynworld->FindObject (result2.mesh);
-      if (dynobj)
-      {
-        hitBody = dynobj->GetBody ();
-        isect = result2.isect;
-      }
-    }
+    isect = isect2;
+    return obj2;
   }
-  return hitBody;
 }
 
 bool AresEdit3DView::OnMouseDown (iEvent& ev)

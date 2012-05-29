@@ -85,9 +85,9 @@ struct i3DView : public virtual iBase
   virtual csSegment3 GetMouseBeam (float maxdist = 1000.0f) = 0;
   
   /**
-   * Given a beam, calculate the rigid body at that position.
+   * Given a beam, calculate the dynamic object at that position.
    */
-  virtual iRigidBody* TraceBeam (const csSegment3& beam, csVector3& isect) = 0;
+  virtual iDynamicObject* TraceBeam (const csSegment3& beam, csVector3& isect) = 0;
 
   /**
    * Hit a beam with the terrain and return the intersection point.

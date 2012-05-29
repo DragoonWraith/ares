@@ -436,9 +436,9 @@ public:
   virtual csSegment3 GetMouseBeam (float maxdist = 1000.0f);
   
   /**
-   * Given a beam, calculate the rigid body at that position.
+   * Given a beam, get the dynamic object at that position.
    */
-  virtual iRigidBody* TraceBeam (const csSegment3& beam, csVector3& isect);
+  virtual iDynamicObject* TraceBeam (const csSegment3& beam, csVector3& isect);
 
   /**
    * Hit a beam with the terrain and return the intersection point.
