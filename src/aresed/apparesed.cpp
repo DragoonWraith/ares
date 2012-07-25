@@ -944,7 +944,6 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
 
 bool AresEdit3DView::SetupWorld ()
 {
-  vfs->Mount ("/aresnode", "data$/node.zip");
   if (!LoadLibrary ("/aresnode/", "library"))
     return app->ReportError ("Error loading library!");
   vfs->PopDir ();
@@ -1610,7 +1609,9 @@ bool AppAresEditWX::InitPlugins ()
     printf ("Loading editor plugin %s\n", plugin.GetData ());
     fflush (stdout);
 
-    wxString searchPath (wxT ("data/windows"));
+    csRef<iDataBuffer> buf = vfs->GetRealPath ("/ares/data/windows");
+    csString path (buf->GetData ());
+    wxString searchPath (wxString::FromUTF8 (path));
     for (size_t j = 0 ; j < pc.resources.GetSize () ; j++)
     {
       if (!LoadResourceFile (pc.resources.Get (j), searchPath)) return false;
@@ -1667,7 +1668,9 @@ bool AppAresEditWX::InitWX ()
   // Load the frame from an XRC file
   wxXmlResource::Get ()->InitAllHandlers ();
 
-  wxString searchPath (wxT ("data/windows"));
+  csRef<iDataBuffer> buf = vfs->GetRealPath ("/ares/data/windows");
+  csString path (buf->GetData ());
+  wxString searchPath (wxString::FromUTF8 (path));
   if (!LoadResourceFile ("AresMainFrame.xrc", searchPath)) return false;
   if (!LoadResourceFile ("FileRequester.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
