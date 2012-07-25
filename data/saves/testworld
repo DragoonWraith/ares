@@ -1,9 +1,9 @@
 <dynlevel>
-    <asset path="/this/data/" file="testassets.xml" />
+    <asset path="/appdata/" file="testassets.xml" />
     <asset path="/lib/krystal/" file="krystal.xml" />
     <asset path="/lib/frankie/" file="frankie.xml" />
-    <asset path="/this/data/" file="dynworldFactories.xml" />
-    <asset path="/this/data/landscape" file="world" />
+    <asset path="/appdata/" file="dynworldFactories.xml" />
+    <asset path="/appdata/landscape" file="world" />
     <dynworld>
       <cell name="outside">
         <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.65085e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="-6.42182 -3.68983 17.6079" />

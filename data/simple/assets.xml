@@ -3,45 +3,45 @@
 
     <textures>
         <texture name="oldmetal.jpg">
-		<file>/this/data/textures/oldmetal.jpg</file>
+		<file>/appdata/textures/oldmetal.jpg</file>
         </texture>
         <texture name="oldmetal_grey.jpg">
-		<file>/this/data/textures/oldmetal_grey.jpg</file>
+		<file>/appdata/textures/oldmetal_grey.jpg</file>
         </texture>
         <texture name="oldmetalDOT3.png">
-		<file>/this/data/textures/oldmetalDOT3.png</file>
+		<file>/appdata/textures/oldmetalDOT3.png</file>
 		<class>normalmap</class>
         </texture>
 
         <texture name="stone2.jpg">
-		<file>/this/data/textures/stone2.jpg</file>
+		<file>/appdata/textures/stone2.jpg</file>
         </texture>
         <texture name="stone2DOT3.png">
-		<file>/this/data/textures/stone2DOT3.png</file>
+		<file>/appdata/textures/stone2DOT3.png</file>
 		<class>normalmap</class>
         </texture>
 
         <texture name="wood_barrel_d.jpg">
-		<file>/this/data/textures/wood_barrel_d.jpg</file>
+		<file>/appdata/textures/wood_barrel_d.jpg</file>
         </texture>
         <texture name="wood_barrel_n.png">
-		<file>/this/data/textures/wood_barrel_n.png</file>
+		<file>/appdata/textures/wood_barrel_n.png</file>
 		<class>normalmap</class>
         </texture>
         <texture name="wood_barrel_h.jpg">
-		<file>/this/data/textures/wood_barrel_h.jpg</file>
+		<file>/appdata/textures/wood_barrel_h.jpg</file>
 		<class>normalmap</class>
         </texture>
 
         <texture name="castle-brick3_d.jpg">
-		<file>/this/data/textures/castle-brick3_d.jpg</file>
+		<file>/appdata/textures/castle-brick3_d.jpg</file>
         </texture>
         <texture name="castle-brick1_n.jpg">
-		<file>/this/data/textures/castle-brick1_n.jpg</file>
+		<file>/appdata/textures/castle-brick1_n.jpg</file>
 		<class>normalmap</class>
         </texture>
         <texture name="castle-brick1_h.jpg">
-		<file>/this/data/textures/castle-brick1_h.jpg</file>
+		<file>/appdata/textures/castle-brick1_h.jpg</file>
 		<class>normalmap</class>
         </texture>
 

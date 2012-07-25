@@ -1,9 +1,9 @@
 <dynlevel>
-    <asset path="/this/data" file="testassets.xml" />
+    <asset path="/appdata" file="testassets.xml" />
     <asset path="/lib/krystal/" file="krystal.xml" />
     <asset path="/lib/frankie/" file="frankie.xml" />
-    <asset path="/this/data/" file="dynworldFactories.xml" />
-    <asset path="/this/data/landscape" file="world" />
+    <asset path="/appdata/" file="dynworldFactories.xml" />
+    <asset path="/appdata/landscape" file="world" />
     <dynworld>
     </dynworld>
     <curves>
