@@ -369,8 +369,11 @@ iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& is
   if (result.body)
   {
     iRigidBody* hitBody = result.body->QueryRigidBody ();
-    isect1 = result.isect;
-    obj1 = dynworld->FindObject (hitBody);
+    if (hitBody)
+    {
+      isect1 = result.isect;
+      obj1 = dynworld->FindObject (hitBody);
+    }
   }
 
   csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
