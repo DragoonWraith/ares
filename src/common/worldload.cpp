@@ -81,8 +81,14 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       bool exists = vfs->Exists (file);
       vfs->PopDir ();
       if (exists)
+      {
         if (!LoadLibrary (path, file))
 	  return false;
+      }
+      else
+      {
+	printf ("Warning! File '%s/%s' does not exist!\n", path.GetData (), file.GetData ());
+      }
       assets.Push (Asset (path, file, saveDynfacts, saveTemplates, saveQuests,
 	    saveLights));
     }
