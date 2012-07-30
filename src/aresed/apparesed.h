@@ -400,6 +400,9 @@ public:
   virtual csReversibleTransform GetSpawnTransformation (
       const csString& name, csReversibleTransform* trans = 0);
 
+  /// Get the spawn position for the current camera transform.
+  csVector3 GetBeamPosition (const char* fname);
+
   /// Get the camera.
   Camera* GetCamera () { return camera; }
 

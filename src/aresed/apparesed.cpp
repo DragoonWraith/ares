@@ -1032,19 +1032,8 @@ RoomFactoryCreator* AresEdit3DView::FindRoomFactoryCreator (const char* name)
   return 0;
 }
 
-csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& name,
-    csReversibleTransform* trans)
+csVector3 AresEdit3DView::GetBeamPosition (const char* fname)
 {
-  csString fname;
-  CurvedFactoryCreator* cfc = FindFactoryCreator (name);
-  RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
-  if (cfc)
-    fname.Format("%s%d", name.GetData (), curvedFactoryCounter+1);
-  else if (rfc)
-    fname.Format("%s%d", name.GetData (), roomFactoryCounter+1);
-  else
-    fname = name;
-
   // Use the camera transform.
   csSegment3 beam = GetMouseBeam (50.0f);
   csSectorHitBeamResult result = sector->HitBeamPortals (beam.Start (), beam.End ());
@@ -1064,6 +1053,23 @@ csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& na
     newPosition.Normalize ();
     newPosition = GetCsCamera ()->GetTransform ().GetOrigin () + newPosition * 3.0f;
   }
+  return newPosition;
+}
+
+csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& name,
+    csReversibleTransform* trans)
+{
+  csString fname;
+  CurvedFactoryCreator* cfc = FindFactoryCreator (name);
+  RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
+  if (cfc)
+    fname.Format("%s%d", name.GetData (), curvedFactoryCounter+1);
+  else if (rfc)
+    fname.Format("%s%d", name.GetData (), roomFactoryCounter+1);
+  else
+    fname = name;
+
+  csVector3 newPosition = GetBeamPosition (fname);
 
   csReversibleTransform tc = GetCsCamera ()->GetTransform ();
   csVector3 front = tc.GetFront ();
@@ -1117,25 +1123,7 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
     fname = name;
   }
 
-  // Use the camera transform.
-  csSegment3 beam = GetMouseBeam (50.0f);
-  csSectorHitBeamResult result = sector->HitBeamPortals (beam.Start (), beam.End ());
-
-  float yorigin = factory_to_origin_offset.Get (fname, 1000000.0);
-
-  csVector3 newPosition;
-  if (result.mesh)
-  {
-    newPosition = result.isect;
-    if (yorigin < 999999.0)
-      newPosition.y -= yorigin;
-  }
-  else
-  {
-    newPosition = beam.End () - beam.Start ();
-    newPosition.Normalize ();
-    newPosition = GetCsCamera ()->GetTransform ().GetOrigin () + newPosition * 3.0f;
-  }
+  csVector3 newPosition = GetBeamPosition (fname);
 
   csReversibleTransform tc = GetCsCamera ()->GetTransform ();
   csVector3 front = tc.GetFront ();
