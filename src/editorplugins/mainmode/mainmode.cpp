@@ -677,8 +677,8 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
     StopDrag ();
 
-    if (ctrl || alt)
-      StartKinematicDragging (alt, beam, isect, false);
+    if (ctrl || alt || shift)
+      StartKinematicDragging (alt || shift, beam, isect, false);
     else if (!newobj->IsStatic () && newobj->GetBody ())
       StartPhysicalDragging (newobj->GetBody (), beam, isect);
 
