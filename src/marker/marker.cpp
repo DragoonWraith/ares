@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include "csgeom/spline.h"
 #include "csgeom/math3d.h"
 #include "csgeom/math2d.h"
+#include "csgeom/tri.h"
+#include "igeom/trimesh.h"
 #include "iutil/objreg.h"
 #include "ivideo/graph2d.h"
 #include "ivideo/graph3d.h"
@@ -38,6 +40,40 @@ THE SOFTWARE.
 #include "iengine/movable.h"
 #include "iengine/mesh.h"
 #include "cstool/pen.h"
+
+struct EdgeI
+{
+  int a, b;
+  uint GetHash () const
+  {
+    return a+b;
+  }
+};
+
+template<>
+class csComparator<EdgeI, EdgeI>
+{
+public:
+  static int Compare (const EdgeI& r1, const EdgeI& r2)
+  {
+    if (r1.a < r2.a) return -1;
+    else if (r1.a > r2.a) return 1;
+    else
+    {
+      if (r1.b < r2.b) return -1;
+      else if (r1.b > r2.b) return 1;
+      else return 0;
+    }
+  }
+};
+
+static void AddEdge (csSet<EdgeI>& edges, int a, int b)
+{
+  EdgeI e;
+  if (a > b) { e.a = b; e.b = a; }
+  else { e.a = a; e.b = b; }
+  edges.Add (e);
+}
 
 
 CS_PLUGIN_NAMESPACE_BEGIN(MarkerManager)
@@ -1023,6 +1059,8 @@ csPen* MarkerColor::GetOrCreatePen (int level)
   {
     pen = new csPen (mgr->g2d, mgr->g3d);
     pens.Put (level, pen);
+    csPen3D* pen3d = new csPen3D (mgr->g2d, mgr->g3d);
+    pens3d.Put (level, pen3d);
   }
   else
   {
@@ -1035,6 +1073,8 @@ void MarkerColor::SetRGBColor (int selectionLevel, float r, float g, float b, fl
 {
   csPen* pen = GetOrCreatePen (selectionLevel);
   pen->SetColor (r, g, b, a);
+  csPen3D* pen3d = pens3d[selectionLevel];
+  pen3d->SetColor (r, g, b, a);
 }
 
 void MarkerColor::SetPenWidth (int selectionLevel, float width)
@@ -1235,6 +1275,19 @@ float CircleMarkerHitArea::CheckHit (int x, int y,
 
 //------------------------------------------------------------------------------
 
+void MarkerLines::Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos, int selectionLevel)
+{
+  iGraphics3D* g3d = mgr->GetG3D ();
+  if (space == MARKER_CAMERA)
+    g3d->SetWorldToCamera (csOrthoTransform ());
+  else
+    g3d->SetWorldToCamera (camtrans.GetInverse ());
+  cache[selectionLevel]->SetTransform (meshtrans);
+  cache[selectionLevel]->Render (g3d);
+}
+
 void MarkerLine::Render3D (const csOrthoTransform& camtrans,
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
       const csVector2& pos, int selectionLevel)
@@ -1392,6 +1445,49 @@ void Marker::Render2D ()
     MarkerPrimitive* prim = primitives[i];
     prim->Render2D (camtrans, meshtrans, mgr, pos, selectionLevel);
   }
+}
+
+void Marker::Mesh (MarkerSpace space,
+      iTriangleMesh* mesh, iMarkerColor* color)
+{
+  csSet<EdgeI> edges;
+  for (size_t i = 0 ; i < mesh->GetTriangleCount () ; i++)
+  {
+    csTriangle& t = mesh->GetTriangles()[i];
+    AddEdge (edges, t.a, t.b);
+    AddEdge (edges, t.b, t.c);
+    AddEdge (edges, t.c, t.a);
+  }
+  csVector3* vertices = mesh->GetVertices ();
+  csArray<csPen3DCoordinatePair> pairs;
+  csSet<EdgeI>::GlobalIterator it = edges.GetIterator ();
+  while (it.HasNext ())
+  {
+    EdgeI e = it.Next ();
+    csVector3& v0 = vertices[e.a];
+    csVector3& v1 = vertices[e.b];
+    pairs.Push (csPen3DCoordinatePair (v0, v1));
+  }
+  Lines (space, pairs, color);
+}
+
+void Marker::Lines (MarkerSpace space,
+      const csArray<csPen3DCoordinatePair>& pairs,
+      iMarkerColor* color)
+{
+  MarkerLines* lines = new MarkerLines ();
+  lines->space = space;
+  lines->color = static_cast<MarkerColor*> (color);
+  for (size_t i = SELECTION_NONE ; i <= SELECTION_SELECTED ; i++)
+  {
+    csPen3D* pen3d = lines->color->GetPen3D (i);
+    csPenCache* cache = new csPenCache ();
+    lines->cache.Push (cache);
+    pen3d->SetActiveCache (cache);
+    pen3d->DrawLines (pairs);
+    pen3d->SetActiveCache (0);
+  }
+  primitives.Push (lines);
 }
 
 void Marker::Line (MarkerSpace space,

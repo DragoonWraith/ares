@@ -275,7 +275,49 @@ void AresEdit3DView::PasteSelection ()
 void AresEdit3DView::PlacePasteMarker ()
 {
   pasteMarker->SetVisible (true);
+  if (currentPasteMarkerContext != todoSpawn[0].dynfactName)
+  {
+    iMarkerColor* white = markerMgr->FindMarkerColor ("white");
+
+    // We need to recreate the mesh in the paste marker.
+    pasteMarker->Clear ();
+    currentPasteMarkerContext = todoSpawn[0].dynfactName;
+    bool error = true;
+    iMeshFactoryWrapper* factory = engine->FindMeshFactory (currentPasteMarkerContext);
+    if (factory)
+    {
+      iMeshObjectFactory* fact = factory->GetMeshObjectFactory ();
+      iObjectModel* model = fact->GetObjectModel ();
+      if (model)
+      {
+ 	csRef<iStringSet> strings = csQueryRegistryTagInterface<iStringSet> (
+ 	   object_reg, "crystalspace.shared.stringset");
+ 	csStringID baseId = strings->Request ("base");
+	iTriangleMesh* triangles = model->GetTriangleData (baseId);
+	if (triangles)
+	{
+	  error = false;
+	  pasteMarker->Mesh (MARKER_OBJECT, triangles, white);
+	}
+      }
+    }
+
+    if (error)
+    {
+      // @@@ Is this needed?
+      pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
+      pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
+      pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
+    }
+  }
   csReversibleTransform tr = todoSpawn[0].trans;
+  if (!todoSpawn[0].useTransform)
+  {
+    tr = GetCsCamera ()->GetTransform ();
+    csVector3 front = tr.GetFront ();
+    front.y = 0;
+    tr.LookAt (front, csVector3 (0, 1, 0));
+  }
   tr.SetOrigin (csVector3 (0));
   tr = GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
   pasteMarker->SetTransform (tr);

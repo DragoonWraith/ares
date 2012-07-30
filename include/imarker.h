@@ -31,6 +31,8 @@ struct iView;
 struct iMeshWrapper;
 struct iMaterialWrapper;
 struct iFont;
+struct iTriangleMesh;
+struct csPen3DCoordinatePair;
 class csReversibleTransform;
 class csVector3;
 class csBox3;
@@ -261,6 +263,21 @@ struct iMarker : public virtual iBase
   virtual void Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
       bool arrow = false) = 0;
+
+  /**
+   * Draw a mesh of lines.
+   * Does not work with MARKER_2D.
+   */
+  virtual void Lines (MarkerSpace space,
+      const csArray<csPen3DCoordinatePair>& lines,
+      iMarkerColor* color) = 0;
+
+  /**
+   * Draw a triangle mesh.
+   * Does not work with MARKER_2D.
+   */
+  virtual void Mesh (MarkerSpace space,
+      iTriangleMesh* mesh, iMarkerColor* color) = 0;
 
   /**
    * Draw a rounded 2D box.

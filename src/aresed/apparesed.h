@@ -253,7 +253,9 @@ private:
    */
   bool InitPhysics ();
 
+  /// Marker used for pasting.
   iMarker* pasteMarker;
+  csString currentPasteMarkerContext;	// Name of the dynfact mesh currently in pasteMarker.
 
   /// A paste buffer.
   csArray<AresPasteContents> pastebuffer;

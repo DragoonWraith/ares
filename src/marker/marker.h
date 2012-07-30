@@ -39,6 +39,8 @@ THE SOFTWARE.
 #include "include/imarker.h"
 
 class csPen;
+class csPen3D;
+class csPenCache;
 struct iFont;
 
 CS_PLUGIN_NAMESPACE_BEGIN(MarkerManager)
@@ -55,6 +57,7 @@ private:
   MarkerManager* mgr;
   csString name;
   csPDelArray<csPen> pens;
+  csPDelArray<csPen3D> pens3d;
 
   csPen* GetOrCreatePen (int level);
 
@@ -76,6 +79,13 @@ public:
       level = pens.GetSize () - 1;
     return pens[level];
   }
+
+  csPen3D* GetPen3D (int level) const
+  {
+    if (size_t (level) >= pens3d.GetSize ())
+      level = pens3d.GetSize () - 1;
+    return pens3d[level];
+  }
 };
 
 struct MarkerPrimitive
@@ -96,6 +106,18 @@ struct MarkerLine : public MarkerPrimitive
   bool arrow;
 
   virtual ~MarkerLine () { }
+  virtual void Render3D (const csOrthoTransform& camtrans,
+      const csReversibleTransform& meshtrans, MarkerManager* mgr,
+      const csVector2& pos, int selectionLevel);
+};
+
+struct MarkerLines : public MarkerPrimitive
+{
+  MarkerSpace space;
+  csPDelArray<csPenCache> cache;
+  MarkerColor* color;
+
+  virtual ~MarkerLines () { }
   virtual void Render3D (const csOrthoTransform& camtrans,
       const csReversibleTransform& meshtrans, MarkerManager* mgr,
       const csVector2& pos, int selectionLevel);
@@ -277,6 +299,11 @@ public:
   virtual void Line (MarkerSpace space,
       const csVector3& v1, const csVector3& v2, iMarkerColor* color,
       bool arrow = false);
+  virtual void Lines (MarkerSpace space,
+      const csArray<csPen3DCoordinatePair>& lines,
+      iMarkerColor* color);
+  virtual void Mesh (MarkerSpace space,
+      iTriangleMesh* mesh, iMarkerColor* color);
   virtual void RoundedBox2D (MarkerSpace space,
       const csVector3& corner1, const csVector3& corner2,
       int roundness, iMarkerColor* color);
@@ -546,6 +573,7 @@ public:
 
   virtual void SetDefaultFont (iFont* font) { MarkerManager::font = font; }
   iFont* GetFont () const { return font; }
+  iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g2d; }
   iVirtualClock* GetVC () const { return vc; }
 
