@@ -42,6 +42,15 @@ namespace Ares
   class Value;
 }
 
+/// Structured used to paste and spawn new information.
+struct PasteContents
+{
+  csString dynfactName;
+  bool useTransform;
+  csReversibleTransform trans;
+  bool isStatic;
+};
+
 /**
  * The 3D view in the editor.
  */
@@ -140,12 +149,6 @@ struct i3DView : public virtual iBase
       csReversibleTransform* trans = 0) = 0;
 
   /**
-   * Return where an item would be spawned if we were to spawn it now.
-   */
-  virtual csReversibleTransform GetSpawnTransformation (
-      const csString& name, csReversibleTransform* trans = 0) = 0;
-
-  /**
    * Get the current dynamic cell.
    */
   virtual iDynamicCell* GetDynamicCell () const = 0;
@@ -171,10 +174,22 @@ struct i3DView : public virtual iBase
    */
   virtual iELCM* GetELCM () const = 0;
 
+  // There are two paste buffers. One is the 'normal' paste buffer which is
+  // filled by doing a copy. We call this the clipboard. The other is the paste
+  // buffer that we're currently about to paste or spawn.
+
   /// Start paste mode.
   virtual void StartPasteSelection () = 0;
   /// Start paste mode for a specific object.
   virtual void StartPasteSelection (const char* name) = 0;
+  /// Paste mode active.
+  virtual bool IsPasteSelectionActive () const = 0;
+  /// Set the paste constrain mode. Use one of the CONSTRAIN_ constants.
+  virtual void SetPasteConstrain (int mode) = 0;
+  /// Get the current paste contrain mode.
+  virtual int GetPasteConstrain () const = 0;
+  /// Is there something in the clipboard?
+  virtual bool IsClipboardFull () const = 0;
 
   /**
    * Move an item to another category. If the item doesn't already exist

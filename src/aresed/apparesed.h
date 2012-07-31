@@ -105,14 +105,6 @@ public:
   virtual void SelectionChanged (const csArray<iDynamicObject*>& current_objects);
 };
 
-struct AresPasteContents
-{
-  csString dynfactName;
-  bool useTransform;
-  csReversibleTransform trans;
-  bool isStatic;
-};
-
 /**
  * The main logic behind the Ares Editor 3D view.
  */
@@ -256,18 +248,25 @@ private:
   /// Marker used for pasting.
   iMarker* pasteMarker;
   csString currentPasteMarkerContext;	// Name of the dynfact mesh currently in pasteMarker.
+  int pasteConstrainMode;		// Current paste constrain mode.
+  csVector3 pasteConstrain;
 
   /// A paste buffer.
-  csArray<AresPasteContents> pastebuffer;
+  csArray<PasteContents> pastebuffer;
 
   /// When there are items in this array we are waiting to spawn stuff.
-  csArray<AresPasteContents> todoSpawn;
+  csArray<PasteContents> todoSpawn;
 
   /**
    * Paste the current paste buffer at the mouse position. Usually you
    * would not use this but use StartPasteSelection() instead.
    */
   void PasteSelection ();
+
+  /**
+   * Create the paste marker based on the current paste buffer (if needed).
+   */
+  void CreatePasteMarker ();
 
   /**
    * Make sure the paste marker is at the correct spot and active.
@@ -278,6 +277,11 @@ private:
    * Stop paste mode.
    */
   void StopPasteMode ();
+
+  /**
+   * Constrain a transform according to the given mode.
+   */
+  void ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain);
 
 public:
   /**
@@ -397,8 +401,7 @@ public:
   void WarpCell (iDynamicCell* cell);
 
   /// Return where an item would be spawned if we were to spawn it now.
-  virtual csReversibleTransform GetSpawnTransformation (
-      const csString& name, csReversibleTransform* trans = 0);
+  csReversibleTransform GetSpawnTransformation ();
 
   /// Get the spawn position for the current camera transform.
   csVector3 GetBeamPosition (const char* fname);
@@ -489,9 +492,13 @@ public:
   /// Start paste mode for a specific object.
   virtual void StartPasteSelection (const char* name);
   /// Paste mode active.
-  bool IsPasteSelectionActive () { return todoSpawn.GetSize () > 0; }
+  virtual bool IsPasteSelectionActive () const { return todoSpawn.GetSize () > 0; }
+  /// Set the paste constrain mode. Use one of the CONSTRAIN_ constants.
+  virtual void SetPasteConstrain (int mode);
+  /// Get the current paste contrain mode.
+  virtual int GetPasteConstrain () const { return pasteConstrainMode; }
   /// Is there something in the paste buffer?
-  bool IsPasteBufferFull () const { return pastebuffer.GetSize () > 0; }
+  virtual bool IsClipboardFull () const { return pastebuffer.GetSize () > 0; }
 };
 
 enum

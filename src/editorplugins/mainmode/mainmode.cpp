@@ -520,8 +520,33 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
   {
     csString itemName = GetSelectedItem ();
     if (!itemName.IsEmpty ())
-    {
       view3d->StartPasteSelection (itemName);
+  }
+  else if (code == 'x')
+  {
+    if (view3d->IsPasteSelectionActive ())
+    {
+      int mode = view3d->GetPasteConstrain ();
+      view3d->SetPasteConstrain (
+	  mode == CONSTRAIN_XPLANE ? CONSTRAIN_NONE : CONSTRAIN_XPLANE);
+    }
+  }
+  else if (code == 'y')
+  {
+    if (view3d->IsPasteSelectionActive ())
+    {
+      int mode = view3d->GetPasteConstrain ();
+      view3d->SetPasteConstrain (
+	  mode == CONSTRAIN_YPLANE ? CONSTRAIN_NONE : CONSTRAIN_YPLANE);
+    }
+  }
+  else if (code == 'z')
+  {
+    if (view3d->IsPasteSelectionActive ())
+    {
+      int mode = view3d->GetPasteConstrain ();
+      view3d->SetPasteConstrain (
+	  mode == CONSTRAIN_ZPLANE ? CONSTRAIN_NONE : CONSTRAIN_ZPLANE);
     }
   }
   else if (code == CSKEY_UP)

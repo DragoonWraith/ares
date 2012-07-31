@@ -239,7 +239,7 @@ void AresEdit3DView::CopySelection ()
   {
     iDynamicObject* dynobj = it->Next ();
     iDynamicFactory* dynfact = dynobj->GetFactory ();
-    AresPasteContents apc;
+    PasteContents apc;
     apc.useTransform = true;	// Use the transform defined in this paste buffer.
     apc.dynfactName = dynfact->GetName ();
     apc.trans = dynobj->GetTransform ();
@@ -272,9 +272,8 @@ void AresEdit3DView::PasteSelection ()
   }
 }
 
-void AresEdit3DView::PlacePasteMarker ()
+void AresEdit3DView::CreatePasteMarker ()
 {
-  pasteMarker->SetVisible (true);
   if (currentPasteMarkerContext != todoSpawn[0].dynfactName)
   {
     iMarkerColor* white = markerMgr->FindMarkerColor ("white");
@@ -310,38 +309,61 @@ void AresEdit3DView::PlacePasteMarker ()
       pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
     }
   }
-  csReversibleTransform tr = todoSpawn[0].trans;
-  if (!todoSpawn[0].useTransform)
+}
+
+void AresEdit3DView::ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain)
+{
+  if (mode == CONSTRAIN_NONE) return;
+  csVector3 origin = tr.GetOrigin ();
+  switch (mode)
   {
-    tr = GetCsCamera ()->GetTransform ();
-    csVector3 front = tr.GetFront ();
-    front.y = 0;
-    tr.LookAt (front, csVector3 (0, 1, 0));
+    case CONSTRAIN_XPLANE:
+      origin.y = constrain.y;
+      origin.z = constrain.z;
+      break;
+    case CONSTRAIN_YPLANE:
+      origin.x = constrain.x;
+      origin.z = constrain.z;
+      break;
+    case CONSTRAIN_ZPLANE:
+      origin.x = constrain.x;
+      origin.y = constrain.y;
+      break;
   }
-  tr.SetOrigin (csVector3 (0));
-  tr = GetSpawnTransformation (todoSpawn[0].dynfactName, &tr);
+  tr.SetOrigin (origin);
+}
+
+void AresEdit3DView::PlacePasteMarker ()
+{
+  pasteMarker->SetVisible (true);
+  CreatePasteMarker ();
+
+  csReversibleTransform tr = GetSpawnTransformation ();
+  ConstrainTransform (tr, pasteConstrainMode, pasteConstrain);
   pasteMarker->SetTransform (tr);
 }
 
 void AresEdit3DView::StartPasteSelection ()
 {
+  pasteConstrainMode = CONSTRAIN_NONE;
   todoSpawn = pastebuffer;
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Middle button to cancel");
+  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement");
 }
 
 void AresEdit3DView::StartPasteSelection (const char* name)
 {
+  pasteConstrainMode = CONSTRAIN_NONE;
   todoSpawn.Empty ();
-  AresPasteContents apc;
+  PasteContents apc;
   apc.useTransform = false;
   apc.dynfactName = name;
   todoSpawn.Push (apc);
   PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Middle button to cancel");
+  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement");
 }
 
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
@@ -1056,16 +1078,38 @@ csVector3 AresEdit3DView::GetBeamPosition (const char* fname)
   return newPosition;
 }
 
-csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& name,
-    csReversibleTransform* trans)
+void AresEdit3DView::SetPasteConstrain (int mode)
 {
+  pasteConstrainMode = mode;
+  if (todoSpawn[0].useTransform)
+    pasteConstrain = todoSpawn[0].trans.GetOrigin ();
+  else
+  {
+    csReversibleTransform tr = GetSpawnTransformation ();
+    pasteConstrain = tr.GetOrigin ();
+  }
+}
+
+csReversibleTransform AresEdit3DView::GetSpawnTransformation ()
+{
+  csReversibleTransform tr = todoSpawn[0].trans;
+  if (!todoSpawn[0].useTransform)
+  {
+    tr = GetCsCamera ()->GetTransform ();
+    csVector3 front = tr.GetFront ();
+    front.y = 0;
+    tr.LookAt (front, csVector3 (0, 1, 0));
+  }
+  tr.SetOrigin (csVector3 (0));
+
+  const char* name = todoSpawn[0].dynfactName;
   csString fname;
   CurvedFactoryCreator* cfc = FindFactoryCreator (name);
   RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
   if (cfc)
-    fname.Format("%s%d", name.GetData (), curvedFactoryCounter+1);
+    fname.Format("%s%d", name, curvedFactoryCounter+1);
   else if (rfc)
-    fname.Format("%s%d", name.GetData (), roomFactoryCounter+1);
+    fname.Format("%s%d", name, roomFactoryCounter+1);
   else
     fname = name;
 
@@ -1075,7 +1119,7 @@ csReversibleTransform AresEdit3DView::GetSpawnTransformation (const csString& na
   csVector3 front = tc.GetFront ();
   front.y = 0;
   tc.LookAt (front, csVector3 (0, 1, 0));
-  if (trans) tc = *trans;
+  tc = tr;
   tc.SetOrigin (tc.GetOrigin () + newPosition);
   return tc;
 }
@@ -1138,6 +1182,9 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   {
     tc.SetOrigin (newPosition);
   }
+  ConstrainTransform (tc, pasteConstrainMode, pasteConstrain);
+  //pasteConstrainMode = CONSTRAIN_NONE;
+
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);
   if (!dynobj)
   {
@@ -1909,7 +1956,7 @@ void AppAresEditWX::SetMenuState ()
     int id;
     const MenuCommand& mc = it.Next (id);
     bool enabled = mc.target->IsCommandValid (mc.command, mc.args,
-	aresed3d->GetSelection (), aresed3d->IsPasteBufferFull (), n);
+	aresed3d->GetSelection (), aresed3d->IsClipboardFull (), n);
     menuBar->Enable (id, enabled);
   }
 }
