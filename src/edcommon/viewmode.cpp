@@ -134,7 +134,7 @@ bool ViewMode::OnKeyboard(iEvent& ev, utf32_char code)
   {
     nature->SetFoliageDensityFactor (nature->GetFoliageDensityFactor ()+.05);
   }
-  else if (code == '.')
+  else if (code == 'p')
   {
     if (view3d->GetEditorCamera ()->IsPanningEnabled ())
     {
