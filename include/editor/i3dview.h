@@ -191,6 +191,9 @@ struct i3DView : public virtual iBase
   /// Is there something in the clipboard?
   virtual bool IsClipboardFull () const = 0;
 
+  /// Toggle grid movement on/off.
+  virtual void ToggleGridMode () = 0;
+
   /**
    * Move an item to another category. If the item doesn't already exist
    * then this is equivalent to calling AddItem().

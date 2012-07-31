@@ -250,6 +250,8 @@ private:
   csString currentPasteMarkerContext;	// Name of the dynfact mesh currently in pasteMarker.
   int pasteConstrainMode;		// Current paste constrain mode.
   csVector3 pasteConstrain;
+  bool gridMode;
+  float gridSize;
 
   /// A paste buffer.
   csArray<PasteContents> pastebuffer;
@@ -281,7 +283,8 @@ private:
   /**
    * Constrain a transform according to the given mode.
    */
-  void ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain);
+  void ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain,
+      bool grid);
 
 public:
   /**
@@ -485,20 +488,15 @@ public:
    */
   void NewProject (const csArray<Asset>& assets);
 
-  /// Copy the current selection to the paste buffer.
   void CopySelection ();
-  /// Start paste mode.
   virtual void StartPasteSelection ();
-  /// Start paste mode for a specific object.
   virtual void StartPasteSelection (const char* name);
-  /// Paste mode active.
   virtual bool IsPasteSelectionActive () const { return todoSpawn.GetSize () > 0; }
-  /// Set the paste constrain mode. Use one of the CONSTRAIN_ constants.
   virtual void SetPasteConstrain (int mode);
-  /// Get the current paste contrain mode.
   virtual int GetPasteConstrain () const { return pasteConstrainMode; }
-  /// Is there something in the paste buffer?
   virtual bool IsClipboardFull () const { return pastebuffer.GetSize () > 0; }
+
+  virtual void ToggleGridMode ();
 };
 
 enum

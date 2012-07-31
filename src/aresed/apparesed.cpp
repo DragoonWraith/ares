@@ -120,6 +120,9 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
   camera.AttachNew (new Camera (this));
   pasteMarker = 0;
+  pasteConstrainMode = CONSTRAIN_NONE;
+  gridMode = false;
+  gridSize = 0.1;
 }
 
 AresEdit3DView::~AresEdit3DView()
@@ -311,12 +314,31 @@ void AresEdit3DView::CreatePasteMarker ()
   }
 }
 
-void AresEdit3DView::ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain)
+void AresEdit3DView::ToggleGridMode ()
 {
-  if (mode == CONSTRAIN_NONE) return;
+  gridMode = !gridMode;
+}
+
+
+void AresEdit3DView::ConstrainTransform (csReversibleTransform& tr,
+    int mode, const csVector3& constrain,
+    bool grid)
+{
   csVector3 origin = tr.GetOrigin ();
+  if (grid)
+  {
+    float m;
+    m = fmod (origin.x, gridSize);
+    origin.x -= m;
+    m = fmod (origin.y, gridSize);
+    origin.y -= m;
+    m = fmod (origin.z, gridSize);
+    origin.z -= m;
+  }
   switch (mode)
   {
+    case CONSTRAIN_NONE:
+      break;
     case CONSTRAIN_XPLANE:
       origin.y = constrain.y;
       origin.z = constrain.z;
@@ -339,7 +361,7 @@ void AresEdit3DView::PlacePasteMarker ()
   CreatePasteMarker ();
 
   csReversibleTransform tr = GetSpawnTransformation ();
-  ConstrainTransform (tr, pasteConstrainMode, pasteConstrain);
+  ConstrainTransform (tr, pasteConstrainMode, pasteConstrain, gridMode);
   pasteMarker->SetTransform (tr);
 }
 
@@ -350,7 +372,7 @@ void AresEdit3DView::StartPasteSelection ()
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement");
+  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement. g for grid");
 }
 
 void AresEdit3DView::StartPasteSelection (const char* name)
@@ -363,7 +385,7 @@ void AresEdit3DView::StartPasteSelection (const char* name)
   todoSpawn.Push (apc);
   PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement");
+  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement. g for grid");
 }
 
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
@@ -1182,7 +1204,7 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   {
     tc.SetOrigin (newPosition);
   }
-  ConstrainTransform (tc, pasteConstrainMode, pasteConstrain);
+  ConstrainTransform (tc, pasteConstrainMode, pasteConstrain, gridMode);
   //pasteConstrainMode = CONSTRAIN_NONE;
 
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);

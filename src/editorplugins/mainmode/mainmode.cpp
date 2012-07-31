@@ -522,6 +522,11 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     if (!itemName.IsEmpty ())
       view3d->StartPasteSelection (itemName);
   }
+  else if (code == 'g')
+  {
+    if (view3d->IsPasteSelectionActive ())
+      view3d->ToggleGridMode ();
+  }
   else if (code == 'x')
   {
     if (view3d->IsPasteSelectionActive ())
