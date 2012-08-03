@@ -984,7 +984,6 @@ bool AresEdit3DView::PostLoadMap ()
   }
 
   iLightList* lightList = sector->GetLights ();
-  lightList->RemoveAll ();
 
   nature->InitSector (sector);
 

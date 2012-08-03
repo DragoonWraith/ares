@@ -146,6 +146,7 @@ bool WorldLoader::LoadDoc (iDocument* doc)
     if (error)
     {
       printf ("Error loading dynworld '%s'!", error->GetData ());
+      fflush (stdout);
       return false;
     }
   }
