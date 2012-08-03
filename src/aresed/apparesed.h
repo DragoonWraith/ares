@@ -564,7 +564,7 @@ private:
   void OnNotebookChanged (wxNotebookEvent& event);
 
 public:
-  AppAresEditWX (iObjectRegistry* object_reg);
+  AppAresEditWX (iObjectRegistry* object_reg, int w, int h);
   virtual ~AppAresEditWX ();
 
   /**

@@ -1392,8 +1392,8 @@ END_EVENT_TABLE()
 // The global pointer to AresEd
 AppAresEditWX* aresed = 0;
 
-AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg)
-  : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (1000, 600)),
+AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
+  : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (w, h)),
     scfImplementationType (this)
 {
   AppAresEditWX::object_reg = object_reg;
@@ -1634,10 +1634,6 @@ bool AppAresEditWX::LoadResourceFile (const char* filename, wxString& searchPath
 
 bool AppAresEditWX::Initialize ()
 {
-  if (!celInitializer::SetupConfigManager (object_reg,
-      "/appdata/AppAresEdit.cfg", "ares"))
-    return ReportError ("Failed to setup configmanager!");
-
   if (!celInitializer::RequestPlugins (object_reg,
 	CS_REQUEST_VFS,
 	CS_REQUEST_PLUGIN ("crystalspace.graphics2d.wxgl", iGraphics2D),
