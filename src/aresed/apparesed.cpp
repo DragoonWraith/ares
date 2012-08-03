@@ -739,9 +739,24 @@ bool AresEdit3DView::SetupDecal ()
 
 void AresEdit3DView::ResizeView (int width, int height)
 {
+printf ("view_wh=%d,%d new_wh=%d,%d\n", view_width, view_height, width, height);
+
+#if 0
   // We use the full window to draw the world.
+  float scale_x = ((float)width)  / ((float)view_width);
+  float scale_y = ((float)height) / ((float)view_height);
+
+  view->GetPerspectiveCamera()->SetPerspectiveCenter (
+      view->GetPerspectiveCamera()->GetShiftX() * scale_x,
+      view->GetPerspectiveCamera()->GetShiftY() * scale_y);
+
+  view->GetPerspectiveCamera()->SetFOVAngle (
+      view->GetPerspectiveCamera()->GetFOVAngle(), width);
+#endif
+
   view_width = width;
   view_height = height;
+
   //view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
   view->SetRectangle (0, 0, view_width, view_height);
 }
