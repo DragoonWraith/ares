@@ -481,7 +481,7 @@ public:
   /**
    * Load the world from a file.
    */
-  void LoadFile (const char* filename);
+  bool LoadFile (const char* filename);
 
   /**
    * Create a new project with the given assets.
@@ -594,6 +594,7 @@ public:
        const char* targetName, const char* command, const char* args);
 
   bool Initialize ();
+  bool ParseCommandLine ();
   bool InitPlugins ();
   bool InitWX ();
   void PushFrame ();
@@ -602,7 +603,7 @@ public:
   void OnShow (wxShowEvent& event);
   void OnSize (wxSizeEvent& ev);
   void SaveFile (const char* filename);
-  void LoadFile (const char* filename);
+  bool LoadFile (const char* filename);
   void NewProject (const csArray<Asset>& assets);
 
   void SwitchToMode (const char* name);

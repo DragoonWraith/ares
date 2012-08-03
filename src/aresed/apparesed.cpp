@@ -644,7 +644,7 @@ void AresEdit3DView::NewProject (const csArray<Asset>& assets)
   PostLoadMap ();
 }
 
-void AresEdit3DView::LoadFile (const char* filename)
+bool AresEdit3DView::LoadFile (const char* filename)
 {
   CleanupWorld ();
   SetupWorld ();
@@ -653,7 +653,7 @@ void AresEdit3DView::LoadFile (const char* filename)
   {
     PostLoadMap ();
     app->GetUIManager ()->Error ("Error loading file '%s'!",filename);
-    return;
+    return false;
   }
 
   // @@@ Hardcoded sector name!
@@ -673,11 +673,12 @@ void AresEdit3DView::LoadFile (const char* filename)
   }
   roomFactories = worldLoader->GetRoomFactories ();
 
-  // @@@ Error handling.
-  SetupDynWorld ();
+  if (!SetupDynWorld ())
+    return false;
 
-  // @@@ Error handling.
-  PostLoadMap ();
+  if (!PostLoadMap ())
+    return false;
+  return true;
 }
 
 void AresEdit3DView::OnExit ()
@@ -1462,10 +1463,12 @@ void AppAresEditWX::NewProject (const csArray<Asset>& assets)
   RefreshModes ();
 }
 
-void AppAresEditWX::LoadFile (const char* filename)
+bool AppAresEditWX::LoadFile (const char* filename)
 {
-  aresed3d->LoadFile (filename);
+  if (!aresed3d->LoadFile (filename))
+    return false;
   RefreshModes ();
+  return true;
 }
 
 void AppAresEditWX::SaveFile (const char* filename)
@@ -1696,6 +1699,21 @@ bool AppAresEditWX::Initialize ()
 
   printer.AttachNew (new FramePrinter (object_reg));
 
+  if (!ParseCommandLine ())
+    return false;
+  return true;
+}
+
+bool AppAresEditWX::ParseCommandLine ()
+{
+  csRef<iCommandLineParser> cmdline (
+  	csQueryRegistry<iCommandLineParser> (object_reg));
+  const char* val = cmdline->GetName ();
+  if (val)
+  {
+    if (!LoadFile (val))
+      return false;
+  }
   return true;
 }
 
