@@ -758,7 +758,7 @@ printf ("view_wh=%d,%d new_wh=%d,%d\n", view_width, view_height, width, height);
   view_height = height;
 
   //view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
-  view->SetRectangle (0, 0, view_width, view_height);
+  view->SetRectangle (0, 0, view_width, view_height, false);
 }
 
 iAresEditor* AresEdit3DView::GetApplication  ()
