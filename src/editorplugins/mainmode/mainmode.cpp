@@ -128,15 +128,7 @@ void MainMode::Start ()
 {
   ViewMode::Start ();
   CreateMarkers ();
-
-  if (view3d->GetSelection ()->GetSize () >= 1)
-  {
-    transformationMarker->SetVisible (true);
-    transformationMarker->AttachMesh (view3d->GetSelection ()->GetFirst ()->GetMesh ());
-  }
-  else
-    transformationMarker->SetVisible (false);
-
+  SetTransformationMarkerStatus ();
   Refresh ();
 }
 
@@ -208,10 +200,20 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
     UITools::SetValue (panel, "factoryNameLabel", "");
   }
 
-  if (current.GetSize () >= 1)
+  SetTransformationMarkerStatus ();
+}
+
+void MainMode::SetTransformationMarkerStatus ()
+{
+  if (do_kinematic_dragging)
+  {
+    transformationMarker->SetVisible (false);
+    return;
+  }
+  if (view3d->GetSelection ()->GetSize () >= 1)
   {
     transformationMarker->SetVisible (true);
-    transformationMarker->AttachMesh (current[0]->GetMesh ());
+    transformationMarker->AttachMesh (view3d->GetSelection ()->GetFirst ()->GetMesh ());
   }
   else
     transformationMarker->SetVisible (false);
@@ -414,10 +416,14 @@ void MainMode::StopDrag (bool cancel)
   }
   dragObjects.DeleteAll ();
   view3d->GetApplication ()->ClearStatus ();
+  view3d->HideConstrainMarker ();
+  SetTransformationMarkerStatus ();
 }
 
 void MainMode::HandleKinematicDragging ()
 {
+  iCamera* camera = view3d->GetCsCamera ();
+
   csSegment3 beam = view3d->GetMouseBeam (1000.0f);
   csVector3 newPosition;
   if (doDragRestrictY)
@@ -464,17 +470,22 @@ void MainMode::HandleKinematicDragging ()
   }
   else
   {
-    iCamera* camera = view3d->GetCsCamera ();
     newPosition = beam.End () - beam.Start ();
     newPosition.Normalize ();
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
   }
+
   for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
   {
     csVector3 np = newPosition - dragObjects[i].kineOffset;
     SetDynObjOrigin (dragObjects[i].dynobj, np);
     if (kinematicFirstOnly) break;
   }
+
+  const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetMesh ()->GetMovable ()->GetTransform ();
+  csReversibleTransform tr;
+  tr.SetOrigin (meshtrans.GetOrigin ());
+  view3d->MoveConstrainMarker (tr);
 }
 
 void MainMode::HandlePhysicalDragging ()
@@ -587,6 +598,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     else if (do_kinematic_dragging)
     {
       doDragRestrictX = !doDragRestrictX;
+      view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
     }
   }
   else if (code == 'y')
@@ -600,6 +612,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     else if (do_kinematic_dragging)
     {
       doDragRestrictY = !doDragRestrictY;
+      view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
     }
   }
   else if (code == 'z')
@@ -613,6 +626,7 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     else if (do_kinematic_dragging)
     {
       doDragRestrictZ = !doDragRestrictZ;
+      view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
     }
   }
   else if (code == CSKEY_UP)
@@ -699,6 +713,8 @@ void MainMode::StartKinematicDragging (bool restrictY,
   doDragRestrictY = restrictY;
   doDragRestrictZ = false;
   dragRestrict = isect;
+  view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+  SetTransformationMarkerStatus ();
 }
 
 void MainMode::StartPhysicalDragging (iRigidBody* hitBody,

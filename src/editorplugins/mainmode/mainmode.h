@@ -64,6 +64,7 @@ private:
 
   void CreateMarkers ();
   iMarker* transformationMarker;
+  void SetTransformationMarkerStatus ();
 
   void StartKinematicDragging (bool restrictY,
       const csSegment3& beam, const csVector3& isect, bool firstOnly);

@@ -70,6 +70,13 @@ struct i3DView : public virtual iBase
   /// Get the light that moves with the camera.
   virtual iLight* GetCameraLight () const = 0;
 
+  /// Show the constrain marker.
+  virtual void ShowConstrainMarker (bool constrainx, bool constrainy, bool constrainz) = 0;
+  /// Move the constrain marker.
+  virtual void MoveConstrainMarker (const csReversibleTransform& trans) = 0;
+  /// Hide the constrain marker.
+  virtual void HideConstrainMarker () = 0;
+
   /// Return true if we're in debug mode.
   virtual bool IsDebugMode () const = 0;
   virtual void SetDebugMode (bool b) = 0;

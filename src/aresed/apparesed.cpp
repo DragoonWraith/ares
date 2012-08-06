@@ -120,6 +120,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
   camera.AttachNew (new Camera (this));
   pasteMarker = 0;
+  constrainMarker = 0;
   pasteConstrainMode = CONSTRAIN_NONE;
   gridMode = false;
   gridSize = 0.1;
@@ -230,6 +231,7 @@ void AresEdit3DView::StopPasteMode ()
 {
   todoSpawn.Empty ();
   pasteMarker->SetVisible (false);
+  constrainMarker->SetVisible (false);
   app->SetMenuState ();
   app->ClearStatus ();
 }
@@ -358,16 +360,21 @@ void AresEdit3DView::ConstrainTransform (csReversibleTransform& tr,
 void AresEdit3DView::PlacePasteMarker ()
 {
   pasteMarker->SetVisible (true);
+  constrainMarker->SetVisible (true);
   CreatePasteMarker ();
 
   csReversibleTransform tr = GetSpawnTransformation ();
   ConstrainTransform (tr, pasteConstrainMode, pasteConstrain, gridMode);
   pasteMarker->SetTransform (tr);
+  csReversibleTransform ctr;
+  ctr.SetOrigin (tr.GetOrigin ());
+  constrainMarker->SetTransform (ctr);
 }
 
 void AresEdit3DView::StartPasteSelection ()
 {
   pasteConstrainMode = CONSTRAIN_NONE;
+  ShowConstrainMarker (false, true, false);
   todoSpawn = pastebuffer;
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
@@ -378,6 +385,7 @@ void AresEdit3DView::StartPasteSelection ()
 void AresEdit3DView::StartPasteSelection (const char* name)
 {
   pasteConstrainMode = CONSTRAIN_NONE;
+  ShowConstrainMarker (false, true, false);
   todoSpawn.Empty ();
   PasteContents apc;
   apc.useTransform = false;
@@ -878,6 +886,9 @@ bool AresEdit3DView::Setup ()
   pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
   pasteMarker->SetVisible (false);
 
+  constrainMarker = markerMgr->CreateMarker ();
+  HideConstrainMarker ();
+
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
 
@@ -1115,9 +1126,44 @@ csVector3 AresEdit3DView::GetBeamPosition (const char* fname)
   return newPosition;
 }
 
+void AresEdit3DView::ShowConstrainMarker (bool constrainx, bool constrainy, bool constrainz)
+{
+  constrainMarker->SetVisible (true);
+  constrainMarker->Clear ();
+  if (!constrainx)
+  {
+    iMarkerColor* red = markerMgr->FindMarkerColor ("red");
+    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
+    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (-1,0,0), red, true);
+  }
+  if (!constrainy)
+  {
+    iMarkerColor* green = markerMgr->FindMarkerColor ("green");
+    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
+    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,-1,0), green, true);
+  }
+  if (!constrainz)
+  {
+    iMarkerColor* blue = markerMgr->FindMarkerColor ("blue");
+    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
+    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,-1), blue, true);
+  }
+}
+
+void AresEdit3DView::MoveConstrainMarker (const csReversibleTransform& trans)
+{
+  constrainMarker->SetTransform (trans);
+}
+
+void AresEdit3DView::HideConstrainMarker ()
+{
+  constrainMarker->SetVisible (false);
+}
+
 void AresEdit3DView::SetPasteConstrain (int mode)
 {
   pasteConstrainMode = mode;
+  ShowConstrainMarker (mode & CONSTRAIN_ZPLANE, true, mode & CONSTRAIN_XPLANE);
   if (todoSpawn[0].useTransform)
     pasteConstrain = todoSpawn[0].trans.GetOrigin ();
   else

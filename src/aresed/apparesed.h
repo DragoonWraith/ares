@@ -247,6 +247,7 @@ private:
 
   /// Marker used for pasting.
   iMarker* pasteMarker;
+  iMarker* constrainMarker;
   csString currentPasteMarkerContext;	// Name of the dynfact mesh currently in pasteMarker.
   int pasteConstrainMode;		// Current paste constrain mode.
   csVector3 pasteConstrain;
@@ -332,6 +333,10 @@ public:
   virtual void ModifyCurrentTime (csTicks t) { currentTime += t; }
   virtual csTicks GetCurrentTime () const { return currentTime; }
   virtual bool IsSimulation () const { return do_simulation; }
+
+  virtual void ShowConstrainMarker (bool constrainx, bool constrainy, bool constrainz);
+  virtual void MoveConstrainMarker (const csReversibleTransform& trans);
+  virtual void HideConstrainMarker ();
 
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
