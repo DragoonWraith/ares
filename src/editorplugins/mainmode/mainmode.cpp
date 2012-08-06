@@ -816,10 +816,21 @@ printf ("mod=%08lx shift=%d ctrl=%d alt=%d\n", mod, shift, ctrl, alt); fflush (s
 
   if (but == csmbLeft)
   {
+    iSelection* sel = view3d->GetSelection ();
     if (shift)
-      view3d->GetSelection ()->AddCurrentObject (newobj);
+      sel->AddCurrentObject (newobj);
     else
-      view3d->GetSelection ()->SetCurrentObject (newobj);
+    {
+      if (sel->GetSize () == 1 && sel->GetFirst () == newobj)
+      {
+	// We are trying to select the same object. Deselect it instead.
+        sel->SetCurrentObject (0);
+      }
+      else
+      {
+        sel->SetCurrentObject (newobj);
+      }
+    }
 
     StopDrag ();
 
