@@ -200,6 +200,9 @@ struct i3DView : public virtual iBase
 
   /// Toggle grid movement on/off.
   virtual void ToggleGridMode () = 0;
+  /// Return true if grid mode is enabled.
+  virtual bool IsGridModeEnabled () const = 0;
+  virtual float GetGridSize () const = 0;
 
   /**
    * Move an item to another category. If the item doesn't already exist

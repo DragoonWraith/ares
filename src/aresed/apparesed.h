@@ -502,6 +502,8 @@ public:
   virtual bool IsClipboardFull () const { return pastebuffer.GetSize () > 0; }
 
   virtual void ToggleGridMode ();
+  virtual bool IsGridModeEnabled () const { return gridMode; }
+  virtual float GetGridSize () const { return gridSize; }
 };
 
 enum

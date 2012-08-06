@@ -1610,8 +1610,8 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
   }
   else if (CS_IS_KEYBOARD_EVENT(object_reg, ev))
   {
-    utf32_char code = csKeyEventHelper::GetCookedCode(&ev);
-    if (csKeyEventHelper::GetEventType(&ev) == csKeyEventTypeDown)
+    utf32_char code = csKeyEventHelper::GetCookedCode (&ev);
+    if (csKeyEventHelper::GetEventType (&ev) == csKeyEventTypeDown)
       return editMode->OnKeyboard (ev, code);
   }
   else if ((ev.Name == MouseMove))

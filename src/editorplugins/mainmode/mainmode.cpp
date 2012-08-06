@@ -475,6 +475,18 @@ void MainMode::HandleKinematicDragging ()
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
   }
 
+  if (view3d->IsGridModeEnabled ())
+  {
+    float gridSize = view3d->GetGridSize ();
+    float m;
+    m = fmod (newPosition.x, gridSize);
+    newPosition.x -= m;
+    m = fmod (newPosition.y, gridSize);
+    newPosition.y -= m;
+    m = fmod (newPosition.z, gridSize);
+    newPosition.z -= m;
+  }
+
   for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
   {
     csVector3 np = newPosition - dragObjects[i].kineOffset;
@@ -530,7 +542,7 @@ csString MainMode::GetSelectedItem ()
   return csString ((const char*)tree->GetItemText (id).mb_str (wxConvUTF8));
 }
 
-bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
+bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
 {
   if (ViewMode::OnKeyboard (ev, code))
     return true;
@@ -574,9 +586,9 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     if (!itemName.IsEmpty ())
       view3d->StartPasteSelection (itemName);
   }
-  else if (code == '#')
+  else if (code == 'q')
   {
-    if (view3d->IsPasteSelectionActive ())
+    if (view3d->IsPasteSelectionActive () || do_kinematic_dragging)
       view3d->ToggleGridMode ();
   }
   else if (code == 'g')
@@ -678,7 +690,7 @@ csRef<iString> MainMode::GetStatusLine ()
 {
   csRef<iString> str = ViewMode::GetStatusLine ();
   if (do_kinematic_dragging)
-    str->Append (", LMB: end drag. RMB: cancel drag. x/y/z to constrain placement. # for grid)");
+    str->Append (", LMB: end drag. RMB: cancel drag. x/y/z to constrain placement. q for grid)");
   else
     str->Append (", LMB: select objects (shift to add to selection)");
   return str;
