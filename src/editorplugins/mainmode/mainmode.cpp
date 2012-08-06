@@ -790,6 +790,7 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   bool shift = (mod & CSMASK_SHIFT) != 0;
   bool ctrl = (mod & CSMASK_CTRL) != 0;
   bool alt = (mod & CSMASK_ALT) != 0;
+printf ("mod=%08lx shift=%d ctrl=%d alt=%d\n", mod, shift, ctrl, alt); fflush (stdout);
 
   int data;
   iMarker* hitMarker = markerMgr->FindHitMarker (mouseX, mouseY, data);
@@ -822,8 +823,8 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 
     StopDrag ();
 
-    if (ctrl || alt || shift)
-      StartKinematicDragging (alt || shift, beam, isect, false);
+    if (ctrl || alt)
+      StartKinematicDragging (alt, beam, isect, false);
     else if (!newobj->IsStatic () && newobj->GetBody ())
       StartPhysicalDragging (newobj->GetBody (), beam, isect);
 
