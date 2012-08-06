@@ -372,7 +372,7 @@ void AresEdit3DView::StartPasteSelection ()
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement. g for grid");
+  app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
 }
 
 void AresEdit3DView::StartPasteSelection (const char* name)
@@ -385,7 +385,7 @@ void AresEdit3DView::StartPasteSelection (const char* name)
   todoSpawn.Push (apc);
   PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Middle button to cancel. x/z to constrain placement. g for grid");
+  app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
 }
 
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
@@ -499,7 +499,7 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
       PasteSelection ();
       StopPasteMode ();
     }
-    else if (but == csmbMiddle)
+    else if (but == csmbRight)
     {
       StopPasteMode ();
     }
@@ -1587,7 +1587,10 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
     int mouseY = csMouseEventHelper::GetY (&ev);
     if (aresed3d)
     {
-      if (!IsPlaying () && but == csmbRight)
+      if (!IsPlaying () &&
+	  but == csmbRight &&
+	  editMode->IsContextMenuAllowed () &&
+	  !aresed3d->IsPasteSelectionActive ())
       {
 	wxMenu contextMenu;
 	bool camwinVis = camwin->IsVisible ();

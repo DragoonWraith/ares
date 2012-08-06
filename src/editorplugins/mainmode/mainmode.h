@@ -39,6 +39,7 @@ struct AresDragObject
 {
   iDynamicObject* dynobj;
   csVector3 kineOffset;
+  csReversibleTransform originalTransform;
 };
 
 class MainMode : public scfImplementationExt1<MainMode, ViewMode, iComponent>
@@ -51,12 +52,13 @@ private:
   float linearDampening, angularDampening;
   float dragDistance;
 
-  bool do_static_dragging;
   bool do_kinematic_dragging;
   bool kinematicFirstOnly;
   csArray<AresDragObject> dragObjects;
+  bool doDragRestrictX;	// Only drag on the x-plane.
   bool doDragRestrictY;	// Only drag on the y-plane.
-  float dragRestrictY;
+  bool doDragRestrictZ;	// Only drag on the z-plane.
+  csVector3 dragRestrict;
 
   int idSetStatic, idClearStatic;
 
@@ -67,7 +69,9 @@ private:
       const csSegment3& beam, const csVector3& isect, bool firstOnly);
   void StartPhysicalDragging (iRigidBody* hitBody,
       const csSegment3& beam, const csVector3& isect);
-  void StopDrag ();
+  // If 'cancel' == True the objects will be restored to the original position.
+  // Only for kinematic dragging!
+  void StopDrag (bool cancel = false);
   void HandleKinematicDragging ();
   void HandlePhysicalDragging ();
 
@@ -86,17 +90,16 @@ public:
   virtual void Start ();
   virtual void Stop ();
 
-  virtual csRef<iString> GetStatusLine ()
-  {
-    csRef<iString> str = ViewMode::GetStatusLine ();
-    str->Append (", LMB: select objects (shift to add to selection)");
-    return str;
-  }
+  virtual csRef<iString> GetStatusLine ();
 
   virtual void Refresh ();
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
+  virtual bool IsContextMenuAllowed ()
+  {
+    return !(do_dragging || do_kinematic_dragging);
+  }
 
   virtual void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
 

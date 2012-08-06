@@ -301,6 +301,7 @@ void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
     AresDragObject dob;
     dob.kineOffset = pos - meshpos;
     dob.dynobj = dynobj;
+    dob.originalTransform = mesh->GetMovable ()->GetTransform ();
     dragObjects.Push (dob);
   }
 }
@@ -374,9 +375,8 @@ void MainMode::MarkerStopDragging (iMarker* marker, iMarkerHitArea* area)
   }
 }
 
-void MainMode::StopDrag ()
+void MainMode::StopDrag (bool cancel)
 {
-  dragObjects.DeleteAll ();
   if (do_dragging)
   {
     do_dragging = false;
@@ -394,15 +394,26 @@ void MainMode::StopDrag ()
   if (do_kinematic_dragging)
   {
     do_kinematic_dragging = false;
+    size_t i = 0;
     csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
     while (it->HasNext ())
     {
       iDynamicObject* dynobj = it->Next ();
+      if (cancel)
+      {
+    	AresDragObject& dob = dragObjects[i];
+        iMeshWrapper* mesh = dynobj->GetMesh ();
+	mesh->GetMovable ()->SetTransform (dob.originalTransform);
+	mesh->GetMovable ()->UpdateMove ();
+      }
       dynobj->UndoKinematic ();
       dynobj->RecreatePivotJoints ();
       if (kinematicFirstOnly) break;
+      i++;
     }
   }
+  dragObjects.DeleteAll ();
+  view3d->GetApplication ()->ClearStatus ();
 }
 
 void MainMode::HandleKinematicDragging ()
@@ -412,13 +423,43 @@ void MainMode::HandleKinematicDragging ()
   if (doDragRestrictY)
   {
     if (fabs (beam.Start ().y-beam.End ().y) < 0.1f) return;
-    if (beam.End ().y < beam.Start ().y && dragRestrictY > beam.Start ().y) return;
-    if (beam.End ().y > beam.Start ().y && dragRestrictY < beam.Start ().y) return;
-    float dist = csIntersect3::SegmentYPlane (beam, dragRestrictY, newPosition);
+    if (beam.End ().y < beam.Start ().y && dragRestrict.y > beam.Start ().y) return;
+    if (beam.End ().y > beam.Start ().y && dragRestrict.y < beam.Start ().y) return;
+    float dist = csIntersect3::SegmentYPlane (beam, dragRestrict.y, newPosition);
     if (dist > 0.08f)
     {
       newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
-      newPosition.y = dragRestrictY;
+      newPosition.y = dragRestrict.y;
+    }
+    if (doDragRestrictX)
+      newPosition.x = dragRestrict.x;
+    if (doDragRestrictZ)
+      newPosition.z = dragRestrict.z;
+  }
+  else if (doDragRestrictZ)
+  {
+    if (fabs (beam.Start ().z-beam.End ().z) < 0.1f) return;
+    if (beam.End ().z < beam.Start ().z && dragRestrict.z > beam.Start ().z) return;
+    if (beam.End ().z > beam.Start ().z && dragRestrict.z < beam.Start ().z) return;
+    float dist = csIntersect3::SegmentZPlane (beam, dragRestrict.z, newPosition);
+    if (dist > 0.08f)
+    {
+      newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
+      newPosition.z = dragRestrict.z;
+    }
+    if (doDragRestrictX)
+      newPosition.x = dragRestrict.x;
+  }
+  else if (doDragRestrictX)
+  {
+    if (fabs (beam.Start ().x-beam.End ().x) < 0.1f) return;
+    //if (beam.End ().x < beam.Start ().x && dragRestrict.x > beam.Start ().x) return;
+    //if (beam.End ().x > beam.Start ().x && dragRestrict.x < beam.Start ().x) return;
+    float dist = csIntersect3::SegmentXPlane (beam, dragRestrict.x, newPosition);
+    if (dist > 0.08f)
+    {
+      newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
+      newPosition.x = dragRestrict.x;
     }
   }
   else
@@ -522,10 +563,18 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
     if (!itemName.IsEmpty ())
       view3d->StartPasteSelection (itemName);
   }
-  else if (code == 'g')
+  else if (code == '#')
   {
     if (view3d->IsPasteSelectionActive ())
       view3d->ToggleGridMode ();
+  }
+  else if (code == 'g')
+  {
+    if (view3d->GetSelection ()->HasSelection ())
+    {
+      csSegment3 seg = view3d->GetMouseBeam (10);
+      StartKinematicDragging (false, seg, seg.End (), false);
+    }
   }
   else if (code == 'x')
   {
@@ -534,6 +583,10 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
       int mode = view3d->GetPasteConstrain ();
       view3d->SetPasteConstrain (
 	  mode == CONSTRAIN_XPLANE ? CONSTRAIN_NONE : CONSTRAIN_XPLANE);
+    }
+    else if (do_kinematic_dragging)
+    {
+      doDragRestrictX = !doDragRestrictX;
     }
   }
   else if (code == 'y')
@@ -544,6 +597,10 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
       view3d->SetPasteConstrain (
 	  mode == CONSTRAIN_YPLANE ? CONSTRAIN_NONE : CONSTRAIN_YPLANE);
     }
+    else if (do_kinematic_dragging)
+    {
+      doDragRestrictY = !doDragRestrictY;
+    }
   }
   else if (code == 'z')
   {
@@ -552,6 +609,10 @@ bool MainMode::OnKeyboard(iEvent& ev, utf32_char code)
       int mode = view3d->GetPasteConstrain ();
       view3d->SetPasteConstrain (
 	  mode == CONSTRAIN_ZPLANE ? CONSTRAIN_NONE : CONSTRAIN_ZPLANE);
+    }
+    else if (do_kinematic_dragging)
+    {
+      doDragRestrictZ = !doDragRestrictZ;
     }
   }
   else if (code == CSKEY_UP)
@@ -599,10 +660,21 @@ void MainMode::OnSnapObjects ()
   }
 }
 
+csRef<iString> MainMode::GetStatusLine ()
+{
+  csRef<iString> str = ViewMode::GetStatusLine ();
+  if (do_kinematic_dragging)
+    str->Append (", LMB: end drag. RMB: cancel drag. x/y/z to constrain placement. # for grid)");
+  else
+    str->Append (", LMB: select objects (shift to add to selection)");
+  return str;
+}
+
 void MainMode::StartKinematicDragging (bool restrictY,
     const csSegment3& beam, const csVector3& isect, bool firstOnly)
 {
   do_kinematic_dragging = true;
+  view3d->GetApplication ()->ClearStatus ();
   kinematicFirstOnly = firstOnly;
 
   csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
@@ -617,16 +689,16 @@ void MainMode::StartKinematicDragging (bool restrictY,
     AresDragObject dob;
     dob.kineOffset = isect - meshpos;
     dob.dynobj = dynobj;
+    dob.originalTransform = mesh->GetMovable ()->GetTransform ();
     dragObjects.Push (dob);
     if (kinematicFirstOnly) break;
   }
 
   dragDistance = (isect - beam.Start ()).Norm ();
+  doDragRestrictX = false;
   doDragRestrictY = restrictY;
-  if (doDragRestrictY)
-  {
-    dragRestrictY = isect.y;
-  }
+  doDragRestrictZ = false;
+  dragRestrict = isect;
 }
 
 void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
@@ -663,6 +735,21 @@ void MainMode::AddForce (iRigidBody* hitBody, bool pull,
 
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 {
+  if (do_dragging || do_kinematic_dragging)
+  {
+    if (but == csmbLeft)
+    {
+      StopDrag ();
+      return true;
+    }
+
+    if (but == csmbRight)
+    {
+      StopDrag (true);
+      return true;
+    }
+  }
+
   if (ViewMode::OnMouseDown (ev, but, mouseX, mouseY))
     return true;
 

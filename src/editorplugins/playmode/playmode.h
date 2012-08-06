@@ -75,6 +75,8 @@ public:
 
   virtual bool Initialize (iObjectRegistry* object_reg);
 
+  virtual bool IsContextMenuAllowed () { return false; }
+
   virtual csRef<iString> GetStatusLine ()
   {
     csRef<iString> str;

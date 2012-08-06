@@ -93,6 +93,7 @@ public:
 
   virtual void AllocContextHandlers (wxFrame* frame) { }
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY) { }
+  virtual bool IsContextMenuAllowed () { return true; }
 
   virtual void Start () { }
   virtual void Stop () { }

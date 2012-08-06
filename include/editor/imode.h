@@ -51,6 +51,12 @@ struct iEditingMode : public virtual iBase
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY) = 0;
 
   /**
+   * Return true if the context menu should be temporarily not allowed. In this
+   * case the mode is interested in acting on the right mouse button itself.
+   */
+  virtual bool IsContextMenuAllowed () = 0;
+
+  /**
    * Activate the mode.
    */
   virtual void Start () = 0;
