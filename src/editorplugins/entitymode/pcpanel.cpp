@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "editor/iuidialog.h"
 #include "editor/iconfig.h"
 #include "editor/iapp.h"
+#include "editor/i3dview.h"
 
 //--------------------------------------------------------------------------
 
@@ -85,6 +86,7 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
   EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
+  EVT_CHECKBOX (XRCID("physics_CheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRandomCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnUniqueCheckBox"), PropertyClassPanel :: OnUpdateEvent)
@@ -514,6 +516,32 @@ void PropertyClassPanel::FillWire ()
 
   wireParCollectionValue->SetPC (pctpl);
   wireParCollectionValue->Refresh ();
+}
+
+// -----------------------------------------------------------------------
+
+bool PropertyClassPanel::UpdateDynworld ()
+{
+  SwitchPCType ("pcworld.dynamic");
+
+  wxCheckBox* physicsCB = XRCCTRL (*this, "physics_CheckBox", wxCheckBox);
+  bool physics = physicsCB->IsChecked ();
+  pctpl->SetProperty (pl->FetchStringID ("physics"), physics);
+
+  emode->GetApplication ()->Get3DView ()->GetDynamicWorld ()->EnablePhysics (physics);
+
+  emode->PCWasEdited (pctpl);
+  return true;
+}
+
+void PropertyClassPanel::FillDynworld ()
+{
+  if (!pctpl || csString ("pcworld.dynamic") != pctpl->GetName ()) return;
+  wxCheckBox* physicsCB = XRCCTRL (*this, "physics_CheckBox", wxCheckBox);
+  bool valid;
+  bool physics = InspectTools::GetPropertyValueBool (pl, pctpl, "physics", &valid);
+  if (!valid) physics = true;	// True is default.
+  physicsCB->SetValue (physics);
 }
 
 // -----------------------------------------------------------------------
@@ -1290,6 +1318,7 @@ bool PropertyClassPanel::UpdatePC ()
   else if (page == "pclogic.quest") return UpdateQuest ();
   else if (page == "pclogic.spawn") return UpdateSpawn ();
   else if (page == "pccamera.old") return UpdateOldCamera ();
+  else if (page == "pcworld.dynamic") return UpdateDynworld ();
   else
   {
     uiManager->Error ("Unknown property class type!");
@@ -1318,6 +1347,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
   FillSpawn ();
   FillWire ();
   FillOldCamera ();
+  FillDynworld ();
 }
 
 void PropertyClassPanel::SetupList (const char* listName, const char* heading, const char* names,

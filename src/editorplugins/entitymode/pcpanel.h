@@ -76,6 +76,10 @@ private:
    */
   void SwitchPCType (const char* pcType);
 
+  // Dynamic world.
+  bool UpdateDynworld ();
+  void FillDynworld ();
+
   // Old camera.
   bool UpdateOldCamera ();
   void FillOldCamera ();
