@@ -1209,7 +1209,6 @@ public:
   virtual ~StaticValue () { }
   virtual void SetBoolValue (bool f)
   {
-    printf ("StaticValue::SetBoolValue %d\n", f); fflush (stdout);
     iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
     if (dynfact)
     {
@@ -1225,6 +1224,33 @@ public:
     if (!dynfact) return false;
     const char* st = dynfact->GetAttribute ("defaultstatic");
     return (st && *st == 't');
+  }
+};
+
+/// Value for the collider value of a dynamic factory.
+class ColliderValue : public BoolValue
+{
+private:
+  DynfactDialog* dialog;
+public:
+  ColliderValue (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~ColliderValue () { }
+  virtual void SetBoolValue (bool f)
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    if (dynfact)
+    {
+      dynfact->SetColliderEnabled (f);
+      //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+      //view3d->RefreshFactorySettings (dynfact);
+      FireValueChanged ();
+    }
+  }
+  virtual bool GetBoolValue ()
+  {
+    iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
+    if (!dynfact) return false;
+    return dynfact->IsColliderEnabled ();
   }
 };
 
@@ -1362,6 +1388,7 @@ DynfactValue::DynfactValue (DynfactDialog* dialog) : dialog (dialog)
   AddChild ("maxRadius", NEWREF(Value,new MaxRadiusValue(dialog)));
   AddChild ("imposterRadius", NEWREF(Value,new ImposterRadiusValue(dialog)));
   AddChild ("static", NEWREF(Value,new StaticValue(dialog)));
+  AddChild ("collider", NEWREF(Value,new ColliderValue(dialog)));
 }
 
 void DynfactValue::ChildChanged (Value* child)
