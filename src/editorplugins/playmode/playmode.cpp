@@ -195,11 +195,11 @@ void PlayMode::Start ()
     playerTrans.SetOrigin (csVector3 (0, 3, 0));
   }
 
-  iCelEntity* zoneEntity = pl->FindEntity ("Zone");
-  csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (zoneEntity);
+  world = pl->FindEntity ("World");
+  pl->ApplyTemplate (world, pl->FindEntityTemplate ("World"), 0);
+  csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
   mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
 
-  world = pl->CreateEntity (pl->FindEntityTemplate ("World"), "World", 0);
   player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
   csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
   iRigidBody* body = mechPlayer->GetBody ();
@@ -233,7 +233,19 @@ void PlayMode::Stop ()
 {
   if (!snapshot) return;
 
-  pl->RemoveEntity (world);
+  // Remove all property classes from the world entity except for the
+  // dynworld and physics ones.
+  iCelPropertyClassList* pclist = world->GetPropertyClassList ();
+  size_t i = 0;
+  while (i < pclist->GetCount ())
+  {
+    iCelPropertyClass* pc = pclist->Get (i);
+    csString name = pc->GetName ();
+    if (name != "pcworld.dynamic" && name != "pcphysics.system")
+      pclist->Remove (i);
+    else
+      i++;
+  }
   world = 0;
   pl->RemoveEntity (player);
   player = 0;

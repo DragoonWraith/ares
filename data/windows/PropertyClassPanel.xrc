@@ -143,6 +143,13 @@
 						</object>
 					</object>
 					<object class="choicebookpage">
+						<label>pctools.messenger</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="messengerPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
 						<label>pcobject.mesh</label>
 						<selected>0</selected>
 						<object class="wxPanel" name="meshPanel">
@@ -495,6 +502,74 @@
 									</object>
 								</object>
 							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcinput.standard</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="inputStandardPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcphysics.object</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="physicsObjectPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcphysics.system</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="physicsSystemPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcmove.actor.dynamic</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="moveActorDynPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcmove.actor.standard</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="moveActorStdPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcmove.actor.wasd</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="moveActorWasdPanel">
+							<style>wxTAB_TRAVERSAL</style>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>pcworld.dynamic</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="dynworldPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALL</flag>
+									<border>5</border>
+									<object class="wxCheckBox" name="physics_CheckBox">
+										<label>Physics</label>
+										<checked>0</checked>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>ares.gamecontrol</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="gameCtrlPanel">
+							<style>wxTAB_TRAVERSAL</style>
 						</object>
 					</object>
 				</object>

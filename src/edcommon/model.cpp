@@ -789,7 +789,6 @@ bool View::BindContainer (Value* value, wxWindow* component)
   }
 
   csString compName = (const char*)component->GetName ().mb_str (wxConvUTF8);
-  printf ("Bind Container: %s\n", compName.GetData ());
 
   RegisterBinding (value, component, wxEVT_NULL);
 
@@ -806,8 +805,6 @@ bool View::BindContainer (Value* value, wxWindow* component)
     else
     {
       compName = (const char*)childComp->GetName ().mb_str (wxConvUTF8);
-printf ("   ");
-      printf ("  Sub bind: %s to %s\n", name.GetData (), compName.GetData ());
       if (!Bind (child, childComp))
 	return false;
     }

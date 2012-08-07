@@ -74,7 +74,7 @@
    </addon>
 
   <addon plugin="cel.addons.dynamicworld.loader">
-    <dynworld name="Zone" />
+    <dynworld name="World" />
     <factory name="Node" maxradius="1" imposterradius="0" mass="1">
       <box>
         <offset x="0" y="0" z="0" />

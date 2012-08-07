@@ -104,7 +104,7 @@
       </propclass>
       <propclass name="pcphysics.object">
 	<action name="SetSystem">
-	  <par name="systempcent" string="Zone" />
+	  <par name="systempcent" string="World" />
 	</action>
 	<!--
 	<action name="SetColliderCylinder">

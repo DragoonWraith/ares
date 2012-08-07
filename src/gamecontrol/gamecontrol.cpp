@@ -354,25 +354,17 @@ void celPcGameController::TryGetDynworld ()
 {
   if (dynworld) return;
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (entity);
-  if (dynworld)
+  if (!dynworld)
   {
-    printf ("Could not find dynamic world!\n");
-    fflush (stdout);
-    return;
+    csRef<iCelEntity> world = pl->FindEntity ("World");
+    if (!world)
+    {
+      printf ("Can't find entity 'World' and current entity has no dynworld PC!\n");
+      fflush (stdout);
+      return;
+    }
+    dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (world);
   }
-
-  // Not very clean. We should only depend on the dynworld plugin
-  // to be in this entity but for the editor we actually have the
-  // dynworld plugin in the 'Zone' entity. Need to find a way for this
-  // that is cleaner.
-  csRef<iCelEntity> zone = pl->FindEntity ("Zone");
-  if (!zone)
-  {
-    printf ("Can't find entity 'Zone' and current entity has no dynworld PC!\n");
-    fflush (stdout);
-    return;
-  }
-  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zone);
   iDynamicSystem* dynSys = dynworld->GetCurrentCell ()->GetDynamicSystem ();
   bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
 }

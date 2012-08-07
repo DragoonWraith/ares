@@ -827,7 +827,7 @@ bool AresEdit3DView::Setup ()
       r, "cel.parameters.manager");
   pm->SetRememberExpression (true);
 
-  zoneEntity = pl->CreateEntity ("Zone", 0, 0,
+  zoneEntity = pl->CreateEntity ("World", 0, 0,
       "pcworld.dynamic", "pcphysics.system", CEL_PROPCLASS_END);
   if (!zoneEntity) return app->ReportError ("Failed to create zone entity!");
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
@@ -1034,8 +1034,7 @@ bool AresEdit3DView::PostLoadMap ()
     if (!LoadLibrary ("/appdata/", "player.xml"))
       return app->ReportError ("Error loading player library!");
   }
-  if (!pl->FindEntityTemplate ("World"))
-    if (!LoadLibrary ("/appdata/", "world.xml"))
+  if (!LoadLibrary ("/appdata/", "world.xml"))
       return app->ReportError ("Error loading world library!");
 
   return true;

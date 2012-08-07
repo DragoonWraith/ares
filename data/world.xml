@@ -1,5 +1,9 @@
 <library>
     <addon plugin="cel.addons.celentitytpl" entityname="World" >
+      <propclass name="pcworld.dynamic">
+      </propclass>
+      <propclass name="pcphysics.system">
+      </propclass>
       <propclass name="ares.gamecontrol" />
       <propclass name="pctools.messenger">
 	<action name="DefineSlot">

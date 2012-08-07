@@ -867,7 +867,11 @@ void EntityMode::OnCreatePC ()
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "pcobject.mesh", "pctools.properties",
       "pctools.inventory", "pclogic.quest", "pclogic.spawn",
-      "pclogic.wire", (const char*)0);
+      "pclogic.wire", "pctools.messenger",
+      "pcinput.standard", "pcphysics.object", "pcphysics.system", "pccamera.old",
+      "pcmove.actor.dynamic", "pcmove.actor.standard", "pcmove.actor.wasd",
+      "pcworld.dynamic", "ares.gamecontrol",
+      (const char*)0);
   dialog->AddRow ();
   dialog->AddLabel ("Tag:");
   dialog->AddText ("tag");
