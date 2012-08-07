@@ -1,10 +1,11 @@
 <library>
-    <library path="/lib/frankie" file="frankie.xml" />
     <addon plugin="cel.addons.celentitytpl" entityname="Player" >
       <propclass name="pcobject.mesh">
-	<action name="LoadMesh">
-	  <par name="factoryname" string="franky_frankie" />
-	</action>
+        <action name="LoadMeshPath">
+	  <par name="path" string="/lib/frankie" />
+	  <par name="filename" string="frankie.xml" />
+          <par name="factoryname" string="franky_frankie" />
+        </action>
       </propclass>
       <propclass name="pcinput.standard">
 	<action name="Bind">

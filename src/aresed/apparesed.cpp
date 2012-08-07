@@ -1028,14 +1028,18 @@ bool AresEdit3DView::PostLoadMap ()
   nature->UpdateTime (currentTime, GetCsCamera ());
 
   // Make the 'Player' and 'World' entity templates if they don't already
-  // exist.
+  // exist. It is possible that they exist because we loaded a project that defined
+  // them.
   if (!pl->FindEntityTemplate ("Player"))
   {
     if (!LoadLibrary ("/appdata/", "player.xml"))
       return app->ReportError ("Error loading player library!");
   }
-  if (!LoadLibrary ("/appdata/", "world.xml"))
+  if (!pl->FindEntityTemplate ("World"))
+  {
+    if (!LoadLibrary ("/appdata/", "world.xml"))
       return app->ReportError ("Error loading world library!");
+  }
 
   return true;
 }

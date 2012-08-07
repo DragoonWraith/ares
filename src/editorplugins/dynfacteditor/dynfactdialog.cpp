@@ -2270,7 +2270,8 @@ bool DynfactDialog::Initialize (iObjectRegistry* object_reg)
 {
   DynfactDialog::object_reg = object_reg;
 
-  bodyManager = csQueryRegistry<CS::Animation::iBodyManager> (object_reg);
+  bodyManager = csQueryRegistryOrLoad<CS::Animation::iBodyManager> (object_reg,
+      "crystalspace.mesh.animesh.body");
   if (!bodyManager)
   {
     printf ("Can't find body manager!\n");

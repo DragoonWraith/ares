@@ -258,19 +258,15 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
     csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
     csRef<iCelEntityTemplateIterator> tempIt = pl->GetEntityTemplates ();
     // @@@ Todo: only save entities from read-only assets if they are modified.
-    // @@@ Todo: save Player and World if they are modified.
     while (tempIt->HasNext ())
     {
       iCelEntityTemplate* temp = tempIt->Next ();
       csString tempName = temp->GetName ();
-      if (tempName != "Player" && tempName != "World")
-      {
-	csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-	addonNode->SetValue ("addon");
-	addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
-	if (!saver->WriteDown (temp, addonNode, 0))
-	  return false;
-      }
+      csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+      addonNode->SetValue ("addon");
+      addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
+      if (!saver->WriteDown (temp, addonNode, 0))
+	return false;
     }
   }
   csRef<iString> xml;
