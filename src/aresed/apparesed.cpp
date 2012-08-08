@@ -216,6 +216,7 @@ iEditorCamera* AresEdit3DView::GetEditorCamera () const
 
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
+  objectsValue->Refresh ();
   app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
 
   bool curveTabEnable = false;
@@ -226,7 +227,6 @@ void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_o
     if (curvedMeshCreator->GetCurvedFactory (name)) curveTabEnable = true;
   }
   app->SetCurveModeEnabled (curveTabEnable);
-  objectsValue->Refresh ();
 }
 
 void AresEdit3DView::StopPasteMode ()
@@ -688,6 +688,9 @@ bool AresEdit3DView::LoadFile (const char* filename)
 
   if (!PostLoadMap ())
     return false;
+
+  objectsValue->Refresh ();
+
   return true;
 }
 

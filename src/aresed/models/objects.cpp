@@ -35,6 +35,7 @@ void ObjectsValue::UpdateChildren ()
 {
   if (!dirty) return;
   dirty = false;
+  dynobjs.DeleteAll ();
   ReleaseChildren ();
   iPcDynamicWorld* dynworld = app->GetAresView ()->GetDynamicWorld ();
   iCamera* camera = app->GetAresView ()->GetCsCamera ();
@@ -43,6 +44,7 @@ void ObjectsValue::UpdateChildren ()
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
+    dynobjs.Push (obj);
     uint id = obj->GetID ();
     iDynamicFactory* fact = obj->GetFactory ();
     const char* entityName = obj->GetEntityName ();

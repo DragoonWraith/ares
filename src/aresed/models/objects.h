@@ -29,11 +29,14 @@ THE SOFTWARE.
 
 class AppAresEditWX;
 struct iMeshFactoryList;
+struct iDynamicObject;
 
 class ObjectsValue : public Ares::StandardCollectionValue
 {
 private:
   AppAresEditWX* app;
+
+  csArray<iDynamicObject*> dynobjs;
 
 protected:
   virtual void UpdateChildren ();
@@ -45,6 +48,8 @@ protected:
 public:
   ObjectsValue (AppAresEditWX* app) : app (app) { }
   virtual ~ObjectsValue () { }
+
+  size_t FindDynObj (iDynamicObject* obj) { return dynobjs.Find (obj); }
 };
 
 #endif // __aresed_objects_h
