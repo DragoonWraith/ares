@@ -90,6 +90,24 @@ void TransformTools::Rotate (iSelection* selection, float baseAngle,
   }
 }
 
+void TransformTools::Rotate (iSelection* selection, float angle)
+{
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
+  {
+    iDynamicObject* dynobj = it->Next ();
+    iMeshWrapper* mesh = dynobj->GetMesh ();
+    if (!mesh) continue;
+
+    dynobj->RemovePivotJoints ();
+    dynobj->MakeKinematic ();
+    mesh->GetMovable ()->GetTransform ().RotateOther (csVector3 (0, 1, 0), angle);
+    mesh->GetMovable ()->UpdateMove ();
+    dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
+  }
+}
+
 static float GetAngle (float x1, float y1, float x2, float y2)
 {
   float dot = x1 * x2 + y1 * y2;

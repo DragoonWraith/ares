@@ -53,6 +53,17 @@
 	    <item name="&amp;Join	Ctrl+J" command="Join" />
 	    <item name="&amp;Unjoin" command="Unjoin" />
 	</menu>
+	<menu name="&amp;Layout">
+	    <item name="&amp;Reset Rotation" target="Main" command="RotReset" />
+	    <item name="&amp;Rotate Left 90" target="Main" command="RotLeft" />
+	    <item name="&amp;Rotate Right 90" target="Main" command="RotRight" />
+	    <sep />
+	    <item name="&amp;Align Objects" target="Main" command="AlignObj" />
+	    <item name="&amp;Align Rotation" target="Main" command="AlignRot" />
+	    <item name="&amp;Align Height" target="Main" command="AlignHeight" />
+	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" />
+	    <item name="&amp;Stack Objects" target="Main" command="StackObj" />
+	</menu>
     </menus>
 
     <knownmessages>

@@ -52,6 +52,8 @@ private:
   float linearDampening, angularDampening;
   float dragDistance;
 
+  bool active;	// Main mode is active.
+
   bool do_kinematic_dragging;
   bool kinematicFirstOnly;
   csArray<AresDragObject> dragObjects;
@@ -112,13 +114,6 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
-  void OnRotLeft ();
-  void OnRotRight ();
-  void OnRotReset ();
-  void OnAlignR ();
-  void OnSetPos ();
-  void OnStack ();
-  void OnSameY ();
   void OnSnapObjects ();
   void OnStaticSelected ();
   void OnObjectNameEntered ();
@@ -138,6 +133,10 @@ public:
       const csReversibleTransform& transform);
   void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 
+  virtual bool Command (const char* name, const char* args);
+  virtual bool IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste, const char* currentmode);
+
   class Panel : public wxPanel
   {
   public:
@@ -145,14 +144,6 @@ public:
       : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
     {}
 
-    void OnRotLeft (wxCommandEvent& event) { s->OnRotLeft (); }
-    void OnRotRight (wxCommandEvent& event) { s->OnRotRight (); }
-    void OnRotReset (wxCommandEvent& event) { s->OnRotReset (); }
-    void OnAlignR (wxCommandEvent& event) { s->OnAlignR (); }
-    void OnSetPos (wxCommandEvent& event) { s->OnSetPos (); }
-    void OnStack (wxCommandEvent& event) { s->OnStack (); }
-    void OnSameY (wxCommandEvent& event) { s->OnSameY (); }
-    void OnSnapObjects (wxCommandEvent& event) { s->OnSnapObjects (); }
     void OnStaticSelected (wxCommandEvent& event) { s->OnStaticSelected (); }
     void OnObjectNameEntered (wxCommandEvent& event) { s->OnObjectNameEntered (); }
     void OnTreeSelChanged (wxTreeEvent& event) { s->OnTreeSelChanged (event); }

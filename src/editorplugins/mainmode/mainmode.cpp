@@ -41,14 +41,6 @@ THE SOFTWARE.
 //---------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
-  EVT_BUTTON (XRCID("rotLeftButton"), MainMode::Panel::OnRotLeft)
-  EVT_BUTTON (XRCID("rotRightButton"), MainMode::Panel::OnRotRight)
-  EVT_BUTTON (XRCID("rotResetButton"), MainMode::Panel::OnRotReset)
-  EVT_BUTTON (XRCID("alignRotButton"), MainMode::Panel::OnAlignR)
-  EVT_BUTTON (XRCID("setPosButton"), MainMode::Panel::OnSetPos)
-  EVT_BUTTON (XRCID("snapButton"), MainMode::Panel::OnSnapObjects)
-  EVT_BUTTON (XRCID("stackButton"), MainMode::Panel::OnStack)
-  EVT_BUTTON (XRCID("sameYButton"), MainMode::Panel::OnSameY)
   EVT_CHECKBOX (XRCID("staticCheckBox"), MainMode::Panel::OnStaticSelected)
   EVT_TEXT_ENTER (XRCID("objectNameText"), MainMode::Panel::OnObjectNameEntered)
   EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), MainMode::Panel::OnTreeSelChanged)
@@ -64,6 +56,7 @@ MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
   do_dragging = false;
   do_kinematic_dragging = false;
   transformationMarker = 0;
+  active = false;
 }
 
 bool MainMode::Initialize (iObjectRegistry* object_reg)
@@ -130,6 +123,7 @@ void MainMode::Start ()
   CreateMarkers ();
   SetTransformationMarkerStatus ();
   Refresh ();
+  active = true;
 }
 
 void MainMode::Stop ()
@@ -138,6 +132,7 @@ void MainMode::Stop ()
   transformationMarker->SetVisible (false);
   transformationMarker->AttachMesh (0);
   //pasteMarker->SetVisible (false);
+  active = false;
 }
 
 void MainMode::AllocContextHandlers (wxFrame* frame)
@@ -219,43 +214,65 @@ void MainMode::SetTransformationMarkerStatus ()
     transformationMarker->SetVisible (false);
 }
 
-void MainMode::OnRotLeft ()
+bool MainMode::Command (const char* name, const char* args)
 {
-  bool slow = kbd->GetKeyState (CSKEY_CTRL);
-  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
-  TransformTools::Rotate (view3d->GetSelection (), PI, slow, fast);
+  csString c = name;
+  if (c == "RotReset")
+  {
+    TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
+    return true;
+  }
+  if (c == "RotLeft")
+  {
+    TransformTools::Rotate (view3d->GetSelection (), PI/2.0);
+    return true;
+  }
+  if (c == "RotRight")
+  {
+    TransformTools::Rotate (view3d->GetSelection (), -PI/2.0);
+    return true;
+  }
+  if (c == "AlignObj")
+  {
+    TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
+    return true;
+  }
+  if (c == "AlignRot")
+  {
+    TransformTools::AlignSelectedObjects (view3d->GetSelection ());
+    return true;
+  }
+  if (c == "AlignHeight")
+  {
+    TransformTools::SameYSelectedObjects (view3d->GetSelection ());
+    return true;
+  }
+  if (c == "SnapObj")
+  {
+    OnSnapObjects ();
+    return true;
+  }
+  if (c == "StackObj")
+  {
+    TransformTools::StackSelectedObjects (view3d->GetSelection ());
+    return true;
+  }
+  return false;
 }
 
-void MainMode::OnRotRight ()
+bool MainMode::IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste, const char* currentmode)
 {
-  bool slow = kbd->GetKeyState (CSKEY_CTRL);
-  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
-  TransformTools::Rotate (view3d->GetSelection (), -PI, slow, fast);
-}
-
-void MainMode::OnRotReset ()
-{
-  TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
-}
-
-void MainMode::OnAlignR ()
-{
-  TransformTools::AlignSelectedObjects (view3d->GetSelection ());
-}
-
-void MainMode::OnStack ()
-{
-  TransformTools::StackSelectedObjects (view3d->GetSelection ());
-}
-
-void MainMode::OnSameY ()
-{
-  TransformTools::SameYSelectedObjects (view3d->GetSelection ());
-}
-
-void MainMode::OnSetPos ()
-{
-  TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
+  if (!active) return false;
+  if (!selection->HasSelection ()) return false;
+  csString c = name;
+  int cnt = selection->GetSize ();
+  if (c == "AlignObj") return cnt > 1;
+  if (c == "AlignRot") return cnt > 1;
+  if (c == "AlignHeight") return cnt > 1;
+  if (c == "SnapObj") return cnt > 1;
+  if (c == "StackObj") return cnt > 1;
+  return true;
 }
 
 void MainMode::OnStaticSelected ()

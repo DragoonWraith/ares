@@ -49,7 +49,7 @@ public:
   static void SameYSelectedObjects (iSelection* selection);
 
   /**
-   * Set the position of the selected objects so that the
+   * Set the position of the selected objects so that they
    * are adjacent to each other along the best matching axis.
    */
   static void SetPosSelectedObjects (iSelection* selection);
@@ -64,6 +64,11 @@ public:
    */
   static void Rotate (iSelection* selection, float baseAngle,
       bool slow, bool fast);
+
+  /**
+   * Rotate the selected objects with the given base angle.
+   */
+  static void Rotate (iSelection* selection, float baseAngle);
 
   /**
    * Move the selection with the given base vector.
