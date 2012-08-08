@@ -118,6 +118,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
+  objectsValue.AttachNew (new ObjectsValue (app));
   camera.AttachNew (new Camera (this));
   pasteMarker = 0;
   constrainMarker = 0;
@@ -225,6 +226,7 @@ void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_o
     if (curvedMeshCreator->GetCurvedFactory (name)) curveTabEnable = true;
   }
   app->SetCurveModeEnabled (curveTabEnable);
+  objectsValue->Refresh ();
 }
 
 void AresEdit3DView::StopPasteMode ()
@@ -696,6 +698,11 @@ void AresEdit3DView::OnExit ()
 Ares::Value* AresEdit3DView::GetDynfactCollectionValue () const
 {
   return dynfactCollectionValue;
+}
+
+Ares::Value* AresEdit3DView::GetObjectsValue () const
+{
+  return objectsValue;
 }
 
 void AresEdit3DView::AddItem (const char* category, const char* itemname)
@@ -1485,11 +1492,9 @@ i3DView* AppAresEditWX::Get3DView () const
 
 void AppAresEditWX::FindObject ()
 {
-  csRef<ObjectsValue> objects;
-  objects.AttachNew (new ObjectsValue (this));
   UIDialog* dialog = new UIDialog (this, "Select an object", 500, 300);
   dialog->AddRow (1);
-  dialog->AddList ("objects", objects, 0,
+  dialog->AddList ("objects", aresed3d->GetObjectsValue (), 0,
     "ID,Entity,Factory,X,Y,Z,Distance",
     "ID,Entity,Factory,X,Y,Z,Distance");
   if (dialog->Show (0))

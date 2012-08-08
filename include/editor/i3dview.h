@@ -123,6 +123,11 @@ struct i3DView : public virtual iBase
   virtual Ares::Value* GetDynfactCollectionValue () const = 0;
 
   /**
+   * Get the value for all the objects.
+   */
+  virtual Ares::Value* GetObjectsValue () const = 0;
+
+  /**
    * Get the current selection.
    */
   virtual iSelection* GetSelection () const = 0;

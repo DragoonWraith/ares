@@ -532,10 +532,12 @@ void View::DestroyBindings ()
   {
     csPtrKey<wxWindow> component;
     Binding* binding = it.Next (component);
-    if (binding->eventType == wxEVT_COMMAND_TEXT_UPDATED)
-      component->Disconnect (binding->eventType,
-	  wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
-    else if (binding->eventType == wxEVT_COMMAND_LIST_ITEM_SELECTED)
+    binding->value->RemoveValueChangeListener (changeListener);
+    if (binding->eventType == wxEVT_COMMAND_TEXT_UPDATED ||
+	binding->eventType == wxEVT_COMMAND_LIST_ITEM_SELECTED ||
+	binding->eventType == wxEVT_COMMAND_CHOICE_SELECTED ||
+	binding->eventType == wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED ||
+	binding->eventType == wxEVT_COMMAND_CHECKBOX_CLICKED)
       component->Disconnect (binding->eventType,
 	  wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
   }

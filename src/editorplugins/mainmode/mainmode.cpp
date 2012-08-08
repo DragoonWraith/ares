@@ -73,6 +73,9 @@ void MainMode::SetParent (wxWindow* parent)
   view.SetParent (panel);
 
   view.Bind (view3d->GetDynfactCollectionValue (), "factoryTree");
+
+  view.DefineHeading ("objectList", "Entity,Factory,ID", "Entity,Factory,ID");
+  view.Bind (view3d->GetObjectsValue (), "objectList");
 }
 
 MainMode::~MainMode ()

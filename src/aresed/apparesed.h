@@ -57,6 +57,7 @@ class AresEdit3DView;
 class Asset;
 
 class DynfactCollectionValue;
+class ObjectsValue;
 class NewProjectDialog;
 class UIManager;
 
@@ -206,6 +207,7 @@ private:
   /// Categories with items.
   csHash<csStringArray,csString> categories;
   csRef<DynfactCollectionValue> dynfactCollectionValue;
+  csRef<ObjectsValue> objectsValue;
 
   /// Debug drawing enabled.
   bool do_debug;
@@ -373,6 +375,8 @@ public:
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
   /// Get the dynamic factory value.
   virtual Ares::Value* GetDynfactCollectionValue () const;
+  /// Get the objects value.
+  virtual Ares::Value* GetObjectsValue () const;
 
   /// Join two selected objects.
   void JoinObjects ();
