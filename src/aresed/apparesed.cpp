@@ -715,6 +715,11 @@ iDynamicObject* AresEdit3DView::GetDynamicObjectFromObjects (Ares::Value* value)
   return dv->GetDynamicObject ();
 }
 
+size_t AresEdit3DView::GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj)
+{
+  return objectsValue->FindDynObj (dynobj);
+}
+
 void AresEdit3DView::AddItem (const char* category, const char* itemname)
 {
   if (!categories.In (category))

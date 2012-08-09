@@ -145,6 +145,12 @@ struct i3DView : public virtual iBase
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value) = 0;
 
   /**
+   * Given a dynamic object, find the index of that object it would have in
+   * the object list.
+   */
+  virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj) = 0;
+
+  /**
    * Get the current selection.
    */
   virtual iSelection* GetSelection () const = 0;

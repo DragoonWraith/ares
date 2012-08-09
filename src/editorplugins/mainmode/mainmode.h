@@ -55,6 +55,10 @@ private:
 
   bool active;	// Main mode is active.
 
+  // If we are busy changing the 3D selection from the object list then we set this flag
+  // so that we don't sync back to the object list.
+  int changing3DSelection;
+
   bool do_kinematic_dragging;
   bool kinematicFirstOnly;
   csArray<AresDragObject> dragObjects;

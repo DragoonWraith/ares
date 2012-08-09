@@ -132,3 +132,12 @@ void ObjectsValue::RefreshModel ()
   }
 }
 
+size_t ObjectsValue::FindDynObj (iDynamicObject* dynobj) const
+{
+  for (size_t i = 0 ; i < values.GetSize () ; i++)
+    if (values[i]->GetDynamicObject () == dynobj)
+      return i;
+  return csArrayItemNotFound;
+}
+
+

@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "mainmode.h"
 #include "inature.h"
 #include "edcommon/uitools.h"
+#include "edcommon/listctrltools.h"
 #include "editor/i3dview.h"
 #include "editor/iselection.h"
 #include "editor/iuimanager.h"
@@ -58,6 +59,7 @@ MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
   do_kinematic_dragging = false;
   transformationMarker = 0;
   active = false;
+  changing3DSelection = 0;
 }
 
 bool MainMode::Initialize (iObjectRegistry* object_reg)
@@ -200,6 +202,20 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
     UITools::SetValue (panel, "factoryNameLabel", "");
   }
 
+#if 0
+  if (changing3DSelection <= 0)
+  {
+    wxListCtrl* list = XRCCTRL (*panel, "objectList", wxListCtrl);
+    ListCtrlTools::ClearSelection (list, false);
+    for (size_t i = 0 ; i < current.GetSize () ; i++)
+    {
+      size_t index = view3d->GetDynamicObjectIndexFromObjects (current[i]);
+      if (index != csArrayItemNotFound)
+        ListCtrlTools::SelectRow (list, (int)index, false);
+    }
+  }
+#endif
+
   SetTransformationMarkerStatus ();
 }
 
@@ -312,6 +328,7 @@ void MainMode::OnTreeSelChanged (wxTreeEvent& event)
 
 void MainMode::OnListSelChanged (wxListEvent& event)
 {
+  changing3DSelection++;
   iSelection* selection = view3d->GetSelection ();
   wxListCtrl* list = XRCCTRL (*panel, "objectList", wxListCtrl);
   csArray<Ares::Value*> values = view.GetSelectedValues (list);
@@ -323,6 +340,7 @@ void MainMode::OnListSelChanged (wxListEvent& event)
       selection->AddCurrentObject (dynobj);
   }
   view3d->GetApplication ()->SetFocus3D ();
+  changing3DSelection--;
 }
 
 void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,

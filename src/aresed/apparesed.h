@@ -378,6 +378,7 @@ public:
   /// Get the objects value.
   virtual Ares::Value* GetObjectsValue () const;
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
+  virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj);
 
   /// Join two selected objects.
   void JoinObjects ();

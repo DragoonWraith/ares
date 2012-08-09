@@ -66,6 +66,7 @@ public:
 
   virtual csPtr<Ares::ValueIterator> GetIterator ();
   virtual Value* GetChild (size_t idx) { return values[idx]; }
+  size_t FindDynObj (iDynamicObject* dynobj) const;
 };
 
 #endif // __aresed_objects_h
