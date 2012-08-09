@@ -31,10 +31,43 @@ THE SOFTWARE.
 
 using namespace Ares;
 
-void ObjectsValue::UpdateChildren ()
+class ObjectsHashIterator : public Ares::ValueIterator
 {
-  if (!dirty) return;
-  dirty = false;
+private:
+  ObjectsHash::GlobalIterator it;
+
+public:
+  ObjectsHashIterator (const ObjectsHash::GlobalIterator& it) : it (it) { }
+  virtual ~ObjectsHashIterator () { }
+  virtual void Reset () { it.Reset (); }
+  virtual bool HasNext () { return it.HasNext (); }
+  virtual Value* NextChild (csString* name = 0)
+  {
+    csPtrKey<iDynamicObject> dynobj;
+    StringArrayValue* child = it.Next (dynobj);
+    return child;
+  }
+};
+
+csPtr<ValueIterator> ObjectsValue::GetIterator ()
+{
+  return new ObjectsHashIterator (dynobjs.GetIterator ());
+}
+
+void ObjectsValue::ReleaseChildren ()
+{
+  ObjectsHash::GlobalIterator it = dynobjs.GetIterator ();
+  while (it.HasNext ())
+  {
+    csPtrKey<iDynamicObject> dynobj;
+    StringArrayValue* child = it.Next (dynobj);
+    child->SetParent (0);
+  }
+  dynobjs.DeleteAll ();
+}
+
+void ObjectsValue::BuildModel ()
+{
   dynobjs.DeleteAll ();
   ReleaseChildren ();
   iPcDynamicWorld* dynworld = app->GetAresView ()->GetDynamicWorld ();
@@ -44,7 +77,6 @@ void ObjectsValue::UpdateChildren ()
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
-    dynobjs.Push (obj);
     uint id = obj->GetID ();
     iDynamicFactory* fact = obj->GetFactory ();
     const char* entityName = obj->GetEntityName ();
@@ -52,7 +84,7 @@ void ObjectsValue::UpdateChildren ()
     const csReversibleTransform& trans = obj->GetTransform ();
     float dist = sqrt (csSquaredDist::PointPoint (trans.GetOrigin (), origin));
 
-    NewStringArrayChild (
+    csRef<StringArrayValue> child = View::CreateStringArray (
 	VALUE_LONG, id,
 	VALUE_STRING, entityName,
 	VALUE_STRING, factName,
@@ -61,6 +93,30 @@ void ObjectsValue::UpdateChildren ()
 	VALUE_FLOAT, trans.GetOrigin ().z,
 	VALUE_FLOAT, dist,
 	VALUE_NONE);
+    dynobjs.Put (obj, child);
+  }
+  FireValueChanged ();
+}
+
+void ObjectsValue::RefreshModel ()
+{
+  iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
+  if (cell->GetObjectCount () != dynobjs.GetSize ())
+  {
+    // Refresh needed!
+    BuildModel ();
+    return;
+  }
+
+  for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+  {
+    iDynamicObject* obj = cell->GetObject (i);
+    StringArrayValue* child = dynobjs.Get (obj, 0);
+    if (!child)
+    {
+      BuildModel ();
+      return;
+    }
   }
 }
 

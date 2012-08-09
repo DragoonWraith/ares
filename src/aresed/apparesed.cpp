@@ -216,7 +216,7 @@ iEditorCamera* AresEdit3DView::GetEditorCamera () const
 
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
-  objectsValue->Refresh ();
+  objectsValue->RefreshModel ();
   app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
 
   bool curveTabEnable = false;
@@ -601,6 +601,7 @@ void AresEdit3DView::DeleteSelectedObjects ()
     iDynamicObject* dynobj = it.Next ();
     dyncell->DeleteObject (dynobj);
   }
+  objectsValue->RefreshModel ();
 }
 
 void AresEdit3DView::CleanupWorld ()
@@ -689,7 +690,7 @@ bool AresEdit3DView::LoadFile (const char* filename)
   if (!PostLoadMap ())
     return false;
 
-  objectsValue->Refresh ();
+  objectsValue->BuildModel ();
 
   return true;
 }

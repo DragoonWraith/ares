@@ -31,61 +31,33 @@ class AppAresEditWX;
 struct iMeshFactoryList;
 struct iDynamicObject;
 
-#if 0
-class DynObjValue : public Ares::AbstractCompositeValue
-{
-public:
-  iDynamicObject* dynobj;
+typedef csHash<csRef<Ares::StringArrayValue>,csPtrKey<iDynamicObject> > ObjectsHash;
 
-protected:
-  virtual size_t GetChildCount () { return 7; }
-  virtual const char* GetName (size_t idx)
-  {
-    switch (idx)
-    {
-      case DYNOBJ_COL_ID: return "ID";
-      case DYNOBJ_COL_ENTITY: return "Entity";
-      case DYNOBJ_COL_FACTORY: return "Factory";
-      case DYNOBJ_COL_X: return "X";
-      case DYNOBJ_COL_Y: return "Y";
-      case DYNOBJ_COL_Z: return "Z";
-      case DYNOBJ_COL_DISTANCE: return "Distance";
-    }
-    return "?";
-  }
-
-public:
-  DynObjValue (iDynamicObject* dynobj) : dynobj (dynobj)
-  {
-  };
-  virtual ~DynObjValue () { }
-
-  virtual Value* GetChild (size_t idx)
-  {
-    return children[idx];
-  }
-};
-#endif
-
-class ObjectsValue : public Ares::StandardCollectionValue
+class ObjectsValue : public Ares::Value
 {
 private:
   AppAresEditWX* app;
 
-  csArray<iDynamicObject*> dynobjs;
+  ObjectsHash dynobjs;
+
+  void ReleaseChildren ();
 
 protected:
-  virtual void UpdateChildren ();
-  virtual void ChildChanged (Value* child)
-  {
-    FireValueChanged ();
-  }
+  //virtual void ChildChanged (Value* child)
+  //{
+    //FireValueChanged ();
+  //}
 
 public:
   ObjectsValue (AppAresEditWX* app) : app (app) { }
   virtual ~ObjectsValue () { }
 
-  size_t FindDynObj (iDynamicObject* obj) { return dynobjs.Find (obj); }
+  virtual Ares::ValueType GetType () const { return Ares::VALUE_COLLECTION; }
+
+  void BuildModel ();
+  void RefreshModel ();
+
+  virtual csPtr<Ares::ValueIterator> GetIterator ();
 };
 
 #endif // __aresed_objects_h
