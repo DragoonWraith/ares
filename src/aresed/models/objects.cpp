@@ -31,27 +31,29 @@ THE SOFTWARE.
 
 using namespace Ares;
 
-class ObjectsHashIterator : public Ares::ValueIterator
+class ObjectsIterator : public ValueIterator
 {
 private:
-  ObjectsHash::GlobalIterator it;
+  csRefArray<DynobjValue> children;
+  size_t idx;
 
 public:
-  ObjectsHashIterator (const ObjectsHash::GlobalIterator& it) : it (it) { }
-  virtual ~ObjectsHashIterator () { }
-  virtual void Reset () { it.Reset (); }
-  virtual bool HasNext () { return it.HasNext (); }
+  ObjectsIterator (const csRefArray<DynobjValue>& children) :
+	children (children), idx (0) { }
+  virtual ~ObjectsIterator () { }
+  virtual void Reset () { idx = 0; }
+  virtual bool HasNext () { return idx < children.GetSize (); }
   virtual Value* NextChild (csString* name = 0)
   {
-    csPtrKey<iDynamicObject> dynobj;
-    StringArrayValue* child = it.Next (dynobj);
-    return child;
+    idx++;
+    return children[idx-1];
   }
 };
 
+
 csPtr<ValueIterator> ObjectsValue::GetIterator ()
 {
-  return new ObjectsHashIterator (dynobjs.GetIterator ());
+  return new ObjectsIterator (values);
 }
 
 void ObjectsValue::ReleaseChildren ()
@@ -64,6 +66,7 @@ void ObjectsValue::ReleaseChildren ()
     child->SetParent (0);
   }
   dynobjs.DeleteAll ();
+  values.DeleteAll ();
 }
 
 void ObjectsValue::BuildModel ()
@@ -77,23 +80,32 @@ void ObjectsValue::BuildModel ()
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
-    uint id = obj->GetID ();
-    iDynamicFactory* fact = obj->GetFactory ();
-    const char* entityName = obj->GetEntityName ();
-    const char* factName = fact->GetName ();
-    const csReversibleTransform& trans = obj->GetTransform ();
-    float dist = sqrt (csSquaredDist::PointPoint (trans.GetOrigin (), origin));
 
-    csRef<StringArrayValue> child = View::CreateStringArray (
-	VALUE_LONG, id,
-	VALUE_STRING, entityName,
-	VALUE_STRING, factName,
-	VALUE_FLOAT, trans.GetOrigin ().x,
-	VALUE_FLOAT, trans.GetOrigin ().y,
-	VALUE_FLOAT, trans.GetOrigin ().z,
-	VALUE_FLOAT, dist,
-	VALUE_NONE);
+    csRef<DynobjValue> child;
+    child.AttachNew (new DynobjValue (obj));
+    csStringArray& array = child->GetArray ();
+    csString fmt;
+
+    fmt.Format ("%d", obj->GetID ());
+    array.Push (fmt);
+    array.Push (obj->GetEntityName ());
+    iDynamicFactory* fact = obj->GetFactory ();
+    array.Push (fact->GetName ());
+
+    const csReversibleTransform& trans = obj->GetTransform ();
+    fmt.Format ("%g", trans.GetOrigin ().x);
+    array.Push (fmt);
+    fmt.Format ("%g", trans.GetOrigin ().y);
+    array.Push (fmt);
+    fmt.Format ("%g", trans.GetOrigin ().z);
+    array.Push (fmt);
+
+    float dist = sqrt (csSquaredDist::PointPoint (trans.GetOrigin (), origin));
+    fmt.Format ("%g", dist);
+    array.Push (fmt);
+
     dynobjs.Put (obj, child);
+    values.Push (child);
   }
   FireValueChanged ();
 }

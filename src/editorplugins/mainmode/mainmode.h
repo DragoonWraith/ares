@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/treectrl.h>
+#include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
 
 class TreeCtrlView;
@@ -118,6 +119,7 @@ public:
   void OnStaticSelected ();
   void OnObjectNameEntered ();
   void OnTreeSelChanged (wxTreeEvent& event);
+  void OnListSelChanged (wxListEvent& event);
 
   void OnSetStatic ();
   void OnClearStatic ();
@@ -147,6 +149,7 @@ public:
     void OnStaticSelected (wxCommandEvent& event) { s->OnStaticSelected (); }
     void OnObjectNameEntered (wxCommandEvent& event) { s->OnObjectNameEntered (); }
     void OnTreeSelChanged (wxTreeEvent& event) { s->OnTreeSelChanged (event); }
+    void OnListSelChanged (wxListEvent& event) { s->OnListSelChanged (event); }
 
     void OnSetStatic (wxCommandEvent& event) { s->OnSetStatic (); }
     void OnClearStatic (wxCommandEvent& event) { s->OnClearStatic (); }

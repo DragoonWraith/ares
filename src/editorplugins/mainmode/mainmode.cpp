@@ -44,6 +44,7 @@ BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
   EVT_CHECKBOX (XRCID("staticCheckBox"), MainMode::Panel::OnStaticSelected)
   EVT_TEXT_ENTER (XRCID("objectNameText"), MainMode::Panel::OnObjectNameEntered)
   EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), MainMode::Panel::OnTreeSelChanged)
+  EVT_LIST_ITEM_SELECTED (XRCID("objectList"), MainMode::Panel::OnListSelChanged)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (MainMode)
@@ -307,6 +308,20 @@ void MainMode::OnClearStatic ()
 
 void MainMode::OnTreeSelChanged (wxTreeEvent& event)
 {
+}
+
+void MainMode::OnListSelChanged (wxListEvent& event)
+{
+  iSelection* selection = view3d->GetSelection ();
+  wxListCtrl* list = XRCCTRL (*panel, "objectList", wxListCtrl);
+  csArray<Ares::Value*> values = view.GetSelectedValues (list);
+  selection->SetCurrentObject (0);
+  for (size_t i = 0 ; i < values.GetSize () ; i++)
+  {
+    iDynamicObject* dynobj = view3d->GetDynamicObjectFromObjects (values[i]);
+    if (dynobj)
+      selection->AddCurrentObject (dynobj);
+  }
 }
 
 void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,

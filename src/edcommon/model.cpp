@@ -1673,6 +1673,36 @@ Value* View::GetSelectedValue (wxWindow* component)
   return 0;
 }
 
+csArray<Value*> View::GetSelectedValues (wxWindow* component)
+{
+  Binding* binding = bindingsByComponent.Get (component, 0);
+  if (!binding)
+  {
+    printf ("GetSelectedValue: Component is not bound to a value!\n");
+    return 0;
+  }
+  csArray<Value*> values;
+  if (component->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    wxListCtrl* listCtrl = wxStaticCast (component, wxListCtrl);
+    csArray<long> indices = ListCtrlTools::GetSelectedRowIndices (listCtrl);
+    for (size_t i = 0 ; i < indices.GetSize () ; i++)
+      values.Push (binding->value->GetChild (size_t (indices[i])));
+    return values;
+  }
+  if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
+  {
+    wxTreeCtrl* treeCtrl = wxStaticCast (component, wxTreeCtrl);
+    wxTreeItemId selection = treeCtrl->GetSelection ();
+    // @@@ Only support first selection for now.
+    if (selection.IsOk ())
+      values.Push (ValueFromTree (treeCtrl, selection, binding->value));
+    return values;
+  }
+  printf ("GetSelectedValue: Unsupported type for component!\n");
+  return 0;
+}
+
 class SignalChangeListener : public ValueChangeListener
 {
 private:

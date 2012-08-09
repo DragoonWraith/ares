@@ -139,6 +139,12 @@ struct i3DView : public virtual iBase
   virtual Ares::Value* GetObjectsValue () const = 0;
 
   /**
+   * Given a value out of a component that was bound to the objects value
+   * this function returns the dynamic object corresponding with that value.
+   */
+  virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value) = 0;
+
+  /**
    * Get the current selection.
    */
   virtual iSelection* GetSelection () const = 0;

@@ -377,6 +377,7 @@ public:
   virtual Ares::Value* GetDynfactCollectionValue () const;
   /// Get the objects value.
   virtual Ares::Value* GetObjectsValue () const;
+  virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
 
   /// Join two selected objects.
   void JoinObjects ();

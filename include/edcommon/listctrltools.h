@@ -94,6 +94,11 @@ public:
   static long GetFirstSelectedRow (wxListCtrl* list);
 
   /**
+   * Return the indices of all selected rows.
+   */
+  static csArray<long> GetSelectedRowIndices (wxListCtrl* list);
+
+  /**
    * Select a row in the list.
    */
   static void SelectRow (wxListCtrl* list, int row, bool sendEvent = false);

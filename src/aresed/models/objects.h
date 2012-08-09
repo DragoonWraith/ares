@@ -31,7 +31,19 @@ class AppAresEditWX;
 struct iMeshFactoryList;
 struct iDynamicObject;
 
-typedef csHash<csRef<Ares::StringArrayValue>,csPtrKey<iDynamicObject> > ObjectsHash;
+class DynobjValue : public Ares::StringArrayValue
+{
+private:
+  iDynamicObject* dynobj;
+
+public:
+  DynobjValue (iDynamicObject* dynobj) : dynobj (dynobj) { }
+  virtual ~DynobjValue () { }
+
+  iDynamicObject* GetDynamicObject () const { return dynobj; }
+};
+
+typedef csHash<DynobjValue*,csPtrKey<iDynamicObject> > ObjectsHash;
 
 class ObjectsValue : public Ares::Value
 {
@@ -39,14 +51,9 @@ private:
   AppAresEditWX* app;
 
   ObjectsHash dynobjs;
+  csRefArray<DynobjValue> values;
 
   void ReleaseChildren ();
-
-protected:
-  //virtual void ChildChanged (Value* child)
-  //{
-    //FireValueChanged ();
-  //}
 
 public:
   ObjectsValue (AppAresEditWX* app) : app (app) { }
@@ -58,6 +65,7 @@ public:
   void RefreshModel ();
 
   virtual csPtr<Ares::ValueIterator> GetIterator ();
+  virtual Value* GetChild (size_t idx) { return values[idx]; }
 };
 
 #endif // __aresed_objects_h

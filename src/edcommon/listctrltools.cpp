@@ -160,6 +160,20 @@ long ListCtrlTools::GetFirstSelectedRow (wxListCtrl* list)
   return list->GetNextItem (-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
 }
 
+csArray<long> ListCtrlTools::GetSelectedRowIndices (wxListCtrl* list)
+{
+  csArray<long> indices;
+
+  long item = -1;
+  while (true)
+  {
+    item = list->GetNextItem (item, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+    if (item != -1) indices.Push (item);
+    else break;
+  }
+  return indices;
+}
+
 void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent)
 {
   if (row >= list->GetItemCount ())

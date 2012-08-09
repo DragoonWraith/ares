@@ -709,6 +709,12 @@ Ares::Value* AresEdit3DView::GetObjectsValue () const
   return objectsValue;
 }
 
+iDynamicObject* AresEdit3DView::GetDynamicObjectFromObjects (Ares::Value* value)
+{
+  DynobjValue* dv = static_cast<DynobjValue*> (value);
+  return dv->GetDynamicObject ();
+}
+
 void AresEdit3DView::AddItem (const char* category, const char* itemname)
 {
   if (!categories.In (category))

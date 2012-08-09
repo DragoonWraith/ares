@@ -1412,10 +1412,16 @@ public:
   //----------------------------------------------------------------
 
   /**
-   * Get the selected value from a component (must be a tree or a list control).
+   * Get the first selected value from a component (must be a tree or a list control).
    * Returns 0 if no value is selected.
    */
   Value* GetSelectedValue (wxWindow* component);
+
+  /**
+   * Get all selected values from a component (must be a tree or a list control).
+   * For trees this will only return one value for now.
+   */
+  csArray<Value*> GetSelectedValues (wxWindow* component);
 
   /**
    * Given a component (tree or list control), select the value in this
