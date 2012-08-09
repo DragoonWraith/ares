@@ -875,14 +875,17 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       sel->AddCurrentObject (newobj);
     else
     {
-      if (sel->GetSize () == 1 && sel->GetFirst () == newobj)
+      if (!ctrl && !alt && !shift)
       {
-	// We are trying to select the same object. Deselect it instead.
-        sel->SetCurrentObject (0);
-      }
-      else
-      {
-        sel->SetCurrentObject (newobj);
+        if (sel->GetSize () == 1 && sel->GetFirst () == newobj)
+        {
+	  // We are trying to select the same object. Deselect it instead.
+          sel->SetCurrentObject (0);
+        }
+        else
+        {
+          sel->SetCurrentObject (newobj);
+        }
       }
     }
 
