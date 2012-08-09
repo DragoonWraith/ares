@@ -551,6 +551,8 @@ private:
 
   csRef<UIManager> uiManager;
 
+  int wantsFocus3D;
+
   NewProjectDialog* newprojectDialog;
 
   csRefArray<iEditorPlugin> plugins;
@@ -647,6 +649,8 @@ public:
   CameraWindow* GetCameraWindow () const { return camwin; }
   virtual void ShowCameraWindow ();
   virtual void HideCameraWindow ();
+
+  virtual void SetFocus3D ();
 
   UIManager* GetUIManager () const { return uiManager; }
   virtual iUIManager* GetUI () const;

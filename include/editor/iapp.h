@@ -42,6 +42,11 @@ struct iAresEditor : public virtual iBase
   virtual iUIManager* GetUI () const = 0;
   virtual i3DView* Get3DView () const = 0;
 
+  /**
+   * Set the focus to the 3d view so that keyboard commands work correctly.
+   */
+  virtual void SetFocus3D () = 0;
+
   /// Set the state of the menus correctly depending on context.
   virtual void SetMenuState () = 0;
 

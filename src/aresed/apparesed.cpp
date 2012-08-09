@@ -1483,6 +1483,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
+  wantsFocus3D = 0;
 }
 
 AppAresEditWX::~AppAresEditWX ()
@@ -1937,6 +1938,11 @@ bool AppAresEditWX::InitWX ()
   return true;
 }
 
+void AppAresEditWX::SetFocus3D ()
+{
+  wantsFocus3D = 10;
+}
+
 void AppAresEditWX::SetStatus (const char* statusmsg, ...)
 {
   va_list args;
@@ -2089,6 +2095,17 @@ void AppAresEditWX::PushFrame ()
   static bool lock = false;
   if (lock) return;
   lock = true;
+
+  if (wantsFocus3D)
+  {
+    wantsFocus3D--;
+    if (wantsFocus3D <= 0)
+    {
+      printf ("Setting focus for real!\n");
+      wxwindow->GetWindow ()->SetFocus ();
+    }
+  }
+
   csRef<iEventQueue> q (csQueryRegistry<iEventQueue> (object_reg));
   csRef<iVirtualClock> vc (csQueryRegistry<iVirtualClock> (object_reg));
 

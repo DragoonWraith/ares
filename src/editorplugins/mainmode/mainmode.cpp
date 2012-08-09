@@ -322,6 +322,7 @@ void MainMode::OnListSelChanged (wxListEvent& event)
     if (dynobj)
       selection->AddCurrentObject (dynobj);
   }
+  view3d->GetApplication ()->SetFocus3D ();
 }
 
 void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
