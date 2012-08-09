@@ -1497,9 +1497,15 @@ void AppAresEditWX::FindObject ()
 {
   UIDialog* dialog = new UIDialog (this, "Select an object", 500, 300);
   dialog->AddRow (1);
-  dialog->AddList ("objects", aresed3d->GetObjectsValue (), 0,
-    "ID,Entity,Factory,X,Y,Z,Distance",
-    "ID,Entity,Factory,X,Y,Z,Distance");
+  dialog->AddListIndexed ("objects", aresed3d->GetObjectsValue (), 0,
+      "ID,Entity,Factory,X,Y,Z,Distance",
+      DYNOBJ_COL_ID,
+      DYNOBJ_COL_ENTITY,
+      DYNOBJ_COL_FACTORY,
+      DYNOBJ_COL_X,
+      DYNOBJ_COL_Y,
+      DYNOBJ_COL_Z,
+      DYNOBJ_COL_DISTANCE);
   if (dialog->Show (0))
   {
     const DialogResult& rc = dialog->GetFieldContents ();

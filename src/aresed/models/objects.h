@@ -31,6 +31,42 @@ class AppAresEditWX;
 struct iMeshFactoryList;
 struct iDynamicObject;
 
+#if 0
+class DynObjValue : public Ares::AbstractCompositeValue
+{
+public:
+  iDynamicObject* dynobj;
+
+protected:
+  virtual size_t GetChildCount () { return 7; }
+  virtual const char* GetName (size_t idx)
+  {
+    switch (idx)
+    {
+      case DYNOBJ_COL_ID: return "ID";
+      case DYNOBJ_COL_ENTITY: return "Entity";
+      case DYNOBJ_COL_FACTORY: return "Factory";
+      case DYNOBJ_COL_X: return "X";
+      case DYNOBJ_COL_Y: return "Y";
+      case DYNOBJ_COL_Z: return "Z";
+      case DYNOBJ_COL_DISTANCE: return "Distance";
+    }
+    return "?";
+  }
+
+public:
+  DynObjValue (iDynamicObject* dynobj) : dynobj (dynobj)
+  {
+  };
+  virtual ~DynObjValue () { }
+
+  virtual Value* GetChild (size_t idx)
+  {
+    return children[idx];
+  }
+};
+#endif
+
 class ObjectsValue : public Ares::StandardCollectionValue
 {
 private:

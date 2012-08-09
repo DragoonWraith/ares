@@ -139,6 +139,7 @@ enum ValueType
   VALUE_LONG,
   VALUE_BOOL,
   VALUE_FLOAT,
+  VALUE_STRINGARRAY,
 
   /**
    * A collection of values. In this situation the
@@ -260,6 +261,19 @@ public:
    * not represent a float.
    */
   virtual void SetFloatValue (float v) { }
+
+  /**
+   * Get the value if the type is VALUE_STRINGARRAY.
+   * Returns 0 if the value does not represent a string array.
+   */
+  virtual const csStringArray* GetStringArrayValue () { return 0; }
+
+  /**
+   * Set the value as a string array. Does nothing if the value does
+   * not represent a string array.
+   */
+  virtual void SetStringArrayValue (const csStringArray& strar) { }
+
 
   /**
    * Add a listener for value changes. Note that a value does not
@@ -394,6 +408,29 @@ public:
 };
 
 /**
+ * A string array value.
+ */
+class StringArrayValue : public Value
+{
+protected:
+  csStringArray array;
+
+public:
+  StringArrayValue () { }
+  StringArrayValue (const csStringArray& arr) : array (arr) { }
+  virtual ~StringArrayValue () { }
+  virtual ValueType GetType () const { return VALUE_STRINGARRAY; }
+  virtual void SetStringArrayValue (const csStringArray& strar)
+  {
+    array = strar;
+    FireValueChanged ();
+  }
+  virtual const csStringArray* GetStringArrayValue () { return &array; }
+
+  csStringArray& GetArray () { return array; }
+};
+
+/**
  * A float value.
  */
 class FloatValue : public Value
@@ -489,6 +526,14 @@ public:
    * should be used.
    */
   CompositeValue* NewCompositeChild (ValueType type, ...);
+
+  /**
+   * Conveniance function to add a string array value with several
+   * values as children.
+   * The parameters given should be a 2-tuple of ValueType and a value of
+   * the appropriate type. To end the paremeters VALUE_NONE should be used.
+   */
+  StringArrayValue* NewStringArrayChild (ValueType type, ...);
 
   virtual csPtr<ValueIterator> GetIterator ()
   {
@@ -1067,6 +1112,7 @@ private:
   {
     csStringArray heading;
     csStringArray names;
+    csArray<int> indices;
   };
   typedef csHash<ListHeading,csPtrKey<wxListCtrl> > ListToHeading;
   ListToHeading listToHeading;
@@ -1348,6 +1394,21 @@ public:
   bool DefineHeading (wxListCtrl* listCtrl, const char* heading,
       const char* names);
 
+  /**
+   * Define a heading for a list control based on indices.
+   * This version is also usable in case the children of the container
+   * which is bound to the list control are of type VALUE_STRINGARRAY.
+   * Every column also has a heading which will be used as a heading
+   * on the list component.
+   * @param heading is a comma separated string with the heading for the list.
+   * Following the heading should come the indices (type int) of the string array value.
+   * There should be as many indices as there are items in the heading.
+   * @return false on failure (component could not be found or is not a list).
+   */
+  bool DefineHeadingIndexed (const char* listName, const char* heading, ...);
+  bool DefineHeadingIndexed (wxListCtrl* listCtrl, const char* heading, ...);
+  bool DefineHeadingIndexed (wxListCtrl* listCtrl, const char* heading, va_list args);
+
   //----------------------------------------------------------------
 
   /**
@@ -1398,6 +1459,14 @@ public:
    */
   static csRef<CompositeValue> CreateComposite (ValueType type, ...);
   static csRef<CompositeValue> CreateComposite (ValueType type, va_list arg);
+
+  /**
+   * Conveniance function to create a string array value.
+   * The parameters given should be a 2-tuple of ValueType and a value of the
+   * appropriate type. To end the paremeters VALUE_NONE should be used.
+   */
+  static csRef<StringArrayValue> CreateStringArray (ValueType type, ...);
+  static csRef<StringArrayValue> CreateStringArray (ValueType type, va_list arg);
 };
 
 } // namespace Ares

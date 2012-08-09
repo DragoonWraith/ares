@@ -51,6 +51,17 @@ struct PasteContents
   bool isStatic;
 };
 
+enum DynObjValueColumns
+{
+  DYNOBJ_COL_ID = 0,
+  DYNOBJ_COL_ENTITY,
+  DYNOBJ_COL_FACTORY,
+  DYNOBJ_COL_X,
+  DYNOBJ_COL_Y,
+  DYNOBJ_COL_Z,
+  DYNOBJ_COL_DISTANCE,
+};
+
 /**
  * The 3D view in the editor.
  */

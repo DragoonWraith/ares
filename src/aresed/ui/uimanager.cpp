@@ -185,6 +185,29 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
   view.Bind (collectionValue, list);
 }
 
+void UIDialog::AddListIndexed (const char* name, Value* collectionValue, size_t valueColumn,
+    const char* heading, ...)
+{
+  CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
+  CS_ASSERT (lastRowSizer != 0);
+  wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
+      wxDefaultSize, wxLC_REPORT);
+  list->SetMinSize (wxSize (-1,150));
+  lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  ValueListInfo info;
+  info.list = list;
+  info.col = valueColumn;
+  info.collectionValue = collectionValue;
+  valueListFields.Put (name, info);
+
+  va_list args;
+  va_start (args, heading);
+  view.DefineHeadingIndexed (list, heading, args);
+  va_end (args);
+
+  view.Bind (collectionValue, list);
+}
+
 void UIDialog::AddButton (const char* str)
 {
   CS_ASSERT (lastRowSizer != 0);
@@ -351,8 +374,25 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
       Value* compositeValue = info.collectionValue->GetChild (rowidx);
       if (info.col != csArrayItemNotFound)
       {
-        Value* child = compositeValue->GetChild (info.col);
-        value = view.ValueToString (child);
+	if (compositeValue->GetType () == VALUE_COMPOSITE)
+	{
+          Value* child = compositeValue->GetChild (info.col);
+          value = view.ValueToString (child);
+	}
+	else if (compositeValue->GetType () == VALUE_STRINGARRAY)
+	{
+	  const csStringArray* array = compositeValue->GetStringArrayValue ();
+	  if (array)
+	    value = array->Get (info.col);
+	}
+	else
+	{
+	  value = view.ValueToString (compositeValue);
+	}
+      }
+      else
+      {
+	value = view.ValueToString (compositeValue);
       }
     }
     fieldContents.Put (name, value);

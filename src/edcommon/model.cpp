@@ -62,6 +62,9 @@ csString Value::Dump (bool verbose)
     case VALUE_STRING:
       dump.Format ("V(string,'%s'%s)", GetStringValue (), parent ? ",[PAR]": "");
       break;
+    case VALUE_STRINGARRAY:
+      dump.Format ("V(string[],''%s)", parent ? ",[PAR]": "");
+      break;
     case VALUE_LONG:
       dump.Format ("V(long,'%ld'%s)", GetLongValue (), parent ? ",[PAR]": "");
       break;
@@ -164,6 +167,12 @@ void CompositeValue::AddChildren (ValueType type, va_list args)
 	  AddChild (name, NEWREF(BoolValue,new BoolValue(value)));
 	  break;
 	}
+      case VALUE_STRINGARRAY:
+	{
+	  const csStringArray* value = va_arg (args, csStringArray*);
+	  AddChild (name, NEWREF(StringArrayValue,new StringArrayValue(*value)));
+	  break;
+	}
       case VALUE_COLLECTION:
       case VALUE_COMPOSITE:
 	{
@@ -189,6 +198,17 @@ CompositeValue* StandardCollectionValue::NewCompositeChild (ValueType type, ...)
   children.Push (composite);
   composite->SetParent (this);
   return composite;
+}
+
+StringArrayValue* StandardCollectionValue::NewStringArrayChild (ValueType type, ...)
+{
+  va_list args;
+  va_start (args, type);
+  csRef<StringArrayValue> stringarray = View::CreateStringArray (type, args);
+  va_end (args);
+  children.Push (stringarray);
+  stringarray->SetParent (this);
+  return stringarray;
 }
 
 void StandardCollectionValue::RemoveChild (Value* child)
@@ -872,6 +892,8 @@ static bool ValueToBoolStatic (Value* value)
       return value->GetBoolValue ();
     case VALUE_FLOAT:
       return fabs (value->GetFloatValue ()) > .000001f;
+    case VALUE_STRINGARRAY:
+      return value->GetStringArrayValue () && !value->GetStringArrayValue ()->IsEmpty ();
     case VALUE_COLLECTION:
     case VALUE_COMPOSITE:
       {
@@ -897,6 +919,7 @@ csString View::ValueToString (Value* value)
     case VALUE_LONG: val.Format ("%ld", value->GetLongValue ()); return val;
     case VALUE_BOOL: return csString (value->GetBoolValue () ? "true" : "false");
     case VALUE_FLOAT: val.Format ("%g", value->GetFloatValue ()); return val;
+    case VALUE_STRINGARRAY: return csString("<stringarray>");
     case VALUE_COLLECTION: return csString ("<collection>");
     case VALUE_COMPOSITE: return csString ("<composite>");
     default: return csString ("<?>");
@@ -921,6 +944,7 @@ void View::LongToValue (long l, Value* value)
     case VALUE_FLOAT:
       value->SetFloatValue (float (l));
       return;
+    case VALUE_STRINGARRAY: return;
     case VALUE_COLLECTION: return;
     case VALUE_COMPOSITE: return;
     default: return;
@@ -943,6 +967,7 @@ void View::BoolToValue (bool in, Value* value)
     case VALUE_FLOAT:
       value->SetFloatValue (float (in));
       return;
+    case VALUE_STRINGARRAY: return;
     case VALUE_COLLECTION: return;
     case VALUE_COMPOSITE: return;
     default: return;
@@ -977,6 +1002,7 @@ void View::StringToValue (const char* str, Value* value)
       value->SetFloatValue (l);
       return;
     }
+    case VALUE_STRINGARRAY: return;
     case VALUE_COLLECTION: return;
     case VALUE_COMPOSITE: return;
     default: return;
@@ -1011,24 +1037,84 @@ csRef<CompositeValue> View::CreateComposite (ValueType type, ...)
   return value;
 }
 
+csRef<StringArrayValue> View::CreateStringArray (ValueType type, va_list args)
+{
+  csRef<StringArrayValue> stringarray = NEWREF(StringArrayValue,new StringArrayValue());
+  csStringArray& array = stringarray->GetArray ();
+
+  while (type != VALUE_NONE)
+  {
+    switch (type)
+    {
+      case VALUE_STRING:
+	{
+	  const char* value = va_arg (args, char*);
+	  array.Push (value);
+	  break;
+	}
+      case VALUE_LONG:
+      case VALUE_BOOL:
+	{
+	  long value = va_arg (args, long);
+	  csString fmt;
+	  fmt.Format ("%ld", value);
+	  array.Push (fmt);
+	  break;
+	}
+      case VALUE_FLOAT:
+	{
+	  float value = va_arg (args, double);
+	  csString fmt;
+	  fmt.Format ("%g", value);
+	  array.Push (fmt);
+	  break;
+	}
+      default:
+	array.Push ("<?>");
+	break;
+    }
+    type = (ValueType) va_arg (args, int);
+  }
+  return stringarray;
+}
+
+csRef<StringArrayValue> View::CreateStringArray (ValueType type, ...)
+{
+  va_list args;
+  va_start (args, type);
+  csRef<StringArrayValue> value = CreateStringArray (type, args);
+  va_end (args);
+  return value;
+}
+
 csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)
 {
   csStringArray row;
-  if (value->GetType () != VALUE_COMPOSITE)
+  ValueType t = value->GetType ();
+  if (t == VALUE_STRINGARRAY)
+  {
+    const csStringArray* array = value->GetStringArrayValue ();
+    if (!array) return row;
+    for (size_t i = 0 ; i < lh.heading.GetSize () ; i++)
+      row.Push (array->Get (lh.indices[i]));
+  }
+  else if (t == VALUE_COMPOSITE)
+  {
+    for (size_t i = 0 ; i < lh.names.GetSize () ; i++)
+    {
+      Value* child = value->GetChildByName (lh.names[i]);
+      if (child)
+	row.Push (ValueToString (child));
+      else
+      {
+	printf ("Warning: child '%s' is missing!\n", (const char*)lh.names[i]);
+	row.Push ("");
+      }
+    }
+  }
+  else
   {
     row.Push (ValueToString (value));
-    return row;
-  }
-  for (size_t i = 0 ; i < lh.names.GetSize () ; i++)
-  {
-    Value* child = value->GetChildByName (lh.names[i]);
-    if (child)
-      row.Push (ValueToString (child));
-    else
-    {
-      printf ("Warning: child '%s' is missing!\n", (const char*)lh.names[i]);
-      row.Push ("");
-    }
   }
   return row;
 }
@@ -1409,6 +1495,54 @@ bool View::DefineHeading (wxListCtrl* listCtrl, const char* heading,
   lh.names.SplitString (names, ",");
   for (size_t i = 0 ; i < lh.heading.GetSize () ; i++)
     ListCtrlTools::SetColumn (listCtrl, i, lh.heading[i], 100);
+  listToHeading.Put (listCtrl, lh);
+  return true;
+}
+
+bool View::DefineHeadingIndexed (const char* listName, const char* heading, ...)
+{
+  wxString wxlistName = wxString::FromUTF8 (listName);
+  wxWindow* comp = parent->FindWindow (wxlistName);
+  if (!comp)
+  {
+    printf ("DefineHeading: Can't find component '%s'!\n", listName);
+    return false;
+  }
+  if (!comp->IsKindOf (CLASSINFO (wxListCtrl)))
+  {
+    printf ("DefineHeading: Component '%s' is not a list control!\n", listName);
+    return false;
+  }
+  wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
+
+  va_list args;
+  va_start (args, heading);
+  bool rc = DefineHeadingIndexed (listCtrl, heading, args);
+  va_end (args);
+  return rc;
+}
+
+bool View::DefineHeadingIndexed (wxListCtrl* listCtrl, const char* heading, ...)
+{
+  va_list args;
+  va_start (args, heading);
+  bool rc = DefineHeadingIndexed (listCtrl, heading, args);
+  va_end (args);
+  return rc;
+}
+
+bool View::DefineHeadingIndexed (wxListCtrl* listCtrl, const char* heading, va_list args)
+{
+  ListHeading lh;
+  lh.heading.SplitString (heading, ",");
+
+  for (size_t i = 0 ; i < lh.heading.GetSize () ; i++)
+  {
+    int index = va_arg (args, int);
+    lh.indices.Push (index);
+    ListCtrlTools::SetColumn (listCtrl, i, lh.heading[i], 100);
+  }
+
   listToHeading.Put (listCtrl, lh);
   return true;
 }

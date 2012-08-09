@@ -52,14 +52,14 @@ void ObjectsValue::UpdateChildren ()
     const csReversibleTransform& trans = obj->GetTransform ();
     float dist = sqrt (csSquaredDist::PointPoint (trans.GetOrigin (), origin));
 
-    NewCompositeChild (
-	VALUE_LONG, "ID", id,
-	VALUE_STRING, "Entity", entityName,
-	VALUE_STRING, "Factory", factName,
-	VALUE_FLOAT, "X", trans.GetOrigin ().x,
-	VALUE_FLOAT, "Y", trans.GetOrigin ().y,
-	VALUE_FLOAT, "Z", trans.GetOrigin ().z,
-	VALUE_FLOAT, "Distance", dist,
+    NewStringArrayChild (
+	VALUE_LONG, id,
+	VALUE_STRING, entityName,
+	VALUE_STRING, factName,
+	VALUE_FLOAT, trans.GetOrigin ().x,
+	VALUE_FLOAT, trans.GetOrigin ().y,
+	VALUE_FLOAT, trans.GetOrigin ().z,
+	VALUE_FLOAT, dist,
 	VALUE_NONE);
   }
 }

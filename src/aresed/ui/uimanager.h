@@ -110,6 +110,8 @@ public:
    */
   virtual void AddList (const char* name, Ares::Value* collectionValue,
       size_t valueColumn, const char* heading, const char* names);
+  virtual void AddListIndexed (const char* name, Ares::Value* collectionValue,
+      size_t valueColumn, const char* heading, ...);
 
   // Clear all input fields to empty or default values.
   virtual void Clear ();
