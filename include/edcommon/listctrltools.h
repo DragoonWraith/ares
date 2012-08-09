@@ -100,8 +100,10 @@ public:
 
   /**
    * Select a row in the list.
+   * If 'addSelection' is true then the selection is extended with this row.
    */
-  static void SelectRow (wxListCtrl* list, int row, bool sendEvent = false);
+  static void SelectRow (wxListCtrl* list, int row, bool sendEvent = false,
+      bool addSelection = false);
 
   /**
    * Clear selection in the list.

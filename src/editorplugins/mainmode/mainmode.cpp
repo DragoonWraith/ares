@@ -202,19 +202,19 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
     UITools::SetValue (panel, "factoryNameLabel", "");
   }
 
-#if 0
   if (changing3DSelection <= 0)
   {
+    changing3DSelection++;
     wxListCtrl* list = XRCCTRL (*panel, "objectList", wxListCtrl);
     ListCtrlTools::ClearSelection (list, false);
     for (size_t i = 0 ; i < current.GetSize () ; i++)
     {
       size_t index = view3d->GetDynamicObjectIndexFromObjects (current[i]);
       if (index != csArrayItemNotFound)
-        ListCtrlTools::SelectRow (list, (int)index, false);
+        ListCtrlTools::SelectRow (list, (int)index, false, true);
     }
+    changing3DSelection--;
   }
-#endif
 
   SetTransformationMarkerStatus ();
 }
@@ -328,6 +328,7 @@ void MainMode::OnTreeSelChanged (wxTreeEvent& event)
 
 void MainMode::OnListSelChanged (wxListEvent& event)
 {
+  if (changing3DSelection > 0) return;
   changing3DSelection++;
   iSelection* selection = view3d->GetSelection ();
   wxListCtrl* list = XRCCTRL (*panel, "objectList", wxListCtrl);

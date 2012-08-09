@@ -174,17 +174,19 @@ csArray<long> ListCtrlTools::GetSelectedRowIndices (wxListCtrl* list)
   return indices;
 }
 
-void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent)
+void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent, bool addSelection)
 {
   if (row >= list->GetItemCount ())
   {
     // If we don't have sufficient rows we also clear the selection but
     // in that case we have to send an event in case we wanted an event
     // when a new selection was made.
-    ClearSelection (list, sendEvent);
+    if (!addSelection)
+      ClearSelection (list, sendEvent);
     return;
   }
-  ClearSelection (list);
+  if (!addSelection)
+    ClearSelection (list);
   wxListItem rowInfo;
   rowInfo.m_itemId = row;
   rowInfo.m_col = 0;
