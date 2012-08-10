@@ -124,6 +124,7 @@ public:
   void OnObjectNameEntered ();
   void OnTreeSelChanged (wxTreeEvent& event);
   void OnListSelChanged (wxListEvent& event);
+  void OnListContext (wxListEvent& event);
 
   void OnSetStatic ();
   void OnClearStatic ();
@@ -154,6 +155,7 @@ public:
     void OnObjectNameEntered (wxCommandEvent& event) { s->OnObjectNameEntered (); }
     void OnTreeSelChanged (wxTreeEvent& event) { s->OnTreeSelChanged (event); }
     void OnListSelChanged (wxListEvent& event) { s->OnListSelChanged (event); }
+    void OnListContext (wxListEvent& event) { s->OnListContext (event); }
 
     void OnSetStatic (wxCommandEvent& event) { s->OnSetStatic (); }
     void OnClearStatic (wxCommandEvent& event) { s->OnClearStatic (); }

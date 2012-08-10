@@ -46,6 +46,7 @@ BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
   EVT_TEXT_ENTER (XRCID("objectNameText"), MainMode::Panel::OnObjectNameEntered)
   EVT_TREE_SEL_CHANGED (XRCID("factoryTree"), MainMode::Panel::OnTreeSelChanged)
   EVT_LIST_ITEM_SELECTED (XRCID("objectList"), MainMode::Panel::OnListSelChanged)
+  EVT_LIST_ITEM_RIGHT_CLICK (XRCID("objectList"), MainMode::Panel::OnListContext)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (MainMode)
@@ -142,6 +143,14 @@ void MainMode::Stop ()
   active = false;
 }
 
+void MainMode::OnListContext (wxListEvent& event)
+{
+  wxListCtrl* list = XRCCTRL (*panel, "objectList", wxListCtrl);
+  wxMenu contextMenu;
+  AddContextMenu (&contextMenu, 0, 0);
+  list->PopupMenu (&contextMenu);
+}
+
 void MainMode::AllocContextHandlers (wxFrame* frame)
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
@@ -158,7 +167,8 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
   if (view3d->GetSelection ()->HasSelection ())
   {
-    //contextMenu->Append (wxID_DELETE, wxT ("&Delete"));
+    contextMenu->AppendSeparator ();
+    contextMenu->Append (wxID_DELETE, wxT ("&Delete"));
     contextMenu->AppendSeparator ();
 
     contextMenu->Append (idSetStatic, wxT ("Set static"));

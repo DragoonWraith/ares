@@ -1672,8 +1672,6 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
 	bool camwinVis = camwin->IsVisible ();
 	if (camwinVis)
 	{
-	  if (aresed3d->GetSelection ()->HasSelection ())
-	    contextMenu.Append (wxID_DELETE, wxT ("&Delete"));
 	  camwin->AddContextMenu (&contextMenu, mouseX, mouseY);
 	}
 	editMode->AddContextMenu (&contextMenu, mouseX, mouseY);
