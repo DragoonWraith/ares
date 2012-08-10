@@ -69,6 +69,14 @@ void ObjectsValue::ReleaseChildren ()
   values.DeleteAll ();
 }
 
+static int CompareDynobjValues (DynobjValue* const & v1, DynobjValue* const & v2)
+{
+  const char* s1 = v1->GetStringArrayValue ()->Get (DYNOBJ_COL_FACTORY);
+  const char* s2 = v2->GetStringArrayValue ()->Get (DYNOBJ_COL_FACTORY);
+  return strcmp (s1, s2);
+}
+
+
 void ObjectsValue::BuildModel ()
 {
   dynobjs.DeleteAll ();
@@ -107,6 +115,7 @@ void ObjectsValue::BuildModel ()
     dynobjs.Put (obj, child);
     values.Push (child);
   }
+  values.Sort (CompareDynobjValues);
   FireValueChanged ();
 }
 
