@@ -65,8 +65,6 @@ private:
   void OnGravitySelected ();
   void OnPanSelected ();
 
-  csBox3 GetBoxSelected ();
-
 public:
   CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~CameraWindow();

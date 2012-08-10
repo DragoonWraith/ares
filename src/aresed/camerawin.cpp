@@ -127,27 +127,6 @@ void CameraWindow::OnR3Button ()
   RecallTrans (2);
 }
 
-csBox3 CameraWindow::GetBoxSelected ()
-{
-  csBox3 totalbox;
-  csRef<iSelectionIterator> it = aresed3d->GetSelection ()->GetIterator ();
-  while (it->HasNext ())
-  {
-    iDynamicObject* dynobj = it->Next ();
-    const csBox3& box = dynobj->GetFactory ()->GetBBox ();
-    const csReversibleTransform& tr = dynobj->GetTransform ();
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (0)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (1)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (2)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (3)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (4)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (5)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (6)));
-    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (7)));
-  }
-  return totalbox;
-}
-
 void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
 {
   wxCheckBox* panCheck = XRCCTRL (*panel, "panCheckBox", wxCheckBox);
@@ -169,7 +148,7 @@ void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& curren
 
 void CameraWindow::OnTopDownSelButton ()
 {
-  csBox3 box = GetBoxSelected ();
+  csBox3 box = TransformTools::GetBoxSelected (aresed3d->GetSelection ());
   float xdim = box.MaxX ()-box.MinX ();
   float zdim = box.MaxZ ()-box.MinZ ();
   csVector3 origin = box.GetCenter () + csVector3 (0, csMax(xdim,zdim), 0);
@@ -187,10 +166,15 @@ void CameraWindow::OnLookAtButton ()
 
 void CameraWindow::OnMoveToButton ()
 {
-  csBox3 box = GetBoxSelected ();
-  csVector3 center = box.GetCenter ();
-  center.y = box.MaxY () + 2.0;
-  aresed3d->GetCamera ()->CamMove (center);
+  Camera* cam = aresed3d->GetCamera ();
+  csSphere sphere = TransformTools::GetSphereSelected (aresed3d->GetSelection ());
+  CamLocation loc = cam->GetCameraLocation ();
+
+  const csVector3& src = loc.pos;
+  const csVector3& dst = sphere.GetCenter ();
+
+  cam->CamLookAtPosition (dst);
+  cam->CamMove (dst - (dst-src).Unit () * sphere.GetRadius () * 2);
 }
 
 void CameraWindow::OnPanSelected ()

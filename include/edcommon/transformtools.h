@@ -80,6 +80,16 @@ public:
    * Return the center of all selected objects.
    */
   static csVector3 GetCenterSelected (iSelection* selection);
+
+  /**
+   * Return the combined world space box of all selected objects.
+   */
+  static csBox3 GetBoxSelected (iSelection* selection);
+
+  /**
+   * Return the combined world space sphere of all selected objects.
+   */
+  static csSphere GetSphereSelected (iSelection* selection);
 };
 
 #endif // __transformtools_h

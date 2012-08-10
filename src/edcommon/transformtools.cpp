@@ -27,6 +27,34 @@ THE SOFTWARE.
 #include "editor/iselection.h"
 #include "propclass/dynworld.h"
 
+csSphere TransformTools::GetSphereSelected (iSelection* selection)
+{
+  csBox3 box = GetBoxSelected (selection);
+  float dist = sqrt (csSquaredDist::PointPoint (box.Min (), box.Max ()));
+  return csSphere (box.GetCenter (), dist/2.0f);
+}
+
+csBox3 TransformTools::GetBoxSelected (iSelection* selection)
+{
+  csBox3 totalbox;
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
+  {
+    iDynamicObject* dynobj = it->Next ();
+    const csBox3& box = dynobj->GetFactory ()->GetBBox ();
+    const csReversibleTransform& tr = dynobj->GetTransform ();
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (0)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (1)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (2)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (3)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (4)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (5)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (6)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (7)));
+  }
+  return totalbox;
+}
+
 csVector3 TransformTools::GetCenterSelected (iSelection* selection)
 {
   csVector3 center (0);
