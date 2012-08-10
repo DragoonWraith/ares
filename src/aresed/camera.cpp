@@ -61,7 +61,8 @@ static csVector3 GetConfigVector (iConfigFile* config,
   return v;
 }
 
-void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos)
+void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos,
+    iDynamicObject* player)
 {
   Camera::camera = camera;
 
@@ -84,6 +85,14 @@ void Camera::Init (iCamera* camera, iSector* sector, const csVector3& pos)
   csVector3 body (GetConfigVector (cfgAcc, "Actor.Body", "0.2,1.8,0.2"));
   csVector3 shift (GetConfigVector (cfgAcc, "Actor.Shift", "0.0,-1.7,0.0"));
   collider_actor.InitializeColliders (camera, legs, body, shift);
+
+  if (player)
+  {
+    const csReversibleTransform& trans = player->GetTransform ();
+    csVector3 origin = trans.GetOrigin ();
+    origin.y += 1.0f;
+    CamMove (origin);
+  }
 }
 
 void Camera::InterpolateCamera (float elapsed_time)

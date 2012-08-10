@@ -1042,6 +1042,19 @@ bool AresEdit3DView::SetupDynWorld ()
   return true;
 }
 
+iDynamicObject* AresEdit3DView::FindPlayerObject ()
+{
+  if (!dyncell) return 0;
+  iDynamicFactory* playerFact = dynworld->FindFactory ("Player");
+  for (size_t i = 0 ; i < dyncell->GetObjectCount () ; i++)
+  {
+    iDynamicObject* dynobj = dyncell->GetObject (i);
+    if (dynobj->GetFactory () == playerFact)
+      return dynobj;
+  }
+  return 0;
+}
+
 bool AresEdit3DView::PostLoadMap ()
 {
   csRef<iDynamicCellIterator> it = dynworld->GetCells ();
@@ -1099,7 +1112,9 @@ bool AresEdit3DView::PostLoadMap ()
   //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
 
   // Setup the camera.
-  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
+  // Put the camera at the position of the player if possible.
+  iDynamicObject* player = FindPlayerObject ();
+  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0), player);
 
   // Force the update of the clock.
   nature->UpdateTime (currentTime+100, GetCsCamera ());
@@ -1138,7 +1153,8 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
   iLightList* lightList = sector->GetLights ();
   lightList->Add (camlight);
 
-  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0));
+  iDynamicObject* player = FindPlayerObject ();
+  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0), player);
 }
 
 bool AresEdit3DView::SetupWorld ()

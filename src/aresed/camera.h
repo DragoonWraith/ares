@@ -74,7 +74,7 @@ public:
   Camera (AresEdit3DView* aresed3d);
   virtual ~Camera () { }
 
-  void Init (iCamera* camera, iSector* sector, const csVector3& pos);
+  void Init (iCamera* camera, iSector* sector, const csVector3& pos, iDynamicObject* player);
 
   virtual bool IsPanningEnabled () const { return do_panning; }
   virtual void EnablePanning (const csVector3& center);

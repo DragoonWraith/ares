@@ -284,6 +284,12 @@ private:
   void ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain,
       bool grid);
 
+  /**
+   * Find the dynamic object representing the player in the current cell (if there
+   * is such an object).
+   */
+  iDynamicObject* FindPlayerObject ();
+
 public:
   /**
    * Constructor.
