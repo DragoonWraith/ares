@@ -153,20 +153,17 @@ void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& curren
   wxCheckBox* panCheck = XRCCTRL (*panel, "panCheckBox", wxCheckBox);
   wxButton* lookAtButton = XRCCTRL (*panel, "lookButton", wxButton);
   wxButton* moveToButton = XRCCTRL (*panel, "moveButton", wxButton);
-  wxButton* topDownSelButton = XRCCTRL (*panel, "topButton", wxButton);
   if (current.GetSize () == 0)
   {
     panCheck->Disable();
     lookAtButton->Disable();
     moveToButton->Disable();
-    topDownSelButton->Disable();
   }
   else
   {
     panCheck->Enable();
     lookAtButton->Enable();
     moveToButton->Enable();
-    topDownSelButton->Enable();
   }
 }
 

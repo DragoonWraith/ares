@@ -158,6 +158,7 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
   if (view3d->GetSelection ()->HasSelection ())
   {
+    //contextMenu->Append (wxID_DELETE, wxT ("&Delete"));
     contextMenu->AppendSeparator ();
 
     contextMenu->Append (idSetStatic, wxT ("Set static"));
