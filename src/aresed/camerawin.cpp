@@ -42,13 +42,10 @@ BEGIN_EVENT_TABLE(CameraWindow::Panel, wxPanel)
   EVT_BUTTON (XRCID("recall2Button"), CameraWindow::Panel::OnR2Button)
   EVT_BUTTON (XRCID("store3Button"), CameraWindow::Panel::OnS3Button)
   EVT_BUTTON (XRCID("recall3Button"), CameraWindow::Panel::OnR3Button)
-  EVT_BUTTON (XRCID("store4Button"), CameraWindow::Panel::OnS4Button)
-  EVT_BUTTON (XRCID("recall4Button"), CameraWindow::Panel::OnR4Button)
 
   EVT_BUTTON (XRCID("topDownButton"), CameraWindow::Panel::OnTopDownButton)
   EVT_BUTTON (XRCID("lookButton"), CameraWindow::Panel::OnLookAtButton)
   EVT_BUTTON (XRCID("moveButton"), CameraWindow::Panel::OnMoveToButton)
-  EVT_BUTTON (XRCID("topButton"), CameraWindow::Panel::OnTopDownSelButton)
 
   EVT_CHECKBOX (XRCID("gravityCheckBox"), CameraWindow::Panel::OnGravitySelected)
   EVT_CHECKBOX (XRCID("panCheckBox"), CameraWindow::Panel::OnPanSelected)
@@ -89,7 +86,6 @@ void CameraWindow::StoreTrans (int idx)
     case 0: recallButton = XRCCTRL (*panel, "recall1Button", wxButton); break;
     case 1: recallButton = XRCCTRL (*panel, "recall2Button", wxButton); break;
     case 2: recallButton = XRCCTRL (*panel, "recall3Button", wxButton); break;
-    case 3: recallButton = XRCCTRL (*panel, "recall4Button", wxButton); break;
   }
   recallButton->Enable ();
   CamLocation loc = aresed3d->GetCamera ()->GetCameraLocation ();
@@ -116,11 +112,6 @@ void CameraWindow::OnS3Button ()
   StoreTrans (2);
 }
 
-void CameraWindow::OnS4Button ()
-{
-  StoreTrans (3);
-}
-
 void CameraWindow::OnR1Button ()
 {
   RecallTrans (0);
@@ -134,11 +125,6 @@ void CameraWindow::OnR2Button ()
 void CameraWindow::OnR3Button ()
 {
   RecallTrans (2);
-}
-
-void CameraWindow::OnR4Button ()
-{
-  RecallTrans (3);
 }
 
 csBox3 CameraWindow::GetBoxSelected ()
@@ -250,8 +236,6 @@ CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
   recallButton  = XRCCTRL (*panel, "recall2Button", wxButton);
   recallButton->Disable ();
   recallButton  = XRCCTRL (*panel, "recall3Button", wxButton);
-  recallButton->Disable ();
-  recallButton  = XRCCTRL (*panel, "recall4Button", wxButton);
   recallButton->Disable ();
 }
 

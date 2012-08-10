@@ -41,7 +41,7 @@ private:
 
   int idLookAt, idTopDownSel, idMoveTo, idTopDown;
 
-  CamLocation trans[4];
+  CamLocation trans[3];
   void StoreTrans (int idx);
   void RecallTrans (int idx);
 
@@ -56,8 +56,6 @@ private:
   void OnR2Button ();
   void OnS3Button ();
   void OnR3Button ();
-  void OnS4Button ();
-  void OnR4Button ();
 
   void OnTopDownButton ();
   void OnLookAtButton ();
@@ -100,8 +98,6 @@ public:
     void OnR2Button (wxCommandEvent& event) { s->OnR2Button (); }
     void OnS3Button (wxCommandEvent& event) { s->OnS3Button (); }
     void OnR3Button (wxCommandEvent& event) { s->OnR3Button (); }
-    void OnS4Button (wxCommandEvent& event) { s->OnS4Button (); }
-    void OnR4Button (wxCommandEvent& event) { s->OnR4Button (); }
 
     void OnTopDownButton (wxCommandEvent& event) { s->OnTopDownButton (); }
     void OnLookAtButton (wxCommandEvent& event) { s->OnLookAtButton (); }
