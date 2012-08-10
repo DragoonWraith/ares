@@ -122,6 +122,7 @@ void ObjectsValue::BuildModel ()
 void ObjectsValue::RefreshModel ()
 {
   iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
+  if (!cell) return;
   if (cell->GetObjectCount () != dynobjs.GetSize ())
   {
     // Refresh needed!

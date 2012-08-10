@@ -78,11 +78,14 @@ void ViewMode::FramePre ()
   editorCamera->Frame (elapsed_time, mouseX, mouseY);
 
   iLight* camlight = view3d->GetCameraLight ();
-  csReversibleTransform tc = camera->GetTransform ();
-  //csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (0, 0, .5);
-  csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (2, 0, 2);
-  camlight->GetMovable ()->GetTransform ().SetOrigin (pos);
-  camlight->GetMovable ()->UpdateMove ();
+  if (camlight)
+  {
+    csReversibleTransform tc = camera->GetTransform ();
+    //csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (0, 0, .5);
+    csVector3 pos = tc.GetOrigin () + tc.GetT2O () * csVector3 (2, 0, 2);
+    camlight->GetMovable ()->GetTransform ().SetOrigin (pos);
+    camlight->GetMovable ()->UpdateMove ();
+  }
 
   if (view3d->IsSimulation ())
   {
@@ -90,7 +93,9 @@ void ViewMode::FramePre ()
     dyn->Step (elapsed_time / dynamicSpeed);
   }
 
-  view3d->GetDynamicWorld ()->PrepareView (camera, elapsed_time);
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+  if (dynworld->GetCurrentCell ())
+    dynworld->PrepareView (camera, elapsed_time);
 }
 
 void ViewMode::Frame3D()

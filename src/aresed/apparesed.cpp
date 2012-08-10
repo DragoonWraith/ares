@@ -104,6 +104,26 @@ struct SaveCallback : public OKCallback
 
 // =========================================================================
 
+class AresDynamicCellCreator : public scfImplementation1<AresDynamicCellCreator,
+  iDynamicCellCreator>
+{
+private:
+  AresEdit3DView* aresed3d;
+
+public:
+  AresDynamicCellCreator (AresEdit3DView* aresed3d) :
+    scfImplementationType (this), aresed3d (aresed3d) { }
+  virtual ~AresDynamicCellCreator () { }
+  virtual iDynamicCell* CreateCell (const char* name)
+  {
+    return aresed3d->CreateCell (name);
+  }
+  virtual void FillCell (iDynamicCell* cell) { }
+};
+
+
+// =========================================================================
+
 AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg) :
   scfImplementationType (this),
   app (app), object_reg (object_reg)
@@ -645,8 +665,16 @@ void AresEdit3DView::NewProject (const csArray<Asset>& assets)
     return;
   }
 
-  // @@@ Hardcoded sector name!
-  sector = engine->FindSector ("outside");
+  iSectorList* sl = engine->GetSectors ();
+  if (sl->GetCount () > 0)
+  {
+    sector = sl->Get (0);
+    CreateCell (sector->QueryObject ()->GetName ());
+  }
+  else
+  {
+    sector = 0;
+  }
 
   // @@@ Error handling.
   SetupDynWorld ();
@@ -668,7 +696,7 @@ bool AresEdit3DView::LoadFile (const char* filename)
   }
 
   // @@@ Hardcoded sector name!
-  sector = engine->FindSector ("outside");
+  //sector = engine->FindSector ("outside");
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
   {
@@ -853,6 +881,11 @@ bool AresEdit3DView::Setup ()
       "pcworld.dynamic", "pcphysics.system", CEL_PROPCLASS_END);
   if (!zoneEntity) return app->ReportError ("Failed to create zone entity!");
   dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (zoneEntity);
+  {
+    csRef<iDynamicCellCreator> cellCreator;
+    cellCreator.AttachNew (new AresDynamicCellCreator (this));
+    dynworld->SetDynamicCellCreator (cellCreator);
+  }
 
   elcm = csQueryRegistry<iELCM> (r);
   dynworld->SetELCM (elcm);
@@ -931,9 +964,6 @@ bool AresEdit3DView::Setup ()
   //if (nw)
     //nw->SetTitle (cfgmgr->GetStr ("WindowTitle",
           //"Please set WindowTitle in AppAresEdit.cfg"));
-
-  if (!InitPhysics ())
-    return false;
 
   if (!SetupWorld ())
     return false;
@@ -1014,11 +1044,32 @@ bool AresEdit3DView::SetupDynWorld ()
 
 bool AresEdit3DView::PostLoadMap ()
 {
+  csRef<iDynamicCellIterator> it = dynworld->GetCells ();
+  if (it->HasNext ())
+  {
+    csRef<iDynamicCell> cell = it->NextCell ();
+    dynworld->SetCurrentCell (cell);
+    sector = cell->GetSector ();
+    dyncell = cell;
+    dynSys = dyncell->GetDynamicSystem ();
+    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+  }
+  else
+  {
+    dyncell = 0;
+    dynSys = 0;
+    bullet_dynSys = 0;
+    sector = 0;
+  }
+
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
   // @@@ Bad: hardcoded terrain name! Don't do this at home!
-  terrainMesh = sector->GetMeshes ()->FindByName ("Terrain");
+  if (sector)
+    terrainMesh = sector->GetMeshes ()->FindByName ("Terrain");
+  else
+    terrainMesh = 0;
 
   if (terrainMesh)
   {
@@ -1032,12 +1083,17 @@ bool AresEdit3DView::PostLoadMap ()
       bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
   }
 
-  iLightList* lightList = sector->GetLights ();
 
-  nature->InitSector (sector);
+  if (sector)
+  {
+    nature->InitSector (sector);
 
-  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
-  lightList->Add (camlight);
+    iLightList* lightList = sector->GetLights ();
+    camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
+    lightList->Add (camlight);
+  }
+  else
+    camlight = 0;
 
   engine->Prepare ();
   //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
@@ -1070,6 +1126,9 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
 {
   if (cell == dynworld->GetCurrentCell ()) return; 
   dyncell = cell;
+  dynSys = dyncell->GetDynamicSystem ();
+  bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+
   if (sector && camlight) sector->GetLights ()->Remove (camlight);
   camlight = 0;
   dynworld->SetCurrentCell (cell);
@@ -1089,10 +1148,14 @@ bool AresEdit3DView::SetupWorld ()
   vfs->PopDir ();
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
-  sector = engine->CreateSector ("outside");
+  //sector = engine->CreateSector ("outside");
 
-  dyncell = dynworld->AddCell ("outside", sector, dynSys);
-  dynworld->SetCurrentCell (dyncell);
+  //dyncell = dynworld->AddCell ("outside", sector, dynSys);
+  //dynworld->SetCurrentCell (dyncell);
+  dyncell = 0;
+  dynSys = 0;
+  bullet_dynSys = 0;
+  sector = 0;
 
   ClearItems ();
   if (!dynworld->FindFactory ("Node"))
@@ -1346,24 +1409,36 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   return dynobj;
 }
 
-bool AresEdit3DView::InitPhysics ()
+iDynamicCell* AresEdit3DView::CreateCell (const char* name)
 {
+  iSector* s = engine->FindSector (name);
+  if (!s)
+    s = engine->CreateSector (name);
+
   dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
-  if (!dyn) return app->ReportError ("Error loading bullet plugin!");
+  if (!dyn) { app->ReportError ("Error loading bullet plugin!"); return 0; }
 
-  dynSys = dyn->CreateSystem ();
-  // @@@ Every cell has its own system. Not handled here!
-  dynSys->QueryObject ()->SetName ("ares.dynamics.system");
-  if (!dynSys) return app->ReportError ("Error creating dynamic system!");
-  //dynSys->SetLinearDampener(.3f);
-  dynSys->SetRollingDampener(.995f);
-  dynSys->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
+  csString systemname = "ares.dynamics.system.";
+  systemname += name;
+  csRef<iDynamicSystem> ds = dyn->FindSystem (systemname);
+  if (!ds)
+  {
+    ds = dyn->CreateSystem ();
+    ds->QueryObject ()->SetName (systemname);
+  }
+  if (!ds) { app->ReportError ("Error creating dynamic system!"); return 0; }
 
-  bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
-  bullet_dynSys->SetInternalScale (1.0f);
-  bullet_dynSys->SetStepParameters (0.005f, 2, 10);
+  //ds->SetLinearDampener(.3f);
+  ds->SetRollingDampener(.995f);
+  ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
 
-  return true;
+  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_ds = scfQueryInterface<
+    CS::Physics::Bullet::iDynamicSystem> (ds);
+  //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
+  bullet_ds->SetStepParameters (0.005f, 2, 10);
+
+  iDynamicCell* cell = dynworld->AddCell (name, s, ds);
+  return cell;
 }
 
 bool AresEdit3DView::LoadLibrary (const char* path, const char* file)

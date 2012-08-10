@@ -31,7 +31,7 @@
         <v x="0.0" z="0.0" y="0.0" />
       </move>
       <addon plugin="crystalspace.dynamics.loader">
-        <system name="ares.dynamics.system">
+        <system name="ares.dynamics.system.outside">
            <colliderbox x="400" y="10" z="400">
              <move y="-5" />
            </colliderbox>

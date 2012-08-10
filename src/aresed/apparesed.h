@@ -242,11 +242,6 @@ private:
 
   int mouseX, mouseY;
 
-  /**
-   * Initialize physics.
-   */
-  bool InitPhysics ();
-
   /// Marker used for pasting.
   iMarker* pasteMarker;
   iMarker* constrainMarker;
@@ -303,6 +298,8 @@ public:
   AppAresEditWX* GetApp () const { return app; }
 
   virtual iAresEditor* GetApplication  ();
+
+  iDynamicCell* CreateCell (const char* name);
 
   /**
    * Setup the 3D view.
