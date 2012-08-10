@@ -1042,6 +1042,27 @@ bool AresEdit3DView::SetupDynWorld ()
   return true;
 }
 
+csBox3 AresEdit3DView::ComputeTotalBox ()
+{
+  if (!dyncell) return csBox3 ();
+  csBox3 totalbox;
+  for (size_t i = 0 ; i < dyncell->GetObjectCount () ; i++)
+  {
+    iDynamicObject* dynobj = dyncell->GetObject (i);
+    const csBox3& box = dynobj->GetFactory ()->GetBBox ();
+    const csReversibleTransform& tr = dynobj->GetTransform ();
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (0)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (1)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (2)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (3)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (4)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (5)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (6)));
+    totalbox.AddBoundingVertex (tr.This2Other (box.GetCorner (7)));
+  }
+  return totalbox;
+}
+
 iDynamicObject* AresEdit3DView::FindPlayerObject ()
 {
   if (!dyncell) return 0;
@@ -1112,9 +1133,7 @@ bool AresEdit3DView::PostLoadMap ()
   //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
 
   // Setup the camera.
-  // Put the camera at the position of the player if possible.
-  iDynamicObject* player = FindPlayerObject ();
-  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0), player);
+  InitCamera ();
 
   // Force the update of the clock.
   nature->UpdateTime (currentTime+100, GetCsCamera ());
@@ -1153,8 +1172,17 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
   iLightList* lightList = sector->GetLights ();
   lightList->Add (camlight);
 
+  InitCamera ();
+}
+
+void AresEdit3DView::InitCamera ()
+{
+  // Put the camera at the position of the player if possible.
   iDynamicObject* player = FindPlayerObject ();
-  camera->Init (view->GetCamera (), sector, csVector3 (0, 10, 0), player);
+  csBox3 box = ComputeTotalBox ();
+  csVector3 origin (0, 10, 0);
+  if (!box.Empty ()) origin = box.GetCenter ();
+  camera->Init (view->GetCamera (), sector, origin, player);
 }
 
 bool AresEdit3DView::SetupWorld ()

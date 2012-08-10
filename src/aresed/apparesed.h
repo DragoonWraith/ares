@@ -290,6 +290,16 @@ private:
    */
   iDynamicObject* FindPlayerObject ();
 
+  /**
+   * Calculate the bounding box of all objects in the current cell.
+   */
+  csBox3 ComputeTotalBox ();
+
+  /**
+   * Initialize the camera and move it to an appropriate spot on the level
+   */
+  void InitCamera ();
+
 public:
   /**
    * Constructor.
