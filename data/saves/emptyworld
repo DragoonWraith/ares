@@ -3,7 +3,7 @@
     <asset path="/lib/krystal/" file="krystal.xml" />
     <asset path="/lib/frankie/" file="frankie.xml" />
     <asset path="/appdata/" file="dynworldFactories.xml" />
-    <asset path="/appdata/landscape" file="world" />
+    <asset path="/assets/levels/landscape" file="world" />
     <dynworld>
     </dynworld>
     <curves>
