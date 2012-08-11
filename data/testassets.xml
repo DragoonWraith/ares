@@ -6,7 +6,7 @@
 	<shader> <file>/shader/lighting/lighting_imposter.xml</file> </shader>
     </shaders>
 
-    <library path="/pt_plants" file="library" />
+    <library path="/assets/objects/pt_plants" file="library" />
     <library path="/assets/objects/instancedFactories" file="library" />
     <library path="/assets/objects/clutter" file="library" />
     <!--<library>/lib/frankie/frankie.xml</library>-->
