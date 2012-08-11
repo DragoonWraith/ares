@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 
-#include "apparesed.h"
+#include "aresview.h"
 #include "editor/icamerawin.h"
 
 class AresEdit3DView;

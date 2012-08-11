@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "edcommon/transformtools.h"
 #include "ui/uimanager.h"
+#include "apparesed.h"
 
 #include <wx/xrc/xmlres.h>
 

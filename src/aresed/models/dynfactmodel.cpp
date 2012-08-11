@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "edcommon/tools.h"
 #include "../ui/uimanager.h"
 #include "../apparesed.h"
+#include "../aresview.h"
 
 using namespace Ares;
 

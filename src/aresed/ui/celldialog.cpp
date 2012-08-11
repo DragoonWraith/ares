@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include "../apparesed.h"
+#include "../aresview.h"
 #include "celldialog.h"
 #include "uimanager.h"
 #include "edcommon/listctrltools.h"
@@ -146,7 +147,7 @@ void CellDialog::UpdateList ()
       info.AppendFmt ("%d meshes", sector->GetMeshes ()->GetCount());
       if (cell) info += ", ";
     }
-    if (cell) info.AppendFmt ("%uz objects", cell->GetObjectCount ());
+    if (cell) info.AppendFmt ("%d objects", cell->GetObjectCount ());
 
     int idx = ListCtrlTools::AddRow (list, name, (const char*)info, (const char*)0);
     if (!cell)
