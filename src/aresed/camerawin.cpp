@@ -162,20 +162,25 @@ void CameraWindow::OnLookAtButton ()
   {
     csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
     aresed3d->GetCamera ()->CamLookAtPosition (center);
+    aresed3d->GetApp ()->SetFocus3D ();
   }
 }
 
 void CameraWindow::OnMoveToButton ()
 {
-  Camera* cam = aresed3d->GetCamera ();
-  csSphere sphere = TransformTools::GetSphereSelected (aresed3d->GetSelection ());
-  CamLocation loc = cam->GetCameraLocation ();
+  if (aresed3d->GetSelection ()->HasSelection ())
+  {
+    Camera* cam = aresed3d->GetCamera ();
+    csSphere sphere = TransformTools::GetSphereSelected (aresed3d->GetSelection ());
+    CamLocation loc = cam->GetCameraLocation ();
 
-  const csVector3& src = loc.pos;
-  const csVector3& dst = sphere.GetCenter ();
+    const csVector3& src = loc.pos;
+    const csVector3& dst = sphere.GetCenter ();
 
-  cam->CamLookAtPosition (dst);
-  cam->CamMove (dst - (dst-src).Unit () * sphere.GetRadius () * 2);
+    cam->CamLookAtPosition (dst);
+    cam->CamMove (dst - (dst-src).Unit () * sphere.GetRadius () * 2);
+    aresed3d->GetApp ()->SetFocus3D ();
+  }
 }
 
 void CameraWindow::OnPanSelected ()
