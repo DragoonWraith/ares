@@ -1,6 +1,6 @@
 <dynlevel>
-  <asset path="/appdata/scifilevel/" file="world" />
-  <asset path="/appdata/models/" file="library" />
+  <asset path="/assets/levels/scifilevel/" file="world" />
+  <asset path="/assets/objects/models/" file="library" />
   <asset path="/assets/objects/militaryboxa/" file="library" />
   <asset path="/appdata/" file="scifilogic.xml" dynfacts="true" templates="true" quests="true" lights="true" />
   <dynworld lastid="1000030000">
