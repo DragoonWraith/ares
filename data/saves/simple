@@ -2,7 +2,7 @@
   <asset path="/assets/objects/simple/" file="objects.xml" />
   <asset path="/assets/logic/" file="dynfact.xml" dynfacts="true" templates="true" quests="true" />
   <asset path="/assets/levels/simple/" file="level.xml" />
-  <asset path="/models/" file="library" />
+  <asset path="/assets/objects/models/" file="library" />
   <dynworld lastid="1000040000">
     <cell name="outside">
       <obj fact="Crate" m="0.951568 -3.26176e-07 0.307438 1.92544e-07 1 4.64995e-07 -0.307438 -3.83279e-07 0.951568" v="-5.69458 -2.38419e-07 13.64" id="1000020000" />
