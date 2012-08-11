@@ -7,8 +7,8 @@
     </shaders>
 
     <library path="/pt_plants" file="library" />
-    <library path="/instancedFactories" file="library" />
-    <library path="/aresdata" file="library" />
+    <library path="/assets/objects/instancedFactories" file="library" />
+    <library path="/assets/objects/clutter" file="library" />
     <!--<library>/lib/frankie/frankie.xml</library>-->
     <!--<library>/lib/krystal/krystal.xml</library>-->
 
