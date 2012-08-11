@@ -59,6 +59,7 @@ public:
   FileReq (wxWindow* parent, iVFS* vfs, const char* path);
   ~FileReq();
 
+  void SetPath (const char* path);
   void Show (OKCallback* callback);
 
   DECLARE_EVENT_TABLE ();

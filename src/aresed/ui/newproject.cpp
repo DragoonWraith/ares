@@ -86,6 +86,7 @@ void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 
 void NewProjectDialog::OnSearchFileButton (wxCommandEvent& event)
 {
+  uiManager->GetFileReqDialog ()->SetPath ("/assets");
   uiManager->GetFileReqDialog ()->Show (new SetFilenameCallback (this));
 }
 

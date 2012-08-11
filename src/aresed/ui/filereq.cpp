@@ -83,6 +83,15 @@ void FileReq::OnDirViewActivated (wxCommandEvent& event)
   StdDlgUpdateLists ();
 }
 
+void FileReq::SetPath (const char* path)
+{
+  currentPath = path;
+  vfs->ChDir (path);
+  //btn = winMgr->getWindow("StdDlg/Path");
+  //btn->setProperty("Text", vfs->GetCwd());
+  StdDlgUpdateLists ();
+}
+
 void FileReq::StdDlgUpdateLists ()
 {
   wxListBox* dirlist = XRCCTRL (*this, "dirListBox", wxListBox);
@@ -132,13 +141,9 @@ void FileReq::Show (OKCallback* callback)
 
 FileReq::FileReq (wxWindow* parent, iVFS* vfs, const char* path) : vfs (vfs)
 {
-  currentPath = path;
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("FileRequesterDialog"));
 
-  vfs->ChDir (path);
-  //btn = winMgr->getWindow("StdDlg/Path");
-  //btn->setProperty("Text", vfs->GetCwd());
-  StdDlgUpdateLists ();
+  SetPath (path);
 }
 
 FileReq::~FileReq ()
