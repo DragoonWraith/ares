@@ -285,10 +285,10 @@ private:
       bool grid);
 
   /**
-   * Find the dynamic object representing the player in the current cell (if there
+   * Find the dynamic object representing the player in the given cell (if there
    * is such an object).
    */
-  iDynamicObject* FindPlayerObject ();
+  iDynamicObject* FindPlayerObject (iDynamicCell* cell);
 
   /**
    * Calculate the bounding box of all objects in the current cell.
@@ -296,9 +296,11 @@ private:
   csBox3 ComputeTotalBox ();
 
   /**
-   * Initialize the camera and move it to an appropriate spot on the level
+   * After entering a cell for the first time do all the setup needed
+   * for that cell. This will initialize the nature plugin, create the
+   * camera light, setup the camera and so on.
    */
-  void InitCamera ();
+  void InitCell ();
 
 public:
   /**

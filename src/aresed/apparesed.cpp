@@ -695,9 +695,6 @@ bool AresEdit3DView::LoadFile (const char* filename)
     return false;
   }
 
-  // @@@ Hardcoded sector name!
-  //sector = engine->FindSector ("outside");
-
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
   {
     iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
@@ -1063,13 +1060,13 @@ csBox3 AresEdit3DView::ComputeTotalBox ()
   return totalbox;
 }
 
-iDynamicObject* AresEdit3DView::FindPlayerObject ()
+iDynamicObject* AresEdit3DView::FindPlayerObject (iDynamicCell* cell)
 {
   if (!dyncell) return 0;
   iDynamicFactory* playerFact = dynworld->FindFactory ("Player");
-  for (size_t i = 0 ; i < dyncell->GetObjectCount () ; i++)
+  for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
-    iDynamicObject* dynobj = dyncell->GetObject (i);
+    iDynamicObject* dynobj = cell->GetObject (i);
     if (dynobj->GetFactory () == playerFact)
       return dynobj;
   }
@@ -1078,19 +1075,26 @@ iDynamicObject* AresEdit3DView::FindPlayerObject ()
 
 bool AresEdit3DView::PostLoadMap ()
 {
+  dyncell = 0;
+  // Pick the first cell containing the player or else
+  // the first cell.
   csRef<iDynamicCellIterator> it = dynworld->GetCells ();
-  if (it->HasNext ())
+  while (it->HasNext ())
   {
     csRef<iDynamicCell> cell = it->NextCell ();
-    dynworld->SetCurrentCell (cell);
-    sector = cell->GetSector ();
-    dyncell = cell;
+    if (!dyncell) dyncell = cell;
+    if (FindPlayerObject (cell)) { dyncell = cell; break; }
+  }
+
+  if (dyncell)
+  {
+    dynworld->SetCurrentCell (dyncell);
+    sector = dyncell->GetSector ();
     dynSys = dyncell->GetDynamicSystem ();
     bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
   }
   else
   {
-    dyncell = 0;
     dynSys = 0;
     bullet_dynSys = 0;
     sector = 0;
@@ -1117,27 +1121,10 @@ bool AresEdit3DView::PostLoadMap ()
       bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
   }
 
-
-  if (sector)
-  {
-    nature->InitSector (sector);
-
-    iLightList* lightList = sector->GetLights ();
-    camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
-    lightList->Add (camlight);
-  }
-  else
-    camlight = 0;
-
   engine->Prepare ();
-  //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
 
-  // Setup the camera.
-  InitCamera ();
-
-  // Force the update of the clock.
-  nature->UpdateTime (currentTime+100, GetCsCamera ());
-  nature->UpdateTime (currentTime, GetCsCamera ());
+  // Setup the cell.
+  InitCell ();
 
   // Make the 'Player' and 'World' entity templates if they don't already
   // exist. It is possible that they exist because we loaded a project that defined
@@ -1163,22 +1150,39 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
   dynSys = dyncell->GetDynamicSystem ();
   bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
 
-  if (sector && camlight) sector->GetLights ()->Remove (camlight);
-  camlight = 0;
   dynworld->SetCurrentCell (cell);
   sector = engine->FindSector (cell->GetName ());
-  nature->InitSector (sector);
-  camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
-  iLightList* lightList = sector->GetLights ();
-  lightList->Add (camlight);
 
-  InitCamera ();
+  InitCell ();
+
+  objectsValue->BuildModel ();
 }
 
-void AresEdit3DView::InitCamera ()
+void AresEdit3DView::InitCell ()
 {
+  if (camlight)
+  {
+    engine->RemoveObject (camlight);
+    camlight = 0;
+  }
+
+  if (sector)
+  {
+    nature->InitSector (sector);
+
+    iLightList* lightList = sector->GetLights ();
+    camlight = engine->CreateLight(0, csVector3(0.0f, 0.0f, 0.0f), 10, csColor (0.8f, 0.9f, 1.0f));
+    lightList->Add (camlight);
+  }
+  else
+    camlight = 0;
+
+  // Force the update of the clock.
+  nature->UpdateTime (currentTime+100, GetCsCamera ());
+  nature->UpdateTime (currentTime, GetCsCamera ());
+
   // Put the camera at the position of the player if possible.
-  iDynamicObject* player = FindPlayerObject ();
+  iDynamicObject* player = FindPlayerObject (dyncell);
   csBox3 box = ComputeTotalBox ();
   csVector3 origin (0, 10, 0);
   if (!box.Empty ()) origin = box.GetCenter ();
@@ -1192,10 +1196,6 @@ bool AresEdit3DView::SetupWorld ()
   vfs->PopDir ();
   vfs->Unmount ("/aresnode", "data$/node.zip");
 
-  //sector = engine->CreateSector ("outside");
-
-  //dyncell = dynworld->AddCell ("outside", sector, dynSys);
-  //dynworld->SetCurrentCell (dyncell);
   dyncell = 0;
   dynSys = 0;
   bullet_dynSys = 0;
