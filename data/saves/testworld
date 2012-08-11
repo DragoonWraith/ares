@@ -1,5 +1,5 @@
 <dynlevel>
-    <asset path="/appdata/" file="testassets.xml" />
+    <asset path="/assets/" file="testassets.xml" />
     <asset path="/lib/krystal/" file="krystal.xml" />
     <asset path="/lib/frankie/" file="frankie.xml" />
     <asset path="/assets/logic/" file="dynworldFactories.xml" />
