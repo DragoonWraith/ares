@@ -81,31 +81,22 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file)
     else
     {
       csRef<iDocumentNode> root = doc->GetRoot ();
-      csRef<iDocumentNodeIterator> it = root->GetNodes ();
-      while (it->HasNext ())
+      csRef<iDocumentNode> manifestNode = root->GetNode ("manifest");
+      if (!manifestNode)
       {
-        csRef<iDocumentNode> child = it->Next ();
-	if (child->GetType () != CS_NODE_ELEMENT) continue;
-        csString value = child->GetValue ();
-	if (value == "manifest")
-	{
-          csRef<iDocumentNodeIterator> it = child->GetNodes ();
-          while (it->HasNext ())
-          {
-            csRef<iDocumentNode> childchild = it->Next ();
-	    if (childchild->GetType () != CS_NODE_ELEMENT) continue;
-            csString value = childchild->GetValue ();
-	    if (value == "description")
-	    {
-	      descriptionText.AppendFmt ("%s\n", childchild->GetContentsValue ());
-	    }
-	  }
-	}
-	else
-	{
-          descriptionText.Format ("Manifest.xml is not valid");
-	}
-	break;
+        descriptionText.Format ("Manifest.xml is not valid");
+      }
+      else
+      {
+	csRef<iDocumentNode> authorNode = manifestNode->GetNode ("author");
+	if (authorNode)
+	  descriptionText.AppendFmt ("Author: %s\n", authorNode->GetContentsValue ());
+	csRef<iDocumentNode> licenseNode = manifestNode->GetNode ("license");
+	if (licenseNode)
+	  descriptionText.AppendFmt ("License: %s\n", licenseNode->GetContentsValue ());
+	csRef<iDocumentNode> descriptionNode = manifestNode->GetNode ("description");
+	if (licenseNode)
+	  descriptionText.AppendFmt ("%s\n", descriptionNode->GetContentsValue ());
       }
     }
   }
