@@ -82,10 +82,10 @@ void ObjectsValue::BuildModel ()
 {
   dynobjs.DeleteAll ();
   ReleaseChildren ();
-  iPcDynamicWorld* dynworld = app->GetAresView ()->GetDynamicWorld ();
   iCamera* camera = app->GetAresView ()->GetCsCamera ();
   const csVector3& origin = camera->GetTransform ().GetOrigin ();
   iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
+  if (!cell) return;
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);

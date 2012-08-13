@@ -64,6 +64,17 @@ void AppSelectionListener::SelectionChanged (
   app->GetMainMode ()->CurrentObjectsChanged (current_objects);
 }
 
+struct ManageAssetsCallbackImp : public NewProjectCallback
+{
+  AppAresEditWX* ares;
+  ManageAssetsCallbackImp (AppAresEditWX* ares) : ares (ares) { }
+  virtual ~ManageAssetsCallbackImp () { }
+  virtual void OkPressed (const csArray<Asset>& assets)
+  {
+    ares->ManageAssets (assets);
+  }
+};
+
 struct NewProjectCallbackImp : public NewProjectCallback
 {
   AppAresEditWX* ares;
@@ -125,10 +136,12 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
   wantsFocus3D = 0;
+  worldLoader = 0;
 }
 
 AppAresEditWX::~AppAresEditWX ()
 {
+  delete worldLoader;
   delete camwin;
 }
 
@@ -184,15 +197,40 @@ void AppAresEditWX::RefreshModes ()
   }
 }
 
+void AppAresEditWX::ManageAssets (const csArray<Asset>& assets)
+{
+  // @@@ TODO
+  //aresed3d->ManageAssets (assets);
+  RefreshModes ();
+}
+
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
 {
-  aresed3d->NewProject (assets);
+  aresed3d->SetupWorld ();	// @@@ Error checking
+  if (!worldLoader->NewProject (assets))
+  {
+    aresed3d->PostLoadMap ();
+    uiManager->Error ("Error creating project!");
+    return;
+  }
+
+  // @@@ Error handling.
+  aresed3d->PostLoadMap ();
+
   RefreshModes ();
 }
 
 bool AppAresEditWX::LoadFile (const char* filename)
 {
-  if (!aresed3d->LoadFile (filename))
+  if (!aresed3d->SetupWorld ())
+    return false;
+  if (!worldLoader->LoadFile (filename))
+  {
+    aresed3d->PostLoadMap ();
+    uiManager->Error ("Error loading file '%s'!",filename);
+    return false;
+  }
+  if (!aresed3d->PostLoadMap ())
     return false;
   RefreshModes ();
   return true;
@@ -200,7 +238,18 @@ bool AppAresEditWX::LoadFile (const char* filename)
 
 void AppAresEditWX::SaveFile (const char* filename)
 {
-  aresed3d->SaveFile (filename);
+  if (!worldLoader->SaveFile (filename))
+  {
+    uiManager->Error ("Error saving file '%s'!",filename);
+    return;
+  }
+}
+
+void AppAresEditWX::ManageAssets ()
+{
+  csRef<ManageAssetsCallbackImp> cb;
+  cb.AttachNew (new ManageAssetsCallbackImp (this));
+  uiManager->GetNewProjectDialog ()->Show (cb, worldLoader->GetAssets ());
 }
 
 void AppAresEditWX::NewProject ()
@@ -559,6 +608,9 @@ bool AppAresEditWX::InitWX ()
   if (!aresed3d->Setup ())
     return false;
 
+  worldLoader = new WorldLoader (object_reg);
+  worldLoader->SetZone (aresed3d->GetDynamicWorld ());
+
   uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
 
   if (!InitPlugins ()) return false;
@@ -612,6 +664,7 @@ bool AppAresEditWX::Command (const char* name, const char* args)
 {
   csString c = name;
   if (c == "NewProject") NewProject ();
+  else if (c == "ManageAssets") ManageAssets ();
   else if (c == "Open") OpenFile ();
   else if (c == "Save") SaveFile ();
   else if (c == "Exit") Quit ();

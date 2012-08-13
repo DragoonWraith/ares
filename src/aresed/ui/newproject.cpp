@@ -276,6 +276,18 @@ void NewProjectDialog::Show (NewProjectCallback* cb)
   ShowModal ();
 }
 
+void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& assets)
+{
+  // @@@ TODO
+  this->callback = cb;
+  wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
+  delButton->Disable ();
+  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  assetList->DeleteAllItems ();
+  selIndex = -1;
+  ShowModal ();
+}
+
 NewProjectDialog::NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs) :
   uiManager (uiManager), vfs (vfs)
 {

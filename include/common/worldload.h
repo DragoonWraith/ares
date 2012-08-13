@@ -92,6 +92,11 @@ public:
   }
 
   /**
+   * Get the currently loaded assets.
+   */
+  const csArray<Asset>& GetAssets () const { return assets; }
+
+  /**
    * Load the world from a file.
    */
   bool LoadFile (const char* filename);

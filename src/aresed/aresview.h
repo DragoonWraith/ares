@@ -129,8 +129,6 @@ private:
   iDecal* cursorDecal;
 #endif
 
-  WorldLoader* worldLoader;
-
   csTicks currentTime;
   bool do_auto_time;
 
@@ -207,11 +205,10 @@ private:
   /// The selection.
   Selection* selection;
 
-  /// Create the room.
-  bool SetupWorld ();
-
-  /// Setup stuff after map loading.
-  bool PostLoadMap ();
+  /**
+   * Clean up the current world.
+   */
+  void CleanupWorld ();
 
   /**
    * Setup the dynamic world and add a few standard dynamic factories
@@ -301,6 +298,14 @@ public:
    * Destructor.
    */
   virtual ~AresEdit3DView ();
+
+  /**
+   * Cleanup the previous world and setup a new world.
+   */
+  bool SetupWorld ();
+
+  /// Setup stuff after map loading.
+  bool PostLoadMap ();
 
   AppAresEditWX* GetApp () const { return app; }
 
@@ -482,26 +487,6 @@ public:
    * Final cleanup.
    */
   void OnExit();
-
-  /**
-   * Clean up the current world.
-   */
-  void CleanupWorld ();
-
-  /**
-   * Save the current world.
-   */
-  void SaveFile (const char* filename);
-
-  /**
-   * Load the world from a file.
-   */
-  bool LoadFile (const char* filename);
-
-  /**
-   * Create a new project with the given assets.
-   */
-  void NewProject (const csArray<Asset>& assets);
 
   void CopySelection ();
   virtual void StartPasteSelection ();

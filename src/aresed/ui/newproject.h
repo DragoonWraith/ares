@@ -67,6 +67,7 @@ public:
   ~NewProjectDialog();
 
   void Show (NewProjectCallback* cb);
+  void Show (NewProjectCallback* cb, const csArray<Asset>& assets);
   void SetFilename (const char* filename);
 
   DECLARE_EVENT_TABLE ();

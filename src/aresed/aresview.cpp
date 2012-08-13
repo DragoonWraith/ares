@@ -95,7 +95,6 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   do_auto_time = false;
   curvedFactoryCounter = 0;
   roomFactoryCounter = 0;
-  worldLoader = 0;
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
@@ -106,11 +105,12 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   pasteConstrainMode = CONSTRAIN_NONE;
   gridMode = false;
   gridSize = 0.1;
+  dyncell = 0;
+  sector = 0;
 }
 
 AresEdit3DView::~AresEdit3DView()
 {
-  delete worldLoader;
   delete selection;
 }
 
@@ -198,7 +198,8 @@ iEditorCamera* AresEdit3DView::GetEditorCamera () const
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
   objectsValue->RefreshModel ();
-  app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
+  if (app->GetCameraWindow ())
+    app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
 
   bool curveTabEnable = false;
   if (selection->GetSize () == 1)
@@ -605,82 +606,6 @@ void AresEdit3DView::CleanupWorld ()
   pl->RemoveEntityTemplates ();
 }
 
-void AresEdit3DView::SaveFile (const char* filename)
-{
-  if (!worldLoader->SaveFile (filename))
-  {
-    app->GetUIManager ()->Error ("Error saving file '%s'!",filename);
-    return;
-  }
-}
-
-void AresEdit3DView::NewProject (const csArray<Asset>& assets)
-{
-  CleanupWorld ();
-  SetupWorld ();
-
-  if (!worldLoader->NewProject (assets))
-  {
-    PostLoadMap ();
-    app->GetUIManager ()->Error ("Error creating project!");
-    return;
-  }
-
-  iSectorList* sl = engine->GetSectors ();
-  if (sl->GetCount () > 0)
-  {
-    sector = sl->Get (0);
-    CreateCell (sector->QueryObject ()->GetName ());
-  }
-  else
-  {
-    sector = 0;
-  }
-
-  // @@@ Error handling.
-  SetupDynWorld ();
-
-  // @@@ Error handling.
-  PostLoadMap ();
-}
-
-bool AresEdit3DView::LoadFile (const char* filename)
-{
-  CleanupWorld ();
-  SetupWorld ();
-
-  if (!worldLoader->LoadFile (filename))
-  {
-    PostLoadMap ();
-    app->GetUIManager ()->Error ("Error loading file '%s'!",filename);
-    return false;
-  }
-
-  for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
-  {
-    iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
-    static_factories.Add (cfact->GetName ());
-  }
-  curvedFactories = worldLoader->GetCurvedFactories ();
-
-  for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryCount () ; i++)
-  {
-    iRoomFactory* cfact = roomMeshCreator->GetRoomFactory (i);
-    static_factories.Add (cfact->GetName ());
-  }
-  roomFactories = worldLoader->GetRoomFactories ();
-
-  if (!SetupDynWorld ())
-    return false;
-
-  if (!PostLoadMap ())
-    return false;
-
-  objectsValue->BuildModel ();
-
-  return true;
-}
-
 void AresEdit3DView::OnExit ()
 {
 }
@@ -850,12 +775,7 @@ bool AresEdit3DView::Setup ()
   dynworld->InhibitEntities (true);
   dynworld->EnableGameMode (false);
 
-  worldLoader = new WorldLoader (r);
-  worldLoader->SetZone (dynworld);
   selection = new Selection (this);
-  SelectionListener* listener = new AresEditSelectionListener (this);
-  selection->AddSelectionListener (listener);
-  listener->DecRef ();
 
   iMarkerColor* red = markerMgr->CreateMarkerColor ("red");
   red->SetRGBColor (SELECTION_NONE, .5, 0, 0, 1);
@@ -929,13 +849,14 @@ bool AresEdit3DView::Setup ()
   if (!PostLoadMap ())
     return app->ReportError ("Error during PostLoadMap()!");
 
-  if (!SetupDynWorld ())
-    return false;
-
 #if USE_DECAL
   if (!SetupDecal ())
     return false;
 #endif
+
+  SelectionListener* listener = new AresEditSelectionListener (this);
+  selection->AddSelectionListener (listener);
+  listener->DecRef ();
 
   // Start the default run/event loop.  This will return only when some code,
   // such as OnKeyboard(), has asked the run loop to terminate.
@@ -1036,6 +957,44 @@ iDynamicObject* AresEdit3DView::FindPlayerObject (iDynamicCell* cell)
 
 bool AresEdit3DView::PostLoadMap ()
 {
+  // Make a default cell if there isn't one already.
+  {
+    csRef<iDynamicCellIterator> cellit = dynworld->GetCells ();
+    if (!cellit->HasNext ())
+    {
+      iSectorList* sl = engine->GetSectors ();
+      if (sl->GetCount () > 0)
+      {
+        sector = sl->Get (0);
+        CreateCell (sector->QueryObject ()->GetName ());
+      }
+      else
+      {
+        sector = 0;
+      }
+    }
+  }
+
+  if (!SetupDynWorld ())
+    return false;
+
+  if (app->GetWorldLoader ())
+  {
+    for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
+    {
+      iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
+      static_factories.Add (cfact->GetName ());
+    }
+    curvedFactories = app->GetWorldLoader ()->GetCurvedFactories ();
+
+    for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryCount () ; i++)
+    {
+      iRoomFactory* cfact = roomMeshCreator->GetRoomFactory (i);
+      static_factories.Add (cfact->GetName ());
+    }
+    roomFactories = app->GetWorldLoader ()->GetRoomFactories ();
+  }
+
   dyncell = 0;
   // Pick the first cell containing the player or else
   // the first cell.
@@ -1101,6 +1060,8 @@ bool AresEdit3DView::PostLoadMap ()
       return app->ReportError ("Error loading world library!");
   }
 
+  objectsValue->BuildModel ();
+
   return true;
 }
 
@@ -1152,6 +1113,8 @@ void AresEdit3DView::InitCell ()
 
 bool AresEdit3DView::SetupWorld ()
 {
+  CleanupWorld ();
+
   if (!LoadLibrary ("/aresnode/", "library"))
     return app->ReportError ("Error loading library!");
   vfs->PopDir ();

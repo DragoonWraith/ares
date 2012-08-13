@@ -110,6 +110,8 @@ private:
   csRef<AresEdit3DView> aresed3d;
   csRef<iEditorPlugin> dynfactDialog;
 
+  WorldLoader* worldLoader;
+
   static bool SimpleEventHandler (iEvent& ev);
   bool HandleEvent (iEvent& ev);
 
@@ -140,6 +142,7 @@ private:
   void OnMenuItem (wxCommandEvent& event);
 
   void NewProject ();
+  void ManageAssets ();
   void OpenFile ();
   void SaveFile ();
   void Quit ();
@@ -190,6 +193,7 @@ public:
   void SaveFile (const char* filename);
   bool LoadFile (const char* filename);
   void NewProject (const csArray<Asset>& assets);
+  void ManageAssets (const csArray<Asset>& assets);
 
   void SwitchToMode (const char* name);
   virtual void SwitchToMainMode ();
@@ -204,6 +208,7 @@ public:
 
   void DoFrame ();
 
+  WorldLoader* GetWorldLoader () const { return worldLoader; }
   AresEdit3DView* GetAresView () const { return aresed3d; }
   iVFS* GetVFS () const { return vfs; }
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }

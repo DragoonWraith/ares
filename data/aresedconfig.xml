@@ -31,6 +31,7 @@
     <menus>
     	<menu name="&amp;File">
 	    <item name="&amp;New project..." id="New" command="NewProject" />
+	    <item name="&amp;Manage Assets..." command="ManageAssets" />
 	    <!-- <item name="&amp;Manage Cells..." target="CellDialog" command="Show" />-->
 	    <item name="&amp;Manage Cells..." command="ManageCells" />
 	    <item name="&amp;Manage Dynamic Factories..." target="DynfactEditor" command="Show" />
