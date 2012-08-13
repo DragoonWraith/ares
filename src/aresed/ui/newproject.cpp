@@ -212,23 +212,33 @@ void NewProjectDialog::SetFilename (const char* filename)
   SetPathFile (vfs->GetCwd (), filename, false, false, false, false);
 }
 
-void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
+void NewProjectDialog::AddAsset (const char* path, const char* file,
+    bool dynfacts, bool templates, bool quests, bool lights)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  ListCtrlTools::AddRow (assetList, path, file,
+      dynfacts ? "true" : "",
+      templates ? "true" : "",
+      quests ? "true" : "",
+      lights ? "true" : "",
+      (const char*)0);
+}
+
+void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
+{
   wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
   wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
   wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
   wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
-  ListCtrlTools::AddRow (assetList,
+  AddAsset (
       (const char*)(pathText->GetValue ().mb_str (wxConvUTF8)),
       (const char*)(fileText->GetValue ().mb_str (wxConvUTF8)),
-      dynfactsCheck->GetValue () ? "true" : "",
-      templatesCheck->GetValue () ? "true" : "",
-      questsCheck->GetValue () ? "true" : "",
-      lightsCheck->GetValue () ? "true" : "",
-      (const char*)0);
+      dynfactsCheck->GetValue (),
+      templatesCheck->GetValue (),
+      questsCheck->GetValue (),
+      lightsCheck->GetValue ());
   SetPathFile ("", "", false, false, false, false);
 }
 
@@ -285,6 +295,13 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& asset
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   assetList->DeleteAllItems ();
   selIndex = -1;
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    const Asset& a = assets[i];
+    AddAsset (a.GetPath (), a.GetFile (), a.IsDynfactSavefile (),
+	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile ());
+  }
+
   ShowModal ();
 }
 

@@ -52,9 +52,17 @@ public:
 
   const csString& GetPath () const { return path; }
   const csString& GetFile () const { return file; }
+
+  void SetDynfactSavefile (bool e) { saveDynfacts = e; }
   bool IsDynfactSavefile () const { return saveDynfacts; }
+
+  void SetTemplateSavefile (bool e) { saveTemplates = e; }
   bool IsTemplateSavefile () const { return saveTemplates; }
+
+  void SetQuestSavefile (bool e) { saveQuests = e; }
   bool IsQuestSavefile () const { return saveQuests; }
+
+  void SetLightFactSaveFile (bool e) { saveLightFacts = e; }
   bool IsLightFactSaveFile () const { return saveLightFacts; }
 };
 
@@ -79,6 +87,7 @@ private:
   bool LoadLibrary (const char* path, const char* file);
 
   bool SaveAsset (iDocumentSystem* docsys, const Asset& asset);
+  bool HasAsset (const Asset& a);
 
 public:
   WorldLoader (iObjectRegistry* object_reg);
@@ -110,6 +119,11 @@ public:
    * Create a new project with the given assets.
    */
   bool NewProject (const csArray<Asset>& newassets);
+
+  /**
+   * Update the assets of the current project.
+   */
+  bool UpdateAssets (const csArray<Asset>& newassets);
 
   const csArray<iDynamicFactory*> GetCurvedFactories () const { return curvedFactories; }
   const csArray<iDynamicFactory*> GetRoomFactories () const { return roomFactories; }

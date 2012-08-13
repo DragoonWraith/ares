@@ -206,6 +206,51 @@ bool WorldLoader::NewProject (const csArray<Asset>& newassets)
   return true;
 }
 
+bool WorldLoader::HasAsset (const Asset& a)
+{
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    if (assets[i].GetPath () == a.GetPath () &&
+	assets[i].GetFile () == a.GetFile ())
+    {
+      // Update the asset we have with the new flags.
+      assets[i].SetDynfactSavefile (a.IsDynfactSavefile ());
+      assets[i].SetTemplateSavefile (a.IsTemplateSavefile ());
+      assets[i].SetQuestSavefile (a.IsQuestSavefile ());
+      assets[i].SetLightFactSaveFile (a.IsLightFactSaveFile ());
+      return true;
+    }
+  }
+  return false;
+}
+
+bool WorldLoader::UpdateAssets (const csArray<Asset>& newassets)
+{
+  // @@@ Removing assets is not yet supported. At least they will not get unloaded.
+  // The assets table will be updated however. So a Save/Load will remove the asset.
+
+  for (size_t i = 0 ; i < newassets.GetSize () ; i++)
+  {
+    const Asset& a = newassets[i];
+    if (!HasAsset (a))
+    {
+      csString path = a.GetPath ();
+      csString file = a.GetFile ();
+      vfs->PushDir (path);
+      // If the file doesn't exist we don't try to load it. That's not an error
+      // as it might be saved later.
+      bool exists = vfs->Exists (file);
+      vfs->PopDir ();
+      if (exists)
+        if (!LoadLibrary (path, file))
+	  return false;
+    }
+  }
+  assets = newassets;
+
+  return true;
+}
+
 bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
 {
   csRef<iDocument> docasset = docsys->CreateDocument ();

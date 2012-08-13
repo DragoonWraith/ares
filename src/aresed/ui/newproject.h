@@ -61,6 +61,8 @@ private:
       bool saveDynfacts, bool saveTemplates, bool saveQuests,
       bool saveLights);
   void ScanCSNode (csString& msg, iDocumentNode* node);
+  void AddAsset (const char* path, const char* file,
+      bool dynfacts, bool templates, bool quests, bool lights);
 
 public:
   NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);

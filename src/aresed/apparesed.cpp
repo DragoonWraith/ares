@@ -199,8 +199,12 @@ void AppAresEditWX::RefreshModes ()
 
 void AppAresEditWX::ManageAssets (const csArray<Asset>& assets)
 {
-  // @@@ TODO
-  //aresed3d->ManageAssets (assets);
+  if (!worldLoader->UpdateAssets (assets))
+  {
+    //@@@ Check? aresed3d->PostLoadMap ();
+    uiManager->Error ("Error updating assets!");
+    return;
+  }
   RefreshModes ();
 }
 

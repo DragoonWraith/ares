@@ -438,6 +438,8 @@ bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 
 iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 {
+  if (!bullet_dynSys) return 0;
+
   csVector3 isect1, isect2;
   iDynamicObject* obj1 = 0, * obj2 = 0;
 
@@ -604,6 +606,19 @@ void AresEdit3DView::CleanupWorld ()
   dynworld->DeleteFactories ();
   engine->DeleteAll ();
   pl->RemoveEntityTemplates ();
+
+  sector = 0;
+  terrainMesh = 0;
+
+  pastebuffer.DeleteAll ();
+  todoSpawn.DeleteAll ();
+
+  dynSys = 0;
+  bullet_dynSys = 0;
+  if (dyn)
+    dyn->RemoveSystems ();
+
+  camera->Init (view->GetCamera (), 0, csVector3 (0, 10, 0), 0);
 }
 
 void AresEdit3DView::OnExit ()
