@@ -2,105 +2,195 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="NewProjectDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<size>536,408</size>
+		<size>760,600</size>
 		<title>New Project</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
-				<option>0</option>
-				<flag>wxALL</flag>
-				<border>5</border>
-				<object class="wxStaticText" name="m_staticText6">
-					<label>Assets:</label>
-					<wrap>-1</wrap>
-				</object>
-			</object>
-			<object class="sizeritem">
 				<option>1</option>
-				<flag>wxALL|wxEXPAND</flag>
-				<border>5</border>
-				<object class="wxListCtrl" name="assetListCtrl">
-					<style>wxLC_REPORT</style>
-				</object>
-			</object>
-			<object class="sizeritem">
-				<option>0</option>
-				<flag>wxALL|wxEXPAND</flag>
-				<border>5</border>
-				<object class="wxStaticText" name="contentsStaticText">
-					<style>wxSUNKEN_BORDER</style>
-					<label>...</label>
-					<wrap>-1</wrap>
-				</object>
-			</object>
-			<object class="sizeritem">
-				<option>0</option>
 				<flag>wxEXPAND</flag>
 				<border>5</border>
 				<object class="wxBoxSizer">
 					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-						<border>5</border>
-						<object class="wxStaticText" name="m_staticText7">
-							<label>File:</label>
-							<wrap>-1</wrap>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>1</option>
-						<flag>wxALL</flag>
-						<border>5</border>
-						<object class="wxTextCtrl" name="pathTextCtrl">
-							<value></value>
-							<maxlength>0</maxlength>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>1</option>
-						<flag>wxALL</flag>
-						<border>5</border>
-						<object class="wxTextCtrl" name="fileTextCtrl">
-							<value></value>
-							<maxlength>0</maxlength>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL</flag>
-						<border>5</border>
-						<object class="wxButton" name="searchFileButton">
-							<size>40,-1</size>
-							<label>...</label>
-							<default>0</default>
-						</object>
-					</object>
-					<object class="spacer">
 						<option>0</option>
 						<flag>wxEXPAND</flag>
 						<border>5</border>
-						<size>20,0</size>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL</flag>
-						<border>5</border>
-						<object class="wxButton" name="addAssetButton">
-							<size>30,-1</size>
-							<label>+</label>
-							<default>0</default>
+						<object class="wxBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="m_staticText10">
+									<label>Browser:</label>
+									<wrap>-1</wrap>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxListBox" name="browser_List">
+									<content />
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="m_staticText7">
+											<label>File:</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxTextCtrl" name="pathTextCtrl">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxTextCtrl" name="fileTextCtrl">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="addAssetButton">
+											<size>30,-1</size>
+											<label>+</label>
+											<default>0</default>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxTextCtrl" name="description_Text">
+									<style>wxTE_MULTILINE|wxTE_READONLY</style>
+									<size>-1,120</size>
+									<value></value>
+									<maxlength>0</maxlength>
+								</object>
+							</object>
 						</object>
 					</object>
 					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL</flag>
+						<option>1</option>
+						<flag>wxEXPAND</flag>
 						<border>5</border>
-						<object class="wxButton" name="delAssetButton">
-							<size>30,-1</size>
-							<label>-</label>
-							<default>0</default>
+						<object class="wxBoxSizer">
+							<orient>wxVERTICAL</orient>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL</flag>
+								<border>5</border>
+								<object class="wxStaticText" name="m_staticText6">
+									<label>Assets:</label>
+									<wrap>-1</wrap>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxListCtrl" name="assetListCtrl">
+									<style>wxLC_REPORT</style>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALL|wxEXPAND</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="contentsStaticText">
+											<style>wxSUNKEN_BORDER</style>
+											<label>...</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxCheckBox" name="dynfact_Check">
+											<tooltip>If checked then dynamic factories will save to this file</tooltip>
+											<label>Dynfacts</label>
+											<checked>0</checked>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxCheckBox" name="entity_Check">
+											<tooltip>If checked then entity templates will save to this file.</tooltip>
+											<label>Templates</label>
+											<checked>0</checked>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxCheckBox" name="light_Check">
+											<label>Lights</label>
+											<checked>0</checked>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxCheckBox" name="quest_Check">
+											<label>Quests</label>
+											<checked>0</checked>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="delAssetButton">
+											<size>30,-1</size>
+											<label>-</label>
+											<default>0</default>
+										</object>
+									</object>
+								</object>
+							</object>
 						</object>
 					</object>
 				</object>
@@ -111,44 +201,6 @@
 				<border>5</border>
 				<object class="wxBoxSizer">
 					<orient>wxHORIZONTAL</orient>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-						<border>5</border>
-						<object class="wxCheckBox" name="dynfact_Check">
-							<tooltip>If checked then dynamic factories will save to this file</tooltip>
-							<label>Dynfacts</label>
-							<checked>0</checked>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-						<border>5</border>
-						<object class="wxCheckBox" name="entity_Check">
-							<tooltip>If checked then entity templates will save to this file.</tooltip>
-							<label>Templates</label>
-							<checked>0</checked>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-						<border>5</border>
-						<object class="wxCheckBox" name="quest_Check">
-							<label>Quests</label>
-							<checked>0</checked>
-						</object>
-					</object>
-					<object class="sizeritem">
-						<option>0</option>
-						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-						<border>5</border>
-						<object class="wxCheckBox" name="light_Check">
-							<label>Lights</label>
-							<checked>0</checked>
-						</object>
-					</object>
 					<object class="spacer">
 						<option>1</option>
 						<flag>wxEXPAND</flag>

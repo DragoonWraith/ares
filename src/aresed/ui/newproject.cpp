@@ -24,37 +24,134 @@ THE SOFTWARE.
 
 #include "newproject.h"
 #include "uimanager.h"
-#include "filereq.h"
 #include "edcommon/listctrltools.h"
 #include "../apparesed.h"
 #include "common/worldload.h"
 
 //--------------------------------------------------------------------------
 
-struct SetFilenameCallback : public OKCallback
-{
-  NewProjectDialog* dialog;
-  SetFilenameCallback (NewProjectDialog* dialog) : dialog (dialog) { }
-  virtual ~SetFilenameCallback () { }
-  virtual void OkPressed (const char* filename)
-  {
-    dialog->SetFilename (filename);
-  }
-};
-
-//--------------------------------------------------------------------------
-
 BEGIN_EVENT_TABLE(NewProjectDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), NewProjectDialog :: OnOkButton)
   EVT_BUTTON (XRCID("cancelButton"), NewProjectDialog :: OnCancelButton)
-  EVT_BUTTON (XRCID("searchFileButton"), NewProjectDialog :: OnSearchFileButton)
   EVT_BUTTON (XRCID("addAssetButton"), NewProjectDialog :: OnAddAssetButton)
   EVT_BUTTON (XRCID("delAssetButton"), NewProjectDialog :: OnDelAssetButton)
   EVT_LIST_ITEM_SELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetSelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetDeselected)
+  EVT_LISTBOX (XRCID("browser_List"), NewProjectDialog :: OnBrowserSelChange)
+  EVT_LISTBOX_DCLICK (XRCID("browser_List"), NewProjectDialog :: OnAddAssetButton)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
+
+void NewProjectDialog::OnBrowserSelChange (wxCommandEvent& event)
+{
+  wxListBox* list = XRCCTRL (*this, "browser_List", wxListBox);
+  csString filename = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
+
+  if (filename[filename.Length ()-1] == '/' || filename == "..")
+  {
+    vfs->ChDir (filename);
+    currentPath = vfs->GetCwd ();
+    FillBrowser ();
+    LoadManifest (currentPath, "");
+    return;
+  }
+
+  SetFilename (filename);
+}
+
+void NewProjectDialog::LoadManifest (const char* path, const char* file)
+{
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  csRef<iDocument> doc = docsys->CreateDocument ();
+  vfs->PushDir (path);
+  csRef<iDataBuffer> buf = vfs->ReadFile ("manifest.xml");
+  csString descriptionText;
+  if (buf)
+  {
+    const char* error = doc->Parse (buf->GetData ());
+    if (error)
+    {
+      descriptionText.Format ("Can't parse manifest.xml: %s", error);
+    }
+    else
+    {
+      csRef<iDocumentNode> root = doc->GetRoot ();
+      csRef<iDocumentNodeIterator> it = root->GetNodes ();
+      while (it->HasNext ())
+      {
+        csRef<iDocumentNode> child = it->Next ();
+	if (child->GetType () != CS_NODE_ELEMENT) continue;
+        csString value = child->GetValue ();
+	if (value == "manifest")
+	{
+          csRef<iDocumentNodeIterator> it = child->GetNodes ();
+          while (it->HasNext ())
+          {
+            csRef<iDocumentNode> childchild = it->Next ();
+	    if (childchild->GetType () != CS_NODE_ELEMENT) continue;
+            csString value = childchild->GetValue ();
+	    if (value == "description")
+	    {
+	      descriptionText.AppendFmt ("%s\n", childchild->GetContentsValue ());
+	    }
+	  }
+	}
+	else
+	{
+          descriptionText.Format ("Manifest.xml is not valid");
+	}
+	break;
+      }
+    }
+  }
+  wxTextCtrl* descriptionCtrl = XRCCTRL (*this, "description_Text", wxTextCtrl);
+  descriptionCtrl->SetValue (wxString::FromUTF8 (descriptionText));
+
+  vfs->PopDir ();
+}
+
+void NewProjectDialog::FillBrowser ()
+{
+  wxListBox* list = XRCCTRL (*this, "browser_List", wxListBox);
+  list->Clear ();
+
+  wxArrayString dirs, files;
+  dirs.Add (wxT (".."));
+
+  csRef<iStringArray> vfsFiles = vfs->FindFiles (vfs->GetCwd ());
+  
+  for (size_t i = 0; i < vfsFiles->GetSize(); i++)
+  {
+    char* file = (char*)vfsFiles->Get(i);
+    if (!file) continue;
+
+    size_t dirlen = strlen (file);
+    if (dirlen)
+      dirlen--;
+    while (dirlen && file[dirlen-1]!= '/')
+      dirlen--;
+    file = file+dirlen;
+
+    if (file[strlen(file)-1] == '/')
+    {
+      wxString name = wxString::FromUTF8 (file);
+      dirs.Add (name);
+    }
+    else
+    {
+      wxString name = wxString::FromUTF8 (file);
+      files.Add (name);
+    }
+  }
+
+  list->InsertItems (files, 0);
+  list->InsertItems (dirs, 0);
+}
 
 void NewProjectDialog::OnOkButton (wxCommandEvent& event)
 {
@@ -82,12 +179,6 @@ void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 {
   callback = 0;
   EndModal (TRUE);
-}
-
-void NewProjectDialog::OnSearchFileButton (wxCommandEvent& event)
-{
-  uiManager->GetFileReqDialog ()->SetPath ("/assets");
-  uiManager->GetFileReqDialog ()->Show (new SetFilenameCallback (this));
 }
 
 void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
@@ -205,6 +296,8 @@ void NewProjectDialog::SetPathFile (const char* path, const char* file,
   }
   contents->SetLabel (wxString::FromUTF8 (msg.GetData ()));
   vfs->PopDir ();
+
+  LoadManifest (path, file);
 }
 
 void NewProjectDialog::SetFilename (const char* filename)
@@ -275,7 +368,7 @@ void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
   delButton->Disable ();
 }
 
-void NewProjectDialog::Show (NewProjectCallback* cb)
+void NewProjectDialog::Setup (NewProjectCallback* cb)
 {
   this->callback = cb;
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
@@ -283,25 +376,26 @@ void NewProjectDialog::Show (NewProjectCallback* cb)
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   assetList->DeleteAllItems ();
   selIndex = -1;
+  currentPath = "/assets";
+  vfs->ChDir (currentPath);
+  FillBrowser ();
+}
+
+void NewProjectDialog::Show (NewProjectCallback* cb)
+{
+  Setup (cb);
   ShowModal ();
 }
 
 void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& assets)
 {
-  // @@@ TODO
-  this->callback = cb;
-  wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
-  delButton->Disable ();
-  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  assetList->DeleteAllItems ();
-  selIndex = -1;
+  Setup (cb);
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     const Asset& a = assets[i];
     AddAsset (a.GetPath (), a.GetFile (), a.IsDynfactSavefile (),
 	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile ());
   }
-
   ShowModal ();
 }
 

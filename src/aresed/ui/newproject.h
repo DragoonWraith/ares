@@ -48,11 +48,11 @@ private:
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
-  void OnSearchFileButton (wxCommandEvent& event);
   void OnAddAssetButton (wxCommandEvent& event);
   void OnDelAssetButton (wxCommandEvent& event);
   void OnAssetSelected (wxListEvent& event);
   void OnAssetDeselected (wxListEvent& event);
+  void OnBrowserSelChange (wxCommandEvent& event);
 
   long selIndex;
   csRef<NewProjectCallback> callback;
@@ -63,6 +63,14 @@ private:
   void ScanCSNode (csString& msg, iDocumentNode* node);
   void AddAsset (const char* path, const char* file,
       bool dynfacts, bool templates, bool quests, bool lights);
+
+  void LoadManifest (const char* path, const char* file);
+
+  void FillBrowser ();
+
+  csString currentPath;
+
+  void Setup (NewProjectCallback* cb);
 
 public:
   NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);
