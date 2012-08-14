@@ -47,7 +47,7 @@ private:
   iObjectRegistry* object_reg;
   UIManager* uiManager;
   iVFS* vfs;
-  csRef<iStringArray> assetPath;
+  csStringArray assetPath;
   csString appDir;
   csString currentPath;
 

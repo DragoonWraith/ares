@@ -106,9 +106,9 @@ csString NewProjectDialog::ConstructMountString (const char* path, const char* f
 csString NewProjectDialog::ConstructRelativePath (const char* path, const char* filePath)
 {
   csString stripped = path;
-  for (size_t i = 0 ; i < assetPath->GetSize () ; i++)
+  for (size_t i = 0 ; i < assetPath.GetSize () ; i++)
   {
-    csString a = assetPath->Get (i);
+    csString a = assetPath.Get (i);
     if (stripped.StartsWith (a, true))
     {
       stripped = "$#"+stripped.Slice (a.Length ());
@@ -514,9 +514,17 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
   csRef<iCommandLineParser> cmdline = csQueryRegistry<iCommandLineParser> (object_reg);
   appDir = cmdline->GetAppDir ();
   wxString defaultdir;
-  assetPath = vfs->GetRealMountPaths ("/assets/");
-  if (assetPath && assetPath->GetSize () > 0)
-    defaultdir = wxString::FromUTF8 (assetPath->Get (0));
+  csRef<iStringArray> path = vfs->GetRealMountPaths ("/assets/");
+  for (size_t i = 0 ; i < path->GetSize () ; i++)
+  {
+    csString p = path->Get (i);
+    // To work around a problem on linux where sometimes assets have a './' in the path
+    // we replace '/./' with '/'.
+    p.ReplaceAll ("/./", "/");
+    assetPath.Push (p);
+  }
+  if (assetPath.GetSize () > 0)
+    defaultdir = wxString::FromUTF8 (assetPath.Get (0));
   else
     defaultdir = wxString::FromUTF8 (appDir);
   dir->SetDefaultPath (defaultdir);
