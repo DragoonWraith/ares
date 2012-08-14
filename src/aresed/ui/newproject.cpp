@@ -60,6 +60,93 @@ void NewProjectDialog::OnBrowserSelChange (wxCommandEvent& event)
   SetFilename (filename);
 }
 
+csString NewProjectDialog::ConstructMountString (const char* path, const char* filePath,
+    csString& file)
+{
+  csString mountable = path;
+  if (mountable.StartsWith (appDir, true))
+  {
+    mountable = mountable.Slice (appDir.Length ());
+    if (mountable.StartsWith ("/") || mountable.StartsWith ("\\"))
+      mountable = mountable.Slice (1);
+    mountable = "$^"+mountable;
+  }
+  mountable.ReplaceAll ("/", "$/");
+  mountable.ReplaceAll ("\\", "$/");
+  if (!filePath || !*filePath)
+  {
+    // 'path' is a directory. In this case make sure we have the correct slashes
+    // and quotes that mount likes.
+    if (mountable[mountable.Length ()-1] != '/')
+      mountable += "$/";
+    file.Empty ();
+  }
+  else
+  {
+    if (mountable.Slice (mountable.Length ()-4) == ".zip")
+      file.Empty ();
+    else
+    {
+      size_t idx = mountable.FindLast ("/");
+      if (idx != csArrayItemNotFound)
+      {
+	file = mountable.Slice (idx+1);
+	mountable = mountable.Slice (0, idx);
+      }
+      else
+      {
+	// @@@ Can this happen?
+	printf ("oops?\n"); fflush (stdout);
+      }
+    }
+  }
+  return mountable;
+}
+
+csString NewProjectDialog::ConstructRelativePath (const char* path, const char* filePath)
+{
+  csString stripped = path;
+  for (size_t i = 0 ; i < assetPath->GetSize () ; i++)
+  {
+    csString a = assetPath->Get (i);
+    if (stripped.StartsWith (a, true))
+    {
+      stripped = "$#"+stripped.Slice (a.Length ());
+      break;
+    }
+  }
+  stripped.ReplaceAll ("\\", "/");
+  if ((!filePath || !*filePath) && stripped[stripped.Length ()-1] != '/')
+  {
+    // We have a directory so we add a '/' at the end.
+    stripped += '/';
+  }
+  return stripped;
+}
+
+void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
+{
+  wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
+  csString path = (const char*)(dir->GetPath ().mb_str (wxConvUTF8));
+  csString filePath = (const char*)(dir->GetFilePath ().mb_str (wxConvUTF8));
+
+  csString stripped = ConstructRelativePath (path, filePath);
+  printf ("Stripped: %s\n", (const char*)stripped);
+
+  csString file;
+  csString mount = ConstructMountString (path, filePath, file);
+  printf ("Mount: %s (file '%s')\n", (const char*)mount, (const char*)file);
+
+  fflush(stdout);
+
+  wxTextCtrl* realpath_Text = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  realpath_Text->SetValue (wxString::FromUTF8 (stripped));
+
+  vfs->Unmount ("/tmp/_aresed_mgr_", 0);
+  vfs->Mount ("/tmp/_aresed_mgr_", mount);
+  LoadManifest ("/tmp/_aresed_mgr_", file);
+}
+
 void NewProjectDialog::LoadManifest (const char* path, const char* file)
 {
   csRef<iDocumentSystem> docsys;
@@ -70,7 +157,7 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file)
   csRef<iDocument> doc = docsys->CreateDocument ();
   vfs->PushDir (path);
   csRef<iDataBuffer> buf = vfs->ReadFile ("manifest.xml");
-  csString descriptionText;
+  csString descriptionText, mountText;
   if (buf)
   {
     const char* error = doc->Parse (buf->GetData ());
@@ -97,11 +184,16 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file)
 	csRef<iDocumentNode> descriptionNode = manifestNode->GetNode ("description");
 	if (licenseNode)
 	  descriptionText.AppendFmt ("%s\n", descriptionNode->GetContentsValue ());
+	csRef<iDocumentNode> mountNode = manifestNode->GetNode ("mount");
+	if (mountNode)
+	  mountText = mountNode->GetContentsValue ();
       }
     }
   }
   wxTextCtrl* descriptionCtrl = XRCCTRL (*this, "description_Text", wxTextCtrl);
   descriptionCtrl->SetValue (wxString::FromUTF8 (descriptionText));
+  wxTextCtrl* mountCtrl = XRCCTRL (*this, "mount_Text", wxTextCtrl);
+  mountCtrl->SetValue (wxString::FromUTF8 (mountText));
 
   vfs->PopDir ();
 }
@@ -157,8 +249,11 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
     csScanStr (row[3], "%b", &saveTemplates);
     csScanStr (row[4], "%b", &saveQuests);
     csScanStr (row[5], "%b", &saveLights);
-    assets.Push (Asset (row[0], row[1], saveDynfacts, saveTemplates,
-	  saveQuests, saveLights));
+    Asset a = Asset (row[0], row[1], saveDynfacts, saveTemplates,
+	  saveQuests, saveLights);
+    a.SetRealPath (row[6]);
+    a.SetMountPoint (row[7]);
+    assets.Push (a);
   }
   callback->OkPressed (assets);
   callback = 0;
@@ -297,7 +392,8 @@ void NewProjectDialog::SetFilename (const char* filename)
 }
 
 void NewProjectDialog::AddAsset (const char* path, const char* file,
-    bool dynfacts, bool templates, bool quests, bool lights)
+    bool dynfacts, bool templates, bool quests, bool lights,
+    const char* realPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   ListCtrlTools::AddRow (assetList, path, file,
@@ -305,6 +401,7 @@ void NewProjectDialog::AddAsset (const char* path, const char* file,
       templates ? "true" : "",
       quests ? "true" : "",
       lights ? "true" : "",
+      realPath, mount,
       (const char*)0);
 }
 
@@ -312,6 +409,8 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
 {
   wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
+  wxTextCtrl* realPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
   wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
   wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
@@ -322,7 +421,9 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
       dynfactsCheck->GetValue (),
       templatesCheck->GetValue (),
       questsCheck->GetValue (),
-      lightsCheck->GetValue ());
+      lightsCheck->GetValue (),
+      (const char*)(realPathText->GetValue ().mb_str (wxConvUTF8)),
+      (const char*)(mountText->GetValue ().mb_str (wxConvUTF8)));
   SetPathFile ("", "", false, false, false, false);
 }
 
@@ -385,27 +486,48 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& asset
   {
     const Asset& a = assets[i];
     AddAsset (a.GetPath (), a.GetFile (), a.IsDynfactSavefile (),
-	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile ());
+	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile (),
+	a.GetRealPath (), a.GetMountPoint ());
   }
   ShowModal ();
 }
 
-NewProjectDialog::NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs) :
-  uiManager (uiManager), vfs (vfs)
+NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_reg,
+    UIManager* uiManager, iVFS* vfs) : object_reg (object_reg), uiManager (uiManager), vfs (vfs)
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("NewProjectDialog"));
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (assetList, 0, "Path", 250);
-  ListCtrlTools::SetColumn (assetList, 1, "File", 120);
+  ListCtrlTools::SetColumn (assetList, 0, "Path", 220);
+  ListCtrlTools::SetColumn (assetList, 1, "File", 100);
   ListCtrlTools::SetColumn (assetList, 2, "Dynf", 50);
   ListCtrlTools::SetColumn (assetList, 3, "Templ", 50);
   ListCtrlTools::SetColumn (assetList, 4, "Quest", 50);
   ListCtrlTools::SetColumn (assetList, 5, "Light", 50);
+  ListCtrlTools::SetColumn (assetList, 6, "RealPath", 100);
+  ListCtrlTools::SetColumn (assetList, 7, "Mount", 100);
+
+  wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
+  dir->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,
+	  wxCommandEventHandler (NewProjectDialog :: OnDirSelChange), 0, this);
+
+  csRef<iCommandLineParser> cmdline = csQueryRegistry<iCommandLineParser> (object_reg);
+  appDir = cmdline->GetAppDir ();
+  wxString defaultdir;
+  assetPath = vfs->GetRealMountPaths ("/assets/");
+  if (assetPath && assetPath->GetSize () > 0)
+    defaultdir = wxString::FromUTF8 (assetPath->Get (0));
+  else
+    defaultdir = wxString::FromUTF8 (appDir);
+  dir->SetDefaultPath (defaultdir);
+  dir->SetPath (defaultdir);
 }
 
 NewProjectDialog::~NewProjectDialog ()
 {
+  wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
+  dir->Disconnect (wxEVT_COMMAND_TREE_SEL_CHANGED,
+	  wxCommandEventHandler (NewProjectDialog :: OnDirSelChange), 0, this);
 }
 
 

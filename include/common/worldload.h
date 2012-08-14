@@ -36,6 +36,8 @@ class ARES_EXPORT Asset
 private:
   csString path;
   csString file;
+  csString realPath;	// Real path supporting $# notation (in asset path)
+  csString mountPoint;	// If given then this mount point must be used.
   bool saveDynfacts;
   bool saveTemplates;
   bool saveQuests;
@@ -50,8 +52,13 @@ public:
     saveQuests (saveQuests), saveLightFacts (saveLightFacts)
   { }
 
+  void SetRealPath (const char* p) { realPath = p; }
+  void SetMountPoint (const char* m) { mountPoint = m; }
+
   const csString& GetPath () const { return path; }
   const csString& GetFile () const { return file; }
+  const csString& GetRealPath () const { return realPath; }
+  const csString& GetMountPoint () const { return mountPoint; }
 
   void SetDynfactSavefile (bool e) { saveDynfacts = e; }
   bool IsDynfactSavefile () const { return saveDynfacts; }

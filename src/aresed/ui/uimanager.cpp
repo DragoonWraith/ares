@@ -450,7 +450,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   app (app), parent (parent)
 {
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
-  newprojectDialog = new NewProjectDialog (parent, this, app->GetVFS ());
+  newprojectDialog = new NewProjectDialog (parent, app->GetObjectRegistry (), this, app->GetVFS ());
   cellDialog = new CellDialog (parent, this);
   contextMenuID = ID_FirstContextItem;
 }

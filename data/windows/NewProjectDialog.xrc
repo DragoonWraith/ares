@@ -37,6 +37,17 @@
 								</object>
 							</object>
 							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND | wxALL</flag>
+								<border>5</border>
+								<object class="wxGenericDirCtrl" name="browser_Dir">
+									<defaultfolder></defaultfolder>
+									<filter></filter>
+									<defaultfilter>0</defaultfilter>
+									<style>wxDIRCTRL_3D_INTERNAL|wxSUNKEN_BORDER</style>
+								</object>
+							</object>
+							<object class="sizeritem">
 								<option>0</option>
 								<flag>wxEXPAND</flag>
 								<border>5</border>
@@ -131,6 +142,50 @@
 											<style>wxSUNKEN_BORDER</style>
 											<label>...</label>
 											<wrap>-1</wrap>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="m_staticText12">
+											<label>Real:</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxTextCtrl" name="realPath_Text">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="m_staticText11">
+											<label>Mount:</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>1</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxTextCtrl" name="mount_Text">
+											<value></value>
+											<maxlength>0</maxlength>
 										</object>
 									</object>
 								</object>

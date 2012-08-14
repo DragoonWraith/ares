@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
+#include <wx/dirctrl.h>
 
 class UIManager;
 class Asset;
@@ -43,8 +44,12 @@ struct NewProjectCallback : public csRefCount
 class NewProjectDialog : public wxDialog
 {
 private:
+  iObjectRegistry* object_reg;
   UIManager* uiManager;
   iVFS* vfs;
+  csRef<iStringArray> assetPath;
+  csString appDir;
+  csString currentPath;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
@@ -53,6 +58,7 @@ private:
   void OnAssetSelected (wxListEvent& event);
   void OnAssetDeselected (wxListEvent& event);
   void OnBrowserSelChange (wxCommandEvent& event);
+  void OnDirSelChange (wxCommandEvent& event);
 
   long selIndex;
   csRef<NewProjectCallback> callback;
@@ -62,18 +68,33 @@ private:
       bool saveLights);
   void ScanCSNode (csString& msg, iDocumentNode* node);
   void AddAsset (const char* path, const char* file,
-      bool dynfacts, bool templates, bool quests, bool lights);
+      bool dynfacts, bool templates, bool quests, bool lights,
+      const char* realPath, const char* mount);
 
   void LoadManifest (const char* path, const char* file);
 
   void FillBrowser ();
 
-  csString currentPath;
+  /**
+   * Construct a path that is mountable.
+   * 'path' and 'filePath' are the path and filePath that you get from
+   * a wxGenericDirCtrl. This means that filePath will be empty if it is a directory
+   * and otherwise they will be the same.
+   */
+  csString ConstructMountString (const char* path, const char* filePath, csString& file);
+
+  /**
+   * Construct a relative path (to asset dir(s)) that can be saved in the project file.
+   * 'path' and 'filePath' are the path and filePath that you get from
+   * a wxGenericDirCtrl. This means that filePath will be empty if it is a directory
+   * and otherwise they will be the same.
+   */
+  csString ConstructRelativePath (const char* path, const char* filePath);
 
   void Setup (NewProjectCallback* cb);
 
 public:
-  NewProjectDialog (wxWindow* parent, UIManager* uiManager, iVFS* vfs);
+  NewProjectDialog (wxWindow* parent, iObjectRegistry* object_reg, UIManager* uiManager, iVFS* vfs);
   ~NewProjectDialog();
 
   void Show (NewProjectCallback* cb);

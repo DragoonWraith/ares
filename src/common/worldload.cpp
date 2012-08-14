@@ -349,6 +349,10 @@ csRef<iDocument> WorldLoader::SaveDoc ()
       assetNode->SetAttribute ("quests", "true");
     if (asset.IsLightFactSaveFile ())
       assetNode->SetAttribute ("lights", "true");
+    if (!asset.GetMountPoint ().IsEmpty ())
+      assetNode->SetAttribute ("mount", asset.GetMountPoint ());
+    if (!asset.GetRealPath ().IsEmpty ())
+      assetNode->SetAttribute ("realpath", asset.GetRealPath ());
   }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
