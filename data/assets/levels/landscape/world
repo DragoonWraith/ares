@@ -71,23 +71,6 @@
         </params>
     </meshfact>
 
-    <!--
-    <meshfact name='River'>
-        <plugin>crystalspace.mesh.loader.factory.genmesh</plugin>
-        <ztest/>
-        <params>
-            <material>water512.jpg</material>
-            <v x="-128" y="3" z="-128" u="0" v="0" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
-            <v x="128" y="3" z="-128" u="100" v="0" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
-            <v x="-128" y="3" z="128" u="0" v="100" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
-            <v x="128" y="3" z="128" u="100" v="100" r="1" g="1" b="1" nx="0" ny="1" nz="0" />
-            <t v1="2" v2="1" v3="0" />
-            <t v1="3" v2="1" v3="2" />
-            <manualcolors/>
-        </params>
-    </meshfact>
-    -->
-
     <sector name="outside">
       <cullerp plugin="crystalspace.culling.frustvis" />
         <meshobj name="clouds">

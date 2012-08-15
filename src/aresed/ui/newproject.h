@@ -57,23 +57,27 @@ private:
   void OnDelAssetButton (wxCommandEvent& event);
   void OnAssetSelected (wxListEvent& event);
   void OnAssetDeselected (wxListEvent& event);
-  void OnBrowserSelChange (wxCommandEvent& event);
   void OnDirSelChange (wxCommandEvent& event);
 
   long selIndex;
   csRef<NewProjectCallback> callback;
 
-  void SetPathFile (const char* path, const char* file,
+  void SetPathFile (const char* file,
       bool saveDynfacts, bool saveTemplates, bool saveQuests,
-      bool saveLights);
+      bool saveLights, const char* realPath, const char* mount);
+  void ScanLoadableFile (const char* path, const char* file);
   void ScanCSNode (csString& msg, iDocumentNode* node);
-  void AddAsset (const char* path, const char* file,
+  void AddAsset (const char* file,
       bool dynfacts, bool templates, bool quests, bool lights,
       const char* realPath, const char* mount);
 
-  void LoadManifest (const char* path, const char* file);
-
-  void FillBrowser ();
+  /**
+   * Try to find the manifest file and see what kind of information can
+   * be found in the asset.
+   * If 'override' is true then the information from the manifest can potentially
+   * override the values already set in the 'file' and 'mount' widgets.
+   */
+  void LoadManifest (const char* path, const char* file, bool override);
 
   /**
    * Construct a path that is mountable.
@@ -99,7 +103,7 @@ public:
 
   void Show (NewProjectCallback* cb);
   void Show (NewProjectCallback* cb, const csArray<Asset>& assets);
-  void SetFilename (const char* filename);
+  //void SetFilename (const char* filename);
 
   DECLARE_EVENT_TABLE ();
 };

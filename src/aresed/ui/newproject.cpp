@@ -37,28 +37,9 @@ BEGIN_EVENT_TABLE(NewProjectDialog, wxDialog)
   EVT_BUTTON (XRCID("delAssetButton"), NewProjectDialog :: OnDelAssetButton)
   EVT_LIST_ITEM_SELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetSelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetDeselected)
-  EVT_LISTBOX (XRCID("browser_List"), NewProjectDialog :: OnBrowserSelChange)
-  EVT_LISTBOX_DCLICK (XRCID("browser_List"), NewProjectDialog :: OnAddAssetButton)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
-
-void NewProjectDialog::OnBrowserSelChange (wxCommandEvent& event)
-{
-  wxListBox* list = XRCCTRL (*this, "browser_List", wxListBox);
-  csString filename = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
-
-  if (filename[filename.Length ()-1] == '/' || filename == "..")
-  {
-    vfs->ChDir (filename);
-    currentPath = vfs->GetCwd ();
-    FillBrowser ();
-    LoadManifest (currentPath, "");
-    return;
-  }
-
-  SetFilename (filename);
-}
 
 csString NewProjectDialog::ConstructMountString (const char* path, const char* filePath,
     csString& file)
@@ -91,7 +72,7 @@ csString NewProjectDialog::ConstructMountString (const char* path, const char* f
       if (idx != csArrayItemNotFound)
       {
 	file = mountable.Slice (idx+1);
-	mountable = mountable.Slice (0, idx);
+	mountable = mountable.Slice (0, idx+1);
       }
       else
       {
@@ -131,23 +112,25 @@ void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
   csString filePath = (const char*)(dir->GetFilePath ().mb_str (wxConvUTF8));
 
   csString stripped = ConstructRelativePath (path, filePath);
-  printf ("Stripped: %s\n", (const char*)stripped);
-
   csString file;
   csString mount = ConstructMountString (path, filePath, file);
-  printf ("Mount: %s (file '%s')\n", (const char*)mount, (const char*)file);
 
+  if (!file.IsEmpty ())
+    stripped = stripped.Slice (0, stripped.Length () - file.Length ());
+
+  printf ("Stripped: %s\n", (const char*)stripped);
+  printf ("Mount: %s (file '%s')\n", (const char*)mount, (const char*)file);
   fflush(stdout);
 
   wxTextCtrl* realpath_Text = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
   realpath_Text->SetValue (wxString::FromUTF8 (stripped));
 
-  vfs->Unmount ("/tmp/_aresed_mgr_", 0);
-  vfs->Mount ("/tmp/_aresed_mgr_", mount);
-  LoadManifest ("/tmp/_aresed_mgr_", file);
+  vfs->Unmount ("/tmp/__mnt__", 0);
+  vfs->Mount ("/tmp/__mnt__", mount);
+  LoadManifest ("/tmp/__mnt__", file, true);
 }
 
-void NewProjectDialog::LoadManifest (const char* path, const char* file)
+void NewProjectDialog::LoadManifest (const char* path, const char* file, bool override)
 {
   csRef<iDocumentSystem> docsys;
   docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
@@ -155,9 +138,21 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file)
     docsys.AttachNew (new csTinyDocumentSystem ());
 
   csRef<iDocument> doc = docsys->CreateDocument ();
+
+  csString descriptionText, mountText, fileText;
+
   vfs->PushDir (path);
+
+  if (file && *file)
+    fileText = file;
+  else if (vfs->Exists ("library"))
+    fileText = "library";
+  else if (vfs->Exists ("world"))
+    fileText = "world";
+  else if (vfs->Exists ("level.xml"))
+    fileText = "level.xml";
+
   csRef<iDataBuffer> buf = vfs->ReadFile ("manifest.xml");
-  csString descriptionText, mountText;
   if (buf)
   {
     const char* error = doc->Parse (buf->GetData ());
@@ -187,53 +182,25 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file)
 	csRef<iDocumentNode> mountNode = manifestNode->GetNode ("mount");
 	if (mountNode)
 	  mountText = mountNode->GetContentsValue ();
+	csRef<iDocumentNode> fileNode = manifestNode->GetNode ("file");
+	if (fileNode)
+	  fileText = fileNode->GetContentsValue ();
       }
     }
   }
   wxTextCtrl* descriptionCtrl = XRCCTRL (*this, "description_Text", wxTextCtrl);
   descriptionCtrl->SetValue (wxString::FromUTF8 (descriptionText));
-  wxTextCtrl* mountCtrl = XRCCTRL (*this, "mount_Text", wxTextCtrl);
-  mountCtrl->SetValue (wxString::FromUTF8 (mountText));
-
-  vfs->PopDir ();
-}
-
-void NewProjectDialog::FillBrowser ()
-{
-  wxListBox* list = XRCCTRL (*this, "browser_List", wxListBox);
-  list->Clear ();
-
-  wxArrayString dirs, files;
-  dirs.Add (wxT (".."));
-
-  csRef<iStringArray> vfsFiles = vfs->FindFiles (vfs->GetCwd ());
-  
-  for (size_t i = 0; i < vfsFiles->GetSize(); i++)
+  if (override)
   {
-    char* file = (char*)vfsFiles->Get(i);
-    if (!file) continue;
-
-    size_t dirlen = strlen (file);
-    if (dirlen)
-      dirlen--;
-    while (dirlen && file[dirlen-1]!= '/')
-      dirlen--;
-    file = file+dirlen;
-
-    if (file[strlen(file)-1] == '/')
-    {
-      wxString name = wxString::FromUTF8 (file);
-      dirs.Add (name);
-    }
-    else
-    {
-      wxString name = wxString::FromUTF8 (file);
-      files.Add (name);
-    }
+    wxTextCtrl* mountCtrl = XRCCTRL (*this, "mount_Text", wxTextCtrl);
+    mountCtrl->SetValue (wxString::FromUTF8 (mountText));
+    wxTextCtrl* fileCtrl = XRCCTRL (*this, "file_Text", wxTextCtrl);
+    fileCtrl->SetValue (wxString::FromUTF8 (fileText));
   }
 
-  list->InsertItems (files, 0);
-  list->InsertItems (dirs, 0);
+  vfs->PopDir ();
+
+  ScanLoadableFile (path, fileText);
 }
 
 void NewProjectDialog::OnOkButton (wxCommandEvent& event)
@@ -249,10 +216,10 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
     csScanStr (row[3], "%b", &saveTemplates);
     csScanStr (row[4], "%b", &saveQuests);
     csScanStr (row[5], "%b", &saveLights);
-    Asset a = Asset (row[0], row[1], saveDynfacts, saveTemplates,
+    Asset a = Asset (row[1], saveDynfacts, saveTemplates,
 	  saveQuests, saveLights);
-    a.SetRealPath (row[6]);
-    a.SetMountPoint (row[7]);
+    a.SetRealPath (row[0]);
+    a.SetMountPoint (row[6]);
     assets.Push (a);
   }
   callback->OkPressed (assets);
@@ -265,6 +232,59 @@ void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 {
   callback = 0;
   EndModal (TRUE);
+}
+
+void NewProjectDialog::ScanLoadableFile (const char* path, const char* file)
+{
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  csRef<iDocument> doc = docsys->CreateDocument ();
+  vfs->PushDir (path);
+  csRef<iDataBuffer> buf = vfs->ReadFile (file);
+  csString msg;
+  if (buf)
+  {
+    const char* error = doc->Parse (buf->GetData ());
+    if (error)
+    {
+      msg.Format ("Can't parse XML: %s", error);
+    }
+    else
+    {
+      msg = "Empty XML";
+      csRef<iDocumentNode> root = doc->GetRoot ();
+      csRef<iDocumentNodeIterator> it = root->GetNodes ();
+      while (it->HasNext ())
+      {
+        csRef<iDocumentNode> child = it->Next ();
+	if (child->GetType () != CS_NODE_ELEMENT) continue;
+        csString value = child->GetValue ();
+	if (value == "dynlevel") msg = "Dynamic level";
+	else if (value == "library")
+	{
+	  msg = "Library";
+	  ScanCSNode (msg, child);
+	}
+	else if (value == "world")
+	{
+	  msg = "World file";
+	  ScanCSNode (msg, child);
+	}
+	else msg = "Unknown XML";
+	break;
+      }
+    }
+  }
+  else
+  {
+    msg = "File can't load...";
+  }
+  wxStaticText* contents = XRCCTRL (*this, "contentsStaticText", wxStaticText);
+  contents->SetLabel (wxString::FromUTF8 (msg.GetData ()));
+  vfs->PopDir ();
 }
 
 void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
@@ -316,115 +336,86 @@ void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
   if (cntUnkownAddons) msg.AppendFmt (", %d unknown", cntUnkownAddons);
 }
 
-void NewProjectDialog::SetPathFile (const char* path, const char* file,
-    bool saveDynfacts, bool saveTemplates, bool saveQuests, bool saveLights)
-{
-  wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
-  wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
-  wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
-  wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
-  wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
-  wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
-  pathText->SetValue (wxString::FromUTF8 (path));
-  fileText->SetValue (wxString::FromUTF8 (file));
-  dynfactsCheck->SetValue (saveDynfacts);
-  templatesCheck->SetValue (saveTemplates);
-  questsCheck->SetValue (saveQuests);
-  lightsCheck->SetValue (saveLights);
-
-  wxStaticText* contents = XRCCTRL (*this, "contentsStaticText", wxStaticText);
-
-  csRef<iDocumentSystem> docsys;
-  docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
-  if (!docsys)
-    docsys.AttachNew (new csTinyDocumentSystem ());
-
-  csRef<iDocument> doc = docsys->CreateDocument ();
-  vfs->PushDir (path);
-  csRef<iDataBuffer> buf = vfs->ReadFile (file);
-  csString msg;
-  if (buf)
-  {
-    const char* error = doc->Parse (buf->GetData ());
-    if (error)
-    {
-      msg.Format ("Can't parse XML: %s", error);
-    }
-    else
-    {
-      msg = "Empty XML";
-      csRef<iDocumentNode> root = doc->GetRoot ();
-      csRef<iDocumentNodeIterator> it = root->GetNodes ();
-      while (it->HasNext ())
-      {
-        csRef<iDocumentNode> child = it->Next ();
-	if (child->GetType () != CS_NODE_ELEMENT) continue;
-        csString value = child->GetValue ();
-	if (value == "dynlevel") msg = "Dynamic level";
-	else if (value == "library")
-	{
-	  msg = "Library";
-	  ScanCSNode (msg, child);
-	}
-	else if (value == "world")
-	{
-	  msg = "World file";
-	  ScanCSNode (msg, child);
-	}
-	else msg = "Unknown XML";
-	break;
-      }
-    }
-  }
-  else
-  {
-    msg = "File can't load...";
-  }
-  contents->SetLabel (wxString::FromUTF8 (msg.GetData ()));
-  vfs->PopDir ();
-
-  LoadManifest (path, file);
-}
-
-void NewProjectDialog::SetFilename (const char* filename)
-{
-  SetPathFile (vfs->GetCwd (), filename, false, false, false, false);
-}
-
-void NewProjectDialog::AddAsset (const char* path, const char* file,
-    bool dynfacts, bool templates, bool quests, bool lights,
+void NewProjectDialog::SetPathFile (const char* file,
+    bool saveDynfacts, bool saveTemplates, bool saveQuests, bool saveLights,
     const char* realPath, const char* mount)
 {
-  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::AddRow (assetList, path, file,
-      dynfacts ? "true" : "",
-      templates ? "true" : "",
-      quests ? "true" : "",
-      lights ? "true" : "",
-      realPath, mount,
-      (const char*)0);
-}
-
-void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
-{
-  wxTextCtrl* pathText = XRCCTRL (*this, "pathTextCtrl", wxTextCtrl);
-  wxTextCtrl* fileText = XRCCTRL (*this, "fileTextCtrl", wxTextCtrl);
-  wxTextCtrl* realPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  wxTextCtrl* realpathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
   wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
   wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
   wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
   wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
+  realpathText->SetValue (wxString::FromUTF8 (realPath));
+  fileText->SetValue (wxString::FromUTF8 (file));
+  mountText->SetValue (wxString::FromUTF8 (mount));
+  dynfactsCheck->SetValue (saveDynfacts);
+  templatesCheck->SetValue (saveTemplates);
+  questsCheck->SetValue (saveQuests);
+  lightsCheck->SetValue (saveLights);
+
+  if (file && *file && ((realPath && *realPath) || (mount && *mount)))
+  {
+    csString path;
+    csString rp = realPath;
+    if (rp.IsEmpty () && mount && *mount)
+      path = mount;
+    else if (rp.StartsWith ("$#"))
+    {
+      csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+      path = WorldLoader::FindAsset (assetPath, rp.Slice (2));
+      if (path == "")
+      {
+        // @@@ Proper reporting
+        printf ("Cannot find asset '%s' in the asset path!\n", realPath);
+        return;
+      }
+    }
+    else path = realPath;
+    printf ("### LoadManifest %s %s\n", path.GetData (), file);
+
+    vfs->Unmount ("/tmp/__mnt__", 0);
+    vfs->Mount ("/tmp/__mnt__", path);
+    LoadManifest ("/tmp/__mnt__", file, false);
+  }
+}
+
+void NewProjectDialog::AddAsset (const char* file,
+    bool dynfacts, bool templates, bool quests, bool lights,
+    const char* realPath, const char* mount)
+{
+  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  ListCtrlTools::AddRow (assetList, realPath, file,
+      dynfacts ? "true" : "",
+      templates ? "true" : "",
+      quests ? "true" : "",
+      lights ? "true" : "",
+      mount,
+      (const char*)0);
+}
+
+void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
+{
+  wxTextCtrl* realPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
+  wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
+  wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
+  wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
+  wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
+  wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
+  csString file = (const char*)(fileText->GetValue ().mb_str (wxConvUTF8));
+  csString realPath = (const char*)(realPathText->GetValue ().mb_str (wxConvUTF8));
+  csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
   AddAsset (
-      (const char*)(pathText->GetValue ().mb_str (wxConvUTF8)),
-      (const char*)(fileText->GetValue ().mb_str (wxConvUTF8)),
+      file,
       dynfactsCheck->GetValue (),
       templatesCheck->GetValue (),
       questsCheck->GetValue (),
       lightsCheck->GetValue (),
-      (const char*)(realPathText->GetValue ().mb_str (wxConvUTF8)),
-      (const char*)(mountText->GetValue ().mb_str (wxConvUTF8)));
-  SetPathFile ("", "", false, false, false, false);
+      realPath,
+      mount);
+  SetPathFile (file, false, false, false, false, realPath, mount);
 }
 
 void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
@@ -433,7 +424,7 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
   {
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     assetList->DeleteItem (selIndex);
-    SetPathFile ("", "", false, false, false, false);
+    SetPathFile ("", false, false, false, false, "", "");
     selIndex = -1;
   }
 }
@@ -450,14 +441,15 @@ void NewProjectDialog::OnAssetSelected (wxListEvent& event)
   csScanStr (row[3], "%b", &saveTemplates);
   csScanStr (row[4], "%b", &saveQuests);
   csScanStr (row[5], "%b", &saveLights);
-  SetPathFile (row[0], row[1], saveDynfacts, saveTemplates, saveQuests,
-      saveLights);
+  SetPathFile (row[1], saveDynfacts, saveTemplates, saveQuests,
+      saveLights, row[0], row[6]);
 }
 
 void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
 {
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
   delButton->Disable ();
+  SetPathFile ("", false, false, false, false, "", "");
 }
 
 void NewProjectDialog::Setup (NewProjectCallback* cb)
@@ -470,7 +462,6 @@ void NewProjectDialog::Setup (NewProjectCallback* cb)
   selIndex = -1;
   currentPath = "/assets";
   vfs->ChDir (currentPath);
-  FillBrowser ();
 }
 
 void NewProjectDialog::Show (NewProjectCallback* cb)
@@ -485,7 +476,7 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& asset
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     const Asset& a = assets[i];
-    AddAsset (a.GetPath (), a.GetFile (), a.IsDynfactSavefile (),
+    AddAsset (a.GetFile (), a.IsDynfactSavefile (),
 	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile (),
 	a.GetRealPath (), a.GetMountPoint ());
   }
@@ -504,8 +495,7 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
   ListCtrlTools::SetColumn (assetList, 3, "Templ", 50);
   ListCtrlTools::SetColumn (assetList, 4, "Quest", 50);
   ListCtrlTools::SetColumn (assetList, 5, "Light", 50);
-  ListCtrlTools::SetColumn (assetList, 6, "RealPath", 100);
-  ListCtrlTools::SetColumn (assetList, 7, "Mount", 100);
+  ListCtrlTools::SetColumn (assetList, 6, "Mount", 100);
 
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   dir->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,

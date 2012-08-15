@@ -57,11 +57,15 @@ bool WorldLoader::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
-static csString FindAsset (iStringArray* assets, const char* filename)
+csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
+    bool use_first_if_not_found)
 {
-  for (size_t i = 0 ; i < assets->GetSize () ; i++)
+  // Trick: we go to == assets size in order to make sure we pick
+  // the first location when we cannot find the file.
+  for (size_t i = 0 ; i <= assets->GetSize () ; i++)
   {
-    csString a = assets->Get (i);
+    if (i == assets->GetSize () && !use_first_if_not_found) return "";
+    csString a = assets->Get (i % assets->GetSize ());	// Make sure to wrap around
     if (a[a.Length ()-1] != '\\' && a[a.Length ()-1] != '/')
       a += CS_PATH_SEPARATOR;
     a += filename;
@@ -71,6 +75,7 @@ static csString FindAsset (iStringArray* assets, const char* filename)
       sep = CS_PATH_SEPARATOR;
       a.ReplaceAll ("/", sep);
     }
+    if (i == assets->GetSize () && use_first_if_not_found) return a;
     struct stat buf;
     if (stat (a, &buf) == 0)
     {
@@ -85,8 +90,6 @@ static csString FindAsset (iStringArray* assets, const char* filename)
 
 bool WorldLoader::LoadDoc (iDocument* doc)
 {
-  csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
 
@@ -98,59 +101,19 @@ bool WorldLoader::LoadDoc (iDocument* doc)
     csString value = child->GetValue ();
     if (value == "asset")
     {
-      csString path = child->GetAttributeValue ("path");
+      csString realpath = child->GetAttributeValue ("path");
       csString file = child->GetAttributeValue ("file");
       csString mount = child->GetAttributeValue ("mount");
       bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
       bool saveTemplates = child->GetAttributeValueAsBool ("templates");
       bool saveQuests = child->GetAttributeValueAsBool ("quests");
       bool saveLights = child->GetAttributeValueAsBool ("lights");
-      if (path.StartsWith ("$#"))
-      {
-	csString newpath = FindAsset (assetPath, path.Slice (2));
-	if (newpath == "")
-	{
-	  // @@@ Proper reporting
-	  printf ("Cannot find asset '%s' in the asset path!\n", path.GetData ());
-	  return false;
-	}
-	path = newpath;
-      }
+      LoadAsset (realpath, file, mount);
 
-      if (mount.IsEmpty ())
-      {
-	mount.Format ("/assets/__mnt_%d__/", mntCounter);
-	mntCounter++;
-      }
-
-      if (!path.IsEmpty ())
-      {
-        vfs->Mount (mount, path);
-	printf ("Mounting '%s' to '%s'\n", path.GetData (), mount.GetData ());
-      }
-
-      vfs->PushDir (mount);
-      // If the file doesn't exist we don't try to load it. That's not an error
-      // as it might be saved later.
-      bool exists = vfs->Exists (file);
-      vfs->PopDir ();
-      if (exists)
-      {
-        if (!LoadLibrary (mount, file))
-	  return false;
-      }
-      else
-      {
-	printf ("Warning! File '%s/%s' does not exist!\n",
-	    path.IsEmpty () ? mount.GetData () : path.GetData (), file.GetData ());
-      }
-
-      //if (!path.IsEmpty ())
-        //vfs->Unmount (mount, path);
-
-      Asset asset = Asset (path, file, saveDynfacts, saveTemplates, saveQuests,
+      Asset asset = Asset (file, saveDynfacts, saveTemplates, saveQuests,
 	    saveLights);
       asset.SetMountPoint (mount);
+      asset.SetRealPath (realpath);
       assets.Push (asset);
     }
     // Ignore the other tags. These are processed below.
@@ -248,21 +211,70 @@ bool WorldLoader::LoadFile (const char* filename)
   return LoadDoc (doc);
 }
 
+bool WorldLoader::LoadAsset (const csString& realpath, const csString& file, const csString& mount)
+{
+  csString path;
+  if (realpath.StartsWith ("$#"))
+  {
+    csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+    path = FindAsset (assetPath, realpath.Slice (2));
+    if (path == "")
+    {
+      // @@@ Proper reporting
+      printf ("Cannot find asset '%s' in the asset path!\n", realpath.GetData ());
+      return false;
+    }
+  }
+  else path = realpath;
+
+  csString rmount;
+  if (mount.IsEmpty ())
+  {
+    rmount.Format ("/assets/__mnt_%d__/", mntCounter);
+    mntCounter++;
+  }
+  else
+  {
+    rmount = mount;
+  }
+
+  if (!path.IsEmpty ())
+  {
+    vfs->Mount (rmount, path);
+    printf ("Mounting '%s' to '%s'\n", path.GetData (), rmount.GetData ());
+  }
+
+  vfs->PushDir (rmount);
+  // If the file doesn't exist we don't try to load it. That's not an error
+  // as it might be saved later.
+  bool exists = vfs->Exists (file);
+  vfs->PopDir ();
+  if (exists)
+  {
+    if (!LoadLibrary (rmount, file))
+      return false;
+  }
+  else
+  {
+    printf ("Warning! File '%s/%s' does not exist!\n",
+	path.IsEmpty () ? rmount.GetData () : path.GetData (), file.GetData ());
+  }
+
+  //if (!path.IsEmpty ())
+    //vfs->Unmount (rmount, path);
+  return true;
+}
+
 bool WorldLoader::NewProject (const csArray<Asset>& newassets)
 {
   assets = newassets;
   for (size_t i = 0 ; i < newassets.GetSize () ; i++)
   {
-    csString path = newassets[i].GetPath ();
+    csString realpath = newassets[i].GetRealPath ();
     csString file = newassets[i].GetFile ();
-    vfs->PushDir (path);
-    // If the file doesn't exist we don't try to load it. That's not an error
-    // as it might be saved later.
-    bool exists = vfs->Exists (file);
-    vfs->PopDir ();
-    if (exists)
-      if (!LoadLibrary (path, file))
-	return false;
+    csString mount = newassets[i].GetMountPoint ();
+    if (!LoadAsset (realpath, file, mount))
+      return false;
   }
   return true;
 }
@@ -271,8 +283,9 @@ bool WorldLoader::HasAsset (const Asset& a)
 {
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
-    if (assets[i].GetPath () == a.GetPath () &&
-	assets[i].GetFile () == a.GetFile ())
+    if (assets[i].GetRealPath () == a.GetRealPath () &&
+	assets[i].GetFile () == a.GetFile () &&
+	assets[i].GetMountPoint () == a.GetMountPoint ())
     {
       // Update the asset we have with the new flags.
       assets[i].SetDynfactSavefile (a.IsDynfactSavefile ());
@@ -295,16 +308,11 @@ bool WorldLoader::UpdateAssets (const csArray<Asset>& newassets)
     const Asset& a = newassets[i];
     if (!HasAsset (a))
     {
-      csString path = a.GetPath ();
+      csString realpath = a.GetRealPath ();
       csString file = a.GetFile ();
-      vfs->PushDir (path);
-      // If the file doesn't exist we don't try to load it. That's not an error
-      // as it might be saved later.
-      bool exists = vfs->Exists (file);
-      vfs->PopDir ();
-      if (exists)
-        if (!LoadLibrary (path, file))
-	  return false;
+      csString mount = a.GetMountPoint ();
+      if (!LoadAsset (realpath, file, mount))
+	return false;
     }
   }
   assets = newassets;
@@ -378,10 +386,26 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   docasset->Write (xml);
-  printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetPath ().GetData ());
-  vfs->PushDir (asset.GetPath ());
+  printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetRealPath ().GetData ());
+
+  // In order to control the exact location to save we make a new temporary mount
+  // point where we can save. That's to avoid the problem where an asset comes from
+  // a location which is mounted on different real paths.
+  // If the asset cannot be found yet then we will save to the first location on the path.
+  csString realpath = asset.GetRealPath ();
+  csString path;
+  if (realpath.StartsWith ("$#"))
+  {
+    csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+    path = FindAsset (assetPath, realpath.Slice (2), true);
+  }
+  else path = realpath;
+
+  vfs->Mount ("/assets/__mnt_wl__", path);
+  vfs->PushDir ("/assets/__mnt_wl__");
   vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
   vfs->PopDir ();
+  vfs->Unmount ("/assets/__mnt_wl__", path);
   return true;
 }
 
@@ -400,8 +424,11 @@ csRef<iDocument> WorldLoader::SaveDoc ()
     const Asset& asset = assets[i];
     csRef<iDocumentNode> assetNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
     assetNode->SetValue ("asset");
-    assetNode->SetAttribute ("path", asset.GetPath ());
+    if (!asset.GetRealPath ().IsEmpty ())
+      assetNode->SetAttribute ("path", asset.GetRealPath ());
     assetNode->SetAttribute ("file", asset.GetFile ());
+    if (!asset.GetMountPoint ().IsEmpty ())
+      assetNode->SetAttribute ("mount", asset.GetMountPoint ());
     if (asset.IsDynfactSavefile ())
       assetNode->SetAttribute ("dynfacts", "true");
     if (asset.IsTemplateSavefile ())
@@ -412,8 +439,6 @@ csRef<iDocument> WorldLoader::SaveDoc ()
       assetNode->SetAttribute ("lights", "true");
     if (!asset.GetMountPoint ().IsEmpty ())
       assetNode->SetAttribute ("mount", asset.GetMountPoint ());
-    if (!asset.GetRealPath ().IsEmpty ())
-      assetNode->SetAttribute ("realpath", asset.GetRealPath ());
   }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);

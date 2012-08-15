@@ -21,19 +21,35 @@
 							<orient>wxVERTICAL</orient>
 							<object class="sizeritem">
 								<option>0</option>
-								<flag>wxALL</flag>
+								<flag>wxEXPAND</flag>
 								<border>5</border>
-								<object class="wxStaticText" name="m_staticText10">
-									<label>Browser:</label>
-									<wrap>-1</wrap>
-								</object>
-							</object>
-							<object class="sizeritem">
-								<option>1</option>
-								<flag>wxALL|wxEXPAND</flag>
-								<border>5</border>
-								<object class="wxListBox" name="browser_List">
-									<content />
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="m_staticText10">
+											<label>Browser:</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="spacer">
+										<option>1</option>
+										<flag>wxEXPAND</flag>
+										<border>5</border>
+										<size>0,0</size>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="addAssetButton">
+											<size>30,-1</size>
+											<label>+</label>
+											<default>0</default>
+										</object>
+									</object>
 								</object>
 							</object>
 							<object class="sizeritem">
@@ -49,56 +65,11 @@
 							</object>
 							<object class="sizeritem">
 								<option>0</option>
-								<flag>wxEXPAND</flag>
-								<border>5</border>
-								<object class="wxBoxSizer">
-									<orient>wxHORIZONTAL</orient>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-										<border>5</border>
-										<object class="wxStaticText" name="m_staticText7">
-											<label>File:</label>
-											<wrap>-1</wrap>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>1</option>
-										<flag>wxALL</flag>
-										<border>5</border>
-										<object class="wxTextCtrl" name="pathTextCtrl">
-											<value></value>
-											<maxlength>0</maxlength>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>1</option>
-										<flag>wxALL</flag>
-										<border>5</border>
-										<object class="wxTextCtrl" name="fileTextCtrl">
-											<value></value>
-											<maxlength>0</maxlength>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL</flag>
-										<border>5</border>
-										<object class="wxButton" name="addAssetButton">
-											<size>30,-1</size>
-											<label>+</label>
-											<default>0</default>
-										</object>
-									</object>
-								</object>
-							</object>
-							<object class="sizeritem">
-								<option>0</option>
 								<flag>wxALL|wxEXPAND</flag>
 								<border>5</border>
 								<object class="wxTextCtrl" name="description_Text">
 									<style>wxTE_MULTILINE|wxTE_READONLY</style>
-									<size>-1,120</size>
+									<size>200,120</size>
 									<value></value>
 									<maxlength>0</maxlength>
 								</object>
@@ -174,6 +145,42 @@
 										<option>0</option>
 										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 										<border>5</border>
+										<object class="wxStaticText" name="fileText">
+											<label>File:</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxTextCtrl" name="file_Text">
+											<value></value>
+											<maxlength>0</maxlength>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="delAssetButton">
+											<size>30,-1</size>
+											<label>-</label>
+											<default>0</default>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
 										<object class="wxStaticText" name="m_staticText11">
 											<label>Mount:</label>
 											<wrap>-1</wrap>
@@ -232,16 +239,6 @@
 										<object class="wxCheckBox" name="quest_Check">
 											<label>Quests</label>
 											<checked>0</checked>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL</flag>
-										<border>5</border>
-										<object class="wxButton" name="delAssetButton">
-											<size>30,-1</size>
-											<label>-</label>
-											<default>0</default>
 										</object>
 									</object>
 								</object>

@@ -34,7 +34,6 @@ struct iRoomMeshCreator;
 class ARES_EXPORT Asset
 {
 private:
-  csString path;
   csString file;
   csString realPath;	// Real path supporting $# notation (in asset path)
   csString mountPoint;	// If given then this mount point must be used.
@@ -44,10 +43,10 @@ private:
   bool saveLightFacts;
 
 public:
-  Asset (const char* path, const char* file,
+  Asset (const char* file,
       bool saveDynfacts, bool saveTemplates, bool saveQuests,
       bool saveLightFacts) :
-    path (path), file (file),
+    file (file),
     saveDynfacts (saveDynfacts), saveTemplates (saveTemplates),
     saveQuests (saveQuests), saveLightFacts (saveLightFacts)
   { }
@@ -55,7 +54,6 @@ public:
   void SetRealPath (const char* p) { realPath = p; }
   void SetMountPoint (const char* m) { mountPoint = m; }
 
-  const csString& GetPath () const { return path; }
   const csString& GetFile () const { return file; }
   const csString& GetRealPath () const { return realPath; }
   const csString& GetMountPoint () const { return mountPoint; }
@@ -96,6 +94,7 @@ private:
 
   bool SaveAsset (iDocumentSystem* docsys, const Asset& asset);
   bool HasAsset (const Asset& a);
+  bool LoadAsset (const csString& realpath, const csString& file, const csString& mount);
 
 public:
   WorldLoader (iObjectRegistry* object_reg);
@@ -107,6 +106,9 @@ public:
   {
     WorldLoader::dynworld = dynworld;
   }
+
+  static csString FindAsset (iStringArray* assets, const char* filename,
+    bool use_first_if_not_found = false);
 
   /**
    * Get the currently loaded assets.
