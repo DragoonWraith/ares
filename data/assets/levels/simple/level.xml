@@ -1,6 +1,5 @@
 <?xml ?>
 <world>
-    <library path="/river" file="library" />
     <library path="/lib/sky" file="library" />
 
     <textures>

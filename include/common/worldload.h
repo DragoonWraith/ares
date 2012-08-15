@@ -84,6 +84,7 @@ private:
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iPcDynamicWorld> dynworld;
 
+  int mntCounter;
   csArray<Asset> assets;
 
   csArray<iDynamicFactory*> curvedFactories;

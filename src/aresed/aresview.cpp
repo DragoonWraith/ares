@@ -899,7 +899,6 @@ bool AresEdit3DView::SetupDynWorld ()
     if (playerName == fact->GetName () || nodeName == fact->GetName ()) continue;
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
-    printf ("%d %s\n", int (i), fact->GetName ()); fflush (stdout);
     RefreshFactorySettings (fact);
     const char* category = fact->GetAttribute ("category");
     AddItem (category, fact->GetName ());

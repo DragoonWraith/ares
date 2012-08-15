@@ -1,8 +1,8 @@
 <dynlevel>
-  <asset path="/assets/levels/scifilevel/" file="world" />
-  <asset path="/assets/objects/models/" file="library" />
-  <asset path="/assets/objects/militaryboxa/" file="library" />
-  <asset path="/assets/logic/" file="scifilogic.xml" dynfacts="true" templates="true" quests="true" lights="true" />
+  <asset path="$#levels/scifilevel/" file="world" />
+  <asset path="$#objects/models/" file="library" />
+  <asset path="$#objects/militaryboxa/" file="library" />
+  <asset path="$#logic/" file="scifilogic.xml" dynfacts="true" templates="true" quests="true" lights="true" />
   <dynworld lastid="1000030000">
     <cell name="outside">
       <obj fact="Player" m="0.986705 1.88135e-006 0.16252 -1.84051e-006 1 -4.01867e-007 -0.16252 9.74042e-008 0.986705" v="5.52025 0.1 2.94952" id="1000010002" />

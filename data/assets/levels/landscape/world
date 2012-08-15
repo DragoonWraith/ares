@@ -5,7 +5,6 @@
         <plugin name="terrain">crystalspace.mesh.loader.terrain2</plugin>
     </plugins>
 
-    <library path="/assets/levels/landscape/river" file="library" />
     <library path="/lib/sky" file="library" />
 
     <textures>

@@ -1,9 +1,10 @@
 <dynlevel>
-    <asset path="/assets" file="testassets.xml" />
-    <asset path="/lib/krystal/" file="krystal.xml" />
-    <asset path="/lib/frankie/" file="frankie.xml" />
-    <asset path="/assets/logic/" file="dynworldFactories.xml" />
-    <asset path="/assets/levels/landscape" file="world" />
+    <asset path="$#" file="testassets.xml" />
+    <asset mount="/lib/krystal/" file="krystal.xml" />
+    <asset mount="/lib/frankie/" file="frankie.xml" />
+    <asset path="$#logic/" file="dynworldFactories.xml" />
+    <asset path="$#river.zip" mount="/assets/levels/landscape/river" file="library" />
+    <asset path="$#levels/landscape/" mount="/assets/levels/landscape" file="world" />
     <dynworld>
     </dynworld>
     <curves>

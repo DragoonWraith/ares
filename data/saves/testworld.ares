@@ -1,9 +1,10 @@
 <dynlevel>
-    <asset path="/assets/" file="testassets.xml" />
-    <asset path="/lib/krystal/" file="krystal.xml" />
-    <asset path="/lib/frankie/" file="frankie.xml" />
-    <asset path="/assets/logic/" file="dynworldFactories.xml" />
-    <asset path="/assets/levels/landscape" file="world" />
+    <asset path="$#" file="testassets.xml" />
+    <asset mount="/lib/krystal/" file="krystal.xml" />
+    <asset mount="/lib/frankie/" file="frankie.xml" />
+    <asset path="$#logic/" file="dynworldFactories.xml" />
+    <asset path="$#river.zip" mount="/assets/levels/landscape/river" file="library" />
+    <asset path="$#levels/landscape/" mount="/assets/levels/landscape" file="world" />
     <dynworld>
       <cell name="outside">
         <obj fact="ConcreteBridge" static="true" m="-1.5103e-007 0 1 8.65085e-015 1 0 -1 -4.3999e-017 -1.05411e-007" v="-6.42182 -3.68983 17.6079" />

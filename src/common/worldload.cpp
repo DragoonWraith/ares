@@ -39,6 +39,7 @@ WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
   engine = csQueryRegistry<iEngine> (object_reg);
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
   roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (object_reg);
+  mntCounter = 0;
 }
 
 bool WorldLoader::LoadLibrary (const char* path, const char* file)
@@ -56,8 +57,36 @@ bool WorldLoader::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
+static csString FindAsset (iStringArray* assets, const char* filename)
+{
+  for (size_t i = 0 ; i < assets->GetSize () ; i++)
+  {
+    csString a = assets->Get (i);
+    if (a[a.Length ()-1] != '\\' && a[a.Length ()-1] != '/')
+      a += CS_PATH_SEPARATOR;
+    a += filename;
+    if (CS_PATH_SEPARATOR != '/')
+    {
+      csString sep;
+      sep = CS_PATH_SEPARATOR;
+      a.ReplaceAll ("/", sep);
+    }
+    struct stat buf;
+    if (stat (a, &buf) == 0)
+    {
+      if (S_ISREG (buf.st_mode) || S_ISDIR (buf.st_mode))
+      {
+	return a;
+      }
+    }
+  }
+  return "";
+}
+
 bool WorldLoader::LoadDoc (iDocument* doc)
 {
+  csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
 
@@ -71,26 +100,58 @@ bool WorldLoader::LoadDoc (iDocument* doc)
     {
       csString path = child->GetAttributeValue ("path");
       csString file = child->GetAttributeValue ("file");
+      csString mount = child->GetAttributeValue ("mount");
       bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
       bool saveTemplates = child->GetAttributeValueAsBool ("templates");
       bool saveQuests = child->GetAttributeValueAsBool ("quests");
       bool saveLights = child->GetAttributeValueAsBool ("lights");
-      vfs->PushDir (path);
+      if (path.StartsWith ("$#"))
+      {
+	csString newpath = FindAsset (assetPath, path.Slice (2));
+	if (newpath == "")
+	{
+	  // @@@ Proper reporting
+	  printf ("Cannot find asset '%s' in the asset path!\n", path.GetData ());
+	  return false;
+	}
+	path = newpath;
+      }
+
+      if (mount.IsEmpty ())
+      {
+	mount.Format ("/assets/__mnt_%d__/", mntCounter);
+	mntCounter++;
+      }
+
+      if (!path.IsEmpty ())
+      {
+        vfs->Mount (mount, path);
+	printf ("Mounting '%s' to '%s'\n", path.GetData (), mount.GetData ());
+      }
+
+      vfs->PushDir (mount);
       // If the file doesn't exist we don't try to load it. That's not an error
       // as it might be saved later.
       bool exists = vfs->Exists (file);
       vfs->PopDir ();
       if (exists)
       {
-        if (!LoadLibrary (path, file))
+        if (!LoadLibrary (mount, file))
 	  return false;
       }
       else
       {
-	printf ("Warning! File '%s/%s' does not exist!\n", path.GetData (), file.GetData ());
+	printf ("Warning! File '%s/%s' does not exist!\n",
+	    path.IsEmpty () ? mount.GetData () : path.GetData (), file.GetData ());
       }
-      assets.Push (Asset (path, file, saveDynfacts, saveTemplates, saveQuests,
-	    saveLights));
+
+      //if (!path.IsEmpty ())
+        //vfs->Unmount (mount, path);
+
+      Asset asset = Asset (path, file, saveDynfacts, saveTemplates, saveQuests,
+	    saveLights);
+      asset.SetMountPoint (mount);
+      assets.Push (asset);
     }
     // Ignore the other tags. These are processed below.
   }
