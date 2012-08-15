@@ -1,0 +1,7 @@
+<manifest>
+  <author>Jorrit Tyberghein</author>
+  <license>Do whatever you want with this</license>
+  <description>Landscape level. This should be loaded together with the river asset</description>
+  <mount>/assets/levels/landscape/</mount>
+</manifest>
+
