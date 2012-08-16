@@ -1924,7 +1924,7 @@
             <property name="minimum_size"></property>
             <property name="name">NewProjectDialog</property>
             <property name="pos"></property>
-            <property name="size">760,600</property>
+            <property name="size">800,600</property>
             <property name="style">wxDEFAULT_DIALOG_STYLE</property>
             <property name="subclass"></property>
             <property name="title">New Project</property>
@@ -2213,11 +2213,11 @@
                                         <property name="id">wxID_ANY</property>
                                         <property name="maximum_size">-1,120</property>
                                         <property name="maxlength">0</property>
-                                        <property name="minimum_size">200,120</property>
+                                        <property name="minimum_size">250,120</property>
                                         <property name="name">description_Text</property>
                                         <property name="permission">protected</property>
                                         <property name="pos"></property>
-                                        <property name="size">200,120</property>
+                                        <property name="size">250,120</property>
                                         <property name="style">wxTE_MULTILINE|wxTE_READONLY</property>
                                         <property name="subclass"></property>
                                         <property name="tooltip"></property>
@@ -2662,7 +2662,7 @@
                                                 <property name="id">wxID_ANY</property>
                                                 <property name="maximum_size"></property>
                                                 <property name="maxlength">0</property>
-                                                <property name="minimum_size"></property>
+                                                <property name="minimum_size">110,-1</property>
                                                 <property name="name">file_Text</property>
                                                 <property name="permission">protected</property>
                                                 <property name="pos"></property>
