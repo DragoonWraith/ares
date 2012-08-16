@@ -31,11 +31,23 @@ THE SOFTWARE.
 struct iCurvedMeshCreator;
 struct iRoomMeshCreator;
 
+// The asset manager knows four kinds of paths:
+// - VFS paths: this is a path on the VFS file system
+// - Real paths: this is a path on the real filesystem. It is OS
+//   dependend (\ or /)
+// - Mountable path: this is a real path where all \ or / have been
+//   converted to $/ so that it can be used with vfs->Mount.
+// - Normalized path: this is a normalized real path. It is normalized in
+//   two ways: if it is a path relative to the asset path (the list of
+//   real directories that are mounted to /assets) then this asset path
+//   will be indicated with $#. In addition slashes are all converted
+//   to '/'
+
 class ARES_EXPORT Asset
 {
 private:
-  csString file;
-  csString realPath;	// Real path supporting $# notation (in asset path)
+  csString file;	// A simple filename ('library', 'world', ...)
+  csString normPath;	// Normalized path for the file.
   csString mountPoint;	// If given then this mount point must be used.
   bool saveDynfacts;
   bool saveTemplates;
@@ -51,11 +63,11 @@ public:
     saveQuests (saveQuests), saveLightFacts (saveLightFacts)
   { }
 
-  void SetRealPath (const char* p) { realPath = p; }
+  void SetNormalizedPath (const char* p) { normPath = p; }
   void SetMountPoint (const char* m) { mountPoint = m; }
 
   const csString& GetFile () const { return file; }
-  const csString& GetRealPath () const { return realPath; }
+  const csString& GetNormalizedPath () const { return normPath; }
   const csString& GetMountPoint () const { return mountPoint; }
 
   void SetDynfactSavefile (bool e) { saveDynfacts = e; }
@@ -94,7 +106,7 @@ private:
 
   bool SaveAsset (iDocumentSystem* docsys, const Asset& asset);
   bool HasAsset (const Asset& a);
-  bool LoadAsset (const csString& realpath, const csString& file, const csString& mount);
+  bool LoadAsset (const csString& normpath, const csString& file, const csString& mount);
 
 public:
   WorldLoader (iObjectRegistry* object_reg);
@@ -107,8 +119,27 @@ public:
     WorldLoader::dynworld = dynworld;
   }
 
+  /**
+   * Find an asset in the asset path. The filename should be a noramlized
+   * path. If use_first_if_not_found is given then this function will use
+   * the first location in the asset path if no file was found on the path.
+   * This is useful when saving new assets.
+   * This function returns a mountable path where the appropriate prefix
+   * path from the asset path has been prepended. Or empty string if
+   * the file could not be found on the path (only if use_first_if_not_found == false).
+   */
   static csString FindAsset (iStringArray* assets, const char* filename,
     bool use_first_if_not_found = false);
+
+  /**
+   * Load a file from a path and set the parsed document or null on error.
+   * In case of error an error string is also returned.
+   * Note that a non-existing file is not an error. In that case doc will be null
+   * but the error string will be empty.
+   */
+  static csString LoadDocument (iObjectRegistry* object_reg,
+      csRef<iDocument>& doc,
+      const char* vfspath, const char* file);
 
   /**
    * Get the currently loaded assets.

@@ -57,35 +57,73 @@ bool WorldLoader::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
+csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
+    csRef<iDocument>& doc,
+    const char* vfspath, const char* file)
+{
+  doc.Invalidate ();
+  csRef<iVFS> vfs = csQueryRegistry<iVFS> (object_reg);
+  if (vfspath) vfs->PushDir (vfspath);
+
+  csRef<iDataBuffer> buf = vfs->ReadFile (file);
+  if (vfspath) vfs->PopDir ();
+  if (!buf)
+    return "";	// No error, just a non-existing file.
+
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  doc = docsys->CreateDocument ();
+  const char* error = doc->Parse (buf->GetData ());
+  if (error)
+  {
+    doc.Invalidate ();
+    csString msg;
+    msg.Format ("Can't parse '%s': %s", file, error);
+    return msg;
+  }
+
+  return "";
+}
+
 csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
     bool use_first_if_not_found)
 {
-  // Trick: we go to == assets size in order to make sure we pick
-  // the first location when we cannot find the file.
-  for (size_t i = 0 ; i <= assets->GetSize () ; i++)
+  csString path;
+  if (csString (filename).StartsWith ("$#"))
   {
-    if (i == assets->GetSize () && !use_first_if_not_found) return "";
-    csString a = assets->Get (i % assets->GetSize ());	// Make sure to wrap around
-    if (a[a.Length ()-1] != '\\' && a[a.Length ()-1] != '/')
-      a += CS_PATH_SEPARATOR;
-    a += filename;
-    if (CS_PATH_SEPARATOR != '/')
+    filename += 2;
+
+    // Trick: we go to == assets size in order to make sure we pick
+    // the first location when we cannot find the file.
+    for (size_t i = 0 ; i <= assets->GetSize () ; i++)
     {
-      csString sep;
-      sep = CS_PATH_SEPARATOR;
-      a.ReplaceAll ("/", sep);
-    }
-    if (i == assets->GetSize () && use_first_if_not_found) return a;
-    struct stat buf;
-    if (stat (a, &buf) == 0)
-    {
-      if (S_ISREG (buf.st_mode) || S_ISDIR (buf.st_mode))
+      if (i == assets->GetSize () && !use_first_if_not_found) return "";
+      path = assets->Get (i % assets->GetSize ());	// Make sure to wrap around
+      if (path[path.Length ()-1] != '\\' && path[path.Length ()-1] != '/')
+	path += CS_PATH_SEPARATOR;
+      path += filename;
+      if (CS_PATH_SEPARATOR != '/')
       {
-	return a;
+	csString sep;
+	sep = CS_PATH_SEPARATOR;
+	path.ReplaceAll ("/", sep);
+      }
+      if (i == assets->GetSize () && use_first_if_not_found) break;
+      struct stat buf;
+      if (stat (path, &buf) == 0)
+      {
+	if (S_ISREG (buf.st_mode) || S_ISDIR (buf.st_mode))
+	  break;
       }
     }
   }
-  return "";
+  else
+    path = filename;
+  path.ReplaceAll ("/", "$/");
+  return path;
 }
 
 bool WorldLoader::LoadDoc (iDocument* doc)
@@ -101,19 +139,19 @@ bool WorldLoader::LoadDoc (iDocument* doc)
     csString value = child->GetValue ();
     if (value == "asset")
     {
-      csString realpath = child->GetAttributeValue ("path");
+      csString normpath = child->GetAttributeValue ("path");
       csString file = child->GetAttributeValue ("file");
       csString mount = child->GetAttributeValue ("mount");
       bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
       bool saveTemplates = child->GetAttributeValueAsBool ("templates");
       bool saveQuests = child->GetAttributeValueAsBool ("quests");
       bool saveLights = child->GetAttributeValueAsBool ("lights");
-      LoadAsset (realpath, file, mount);
+      LoadAsset (normpath, file, mount);
 
       Asset asset = Asset (file, saveDynfacts, saveTemplates, saveQuests,
 	    saveLights);
       asset.SetMountPoint (mount);
-      asset.SetRealPath (realpath);
+      asset.SetNormalizedPath (normpath);
       assets.Push (asset);
     }
     // Ignore the other tags. These are processed below.
@@ -189,43 +227,31 @@ bool WorldLoader::LoadFile (const char* filename)
   roomMeshCreator->DeleteRoomFactoryTemplates ();
   roomFactories.DeleteAll ();
 
-  csRef<iDocumentSystem> docsys;
-  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
-  if (!docsys)
-    docsys.AttachNew (new csTinyDocumentSystem ());
+  csRef<iDocument> doc;
+  csString error = LoadDocument (object_reg, doc, 0, filename);
+  if (!doc && error.IsEmpty ())
+    error.Format ("ERROR reading file '%s'", filename);
+  else
+    return LoadDoc (doc);
 
-  csRef<iDocument> doc = docsys->CreateDocument ();
-  csRef<iDataBuffer> buf = vfs->ReadFile (filename);
-  if (!buf)
-  {
-    printf ("ERROR reading file '%s'\n", filename);
-    return false;
-  }
-  const char* error = doc->Parse (buf->GetData ());
-  if (error)
-  {
-    printf ("ERROR: %s\n", error);
-    return false;
-  }
-
-  return LoadDoc (doc);
+  printf ("%s\n", error.GetData ());
+  return false;
 }
 
-bool WorldLoader::LoadAsset (const csString& realpath, const csString& file, const csString& mount)
+bool WorldLoader::LoadAsset (const csString& normpath, const csString& file, const csString& mount)
 {
   csString path;
-  if (realpath.StartsWith ("$#"))
+  if (!normpath.IsEmpty ())
   {
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-    path = FindAsset (assetPath, realpath.Slice (2));
+    path = FindAsset (assetPath, normpath);
     if (path == "")
     {
       // @@@ Proper reporting
-      printf ("Cannot find asset '%s' in the asset path!\n", realpath.GetData ());
+      printf ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
       return false;
     }
   }
-  else path = realpath;
 
   csString rmount;
   if (mount.IsEmpty ())
@@ -270,10 +296,10 @@ bool WorldLoader::NewProject (const csArray<Asset>& newassets)
   assets = newassets;
   for (size_t i = 0 ; i < newassets.GetSize () ; i++)
   {
-    csString realpath = newassets[i].GetRealPath ();
+    csString normpath = newassets[i].GetNormalizedPath ();
     csString file = newassets[i].GetFile ();
     csString mount = newassets[i].GetMountPoint ();
-    if (!LoadAsset (realpath, file, mount))
+    if (!LoadAsset (normpath, file, mount))
       return false;
   }
   return true;
@@ -283,7 +309,7 @@ bool WorldLoader::HasAsset (const Asset& a)
 {
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
-    if (assets[i].GetRealPath () == a.GetRealPath () &&
+    if (assets[i].GetNormalizedPath () == a.GetNormalizedPath () &&
 	assets[i].GetFile () == a.GetFile () &&
 	assets[i].GetMountPoint () == a.GetMountPoint ())
     {
@@ -308,10 +334,10 @@ bool WorldLoader::UpdateAssets (const csArray<Asset>& newassets)
     const Asset& a = newassets[i];
     if (!HasAsset (a))
     {
-      csString realpath = a.GetRealPath ();
+      csString normpath = a.GetNormalizedPath ();
       csString file = a.GetFile ();
       csString mount = a.GetMountPoint ();
-      if (!LoadAsset (realpath, file, mount))
+      if (!LoadAsset (normpath, file, mount))
 	return false;
     }
   }
@@ -386,20 +412,15 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   docasset->Write (xml);
-  printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetRealPath ().GetData ());
+  printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetNormalizedPath ().GetData ());
 
   // In order to control the exact location to save we make a new temporary mount
   // point where we can save. That's to avoid the problem where an asset comes from
   // a location which is mounted on different real paths.
   // If the asset cannot be found yet then we will save to the first location on the path.
-  csString realpath = asset.GetRealPath ();
-  csString path;
-  if (realpath.StartsWith ("$#"))
-  {
-    csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-    path = FindAsset (assetPath, realpath.Slice (2), true);
-  }
-  else path = realpath;
+  csString normpath = asset.GetNormalizedPath ();
+  csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+  csString path = FindAsset (assetPath, normpath, true);
 
   vfs->Mount ("/assets/__mnt_wl__", path);
   vfs->PushDir ("/assets/__mnt_wl__");
@@ -424,8 +445,8 @@ csRef<iDocument> WorldLoader::SaveDoc ()
     const Asset& asset = assets[i];
     csRef<iDocumentNode> assetNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
     assetNode->SetValue ("asset");
-    if (!asset.GetRealPath ().IsEmpty ())
-      assetNode->SetAttribute ("path", asset.GetRealPath ());
+    if (!asset.GetNormalizedPath ().IsEmpty ())
+      assetNode->SetAttribute ("path", asset.GetNormalizedPath ());
     assetNode->SetAttribute ("file", asset.GetFile ());
     if (!asset.GetMountPoint ().IsEmpty ())
       assetNode->SetAttribute ("mount", asset.GetMountPoint ());

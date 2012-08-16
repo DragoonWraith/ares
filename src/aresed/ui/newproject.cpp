@@ -122,8 +122,8 @@ void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
   printf ("Mount: %s (file '%s')\n", (const char*)mount, (const char*)file);
   fflush(stdout);
 
-  wxTextCtrl* realpath_Text = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
-  realpath_Text->SetValue (wxString::FromUTF8 (stripped));
+  wxTextCtrl* normpath_Text = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  normpath_Text->SetValue (wxString::FromUTF8 (stripped));
 
   vfs->Unmount ("/tmp/__mnt__", 0);
   vfs->Mount ("/tmp/__mnt__", mount);
@@ -132,17 +132,9 @@ void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
 
 void NewProjectDialog::LoadManifest (const char* path, const char* file, bool override)
 {
-  csRef<iDocumentSystem> docsys;
-  docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
-  if (!docsys)
-    docsys.AttachNew (new csTinyDocumentSystem ());
-
-  csRef<iDocument> doc = docsys->CreateDocument ();
-
   csString descriptionText, mountText, fileText;
 
   vfs->PushDir (path);
-
   if (file && *file)
     fileText = file;
   else if (vfs->Exists ("library"))
@@ -151,43 +143,41 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
     fileText = "world";
   else if (vfs->Exists ("level.xml"))
     fileText = "level.xml";
+  vfs->PopDir ();
 
-  csRef<iDataBuffer> buf = vfs->ReadFile ("manifest.xml");
-  if (buf)
+  csRef<iDocument> doc;
+  csString error = WorldLoader::LoadDocument (uiManager->GetApp ()->GetObjectRegistry (),
+      doc, path, "manifest.xml");
+  if (!doc && !error.IsEmpty ())
+    descriptionText = error;
+  else if (doc)
   {
-    const char* error = doc->Parse (buf->GetData ());
-    if (error)
+    csRef<iDocumentNode> root = doc->GetRoot ();
+    csRef<iDocumentNode> manifestNode = root->GetNode ("manifest");
+    if (!manifestNode)
     {
-      descriptionText.Format ("Can't parse manifest.xml: %s", error);
+      descriptionText.Format ("Manifest.xml is not valid");
     }
     else
     {
-      csRef<iDocumentNode> root = doc->GetRoot ();
-      csRef<iDocumentNode> manifestNode = root->GetNode ("manifest");
-      if (!manifestNode)
-      {
-        descriptionText.Format ("Manifest.xml is not valid");
-      }
-      else
-      {
-	csRef<iDocumentNode> authorNode = manifestNode->GetNode ("author");
-	if (authorNode)
-	  descriptionText.AppendFmt ("Author: %s\n", authorNode->GetContentsValue ());
-	csRef<iDocumentNode> licenseNode = manifestNode->GetNode ("license");
-	if (licenseNode)
-	  descriptionText.AppendFmt ("License: %s\n", licenseNode->GetContentsValue ());
-	csRef<iDocumentNode> descriptionNode = manifestNode->GetNode ("description");
-	if (licenseNode)
-	  descriptionText.AppendFmt ("%s\n", descriptionNode->GetContentsValue ());
-	csRef<iDocumentNode> mountNode = manifestNode->GetNode ("mount");
-	if (mountNode)
-	  mountText = mountNode->GetContentsValue ();
-	csRef<iDocumentNode> fileNode = manifestNode->GetNode ("file");
-	if (fileNode)
-	  fileText = fileNode->GetContentsValue ();
-      }
+      csRef<iDocumentNode> authorNode = manifestNode->GetNode ("author");
+      if (authorNode)
+	descriptionText.AppendFmt ("Author: %s\n", authorNode->GetContentsValue ());
+      csRef<iDocumentNode> licenseNode = manifestNode->GetNode ("license");
+      if (licenseNode)
+	descriptionText.AppendFmt ("License: %s\n", licenseNode->GetContentsValue ());
+      csRef<iDocumentNode> descriptionNode = manifestNode->GetNode ("description");
+      if (licenseNode)
+	descriptionText.AppendFmt ("%s\n", descriptionNode->GetContentsValue ());
+      csRef<iDocumentNode> mountNode = manifestNode->GetNode ("mount");
+      if (mountNode)
+	mountText = mountNode->GetContentsValue ();
+      csRef<iDocumentNode> fileNode = manifestNode->GetNode ("file");
+      if (fileNode)
+	fileText = fileNode->GetContentsValue ();
     }
   }
+
   wxTextCtrl* descriptionCtrl = XRCCTRL (*this, "description_Text", wxTextCtrl);
   descriptionCtrl->SetValue (wxString::FromUTF8 (descriptionText));
   if (override)
@@ -197,8 +187,6 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
     wxTextCtrl* fileCtrl = XRCCTRL (*this, "file_Text", wxTextCtrl);
     fileCtrl->SetValue (wxString::FromUTF8 (fileText));
   }
-
-  vfs->PopDir ();
 
   ScanLoadableFile (path, fileText);
 }
@@ -218,7 +206,7 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
     csScanStr (row[5], "%b", &saveLights);
     Asset a = Asset (row[1], saveDynfacts, saveTemplates,
 	  saveQuests, saveLights);
-    a.SetRealPath (row[0]);
+    a.SetNormalizedPath (row[0]);
     a.SetMountPoint (row[6]);
     assets.Push (a);
   }
@@ -236,55 +224,43 @@ void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 
 void NewProjectDialog::ScanLoadableFile (const char* path, const char* file)
 {
-  csRef<iDocumentSystem> docsys;
-  docsys = csQueryRegistry<iDocumentSystem> (uiManager->GetApp ()->GetObjectRegistry ());
-  if (!docsys)
-    docsys.AttachNew (new csTinyDocumentSystem ());
-
-  csRef<iDocument> doc = docsys->CreateDocument ();
-  vfs->PushDir (path);
-  csRef<iDataBuffer> buf = vfs->ReadFile (file);
+  csRef<iDocument> doc;
+  csString error = WorldLoader::LoadDocument (uiManager->GetApp ()->GetObjectRegistry (),
+      doc, path, file);
   csString msg;
-  if (buf)
+  if (!doc && !error.IsEmpty ())
+    msg = error;
+  else if (doc)
   {
-    const char* error = doc->Parse (buf->GetData ());
-    if (error)
+    msg = "Empty XML";
+    csRef<iDocumentNode> root = doc->GetRoot ();
+    csRef<iDocumentNodeIterator> it = root->GetNodes ();
+    while (it->HasNext ())
     {
-      msg.Format ("Can't parse XML: %s", error);
-    }
-    else
-    {
-      msg = "Empty XML";
-      csRef<iDocumentNode> root = doc->GetRoot ();
-      csRef<iDocumentNodeIterator> it = root->GetNodes ();
-      while (it->HasNext ())
+      csRef<iDocumentNode> child = it->Next ();
+      if (child->GetType () != CS_NODE_ELEMENT) continue;
+      csString value = child->GetValue ();
+      if (value == "dynlevel") msg = "Dynamic level";
+      else if (value == "library")
       {
-        csRef<iDocumentNode> child = it->Next ();
-	if (child->GetType () != CS_NODE_ELEMENT) continue;
-        csString value = child->GetValue ();
-	if (value == "dynlevel") msg = "Dynamic level";
-	else if (value == "library")
-	{
-	  msg = "Library";
-	  ScanCSNode (msg, child);
-	}
-	else if (value == "world")
-	{
-	  msg = "World file";
-	  ScanCSNode (msg, child);
-	}
-	else msg = "Unknown XML";
-	break;
+	msg = "Library";
+	ScanCSNode (msg, child);
       }
+      else if (value == "world")
+      {
+	msg = "World file";
+	ScanCSNode (msg, child);
+      }
+      else msg = "Unknown XML";
+      break;
     }
   }
   else
   {
-    msg = "File can't load...";
+    msg.Format ("File '%s' can't load...", file);
   }
   wxStaticText* contents = XRCCTRL (*this, "contentsStaticText", wxStaticText);
   contents->SetLabel (wxString::FromUTF8 (msg.GetData ()));
-  vfs->PopDir ();
 }
 
 void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
@@ -338,16 +314,16 @@ void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
 
 void NewProjectDialog::SetPathFile (const char* file,
     bool saveDynfacts, bool saveTemplates, bool saveQuests, bool saveLights,
-    const char* realPath, const char* mount)
+    const char* normPath, const char* mount)
 {
-  wxTextCtrl* realpathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  wxTextCtrl* normpathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
   wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
   wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
   wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
   wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
-  realpathText->SetValue (wxString::FromUTF8 (realPath));
+  normpathText->SetValue (wxString::FromUTF8 (normPath));
   fileText->SetValue (wxString::FromUTF8 (file));
   mountText->SetValue (wxString::FromUTF8 (mount));
   dynfactsCheck->SetValue (saveDynfacts);
@@ -355,24 +331,22 @@ void NewProjectDialog::SetPathFile (const char* file,
   questsCheck->SetValue (saveQuests);
   lightsCheck->SetValue (saveLights);
 
-  if (file && *file && ((realPath && *realPath) || (mount && *mount)))
+  if (file && *file && ((normPath && *normPath) || (mount && *mount)))
   {
     csString path;
-    csString rp = realPath;
-    if (rp.IsEmpty () && mount && *mount)
+    if (!(normPath && *normPath) && mount && *mount)
       path = mount;
-    else if (rp.StartsWith ("$#"))
+    else
     {
       csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-      path = WorldLoader::FindAsset (assetPath, rp.Slice (2));
+      path = WorldLoader::FindAsset (assetPath, normPath);
       if (path == "")
       {
         // @@@ Proper reporting
-        printf ("Cannot find asset '%s' in the asset path!\n", realPath);
+        printf ("Cannot find asset '%s' in the asset path!\n", normPath);
         return;
       }
     }
-    else path = realPath;
     printf ("### LoadManifest %s %s\n", path.GetData (), file);
 
     vfs->Unmount ("/tmp/__mnt__", 0);
@@ -383,10 +357,10 @@ void NewProjectDialog::SetPathFile (const char* file,
 
 void NewProjectDialog::AddAsset (const char* file,
     bool dynfacts, bool templates, bool quests, bool lights,
-    const char* realPath, const char* mount)
+    const char* normPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::AddRow (assetList, realPath, file,
+  ListCtrlTools::AddRow (assetList, normPath, file,
       dynfacts ? "true" : "",
       templates ? "true" : "",
       quests ? "true" : "",
@@ -397,7 +371,7 @@ void NewProjectDialog::AddAsset (const char* file,
 
 void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
 {
-  wxTextCtrl* realPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+  wxTextCtrl* normPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
   wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
   wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
@@ -405,7 +379,7 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
   wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
   csString file = (const char*)(fileText->GetValue ().mb_str (wxConvUTF8));
-  csString realPath = (const char*)(realPathText->GetValue ().mb_str (wxConvUTF8));
+  csString normPath = (const char*)(normPathText->GetValue ().mb_str (wxConvUTF8));
   csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
   AddAsset (
       file,
@@ -413,9 +387,9 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
       templatesCheck->GetValue (),
       questsCheck->GetValue (),
       lightsCheck->GetValue (),
-      realPath,
+      normPath,
       mount);
-  SetPathFile (file, false, false, false, false, realPath, mount);
+  SetPathFile (file, false, false, false, false, normPath, mount);
 }
 
 void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
@@ -478,7 +452,7 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& asset
     const Asset& a = assets[i];
     AddAsset (a.GetFile (), a.IsDynfactSavefile (),
 	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile (),
-	a.GetRealPath (), a.GetMountPoint ());
+	a.GetNormalizedPath (), a.GetMountPoint ());
   }
   ShowModal ();
 }
