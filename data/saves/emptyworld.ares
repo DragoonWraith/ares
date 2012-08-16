@@ -1,4 +1,6 @@
 <dynlevel>
+    <asset path="$#pt_plants.zip" file="library" />
+    <asset path="$#objects/instancedFactories.zip" file="library" />
     <asset path="$#" file="testassets.xml" />
     <asset mount="/lib/krystal/" file="krystal.xml" />
     <asset mount="/lib/frankie/" file="frankie.xml" />

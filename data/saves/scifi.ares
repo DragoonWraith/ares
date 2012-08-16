@@ -1,7 +1,7 @@
 <dynlevel>
   <asset path="$#levels/scifilevel/" file="world" />
   <asset path="$#objects/modernmodels.zip" file="library" />
-  <asset path="$#objects/militaryboxa/" file="library" />
+  <asset path="$#objects/militaryboxa.zip" file="library" />
   <asset path="$#logic/" file="scifilogic.xml" dynfacts="true" templates="true" quests="true" lights="true" />
   <dynworld lastid="1000030000">
     <cell name="outside">
