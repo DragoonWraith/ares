@@ -91,6 +91,7 @@ csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
 csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
     bool use_first_if_not_found)
 {
+printf ("### FindAsset %s\n", filename); fflush (stdout);
   csString path;
   if (csString (filename).StartsWith ("$#"))
   {
@@ -113,7 +114,12 @@ csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
       }
       if (i == assets->GetSize () && use_first_if_not_found) break;
       struct stat buf;
-      if (stat (path, &buf) == 0)
+      csString sp;
+      if (path[path.Length ()-1] == '\\' || path[path.Length ()-1] == '/')
+	sp = path.Slice (0, path.Length ()-1);
+      else
+	sp = path;
+      if (stat (sp, &buf) == 0)
       {
 	if (S_ISREG (buf.st_mode) || S_ISDIR (buf.st_mode))
 	  break;
