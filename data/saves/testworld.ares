@@ -2,7 +2,7 @@
     <asset path="$#objects/simple.zip" file="library" />
     <asset path="$#objects/pt_plants.zip" file="library" />
     <asset path="$#objects/instancedFactories.zip" file="library" />
-    <asset path="$#" file="testassets.xml" />
+    <asset path="$#objects/clutter.zip" file="library" />
     <asset mount="/lib/krystal/" file="krystal.xml" />
     <asset mount="/lib/frankie/" file="frankie.xml" />
     <asset path="$#logic/" file="dynworldFactories.xml" />
