@@ -6,7 +6,7 @@
     </plugins>
     <textures>
       <texture name="grass-texture-2.jpg">
-        <file>/appdata/textures/grass-texture-2.jpg</file>
+        <file>grass-texture-2.jpg</file>
       </texture>
     </textures>
     <shaders>
@@ -64,8 +64,8 @@
                     <position x="-128" y="-128" />
                     <basematerial>Dirt</basematerial>
                     <feederproperties>
-                      <param name="heightmap source">/appdata/landscape/heightmap.png</param>
-                      <param name="materialmap source">/appdata/landscape/materialmap.png</param>
+		      <param name="heightmap source">/assets/levels/landscape/heightmap.png</param>
+		      <param name="materialmap source">/assets/levels/landscape/materialmap.png</param>
                     </feederproperties>
                 </cell>
             </cells>

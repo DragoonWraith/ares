@@ -9,7 +9,7 @@
 
     <textures>
         <texture name="grass-texture-2.jpg">
-	    <file>/appdata/textures/grass-texture-2.jpg</file>
+	    <file>grass-texture-2.jpg</file>
 	</texture>
         <texture name="cobgrass.png">
 	    <file>/data/terrained/cobgrass.png</file>
