@@ -67,11 +67,9 @@
 								<option>0</option>
 								<flag>wxALL|wxEXPAND</flag>
 								<border>5</border>
-								<object class="wxTextCtrl" name="description_Text">
-									<style>wxTE_MULTILINE|wxTE_READONLY</style>
-									<size>350,120</size>
-									<value></value>
-									<maxlength>0</maxlength>
+								<object class="wxHtmlWindow" name="description_Html">
+									<style>wxHW_SCROLLBAR_AUTO</style>
+									<size>350,160</size>
 								</object>
 							</object>
 						</object>

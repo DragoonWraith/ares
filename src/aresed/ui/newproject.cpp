@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "common/worldload.h"
 
+#include <wx/html/htmlwin.h>
+
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(NewProjectDialog, wxDialog)
@@ -148,30 +150,32 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
     fileText = "level.xml";
   vfs->PopDir ();
 
+  descriptionText = "<html><body>";
+
   csRef<iDocument> doc;
   csString error = WorldLoader::LoadDocument (uiManager->GetApp ()->GetObjectRegistry (),
       doc, path, "manifest.xml");
   if (!doc && !error.IsEmpty ())
-    descriptionText = error;
+    descriptionText += error;
   else if (doc)
   {
     csRef<iDocumentNode> root = doc->GetRoot ();
     csRef<iDocumentNode> manifestNode = root->GetNode ("manifest");
     if (!manifestNode)
     {
-      descriptionText.Format ("Manifest.xml is not valid");
+      descriptionText += "Manifest.xml is not valid";
     }
     else
     {
       csRef<iDocumentNode> authorNode = manifestNode->GetNode ("author");
       if (authorNode)
-	descriptionText.AppendFmt ("Author: %s\n", authorNode->GetContentsValue ());
+	descriptionText.AppendFmt ("<b>Author(s): </b>%s<br>", authorNode->GetContentsValue ());
       csRef<iDocumentNode> licenseNode = manifestNode->GetNode ("license");
       if (licenseNode)
-	descriptionText.AppendFmt ("License: %s\n", licenseNode->GetContentsValue ());
+	descriptionText.AppendFmt ("<b>License: </b>%s<br>", licenseNode->GetContentsValue ());
       csRef<iDocumentNode> descriptionNode = manifestNode->GetNode ("description");
       if (licenseNode)
-	descriptionText.AppendFmt ("%s\n", descriptionNode->GetContentsValue ());
+	descriptionText.AppendFmt ("%s<br>", descriptionNode->GetContentsValue ());
       csRef<iDocumentNode> mountNode = manifestNode->GetNode ("mount");
       if (mountNode)
 	mountText = mountNode->GetContentsValue ();
@@ -181,8 +185,12 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
     }
   }
 
-  wxTextCtrl* descriptionCtrl = XRCCTRL (*this, "description_Text", wxTextCtrl);
-  descriptionCtrl->SetValue (wxString::FromUTF8 (descriptionText));
+  descriptionText += "</body></html>";
+
+  wxHtmlWindow* description_Html = XRCCTRL (*this, "description_Html", wxHtmlWindow);
+  description_Html->SetPage (wxString::FromUTF8 (descriptionText));
+
+
   if (override)
   {
     wxTextCtrl* mountCtrl = XRCCTRL (*this, "mount_Text", wxTextCtrl);
