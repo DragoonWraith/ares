@@ -79,9 +79,9 @@ csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
   const char* error = doc->Parse (buf->GetData ());
   if (error)
   {
-    doc.Invalidate ();
     csString msg;
     msg.Format ("Can't parse '%s': %s", file, error);
+    doc.Invalidate ();
     return msg;
   }
 
@@ -91,7 +91,6 @@ csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
 csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
     bool use_first_if_not_found)
 {
-printf ("### FindAsset %s\n", filename); fflush (stdout);
   csString path;
   if (csString (filename).StartsWith ("$#"))
   {
