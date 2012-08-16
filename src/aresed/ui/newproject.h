@@ -55,6 +55,9 @@ private:
   void OnCancelButton (wxCommandEvent& event);
   void OnAddAssetButton (wxCommandEvent& event);
   void OnDelAssetButton (wxCommandEvent& event);
+  void OnUpdateAssetButton (wxCommandEvent& event);
+  void OnMoveUpButton (wxCommandEvent& event);
+  void OnMoveDownButton (wxCommandEvent& event);
   void OnAssetSelected (wxListEvent& event);
   void OnAssetDeselected (wxListEvent& event);
   void OnDirSelChange (wxCommandEvent& event);
@@ -67,6 +70,9 @@ private:
       bool saveLights, const char* normPath, const char* mount);
   void ScanLoadableFile (const char* path, const char* file);
   void ScanCSNode (csString& msg, iDocumentNode* node);
+  void UpdateAsset (int idx, const char* file,
+      bool dynfacts, bool templates, bool quests, bool lights,
+      const char* normPath, const char* mount);
   void AddAsset (const char* file,
       bool dynfacts, bool templates, bool quests, bool lights,
       const char* normPath, const char* mount);
@@ -96,6 +102,11 @@ private:
   csString ConstructRelativePath (const char* path, const char* filePath);
 
   void Setup (NewProjectCallback* cb);
+
+  /**
+   * Enable/disable buttons that have to be enabled when an asset is selected.
+   */
+  void EnableAssetButtons (bool e);
 
 public:
   NewProjectDialog (wxWindow* parent, iObjectRegistry* object_reg, UIManager* uiManager, iVFS* vfs);

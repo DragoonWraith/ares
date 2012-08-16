@@ -78,7 +78,28 @@ long ListCtrlTools::AddRow (wxListCtrl* list, const char* value, ...)
 
 long ListCtrlTools::AddRow (wxListCtrl* list, const csStringArray& values)
 {
-  long idx = list->InsertItem (list->GetItemCount (), wxString::FromUTF8 (values[0]));
+  return InsertRow (list, list->GetItemCount (), values);
+}
+
+long ListCtrlTools::InsertRow (wxListCtrl* list, int idx, const char* value, ...)
+{
+  idx = list->InsertItem (idx, wxString::FromUTF8 (value));
+  int col = 1;
+  va_list args;
+  va_start (args, value);
+  const char* value2 = va_arg (args, char*);
+  while (value2 != 0)
+  {
+    list->SetItem (idx, col++, wxString::FromUTF8 (value2));
+    value2 = va_arg (args, char*);
+  }
+  va_end (args);
+  return idx;
+}
+
+long ListCtrlTools::InsertRow (wxListCtrl* list, int idx, const csStringArray& values)
+{
+  idx = list->InsertItem (idx, wxString::FromUTF8 (values[0]));
   for (size_t col = 1 ; col < values.GetSize () ; col++)
     list->SetItem (idx, col, wxString::FromUTF8 (values[col]));
   for (size_t i = 0 ; i < values.GetSize () ; i++)

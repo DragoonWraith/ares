@@ -35,6 +35,9 @@ BEGIN_EVENT_TABLE(NewProjectDialog, wxDialog)
   EVT_BUTTON (XRCID("cancelButton"), NewProjectDialog :: OnCancelButton)
   EVT_BUTTON (XRCID("addAssetButton"), NewProjectDialog :: OnAddAssetButton)
   EVT_BUTTON (XRCID("delAssetButton"), NewProjectDialog :: OnDelAssetButton)
+  EVT_BUTTON (XRCID("updateButton"), NewProjectDialog :: OnUpdateAssetButton)
+  EVT_BUTTON (XRCID("moveUpButton"), NewProjectDialog :: OnMoveUpButton)
+  EVT_BUTTON (XRCID("moveDownButton"), NewProjectDialog :: OnMoveDownButton)
   EVT_LIST_ITEM_SELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetSelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetDeselected)
 END_EVENT_TABLE()
@@ -200,14 +203,15 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
   {
     csStringArray row = ListCtrlTools::ReadRow (assetList, i);
     bool saveDynfacts, saveTemplates, saveQuests, saveLights;
-    csScanStr (row[2], "%b", &saveDynfacts);
-    csScanStr (row[3], "%b", &saveTemplates);
-    csScanStr (row[4], "%b", &saveQuests);
-    csScanStr (row[5], "%b", &saveLights);
+    csString flags = row[2];
+    saveDynfacts = flags.GetAt (0) == 'D';
+    saveTemplates = flags.GetAt (1) == 'T';
+    saveQuests = flags.GetAt (2) == 'Q';
+    saveLights = flags.GetAt (3) == 'L';
     Asset a = Asset (row[1], saveDynfacts, saveTemplates,
 	  saveQuests, saveLights);
     a.SetNormalizedPath (row[0]);
-    a.SetMountPoint (row[6]);
+    a.SetMountPoint (row[3]);
     assets.Push (a);
   }
   callback->OkPressed (assets);
@@ -355,17 +359,31 @@ void NewProjectDialog::SetPathFile (const char* file,
   }
 }
 
+void NewProjectDialog::UpdateAsset (int idx, const char* file,
+    bool dynfacts, bool templates, bool quests, bool lights,
+    const char* normPath, const char* mount)
+{
+  wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+  csString flags;
+  flags += dynfacts ? "D" : "-";
+  flags += templates ? "T" : "-";
+  flags += quests ? "Q" : "-";
+  flags += lights ? "L" : "-";
+  ListCtrlTools::ReplaceRow (assetList, idx, normPath, file, flags.GetData (), mount,
+      (const char*)0);
+}
+
 void NewProjectDialog::AddAsset (const char* file,
     bool dynfacts, bool templates, bool quests, bool lights,
     const char* normPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::AddRow (assetList, normPath, file,
-      dynfacts ? "true" : "",
-      templates ? "true" : "",
-      quests ? "true" : "",
-      lights ? "true" : "",
-      mount,
+  csString flags;
+  flags += dynfacts ? "D" : "-";
+  flags += templates ? "T" : "-";
+  flags += quests ? "Q" : "-";
+  flags += lights ? "L" : "-";
+  ListCtrlTools::AddRow (assetList, normPath, file, flags.GetData (), mount,
       (const char*)0);
 }
 
@@ -381,15 +399,71 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   csString file = (const char*)(fileText->GetValue ().mb_str (wxConvUTF8));
   csString normPath = (const char*)(normPathText->GetValue ().mb_str (wxConvUTF8));
   csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
+    bool dynfacts = dynfactsCheck->GetValue ();
+    bool templates = templatesCheck->GetValue ();
+    bool quests = questsCheck->GetValue ();
+    bool lights = lightsCheck->GetValue ();
   AddAsset (
       file,
-      dynfactsCheck->GetValue (),
-      templatesCheck->GetValue (),
-      questsCheck->GetValue (),
-      lightsCheck->GetValue (),
-      normPath,
-      mount);
-  SetPathFile (file, false, false, false, false, normPath, mount);
+      dynfacts, templates, quests, lights,
+      normPath, mount);
+  SetPathFile (file, dynfacts, templates, quests, lights, normPath, mount);
+}
+
+void NewProjectDialog::OnMoveUpButton (wxCommandEvent& event)
+{
+  if (selIndex > 0)
+  {
+    wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+    csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
+    assetList->DeleteItem (selIndex);
+    ListCtrlTools::InsertRow (assetList, selIndex-1, row);
+    selIndex--;
+    ListCtrlTools::SelectRow (assetList, selIndex);
+  }
+}
+
+void NewProjectDialog::OnMoveDownButton (wxCommandEvent& event)
+{
+  if (selIndex >= 0)
+  {
+    wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+    if (selIndex >= assetList->GetItemCount ()-1)
+      return;
+    csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
+    assetList->DeleteItem (selIndex);
+    ListCtrlTools::InsertRow (assetList, selIndex+1, row);
+    selIndex++;
+    ListCtrlTools::SelectRow (assetList, selIndex);
+  }
+}
+
+void NewProjectDialog::OnUpdateAssetButton (wxCommandEvent& event)
+{
+  if (selIndex >= 0)
+  {
+    wxTextCtrl* normPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
+    wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
+    wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
+    wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
+    wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
+    wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
+    wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
+    csString file = (const char*)(fileText->GetValue ().mb_str (wxConvUTF8));
+    csString normPath = (const char*)(normPathText->GetValue ().mb_str (wxConvUTF8));
+    csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
+    bool dynfacts = dynfactsCheck->GetValue ();
+    bool templates = templatesCheck->GetValue ();
+    bool quests = questsCheck->GetValue ();
+    bool lights = lightsCheck->GetValue ();
+    UpdateAsset (selIndex,
+        file,
+        dynfacts, templates, quests, lights,
+        normPath, mount);
+    SetPathFile (file, dynfacts, templates, quests, lights, normPath, mount);
+    wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
+    ListCtrlTools::SelectRow (assetList, selIndex);
+  }
 }
 
 void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
@@ -403,34 +477,56 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
   }
 }
 
-void NewProjectDialog::OnAssetSelected (wxListEvent& event)
+void NewProjectDialog::EnableAssetButtons (bool e)
 {
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
-  delButton->Enable ();
+  wxButton* moveUpButton = XRCCTRL (*this, "moveUpButton", wxButton);
+  wxButton* moveDownButton = XRCCTRL (*this, "moveDownButton", wxButton);
+  wxButton* updateButton = XRCCTRL (*this, "updateButton", wxButton);
+  if (e)
+  {
+    delButton->Enable ();
+    moveUpButton->Enable ();
+    moveDownButton->Enable ();
+    updateButton->Enable ();
+  }
+  else
+  {
+    delButton->Disable ();
+    moveUpButton->Disable ();
+    moveDownButton->Disable ();
+    updateButton->Disable ();
+  }
+}
+
+void NewProjectDialog::OnAssetSelected (wxListEvent& event)
+{
+  EnableAssetButtons (true);
+
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   selIndex = event.GetIndex ();
   csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
   bool saveDynfacts, saveTemplates, saveQuests, saveLights;
-  csScanStr (row[2], "%b", &saveDynfacts);
-  csScanStr (row[3], "%b", &saveTemplates);
-  csScanStr (row[4], "%b", &saveQuests);
-  csScanStr (row[5], "%b", &saveLights);
+  csString flags = row[2];
+  saveDynfacts = flags.GetAt (0) == 'D';
+  saveTemplates = flags.GetAt (1) == 'T';
+  saveQuests = flags.GetAt (2) == 'Q';
+  saveLights = flags.GetAt (3) == 'L';
   SetPathFile (row[1], saveDynfacts, saveTemplates, saveQuests,
-      saveLights, row[0], row[6]);
+      saveLights, row[0], row[3]);
 }
 
 void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
 {
-  wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
-  delButton->Disable ();
+  EnableAssetButtons (false);
   SetPathFile ("", false, false, false, false, "", "");
 }
 
 void NewProjectDialog::Setup (NewProjectCallback* cb)
 {
   this->callback = cb;
-  wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
-  delButton->Disable ();
+  EnableAssetButtons (false);
+
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   assetList->DeleteAllItems ();
   selIndex = -1;
@@ -465,11 +561,8 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   ListCtrlTools::SetColumn (assetList, 0, "Path", 220);
   ListCtrlTools::SetColumn (assetList, 1, "File", 100);
-  ListCtrlTools::SetColumn (assetList, 2, "Dynf", 50);
-  ListCtrlTools::SetColumn (assetList, 3, "Templ", 50);
-  ListCtrlTools::SetColumn (assetList, 4, "Quest", 50);
-  ListCtrlTools::SetColumn (assetList, 5, "Light", 50);
-  ListCtrlTools::SetColumn (assetList, 6, "Mount", 100);
+  ListCtrlTools::SetColumn (assetList, 2, "Flags", 50);
+  ListCtrlTools::SetColumn (assetList, 3, "Mount", 100);
 
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   dir->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,

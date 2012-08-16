@@ -56,6 +56,16 @@ public:
   static long AddRow (wxListCtrl* list, const csStringArray& values);
 
   /**
+   * Insert a row in the list control.
+   */
+  static long InsertRow (wxListCtrl* list, int idx, const char* value, ...);
+
+  /**
+   * Insert a row in the list control.
+   */
+  static long InsertRow (wxListCtrl* list, int idx, const csStringArray& values);
+
+  /**
    * Replace a row in the list control.
    */
   static void ReplaceRow (wxListCtrl* list, int idx, const char* value, ...);
