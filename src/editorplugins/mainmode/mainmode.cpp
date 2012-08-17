@@ -887,7 +887,11 @@ bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
       sel->AddCurrentObject (newobj);
     else
     {
-      if ((!ctrl && !alt && !shift) || sel->GetSize () == 0)
+      if (sel->GetSize () == 0)
+      {
+        sel->SetCurrentObject (newobj);
+      }
+      else if (!ctrl && !alt && !shift)
       {
         if (sel->GetSize () == 1 && sel->GetFirst () == newobj)
         {
