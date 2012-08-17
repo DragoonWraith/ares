@@ -33,6 +33,7 @@ THE SOFTWARE.
 class AppAresEditWX;
 class FileReq;
 class NewProjectDialog;
+class MessageFrame;
 class CellDialog;
 class UIDialog;
 class SimpleListCtrlView;
@@ -159,6 +160,7 @@ private:
   FileReq* filereqDialog;
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
+  MessageFrame* messageFrame;
 
   int contextMenuID;
 
@@ -176,6 +178,7 @@ public:
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
+  MessageFrame* GetMessageFrame () const { return messageFrame; }
 
   /// Create a dynamically buildable dialog.
   virtual csPtr<iUIDialog> CreateDialog (const char* title);

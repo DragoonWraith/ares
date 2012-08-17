@@ -38,6 +38,8 @@
 	    <sep />
 	    <item name="&amp;Play	Ctrl+P" command="SwitchMode" args="Play" />
 	    <sep />
+	    <item name="&amp;Messages	Ctrl+M" command="Messages" />
+	    <sep />
 	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" />
 	    <item name="&amp;Save...	Ctrl+S" id="Save" command="Save" />
 	    <item name="&amp;Exit..." id="Exit" command="Exit" />

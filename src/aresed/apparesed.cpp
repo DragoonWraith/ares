@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "ui/uimanager.h"
 #include "ui/filereq.h"
 #include "ui/newproject.h"
+#include "ui/messageframe.h"
 #include "ui/celldialog.h"
 #include "camera.h"
 #include "editor/imode.h"
@@ -56,6 +57,9 @@ THE SOFTWARE.
 #include <wx/treectrl.h>
 #include <wx/notebook.h>
 #include <wx/xrc/xmlres.h>
+
+// Defined in mingw includes apparently.
+#undef SetJob
 
 void AppSelectionListener::SelectionChanged (
     const csArray<iDynamicObject*>& current_objects)
@@ -107,6 +111,31 @@ struct SaveCallback : public OKCallback
     ares->SaveFile (filename);
   }
 };
+
+class AresReporterListener :
+  public ThreadedCallable<AresReporterListener>,
+  public scfImplementation1<AresReporterListener,iReporterListener>
+{
+private:
+  AppAresEditWX* app;
+  iObjectRegistry* GetObjectRegistry() const { return app->GetObjectRegistry (); }
+
+public:
+  AresReporterListener (AppAresEditWX* app) : scfImplementationType (this), app (app) { }
+  virtual ~AresReporterListener () { }
+
+  THREADED_CALLABLE_DECL4(AresReporterListener, Report, csThreadReturn,
+    iReporter*, reporter, int, severity, const char*, msgId, const char*,
+    description, HIGH, false, false);
+};
+
+
+THREADED_CALLABLE_IMPL4(AresReporterListener, Report, iReporter*, int severity,
+  const char* msgID, const char* description)
+{
+  app->GetUIManager ()->GetMessageFrame ()->ReceiveMessage (severity, msgID, description);
+  return true;
+}
 
 // =========================================================================
 
@@ -479,6 +508,17 @@ bool AppAresEditWX::Initialize ()
   if (!InitWX ())
     return false;
 
+  csRef<iStandardReporterListener> stdrep = csQueryRegistry<iStandardReporterListener> (object_reg);
+  stdrep->RemoveMessages (CS_REPORTER_SEVERITY_BUG, false);
+  stdrep->RemoveMessages (CS_REPORTER_SEVERITY_ERROR, false);
+  stdrep->RemoveMessages (CS_REPORTER_SEVERITY_WARNING, false);
+  stdrep->RemoveMessages (CS_REPORTER_SEVERITY_NOTIFY, false);
+  stdrep->RemoveMessages (CS_REPORTER_SEVERITY_DEBUG, false);
+  csRef<iReporter> reporter = csQueryRegistry<iReporter> (object_reg);
+  csRef<AresReporterListener> repListener;
+  repListener.AttachNew (new AresReporterListener (this));
+  reporter->AddReporterListener (repListener);
+
   printer.AttachNew (new FramePrinter (object_reg));
 
   if (!ParseCommandLine ())
@@ -577,6 +617,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("MessageFrame.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -681,6 +722,7 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   else if (c == "Unjoin") aresed3d->UnjoinObjects ();
   else if (c == "ManageCells") uiManager->GetCellDialog ()->Show ();
   else if (c == "SwitchMode") SwitchToMode (args);
+  else if (c == "Messages") uiManager->GetMessageFrame ()->Show ();
   else return false;
   return true;
 }
