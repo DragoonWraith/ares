@@ -1,0 +1,137 @@
+<library>
+    <addon plugin="cel.addons.celentitytpl" entityname="Player" >
+      <propclass name="pcobject.mesh">
+        <action name="LoadMeshPath">
+	  <par name="path" string="/lib/frankie" />
+	  <par name="filename" string="frankie.xml" />
+          <par name="factoryname" string="franky_frankie" />
+        </action>
+      </propclass>
+      <propclass name="pcinput.standard">
+	<action name="Bind">
+	  <par name="trigger" string="MouseAxis0_centered" />
+	  <par name="command" string="mouselook" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="MouseButton0" />
+	  <par name="command" string="activate" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="MouseButton1" />
+	  <par name="command" string="examine" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="up" />
+	  <par name="command" string="forward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="down" />
+	  <par name="command" string="backward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="a" />
+	  <par name="command" string="strafeleft" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="d" />
+	  <par name="command" string="straferight" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="w" />
+	  <par name="command" string="forward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="s" />
+	  <par name="command" string="backward" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="space" />
+	  <par name="command" string="jump" />
+	</action>
+	<action name="Bind">
+	  <par name="trigger" string="i" />
+	  <par name="command" string="inventory" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="mousemove">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.mouselook" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="cel.move.actor.action.MouseMove" />
+	</action>
+	<action name="MapParameter">
+	  <par name="id" long="0" />
+	  <par name="source" string="x" />
+	  <par name="dest" string="x" />
+	</action>
+	<action name="MapParameter">
+	  <par name="id" long="0" />
+	  <par name="source" string="y" />
+	  <par name="dest" string="y" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="inventory">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.inventory.down" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.Inventory" />
+	  <par name="entity" string="World" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="down">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.activate.down" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.Activate" />
+	  <par name="entity" string="World" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="up">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.activate.up" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.StopDrag" />
+	  <par name="entity" string="World" />
+	</action>
+      </propclass>
+      <propclass name="pclogic.wire" tag="examine">
+	<action name="AddInput">
+	  <par name="mask" string="cel.input.examine.down" />
+	</action>
+	<action name="AddOutput">
+	  <par name="msgid" string="ares.controller.Examine" />
+	  <par name="entity" string="World" />
+	</action>
+      </propclass>
+      <propclass name="pctools.inventory"/>
+      <propclass name="pccamera.old">
+	<action name="SetCamera">
+	  <par name="modename" string="firstperson" />
+	  <par name="pitch" float="-.4" />
+	  <par name="fpoffset" vector3="0,1.6,0" />
+	</action>
+      </propclass>
+      <!--
+      <propclass name="pcmove.actor.dynamic">
+	<property name="speed" float=".5" />
+	<property name="jumpspeed" float="1" />
+	<property name="rotspeed" float=".5" />
+	<property name="correctup" bool="true" />
+      </propclass>
+-->
+      <propclass name="pcmove.linear">
+      </propclass>
+      <propclass name="pcmove.actor.standard">
+	<action name="SetSpeed">
+	  <par name="movement" float="5" />
+	  <par name="running" float="8" />
+	  <par name="rotation" float="2" />
+	</action>
+	<action name="Subscribe" />
+      </propclass>
+    </addon>
+</library>
