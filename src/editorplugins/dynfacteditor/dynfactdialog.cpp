@@ -2059,7 +2059,7 @@ void DynfactDialog::SetupDialogs ()
   factoryDialog->AddRow (1);
   factoryDialog->AddLabel ("Name:");
   factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue (engine,
-	  app->Get3DView ()->GetDynamicWorld ())), 0,
+	  app->Get3DView ()->GetDynamicWorld ())), 0, 300,
       "Name", "name");
 
   // The dialog for editing new attributes.
@@ -2074,7 +2074,7 @@ void DynfactDialog::SetupDialogs ()
   // The dialog for selecting a bone.
   selectBoneDialog = app->GetUI ()->CreateDialog (this, "Select Bone");
   selectBoneDialog->AddRow ();
-  selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0,
+  selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0, 200,
       "Name", "name");
 }
 

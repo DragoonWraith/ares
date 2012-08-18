@@ -188,7 +188,7 @@ void AppAresEditWX::FindObject ()
 {
   UIDialog* dialog = new UIDialog (this, "Select an object", 500, 300);
   dialog->AddRow (1);
-  dialog->AddListIndexed ("objects", aresed3d->GetObjectsValue (), 0,
+  dialog->AddListIndexed ("objects", aresed3d->GetObjectsValue (), 0, 250,
       "ID,Entity,Factory,X,Y,Z,Distance",
       DYNOBJ_COL_ID,
       DYNOBJ_COL_ENTITY,

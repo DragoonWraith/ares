@@ -169,13 +169,13 @@ void UIDialog::AddChoice (const char* name, ...)
 using namespace Ares;
 
 void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn,
-    const char* heading, const char* names)
+    int height, const char* heading, const char* names)
 {
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
   wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
       wxDefaultSize, wxLC_REPORT);
-  list->SetMinSize (wxSize (-1,150));
+  list->SetMinSize (wxSize (-1, height));
   lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   ValueListInfo info;
   info.list = list;
@@ -187,13 +187,13 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
 }
 
 void UIDialog::AddListIndexed (const char* name, Value* collectionValue, size_t valueColumn,
-    const char* heading, ...)
+    int height, const char* heading, ...)
 {
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
   wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
       wxDefaultSize, wxLC_REPORT);
-  list->SetMinSize (wxSize (-1,150));
+  list->SetMinSize (wxSize (-1, height));
   lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   ValueListInfo info;
   info.list = list;
