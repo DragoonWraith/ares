@@ -30,18 +30,26 @@ THE SOFTWARE.
 
 using namespace Ares;
 
+
 void MeshCollectionValue::UpdateChildren ()
 {
   if (!dirty) return;
   dirty = false;
   ReleaseChildren ();
   iMeshFactoryList* list = engine->GetMeshFactories ();
+  csStringArray names;
   for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
   {
     iMeshFactoryWrapper* fact = list->Get (i);
     const char* name = fact->QueryObject ()->GetName ();
     if (!dynworld->FindFactory (name))
-      NewCompositeChild (VALUE_STRING, "name", name, VALUE_NONE);
+      names.Push (name);
+  }
+  names.Sort ();
+
+  for (size_t i = 0 ; i < names.GetSize () ; i++)
+  {
+    NewCompositeChild (VALUE_STRING, "name", names[i], VALUE_NONE);
   }
 }
 
