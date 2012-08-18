@@ -186,6 +186,7 @@ i3DView* AppAresEditWX::Get3DView () const
 
 void AppAresEditWX::FindObject ()
 {
+  aresed3d->RefreshObjectsValue ();
   UIDialog* dialog = new UIDialog (this, "Select an object", 500, 300);
   dialog->AddRow (1);
   dialog->AddListIndexed ("objects", aresed3d->GetObjectsValue (), 0, 250,

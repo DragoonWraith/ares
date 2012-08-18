@@ -635,6 +635,11 @@ Ares::Value* AresEdit3DView::GetObjectsValue () const
   return objectsValue;
 }
 
+void AresEdit3DView::RefreshObjectsValue ()
+{
+  objectsValue->BuildModel ();
+}
+
 iDynamicObject* AresEdit3DView::GetDynamicObjectFromObjects (Ares::Value* value)
 {
   DynobjValue* dv = static_cast<DynobjValue*> (value);

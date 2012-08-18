@@ -386,6 +386,7 @@ public:
   virtual Ares::Value* GetDynfactCollectionValue () const;
   /// Get the objects value.
   virtual Ares::Value* GetObjectsValue () const;
+  virtual void RefreshObjectsValue ();
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
   virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj);
 
