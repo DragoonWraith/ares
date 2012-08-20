@@ -288,6 +288,20 @@ private:
    */
   void InitCell ();
 
+  /**
+   * Enable/disable physics. This function will also try to find the 'World'
+   * template and fix it.
+   */
+  void EnablePhysics (bool e);
+
+  /**
+   * Find the player template and remove all property classes that have to do
+   * with movement (both physics based as opcode based).
+   */
+  void RemovePlayerMovementPropertyClasses ();
+
+
+
 public:
   /**
    * Constructor.
@@ -397,6 +411,10 @@ public:
   /// Update all objects (after factory changes).
   void UpdateObjects ();
 
+  /// Convert the world to using physics.
+  void ConvertPhysics ();
+  /// Convert the world to using Opcode.
+  void ConvertOpcode ();
 
   /// Clear all items and categories.
   void ClearItems () { categories.DeleteAll (); }

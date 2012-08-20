@@ -719,6 +719,8 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   else if (c == "Delete") aresed3d->DeleteSelectedObjects ();
   else if (c == "UpdateObjects") aresed3d->UpdateObjects ();
   else if (c == "FindObjectDialog") FindObject ();
+  else if (c == "ConvertPhysics") aresed3d->ConvertPhysics ();
+  else if (c == "ConvertOpcode") aresed3d->ConvertOpcode ();
   else if (c == "Join") aresed3d->JoinObjects ();
   else if (c == "Unjoin") aresed3d->UnjoinObjects ();
   else if (c == "ManageCells") uiManager->GetCellDialog ()->Show ();

@@ -202,15 +202,20 @@ void PlayMode::Start ()
 
   player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
   csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
-  iRigidBody* body = mechPlayer->GetBody ();
-  csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
-  //bulletBody->MakeKinematic ();
+  iRigidBody* body = 0;
+  if (mechPlayer)
+  {
+    body = mechPlayer->GetBody ();
+    csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
+    //bulletBody->MakeKinematic ();
+  }
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
   // @@@ Need support for setting transform on pcmesh.
   pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
-  body->SetTransform (playerTrans);
+  if (body)
+    body->SetTransform (playerTrans);
 
   iELCM* elcm = view3d->GetELCM ();
   elcm->SetPlayer (player);

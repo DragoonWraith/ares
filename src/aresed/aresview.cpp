@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include "models/objects.h"
 #include "common/worldload.h"
 #include "edcommon/transformtools.h"
+#include "edcommon/inspect.h"
 
 
 /* Fun fact: should occur after csutil/event.h, otherwise, gcc may report
@@ -1522,6 +1523,134 @@ void AresEdit3DView::UpdateObjects ()
   if (!app->GetUIManager ()->Ask ("Updating all objects in this cell? Are you sure?")) return;
   dynworld->UpdateObjects (dyncell);
 }
+
+void AresEdit3DView::EnablePhysics (bool e)
+{
+  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
+  if (worldTpl)
+    for (size_t i = 0 ; i < worldTpl->GetPropertyClassTemplateCount () ; i++)
+    {
+      iCelPropertyClassTemplate* pctpl = worldTpl->GetPropertyClassTemplate (i);
+      csString pcName = pctpl->GetName ();
+      if (pcName == "pcworld.dynamic")
+      {
+	pctpl->SetProperty (pl->FetchStringID ("physics"), e);
+	break;
+      }
+    }
+  for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
+  {
+    iDynamicFactory* fact = dynworld->GetFactory (i);
+    fact->SetColliderEnabled (!e);
+  }
+  dynworld->EnablePhysics (e);
+}
+
+void AresEdit3DView::RemovePlayerMovementPropertyClasses ()
+{
+  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
+  if (!playerTpl) return;
+  csRefArray<iCelPropertyClassTemplate> toDelete;
+  for (size_t i = 0 ; i < playerTpl->GetPropertyClassTemplateCount () ; i++)
+  {
+    iCelPropertyClassTemplate* pctpl = playerTpl->GetPropertyClassTemplate (i);
+    csString pcName = pctpl->GetName ();
+    csString pcTag = pctpl->GetTag ();
+    if ((pcName == "pclogic.wire" && pcTag == "mousemove") || pcName == "pcmove.actor.standard"
+	|| pcName == "pcmove.linear" || pcName == "pcphysics.object"
+	|| pcName == "pcmove.actor.dynamic")
+      toDelete.Push (pctpl);
+  }
+  for (size_t i = 0 ; i < toDelete.GetSize () ; i++)
+    playerTpl->RemovePropertyClassTemplate (toDelete[i]);
+  toDelete.DeleteAll ();
+}
+
+void AresEdit3DView::ConvertPhysics ()
+{
+  if (!app->GetUIManager ()->Ask ("Converting the game to physics? Are you sure?")) return;
+
+  RemovePlayerMovementPropertyClasses ();
+
+  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
+  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (object_reg,
+      "cel.parameters.manager");
+  {
+    iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
+    pctpl->SetName ("pcmove.actor.dynamic");
+    pctpl->SetProperty (pl->FetchStringID ("speed"), .5f);
+    pctpl->SetProperty (pl->FetchStringID ("jumpspeed"), 1.0f);
+    pctpl->SetProperty (pl->FetchStringID ("rotspeed"), .5f);
+    pctpl->SetProperty (pl->FetchStringID ("correctup"), true);
+  }
+  {
+    iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
+    pctpl->SetName ("pcphysics.object");
+    InspectTools::AddAction (pl, pm, pctpl, "SetSystem",
+	CEL_DATA_STRING, "systempcent", "World",
+	CEL_DATA_NONE);
+    InspectTools::AddAction (pl, pm, pctpl, "SetColliderBoundingBox",
+	CEL_DATA_NONE);
+  }
+
+  EnablePhysics (true);
+}
+
+void AresEdit3DView::ConvertOpcode ()
+{
+  if (!app->GetUIManager ()->Ask ("Converting the game to Opcode? Are you sure?")) return;
+
+  RemovePlayerMovementPropertyClasses ();
+
+  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
+
+  csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (object_reg,
+      "cel.parameters.manager");
+  {
+    iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
+    pctpl->SetName ("pclogic.wire");
+    pctpl->SetTag ("mousemove");
+    InspectTools::AddAction (pl, pm, pctpl, "AddInput",
+	CEL_DATA_STRING, "mask", "cel.input.mouselook",
+	CEL_DATA_NONE);
+    InspectTools::AddAction (pl, pm, pctpl, "AddOutput",
+	CEL_DATA_STRING, "msgid", "cel.move.actor.action.MouseMove",
+	CEL_DATA_NONE);
+    InspectTools::AddAction (pl, pm, pctpl, "MapParameter",
+	CEL_DATA_LONG, "id", "0",
+	CEL_DATA_STRING, "source", "x",
+	CEL_DATA_STRING, "dest", "x",
+	CEL_DATA_NONE);
+    InspectTools::AddAction (pl, pm, pctpl, "MapParameter",
+	CEL_DATA_LONG, "id", "0",
+	CEL_DATA_STRING, "source", "y",
+	CEL_DATA_STRING, "dest", "y",
+	CEL_DATA_NONE);
+  }
+  {
+    iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
+    pctpl->SetName ("pcmove.linear");
+    InspectTools::AddAction (pl, pm, pctpl, "InitCD",
+	CEL_DATA_VECTOR3, "body", ".5,.4,.5",
+	CEL_DATA_VECTOR3, "legs", ".5,.2,.5",
+	CEL_DATA_VECTOR3, "offset", "0,0,0",
+	CEL_DATA_NONE);
+  }
+  {
+    iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
+    pctpl->SetName ("pcmove.actor.standard");
+    InspectTools::AddAction (pl, pm, pctpl, "SetSpeed",
+	CEL_DATA_FLOAT, "movement", "5",
+	CEL_DATA_FLOAT, "running", "8",
+	CEL_DATA_FLOAT, "rotation", "2",
+	CEL_DATA_NONE);
+    InspectTools::AddAction (pl, pm, pctpl, "Subscribe", CEL_DATA_NONE);
+    pctpl->SetProperty (pl->FetchStringID ("mousemove"), true);
+  }
+
+  EnablePhysics (false);
+}
+
 
 // =========================================================================
 

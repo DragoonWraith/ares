@@ -54,8 +54,6 @@ class WireMsgCollectionValue;
 class WireParCollectionValue;
 class ListSelectedValue;
 
-typedef csHash<csRef<iParameter>,csStringID> ParHash;
-
 class PropertyClassPanel : public wxPanel, public Ares::View
 {
 private:

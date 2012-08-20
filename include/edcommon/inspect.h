@@ -32,6 +32,9 @@ THE SOFTWARE.
 struct iCelPropertyClassTemplate;
 struct iCelPlLayer;
 struct iParameter;
+struct iParameterManager;
+
+typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
 class ARES_EXPORT InspectTools
 {
@@ -84,6 +87,14 @@ public:
   static void AddActionParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName,
       const char* parName, iParameter* parameter);
+
+  /**
+   * Add an action with parameters.
+   * Following the actionName is a list of celDataType/name/value tuples ended
+   * by the value CEL_DATA_NONE.
+   */
+  static void AddAction (iCelPlLayer* pl, iParameterManager* pm,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, ...);
 
   /**
    * Get the value of a parameter for an action.

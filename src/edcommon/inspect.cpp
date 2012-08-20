@@ -208,6 +208,26 @@ void InspectTools::AddActionParameter (iCelPlLayer* pl,
   AddActionParameter (pl, pctpl, idx, parName, parameter);
 }
 
+void InspectTools::AddAction (iCelPlLayer* pl, iParameterManager* pm,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, ...)
+{
+  ParHash params;
+  va_list args;
+  va_start (args, actionName);
+  celDataType type = (celDataType)va_arg (args, int);
+  while (type != CEL_DATA_NONE)
+  {
+    const char* name = va_arg (args, char*);
+    const char* value = va_arg (args, char*);
+    csRef<iParameter> par = pm->GetParameter (value, type);
+    params.Put (pl->FetchStringID (name), par);
+    type = (celDataType)va_arg (args, int);
+  }
+
+  va_end (args);
+  pctpl->PerformAction (pl->FetchStringID (actionName), params);
+}
+
 size_t InspectTools::FindActionWithParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName,
       const char* parName, const char* parValue)

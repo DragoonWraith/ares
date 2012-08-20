@@ -53,6 +53,9 @@
 	    <item name="&amp;Find Object..." command="FindObjectDialog" />
 	    <item name="&amp;Update Objects" command="UpdateObjects" />
 	    <sep />
+	    <item name="&amp;Convert to Physics..." command="ConvertPhysics" />
+	    <item name="&amp;Convert to Opcode..." command="ConvertOpcode" />
+	    <sep />
 	    <item name="&amp;Join	Ctrl+J" command="Join" />
 	    <item name="&amp;Unjoin" command="Unjoin" />
 	</menu>

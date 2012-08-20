@@ -8,8 +8,9 @@
         </action>
       </propclass>
       <propclass name="pcinput.standard">
+	<!--<property name="screenspace" bool="true" />-->
 	<action name="Bind">
-	  <par name="trigger" string="MouseAxis0_centered" />
+	  <par name="trigger" string="MouseAxis0" />
 	  <par name="command" string="mouselook" />
 	</action>
 	<action name="Bind">
@@ -108,6 +109,15 @@
 	</action>
       </propclass>
       <propclass name="pctools.inventory"/>
+
+      <propclass name="pcmove.linear">
+        <action name="InitCD" >
+          <par name="body" vector3=".5,.4,.5" />
+          <par name="legs" vector3=".5,.2,.5" />
+          <par name="offset" vector3="0,0,0" />
+	</action>
+      </propclass>
+
       <propclass name="pccamera.old">
 	<action name="SetCamera">
 	  <par name="modename" string="firstperson" />
@@ -123,8 +133,6 @@
 	<property name="correctup" bool="true" />
       </propclass>
 -->
-      <propclass name="pcmove.linear">
-      </propclass>
       <propclass name="pcmove.actor.standard">
 	<action name="SetSpeed">
 	  <par name="movement" float="5" />
@@ -132,6 +140,7 @@
 	  <par name="rotation" float="2" />
 	</action>
 	<action name="Subscribe" />
+	<property name="mousemove" bool="true" />
       </propclass>
     </addon>
 </library>
