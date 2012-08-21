@@ -36,12 +36,13 @@
 	    <item name="&amp;Manage Cells..." command="ManageCells" />
 	    <item name="&amp;Manage Dynamic Factories..." target="DynfactEditor" command="Show" />
 	    <sep />
-	    <item name="&amp;Play	Ctrl+P" command="SwitchMode" args="Play" />
+	    <item name="&amp;Play	Ctrl+P" id="Preview" command="SwitchMode" args="Play" />
 	    <sep />
 	    <item name="&amp;Messages	Ctrl+M" command="Messages" />
 	    <sep />
 	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" />
-	    <item name="&amp;Save...	Ctrl+S" id="Save" command="Save" />
+	    <item name="&amp;Save   	Ctrl+S" id="Save" command="Save" />
+	    <item name="&amp;Save As..." id="SaveAs" command="SaveAs" />
 	    <item name="&amp;Exit..." id="Exit" command="Exit" />
 	</menu>
 	<menu name="&amp;Edit">
@@ -50,7 +51,7 @@
 	    <item name="&amp;Delete" id="Delete" command="Delete" />
 	    <sep />
 	    <!--<item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />-->
-	    <item name="&amp;Find Object..." command="FindObjectDialog" />
+	    <item name="&amp;Find Object..." id="Find" command="FindObjectDialog" />
 	    <item name="&amp;Update Objects" command="UpdateObjects" />
 	    <sep />
 	    <item name="&amp;Convert to Physics..." command="ConvertPhysics" />

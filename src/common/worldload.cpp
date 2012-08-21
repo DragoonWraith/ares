@@ -417,21 +417,31 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   docasset->Write (xml);
-  printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetNormalizedPath ().GetData ());
 
   // In order to control the exact location to save we make a new temporary mount
   // point where we can save. That's to avoid the problem where an asset comes from
   // a location which is mounted on different real paths.
   // If the asset cannot be found yet then we will save to the first location on the path.
   csString normpath = asset.GetNormalizedPath ();
-  csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-  csString path = FindAsset (assetPath, normpath, true);
+  if (normpath.IsEmpty ())
+  {
+    printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetMountPoint ().GetData ());
+    vfs->PushDir (asset.GetMountPoint ());
+    vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
+    vfs->PopDir ();
+  }
+  else
+  {
+    printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetNormalizedPath ().GetData ());
+    csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+    csString path = FindAsset (assetPath, normpath, true);
 
-  vfs->Mount ("/assets/__mnt_wl__", path);
-  vfs->PushDir ("/assets/__mnt_wl__");
-  vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
-  vfs->PopDir ();
-  vfs->Unmount ("/assets/__mnt_wl__", path);
+    vfs->Mount ("/assets/__mnt_wl__", path);
+    vfs->PushDir ("/assets/__mnt_wl__");
+    vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
+    vfs->PopDir ();
+    vfs->Unmount ("/assets/__mnt_wl__", path);
+  }
   return true;
 }
 

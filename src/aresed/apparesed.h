@@ -111,6 +111,8 @@ private:
   csRef<iEditorPlugin> dynfactDialog;
 
   WorldLoader* worldLoader;
+  csString currentPath;
+  csString currentFile;
 
   static bool SimpleEventHandler (iEvent& ev);
   bool HandleEvent (iEvent& ev);
@@ -145,8 +147,10 @@ private:
   void ManageAssets ();
   void OpenFile ();
   void SaveFile ();
+  void SaveCurrentFile ();
   void Quit ();
   void FindObject ();
+  void SetCurrentFile (const char* path, const char* file);
 
   void OnNotebookChange (wxNotebookEvent& event);
   void OnNotebookChanged (wxNotebookEvent& event);

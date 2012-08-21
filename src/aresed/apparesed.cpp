@@ -240,6 +240,8 @@ void AppAresEditWX::ManageAssets (const csArray<Asset>& assets)
 
 void AppAresEditWX::NewProject (const csArray<Asset>& assets)
 {
+  SetCurrentFile ("", "");
+
   aresed3d->SetupWorld ();	// @@@ Error checking
   if (!worldLoader->NewProject (assets))
   {
@@ -258,10 +260,14 @@ bool AppAresEditWX::LoadFile (const char* filename)
 {
   if (!aresed3d->SetupWorld ())
     return false;
-  if (!worldLoader->LoadFile (filename))
+
+  SetCurrentFile (vfs->GetCwd (), filename);
+
+  if (!worldLoader->LoadFile (currentFile))
   {
     aresed3d->PostLoadMap ();
-    uiManager->Error ("Error loading file '%s'!",filename);
+    uiManager->Error ("Error loading file '%s' on path '%s'!", currentFile.GetData (),
+	currentPath.GetData ());
     return false;
   }
   if (!aresed3d->PostLoadMap ())
@@ -272,9 +278,10 @@ bool AppAresEditWX::LoadFile (const char* filename)
 
 void AppAresEditWX::SaveFile (const char* filename)
 {
+  SetCurrentFile (vfs->GetCwd (), filename);
   if (!worldLoader->SaveFile (filename))
   {
-    uiManager->Error ("Error saving file '%s'!",filename);
+    uiManager->Error ("Error saving file '%s' on path '%s'!", filename, currentPath.GetData ());
     return;
   }
 }
@@ -305,6 +312,11 @@ void AppAresEditWX::DoFrame ()
 
 void AppAresEditWX::OpenFile ()
 {
+  if (currentPath.IsEmpty ())
+    vfs->ChDir ("/saves");
+  else
+    vfs->ChDir (currentPath);
+  uiManager->GetFileReqDialog ()->SetPath (vfs->GetCwd ());
   csRef<LoadCallback> cb;
   cb.AttachNew (new LoadCallback (this));
   uiManager->GetFileReqDialog ()->Show (cb);
@@ -312,9 +324,36 @@ void AppAresEditWX::OpenFile ()
 
 void AppAresEditWX::SaveFile ()
 {
+  if (currentPath.IsEmpty ())
+    vfs->ChDir ("/saves");
+  else
+    vfs->ChDir (currentPath);
+  uiManager->GetFileReqDialog ()->SetPath (vfs->GetCwd ());
   csRef<SaveCallback> cb;
   cb.AttachNew (new SaveCallback (this));
   uiManager->GetFileReqDialog ()->Show (cb);
+}
+
+void AppAresEditWX::SetCurrentFile (const char* path, const char* file)
+{
+  currentFile = file;
+  currentPath = path;
+  csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
+  csString title = cfgmgr->GetStr ("WindowTitle", "Please set WindowTitle in AppAresEdit.cfg");
+  title.AppendFmt (": %s%s", path, file);
+  SetTitle (wxString::FromUTF8 (title));
+}
+
+void AppAresEditWX::SaveCurrentFile ()
+{
+  if (currentFile.IsEmpty ())
+    SaveFile ();
+  else
+  {
+    vfs->PushDir (currentPath);
+    SaveFile (currentFile);
+    vfs->PopDir ();
+  }
 }
 
 void AppAresEditWX::Quit ()
@@ -524,6 +563,12 @@ bool AppAresEditWX::Initialize ()
 
   if (!ParseCommandLine ())
     return false;
+
+  // Set the window title.
+  csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
+  SetTitle (wxString::FromUTF8 (cfgmgr->GetStr ("WindowTitle",
+          "Please set WindowTitle in AppAresEdit.cfg")));
+
   return true;
 }
 
@@ -712,7 +757,8 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   if (c == "NewProject") NewProject ();
   else if (c == "ManageAssets") ManageAssets ();
   else if (c == "Open") OpenFile ();
-  else if (c == "Save") SaveFile ();
+  else if (c == "Save") SaveCurrentFile ();
+  else if (c == "SaveAs") SaveFile ();
   else if (c == "Exit") Quit ();
   else if (c == "Copy") aresed3d->CopySelection ();
   else if (c == "Paste") aresed3d->StartPasteSelection ();

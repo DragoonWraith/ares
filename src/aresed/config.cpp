@@ -196,8 +196,11 @@ static int StringToId (csString s)
   if (s == "quit") return wxID_EXIT;
   if (s == "open") return wxID_OPEN;
   if (s == "save") return wxID_SAVE;
+  if (s == "saveas") return wxID_SAVEAS;
   if (s == "paste") return wxID_PASTE;
   if (s == "delete") return wxID_DELETE;
+  if (s == "preview") return wxID_PREVIEW;
+  if (s == "find") return wxID_FIND;
   return wxID_ANY;
 }
 

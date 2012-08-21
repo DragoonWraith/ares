@@ -120,6 +120,8 @@ void AresEdit3DView::Frame (iEditingMode* editMode)
   if (IsPasteSelectionActive ()) PlacePasteMarker ();
 
   g3d->BeginDraw( CSDRAW_3DGRAPHICS);
+  if (GetCsCamera ()->GetSector () == 0)
+    g3d->GetDriver2D ()->Clear (0);
   editMode->Frame3D ();
   markerMgr->Frame3D ();
 
@@ -407,6 +409,7 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
 
 bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 {
+  if (!bullet_dynSys) return false;
   csVector3 isect1, isect2;
 
   // Trace the physical beam
@@ -605,7 +608,16 @@ void AresEdit3DView::CleanupWorld ()
   camlight = 0;
   dynworld->DeleteAll ();
   dynworld->DeleteFactories ();
-  engine->DeleteAll ();
+  elcm->DeleteAll ();
+
+  //engine->DeleteAll ();
+  //@@@ CLUMSY: this would be better done by removing everything loaded from an iCollection.
+  engine->GetMeshes ()->RemoveAll ();
+  engine->GetMeshFactories ()->RemoveAll ();
+  engine->GetSectors ()->RemoveAll ();
+  engine->GetMaterialList ()->RemoveAll ();
+  engine->GetTextureList ()->RemoveAll ();
+
   pl->RemoveEntityTemplates ();
 
   sector = 0;
@@ -774,9 +786,6 @@ bool AresEdit3DView::Setup ()
   cdsys = csQueryRegistry<iCollideSystem> (r);
   if (!cdsys) return app->ReportError ("Failed to locate CD system!");
 
-  cfgmgr = csQueryRegistry<iConfigManager> (r);
-  if (!cfgmgr) return app->ReportError ("Failed to locate the configuration manager plugin!");
-
   csRef<iParameterManager> pm = csQueryRegistryOrLoad<iParameterManager> (
       r, "cel.parameters.manager");
   pm->SetRememberExpression (true);
@@ -857,12 +866,6 @@ bool AresEdit3DView::Setup ()
   view->SetRectangle (0, 0, view_width, view_height);
 
   markerMgr->SetView (view);
-
-  // Set the window title.
-  //iNativeWindow* nw = g2d->GetNativeWindow ();
-  //if (nw)
-    //nw->SetTitle (cfgmgr->GetStr ("WindowTitle",
-          //"Please set WindowTitle in AppAresEdit.cfg"));
 
   if (!SetupWorld ())
     return false;
@@ -1570,6 +1573,8 @@ void AresEdit3DView::ConvertPhysics ()
 {
   if (!app->GetUIManager ()->Ask ("Converting the game to physics? Are you sure?")) return;
 
+  selection->SetCurrentObject (0);
+
   RemovePlayerMovementPropertyClasses ();
 
   iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
@@ -1599,6 +1604,8 @@ void AresEdit3DView::ConvertPhysics ()
 void AresEdit3DView::ConvertOpcode ()
 {
   if (!app->GetUIManager ()->Ask ("Converting the game to Opcode? Are you sure?")) return;
+
+  selection->SetCurrentObject (0);
 
   RemovePlayerMovementPropertyClasses ();
 

@@ -97,8 +97,8 @@ private:
   float oldAngularDampening;
   float dragDistance;	// Distance depends on type of dragging.
   iDynamicObject* dragobj;
-  csVector3 dragOrigin; // Only for DRAGTYPE_ROTY
-  csVector3 dragAnchor;	// Only for DRAGTYPE_ROTY
+  csVector3 dragOrigin;
+  csVector3 dragAnchor;
   DragType dragType;
 
   // Icons.

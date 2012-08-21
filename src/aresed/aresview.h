@@ -148,9 +148,6 @@ private:
   int view_width;
   int view_height;
 
-  /// A pointer to the configuration manager.
-  csRef<iConfigManager> cfgmgr;
-
   /// A pointer to the sector the camera will be in.
   iSector* sector;
 

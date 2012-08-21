@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "iengine/texture.h"
 #include "iengine/camera.h"
 #include "iengine/movable.h"
+#include "iengine/sector.h"
 #include "gamecontrol.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entity.h"
@@ -230,7 +231,10 @@ void celPcGameController::Inventory ()
 {
   csRef<iPcInventory> inventory = celQueryPropertyClassEntity<iPcInventory> (
 	  player);
-  uiInventory->Open ("Inventory for player", inventory);
+  if (inventory->GetEntityCount () == 0 && inventory->GetEntityTemplateCount () == 0)
+    messenger->Message ("error", 0, "You have nothing!", (const char*)0);
+  else
+    uiInventory->Open ("Inventory for player", inventory);
 }
 
 void celPcGameController::Activate ()
@@ -365,8 +369,15 @@ void celPcGameController::TryGetDynworld ()
     }
     dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (world);
   }
-  iDynamicSystem* dynSys = dynworld->GetCurrentCell ()->GetDynamicSystem ();
-  bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+  if (dynworld->IsPhysicsEnabled ())
+  {
+    iDynamicSystem* dynSys = dynworld->GetCurrentCell ()->GetDynamicSystem ();
+    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+  }
+  else
+  {
+    bullet_dynSys = 0;
+  }
 }
 
 void celPcGameController::TryGetCamera ()
@@ -481,11 +492,21 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
   start = cam->GetTransform ().GetOrigin ();
   csVector3 end = cam->GetTransform ().This2Other (v3d);
   // Trace the physical beam
-  CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (start, end);
-  if (!result.body) return 0;
-  hitBody = result.body->QueryRigidBody ();
-  isect = result.isect;
-  return dynworld->FindObject (hitBody);
+  if (bullet_dynSys)
+  {
+    CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (start, end);
+    if (!result.body) return 0;
+    hitBody = result.body->QueryRigidBody ();
+    isect = result.isect;
+    return dynworld->FindObject (hitBody);
+  }
+  else
+  {
+    csSectorHitBeamResult result = cam->GetSector ()->HitBeamPortals (start, end);
+    if (!result.mesh) return 0;
+    isect = result.isect;
+    return dynworld->FindObject (result.mesh);
+  }
 }
 
 bool celPcGameController::StartDrag ()
@@ -509,15 +530,15 @@ bool celPcGameController::StartDrag ()
     dragobj = obj;
 
     csString dt = obj->GetFactory ()->GetAttribute (attrDragType);
+    dragOrigin = obj->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
+    dragAnchor = isect;
     if (dt == "roty")
     {
       printf ("Start roty drag!\n"); fflush (stdout);
       dragType = DRAGTYPE_ROTY;
       pcdynmove->EnableMouselook (false);
-      dragOrigin = obj->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
-      //dragOrigin.y = isect.y;
       isect.y = dragOrigin.y;
-      dragAnchor = isect;
+      dragAnchor.y = dragOrigin.y;
       dragDistance = (isect - dragOrigin).Norm ();
     }
     else if (dt == "none")
@@ -534,17 +555,24 @@ bool celPcGameController::StartDrag ()
       dragDistance = (isect - start).Norm ();
     }
 
-    dragJoint = bullet_dynSys->CreatePivotJoint ();
-    dragJoint->SetParameters (1.0f, 0.001f, 1.0f);
-    dragJoint->Attach (hitBody, isect);
+    if (bullet_dynSys)
+    {
+      dragJoint = bullet_dynSys->CreatePivotJoint ();
+      dragJoint->SetParameters (1.0f, 0.001f, 1.0f);
+      dragJoint->Attach (hitBody, isect);
 
-    // Set some dampening on the rigid body to have a more stable dragging
-    csRef<CS::Physics::Bullet::iRigidBody> csBody =
-          scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
-    oldLinearDampening = csBody->GetLinearDampener ();
-    oldAngularDampening = csBody->GetRollingDampener ();
-    csBody->SetLinearDampener (0.9f);
-    csBody->SetRollingDampener (0.9f);
+      // Set some dampening on the rigid body to have a more stable dragging
+      csRef<CS::Physics::Bullet::iRigidBody> csBody =
+            scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
+      oldLinearDampening = csBody->GetLinearDampener ();
+      oldAngularDampening = csBody->GetRollingDampener ();
+      csBody->SetLinearDampener (0.9f);
+      csBody->SetRollingDampener (0.9f);
+    }
+    else
+    {
+      // @@@ TODO: implement dragging for opcode based world?
+    }
     return true;
   }
   return false;
@@ -554,12 +582,19 @@ void celPcGameController::StopDrag ()
 {
   if (!dragobj) return;
   printf ("Stop drag!\n"); fflush (stdout);
-  csRef<CS::Physics::Bullet::iRigidBody> csBody =
-    scfQueryInterface<CS::Physics::Bullet::iRigidBody> (dragJoint->GetAttachedBody ());
-  csBody->SetLinearDampener (oldLinearDampening);
-  csBody->SetRollingDampener (oldAngularDampening);
-  bullet_dynSys->RemovePivotJoint (dragJoint);
-  dragJoint = 0;
+  if (bullet_dynSys)
+  {
+    csRef<CS::Physics::Bullet::iRigidBody> csBody =
+      scfQueryInterface<CS::Physics::Bullet::iRigidBody> (dragJoint->GetAttachedBody ());
+    csBody->SetLinearDampener (oldLinearDampening);
+    csBody->SetRollingDampener (oldAngularDampening);
+    bullet_dynSys->RemovePivotJoint (dragJoint);
+    dragJoint = 0;
+  }
+  else
+  {
+    // @@@ TODO: implement dragging for opcode based world?
+  }
   dragobj = 0;
   if (dragType == DRAGTYPE_ROTY)
     pcdynmove->EnableMouselook (true);
@@ -597,7 +632,14 @@ void celPcGameController::TickEveryFrame ()
         newPosition = dragAnchor - dragOrigin;
         newPosition.Normalize ();
         newPosition = dragOrigin + newPosition * dragDistance;
-        dragJoint->SetPosition (newPosition);
+	if (dragJoint)
+          dragJoint->SetPosition (newPosition);
+	else
+	{
+	  csReversibleTransform tr = dragobj->GetTransform ();
+	  tr.SetOrigin (newPosition - (dragAnchor-dragOrigin));
+	  dragobj->SetTransform (tr);
+	}
       }
       icon = iconDot;
     }
@@ -610,7 +652,14 @@ void celPcGameController::TickEveryFrame ()
       newPosition = end - start;
       newPosition.Normalize ();
       newPosition = cam->GetTransform ().GetOrigin () + newPosition * dragDistance;
-      dragJoint->SetPosition (newPosition);
+      if (dragJoint)
+        dragJoint->SetPosition (newPosition);
+      else
+      {
+	csReversibleTransform tr = dragobj->GetTransform ();
+	tr.SetOrigin (newPosition - (dragAnchor-dragOrigin));
+	dragobj->SetTransform (tr);
+      }
       icon = iconCursor;
     }
   }

@@ -236,6 +236,7 @@ void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
 
 void NewProjectDialog::ScanLoadableFile (const char* path, const char* file)
 {
+printf ("path=%s file=%s\n", path, file); fflush (stdout);
   csRef<iDocument> doc;
   csString error = WorldLoader::LoadDocument (uiManager->GetApp ()->GetObjectRegistry (),
       doc, path, file);
@@ -347,7 +348,11 @@ void NewProjectDialog::SetPathFile (const char* file,
   {
     csString path;
     if (!(normPath && *normPath) && mount && *mount)
+    {
       path = mount;
+      printf ("### LoadManifest mount=%s %s\n", path.GetData (), file);
+      LoadManifest (path, file, false);
+    }
     else
     {
       csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
@@ -358,12 +363,11 @@ void NewProjectDialog::SetPathFile (const char* file,
         printf ("Cannot find asset '%s' in the asset path!\n", normPath);
         return;
       }
+      printf ("### LoadManifest path=%s %s\n", path.GetData (), file);
+      vfs->Unmount ("/tmp/__mnt__", 0);
+      vfs->Mount ("/tmp/__mnt__", path);
+      LoadManifest ("/tmp/__mnt__", file, false);
     }
-    printf ("### LoadManifest %s %s\n", path.GetData (), file);
-
-    vfs->Unmount ("/tmp/__mnt__", 0);
-    vfs->Mount ("/tmp/__mnt__", path);
-    LoadManifest ("/tmp/__mnt__", file, false);
   }
 }
 
