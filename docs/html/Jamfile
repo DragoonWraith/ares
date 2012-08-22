@@ -1,0 +1,13 @@
+SubDir TOP docs html ;
+
+rule FilelistEntryManual
+{
+  FileListEntriesData $(1) : $(2) : doc-manual ;
+}
+
+CELDOCFILES_HTML = .html .jpg .jpeg .png .gif .css ;
+
+SubDir TOP docs html manual ;
+Recurse InstallDoc : $(CELDOCFILES_HTML) : html manual ;
+Recurse FilelistEntryManual : $(CELDOCFILES_HTML) ;
+

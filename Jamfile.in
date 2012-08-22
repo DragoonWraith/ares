@@ -116,3 +116,4 @@ MsvcGenConfig CEGUI.LIBS.DEBUG.10 : CEGUIBase-vc10_d.lib ;
 #MsvcGenConfig SUPERCOOL.LIBS.DEBUG : supercooldebug.lib ;
 
 SubInclude TOP src ;
+SubInclude TOP docs ;

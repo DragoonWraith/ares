@@ -1,0 +1,11 @@
+SubDir TOP docs texinfo ;
+
+{
+local alltexi = aresed.txi [ Filter [ Recurse : .txi ] : aresed.txi ] ;
+
+RepairNodes repairdoc : $(alltexi[1]) ;
+Help repairdoc : "Repair Texinfo @node and @menu directives" ;
+
+Texi2HTML manualhtml : $(alltexi) : html manual : index.html : -prefix=aresed ;
+Help manualhtml : "Convert user manual to HTML format" ;
+}

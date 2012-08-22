@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 2.4 Dynamic Factory Manager</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 2.4 Dynamic Factory Manager">
+<meta name="keywords" content="Ares Editor 0.0.1: 2.4 Dynamic Factory Manager">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Dynamic-Factory-Manager"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Cell-Manager.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="New-Project.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="New-Project.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 2.4 Dynamic Factory Manager </h2>
+
+<p>In AresEd it is not possible to directly put objects in the world unless you defined a
+dynamic factory for them. This can be done with the <samp>&lsquo;Manage Dynamic Factories&rsquo;</samp> dialog.
+This window has four major sections:
+</p>
+<ul>
+<li> <samp>&lsquo;Factory Tree&rsquo;</samp>: top-left location.
+This section shows all the dynamic factories as they are already created in the system.
+You will notice that it already contains at least the <samp>&lsquo;Player&rsquo;</samp> and <samp>&lsquo;Node&rsquo;</samp> factories
+as these are added by default in AresEd (more on these later). Using the right mouse button
+on this tree you get a menu. Selecting an item in the tree will display a preview in the preview
+section and also populate the other sections of this window.
+</li><li> <samp>&lsquo;Preview&rsquo;</samp>: top-middle location.
+This shows a preview of the currently selected object.
+</li><li> <samp>&lsquo;Attributes&rsquo;</samp>: top-right location.
+This section shows all user defined attributes for the given object. These attributes can be used
+by your game logic for example.
+</li><li> <samp>&lsquo;Detail&rsquo;</samp>: bottom location.
+This is the main part of the dialog and shows information relevant for this object.
+You can define the physics colliders here as well as any joints, pivots and bones your object
+needs.
+</li></ul>
+
+<p>To define new dynamic factories you have to use the right mouse button on the desired
+category in the factory tree (first level in the tree). Don't worry if the desired category
+isn't there yet. Just create the object first in one of the existing categories and then you can
+later move it to right category (with right mouse button on the object). Select <samp>&lsquo;New...&rsquo;</samp>
+to create a new dynamic factory. This will present you with a list of all mesh factories currently
+in memory for which there is no dynamic factory defined yet.
+</p>
+<p>After creating a dynamic factory you will most likely want to define one or more colliders. In the
+(currently empty) list of colliders below use right mouse button and select <samp>&lsquo;New&rsquo;</samp>. You can then
+change the type of the collider (default is <samp>&lsquo;Box&rsquo;</samp>) or change its attributes. In the preview
+window you can see an outline of the current collider.
+</p>
+<p>If you want objects created from this dynamic factory to be static by default (meaning they will
+never move) then you can use the <samp>&lsquo;Static&rsquo;</samp> checkbox.
+</p>
+<p>If you don't want to use physics but plan on using an opcode based game instead then you can
+use the <samp>&lsquo;Collider&rsquo;</samp> checkbox to enable an opcode based collider.
+</p>
+
+
+
+<hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Cell-Manager.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="New-Project.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="New-Project.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

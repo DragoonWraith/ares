@@ -1,0 +1,16 @@
+@c -*-texinfo-*-
+@node Working With Objects, Index, Moving Around, Top
+@chapter Working With Objects
+@cindex Working With Objects
+
+@menu
+* Creating New Objects::
+@end menu
+
+@node Creating New Objects, , Working With Objects, Working With Objects
+@section Creating New Objects
+
+Once you have created your project you can place objects in your world.
+After selecting the right factory in the factory tree on the left you can now
+use the @samp{e} key to spawn new objects.
+

@@ -1,0 +1,4 @@
+SubDir TOP docs ;
+
+SubInclude TOP docs texinfo ;
+SubInclude TOP docs html ;

@@ -1,0 +1,83 @@
+@c -*-texinfo-*-
+@node Introduction, New Project, Top, Top
+@chapter Introduction
+@cindex Introduction
+
+@menu
+* About::
+* What Is AresEd:: What Is Ares Editor
+* Concepts::
+@end menu
+
+@node About, What Is AresEd, Introduction, Introduction
+@section About
+
+Ares Editor version 0.1 (alpha software)
+
+Copyright Jorrit Tyberghein (2012)
+
+Source code under The MIT License
+
+Most art work is licensed under one of the Creative Commons licenses.
+
+@node What Is AresEd, Concepts, About, Introduction
+@section What Is Ares Editor
+
+Ares Editor is a 3D Game Creation Kit. What this means is that with AresEd
+you will be able to construct full 3D games using assets that were generated
+with Blender or another 3D modeller. Note that AresEd is *not* a modeller.
+You will have to create 3D models in Blender or get them from another source.
+
+With AresEd you can import assets (models) and place them in the 3D world as
+you wish. This placement uses a full 3D preview as it would be shown in your
+actual game and is fully physics based to allow for realistic
+setups. In addition you will be able to edit game logic using a graphic tool
+and preview your game from within the editor itself.
+
+In the future it will also be possible to edit sound, special effects, NPC
+behaviour and so on.
+
+AresEd is work in progress. There are many missing features and likely many bugs.
+Please report any bug you may find at
+@uref{http://code.google.com/p/ares/issues/list}.
+
+AresEd is based on Crystal Space for 3D rendering.
+Crystal Space is a portable modular 3D SDK, including many components for 
+building various applications and games.  For more information on Crystal 
+Space please see the
+@uref{http://www.crystalspace3d.org/,Crystal Space web page}.
+
+AresEd is also based on Crystal Entity Layer (@sc{cel}) for game logic.
+For more information on Crystal Entity Layer see the
+@uref{http://cel.crystalspace3d.org/,Crystal Entity Layer} project page.
+
+@node Concepts, , What Is AresEd, Introduction
+@section Concepts
+
+Ares Editor is based on the dynamic world plugin from @sc{cel}. This plugin
+is responsible for effecient managing of dynamic objects in a big world. An
+object in AresEd is called a @samp{dynamic object}. When you place new objects
+in the world you are creating new dynamic objects. So a dynamic object is the
+most important concept you have to deal with when using AresEd.
+
+Dynamic objects are not created out of nothing. To create a dynamic object you
+need a dynamic factory. This is a blueprint that represents the shared data
+of all dynamic objects of a certain type. A dynamic factory defines the Crystal
+Space mesh that defines the visual representation of dynamic objects created
+from this factory. It also defines certain characteristics like colliders for
+physics. Setting up your dynamic factories is one of the first things you are
+going to have to do when creating a new project in AresEd.
+
+Game logic is defined using the @sc{cel} concept called @samp{entities}. An
+@samp{entity} basically represents all necessary @samp{property classes} which
+define how an object interacts with the world and how the player can interact
+with this object. To associate this game logic with your dynamic objects you have
+to create an @samp{entity template} which is again a blueprint for creating
+@samp{entities}.
+
+The dynamic world plugin divides the world in @samp{cells}. A cell is (currently)
+one-by-one equivalent to a Crystal Space @samp{sector} but this is a limitation that
+may go away in the future. AresEd fully supports editing different cells and allows
+you to set up game logic to switch between cells at play time.
+
+

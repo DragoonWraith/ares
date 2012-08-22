@@ -1,0 +1,14 @@
+@c -*-texinfo-*-
+@node Moving Around, Working With Objects, New Project, Top
+@chapter Moving Around
+@cindex Moving Around
+
+@menu
+* Locating Objects::
+@end menu
+
+@node Locating Objects, , Moving Around, Moving Around
+@section Locating Objects
+
+todo.
+
