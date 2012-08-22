@@ -39,6 +39,7 @@ Help maintainerclean :
 MsvcGenSubDir TOP msvc : common ;
 MsvcGenSubDir TOP msvc 8 : 8 ;
 MsvcGenSubDir TOP msvc 9 : 9 ;
+MsvcGenSubDir TOP msvc 10 : 10 ;
 MsvcGenTemplateDir TOP mk msvcgen ;
 
 # Customize the build configurations to contain some defines required by
