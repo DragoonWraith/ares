@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
+	<object class="wxFrame" name="HelpFrame">
+		<style>wxDEFAULT_FRAME_STYLE|wxTAB_TRAVERSAL</style>
+		<size>500,300</size>
+		<title>Online Help</title>
+		<centered>1</centered>
+		<object class="wxHtmlWindow" name="help_Html">
+			<style>wxHW_SCROLLBAR_AUTO</style>
+		</object>
+	</object>
+</resource>
+
