@@ -166,7 +166,7 @@ public:
    * application string name identifier set with SetApplicationName().
    * \sa \ref FormatterNotes
    */
-  bool ReportError (const char* description, ...)
+  virtual bool ReportError (const char* description, ...)
   {
     va_list args;
     va_start (args, description);
@@ -196,7 +196,6 @@ public:
   void OnSize (wxSizeEvent& ev);
   void SaveFile (const char* filename);
   bool LoadFile (const char* filename);
-  void NewProject (const csArray<Asset>& assets);
   void ManageAssets (const csArray<Asset>& assets);
 
   void SwitchToMode (const char* name);

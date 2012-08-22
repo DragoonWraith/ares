@@ -53,6 +53,24 @@ SCF_IMPLEMENT_FACTORY (MainMode)
 
 //---------------------------------------------------------------------------
 
+class SpawnItemAction : public Ares::Action
+{
+private:
+  MainMode* mainMode;
+
+public:
+  SpawnItemAction (MainMode* mainMode) : mainMode (mainMode) { }
+  virtual ~SpawnItemAction () { }
+  virtual const char* GetName () const { return "Spawn Item"; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    mainMode->SpawnSelectedItem ();
+    return true;
+  }
+};
+
+//---------------------------------------------------------------------------
+
 MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Main";
@@ -77,6 +95,8 @@ void MainMode::SetParent (wxWindow* parent)
   view.SetParent (panel);
 
   view.Bind (view3d->GetDynfactCollectionValue (), "factoryTree");
+  wxTreeCtrl* factoryTree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
+  view.AddAction (factoryTree, NEWREF(Ares::Action, new SpawnItemAction(this)));
 
   view.DefineHeadingIndexed ("objectList", "Factory,Entity,ID",
       DYNOBJ_COL_FACTORY, DYNOBJ_COL_ENTITY, DYNOBJ_COL_ID);
@@ -335,6 +355,7 @@ void MainMode::OnClearStatic ()
 
 void MainMode::OnTreeSelChanged (wxTreeEvent& event)
 {
+  view3d->GetApplication ()->SetFocus3D ();
 }
 
 void MainMode::OnListSelChanged (wxListEvent& event)
@@ -609,6 +630,13 @@ csString MainMode::GetSelectedItem ()
   return csString ((const char*)tree->GetItemText (id).mb_str (wxConvUTF8));
 }
 
+void MainMode::SpawnSelectedItem ()
+{
+  csString itemName = GetSelectedItem ();
+  if (!itemName.IsEmpty ())
+    view3d->StartPasteSelection (itemName);
+}
+
 bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
 {
   if (ViewMode::OnKeyboard (ev, code))
@@ -649,9 +677,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   }
   else if (code == 'e')
   {
-    csString itemName = GetSelectedItem ();
-    if (!itemName.IsEmpty ())
-      view3d->StartPasteSelection (itemName);
+    SpawnSelectedItem ();
   }
   else if (code == 'q')
   {

@@ -61,6 +61,7 @@ private:
   void OnAssetSelected (wxListEvent& event);
   void OnAssetDeselected (wxListEvent& event);
   void OnDirSelChange (wxCommandEvent& event);
+  void OnPathSelected (wxCommandEvent& event);
 
   long selIndex;
   csRef<NewProjectCallback> callback;

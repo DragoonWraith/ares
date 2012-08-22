@@ -42,6 +42,8 @@ struct iAresEditor : public virtual iBase
   virtual iUIManager* GetUI () const = 0;
   virtual i3DView* Get3DView () const = 0;
 
+  virtual bool ReportError (const char* description, ...) = 0;
+
   /**
    * Set the focus to the 3d view so that keyboard commands work correctly.
    */

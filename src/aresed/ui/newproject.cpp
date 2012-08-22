@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "edcommon/listctrltools.h"
 #include "../apparesed.h"
 #include "common/worldload.h"
+#include "edcommon/uitools.h"
 
 #include <wx/html/htmlwin.h>
 
@@ -40,6 +41,7 @@ BEGIN_EVENT_TABLE(NewProjectDialog, wxDialog)
   EVT_BUTTON (XRCID("updateButton"), NewProjectDialog :: OnUpdateAssetButton)
   EVT_BUTTON (XRCID("moveUpButton"), NewProjectDialog :: OnMoveUpButton)
   EVT_BUTTON (XRCID("moveDownButton"), NewProjectDialog :: OnMoveDownButton)
+  EVT_COMBOBOX (XRCID("path_Combo"), NewProjectDialog :: OnPathSelected)
   EVT_LIST_ITEM_SELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetSelected)
   EVT_LIST_ITEM_DESELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetDeselected)
 END_EVENT_TABLE()
@@ -108,6 +110,13 @@ csString NewProjectDialog::ConstructRelativePath (const char* path, const char* 
     stripped += '/';
   }
   return stripped;
+}
+
+void NewProjectDialog::OnPathSelected (wxCommandEvent& event)
+{
+  csString path = UITools::GetValue (this, "path_Combo");
+  wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
+  dir->ExpandPath (wxString::FromUTF8 (path));
 }
 
 void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
@@ -580,6 +589,9 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
   dir->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,
 	  wxCommandEventHandler (NewProjectDialog :: OnDirSelChange), 0, this);
 
+  wxComboBox* path_Combo = XRCCTRL (*this, "path_Combo", wxComboBox);
+  path_Combo->Clear ();
+
   csRef<iCommandLineParser> cmdline = csQueryRegistry<iCommandLineParser> (object_reg);
   appDir = cmdline->GetAppDir ();
   wxString defaultdir;
@@ -591,6 +603,8 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
     // we replace '/./' with '/'.
     p.ReplaceAll ("/./", "/");
     assetPath.Push (p);
+    path_Combo->Append (wxString::FromUTF8 (p));
+
   }
   if (assetPath.GetSize () > 0)
     defaultdir = wxString::FromUTF8 (assetPath.Get (0));

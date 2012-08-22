@@ -182,7 +182,9 @@ private:
   int roomFactoryCounter;
 
   CurvedFactoryCreator* FindFactoryCreator (const char* name);
+  void DeleteFactoryCreator (const char* name);
   RoomFactoryCreator* FindRoomFactoryCreator (const char* name);
+  void DeleteRoomFactoryCreator (const char* name);
 
   /// If the factory is in this set then objects of this factory are created
   /// static by default.

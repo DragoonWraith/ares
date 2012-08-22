@@ -151,6 +151,14 @@ void PlayMode::Start ()
   view3d->GetSelection ()->SetCurrentObject (0);
   delete snapshot;
   iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+
+  if (dynworld->GetCurrentCell () == 0)
+  {
+    view3d->GetApplication ()->ReportError ("There is no cell defined in this world!");
+    view3d->GetApplication ()->SwitchToMainMode ();
+    return;
+  }
+
   dynworld->InhibitEntities (false);
   dynworld->EnableGameMode (true);
   snapshot = new DynworldSnapshot (dynworld);
@@ -215,7 +223,10 @@ void PlayMode::Start ()
   // @@@ Need support for setting transform on pcmesh.
   pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
   if (body)
+  {
+    playerTrans.RotateThis (csVector3 (0, 1, 0), M_PI);
     body->SetTransform (playerTrans);
+  }
 
   iELCM* elcm = view3d->GetELCM ();
   elcm->SetPlayer (player);

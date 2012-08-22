@@ -76,6 +76,7 @@ private:
 
 protected:
   csRef<iMeshWrapper> mesh;
+  csRef<iMeshWrapper> roomMesh;
 
 public:
   MeshView (iObjectRegistry* object_reg, wxWindow* parent);

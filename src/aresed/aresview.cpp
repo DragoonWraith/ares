@@ -501,6 +501,7 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
     {
       StopPasteMode ();
     }
+    else camera->OnMouseDown (ev, but, mouseX, mouseY);
     return true;
   }
 
@@ -669,7 +670,9 @@ void AresEdit3DView::AddItem (const char* category, const char* itemname)
   if (!categories.In (category))
     categories.Put (category, csStringArray());
   csStringArray a;
-  categories.Get (category, a).Push (itemname);
+  csStringArray& items = categories.Get (category, a);
+  if (items.FindSortedKey (itemname) == csArrayItemNotFound)
+    items.InsertSorted (itemname);
 }
 
 void AresEdit3DView::RemoveItem (const char* category, const char* itemname)
@@ -677,7 +680,7 @@ void AresEdit3DView::RemoveItem (const char* category, const char* itemname)
   if (!categories.In (category)) return;
   csStringArray a;
   csStringArray& items = categories.Get (category, a);
-  size_t idx = items.Find (itemname);
+  size_t idx = items.FindSortedKey (itemname);
   if (idx != csArrayItemNotFound)
     items.DeleteIndex (idx);
 }
@@ -926,6 +929,7 @@ bool AresEdit3DView::SetupDynWorld ()
     const char* massS = cft->GetAttribute ("mass");
     csScanStr (massS, "%f", &creator.mass);
 
+    DeleteFactoryCreator (creator.name);
     curvedFactoryCreators.Push (creator);
   }
   for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryTemplateCount () ; i++)
@@ -937,6 +941,7 @@ bool AresEdit3DView::SetupDynWorld ()
     RoomFactoryCreator creator;
     creator.name = cft->GetName ();
 
+    DeleteRoomFactoryCreator (creator.name);
     roomFactoryCreators.Push (creator);
   }
   return true;
@@ -1063,6 +1068,8 @@ bool AresEdit3DView::PostLoadMap ()
 
   if (terrainMesh)
   {
+    // @@@ How to prevent adding these colliders again! This should be done in
+    // the map!
     csRef<iTerrainSystem> terrain =
       scfQueryInterface<iTerrainSystem> (terrainMesh->GetMeshObject ());
     if (!terrain)
@@ -1160,12 +1167,32 @@ bool AresEdit3DView::SetupWorld ()
   return true;
 }
 
+void AresEdit3DView::DeleteFactoryCreator (const char* name)
+{
+  for (size_t i = 0 ; i < curvedFactoryCreators.GetSize () ; i++)
+    if (curvedFactoryCreators[i].name == name)
+    {
+      curvedFactoryCreators.DeleteIndex (i);
+      return;
+    }
+}
+
 CurvedFactoryCreator* AresEdit3DView::FindFactoryCreator (const char* name)
 {
   for (size_t i = 0 ; i < curvedFactoryCreators.GetSize () ; i++)
     if (curvedFactoryCreators[i].name == name)
       return &curvedFactoryCreators[i];
   return 0;
+}
+
+void AresEdit3DView::DeleteRoomFactoryCreator (const char* name)
+{
+  for (size_t i = 0 ; i < roomFactoryCreators.GetSize () ; i++)
+    if (roomFactoryCreators[i].name == name)
+    {
+      roomFactoryCreators.DeleteIndex (i);
+      return;
+    }
 }
 
 RoomFactoryCreator* AresEdit3DView::FindRoomFactoryCreator (const char* name)

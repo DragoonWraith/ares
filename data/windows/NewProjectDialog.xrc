@@ -53,6 +53,16 @@
 								</object>
 							</object>
 							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxComboBox" name="path_Combo">
+									<style>wxCB_READONLY</style>
+									<value></value>
+									<content />
+								</object>
+							</object>
+							<object class="sizeritem">
 								<option>1</option>
 								<flag>wxEXPAND | wxALL</flag>
 								<border>5</border>

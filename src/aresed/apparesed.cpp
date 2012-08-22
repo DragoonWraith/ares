@@ -79,17 +79,6 @@ struct ManageAssetsCallbackImp : public NewProjectCallback
   }
 };
 
-struct NewProjectCallbackImp : public NewProjectCallback
-{
-  AppAresEditWX* ares;
-  NewProjectCallbackImp (AppAresEditWX* ares) : ares (ares) { }
-  virtual ~NewProjectCallbackImp () { }
-  virtual void OkPressed (const csArray<Asset>& assets)
-  {
-    ares->NewProject (assets);
-  }
-};
-
 struct LoadCallback : public OKCallback
 {
   AppAresEditWX* ares;
@@ -235,24 +224,7 @@ void AppAresEditWX::ManageAssets (const csArray<Asset>& assets)
     uiManager->Error ("Error updating assets!");
     return;
   }
-  RefreshModes ();
-}
-
-void AppAresEditWX::NewProject (const csArray<Asset>& assets)
-{
-  SetCurrentFile ("", "");
-
-  aresed3d->SetupWorld ();	// @@@ Error checking
-  if (!worldLoader->NewProject (assets))
-  {
-    aresed3d->PostLoadMap ();
-    uiManager->Error ("Error creating project!");
-    return;
-  }
-
-  // @@@ Error handling.
   aresed3d->PostLoadMap ();
-
   RefreshModes ();
 }
 
@@ -295,9 +267,13 @@ void AppAresEditWX::ManageAssets ()
 
 void AppAresEditWX::NewProject ()
 {
-  csRef<NewProjectCallbackImp> cb;
-  cb.AttachNew (new NewProjectCallbackImp (this));
-  uiManager->GetNewProjectDialog ()->Show (cb);
+  SetCurrentFile ("", "");
+
+  aresed3d->SetupWorld ();
+  worldLoader->NewProject (csArray<Asset> ());
+  aresed3d->PostLoadMap ();
+
+  RefreshModes ();
 }
 
 bool AppAresEditWX::IsPlaying () const

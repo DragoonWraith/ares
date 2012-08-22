@@ -69,11 +69,14 @@ void MeshView::RemoveMesh ()
   {
     iSector* sector = mesh->GetMovable ()->GetSectors ()->Get (0);
     engine->RemoveObject (mesh);
+    if (roomMesh)
+      engine->RemoveObject (roomMesh);
     if (sector->GetMeshes ()->GetCount () == 0)
     {
       engine->RemoveObject (sector);
     }
     mesh = 0;
+    roomMesh = 0;
   }
 }
 
@@ -87,12 +90,21 @@ iSector* MeshView::FindSuitableSector (int& num)
     if (!engine->FindSector (name))
     {
       iSector* sector = engine->CreateSector (name);
+
+      using namespace CS::Geometry;
+      Box box (csVector3 (-1000, -1000, -1000), csVector3 (1000, 1000, 1000));
+      box.SetFlags (Primitives::CS_PRIMBOX_INSIDE);
+      roomMesh = GeneralMeshBuilder::CreateFactoryAndMesh (engine, sector,
+	  name, name, &box);
+      roomMesh->GetMeshObject ()->SetMaterialWrapper (engine->FindMaterial ("invisible"));
+
       csRef<iLight> light;
       iLightList* ll = sector->GetLights ();
-      light = engine->CreateLight (0, csVector3 (-300, 300, -300), 1000, csColor (1, 1, 1));
+      light = engine->CreateLight (0, csVector3 (-500, 500, -500), 3000, csColor (1, 1, 1));
       ll->Add (light);
-      light = engine->CreateLight (0, csVector3 (300, 300, 300), 1000, csColor (1, 1, 1));
+      light = engine->CreateLight (0, csVector3 (500, 500, 500), 3000, csColor (1, 1, 1));
       ll->Add (light);
+
       return sector;
     }
     num++;
@@ -102,11 +114,19 @@ iSector* MeshView::FindSuitableSector (int& num)
 void MeshView::RotateMesh (float seconds)
 {
   if (!mesh) return;
+
   iMovable* movable = mesh->GetMovable ();
   csReversibleTransform trans = movable->GetTransform ();
   trans.RotateThis (csVector3 (0, 1, 0), seconds);
   movable->SetTransform (trans);
   movable->UpdateMove ();
+
+  movable = roomMesh->GetMovable ();
+  trans = movable->GetTransform ();
+  trans.RotateThis (csVector3 (0, 1, 0), seconds);
+  movable->SetTransform (trans);
+  movable->UpdateMove ();
+
   UpdateImageButton ();
 }
 
@@ -336,7 +356,14 @@ void MeshView::RenderGeometry ()
 
 void MeshView::UpdateImageButton ()
 {
-  meshOnTexture->Render (mesh, handle, false);
+  meshOnTexture->PrepareRender (handle);
+  csView* view = meshOnTexture->GetView ();
+  view->GetMeshFilter().Clear ();
+  view->GetMeshFilter().AddFilterMesh (mesh, true);
+  view->GetMeshFilter().AddFilterMesh (roomMesh, true);
+  view->GetCamera()->SetSector(mesh->GetMovable()->GetSectors()->Get(0));
+  meshOnTexture->DoRender (handle, false);
+  //meshOnTexture->Render (mesh, handle, false);
 
   // Actually make sure the rendermanager renders.
   iRenderManager* rm = engine->GetRenderManager ();

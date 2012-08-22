@@ -41,6 +41,7 @@ private:
 
   void OnCloseButton (wxCommandEvent& event);
   void OnClearButton (wxCommandEvent& event);
+  void OnClose (wxCloseEvent& event);
 
   int lastMessageSeverity;
   csString lastMessageID;

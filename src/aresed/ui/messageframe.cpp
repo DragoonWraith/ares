@@ -34,6 +34,7 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(MessageFrame, wxFrame)
   EVT_BUTTON (XRCID("close_Button"), MessageFrame :: OnCloseButton)
   EVT_BUTTON (XRCID("clear_Button"), MessageFrame :: OnClearButton)
+  EVT_CLOSE(MessageFrame :: OnClose)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -41,6 +42,19 @@ END_EVENT_TABLE()
 void MessageFrame::OnCloseButton (wxCommandEvent& event)
 {
   wxFrame::Show (false);
+}
+
+void MessageFrame::OnClose (wxCloseEvent& event)
+{
+  if (event.CanVeto ())
+  {
+    wxFrame::Show (false);
+    event.Veto ();
+  }
+  else
+  {
+    Destroy ();
+  }
 }
 
 void MessageFrame::UpdateHtml ()

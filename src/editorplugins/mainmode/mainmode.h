@@ -119,6 +119,8 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
+  void SpawnSelectedItem ();
+
   void OnSnapObjects ();
   void OnStaticSelected ();
   void OnObjectNameEntered ();
