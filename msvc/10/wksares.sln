@@ -1,10 +1,10 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual C++ Express 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appares", "appares.vcproj", "{E03CB9E2-285E-D00B-3CDC-EA46625DC36F}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appares", "appares.vcxproj", "{E03CB9E2-285E-D00B-3CDC-EA46625DC36F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apparesed", "apparesed.vcproj", "{7F9EE288-75E9-73D9-CF09-6C0CC81F20E5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apparesed", "apparesed.vcxproj", "{7F9EE288-75E9-73D9-CF09-6C0CC81F20E5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpall_ares", "grpall_ares.vcproj", "{BEA4582D-13CC-716C-235A-FCE389F72A07}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpall_ares", "grpall_ares.vcxproj", "{BEA4582D-13CC-716C-235A-FCE389F72A07}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E03CB9E2-285E-D00B-3CDC-EA46625DC36F} = {E03CB9E2-285E-D00B-3CDC-EA46625DC36F}
 		{7F9EE288-75E9-73D9-CF09-6C0CC81F20E5} = {7F9EE288-75E9-73D9-CF09-6C0CC81F20E5}
@@ -25,19 +25,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpall_ares", "grpall_ares.
 		{6338701E-77F1-0B7E-C779-F754B9207DFA} = {6338701E-77F1-0B7E-C779-F754B9207DFA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpapps_ares", "grpapps_ares.vcproj", "{AC865C35-BFBE-FC89-B970-45FE8DCF02ED}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpapps_ares", "grpapps_ares.vcxproj", "{AC865C35-BFBE-FC89-B970-45FE8DCF02ED}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E03CB9E2-285E-D00B-3CDC-EA46625DC36F} = {E03CB9E2-285E-D00B-3CDC-EA46625DC36F}
 		{7F9EE288-75E9-73D9-CF09-6C0CC81F20E5} = {7F9EE288-75E9-73D9-CF09-6C0CC81F20E5}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grplibs_ares", "grplibs_ares.vcproj", "{959F6EB5-8F83-8A07-4DB3-E328DE5F7103}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grplibs_ares", "grplibs_ares.vcxproj", "{959F6EB5-8F83-8A07-4DB3-E328DE5F7103}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5C8586A7-529C-7B0C-0178-3BEFF934F30B} = {5C8586A7-529C-7B0C-0178-3BEFF934F30B}
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpplugins_ares", "grpplugins_ares.vcproj", "{9D292F78-D389-D620-A016-442A680D3F9E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpplugins_ares", "grpplugins_ares.vcxproj", "{9D292F78-D389-D620-A016-442A680D3F9E}"
 	ProjectSection(ProjectDependencies) = postProject
 		{48BAD99A-4048-14FF-4C9C-2E7509AA368B} = {48BAD99A-4048-14FF-4C9C-2E7509AA368B}
 		{F4B0AAAC-3A4D-0734-D247-6E8EA481E81D} = {F4B0AAAC-3A4D-0734-D247-6E8EA481E81D}
@@ -54,56 +54,56 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpplugins_ares", "grpplugi
 		{6338701E-77F1-0B7E-C779-F754B9207DFA} = {6338701E-77F1-0B7E-C779-F754B9207DFA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcommon", "libcommon.vcproj", "{5C8586A7-529C-7B0C-0178-3BEFF934F30B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcommon", "libcommon.vcxproj", "{5C8586A7-529C-7B0C-0178-3BEFF934F30B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libedcommon", "libedcommon.vcproj", "{BC0D3283-1519-F7CE-004F-B767FEE4A54C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libedcommon", "libedcommon.vcxproj", "{BC0D3283-1519-F7CE-004F-B767FEE4A54C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgcurvemesh", "plgcurvemesh.vcproj", "{48BAD99A-4048-14FF-4C9C-2E7509AA368B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgcurvemesh", "plgcurvemesh.vcxproj", "{48BAD99A-4048-14FF-4C9C-2E7509AA368B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgcurvemode", "plgcurvemode.vcproj", "{F4B0AAAC-3A4D-0734-D247-6E8EA481E81D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgcurvemode", "plgcurvemode.vcxproj", "{F4B0AAAC-3A4D-0734-D247-6E8EA481E81D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgdynfacteditor", "plgdynfacteditor.vcproj", "{DDE460DD-0A77-1C46-BF3C-50029F813622}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgdynfacteditor", "plgdynfacteditor.vcxproj", "{DDE460DD-0A77-1C46-BF3C-50029F813622}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgdynworldload", "plgdynworldload.vcproj", "{CAF95EE0-CD20-AEC5-8418-F506ABAAC564}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgdynworldload", "plgdynworldload.vcxproj", "{CAF95EE0-CD20-AEC5-8418-F506ABAAC564}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgentitymode", "plgentitymode.vcproj", "{3A3271CB-B438-2D5E-EDF6-FC8BFFCF0B6F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgentitymode", "plgentitymode.vcxproj", "{3A3271CB-B438-2D5E-EDF6-FC8BFFCF0B6F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgfoliagemode", "plgfoliagemode.vcproj", "{3C0EEE4B-B894-8F68-C2FF-DABCA539072F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgfoliagemode", "plgfoliagemode.vcxproj", "{3C0EEE4B-B894-8F68-C2FF-DABCA539072F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plggamecontrol", "plggamecontrol.vcproj", "{E51E79E0-A706-4A4A-1725-FF8ED7F87C08}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plggamecontrol", "plggamecontrol.vcxproj", "{E51E79E0-A706-4A4A-1725-FF8ED7F87C08}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgmainmode", "plgmainmode.vcproj", "{88E5AE79-E145-EF03-D89A-2B38BF858EE0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgmainmode", "plgmainmode.vcxproj", "{88E5AE79-E145-EF03-D89A-2B38BF858EE0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgmarker", "plgmarker.vcproj", "{89FF1EE7-2C1A-CC80-C11F-17C44E7A2E56}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgmarker", "plgmarker.vcxproj", "{89FF1EE7-2C1A-CC80-C11F-17C44E7A2E56}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgnature", "plgnature.vcproj", "{D54793E1-AF2F-30B4-9DF3-13F0B28BB3C5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgnature", "plgnature.vcxproj", "{D54793E1-AF2F-30B4-9DF3-13F0B28BB3C5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgplaymode", "plgplaymode.vcproj", "{09434ADA-558A-5763-ED95-2AB4C0086A26}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgplaymode", "plgplaymode.vcxproj", "{09434ADA-558A-5763-ED95-2AB4C0086A26}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgroommode", "plgroommode.vcproj", "{11B180F7-0418-5363-6A82-C114A54E0D34}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgroommode", "plgroommode.vcxproj", "{11B180F7-0418-5363-6A82-C114A54E0D34}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgrooms", "plgrooms.vcproj", "{6338701E-77F1-0B7E-C779-F754B9207DFA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plgrooms", "plgrooms.vcxproj", "{6338701E-77F1-0B7E-C779-F754B9207DFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

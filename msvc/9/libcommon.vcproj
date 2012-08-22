@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding = "Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
-	Name="appares"
-	ProjectGUID="{E03CB9E2-285E-D00B-3CDC-EA46625DC36F}"
+	Version="9.00"
+	Name="libcommon"
+	ProjectGUID="{5C8586A7-529C-7B0C-0178-3BEFF934F30B}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,11 +13,9 @@
 	<Configurations>
             		<Configuration
 			Name="Release (with static libs)|Win32"
-			OutputDirectory="..\..\out\release8\build\appares\"
-			IntermediateDirectory="..\..\out\release8\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
-			WholeProgramOptimization="1"
+			OutputDirectory="..\..\out\release9\build\libcommon\"
+			IntermediateDirectory="..\..\out\release9\build\libcommon\"
+			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -27,14 +25,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8\build\appares\Win32\ares.pdb"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
+				ProgramDataBaseFileName="..\..\out\release9\build\libcommon\Win32\common.pdb"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\release8\build\appares\"
-				ObjectFile="..\..\out\release8\build\appares\"
+				PrecompiledHeaderFile="..\..\out\release9\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\release9\build\libcommon\"
+				ObjectFile="..\..\out\release9\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -51,27 +49,25 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\release8\build\appares\Win32\ares.pdb"
-				SubSystem="2"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="..\..\out\release9\libs\libcommon.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\release9\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\release8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\release9\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release9\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -79,8 +75,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -89,10 +85,9 @@
 		</Configuration>
       		<Configuration
 			Name="Release (with DLLs)|Win32"
-			OutputDirectory="..\..\out\release8\build\appares\"
-			IntermediateDirectory="..\..\out\release8\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\release9\build\libcommon\"
+			IntermediateDirectory="..\..\out\release9\build\libcommon\"
+			ConfigurationType="2"
 			WholeProgramOptimization="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -103,14 +98,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8\build\appares\Win32\ares.pdb"
+				ProgramDatabaseFileName="..\..\out\release9\build\libcommon\Win32\common-0.1-vc9.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\release8\build\appares\"
-				ObjectFile="..\..\out\release8\build\appares\"
+				PrecompiledHeaderFile="..\..\out\release9\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\release9\build\libcommon\"
+				ObjectFile="..\..\out\release9\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -127,13 +122,13 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\release8\build\appares\Win32\ares.pdb"
-				SubSystem="2"
+                        OutputFile="..\..\common-0.1-vc9.dll"
+				ImportLibrary="..\..\out\release9\libs\libcommon.lib"
+				ProgramDatabaseFile="..\..\out\release9\build\libcommon\Win32\common-0.1-vc9.pdb"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCLibrarianTool"
@@ -144,10 +139,10 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\release9\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\release8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\release9\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release9\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -155,8 +150,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -165,10 +160,9 @@
 		</Configuration>
                 		<Configuration
 			Name="Debug (with static libs)|Win32"
-			OutputDirectory="..\..\out\debug8\build\appares\"
-			IntermediateDirectory="..\..\out\debug8\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug9\build\libcommon\"
+			IntermediateDirectory="..\..\out\debug9\build\libcommon\"
+			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -178,14 +172,14 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8\build\appares\Win32\ares.pdb"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
+				ProgramDataBaseFileName="..\..\out\debug9\build\libcommon\Win32\common.pdb"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\debug8\build\appares\"
-				ObjectFile="..\..\out\debug8\build\appares\"
+				PrecompiledHeaderFile="..\..\out\debug9\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\debug9\build\libcommon\"
+				ObjectFile="..\..\out\debug9\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -200,27 +194,25 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\debug8\build\appares\Win32\ares.pdb"
-				SubSystem="1"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="..\..\out\debug9\libs\libcommon_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\debug9\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\debug8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\debug9\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug9\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -228,8 +220,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -238,10 +230,9 @@
 		</Configuration>
       		<Configuration
 			Name="Debug (with DLLs)|Win32"
-			OutputDirectory="..\..\out\debug8\build\appares\"
-			IntermediateDirectory="..\..\out\debug8\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug9\build\libcommon\"
+			IntermediateDirectory="..\..\out\debug9\build\libcommon\"
+			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -251,14 +242,15 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8\build\appares\Win32\ares.pdb"
+
+				ProgramDatabaseFileName="..\..\out\debug9\build\libcommon\Win32\common-0.1-vc9_d.pdb"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\debug8\build\appares\"
-				ObjectFile="..\..\out\debug8\build\appares\"
+				PrecompiledHeaderFile="..\..\out\debug9\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\debug9\build\libcommon\"
+				ObjectFile="..\..\out\debug9\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -273,13 +265,13 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\debug8\build\appares\Win32\ares.pdb"
-				SubSystem="1"
+                        OutputFile="..\..\common-0.1-vc9_d.dll"
+				ImportLibrary="..\..\out\debug9\libs\libcommon_d.lib"
+				ProgramDatabaseFile="..\..\out\debug9\build\libcommon\Win32\common-0.1-vc9_d.pdb"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCLibrarianTool"
@@ -290,10 +282,10 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\debug9\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\debug8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\debug9\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug9\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -301,8 +293,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -311,11 +303,9 @@
 		</Configuration>
                         		<Configuration
 			Name="Release (with static libs)|x64"
-			OutputDirectory="..\..\out\release8-x64\build\appares\"
-			IntermediateDirectory="..\..\out\release8-x64\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
-			WholeProgramOptimization="1"
+			OutputDirectory="..\..\out\release9-x64\build\libcommon\"
+			IntermediateDirectory="..\..\out\release9-x64\build\libcommon\"
+			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -325,14 +315,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8-x64\build\appares\x64\ares.pdb"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
+				ProgramDataBaseFileName="..\..\out\release9-x64\build\libcommon\x64\common.pdb"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8-x64\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\release8-x64\build\appares\"
-				ObjectFile="..\..\out\release8-x64\build\appares\"
+				PrecompiledHeaderFile="..\..\out\release9-x64\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\release9-x64\build\libcommon\"
+				ObjectFile="..\..\out\release9-x64\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -349,27 +339,25 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\release8-x64\build\appares\x64\ares.pdb"
-				SubSystem="2"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
 				TargetMachine="17"/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="..\..\out\release9-x64\libs\libcommon.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8-x64\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\release9-x64\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\release8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8-x64\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\release9-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release9-x64\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -377,8 +365,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -387,10 +375,9 @@
 		</Configuration>
       		<Configuration
 			Name="Release (with DLLs)|x64"
-			OutputDirectory="..\..\out\release8-x64\build\appares\"
-			IntermediateDirectory="..\..\out\release8-x64\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\release9-x64\build\libcommon\"
+			IntermediateDirectory="..\..\out\release9-x64\build\libcommon\"
+			ConfigurationType="2"
 			WholeProgramOptimization="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -401,14 +388,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8-x64\build\appares\x64\ares.pdb"
+				ProgramDatabaseFileName="..\..\out\release9-x64\build\libcommon\x64\common-0.1-vc9-x64.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8-x64\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\release8-x64\build\appares\"
-				ObjectFile="..\..\out\release8-x64\build\appares\"
+				PrecompiledHeaderFile="..\..\out\release9-x64\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\release9-x64\build\libcommon\"
+				ObjectFile="..\..\out\release9-x64\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -425,13 +412,13 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\release8-x64\build\appares\x64\ares.pdb"
-				SubSystem="2"
+                        OutputFile="..\..\common-0.1-vc9-x64.dll"
+				ImportLibrary="..\..\out\release9-x64\libs\libcommon.lib"
+				ProgramDatabaseFile="..\..\out\release9-x64\build\libcommon\x64\common-0.1-vc9-x64.pdb"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc8.lib libceltool.lib"
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
 				TargetMachine="17"/>
 			<Tool
 				Name="VCLibrarianTool"
@@ -442,10 +429,10 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8-x64\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\release9-x64\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\release8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8-x64\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\release9-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release9-x64\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -453,8 +440,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -463,10 +450,9 @@
 		</Configuration>
                 		<Configuration
 			Name="Debug (with static libs)|x64"
-			OutputDirectory="..\..\out\debug8-x64\build\appares\"
-			IntermediateDirectory="..\..\out\debug8-x64\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug9-x64\build\libcommon\"
+			IntermediateDirectory="..\..\out\debug9-x64\build\libcommon\"
+			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -476,14 +462,14 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8-x64\build\appares\x64\ares.pdb"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
+				ProgramDataBaseFileName="..\..\out\debug9-x64\build\libcommon\x64\common.pdb"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8-x64\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\debug8-x64\build\appares\"
-				ObjectFile="..\..\out\debug8-x64\build\appares\"
+				PrecompiledHeaderFile="..\..\out\debug9-x64\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\debug9-x64\build\libcommon\"
+				ObjectFile="..\..\out\debug9-x64\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -498,27 +484,25 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\debug8-x64\build\appares\x64\ares.pdb"
-				SubSystem="1"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
 				TargetMachine="17"/>
 			<Tool
 				Name="VCLibrarianTool"
+				OutputFile="..\..\out\debug9-x64\libs\libcommon_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8-x64\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\debug9-x64\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\debug8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8-x64\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\debug9-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug9-x64\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -526,8 +510,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -536,10 +520,9 @@
 		</Configuration>
       		<Configuration
 			Name="Debug (with DLLs)|x64"
-			OutputDirectory="..\..\out\debug8-x64\build\appares\"
-			IntermediateDirectory="..\..\out\debug8-x64\build\appares\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug9-x64\build\libcommon\"
+			IntermediateDirectory="..\..\out\debug9-x64\build\libcommon\"
+			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -549,14 +532,15 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8-x64\build\appares\x64\ares.pdb"
+
+				ProgramDatabaseFileName="..\..\out\debug9-x64\build\libcommon\x64\common-0.1-vc9-x64_d.pdb"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;WIN32;CS_USE_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8-x64\build\appares\appares.pch"
-				AssemblerListingLocation="..\..\out\debug8-x64\build\appares\"
-				ObjectFile="..\..\out\debug8-x64\build\appares\"
+				PrecompiledHeaderFile="..\..\out\debug9-x64\build\libcommon\libcommon.pch"
+				AssemblerListingLocation="..\..\out\debug9-x64\build\libcommon\"
+				ObjectFile="..\..\out\debug9-x64\build\libcommon\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -571,13 +555,13 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\ares.exe"
-				ProgramDatabaseFile="..\..\out\debug8-x64\build\appares\x64\ares.pdb"
-				SubSystem="1"
+                        OutputFile="..\..\common-0.1-vc9-x64_d.dll"
+				ImportLibrary="..\..\out\debug9-x64\libs\libcommon_d.lib"
+				ProgramDatabaseFile="..\..\out\debug9-x64\build\libcommon\x64\common-0.1-vc9-x64_d.pdb"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc8_d.lib libceltool_d.lib"
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs;$(CEL)\libs"
+				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
 				TargetMachine="17"/>
 			<Tool
 				Name="VCLibrarianTool"
@@ -588,10 +572,10 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8-x64\build\appares\appares.tlb"/>
+				TypeLibraryName="..\..\out\debug9-x64\build\libcommon\libcommon.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="md ..\..\out\debug8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8-x64\bin\&#x0D;&#x0A;"
+				CommandLine="md ..\..\out\debug9-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug9-x64\bin\&#x0D;&#x0A;"
 				/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
@@ -599,8 +583,8 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\ares;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;PROJECTGEN_VERSION=9"
+				AdditionalIncludeDirectories=".;..\..\src\common;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -613,33 +597,14 @@
 			Name="Source Files"
 			Filter="">
 			<File
-				RelativePath="..\..\src\ares\actorsettings.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\ares\appares.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\ares\main.cpp">
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="">
-			<File
-				RelativePath="..\..\src\ares\actorsettings.h">
-			</File>
-			<File
-				RelativePath="..\..\src\ares\appares.h">
-			</File>
-			<File
-				RelativePath="..\..\src\ares\ares.h">
+				RelativePath="..\..\src\common\worldload.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="">
 			<File
-				RelativePath="..\..\msvc\appares.rc">
+				RelativePath="..\..\msvc\libcommon.rc">
 			</File>
 		</Filter>
 	</Files>

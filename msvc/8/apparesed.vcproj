@@ -613,10 +613,10 @@
 			Name="Source Files"
 			Filter="">
 			<File
-				RelativePath="..\..\src\aresed\..\common\worldload.cpp">
+				RelativePath="..\..\src\aresed\apparesed.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\apparesed.cpp">
+				RelativePath="..\..\src\aresed\aresview.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\camera.cpp">
@@ -625,37 +625,19 @@
 				RelativePath="..\..\src\aresed\camerawin.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\inspect.cpp">
+				RelativePath="..\..\src\aresed\config.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\main.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\modes\curvemode.cpp">
+				RelativePath="..\..\src\aresed\models\dynfactmodel.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\modes\editmodes.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\entitymode.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\foliagemode.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\mainmode.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\roommode.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\viewmode.cpp">
+				RelativePath="..\..\src\aresed\models\objects.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\transformtools.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\celldialog.cpp">
@@ -664,13 +646,10 @@
 				RelativePath="..\..\src\aresed\ui\filereq.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\ui\listctrltools.cpp">
+				RelativePath="..\..\src\aresed\ui\messageframe.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\newproject.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\pcdialog.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.cpp">
@@ -680,13 +659,13 @@
 			Name="Header Files"
 			Filter="">
 			<File
-				RelativePath="..\..\src\aresed\..\common\worldload.h">
-			</File>
-			<File
 				RelativePath="..\..\src\aresed\apparesed.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\aresed.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\aresview.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\camera.h">
@@ -695,34 +674,16 @@
 				RelativePath="..\..\src\aresed\camerawin.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\inspect.h">
+				RelativePath="..\..\src\aresed\config.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\modes\curvemode.h">
+				RelativePath="..\..\src\aresed\models\dynfactmodel.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\modes\editmodes.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\entitymode.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\foliagemode.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\mainmode.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\roommode.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\modes\viewmode.h">
+				RelativePath="..\..\src\aresed\models\objects.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\transformtools.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\celldialog.h">
@@ -731,13 +692,10 @@
 				RelativePath="..\..\src\aresed\ui\filereq.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\ui\listctrltools.h">
+				RelativePath="..\..\src\aresed\ui\messageframe.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\newproject.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\pcdialog.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.h">

@@ -54,7 +54,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\release9\build\appares\Win32\ares.pdb"
 				SubSystem="2"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc9.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
@@ -130,7 +130,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\release9\build\appares\Win32\ares.pdb"
 				SubSystem="2"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc9.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
@@ -203,7 +203,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\debug9\build\appares\Win32\ares.pdb"
 				SubSystem="1"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc9_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
@@ -276,7 +276,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\debug9\build\appares\Win32\ares.pdb"
 				SubSystem="1"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc9_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
@@ -352,7 +352,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\release9-x64\build\appares\x64\ares.pdb"
 				SubSystem="2"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc9.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
@@ -428,7 +428,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\release9-x64\build\appares\x64\ares.pdb"
 				SubSystem="2"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace.lib CEGUIBase-vc9.lib libceltool.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs;$(CEL)\libs"
@@ -501,7 +501,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\debug9-x64\build\appares\x64\ares.pdb"
 				SubSystem="1"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc9_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
@@ -574,7 +574,7 @@
 				OutputFile="..\..\ares.exe"
 				ProgramDatabaseFile="..\..\out\debug9-x64\build\appares\x64\ares.pdb"
 				SubSystem="1"
-				AdditionalOptions="-lCEGUIBase "
+				AdditionalOptions=" "
 				AdditionalDependencies="libcrystalspace_d.lib CEGUIBase-vc9_d.lib libceltool_d.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs;$(CEL)\libs"
@@ -613,9 +613,6 @@
 			Name="Source Files"
 			Filter="">
 			<File
-				RelativePath="..\..\src\ares\..\common\worldload.cpp">
-			</File>
-			<File
 				RelativePath="..\..\src\ares\actorsettings.cpp">
 			</File>
 			<File
@@ -628,9 +625,6 @@
 		<Filter
 			Name="Header Files"
 			Filter="">
-			<File
-				RelativePath="..\..\src\ares\..\common\worldload.h">
-			</File>
 			<File
 				RelativePath="..\..\src\ares\actorsettings.h">
 			</File>
