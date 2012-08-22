@@ -232,6 +232,7 @@ AS_IF([test $cs_cv_libwx = yes],
 	[AS_IF([test -n "$CONFIG_WX"],
 	    [cs_cv_libwx_gllibs=CS_RUN_PATH_NORMALIZE([$CONFIG_WX --gl-libs])],
 	    [cs_cv_libwx_gllibs=''])])
+    CS_CHECK_GLU
     CS_CHECK_BUILD([if wxWidgets is built with OpenGL support],
 	[cs_cv_libwx_opengl],
 	[AC_LANG_PROGRAM(
