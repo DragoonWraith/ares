@@ -88,9 +88,9 @@ void HelpFrame::SetParent (wxWindow* parent)
   wxHtmlWindow* help_Html = XRCCTRL (*this, "help_Html", wxHtmlWindow);
   help_Html->LoadPage (wxString::FromUTF8 ("docs/html/manual/index.html"));
 
-  SetSize (700, 600);
   Layout ();
   Fit ();
+  SetSize (700, 600);
 }
 
 HelpFrame::~HelpFrame ()
