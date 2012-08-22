@@ -900,16 +900,14 @@ void AresEdit3DView::RefreshFactorySettings (iDynamicFactory* fact)
 
 bool AresEdit3DView::SetupDynWorld ()
 {
-  csString playerName = "Player";
-  csString nodeName = "Node";
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
-    if (playerName == fact->GetName () || nodeName == fact->GetName ()) continue;
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     RefreshFactorySettings (fact);
     const char* category = fact->GetAttribute ("category");
+    if (!category) category = "Nodes";
     AddItem (category, fact->GetName ());
   }
 
@@ -980,6 +978,17 @@ iDynamicObject* AresEdit3DView::FindPlayerObject (iDynamicCell* cell)
 
 bool AresEdit3DView::PostLoadMap ()
 {
+  if (!dynworld->FindFactory ("Node"))
+  {
+    iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
+    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
+  }
+  if (!dynworld->FindFactory ("Player"))
+  {
+    iDynamicFactory* fact = dynworld->AddFactory ("Player", 1.0, -1);
+    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
+  }
+
   // Make a default cell if there isn't one already.
   {
     csRef<iDynamicCellIterator> cellit = dynworld->GetCells ();
@@ -1140,8 +1149,6 @@ bool AresEdit3DView::SetupWorld ()
 
   if (!LoadLibrary ("/aresnode/", "library"))
     return app->ReportError ("Error loading library!");
-  vfs->PopDir ();
-  vfs->Unmount ("/aresnode", "data$/node.zip");
 
   dyncell = 0;
   dynSys = 0;
@@ -1149,18 +1156,6 @@ bool AresEdit3DView::SetupWorld ()
   sector = 0;
 
   ClearItems ();
-  if (!dynworld->FindFactory ("Node"))
-  {
-    iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
-    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
-    AddItem ("Nodes", "Node");
-  }
-  if (!dynworld->FindFactory ("Player"))
-  {
-    iDynamicFactory* fact = dynworld->AddFactory ("Player", 1.0, -1);
-    fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
-    AddItem ("Nodes", "Player");
-  }
 
   return true;
 }
