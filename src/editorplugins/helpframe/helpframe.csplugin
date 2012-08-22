@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- helpframe.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.helpframe</name>
+        <implementation>HelpFrame</implementation>
+        <description>AresEd Help Frame</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

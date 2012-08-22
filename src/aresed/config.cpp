@@ -201,6 +201,8 @@ static int StringToId (csString s)
   if (s == "delete") return wxID_DELETE;
   if (s == "preview") return wxID_PREVIEW;
   if (s == "find") return wxID_FIND;
+  if (s == "help") return wxID_HELP_INDEX;
+  if (s == "about") return wxID_ABOUT;
   return wxID_ANY;
 }
 

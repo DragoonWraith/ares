@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins helpframe ;
+
+Description helpframe : "AresEd Help Plugin" ;
+Plugin helpframe :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs helpframe : CRYSTAL ;
+ExternalLibs helpframe : CEL ;
+ExternalLibs helpframe : WX ;
+LinkWith helpframe : edcommon ;
+

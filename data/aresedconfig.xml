@@ -4,6 +4,9 @@
 	  <resource file="DynfactDialog.xrc" />
 	  <resource file="LightEditorDialog.xrc" />
       </plugin>
+      <plugin plugin="ares.editor.helpframe">
+	  <resource file="HelpFrame.xrc" />
+      </plugin>
       <plugin plugin="ares.editor.modes.play" />
       <plugin plugin="ares.editor.modes.main" main="True" notebook="True"
       		tooltip="Main 3D object manipulation mode">
@@ -30,7 +33,7 @@
 
     <menus>
     	<menu name="&amp;File">
-	    <item name="&amp;New project..." id="New" command="NewProject" />
+	    <item name="&amp;New project" id="New" command="NewProject" />
 	    <item name="&amp;Manage Assets..." command="ManageAssets" />
 	    <!-- <item name="&amp;Manage Cells..." target="CellDialog" command="Show" />-->
 	    <item name="&amp;Manage Cells..." command="ManageCells" />
@@ -70,6 +73,10 @@
 	    <item name="&amp;Align Height" target="Main" command="AlignHeight" />
 	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" />
 	    <item name="&amp;Stack Objects" target="Main" command="StackObj" />
+	</menu>
+	<menu name="&amp;Help">
+	    <item name="&amp;Online Help" id="Help" target="Help" command="Show" />
+	    <item name="&amp;About" id="About" target="Help" command="About" />
 	</menu>
     </menus>
 
