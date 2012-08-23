@@ -640,6 +640,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("MessageFrame.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -748,6 +749,7 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   else if (c == "ManageCells") uiManager->GetCellDialog ()->Show ();
   else if (c == "SwitchMode") SwitchToMode (args);
   else if (c == "Messages") uiManager->GetMessageFrame ()->Show ();
+  else if (c == "EntityParameters") aresed3d->EntityParameters ();
   else return false;
   return true;
 }
@@ -764,6 +766,7 @@ bool AppAresEditWX::IsCommandValid (const char* name, const char* args,
   if (c == "Delete") return selsize > 0 && mode == "Main";
   if (c == "Join") return selsize == 2 && mode == "Main";
   if (c == "Unjoin") return selsize > 0 && mode == "Main";
+  if (c == "EntityParameters") return selsize == 1 && mode == "Main";
   return true;
 }
 

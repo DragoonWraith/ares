@@ -410,6 +410,9 @@ public:
   /// Update all objects (after factory changes).
   void UpdateObjects ();
 
+  /// Show an entity parameter dialog.
+  void EntityParameters ();
+
   /// Convert the world to using physics.
   void ConvertPhysics ();
   /// Convert the world to using Opcode.

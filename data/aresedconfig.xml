@@ -74,6 +74,9 @@
 	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" />
 	    <item name="&amp;Stack Objects" target="Main" command="StackObj" />
 	</menu>
+	<menu name="&amp;Logic">
+	    <item name="&amp;Entity Parameters..." command="EntityParameters" />
+	</menu>
 	<menu name="&amp;Help">
 	    <item name="&amp;Online Help" id="Help" target="Help" command="Show" />
 	    <item name="&amp;About" id="About" target="Help" command="About" />

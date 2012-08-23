@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "newproject.h"
 #include "messageframe.h"
 #include "celldialog.h"
+#include "entityparameters.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/model.h"
 
@@ -454,6 +455,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   newprojectDialog = new NewProjectDialog (parent, app->GetObjectRegistry (), this, app->GetVFS ());
   cellDialog = new CellDialog (parent, this);
   messageFrame = new MessageFrame (parent, this);
+  entityParameterDialog = new EntityParameterDialog (parent, this);
   contextMenuID = ID_FirstContextItem;
 }
 
@@ -463,6 +465,7 @@ UIManager::~UIManager ()
   delete newprojectDialog;
   delete cellDialog;
   delete messageFrame;
+  delete entityParameterDialog;
 }
 
 csRef<iString> UIManager::AskDialog (const char* description, const char* label)

@@ -59,6 +59,7 @@ void HelpFrame::OnClose (wxCloseEvent& event)
 void HelpFrame::Show ()
 {
   wxFrame::Show (true);
+  Raise ();
   wxHtmlWindow* help_Html = XRCCTRL (*this, "help_Html", wxHtmlWindow);
   help_Html->LoadPage (wxString::FromUTF8 ("docs/html/manual/index.html"));
 }

@@ -108,12 +108,12 @@ AC_ARG_WITH([cs], [AC_HELP_STRING([--without-cs],
 AS_IF([test -z "$with_cs"], [with_cs=yes])
 
 AS_IF([test $with_cs != no],
-[CS_PATH_CRYSTAL_EMIT([1.1], [],
+[CS_PATH_CRYSTAL_EMIT([2.1], [],
   [AC_MSG_ERROR([
 *** Crystal Space could not be found or was unusable. The latest version is
 *** always available from http://www.crystalspace3d.org/
 *** Also, be sure that you have either installed Crystal Space or set the
-*** CRYSTAL_1_1 environment variable properly.
+*** CRYSTAL_2_1 environment variable properly.
 ])], [crystalspace])])
 
 #----------------------------------------------------------------------------
@@ -130,7 +130,7 @@ m4_if(cel_desired, [yes],
 AS_IF([test -z "$with_cel"], [with_cel=yes])
 
 AS_IF([test $with_cel != no],
-[CS_PATH_CEL_EMIT([1.1], [],
+[CS_PATH_CEL_EMIT([2.1], [],
   [AC_MSG_ERROR([
 *** CEL could not be found or was unusable. The latest version is always
 *** available from http://cel.crystalspace3d.org/

@@ -37,6 +37,7 @@ class MessageFrame;
 class CellDialog;
 class UIDialog;
 class SimpleListCtrlView;
+class EntityParameterDialog;
 
 class wxBoxSizer;
 class wxTextCtrl;
@@ -161,6 +162,7 @@ private:
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
   MessageFrame* messageFrame;
+  EntityParameterDialog* entityParameterDialog;
 
   int contextMenuID;
 
@@ -179,6 +181,7 @@ public:
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
   MessageFrame* GetMessageFrame () const { return messageFrame; }
+  EntityParameterDialog* GetEntityParameterDialog () const { return entityParameterDialog; }
 
   /// Create a dynamically buildable dialog.
   virtual csPtr<iUIDialog> CreateDialog (const char* title);

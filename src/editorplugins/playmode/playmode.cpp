@@ -58,6 +58,7 @@ DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
       if (dynobj->GetEntityTemplate ())
         obj.templateName = dynobj->GetEntityTemplate ()->GetName ();
       obj.entityName = dynobj->GetEntityName ();
+      obj.params = dynobj->GetEntityParameters ();
 printf ("snapshotting %d/%s\n", i, obj.entityName.GetData ()); fflush (stdout);
       for (size_t j = 0 ; j < dynobj->GetFactory ()->GetJointCount () ; j++)
       {
@@ -94,8 +95,8 @@ void DynworldSnapshot::Restore (iPcDynamicWorld* dynworld)
     Obj& obj = objects[i];
     iDynamicObject* dynobj = obj.cell->AddObject (obj.fact->GetName (), obj.trans);
 
-    if (!obj.templateName.IsEmpty ())
-      dynobj->SetEntity (obj.entityName, obj.templateName, 0);
+    if (!obj.templateName.IsEmpty () || obj.params)
+      dynobj->SetEntity (obj.entityName, obj.templateName, obj.params);
     else if (!obj.entityName.IsEmpty ())
       dynobj->SetEntityName (obj.entityName);
 
@@ -184,11 +185,13 @@ void PlayMode::Start ()
       }
       else
       {
+#if 0
 	csString tplName = dynobj->GetFactory ()->GetDefaultEntityTemplate ();
 	if (tplName.IsEmpty ())
 	  tplName = dynobj->GetFactory ()->GetName ();
 	printf ("Setting entity %s with template %s\n", dynobj->GetEntityName (), tplName.GetData ());
         dynobj->SetEntity (dynobj->GetEntityName (), tplName, 0);
+#endif
       }
     }
   }

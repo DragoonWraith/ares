@@ -47,6 +47,7 @@ private:
     csReversibleTransform trans;
     csString entityName;
     csString templateName;
+    csRef<iCelParameterBlock> params;
     // Indices of connected objects.
     csArray<size_t> connectedObjects;
   };

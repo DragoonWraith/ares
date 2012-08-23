@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "ui/filereq.h"
 #include "ui/newproject.h"
 #include "ui/celldialog.h"
+#include "ui/entityparameters.h"
 #include "camera.h"
 #include "editor/imode.h"
 #include "editor/iplugin.h"
@@ -1375,7 +1376,11 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
     app->GetUIManager ()->Error ("Could not create object for '%s'!", fname.GetData ());
     return 0;
   }
-  dynobj->SetEntity (0, fname, 0);
+
+  csString tplName = dynobj->GetFactory ()->GetDefaultEntityTemplate ();
+  if (tplName.IsEmpty ())
+    tplName = fname;
+  dynobj->SetEntity (0, tplName, 0);
   dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))
@@ -1541,6 +1546,12 @@ void AresEdit3DView::UnjoinObjects ()
 	}
     }
   }
+}
+
+void AresEdit3DView::EntityParameters ()
+{
+  app->GetUIManager ()->GetEntityParameterDialog ()->Show (
+      selection->GetFirst ());
 }
 
 void AresEdit3DView::UpdateObjects ()
