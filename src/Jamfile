@@ -2,8 +2,6 @@ SubDir TOP src editorplugins ;
 
 SubDir TOP src ;
 
-SubInclude TOP src ares ;
-SubInclude TOP src aresed ;
 SubInclude TOP src curvemesh ;
 SubInclude TOP src gamecontrol ;
 SubInclude TOP src rooms ;
@@ -13,3 +11,11 @@ SubInclude TOP src marker ;
 SubInclude TOP src common ;
 SubInclude TOP src edcommon ;
 SubInclude TOP src editorplugins ;
+
+# Assemble big static plugins lib
+StaticPluginLibrary ares_staticplugins ;
+ExternalLibs ares_staticplugins  : CRYSTAL CEL WX ;
+
+# Set up app targets after static plugins lib
+SubInclude TOP src ares ;
+SubInclude TOP src aresed ;
