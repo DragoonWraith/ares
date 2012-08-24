@@ -20,6 +20,70 @@
 #=============================================================================
 
 #-----------------------------------------------------------------------------
+# _CS_CHECK_SEPARATE_SECTION(LANGUAGE, PROPERTY, [EMITTER-OPTIONS])
+#	Check whether the compiler for LANGUAGE supports the
+#	-ffunction-sections and -fdata-sections arguments. The flags can,
+#	in conjunction with --gc-sections linker flag, reduce the size of the
+#	final linked binaries.
+#	However, on some (older) gcc versions these flags produce annoying,
+#	but harmless, warnings. If this is discovered to be the case the
+#	flags aren't used.
+#	The check result is emitted to the build property PROPERTY using the
+#	emitter options EMITTER-OPTIONS.
+#-----------------------------------------------------------------------------
+# Helper function to get language-dependent part of check result variables.
+# Works with the 'anomalous' C case where all default autoconf variables use
+# 'cc' in their names.
+AC_DEFUN([_CS_CC_SH],
+    [CS_TR_SH_lang(_AC_CC)])
+AC_DEFUN([_CS_SEPARATE_SECTION_ENABLE],
+    [AC_ARG_ENABLE([separate-sections],
+	[AC_HELP_STRING([--enable-separate-sections],
+	    [Instruct compiler to generate separate object file sections for
+	    functions and global variables. Can reduce size of the final 
+	    linked binaries. (default YES if not annoying)])],
+	[], [enable_separate_sections=maybe])])
+AC_DEFUN([_CS_CHECK_SEPARATE_SECTION],
+    [AC_REQUIRE([_CS_SEPARATE_SECTION_ENABLE])
+
+    AC_LANG_PUSH([$1])
+    AS_IF([test "$enable_separate_sections" != "no"],
+	[CS_CHECK_BUILD_FLAGS([if $]_AC_CC[ accepts -ffunction-sections -fdata-sections],
+	    [cs_cv_prog_]_CS_CC_SH[_individual_sections],
+	    [CS_CREATE_TUPLE([-ffunction-sections -fdata-sections])],
+	    [$1])
+
+	AS_IF([test "$cs_cv_prog_]_CS_CC_SH[_individual_sections" != "no"],
+	    [AS_IF([test "$enable_separate_sections" = "maybe"],
+		[# We need -Werror for the following checks...
+		CS_COMPILER_ERRORS([$1])
+
+		g_flag=''
+		AS_IF([test "$ac_cv_prog_]_CS_CC_SH[_g" != "no"],
+		    [g_flag='-g'])
+		CS_CHECK_BUILD(
+		    [if $cs_cv_prog_]_CS_CC_SH[_individual_sections isn't annoying],
+		    [cs_cv_prog_]_CS_CC_SH[_individual_sections_annoy],
+		    [],
+		    [CS_CREATE_TUPLE([$cs_cv_prog_]_CS_CC_SH[_individual_sections])],
+		    [C],
+		    [], [], [],
+		    [$g_flag $cs_cv_prog_]CS_TR_SH_lang(_AC_CC)[_enable_errors])
+		enable_separate_sections_]_CS_CC_SH[=$cs_cv_prog_]_CS_CC_SH[_individual_sections_annoy
+		],
+		[enable_separate_sections_]_CS_CC_SH[=yes])
+	    AS_IF([test "$enable_separate_sections_]_CS_CC_SH[" = "yes"],
+		[CS_EMIT_BUILD_PROPERTY([$2],
+		    [$cs_cv_prog_]_CS_CC_SH[_individual_sections], [$3])
+		])
+	    ])
+	])
+    AC_LANG_POP
+    ])
+
+
+
+#-----------------------------------------------------------------------------
 # Detection of C and C++ compilers and setting flags
 #
 # CS_PROG_CC
@@ -65,15 +129,19 @@ AC_DEFUN([CS_PROG_CC],[
 		;;
 	esac
 
-	# The -ffunction-sections and -fdata-sections can, in conjunction with
-	# the linker flag --gc-sections, reduce the size of the final linked
-	# binaries.
-	CS_EMIT_BUILD_FLAGS([if $CC accepts -ffunction-sections -fdata-sections],
-	    [cs_cv_prog_cc_individual_sections],
-	    [CS_CREATE_TUPLE([-ffunction-sections -fdata-sections])],
-	    [C], [COMPILER.CFLAGS], [append])
+	_CS_CHECK_SEPARATE_SECTION([C], [COMPILER.CFLAGS.SEPARATE_SECTIONS], [])
+	# Don't use separate sections in 'profile' mode
+	# (reportedly breaks it)
+	CS_EMIT_BUILD_PROPERTY([COMPILER.CFLAGS.optimize],
+	    [AS_ESCAPE([$(COMPILER.CFLAGS.SEPARATE_SECTIONS)])],
+	    [append])
+	CS_EMIT_BUILD_PROPERTY([COMPILER.CFLAGS.debug],
+	    [AS_ESCAPE([$(COMPILER.CFLAGS.SEPARATE_SECTIONS)])],
+	    [append])
     ])
 ])
+
+
 
 #-----------------------------------------------------------------------------
 # CS_PROG_CXX
@@ -271,7 +339,13 @@ AC_DEFUN([CS_PROG_LINK],[
 	    [CS_CREATE_TUPLE([-Wl,--gc-sections])], 
 	    [C++], 
 	    [CS_EMIT_BUILD_PROPERTY([LINK.GC_SECTIONS], 
-	        [$cs_cv_prog_link_gc_sections])])])
+	        [$cs_cv_prog_link_gc_sections])])
+	CS_CHECK_BUILD_FLAGS([if --no-gc-sections is supported], 
+	    [cs_cv_prog_link_no_gc_sections], 
+	    [CS_CREATE_TUPLE([-Wl,--no-gc-sections])], 
+	    [C++], 
+	    [CS_EMIT_BUILD_PROPERTY([LINK.NO_GC_SECTIONS], 
+	        [$cs_cv_prog_link_no_gc_sections])])])
     
     # Check if linker supports --large-address-aware.
     AC_ARG_ENABLE([large-address-aware], 
@@ -329,3 +403,68 @@ AC_DEFUN([CS_CHECK_MNO_CYGWIN],
 	], [cs_mno_cygwin=no])
     AC_MSG_RESULT([$cs_mno_cygwin])
     ])
+
+
+
+#-----------------------------------------------------------------------------
+# CS_CHECK_LTO(LANGUAGE)
+#	Check for the -flto compiler and linker flags.
+#-----------------------------------------------------------------------------
+AC_DEFUN([_CS_CHECK_LTO_LINKER],
+    [AC_REQUIRE([CS_PROG_LINK])
+
+    # Work around link-time error caused by multiple symbol definitions
+    # occuring when using gcc's LTO partioning (the default).
+    # Errors the likes of 
+    # multiple definition of `_ZTV16csSharedVariable.local.41917'.
+    # Possibly this bug:
+    # http://sourceware.org/bugzilla/show_bug.cgi?id=12762
+    # @@@ FIXME: Check if bug persists with newer ld versions (>= 2.22)
+    # and/or gcc versions (>= 4.6.1) and add proper check.
+    CS_CHECK_BUILD_FLAGS(
+        [how to have the linker allow multiple symbol definitions], 
+        [cs_cv_prog_link_allow_multiple_defitions],
+        [CS_CREATE_TUPLE([-Wl,--allow-multiple-definition])])
+
+    # Disable gc sections to work around a linker bug
+    # (see http://sourceware.org/bugzilla/show_bug.cgi?id=12851)
+    # @@@ FIXME: Supposedly fixed with ld 2.22, need to add check
+    link_disable_gc_sections=$cs_cv_prog_link_no_gc_sections
+
+    CS_CHECK_BUILD_FLAGS([linker LTO arguments], 
+        [cs_cv_prog_link_flto],
+        [CS_CREATE_TUPLE([-flto $link_disable_gc_sections \
+            $cs_cv_prog_link_allow_multiple_defitions])])])
+AC_DEFUN([CS_CHECK_LTO],
+    [AC_REQUIRE([_CS_CHECK_LTO_LINKER])
+    
+    AC_LANG_PUSH([$1])
+    CS_CHECK_BUILD_FLAGS([if $]_AC_CC[ accepts -flto],
+        [cs_cv_prog_]_CS_CC_SH[_flto],
+        [CS_CREATE_TUPLE([-flto])],
+        [$1])
+    AC_LANG_POP])
+
+
+
+#-----------------------------------------------------------------------------
+# CS_CHECK_ENABLE_LTO
+#       Conveniently add an “--enable-lto” configure option and perform the
+#       LTO checks for the C and C++ languages.
+#-----------------------------------------------------------------------------
+AC_DEFUN([CS_CHECK_ENABLE_LTO],
+    [AC_MSG_CHECKING([whether to enable LTO])
+    AC_ARG_ENABLE([lto], 
+        [AC_HELP_STRING([--lto],
+            [enable LTO (link-time optimization). (default NO)])],
+        [enable_lto=$enableval],
+        [enable_lto=no])
+    AC_MSG_RESULT([$enable_lto])
+    AS_IF([test "$enable_lto" != "no"], 
+        [CS_CHECK_LTO([C])
+        CS_CHECK_LTO([C++])
+
+        #-flto-partition=none
+        CS_EMIT_BUILD_PROPERTY([COMPILER.LFLAGS], [$cs_cv_prog_link_flto], [+])
+        CS_EMIT_BUILD_PROPERTY([COMPILER.CFLAGS], [$cs_cv_prog_cc_flto], [+])
+        CS_EMIT_BUILD_PROPERTY([COMPILER.C++FLAGS], [$cs_cv_prog_cxx_flto], [+])])])
