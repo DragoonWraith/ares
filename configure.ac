@@ -116,6 +116,22 @@ AS_IF([test $with_cs != no],
 *** CRYSTAL_2_1 environment variable properly.
 ])], [crystalspace])])
 
+
+#----------------------------------------------------------------------------
+# Check if the Crystal Space static plugins lib was built.
+#----------------------------------------------------------------------------
+AS_IF([test $with_cs != no],
+    [AC_MSG_CHECKING([for Crystal Space static plugins])
+    ares_have_crystal_static=no
+    for m in $CRYSTAL_AVAILABLE_LIBS; do
+        AS_IF([test crystalspace_staticplugins = "$m"],
+            [ares_have_crystal_static=yes
+            break])
+    done
+    AC_MSG_RESULT([$ares_have_crystal_static])
+    CS_EMIT_BUILD_PROPERTY([HAVE_CS_STATIC_PLUGINS], [$ares_have_crystal_static])])
+
+
 #----------------------------------------------------------------------------
 # Check for Crystal Entity Layer (CEL)
 #----------------------------------------------------------------------------
@@ -139,6 +155,22 @@ AC_DEFINE([USE_CEL], [], [Define to enable CEL.])
 AC_DEFINE_UNQUOTED([CEL_PLUGIN_DIR], ["$CEL_PLUGIN_DIR"],
   [Define with path to CEL plugins.])
 ])])
+
+
+#----------------------------------------------------------------------------
+# Check if the CEL static plugins lib was built.
+#----------------------------------------------------------------------------
+AS_IF([test $with_cel != no],
+    [AC_MSG_CHECKING([for CEL static plugins])
+    ares_have_cel_static=no
+    for m in $CEL_AVAILABLE_LIBS; do
+        AS_IF([test cel_staticplugins = "$m"],
+            [ares_have_cel_static=yes
+            break])
+    done
+    AC_MSG_RESULT([$ares_have_cel_static])
+    CS_EMIT_BUILD_PROPERTY([HAVE_CEL_STATIC_PLUGINS], [$ares_have_cel_static])])
+
 
 #----------------------------------------------------------------------------
 # Win32libs additions.
