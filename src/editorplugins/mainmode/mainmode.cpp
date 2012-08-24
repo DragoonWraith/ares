@@ -98,8 +98,8 @@ void MainMode::SetParent (wxWindow* parent)
   wxTreeCtrl* factoryTree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
   view.AddAction (factoryTree, NEWREF(Ares::Action, new SpawnItemAction(this)));
 
-  view.DefineHeadingIndexed ("objectList", "Factory,Entity,ID",
-      DYNOBJ_COL_FACTORY, DYNOBJ_COL_ENTITY, DYNOBJ_COL_ID);
+  view.DefineHeadingIndexed ("objectList", "Factory,Template,Entity,ID",
+      DYNOBJ_COL_FACTORY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_ENTITY,  DYNOBJ_COL_ID);
   view.Bind (view3d->GetObjectsValue (), "objectList");
 }
 

@@ -57,7 +57,9 @@ class AresEdit3DView;
 class Asset;
 
 class DynfactCollectionValue;
+class FactoriesValue;
 class ObjectsValue;
+class TemplatesValue;
 class NewProjectDialog;
 class UIManager;
 
@@ -193,7 +195,9 @@ private:
   /// Categories with items.
   csHash<csStringArray,csString> categories;
   csRef<DynfactCollectionValue> dynfactCollectionValue;
+  csRef<FactoriesValue> factoriesValue;
   csRef<ObjectsValue> objectsValue;
+  csRef<TemplatesValue> templatesValue;
 
   /// Debug drawing enabled.
   bool do_debug;
@@ -377,7 +381,7 @@ public:
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }
-  iCelPlLayer* GetPL () const { return pl; }
+  virtual iCelPlLayer* GetPL () const { return pl; }
   iParameterManager* GetPM ();
   virtual iELCM* GetELCM () const { return elcm; }
 
@@ -397,11 +401,13 @@ public:
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
   /// Get the dynamic factory value.
   virtual Ares::Value* GetDynfactCollectionValue () const;
-  /// Get the objects value.
+  virtual Ares::Value* GetFactoriesValue () const;
   virtual Ares::Value* GetObjectsValue () const;
+  virtual Ares::Value* GetTemplatesValue () const;
   virtual void RefreshObjectsValue ();
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
   virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj);
+  virtual size_t GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl);
 
   /// Join two selected objects.
   void JoinObjects ();

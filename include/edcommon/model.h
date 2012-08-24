@@ -376,6 +376,21 @@ public:
 };
 
 /**
+ * A standard change listener that notifies another value when
+ * a value has changed.
+ */
+class StandardChangeListener : public ValueChangeListener
+{
+private:
+  Value* value;
+
+public:
+  StandardChangeListener (Value* value) : value (value) { }
+  virtual ~StandardChangeListener () { }
+  virtual void ValueChanged (Value*) { value->FireValueChanged (); }
+};
+
+/**
  * A constant null value.
  */
 class NullValue : public Value
@@ -554,6 +569,63 @@ public:
 };
 
 /**
+ * A collection value that filters another collection value based
+ * on some criteria. This is an abstract class that you need to
+ * override in order to provide the actual filter.
+ */
+class FilteredCollectionValue : public Value
+{
+protected:
+  csRef<Value> collection;
+  csRefArray<Value> filteredChildren;
+  csRef<StandardChangeListener> listener;
+
+  /// Filter a child. Returns true if the child should be visible.
+  virtual bool Filter (Value* child) = 0;
+
+  void UpdateFilter ();
+
+public:
+  FilteredCollectionValue (Value* collection) : collection (collection)
+  {
+    listener.AttachNew (new StandardChangeListener (this));
+    if (collection)
+      collection->AddValueChangeListener (listener);
+    UpdateFilter ();
+  }
+  virtual ~FilteredCollectionValue ()
+  {
+    collection->RemoveValueChangeListener (listener);
+  }
+  virtual void FireValueChanged ()
+  {
+    UpdateFilter ();
+    Value::FireValueChanged ();
+  }
+
+  void SetCollection (Value* newcollection)
+  {
+    if (collection)
+      collection->RemoveValueChangeListener (listener);
+    collection = newcollection;
+    if (collection)
+      collection->AddValueChangeListener (listener);
+    FireValueChanged ();
+  }
+
+  virtual ValueType GetType () const { return VALUE_COLLECTION; }
+
+  virtual csPtr<ValueIterator> GetIterator ()
+  {
+    return new StandardValueIterator (filteredChildren);
+  }
+  virtual Value* GetChild (size_t idx)
+  {
+    return filteredChildren[idx];
+  }
+};
+
+/**
  * An abstract composite value which supports iteration and
  * selection of the children by name. This is an abstract
  * class that has to be subclassed in order to provide the
@@ -704,20 +776,6 @@ public:
     *flt = v;
     FireValueChanged ();
   }
-};
-
-/**
- * A standard change listener that notifies another value when
- * a value has changed.
- */
-class StandardChangeListener : public ValueChangeListener
-{
-private:
-  Value* value;
-public:
-  StandardChangeListener (Value* value) : value (value) { }
-  virtual ~StandardChangeListener () { }
-  virtual void ValueChanged (Value*) { value->FireValueChanged (); }
 };
 
 /**

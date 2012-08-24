@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "csutil/csstring.h"
 #include "edcommon/editmodes.h"
+#include "edcommon/model.h"
 
 struct iGeometryGenerator;
 struct iCelEntityTemplate;
@@ -58,7 +59,9 @@ class EntityMode : public scfImplementationExt1<EntityMode, EditingMode, iCompon
 private:
   csRef<iCelPlLayer> pl;
 
-  void SetupItems ();
+  Ares::View view;
+
+  bool started;
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
   void BuildRewardGraph (iRewardFactoryArray* rewards,
@@ -178,8 +181,8 @@ public:
   void OnDefaultState ();
   void OnCreateTrigger ();
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
-  void OnContextMenu (wxContextMenuEvent& event);
-  void OnTemplateAdd ();
+
+  void AskNewTemplate ();
   void OnTemplateDel ();
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
@@ -202,9 +205,7 @@ public:
     void OnCreateReward (wxCommandEvent& event) { s->OnCreateReward (0); }
     void OnCreateRewardOnInit (wxCommandEvent& event) { s->OnCreateReward (1); }
     void OnCreateRewardOnExit (wxCommandEvent& event) { s->OnCreateReward (2); }
-    void OnTemplateSelect (wxCommandEvent& event) { s->OnTemplateSelect (); }
-    void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
-    void OnTemplateAdd (wxCommandEvent& event) { s->OnTemplateAdd (); }
+    void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnTemplateDel (wxCommandEvent& event) { s->OnTemplateDel (); }
 
   private:

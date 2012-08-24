@@ -37,6 +37,8 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(EntityParameterDialog, wxDialog)
   EVT_BUTTON (XRCID("ok_Button"), EntityParameterDialog :: OnOkButton)
   EVT_BUTTON (XRCID("cancel_Button"), EntityParameterDialog :: OnCancelButton)
+  EVT_BUTTON (XRCID("searchTemplate_Button"), EntityParameterDialog :: OnSearchTemplateButton)
+  EVT_BUTTON (XRCID("reset_Button"), EntityParameterDialog :: OnResetButton)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -107,11 +109,56 @@ public:
     FireValueChanged ();
     return p.child;
   }
-
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    for (size_t i = 0 ; i < parameters.GetSize () ; i++)
+    {
+      Par& p = parameters[i];
+      if (p.child == selectedValue)
+      {
+        p.name = suggestion.Get ("name", (const char*)0);
+        csString typeName = suggestion.Get ("type", (const char*)0);
+        p.type = celParameterTools::GetType (typeName);
+        p.value = suggestion.Get ("value", (const char*)0);
+	dirty = true;
+	FireValueChanged ();
+	return true;
+      }
+    }
+    return false;
+  }
 };
 
 
 //--------------------------------------------------------------------------
+
+void EntityParameterDialog::OnResetButton (wxCommandEvent& event)
+{
+  UITools::SetValue (this, "template_Text", "");
+}
+
+void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
+{
+  csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a template");
+  dialog->AddRow ();
+  dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->GetTemplatesValue (),
+      TEMPLATE_COL_NAME, 300, "Template", TEMPLATE_COL_NAME);
+
+  if (dialog->Show (0) == 1)
+  {
+    const DialogResult& result = dialog->GetFieldContents ();
+    csString name = result.Get ("template", (const char*)0);
+    csString factoryName = object->GetFactory ()->GetName ();
+    if (factoryName != name)
+    {
+      UITools::SetValue (this, "template_Text", name);
+    }
+    else
+    {
+      UITools::SetValue (this, "template_Text", "");
+    }
+  }
+}
 
 void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
 {
@@ -145,6 +192,8 @@ void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
       entityName.IsEmpty () ? 0 : entityName.GetData (),
       tplName.IsEmpty () ? 0 : tplName.GetData (),
       params);
+
+  uiManager->GetApp ()->Get3DView ()->GetObjectsValue ()->Refresh ();
 
   EndModal (TRUE);
 }
@@ -214,6 +263,7 @@ EntityParameterDialog::EntityParameterDialog (wxWindow* parent, UIManager* uiMan
   Bind (parameters, "parameter_List");
   wxListCtrl* parameter_List = XRCCTRL (*this, "parameter_List", wxListCtrl);
   AddAction (parameter_List, NEWREF (Action, new NewChildDialogAction (parameters, dialog)));
+  AddAction (parameter_List, NEWREF (Action, new EditChildDialogAction (parameters, dialog)));
   AddAction (parameter_List, NEWREF (Action, new DeleteChildAction (parameters)));
 }
 

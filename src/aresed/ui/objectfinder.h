@@ -22,25 +22,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_objects_h
-#define __aresed_objects_h
+#ifndef __appares_objectfinder_h
+#define __appares_objectfinder_h
+
+#include <crystalspace.h>
 
 #include "edcommon/model.h"
-#include "helper.h"
 
-class AppAresEditWX;
-struct iMeshFactoryList;
-struct iDynamicObject;
+#include <wx/wx.h>
+#include <wx/imaglist.h>
+#include <wx/listctrl.h>
+#include <wx/xrc/xmlres.h>
 
-class ObjectsValue : public GenericStringArrayCollectionValue<iDynamicObject>
+class UIManager;
+class ObjectFinderFilteredCollectionValue;
+
+using namespace Ares;
+
+class ObjectFinderDialog : public wxDialog, public View
 {
-public:
-  ObjectsValue (AppAresEditWX* app) : GenericStringArrayCollectionValue<iDynamicObject> (app) { }
-  virtual ~ObjectsValue () { }
+private:
+  UIManager* uiManager;
 
-  virtual void BuildModel ();
-  virtual void RefreshModel ();
+  csRef<ObjectFinderFilteredCollectionValue> filteredCollection;
+
+  void OnOkButton (wxCommandEvent& event);
+  void OnCancelButton (wxCommandEvent& event);
+
+  void OnSearchTemplateButton (wxCommandEvent& event);
+  void OnSearchDynfactButton (wxCommandEvent& event);
+  void OnResetTemplateButton (wxCommandEvent& event);
+  void OnResetDynfactButton (wxCommandEvent& event);
+  void OnResetRadiusButton (wxCommandEvent& event);
+  void OnChangeRadius (wxCommandEvent& event);
+
+public:
+  ObjectFinderDialog (wxWindow* parent, UIManager* uiManager);
+  ~ObjectFinderDialog ();
+
+  void Show ();
+
+  DECLARE_EVENT_TABLE ();
 };
 
-#endif // __aresed_objects_h
+#endif // __appares_objectfinder_h
 

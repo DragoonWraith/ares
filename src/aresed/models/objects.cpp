@@ -30,47 +30,14 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "../aresview.h"
 
+#include "physicallayer/entitytpl.h"
+
 using namespace Ares;
 
-class ObjectsIterator : public ValueIterator
-{
-private:
-  csRefArray<DynobjValue> children;
-  size_t idx;
 
-public:
-  ObjectsIterator (const csRefArray<DynobjValue>& children) :
-	children (children), idx (0) { }
-  virtual ~ObjectsIterator () { }
-  virtual void Reset () { idx = 0; }
-  virtual bool HasNext () { return idx < children.GetSize (); }
-  virtual Value* NextChild (csString* name = 0)
-  {
-    idx++;
-    return children[idx-1];
-  }
-};
-
-
-csPtr<ValueIterator> ObjectsValue::GetIterator ()
-{
-  return new ObjectsIterator (values);
-}
-
-void ObjectsValue::ReleaseChildren ()
-{
-  ObjectsHash::GlobalIterator it = dynobjs.GetIterator ();
-  while (it.HasNext ())
-  {
-    csPtrKey<iDynamicObject> dynobj;
-    StringArrayValue* child = it.Next (dynobj);
-    child->SetParent (0);
-  }
-  dynobjs.DeleteAll ();
-  values.DeleteAll ();
-}
-
-static int CompareDynobjValues (DynobjValue* const & v1, DynobjValue* const & v2)
+static int CompareDynobjValues (
+    GenericStringArrayValue<iDynamicObject>* const & v1,
+    GenericStringArrayValue<iDynamicObject>* const & v2)
 {
   const char* s1 = v1->GetStringArrayValue ()->Get (DYNOBJ_COL_FACTORY);
   const char* s2 = v2->GetStringArrayValue ()->Get (DYNOBJ_COL_FACTORY);
@@ -80,7 +47,8 @@ static int CompareDynobjValues (DynobjValue* const & v1, DynobjValue* const & v2
 
 void ObjectsValue::BuildModel ()
 {
-  dynobjs.DeleteAll ();
+  dirty = false;
+  objectsHash.DeleteAll ();
   ReleaseChildren ();
   iCamera* camera = app->GetAresView ()->GetCsCamera ();
   const csVector3& origin = camera->GetTransform ().GetOrigin ();
@@ -90,14 +58,25 @@ void ObjectsValue::BuildModel ()
   {
     iDynamicObject* obj = cell->GetObject (i);
 
-    csRef<DynobjValue> child;
-    child.AttachNew (new DynobjValue (obj));
+    csRef<GenericStringArrayValue<iDynamicObject> > child;
+    child.AttachNew (new GenericStringArrayValue<iDynamicObject> (obj));
     csStringArray& array = child->GetArray ();
     csString fmt;
 
     fmt.Format ("%d", obj->GetID ());
     array.Push (fmt);
     array.Push (obj->GetEntityName ());
+    if (obj->GetEntityTemplate ())
+    {
+      csString tplName = obj->GetEntityTemplate ()->GetName ();
+      if (obj->GetEntityParameters ())
+	tplName += '*';
+      array.Push (tplName);
+    }
+    else
+    {
+      array.Push ("");
+    }
     iDynamicFactory* fact = obj->GetFactory ();
     array.Push (fact->GetName ());
 
@@ -113,7 +92,7 @@ void ObjectsValue::BuildModel ()
     fmt.Format ("%g", dist);
     array.Push (fmt);
 
-    dynobjs.Put (obj, child);
+    objectsHash.Put (obj, child);
     values.Push (child);
   }
   values.Sort (CompareDynobjValues);
@@ -124,7 +103,7 @@ void ObjectsValue::RefreshModel ()
 {
   iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
   if (!cell) return;
-  if (cell->GetObjectCount () != dynobjs.GetSize ())
+  if (cell->GetObjectCount () != objectsHash.GetSize ())
   {
     // Refresh needed!
     BuildModel ();
@@ -134,7 +113,7 @@ void ObjectsValue::RefreshModel ()
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
-    StringArrayValue* child = dynobjs.Get (obj, 0);
+    StringArrayValue* child = objectsHash.Get (obj, 0);
     if (!child)
     {
       BuildModel ();
@@ -143,12 +122,5 @@ void ObjectsValue::RefreshModel ()
   }
 }
 
-size_t ObjectsValue::FindDynObj (iDynamicObject* dynobj) const
-{
-  for (size_t i = 0 ; i < values.GetSize () ; i++)
-    if (values[i]->GetDynamicObject () == dynobj)
-      return i;
-  return csArrayItemNotFound;
-}
 
 

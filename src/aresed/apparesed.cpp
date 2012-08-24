@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "ui/newproject.h"
 #include "ui/messageframe.h"
 #include "ui/celldialog.h"
+#include "ui/objectfinder.h"
 #include "camera.h"
 #include "editor/imode.h"
 #include "editor/iplugin.h"
@@ -176,34 +177,7 @@ i3DView* AppAresEditWX::Get3DView () const
 void AppAresEditWX::FindObject ()
 {
   aresed3d->RefreshObjectsValue ();
-  UIDialog* dialog = new UIDialog (this, "Select an object", 500, 300);
-  dialog->AddRow (1);
-  dialog->AddListIndexed ("objects", aresed3d->GetObjectsValue (), 0, 250,
-      "ID,Entity,Factory,X,Y,Z,Distance",
-      DYNOBJ_COL_ID,
-      DYNOBJ_COL_ENTITY,
-      DYNOBJ_COL_FACTORY,
-      DYNOBJ_COL_X,
-      DYNOBJ_COL_Y,
-      DYNOBJ_COL_Z,
-      DYNOBJ_COL_DISTANCE);
-  if (dialog->Show (0))
-  {
-    const DialogResult& rc = dialog->GetFieldContents ();
-    csString idValue = rc.Get ("objects", (const char*)0);
-    if (!idValue.IsEmpty ())
-    {
-      uint id;
-      csScanStr (idValue, "%d", &id);
-      iDynamicObject* dynobj = aresed3d->GetDynamicWorld ()->FindObject (id);
-      printf ("Find object %p with id %d\n", dynobj, id);
-      if (dynobj)
-      {
-	aresed3d->GetSelection ()->SetCurrentObject (dynobj);
-      }
-    }
-  }
-  delete dialog;
+  uiManager->GetObjectFinderDialog ()->Show ();
 }
 
 void AppAresEditWX::RefreshModes ()
@@ -641,6 +615,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("MessageFrame.xrc", searchPath)) return false;
   if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("ObjectFinderDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");

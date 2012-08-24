@@ -45,7 +45,9 @@ THE SOFTWARE.
 #include "camerawin.h"
 #include "selection.h"
 #include "models/dynfactmodel.h"
+#include "models/factories.h"
 #include "models/objects.h"
+#include "models/templates.h"
 #include "common/worldload.h"
 #include "edcommon/transformtools.h"
 #include "edcommon/inspect.h"
@@ -100,7 +102,9 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
   dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
+  factoriesValue.AttachNew (new FactoriesValue (app));
   objectsValue.AttachNew (new ObjectsValue (app));
+  templatesValue.AttachNew (new TemplatesValue (app));
   camera.AttachNew (new Camera (this));
   pasteMarker = 0;
   constrainMarker = 0;
@@ -239,12 +243,14 @@ void AresEdit3DView::CopySelection ()
     apc.isStatic = dynobj->IsStatic ();
     pastebuffer.Push (apc);
   }
+  app->SetFocus3D ();
 }
 
 void AresEdit3DView::PasteSelection ()
 {
   if (todoSpawn.GetSize () <= 0) return;
   csReversibleTransform trans = todoSpawn[0].trans;
+  csArray<iDynamicObject*> newobjects;
   for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
   {
     csReversibleTransform tr = todoSpawn[i].trans;
@@ -262,7 +268,12 @@ void AresEdit3DView::PasteSelection ()
       else
         dynobj->MakeDynamic ();
     }
+    newobjects.Push (dynobj);
   }
+
+  selection->SetCurrentObject (0);
+  for (size_t i = 0 ; i < newobjects.GetSize () ; i++)
+    selection->AddCurrentObject (newobjects[i]);
 }
 
 void AresEdit3DView::CreatePasteMarker ()
@@ -368,6 +379,7 @@ void AresEdit3DView::StartPasteSelection ()
     PlacePasteMarker ();
   app->SetMenuState ();
   app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
+  app->SetFocus3D ();
 }
 
 void AresEdit3DView::StartPasteSelection (const char* name)
@@ -382,6 +394,7 @@ void AresEdit3DView::StartPasteSelection (const char* name)
   PlacePasteMarker ();
   app->SetMenuState ();
   app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
+  app->SetFocus3D ();
 }
 
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
@@ -650,6 +663,18 @@ Ares::Value* AresEdit3DView::GetObjectsValue () const
   return objectsValue;
 }
 
+Ares::Value* AresEdit3DView::GetFactoriesValue () const
+{
+  factoriesValue->RefreshModel ();
+  return factoriesValue;
+}
+
+Ares::Value* AresEdit3DView::GetTemplatesValue () const
+{
+  templatesValue->RefreshModel ();
+  return templatesValue;
+}
+
 void AresEdit3DView::RefreshObjectsValue ()
 {
   objectsValue->BuildModel ();
@@ -657,13 +682,18 @@ void AresEdit3DView::RefreshObjectsValue ()
 
 iDynamicObject* AresEdit3DView::GetDynamicObjectFromObjects (Ares::Value* value)
 {
-  DynobjValue* dv = static_cast<DynobjValue*> (value);
-  return dv->GetDynamicObject ();
+  GenericStringArrayValue<iDynamicObject>* dv = static_cast<GenericStringArrayValue<iDynamicObject>*> (value);
+  return dv->GetObject ();
 }
 
 size_t AresEdit3DView::GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj)
 {
-  return objectsValue->FindDynObj (dynobj);
+  return objectsValue->FindObject (dynobj);
+}
+
+size_t AresEdit3DView::GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl)
+{
+  return templatesValue->FindObject (tpl);
 }
 
 void AresEdit3DView::AddItem (const char* category, const char* itemname)
@@ -1101,6 +1131,7 @@ bool AresEdit3DView::PostLoadMap ()
   }
 
   objectsValue->BuildModel ();
+  templatesValue->BuildModel ();
 
   return true;
 }

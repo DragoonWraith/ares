@@ -22,25 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_objects_h
-#define __aresed_objects_h
+#ifndef __aresed_templates_h
+#define __aresed_templates_h
 
 #include "edcommon/model.h"
 #include "helper.h"
 
 class AppAresEditWX;
-struct iMeshFactoryList;
-struct iDynamicObject;
+struct iCelEntityTemplate;
 
-class ObjectsValue : public GenericStringArrayCollectionValue<iDynamicObject>
+class TemplatesValue : public GenericStringArrayCollectionValue<iCelEntityTemplate>
 {
 public:
-  ObjectsValue (AppAresEditWX* app) : GenericStringArrayCollectionValue<iDynamicObject> (app) { }
-  virtual ~ObjectsValue () { }
+  TemplatesValue (AppAresEditWX* app) : GenericStringArrayCollectionValue<iCelEntityTemplate> (app) { }
+  virtual ~TemplatesValue () { }
 
   virtual void BuildModel ();
   virtual void RefreshModel ();
 };
 
-#endif // __aresed_objects_h
+#endif // __aresed_templates_h
 

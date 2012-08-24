@@ -46,10 +46,7 @@ THE SOFTWARE.
 //---------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
-  EVT_LISTBOX (XRCID("templateList"), EntityMode::Panel :: OnTemplateSelect)
-  EVT_CONTEXT_MENU (EntityMode::Panel :: OnContextMenu)
-  EVT_MENU (ID_Template_Add, EntityMode::Panel :: OnTemplateAdd)
-  EVT_MENU (ID_Template_Delete, EntityMode::Panel :: OnTemplateDel)
+  EVT_LIST_ITEM_SELECTED (XRCID("template_List"), EntityMode::Panel::OnTemplateSelect)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
@@ -72,9 +69,28 @@ public:
 
 //---------------------------------------------------------------------------
 
+class AddTemplateAction : public Ares::Action
+{
+private:
+  EntityMode* entityMode;
+
+public:
+  AddTemplateAction (EntityMode* entityMode) : entityMode (entityMode) { }
+  virtual ~AddTemplateAction () { }
+  virtual const char* GetName () const { return "Add Template..."; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    entityMode->AskNewTemplate ();
+    return true;
+  }
+};
+
+//---------------------------------------------------------------------------
+
 EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Entity";
+  started = false;
 }
 
 bool EntityMode::Initialize (iObjectRegistry* object_reg)
@@ -99,6 +115,8 @@ void EntityMode::SetParent (wxWindow* parent)
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
 
+  view.SetParent (panel);
+
   pcPanel = new PropertyClassPanel (panel, view3d->GetApplication ()->GetUI (), this);
   pcPanel->Hide ();
 
@@ -121,6 +139,11 @@ void EntityMode::SetParent (wxWindow* parent)
   graphView->AddNodeActivationCallback (cb);
 
   graphView->SetVisible (false);
+
+  view.DefineHeadingIndexed ("template_List", "Name", TEMPLATE_COL_NAME);
+  view.Bind (view3d->GetTemplatesValue (), "template_List");
+  wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+  view.AddAction (list, NEWREF(Ares::Action, new AddTemplateAction(this)));
 
   InitColors ();
   editQuestMode = false;
@@ -259,25 +282,11 @@ void EntityMode::InitColors ()
   graphView->SetDefaultLinkStyle (styleThickLink);
 }
 
-void EntityMode::SetupItems ()
-{
-  wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
-  list->Clear ();
-  wxArrayString names;
-  csRef<iCelEntityTemplateIterator> it = pl->GetEntityTemplates ();
-  while (it->HasNext ())
-  {
-    iCelEntityTemplate* tpl = it->Next ();
-    wxString name = wxString::FromUTF8 (tpl->GetName ());
-    names.Add (name);
-  }
-  list->InsertItems (names, 0);
-}
-
 void EntityMode::Start ()
 {
+  started = true;
   view3d->GetApplication ()->HideCameraWindow ();
-  SetupItems ();
+  view3d->GetTemplatesValue ()->Refresh ();
   graphView->SetVisible (true);
   pcPanel->Hide ();
   triggerPanel->Hide ();
@@ -290,22 +299,7 @@ void EntityMode::Start ()
 void EntityMode::Stop ()
 {
   graphView->SetVisible (false);
-}
-
-void EntityMode::OnContextMenu (wxContextMenuEvent& event)
-{
-  wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
-  bool hasItem;
-  if (ListCtrlTools::CheckHitList (list, hasItem, event.GetPosition ()))
-  {
-    wxMenu contextMenu;
-    contextMenu.Append(ID_Template_Add, wxT ("&Add Template..."));
-    if (hasItem)
-    {
-      contextMenu.Append(ID_Template_Delete, wxT ("&Delete"));
-    }
-    panel->PopupMenu (&contextMenu);
-  }
+  started = false;
 }
 
 const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
@@ -576,6 +570,7 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
 
 void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
 {
+  if (!started) return;
   if (editQuestMode)
   {
     if (!pctpl)
@@ -770,13 +765,16 @@ iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
 
 void EntityMode::OnTemplateSelect ()
 {
-  wxListBox* list = XRCCTRL (*panel, "templateList", wxListBox);
-  csString templateName = (const char*)list->GetStringSelection ().mb_str(wxConvUTF8);
+  if (!started) return;
+  wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+  Ares::Value* v = view.GetSelectedValue (list);
+  if (!v) return;
+  csString templateName = v->GetStringArrayValue ()->Get (0);
   editQuestMode = false;
   BuildTemplateGraph (templateName);
 }
 
-void EntityMode::OnTemplateAdd ()
+void EntityMode::AskNewTemplate ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iString> name = ui->AskDialog ("New Template", "Name:");
@@ -791,7 +789,10 @@ void EntityMode::OnTemplateAdd ()
       currentTemplate = name->GetData ();
       editQuestMode = false;
       BuildTemplateGraph (currentTemplate);
-      SetupItems ();
+      view3d->GetTemplatesValue ()->Refresh ();
+      size_t i = view3d->GetTemplateIndexFromTemplates (tpl);
+      wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+      ListCtrlTools::SelectRow (list, (int)i, false);
     }
   }
 }

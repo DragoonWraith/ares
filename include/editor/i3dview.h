@@ -36,6 +36,8 @@ struct iPcDynamicWorld;
 struct iAresEditor;
 struct iELCM;
 struct iEditorCamera;
+struct iCelPlLayer;
+struct iCelEntityTemplate;
 
 namespace Ares
 {
@@ -55,11 +57,22 @@ enum DynObjValueColumns
 {
   DYNOBJ_COL_ID = 0,
   DYNOBJ_COL_ENTITY,
+  DYNOBJ_COL_TEMPLATE,
   DYNOBJ_COL_FACTORY,
   DYNOBJ_COL_X,
   DYNOBJ_COL_Y,
   DYNOBJ_COL_Z,
   DYNOBJ_COL_DISTANCE,
+};
+
+enum TemplateValueColumns
+{
+  TEMPLATE_COL_NAME = 0,
+};
+
+enum FactoryValueColumns
+{
+  FACTORY_COL_NAME = 0,
 };
 
 /**
@@ -74,6 +87,9 @@ struct i3DView : public virtual iBase
 
   /// Get the view.
   virtual iView* GetView () const = 0;
+
+  /// Get the physical layer.
+  virtual iCelPlLayer* GetPL () const = 0;
 
   /// Get the editor camera.
   virtual iEditorCamera* GetEditorCamera () const = 0;
@@ -130,13 +146,25 @@ struct i3DView : public virtual iBase
 
   /**
    * Get the value for the collection of dynamic factories.
+   * This version is useful for binding to a tree.
    */
   virtual Ares::Value* GetDynfactCollectionValue () const = 0;
+
+  /**
+   * Get the value for the collection of dynamic factories.
+   * This version is useful for binding to a list.
+   */
+  virtual Ares::Value* GetFactoriesValue () const = 0;
 
   /**
    * Get the value for all the objects.
    */
   virtual Ares::Value* GetObjectsValue () const = 0;
+
+  /**
+   * Get the value for all the templates.
+   */
+  virtual Ares::Value* GetTemplatesValue () const = 0;
 
   /**
    * Given a value out of a component that was bound to the objects value
@@ -149,6 +177,12 @@ struct i3DView : public virtual iBase
    * the object list.
    */
   virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj) = 0;
+
+  /**
+   * Given a template, find the index of that object it would have in
+   * the template list.
+   */
+  virtual size_t GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl) = 0;
 
   /**
    * Get the current selection.

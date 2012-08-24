@@ -58,17 +58,32 @@ CEL_IMPLEMENT_FACTORY (GameController, "ares.gamecontrol")
 class GameTestDefaultInfo : public scfImplementation1<GameTestDefaultInfo,iUIInventoryInfo>
 {
 private:
+  celPcGameController* ctrl;
   iCelPlLayer* pl;
   iEngine* engine;
   csRef<iUIInventoryInfo> pInfo;
 
 public:
-  GameTestDefaultInfo (iCelPlLayer* pl, iEngine* engine, iUIInventoryInfo* pInfo) :
-    scfImplementationType (this), pl (pl), engine (engine),
+  GameTestDefaultInfo (celPcGameController* ctrl, iCelPlLayer* pl,
+      iEngine* engine, iUIInventoryInfo* pInfo) :
+    scfImplementationType (this), ctrl (ctrl), pl (pl), engine (engine),
     pInfo( pInfo) { }
   virtual ~GameTestDefaultInfo () { }
 
-  virtual csRef<iString> GetName (iCelEntity* entity) { return pInfo->GetName (entity); }
+  virtual csRef<iString> GetName (iCelEntity* entity)
+  {
+    if (entity->GetName ())
+      return pInfo->GetName (entity);
+    iMeshFactoryWrapper* fact = GetMeshFactory (entity);
+    if (fact)
+    {
+      csRef<scfString> str;
+      str.AttachNew (new scfString (fact->QueryObject ()->GetName ()));
+      return str;
+    }
+    else
+      return pInfo->GetName (entity);
+  }
   virtual csRef<iString> GetName (iCelEntityTemplate* tpl, int count) { return pInfo->GetName (tpl, count); }
 
   virtual csRef<iString> GetDescription (iCelEntity* entity) { return pInfo->GetDescription (entity); }
@@ -187,12 +202,14 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   uiInventory->AddSelectionListener (cb);
 
   csRef<GameTestDefaultInfo> info;
-  info.AttachNew (new GameTestDefaultInfo (pl, engine, uiInventory->GetInfo ()));
+  info.AttachNew (new GameTestDefaultInfo (this, pl, engine, uiInventory->GetInfo ()));
   uiInventory->SetInfo (info);
 }
 
 celPcGameController::~celPcGameController ()
 {
+  if (uiInventory)
+    uiInventory->Close ();
   pl->RemoveCallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
   delete iconCursor;
   delete iconEye;
@@ -303,7 +320,23 @@ void celPcGameController::PickUpDynObj (iDynamicObject* dynobj)
   iCelEntity* ent = dynobj->GetEntity ();
   csRef<iPcInventory> inventory = celQueryPropertyClassEntity<iPcInventory> (
 	  player);
+
+  bool hasState = false;
   if (ent->IsModifiedSinceBaseline ())
+    hasState = true;
+  else if (dynobj->GetEntityTemplate ())
+  {
+    csString tplName = dynobj->GetFactory ()->GetName ();
+    if (tplName != dynobj->GetEntityTemplate ()->GetName ())
+    {
+      // This entity uses another template then the standard template. So we
+      // have to see this entity as having state as well.
+      hasState = true;
+    }
+  }
+
+
+  if (hasState)
   {
     // This entity has state. We cannot convert it to a template in the
     // inventory so we have to add the actual entity.
@@ -314,8 +347,7 @@ void celPcGameController::PickUpDynObj (iDynamicObject* dynobj)
   }
   else
   {
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (
-	dynobj->GetFactory ()->GetName ());
+    iCelEntityTemplate* tpl = dynobj->GetEntityTemplate ();
     if (tpl)
     {
       inventory->AddEntityTemplate (tpl, 1);

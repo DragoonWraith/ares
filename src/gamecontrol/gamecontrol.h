@@ -157,6 +157,8 @@ public:
   void SelectEntity (iCelEntity* entity, const char* command);
   void SelectTemplate (iCelEntityTemplate* tpl, const char* command);
 
+  iPcDynamicWorld* GetDynWorld () { TryGetDynworld (); return dynworld; }
+
   virtual void Examine ();
   virtual bool StartDrag ();
   virtual void StopDrag ();

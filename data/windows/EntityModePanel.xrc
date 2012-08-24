@@ -9,8 +9,8 @@
 				<option>1</option>
 				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxListBox" name="templateList">
-					<content />
+				<object class="wxListCtrl" name="template_List">
+					<style>wxLC_ICON|wxLC_REPORT</style>
 				</object>
 			</object>
 		</object>

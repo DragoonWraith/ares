@@ -219,6 +219,22 @@ void StandardCollectionValue::RemoveChild (Value* child)
 
 // --------------------------------------------------------------------------
 
+void FilteredCollectionValue::UpdateFilter ()
+{
+  filteredChildren.DeleteAll ();
+  if (!collection) return;
+  csRef<ValueIterator> it = collection->GetIterator ();
+  while (it->HasNext ())
+  {
+    Value* child = it->NextChild ();
+    if (Filter (child))
+      filteredChildren.Push (child);
+  }
+}
+
+
+// --------------------------------------------------------------------------
+
 MirrorValue::MirrorValue (ValueType type) : type (type)
 {
   changeListener.AttachNew (new SelChangeListener (this));
