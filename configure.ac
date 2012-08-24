@@ -323,6 +323,12 @@ AC_MSG_RESULT([$build_mode])
 
 CS_EMIT_BUILD_PROPERTY([MODE], [$build_mode])
 
+#------------------------------------------------------------------------------
+# Determine whether link libraries should be static or shared.
+#------------------------------------------------------------------------------
+CS_CHECK_BUILD_LIBS_SHARED([ARES_BUILD_SHARED_LIBS])
+
+
 #-----------------------------------------------------------------------------
 # Emit install paths and package information.
 #-----------------------------------------------------------------------------
