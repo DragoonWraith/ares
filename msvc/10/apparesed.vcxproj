@@ -483,12 +483,16 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClCompile Include="..\..\src\aresed\config.cpp" />
     <ClCompile Include="..\..\src\aresed\main.cpp" />
     <ClCompile Include="..\..\src\aresed\models\dynfactmodel.cpp" />
+    <ClCompile Include="..\..\src\aresed\models\factories.cpp" />
     <ClCompile Include="..\..\src\aresed\models\objects.cpp" />
+    <ClCompile Include="..\..\src\aresed\models\templates.cpp" />
     <ClCompile Include="..\..\src\aresed\selection.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\celldialog.cpp" />
+    <ClCompile Include="..\..\src\aresed\ui\entityparameters.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\filereq.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\messageframe.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\newproject.cpp" />
+    <ClCompile Include="..\..\src\aresed\ui\objectfinder.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\uimanager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -499,16 +503,29 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClInclude Include="..\..\src\aresed\camerawin.h" />
     <ClInclude Include="..\..\src\aresed\config.h" />
     <ClInclude Include="..\..\src\aresed\models\dynfactmodel.h" />
+    <ClInclude Include="..\..\src\aresed\models\factories.h" />
+    <ClInclude Include="..\..\src\aresed\models\helper.h" />
     <ClInclude Include="..\..\src\aresed\models\objects.h" />
+    <ClInclude Include="..\..\src\aresed\models\templates.h" />
     <ClInclude Include="..\..\src\aresed\selection.h" />
     <ClInclude Include="..\..\src\aresed\ui\celldialog.h" />
+    <ClInclude Include="..\..\src\aresed\ui\entityparameters.h" />
     <ClInclude Include="..\..\src\aresed\ui\filereq.h" />
     <ClInclude Include="..\..\src\aresed\ui\messageframe.h" />
     <ClInclude Include="..\..\src\aresed\ui\newproject.h" />
+    <ClInclude Include="..\..\src\aresed\ui\objectfinder.h" />
     <ClInclude Include="..\..\src\aresed\ui\uimanager.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\msvc\apparesed.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="libcommon.vcxproj">
+      <Project>{5C8586A7-529C-7B0C-0178-3BEFF934F30B}</Project>
+    </ProjectReference>
+    <ProjectReference Include="libedcommon.vcxproj">
+      <Project>{BC0D3283-1519-F7CE-004F-B767FEE4A54C}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

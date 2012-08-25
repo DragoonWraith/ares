@@ -18,7 +18,7 @@ FILEFLAGS 0x0
       VALUE "ProductVersion", "0.1"
       VALUE "FileVersion", "0.1"
       VALUE "LegalCopyright", "Jorrit Tyberghein"
-      VALUE "FileDescription", "The Ares Project Editor"
+      VALUE "FileDescription", "The Ares Project Player"
 #ifdef CS_DEBUG
       VALUE "Comments", "Debug build"
 #else

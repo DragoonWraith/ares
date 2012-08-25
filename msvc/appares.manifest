@@ -7,7 +7,7 @@
     name="ares.ares"
     type="win32"
 />
-<description>The Ares Project Editor</description>
+<description>The Ares Project Player</description>
 <dependency>
     <dependentAssembly>
 	  <assemblyIdentity

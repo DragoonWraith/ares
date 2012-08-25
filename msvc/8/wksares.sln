@@ -1,8 +1,15 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "appares", "appares.vcproj", "{E03CB9E2-285E-D00B-3CDC-EA46625DC36F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C8586A7-529C-7B0C-0178-3BEFF934F30B} = {5C8586A7-529C-7B0C-0178-3BEFF934F30B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apparesed", "apparesed.vcproj", "{7F9EE288-75E9-73D9-CF09-6C0CC81F20E5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C8586A7-529C-7B0C-0178-3BEFF934F30B} = {5C8586A7-529C-7B0C-0178-3BEFF934F30B}
+		{BC0D3283-1519-F7CE-004F-B767FEE4A54C} = {BC0D3283-1519-F7CE-004F-B767FEE4A54C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "grpall_ares", "grpall_ares.vcproj", "{BEA4582D-13CC-716C-235A-FCE389F72A07}"
 	ProjectSection(ProjectDependencies) = postProject

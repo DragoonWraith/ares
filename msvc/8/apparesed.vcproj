@@ -634,13 +634,22 @@
 				RelativePath="..\..\src\aresed\models\dynfactmodel.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\models\factories.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\models\objects.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\models\templates.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\celldialog.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\entityparameters.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\filereq.cpp">
@@ -650,6 +659,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\newproject.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\objectfinder.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.cpp">
@@ -680,13 +692,25 @@
 				RelativePath="..\..\src\aresed\models\dynfactmodel.h">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\models\factories.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\models\helper.h">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\models\objects.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\models\templates.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\celldialog.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\entityparameters.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\filereq.h">
@@ -696,6 +720,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\newproject.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\objectfinder.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.h">
