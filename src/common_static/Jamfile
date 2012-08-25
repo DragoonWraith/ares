@@ -1,0 +1,184 @@
+SubDir TOP src common_static ;
+
+if $(HAVE_CS_STATIC_PLUGINS) = "yes"
+  && $(HAVE_CEL_STATIC_PLUGINS) = "yes"
+{
+  SubVariant static ;
+
+  # Library that pulls in static plugins needed by both ares and aresed
+  Description common_static : "Ares common static plugins" ;
+  Library common_static :
+    [ Wildcard *.cpp *.h ] :
+    shared ;
+  CFlags common_static : [ FDefines CS_STATIC_LINKED ] ;
+  MsvcDefine common_static : CS_STATIC_LINKED ;
+
+  #
+  # The plugins that we need
+  #
+  STATIC.PLUGINLIST =
+    animesh
+    animeshldr
+    bindoc
+    bruteblock
+    simpleformer
+    simpleformerldr
+    bugplug
+    csbmpimg
+    csconin
+    csconout
+    csddsimg
+    csfont
+    csgifimg
+    csjngimg
+    csjpgimg
+    csopcode
+    csparser
+    cspngimg
+    cssynldr
+    cstgaimg
+    dsplex
+    dynavis
+    emit
+    emitldr
+    engine
+    engseq
+    imgplex
+    fontplex
+    freefnt2
+    frustvis
+    genmesh
+    gl3d
+    glshader_arb
+    glshader_fixed
+    gmeshldr
+    gmeshskelanim2
+    haze
+    hazeldr
+    lghtng
+    null2d
+    null3d
+    nullmesh
+    nullmeshldr
+    physldr
+    particles
+    particlesldr
+    ptanimimg
+    rendloop_loader
+    rendstep_std
+    reporter
+    sequence
+    shadermgr
+    shaderweaver
+    skeleton
+    skeleton2
+    skeleton2ldr
+    skelldr
+    spr2d
+    spr3d
+    spr3dbin
+    spr3dldr
+    spr2dldr
+    stdrep
+    terrain2
+    terrain2ldr
+    terrainldr
+    trans_std
+    vfs
+    xmlread
+    xmlshader
+    vproc_std
+    ;
+
+  #
+  # The plugins that are nice to have if present
+  #
+  STATIC.OPTIONALPLUGINLIST =
+    bullet
+    cspython
+    glshader_cg
+    glshader_ps1
+    rm_rlcompat
+    rm_shadow_pssm
+    rm_unshadowed
+    sndmanager
+    sndsysopenal
+    sndsyssoft
+    sndsysloader
+    sndsysnull
+    sndsysogg
+    sndsyswav
+    ;
+
+  if $(TARGET.OS) = "WIN32" { STATIC.PLUGINLIST += sndsyswin ; }
+  if $(TARGET.OS) = "MACOS_X" { STATIC.PLUGINLIST += sndsyscoreaudio ; }
+  if $(TARGET.OS) = "UNIX"
+  {
+    STATIC.OPTIONALPLUGINLIST += sndsysoss ;
+    STATIC.OPTIONALPLUGINLIST += sndsysalsa ;
+  }
+
+  LinkStaticPlugins common_static : $(STATIC.PLUGINLIST) : $(STATIC.OPTIONALPLUGINLIST)
+  : CRYSTAL
+  ;
+
+  LinkStaticPlugins common_static :
+    addon_celentity
+    addon_celentitytpl
+    addon_celgraph
+    addon_questdef
+    addon_xmlscripts
+    blxml
+    celconsole
+    celgraph
+    mgr_quests
+    mgr_billboard
+    pfactormove
+    pfanalogmotion
+    pfbillboard
+    pfdamage
+    pfdefcam
+    pfdelegcam
+    pfengine
+    pfinput
+    pfinv
+    pfjump
+    pflight
+    pfmechanics
+    pfmeshdeform
+    pfhover
+    pfmesh
+    pfmeshdeform
+    pfmove
+    pfmover
+    pfnewcamera
+    pfpathfinder
+    pfportal
+    pfquest
+    pfsound
+    pfsteer
+    pftest
+    pftools
+    pftrackingcam
+    pftrigger
+    pfwheeled
+    pfzone
+    pfprojectile
+    stdphyslayer
+  : blpython
+  : CEL
+  ;
+
+  LinkStaticPlugins common_static :
+    curvemesh
+    dynworldload
+    gamecontrol
+    marker
+    nature
+    rooms
+    ;
+
+  ExternalLibs common_static : CRYSTAL CEL ;
+  SubVariant ;
+}
+

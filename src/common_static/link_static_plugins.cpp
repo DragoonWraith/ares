@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2010 by Jorrit Tyberghein
+Copyright (c) 2012 by Frank Richter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +20,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
- */
+*/
 
-#include "ares.h"
-#include "appares.h"
-#include <csutil/sysfunc.h> // Provides csPrintf()
+#include "cssysdef.h"
 
-#ifdef CS_STATIC_LINKED
 #include "common_static/link_static_plugins.h"
 
-ARES_LINK_COMMON_STATIC_PLUGIN
-#endif
-
-CS_IMPLEMENT_APPLICATION
-
-int main(int argc, char** argv)
+void AresLinkCommonStaticPlugins ()
 {
-  //csPrintf ("This application is a place holder and will in the future run the actual game made by aresed.\n");
-  //exit (0);
-  // Open the main system. This will open all the previously loaded plug-ins.
-  csPrintf ("ares version 0.1 by Jorrit Tyberghein.\n");
-
-  /* Runs the application.  
-   *
-   * csApplicationRunner<> cares about creating an application instance 
-   * which will perform initialization and event handling for the entire game. 
-   *
-   * The underlying csApplicationFramework also performs some core 
-   * initialization.  It will set up the configuration manager, event queue, 
-   * object registry, and much more.  The object registry is very important, 
-   * and it is stored in your main application class (again, by 
-   * csApplicationFramework). 
-   */
-  return csApplicationRunner<AppAres>::Run (argc, argv);
+  /* Do nothing. But that's enough to make the static plugins registration
+   * work, as the other objects from the lib are considered for static
+   * initialization. */
 }

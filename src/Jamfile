@@ -16,6 +16,7 @@ SubInclude TOP src editorplugins ;
 StaticPluginLibrary ares_staticplugins ;
 ExternalLibs ares_staticplugins  : CRYSTAL CEL WX ;
 
-# Set up app targets after static plugins lib
+# Set up app and common static plugins targets after static plugins lib
+SubInclude TOP src common_static ;
 SubInclude TOP src ares ;
 SubInclude TOP src aresed ;

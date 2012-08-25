@@ -38,6 +38,12 @@ THE SOFTWARE.
 #include <wx/treectrl.h>
 #include <wx/xrc/xmlres.h>
 
+#ifdef CS_STATIC_LINKED
+#include "common_static/link_static_plugins.h"
+
+ARES_LINK_COMMON_STATIC_PLUGIN
+#endif
+
 CS_IMPLEMENT_APPLICATION
 
 #if defined(CS_PLATFORM_WIN32)
