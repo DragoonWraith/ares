@@ -54,7 +54,7 @@
 	    <item name="&amp;Delete" id="Delete" command="Delete" />
 	    <sep />
 	    <!--<item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />-->
-	    <item name="&amp;Find Object..." id="Find" command="FindObjectDialog" />
+	    <item name="&amp;Find Object...	Ctrl+F" id="Find" command="FindObjectDialog" />
 	    <item name="&amp;Update Objects" command="UpdateObjects" />
 	    <sep />
 	    <item name="&amp;Convert to Physics..." command="ConvertPhysics" />
