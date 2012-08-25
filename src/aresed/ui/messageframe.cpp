@@ -76,7 +76,7 @@ void MessageFrame::OnClearButton (wxCommandEvent& event)
 
 void MessageFrame::ReceiveMessage (int severity, const char* msgID, const char* description)
 {
-  if (severity != lastMessageSeverity && lastMessageID != msgID)
+  if (severity != lastMessageSeverity || lastMessageID != msgID)
   {
     csString color;
     switch (severity)

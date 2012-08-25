@@ -53,7 +53,11 @@ void ObjectsValue::BuildModel ()
   iCamera* camera = app->GetAresView ()->GetCsCamera ();
   const csVector3& origin = camera->GetTransform ().GetOrigin ();
   iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
-  if (!cell) return;
+  if (!cell)
+  {
+    FireValueChanged ();
+    return;
+  }
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
@@ -102,7 +106,11 @@ void ObjectsValue::BuildModel ()
 void ObjectsValue::RefreshModel ()
 {
   iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
-  if (!cell) return;
+  if (!cell)
+  {
+    BuildModel ();
+    return;
+  }
   if (cell->GetObjectCount () != objectsHash.GetSize ())
   {
     // Refresh needed!

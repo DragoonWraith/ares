@@ -372,6 +372,11 @@ void AresEdit3DView::PlacePasteMarker ()
 
 void AresEdit3DView::StartPasteSelection ()
 {
+  if (!sector || !dyncell)
+  {
+    app->ReportError ("Can't paste when no cell is active!");
+    return;
+  }
   pasteConstrainMode = CONSTRAIN_NONE;
   ShowConstrainMarker (false, true, false);
   todoSpawn = pastebuffer;
@@ -384,6 +389,11 @@ void AresEdit3DView::StartPasteSelection ()
 
 void AresEdit3DView::StartPasteSelection (const char* name)
 {
+  if (!sector || !dyncell)
+  {
+    app->ReportError ("Can't paste when no cell is active!");
+    return;
+  }
   pasteConstrainMode = CONSTRAIN_NONE;
   ShowConstrainMarker (false, true, false);
   todoSpawn.Empty ();
@@ -919,6 +929,9 @@ bool AresEdit3DView::Setup ()
   // Start the default run/event loop.  This will return only when some code,
   // such as OnKeyboard(), has asked the run loop to terminate.
   //Run();
+
+  objectsValue->FireValueChanged ();
+  templatesValue->FireValueChanged ();
 
   return true;
 }
