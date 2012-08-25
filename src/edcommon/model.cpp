@@ -1069,9 +1069,16 @@ csRef<StringArrayValue> View::CreateStringArray (ValueType type, va_list args)
 	  break;
 	}
       case VALUE_LONG:
-      case VALUE_BOOL:
 	{
 	  long value = va_arg (args, long);
+	  csString fmt;
+	  fmt.Format ("%ld", value);
+	  array.Push (fmt);
+	  break;
+	}
+      case VALUE_BOOL:
+	{
+	  bool value = va_arg (args, int);
 	  csString fmt;
 	  fmt.Format ("%ld", value);
 	  array.Push (fmt);
@@ -1112,7 +1119,10 @@ csStringArray View::ConstructListRow (const ListHeading& lh, Value* value)
     const csStringArray* array = value->GetStringArrayValue ();
     if (!array) return row;
     for (size_t i = 0 ; i < lh.heading.GetSize () ; i++)
-      row.Push (array->Get (lh.indices[i]));
+    {
+      csString el = array->Get (lh.indices[i]);
+      row.Push (el);
+    }
   }
   else if (t == VALUE_COMPOSITE)
   {
