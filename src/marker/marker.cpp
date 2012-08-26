@@ -261,6 +261,27 @@ bool GraphView::IsLinked (const char* n1, const char* n2)
   return false;
 }
 
+static float CalculateIntersectingArea (
+    const csVector2& pos1, const csVector2& size1,
+    const csVector2& pos2, const csVector2& size2)
+{
+  csBox2 nodeBox1 (pos1.x - size1.x / 2, pos1.y - size1.y / 2,
+      pos1.x + size1.x / 2, pos1.y + size1.y / 2);
+  csBox2 nodeBox2 (pos2.x - size2.x / 2, pos2.y - size2.y / 2,
+      pos2.x + size2.x / 2, pos2.y + size2.y / 2);
+  bool intersect = nodeBox1.TestIntersect (nodeBox2);
+  if (intersect)
+  {
+    float areaTotal = nodeBox1.Area ();
+    nodeBox1 *= nodeBox2;
+    float areaIntersect = nodeBox1.Area ();
+    float factor = 1.0f - areaIntersect / areaTotal;
+    factor *= factor;
+    return factor;
+  }
+  return 1.0f;
+}
+
 void GraphView::HandlePushingForces ()
 {
   int fw = mgr->GetG2D ()->GetWidth ();
@@ -274,6 +295,7 @@ void GraphView::HandlePushingForces ()
     if (node->marker == draggingMarker || node->frozen) continue;
 
     const csVector2& pos = node->marker->GetPosition ();
+    const csVector2& size = node->size;
     node->netForce.Set (0, 0);
 
     // The border pushes too.
@@ -290,10 +312,13 @@ void GraphView::HandlePushingForces ()
       if (node->marker != node2->marker)
       {
 	const csVector2& pos2 = node2->marker->GetPosition ();
+        const csVector2& size2 = node2->size;
 	float sqdist = SqDistance2d (pos, pos2);
 	if (sqdist < .0001) sqdist = .0001;
+        float factor = CalculateIntersectingArea (pos, size, pos2, size2);
+	if (factor < .1f) factor = .1f;
 	node->netForce += (pos-pos2) * node->externalInfluenceFactor *
-	    node2->weightFactor * nodeForceFactor / sqdist;
+	    node2->weightFactor * (nodeForceFactor / sqdist) / factor;
       }
     }
   }
@@ -311,7 +336,11 @@ void GraphView::HandlePullingLinks ()
     {
       const csVector2& pos1 = node1->marker->GetPosition ();
       const csVector2& pos2 = node2->marker->GetPosition ();
-      csVector2 force = (pos2-pos1) * l.strength * linkForceFactor;
+      const csVector2& size1 = node1->size;
+      const csVector2& size2 = node2->size;
+      float factor = CalculateIntersectingArea (pos1, size1, pos2, size2);
+      csVector2 force = (pos2-pos1) * l.strength * linkForceFactor * factor;
+
       node1->netForce += force;
       node2->netForce -= force;
     }

@@ -496,7 +496,9 @@ public:
     SetStr ("vectory", sequence->GetVectorY ());
     SetStr ("vectorz", sequence->GetVectorZ ());
     static const char* axisStr[] = { "0", "1", "2" };
-    SetStr ("axis", axisStr[sequence->GetRotationAxis ()]);
+    int axis = sequence->GetRotationAxis ();
+    if (axis >= 0)
+      SetStr ("axis", axisStr[axis]);
     SetStr ("angle", sequence->GetRotationAngle ());
     updating = false;
   }
