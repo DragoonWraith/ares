@@ -752,12 +752,14 @@ void GraphView::FinishRefresh ()
     if (node->maybeDelete) toDelete.Add (key);
     else
     {
-      size_t j = 0;
-      while (j < node->subnodes.GetSize ())
+      csStringArray toDelete;
+      for (size_t j = 0 ; j < node->subnodes.GetSize () ; j++)
+      {
 	if (node->subnodes[j]->maybeDelete)
-	  RemoveNode (node->subnodes[j]->name);
-      	else
-	  j++;
+	  toDelete.Push (node->subnodes[j]->name);
+      }
+      for (size_t j = 0 ; j < toDelete.GetSize () ; j++)
+	RemoveNode (toDelete[j]);
     }
   }
   csSet<csString>::GlobalIterator delIt = toDelete.GetIterator ();
