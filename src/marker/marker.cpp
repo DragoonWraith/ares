@@ -587,6 +587,9 @@ void GraphView::CalculateCurve (
 
 void GraphView::Render3D ()
 {
+  csSet<csPen*> pensWithCache;
+  csPenCache cache;
+
   for (size_t i = 0 ; i < links.GetSize () ; i++)
   {
     GraphLink& l = links[i];
@@ -605,6 +608,11 @@ void GraphView::Render3D ()
     }
     iMarkerColor* color = l.color;
     csPen* pen = static_cast<MarkerColor*> (color)->GetPen (1);
+    if (!pensWithCache.Contains (pen))
+    {
+      pen->SetActiveCache (&cache);
+      pensWithCache.Add (pen);
+    }
 
     if (l.soft)
     {
@@ -676,6 +684,15 @@ void GraphView::Render3D ()
       }
     }
   }
+
+  csSet<csPen*>::GlobalIterator it = pensWithCache.GetIterator ();
+  while (it.HasNext ())
+  {
+    csPen* pen = it.Next ();
+    pen->SetActiveCache (0);
+  }
+
+  cache.Render (mgr->GetG3D ());
 }
 
 void GraphView::SetVisible (bool v)

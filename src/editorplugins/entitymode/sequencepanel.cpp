@@ -471,10 +471,14 @@ protected:
 	GetStr ("vectorz"));
     csString rotAxis = GetStr ("axis");
     int axis;
-    if (rotAxis == "x") axis = 0;
+    if (rotAxis == "none") axis = -1;
+    else if (rotAxis == "x") axis = 0;
     else if (rotAxis == "y") axis = 1;
     else axis = 2;
     sequence->SetRotationParameter (axis, GetStr ("angle"));
+    
+    csString r = GetStr ("reversed");
+    sequence->SetReversed (r == "true");
   }
 
 public:
@@ -482,7 +486,7 @@ public:
     : SequenceValue<iTransformSeqOpFactory> (sequencePanel)
   {
     AddStringChildren ("entity", "tag", "axis", "angle",
-	"vectorx", "vectory", "vectorz", (const char*)0);
+	"vectorx", "vectory", "vectorz", "reversed", (const char*)0);
   }
   virtual ~TransformValue () { }
   virtual void FireValueChanged ()
@@ -495,11 +499,12 @@ public:
     SetStr ("vectorx", sequence->GetVectorX ());
     SetStr ("vectory", sequence->GetVectorY ());
     SetStr ("vectorz", sequence->GetVectorZ ());
-    static const char* axisStr[] = { "0", "1", "2" };
+    static const char* axisStr[] = { "none", "0", "1", "2" };
     int axis = sequence->GetRotationAxis ();
-    if (axis >= 0)
-      SetStr ("axis", axisStr[axis]);
+    if (axis >= -1)
+      SetStr ("axis", axisStr[axis+1]);
     SetStr ("angle", sequence->GetRotationAngle ());
+    SetStr ("reversed", sequence->IsReversed () ? "true" : "false");
     updating = false;
   }
 };

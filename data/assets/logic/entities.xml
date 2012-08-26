@@ -4,7 +4,7 @@
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="moveOn" entity_tag="PusherTwoState" />
-          <reward type="cel.rewards.debugprint" message="yes" />
+          <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="PusherTwoState" sequence="moveOn" />
@@ -28,6 +28,15 @@
         </trigger>
       </state>
       <state name="off">
+        <oninit>
+          <reward type="cel.rewards.sequence" entity="$this" sequence="moveOff" entity_tag="PusherTwoState" />
+          <reward type="cel.rewards.debugprint" message="off started" />
+        </oninit>
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="PusherTwoState" sequence="moveOff" />
+          <reward type="cel.rewards.debugprint" message="Off Done" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
       </state>
       <sequence name="moveOn">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
@@ -36,8 +45,8 @@
         <delay time="$duration" />
       </sequence>
       <sequence name="moveOff">
-        <op duration="$duration" type="cel.seqops.transform" entity="$this">
-          <v x="-$x" y="-$y" z="-$z" />
+        <op duration="$duration" type="cel.seqops.transform" entity="$this" reversed="true">
+          <v x="$x" y="$y" z="$z" />
         </op>
         <delay time="$duration" />
       </sequence>

@@ -820,6 +820,7 @@
 											<object class="wxChoice" name="axis_Tr_Choice">
 												<selection>0</selection>
 												<content>
+													<item>none</item>
 													<item>x</item>
 													<item>y</item>
 													<item>z</item>
@@ -834,6 +835,23 @@
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxCheckBox" name="reversed_Check">
+												<label>Reversed</label>
+												<checked>0</checked>
 											</object>
 										</object>
 									</object>
