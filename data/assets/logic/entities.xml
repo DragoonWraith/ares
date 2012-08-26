@@ -9,6 +9,7 @@
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="PusherTwoState" sequence="moveOn" />
           <reward type="cel.rewards.debugprint" message="On Done" />
+          <reward type="cel.rewards.newstate" state="waitOff" />
         </trigger>
       </state>
       <state name="init">
@@ -19,6 +20,17 @@
           <fireon entity="$this" mask="ares.Activate" />
           <reward type="cel.rewards.newstate" state="on" />
         </trigger>
+      </state>
+      <state name="waitOff">
+        <trigger type="cel.triggers.message">
+          <fireon entity="$this" mask="ares.Activate" />
+          <reward type="cel.rewards.newstate" state="off" />
+        </trigger>
+      </state>
+      <state name="off">
+        <oninit>
+          <reward type="cel.rewards.sequence" />
+        </oninit>
       </state>
       <sequence name="moveOn">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
