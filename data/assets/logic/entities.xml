@@ -3,7 +3,7 @@
     <quest name="PusherTwoState">
       <state name="on">
         <oninit>
-          <reward type="cel.rewards.sequence" entity="$this" sequence="moveOn" />
+          <reward type="cel.rewards.sequence" entity="$this" sequence="moveOn" entity_tag="PusherTwoState" />
           <reward type="cel.rewards.debugprint" message="yes" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
@@ -75,9 +75,14 @@
     <propclass name="pclogic.quest" tag="PusherTwoState">
       <action name="NewQuest">
         <par name="name" string="PusherTwoState" />
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
       </action>
       <property name="state" string="init" />
     </propclass>
+    <propclass name="pcobject.mesh" />
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="Player">
     <propclass name="pcobject.mesh">
