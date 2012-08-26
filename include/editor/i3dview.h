@@ -73,6 +73,7 @@ enum TemplateValueColumns
 enum FactoryValueColumns
 {
   FACTORY_COL_NAME = 0,
+  FACTORY_COL_USAGE,
 };
 
 /**

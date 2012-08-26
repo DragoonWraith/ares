@@ -38,8 +38,8 @@ static int CompareFactoryValues (
     GenericStringArrayValue<iDynamicFactory>* const & v1,
     GenericStringArrayValue<iDynamicFactory>* const & v2)
 {
-  const char* s1 = v1->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
-  const char* s2 = v2->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
+  const char* s1 = v1->GetStringArrayValue ()->Get (FACTORY_COL_NAME);
+  const char* s2 = v2->GetStringArrayValue ()->Get (FACTORY_COL_NAME);
   return strcmp (s1, s2);
 }
 
@@ -56,6 +56,9 @@ void FactoriesValue::BuildModel ()
     child.AttachNew (new GenericStringArrayValue<iDynamicFactory> (fact));
     csStringArray& array = child->GetArray ();
     array.Push (fact->GetName ());
+    csString v;
+    v.Format ("%d", fact->GetObjectCount ());
+    array.Push (v);
     objectsHash.Put (fact, child);
     values.Push (child);
   }

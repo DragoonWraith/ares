@@ -772,6 +772,7 @@ void EntityMode::OnTemplateSelect ()
   csString templateName = v->GetStringArrayValue ()->Get (0);
   editQuestMode = false;
   BuildTemplateGraph (templateName);
+  ActivateNode (0);
 }
 
 void EntityMode::AskNewTemplate ()
@@ -793,6 +794,7 @@ void EntityMode::AskNewTemplate ()
       size_t i = view3d->GetTemplateIndexFromTemplates (tpl);
       wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
       ListCtrlTools::SelectRow (list, (int)i, false);
+      ActivateNode (0);
     }
   }
 }

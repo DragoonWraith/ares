@@ -68,31 +68,53 @@ void DynfactCollectionValue::UpdateChildren ()
 
 bool DynfactCollectionValue::DeleteValue (Value* child)
 {
+  iUIManager* ui = aresed3d->GetApp ()->GetUIManager ();
   if (!child)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("Please select an item!");
+    ui->Error ("Please select an item!");
     return false;
   }
   Value* categoryValue = GetCategoryForValue (child);
   if (!categoryValue)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("Please select an item!");
+    ui->Error ("Please select an item!");
     return false;
   }
   if (categoryValue == child)
   {
-    aresed3d->GetApp ()->GetUIManager ()->Error ("You can't delete an entire category at once!");
+    ui->Error ("You can't delete an entire category at once!");
     return false;
   }
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
   iDynamicFactory* factory = dynworld->FindFactory (child->GetStringValue ());
   CS_ASSERT (factory != 0);
+  if (factory->GetObjectCount () > 0)
+  {
+    if (ui->Ask ("There are still %d objects using this factory. Do you want to delete them?",
+	factory->GetObjectCount ()))
+    {
+      aresed3d->GetSelection ()->SetCurrentObject (0);
+      csRef<iDynamicCellIterator> it = dynworld->GetCells ();
+      while (it->HasNext ())
+      {
+	iDynamicCell* cell = it->NextCell ();
+	csArray<iDynamicObject*> toDelete;
+	for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+	{
+	  iDynamicObject* o = cell->GetObject (i);
+	  if (o->GetFactory () == factory)
+	    toDelete.Push (o);
+	}
+	for (size_t i = 0 ; i < toDelete.GetSize () ; i++)
+	  cell->DeleteObject (toDelete[i]);
+      }
+    }
+    else
+      return false;
+  }
   dynworld->RemoveFactory (factory);
   aresed3d->RemoveItem (categoryValue->GetStringValue (), child->GetStringValue ());
-
-  // @@@ Remove all items using this factory!
-  // @@@ Add confirmation
 
   dirty = true;
   FireValueChanged ();

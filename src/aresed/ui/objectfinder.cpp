@@ -153,7 +153,7 @@ void ObjectFinderDialog::OnSearchDynfactButton (wxCommandEvent& event)
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a dynamic factory");
   dialog->AddRow ();
   dialog->AddListIndexed ("factory", uiManager->GetApp ()->Get3DView ()->GetFactoriesValue (),
-      FACTORY_COL_NAME, 300, "Factory", FACTORY_COL_NAME);
+      FACTORY_COL_NAME, 300, "Factory,Usage", FACTORY_COL_NAME, FACTORY_COL_USAGE);
 
   if (dialog->Show (0) == 1)
   {

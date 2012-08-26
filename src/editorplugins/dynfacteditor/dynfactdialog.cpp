@@ -1854,18 +1854,34 @@ public:
 
 //--------------------------------------------------------------------------
 
+void DynfactDialog::AddDirtyFactory (iDynamicFactory* fact)
+{
+  if (fact)
+  {
+    if (!dirtyFactories.Contains (fact))
+    {
+      dirtyFactories.Add (fact);
+      dirtyFactoriesWeakArray.Push (fact);
+    }
+  }
+}
+
 void DynfactDialog::OnOkButton (wxCommandEvent& event)
 {
   i3DView* view3d = GetApplication ()->Get3DView ();
   iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
-  csSet<iDynamicFactory*>::GlobalIterator it = dirtyFactories.GetIterator ();
-  while (it.HasNext ())
+  for (size_t i = 0 ; i < dirtyFactoriesWeakArray.GetSize () ; i++)
   {
-    iDynamicFactory* fact = it.Next ();
-    printf ("Updating factory '%s'\n", fact->GetName ());
-    dynworld->UpdateObjects (fact);
+    iDynamicFactory* fact = dirtyFactoriesWeakArray[i];
+    if (fact)
+    {
+      printf ("Updating factory '%s'\n", fact->GetName ());
+      dynworld->UpdateObjects (fact);
+    }
   }
   dirtyFactories.DeleteAll ();
+  dirtyFactoriesWeakArray.DeleteAll ();
+  view3d->GetObjectsValue ()->Refresh ();
   EndModal (TRUE);
 }
 
