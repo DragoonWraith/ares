@@ -57,7 +57,7 @@ THE SOFTWARE.
 #include "propclass/billboard.h"
 #include "propclass/prop.h"
 
-#include "common/worldload.h"
+#include "iassetmanager.h"
 
 #define PATHFIND_VERBOSE 0
 
@@ -66,13 +66,11 @@ THE SOFTWARE.
 AppAres::AppAres ()
 {
   SetApplicationName ("Ares");
-  worldLoader = 0;
   currentTime = 31000;
 }
 
 AppAres::~AppAres ()
 {
-  delete worldLoader;
 }
 
 void AppAres::OnExit ()
@@ -458,13 +456,13 @@ bool AppAres::Application ()
   nature = csQueryRegistry<iNature> (object_reg);
   if (!nature) return ReportError("Failed to locate nature plugin!");
 
-  worldLoader = new WorldLoader (object_reg);
-  worldLoader->SetZone (dynworld);
+  assetManager = csQueryRegistry<iAssetManager> (object_reg);
+  assetManager->SetZone (dynworld);
 
   if (!InitPhysics ())
     return false;
 
-  worldLoader->LoadFile ("/saves/testworld");
+  assetManager->LoadFile ("/saves/testworld");
   sector = engine->FindSector ("room");
 
   if (!PostLoadMap ())

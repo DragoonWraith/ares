@@ -34,11 +34,12 @@ THE SOFTWARE.
 #include <wx/dirctrl.h>
 
 class UIManager;
-class Asset;
+class BaseAsset;
+struct iAsset;
 
 struct NewProjectCallback : public csRefCount
 {
-  virtual void OkPressed (const csArray<Asset>& assets) = 0;
+  virtual void OkPressed (const csArray<BaseAsset>& assets) = 0;
 };
 
 class NewProjectDialog : public wxDialog
@@ -114,7 +115,7 @@ public:
   ~NewProjectDialog();
 
   void Show (NewProjectCallback* cb);
-  void Show (NewProjectCallback* cb, const csArray<Asset>& assets);
+  void Show (NewProjectCallback* cb, const csRefArray<iAsset>& assets);
   //void SetFilename (const char* filename);
 
   DECLARE_EVENT_TABLE ();

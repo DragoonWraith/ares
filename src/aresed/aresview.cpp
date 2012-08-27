@@ -48,7 +48,7 @@ THE SOFTWARE.
 #include "models/factories.h"
 #include "models/objects.h"
 #include "models/templates.h"
-#include "common/worldload.h"
+#include "iassetmanager.h"
 #include "edcommon/transformtools.h"
 #include "edcommon/inspect.h"
 
@@ -1059,21 +1059,21 @@ bool AresEdit3DView::PostLoadMap ()
   if (!SetupDynWorld ())
     return false;
 
-  if (app->GetWorldLoader ())
+  if (app->GetAssetManager ())
   {
     for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
     {
       iCurvedFactory* cfact = curvedMeshCreator->GetCurvedFactory (i);
       static_factories.Add (cfact->GetName ());
     }
-    curvedFactories = app->GetWorldLoader ()->GetCurvedFactories ();
+    curvedFactories = app->GetAssetManager ()->GetCurvedFactories ();
 
     for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryCount () ; i++)
     {
       iRoomFactory* cfact = roomMeshCreator->GetRoomFactory (i);
       static_factories.Add (cfact->GetName ());
     }
-    roomFactories = app->GetWorldLoader ()->GetRoomFactories ();
+    roomFactories = app->GetAssetManager ()->GetRoomFactories ();
   }
 
   dyncell = 0;

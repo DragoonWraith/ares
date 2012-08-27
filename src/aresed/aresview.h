@@ -32,7 +32,6 @@ THE SOFTWARE.
 #include "editor/i3dview.h"
 #include "editor/iapp.h"
 #include "editor/icommand.h"
-#include "common/worldload.h"
 
 #include "aresed.h"
 #include "camera.h"

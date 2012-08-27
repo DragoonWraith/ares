@@ -56,7 +56,7 @@ struct iCelBlLayer;
 struct iCelPropertyClass;
 struct iCelPropertyClassFactory;
 
-class WorldLoader;
+struct iAssetManager;
 
 /**
  * Main application class of AppAres.
@@ -85,7 +85,7 @@ private:
   csRef<iCelEntity> entity_cam;
   csRef<iCelEntity> zoneEntity;
 
-  WorldLoader* worldLoader;
+  csRef<iAssetManager> assetManager;
 
   ActorSettings actorsettings;
 

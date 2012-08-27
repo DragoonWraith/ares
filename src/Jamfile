@@ -8,8 +8,8 @@ SubInclude TOP src rooms ;
 SubInclude TOP src dynworldload ;
 SubInclude TOP src nature ;
 SubInclude TOP src marker ;
-SubInclude TOP src common ;
 SubInclude TOP src edcommon ;
+SubInclude TOP src assetmanager ;
 SubInclude TOP src editorplugins ;
 
 # Assemble big static plugins lib

@@ -8,7 +8,6 @@ Application ares : $(ARES_SOURCES) ;
 ExternalLibs ares : CRYSTAL ;
 ExternalLibs ares : CEGUI ;
 ExternalLibs ares : CEL ;
-LinkWith ares : common ;
 
 if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   && $(HAVE_CEL_STATIC_PLUGINS) = "yes"
@@ -19,7 +18,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   Application ares_static : $(ARES_SOURCES) ;
   CFlags ares_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine ares_static : CS_STATIC_LINKED ;
-  LinkWith ares_static : common common_static ;
+  LinkWith ares_static : common_static ;
 
   #
   # The plugins that we need

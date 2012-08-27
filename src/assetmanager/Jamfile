@@ -1,0 +1,8 @@
+SubDir TOP src assetmanager ;
+
+Description assetmanager : "Asset Manager Plugin" ;
+Plugin assetmanager :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs assetmanager : CRYSTAL ;
+ExternalLibs assetmanager : CEL ;
+

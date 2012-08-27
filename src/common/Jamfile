@@ -1,8 +1,0 @@
-SubDir TOP src common ;
-
-Description common : "Ares common library" ;
-Library common :
-  [ Wildcard *.cpp *.h ] :
-  shared ;
-ExternalLibs common : CRYSTAL CEL ;
-

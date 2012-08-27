@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- assetmanager.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>utility.assetmanager</name>
+        <implementation>AssetManager</implementation>
+        <description>Asset Manager Plugin</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2011 by Jorrit Tyberghein
+Copyright (c) 2012 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,24 +25,32 @@ THE SOFTWARE.
 #include <crystalspace.h>
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
-#include "common/worldload.h"
+#include "assetmanager.h"
 
 #include "propclass/dynworld.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
 #include "tools/questmanager.h"
 
-WorldLoader::WorldLoader (iObjectRegistry* object_reg) : object_reg (object_reg)
+SCF_IMPLEMENT_FACTORY (AssetManager)
+
+AssetManager::AssetManager (iBase* parent) : scfImplementationType (this, parent)
 {
+}
+
+bool AssetManager::Initialize (iObjectRegistry* object_reg)
+{
+  AssetManager::object_reg = object_reg;
   loader = csQueryRegistry<iLoader> (object_reg);
   vfs = csQueryRegistry<iVFS> (object_reg);
   engine = csQueryRegistry<iEngine> (object_reg);
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
   roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (object_reg);
   mntCounter = 0;
+  return true;
 }
 
-bool WorldLoader::LoadLibrary (const char* path, const char* file)
+bool AssetManager::LoadLibrary (const char* path, const char* file)
 {
   // Set current VFS dir to the level dir, helps with relative paths in maps
   vfs->PushDir (path);
@@ -57,7 +65,7 @@ bool WorldLoader::LoadLibrary (const char* path, const char* file)
   return true;
 }
 
-csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
+csPtr<iString> AssetManager::LoadDocument (iObjectRegistry* object_reg,
     csRef<iDocument>& doc,
     const char* vfspath, const char* file)
 {
@@ -68,7 +76,7 @@ csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
   csRef<iDataBuffer> buf = vfs->ReadFile (file);
   if (vfspath) vfs->PopDir ();
   if (!buf)
-    return "";	// No error, just a non-existing file.
+    return 0;	// No error, just a non-existing file.
 
   csRef<iDocumentSystem> docsys;
   docsys = csQueryRegistry<iDocumentSystem> (object_reg);
@@ -79,16 +87,16 @@ csString WorldLoader::LoadDocument (iObjectRegistry* object_reg,
   const char* error = doc->Parse (buf->GetData ());
   if (error)
   {
-    csString msg;
-    msg.Format ("Can't parse '%s': %s", file, error);
+    scfString* msg = new scfString ();;
+    msg->Format ("Can't parse '%s': %s", file, error);
     doc.Invalidate ();
     return msg;
   }
 
-  return "";
+  return 0;
 }
 
-csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
+csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filename,
     bool use_first_if_not_found)
 {
   csString path;
@@ -100,7 +108,7 @@ csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
     // the first location when we cannot find the file.
     for (size_t i = 0 ; i <= assets->GetSize () ; i++)
     {
-      if (i == assets->GetSize () && !use_first_if_not_found) return "";
+      if (i == assets->GetSize () && !use_first_if_not_found) return 0;
       path = assets->Get (i % assets->GetSize ());	// Make sure to wrap around
       if (path[path.Length ()-1] != '\\' && path[path.Length ()-1] != '/')
 	path += CS_PATH_SEPARATOR;
@@ -128,10 +136,10 @@ csString WorldLoader::FindAsset (iStringArray* assets, const char* filename,
   else
     path = filename;
   path.ReplaceAll ("/", "$/");
-  return path;
+  return new scfString (path);
 }
 
-bool WorldLoader::LoadDoc (iDocument* doc)
+bool AssetManager::LoadDoc (iDocument* doc)
 {
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> dynlevelNode = root->GetNode ("dynlevel");
@@ -153,10 +161,11 @@ bool WorldLoader::LoadDoc (iDocument* doc)
       bool saveLights = child->GetAttributeValueAsBool ("lights");
       LoadAsset (normpath, file, mount);
 
-      Asset asset = Asset (file, saveDynfacts, saveTemplates, saveQuests,
-	    saveLights);
-      asset.SetMountPoint (mount);
-      asset.SetNormalizedPath (normpath);
+      csRef<IntAsset> asset;
+      asset.AttachNew (new IntAsset (file, saveDynfacts, saveTemplates, saveQuests,
+	    saveLights));
+      asset->SetMountPoint (mount);
+      asset->SetNormalizedPath (normpath);
       assets.Push (asset);
     }
     // Ignore the other tags. These are processed below.
@@ -220,7 +229,7 @@ bool WorldLoader::LoadDoc (iDocument* doc)
   return true;
 }
 
-bool WorldLoader::LoadFile (const char* filename)
+bool AssetManager::LoadFile (const char* filename)
 {
   assets.DeleteAll ();
 
@@ -233,24 +242,27 @@ bool WorldLoader::LoadFile (const char* filename)
   roomFactories.DeleteAll ();
 
   csRef<iDocument> doc;
-  csString error = LoadDocument (object_reg, doc, 0, filename);
-  if (!doc && error.IsEmpty ())
-    error.Format ("ERROR reading file '%s'", filename);
+  csRef<iString> error = LoadDocument (object_reg, doc, 0, filename);
+  if (!doc && !error)
+  {
+    error.AttachNew (new scfString ());
+    error->Format ("ERROR reading file '%s'", filename);
+  }
   else
     return LoadDoc (doc);
 
-  printf ("%s\n", error.GetData ());
+  printf ("%s\n", error->GetData ());
   return false;
 }
 
-bool WorldLoader::LoadAsset (const csString& normpath, const csString& file, const csString& mount)
+bool AssetManager::LoadAsset (const csString& normpath, const csString& file, const csString& mount)
 {
-  csString path;
+  csRef<iString> path;
   if (!normpath.IsEmpty ())
   {
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
     path = FindAsset (assetPath, normpath);
-    if (path == "")
+    if (!path)
     {
       // @@@ Proper reporting
       printf ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
@@ -269,10 +281,10 @@ bool WorldLoader::LoadAsset (const csString& normpath, const csString& file, con
     rmount = mount;
   }
 
-  if (!path.IsEmpty ())
+  if (path)
   {
-    vfs->Mount (rmount, path);
-    printf ("Mounting '%s' to '%s'\n", path.GetData (), rmount.GetData ());
+    vfs->Mount (rmount, path->GetData ());
+    printf ("Mounting '%s' to '%s'\n", path->GetData (), rmount.GetData ());
   }
 
   vfs->PushDir (rmount);
@@ -288,7 +300,7 @@ bool WorldLoader::LoadAsset (const csString& normpath, const csString& file, con
   else
   {
     printf ("Warning! File '%s/%s' does not exist!\n",
-	path.IsEmpty () ? rmount.GetData () : path.GetData (), file.GetData ());
+	(!path) ? rmount.GetData () : path->GetData (), file.GetData ());
   }
 
   //if (!path.IsEmpty ())
@@ -296,54 +308,60 @@ bool WorldLoader::LoadAsset (const csString& normpath, const csString& file, con
   return true;
 }
 
-bool WorldLoader::NewProject (const csArray<Asset>& newassets)
+bool AssetManager::NewProject ()
 {
-  assets = newassets;
-  for (size_t i = 0 ; i < newassets.GetSize () ; i++)
-  {
-    csString normpath = newassets[i].GetNormalizedPath ();
-    csString file = newassets[i].GetFile ();
-    csString mount = newassets[i].GetMountPoint ();
-    if (!LoadAsset (normpath, file, mount))
-      return false;
-  }
+  assets.DeleteAll ();
   return true;
 }
 
-bool WorldLoader::HasAsset (const Asset& a)
+iAsset* AssetManager::HasAsset (const BaseAsset& a)
 {
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
-    if (assets[i].GetNormalizedPath () == a.GetNormalizedPath () &&
-	assets[i].GetFile () == a.GetFile () &&
-	assets[i].GetMountPoint () == a.GetMountPoint ())
+    if (assets[i]->GetNormalizedPath () == a.GetNormalizedPath () &&
+	assets[i]->GetFile () == a.GetFile () &&
+	assets[i]->GetMountPoint () == a.GetMountPoint ())
     {
       // Update the asset we have with the new flags.
-      assets[i].SetDynfactSavefile (a.IsDynfactSavefile ());
-      assets[i].SetTemplateSavefile (a.IsTemplateSavefile ());
-      assets[i].SetQuestSavefile (a.IsQuestSavefile ());
-      assets[i].SetLightFactSaveFile (a.IsLightFactSaveFile ());
-      return true;
+      IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+      ia->SetDynfactSavefile (a.IsDynfactSavefile ());
+      ia->SetTemplateSavefile (a.IsTemplateSavefile ());
+      ia->SetQuestSavefile (a.IsQuestSavefile ());
+      ia->SetLightFactSaveFile (a.IsLightFactSaveFile ());
+      return assets[i];
     }
   }
-  return false;
+  return 0;
 }
 
-bool WorldLoader::UpdateAssets (const csArray<Asset>& newassets)
+bool AssetManager::UpdateAssets (const csArray<BaseAsset>& update)
 {
   // @@@ Removing assets is not yet supported. At least they will not get unloaded.
   // The assets table will be updated however. So a Save/Load will remove the asset.
+  csRefArray<iAsset> newassets;
 
-  for (size_t i = 0 ; i < newassets.GetSize () ; i++)
+  for (size_t i = 0 ; i < update.GetSize () ; i++)
   {
-    const Asset& a = newassets[i];
-    if (!HasAsset (a))
+    const BaseAsset& a = update[i];
+    iAsset* currentAsset = HasAsset (a);
+    if (currentAsset)
+    {
+      newassets.Push (currentAsset);
+    }
+    else
     {
       csString normpath = a.GetNormalizedPath ();
       csString file = a.GetFile ();
       csString mount = a.GetMountPoint ();
       if (!LoadAsset (normpath, file, mount))
 	return false;
+
+      csRef<IntAsset> asset;
+      asset.AttachNew (new IntAsset (file, a.IsDynfactSavefile (), a.IsTemplateSavefile (),
+	    a.IsQuestSavefile (), a.IsLightFactSaveFile ()));
+      asset->SetMountPoint (mount);
+      asset->SetNormalizedPath (normpath);
+      newassets.Push (asset);
     }
   }
   assets = newassets;
@@ -351,14 +369,14 @@ bool WorldLoader::UpdateAssets (const csArray<Asset>& newassets)
   return true;
 }
 
-bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
+bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
 {
   csRef<iDocument> docasset = docsys->CreateDocument ();
 
   csRef<iDocumentNode> root = docasset->CreateRoot ();
   csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
   rootNode->SetValue ("library");
-  if (asset.IsLightFactSaveFile ())
+  if (asset->IsLightFactSaveFile ())
   {
     csRef<iSaver> saver = csQueryRegistryOrLoad<iSaver> (object_reg,
     	"crystalspace.level.saver");
@@ -373,7 +391,7 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
       return false;
     }
   }
-  if (asset.IsQuestSavefile ())
+  if (asset->IsQuestSavefile ())
   {
     csRef<iQuestManager> questmgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
     	"cel.manager.quests");
@@ -384,7 +402,7 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
     if (!questmgr->Save (addonNode))
       return false;
   }
-  if (asset.IsDynfactSavefile ())
+  if (asset->IsDynfactSavefile ())
   {
     csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
 	"cel.addons.dynamicworld.loader");
@@ -395,7 +413,7 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
     if (!saver->WriteDown (dynworld, addonNode, 0))
       return false;
   }
-  if (asset.IsTemplateSavefile ())
+  if (asset->IsTemplateSavefile ())
   {
     csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
 	"cel.addons.celentitytpl");
@@ -422,30 +440,30 @@ bool WorldLoader::SaveAsset (iDocumentSystem* docsys, const Asset& asset)
   // point where we can save. That's to avoid the problem where an asset comes from
   // a location which is mounted on different real paths.
   // If the asset cannot be found yet then we will save to the first location on the path.
-  csString normpath = asset.GetNormalizedPath ();
+  csString normpath = asset->GetNormalizedPath ();
   if (normpath.IsEmpty ())
   {
-    printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetMountPoint ().GetData ());
-    vfs->PushDir (asset.GetMountPoint ());
-    vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
+    printf ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetMountPoint ().GetData ());
+    vfs->PushDir (asset->GetMountPoint ());
+    vfs->WriteFile (asset->GetFile (), xml->GetData (), xml->Length ());
     vfs->PopDir ();
   }
   else
   {
-    printf ("Writing '%s' at '%s\n", asset.GetFile ().GetData (), asset.GetNormalizedPath ().GetData ());
+    printf ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-    csString path = FindAsset (assetPath, normpath, true);
+    csRef<iString> path = FindAsset (assetPath, normpath, true);
 
-    vfs->Mount ("/assets/__mnt_wl__", path);
+    vfs->Mount ("/assets/__mnt_wl__", path->GetData ());
     vfs->PushDir ("/assets/__mnt_wl__");
-    vfs->WriteFile (asset.GetFile (), xml->GetData (), xml->Length ());
+    vfs->WriteFile (asset->GetFile (), xml->GetData (), xml->Length ());
     vfs->PopDir ();
-    vfs->Unmount ("/assets/__mnt_wl__", path);
+    vfs->Unmount ("/assets/__mnt_wl__", path->GetData ());
   }
   return true;
 }
 
-csRef<iDocument> WorldLoader::SaveDoc ()
+csRef<iDocument> AssetManager::SaveDoc ()
 {
   csRef<iDocumentSystem> docsys;
   docsys.AttachNew (new csTinyDocumentSystem ());
@@ -457,24 +475,24 @@ csRef<iDocument> WorldLoader::SaveDoc ()
 
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
-    const Asset& asset = assets[i];
+    iAsset* asset = assets[i];
     csRef<iDocumentNode> assetNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
     assetNode->SetValue ("asset");
-    if (!asset.GetNormalizedPath ().IsEmpty ())
-      assetNode->SetAttribute ("path", asset.GetNormalizedPath ());
-    assetNode->SetAttribute ("file", asset.GetFile ());
-    if (!asset.GetMountPoint ().IsEmpty ())
-      assetNode->SetAttribute ("mount", asset.GetMountPoint ());
-    if (asset.IsDynfactSavefile ())
+    if (!asset->GetNormalizedPath ().IsEmpty ())
+      assetNode->SetAttribute ("path", asset->GetNormalizedPath ());
+    assetNode->SetAttribute ("file", asset->GetFile ());
+    if (!asset->GetMountPoint ().IsEmpty ())
+      assetNode->SetAttribute ("mount", asset->GetMountPoint ());
+    if (asset->IsDynfactSavefile ())
       assetNode->SetAttribute ("dynfacts", "true");
-    if (asset.IsTemplateSavefile ())
+    if (asset->IsTemplateSavefile ())
       assetNode->SetAttribute ("templates", "true");
-    if (asset.IsQuestSavefile ())
+    if (asset->IsQuestSavefile ())
       assetNode->SetAttribute ("quests", "true");
-    if (asset.IsLightFactSaveFile ())
+    if (asset->IsLightFactSaveFile ())
       assetNode->SetAttribute ("lights", "true");
-    if (!asset.GetMountPoint ().IsEmpty ())
-      assetNode->SetAttribute ("mount", asset.GetMountPoint ());
+    if (!asset->GetMountPoint ().IsEmpty ())
+      assetNode->SetAttribute ("mount", asset->GetMountPoint ());
   }
 
   csRef<iDocumentNode> dynworldNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
@@ -493,9 +511,9 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   // be modified to only save the new assets and assets that actually came from here.
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
-    const Asset& asset = assets[i];
-    if (asset.IsDynfactSavefile () || asset.IsTemplateSavefile ()
-	|| asset.IsQuestSavefile () || asset.IsLightFactSaveFile ())
+    iAsset* asset = assets[i];
+    if (asset->IsDynfactSavefile () || asset->IsTemplateSavefile ()
+	|| asset->IsQuestSavefile () || asset->IsLightFactSaveFile ())
     {
       // @@@ Todo: proper error reporting.
       if (!SaveAsset (docsys, asset))
@@ -506,7 +524,7 @@ csRef<iDocument> WorldLoader::SaveDoc ()
   return doc;
 }
 
-bool WorldLoader::SaveFile (const char* filename)
+bool AssetManager::SaveFile (const char* filename)
 {
   csRef<iDocument> doc = SaveDoc ();
 

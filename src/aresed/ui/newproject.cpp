@@ -26,8 +26,8 @@ THE SOFTWARE.
 #include "uimanager.h"
 #include "edcommon/listctrltools.h"
 #include "../apparesed.h"
-#include "common/worldload.h"
 #include "edcommon/uitools.h"
+#include "iassetmanager.h"
 
 #include <wx/html/htmlwin.h>
 
@@ -162,10 +162,11 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
   descriptionText = "<html><body>";
 
   csRef<iDocument> doc;
-  csString error = WorldLoader::LoadDocument (uiManager->GetApp ()->GetObjectRegistry (),
+  csRef<iString> error = uiManager->GetApp ()->GetAssetManager ()->LoadDocument (
+      uiManager->GetApp ()->GetObjectRegistry (),
       doc, path, "manifest.xml");
-  if (!doc && !error.IsEmpty ())
-    descriptionText += error;
+  if (!doc && error)
+    descriptionText += error->GetData ();
   else if (doc)
   {
     csRef<iDocumentNode> root = doc->GetRoot ();
@@ -213,7 +214,7 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
 
 void NewProjectDialog::OnOkButton (wxCommandEvent& event)
 {
-  csArray<Asset> assets;
+  csArray<BaseAsset> assets;
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   for (int i = 0 ; i < assetList->GetItemCount () ; i++)
@@ -225,7 +226,7 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
     saveTemplates = flags.GetAt (1) == 'T';
     saveQuests = flags.GetAt (2) == 'Q';
     saveLights = flags.GetAt (3) == 'L';
-    Asset a = Asset (row[1], saveDynfacts, saveTemplates,
+    BaseAsset a = BaseAsset (row[1], saveDynfacts, saveTemplates,
 	  saveQuests, saveLights);
     a.SetNormalizedPath (row[0]);
     a.SetMountPoint (row[3]);
@@ -247,11 +248,12 @@ void NewProjectDialog::ScanLoadableFile (const char* path, const char* file)
 {
 printf ("path=%s file=%s\n", path, file); fflush (stdout);
   csRef<iDocument> doc;
-  csString error = WorldLoader::LoadDocument (uiManager->GetApp ()->GetObjectRegistry (),
+  csRef<iString> error = uiManager->GetApp ()->GetAssetManager ()->LoadDocument (
+      uiManager->GetApp ()->GetObjectRegistry (),
       doc, path, file);
   csString msg;
-  if (!doc && !error.IsEmpty ())
-    msg = error;
+  if (!doc && error)
+    msg = error->GetData ();
   else if (doc)
   {
     msg = "Empty XML";
@@ -365,13 +367,14 @@ void NewProjectDialog::SetPathFile (const char* file,
     else
     {
       csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-      path = WorldLoader::FindAsset (assetPath, normPath);
-      if (path == "")
+      csRef<iString> p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetPath, normPath);
+      if (!p)
       {
         // @@@ Proper reporting
         printf ("Cannot find asset '%s' in the asset path!\n", normPath);
         return;
       }
+      path = p->GetData ();
       printf ("### LoadManifest path=%s %s\n", path.GetData (), file);
       vfs->Unmount ("/tmp/__mnt__", 0);
       vfs->Mount ("/tmp/__mnt__", path);
@@ -561,15 +564,15 @@ void NewProjectDialog::Show (NewProjectCallback* cb)
   ShowModal ();
 }
 
-void NewProjectDialog::Show (NewProjectCallback* cb, const csArray<Asset>& assets)
+void NewProjectDialog::Show (NewProjectCallback* cb, const csRefArray<iAsset>& assets)
 {
   Setup (cb);
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
-    const Asset& a = assets[i];
-    AddAsset (a.GetFile (), a.IsDynfactSavefile (),
-	a.IsTemplateSavefile (), a.IsQuestSavefile (), a.IsLightFactSaveFile (),
-	a.GetNormalizedPath (), a.GetMountPoint ());
+    iAsset* a = assets[i];
+    AddAsset (a->GetFile (), a->IsDynfactSavefile (),
+	a->IsTemplateSavefile (), a->IsQuestSavefile (), a->IsLightFactSaveFile (),
+	a->GetNormalizedPath (), a->GetMountPoint ());
   }
   ShowModal ();
 }

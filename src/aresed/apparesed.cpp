@@ -47,7 +47,6 @@ THE SOFTWARE.
 #include "selection.h"
 #include "models/dynfactmodel.h"
 #include "models/objects.h"
-#include "common/worldload.h"
 #include "edcommon/transformtools.h"
 
 
@@ -74,7 +73,7 @@ struct ManageAssetsCallbackImp : public NewProjectCallback
   AppAresEditWX* ares;
   ManageAssetsCallbackImp (AppAresEditWX* ares) : ares (ares) { }
   virtual ~ManageAssetsCallbackImp () { }
-  virtual void OkPressed (const csArray<Asset>& assets)
+  virtual void OkPressed (const csArray<BaseAsset>& assets)
   {
     ares->ManageAssets (assets);
   }
@@ -155,12 +154,10 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
   wantsFocus3D = 0;
-  worldLoader = 0;
 }
 
 AppAresEditWX::~AppAresEditWX ()
 {
-  delete worldLoader;
   delete camwin;
 }
 
@@ -190,9 +187,9 @@ void AppAresEditWX::RefreshModes ()
   }
 }
 
-void AppAresEditWX::ManageAssets (const csArray<Asset>& assets)
+void AppAresEditWX::ManageAssets (const csArray<BaseAsset>& assets)
 {
-  if (!worldLoader->UpdateAssets (assets))
+  if (!assetManager->UpdateAssets (assets))
   {
     //@@@ Check? aresed3d->PostLoadMap ();
     uiManager->Error ("Error updating assets!");
@@ -209,7 +206,7 @@ bool AppAresEditWX::LoadFile (const char* filename)
 
   SetCurrentFile (vfs->GetCwd (), filename);
 
-  if (!worldLoader->LoadFile (currentFile))
+  if (!assetManager->LoadFile (currentFile))
   {
     aresed3d->PostLoadMap ();
     uiManager->Error ("Error loading file '%s' on path '%s'!", currentFile.GetData (),
@@ -225,7 +222,7 @@ bool AppAresEditWX::LoadFile (const char* filename)
 void AppAresEditWX::SaveFile (const char* filename)
 {
   SetCurrentFile (vfs->GetCwd (), filename);
-  if (!worldLoader->SaveFile (filename))
+  if (!assetManager->SaveFile (filename))
   {
     uiManager->Error ("Error saving file '%s' on path '%s'!", filename, currentPath.GetData ());
     return;
@@ -236,7 +233,7 @@ void AppAresEditWX::ManageAssets ()
 {
   csRef<ManageAssetsCallbackImp> cb;
   cb.AttachNew (new ManageAssetsCallbackImp (this));
-  uiManager->GetNewProjectDialog ()->Show (cb, worldLoader->GetAssets ());
+  uiManager->GetNewProjectDialog ()->Show (cb, assetManager->GetAssets ());
 }
 
 void AppAresEditWX::NewProject ()
@@ -244,7 +241,7 @@ void AppAresEditWX::NewProject ()
   SetCurrentFile ("", "");
 
   aresed3d->SetupWorld ();
-  worldLoader->NewProject (csArray<Asset> ());
+  assetManager->NewProject ();
   aresed3d->PostLoadMap ();
 
   RefreshModes ();
@@ -458,6 +455,7 @@ bool AppAresEditWX::Initialize ()
 	CS_REQUEST_PLUGIN ("utility.marker", iMarkerManager),
 	CS_REQUEST_PLUGIN ("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_PLUGIN ("utility.rooms", iRoomMeshCreator),
+	CS_REQUEST_PLUGIN ("utility.assetmanager", iAssetManager),
 	CS_REQUEST_END))
     return ReportError ("Can't initialize plugins!");
 
@@ -651,8 +649,8 @@ bool AppAresEditWX::InitWX ()
   if (!aresed3d->Setup ())
     return false;
 
-  worldLoader = new WorldLoader (object_reg);
-  worldLoader->SetZone (aresed3d->GetDynamicWorld ());
+  assetManager = csQueryRegistry<iAssetManager> (object_reg);
+  assetManager->SetZone (aresed3d->GetDynamicWorld ());
 
   uiManager.AttachNew (new UIManager (this, wxwindow->GetWindow ()));
 

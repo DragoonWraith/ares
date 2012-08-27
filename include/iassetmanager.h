@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2011 by Jorrit Tyberghein
+Copyright (c) 2012 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_worldload_h
-#define __aresed_worldload_h
+#ifndef __ARES_ASSETMANAGER_H__
+#define __ARES_ASSETMANAGER_H__
 
 #include "aresextern.h"
 #include "propclass/dynworld.h"
@@ -43,9 +43,9 @@ struct iRoomMeshCreator;
 //   will be indicated with $#. In addition slashes are all converted
 //   to '/'
 
-class ARES_EXPORT Asset
+class ARES_EXPORT BaseAsset
 {
-private:
+public:
   csString file;	// A simple filename ('library', 'world', ...)
   csString normPath;	// Normalized path for the file.
   csString mountPoint;	// If given then this mount point must be used.
@@ -54,8 +54,7 @@ private:
   bool saveQuests;
   bool saveLightFacts;
 
-public:
-  Asset (const char* file,
+  BaseAsset (const char* file,
       bool saveDynfacts, bool saveTemplates, bool saveQuests,
       bool saveLightFacts) :
     file (file),
@@ -72,52 +71,48 @@ public:
 
   void SetDynfactSavefile (bool e) { saveDynfacts = e; }
   bool IsDynfactSavefile () const { return saveDynfacts; }
-
   void SetTemplateSavefile (bool e) { saveTemplates = e; }
   bool IsTemplateSavefile () const { return saveTemplates; }
-
   void SetQuestSavefile (bool e) { saveQuests = e; }
   bool IsQuestSavefile () const { return saveQuests; }
-
   void SetLightFactSaveFile (bool e) { saveLightFacts = e; }
   bool IsLightFactSaveFile () const { return saveLightFacts; }
 };
 
-class ARES_EXPORT WorldLoader
+/**
+ * A representation of an asset.
+ */
+struct iAsset : public virtual iBase
 {
-private:
-  iObjectRegistry* object_reg;
-  csRef<iLoader> loader;
-  csRef<iVFS> vfs;
-  csRef<iEngine> engine;
-  csRef<iCurvedMeshCreator> curvedMeshCreator;
-  csRef<iRoomMeshCreator> roomMeshCreator;
-  csRef<iPcDynamicWorld> dynworld;
+  //void SetNormalizedPath (const char* p) { normPath = p; }
+  //void SetMountPoint (const char* m) { mountPoint = m; }
 
-  int mntCounter;
-  csArray<Asset> assets;
+  virtual const csString& GetFile () const = 0;
+  virtual const csString& GetNormalizedPath () const = 0;
+  virtual const csString& GetMountPoint () const = 0;
 
-  csArray<iDynamicFactory*> curvedFactories;
-  csArray<iDynamicFactory*> roomFactories;
+  //void SetDynfactSavefile (bool e) { saveDynfacts = e; }
+  virtual bool IsDynfactSavefile () const = 0;
 
-  csRef<iDocument> SaveDoc ();
-  bool LoadDoc (iDocument* doc);
-  bool LoadLibrary (const char* path, const char* file);
+  //void SetTemplateSavefile (bool e) { saveTemplates = e; }
+  virtual bool IsTemplateSavefile () const = 0;
 
-  bool SaveAsset (iDocumentSystem* docsys, const Asset& asset);
-  bool HasAsset (const Asset& a);
-  bool LoadAsset (const csString& normpath, const csString& file, const csString& mount);
+  //void SetQuestSavefile (bool e) { saveQuests = e; }
+  virtual bool IsQuestSavefile () const = 0;
 
-public:
-  WorldLoader (iObjectRegistry* object_reg);
+  //void SetLightFactSaveFile (bool e) { saveLightFacts = e; }
+  virtual bool IsLightFactSaveFile () const = 0;
+};
 
+/**
+ * The asset manager.
+ */
+struct iAssetManager : public virtual iBase
+{
   /**
    * Set the zone on which to operate.
    */
-  void SetZone (iPcDynamicWorld* dynworld)
-  {
-    WorldLoader::dynworld = dynworld;
-  }
+  virtual void SetZone (iPcDynamicWorld* dynworld) = 0;
 
   /**
    * Find an asset in the asset path. The filename should be a noramlized
@@ -128,8 +123,8 @@ public:
    * path from the asset path has been prepended. Or empty string if
    * the file could not be found on the path (only if use_first_if_not_found == false).
    */
-  static csString FindAsset (iStringArray* assets, const char* filename,
-    bool use_first_if_not_found = false);
+  virtual csPtr<iString> FindAsset (iStringArray* assets, const char* filename,
+    bool use_first_if_not_found = false) = 0;
 
   /**
    * Load a file from a path and set the parsed document or null on error.
@@ -137,38 +132,38 @@ public:
    * Note that a non-existing file is not an error. In that case doc will be null
    * but the error string will be empty.
    */
-  static csString LoadDocument (iObjectRegistry* object_reg,
+  virtual csPtr<iString> LoadDocument (iObjectRegistry* object_reg,
       csRef<iDocument>& doc,
-      const char* vfspath, const char* file);
+      const char* vfspath, const char* file) = 0;
 
   /**
    * Get the currently loaded assets.
    */
-  const csArray<Asset>& GetAssets () const { return assets; }
+  virtual const csRefArray<iAsset>& GetAssets () const = 0;
 
   /**
    * Load the world from a file.
    */
-  bool LoadFile (const char* filename);
+  virtual bool LoadFile (const char* filename) = 0;
 
   /**
    * Save the world to a file.
    */
-  bool SaveFile (const char* filename);
+  virtual bool SaveFile (const char* filename) = 0;
 
   /**
-   * Create a new project with the given assets.
+   * Create a new project empty project.
    */
-  bool NewProject (const csArray<Asset>& newassets);
+  virtual bool NewProject () = 0;
 
   /**
    * Update the assets of the current project.
    */
-  bool UpdateAssets (const csArray<Asset>& newassets);
+  virtual bool UpdateAssets (const csArray<BaseAsset>& newassets) = 0;
 
-  const csArray<iDynamicFactory*> GetCurvedFactories () const { return curvedFactories; }
-  const csArray<iDynamicFactory*> GetRoomFactories () const { return roomFactories; }
+  virtual const csArray<iDynamicFactory*> GetCurvedFactories () const = 0;
+  virtual const csArray<iDynamicFactory*> GetRoomFactories () const = 0;
 };
 
-#endif // __aresed_worldload_h
+#endif // __ARES_ASSETMANAGER_H__
 
