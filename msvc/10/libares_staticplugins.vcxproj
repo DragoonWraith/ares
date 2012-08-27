@@ -111,7 +111,7 @@
       <ProgramDataBaseFileName>..\..\out\release10\build\libares_staticplugins\Win32\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_STATIC_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/MP  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\release10\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\release10\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\release10\build\libares_staticplugins\</ObjectFileName>
@@ -129,7 +129,7 @@
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Lib>
@@ -143,7 +143,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -157,7 +157,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <ProgramDataBaseFileName>..\..\out\release10\build\libares_staticplugins\Win32\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/MP  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\release10\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\release10\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\release10\build\libares_staticplugins\</ObjectFileName>
@@ -175,7 +175,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Lib>
@@ -189,7 +189,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -201,7 +201,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10\build\libares_staticplugins\Win32\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_STATIC_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\debug10\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\debug10\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\debug10\build\libares_staticplugins\</ObjectFileName>
@@ -217,7 +217,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Lib>
@@ -231,7 +231,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -243,7 +243,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10\build\libares_staticplugins\Win32\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\debug10\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\debug10\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\debug10\build\libares_staticplugins\</ObjectFileName>
@@ -259,7 +259,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Lib>
@@ -273,7 +273,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -287,7 +287,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <ProgramDataBaseFileName>..\..\out\release10-x64\build\libares_staticplugins\x64\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_STATIC_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/MP  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\release10-x64\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\release10-x64\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\release10-x64\build\libares_staticplugins\</ObjectFileName>
@@ -305,7 +305,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <Lib>
@@ -319,7 +319,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -333,7 +333,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <ProgramDataBaseFileName>..\..\out\release10-x64\build\libares_staticplugins\x64\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/MP  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\release10-x64\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\release10-x64\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\release10-x64\build\libares_staticplugins\</ObjectFileName>
@@ -351,7 +351,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <Lib>
@@ -365,7 +365,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -377,7 +377,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10-x64\build\libares_staticplugins\x64\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_STATIC_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\debug10-x64\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\debug10-x64\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\debug10-x64\build\libares_staticplugins\</ObjectFileName>
@@ -393,7 +393,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <Lib>
@@ -407,7 +407,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -419,7 +419,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10-x64\build\libares_staticplugins\x64\ares_staticplugins.pdb</ProgramDataBaseFileName>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>..\..\out\debug10-x64\build\libares_staticplugins\libares_staticplugins.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>..\..\out\debug10-x64\build\libares_staticplugins\</AssemblerListingLocation>
       <ObjectFileName>..\..\out\debug10-x64\build\libares_staticplugins\</ObjectFileName>
@@ -435,7 +435,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;$(CEL)\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <Lib>
@@ -449,7 +449,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </PostBuildEvent>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\..\src;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
