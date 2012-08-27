@@ -55,6 +55,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     mainmode
     playmode
     roommode
+    assetmanager
     ;
 
   ExternalLibs aresed_static : CRYSTAL CEL WX ;
