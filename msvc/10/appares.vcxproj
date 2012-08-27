@@ -488,11 +488,6 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
   <ItemGroup>
     <ResourceCompile Include="..\..\msvc\appares.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="libcommon.vcxproj">
-      <Project>{5C8586A7-529C-7B0C-0178-3BEFF934F30B}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -522,9 +522,6 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ResourceCompile Include="..\..\msvc\apparesed_static.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="libcommon.vcxproj">
-      <Project>{5C8586A7-529C-7B0C-0178-3BEFF934F30B}</Project>
-    </ProjectReference>
     <ProjectReference Include="libedcommon.vcxproj">
       <Project>{BC0D3283-1519-F7CE-004F-B767FEE4A54C}</Project>
     </ProjectReference>

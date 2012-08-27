@@ -28,7 +28,7 @@
 				ProgramDataBaseFileName="..\..\out\release9\build\libares_staticplugins\Win32\ares_staticplugins.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
 				OptimizeForProcessor="1"
-				AdditionalOptions=" "
+				AdditionalOptions="/MP "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				PrecompiledHeaderFile="..\..\out\release9\build\libares_staticplugins\libares_staticplugins.pch"
 				AssemblerListingLocation="..\..\out\release9\build\libares_staticplugins\"
@@ -100,7 +100,7 @@
 				ProgramDataBaseFileName="..\..\out\release9\build\libares_staticplugins\Win32\ares_staticplugins.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_SHARED_LIBS"
 				OptimizeForProcessor="1"
-				AdditionalOptions=" "
+				AdditionalOptions="/MP "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				PrecompiledHeaderFile="..\..\out\release9\build\libares_staticplugins\libares_staticplugins.pch"
 				AssemblerListingLocation="..\..\out\release9\build\libares_staticplugins\"
@@ -312,7 +312,7 @@
 				ProgramDataBaseFileName="..\..\out\release9-x64\build\libares_staticplugins\x64\ares_staticplugins.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_STATIC_LIBS"
 				OptimizeForProcessor="1"
-				AdditionalOptions=" "
+				AdditionalOptions="/MP "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				PrecompiledHeaderFile="..\..\out\release9-x64\build\libares_staticplugins\libares_staticplugins.pch"
 				AssemblerListingLocation="..\..\out\release9-x64\build\libares_staticplugins\"
@@ -384,7 +384,7 @@
 				ProgramDataBaseFileName="..\..\out\release9-x64\build\libares_staticplugins\x64\ares_staticplugins.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;USE_CEL;WIN32;CS_USE_SHARED_LIBS"
 				OptimizeForProcessor="1"
-				AdditionalOptions=" "
+				AdditionalOptions="/MP "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				PrecompiledHeaderFile="..\..\out\release9-x64\build\libares_staticplugins\libares_staticplugins.pch"
 				AssemblerListingLocation="..\..\out\release9-x64\build\libares_staticplugins\"
@@ -585,6 +585,9 @@
 			Name="Source Files"
 			Filter="">
 			<File
+				RelativePath="..\..\msvc\libassetmanager_staticreg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\msvc\libcurvemesh_staticreg.cpp">
 			</File>
 			<File
@@ -625,6 +628,9 @@
 			</File>
 			<File
 				RelativePath="..\..\msvc\librooms_staticreg.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\assetmanager\assetmanager.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\curvemesh\curvemesh.cpp">
@@ -699,6 +705,9 @@
 		<Filter
 			Name="Header Files"
 			Filter="">
+			<File
+				RelativePath="..\..\src\assetmanager\assetmanager.h">
+			</File>
 			<File
 				RelativePath="..\..\src\curvemesh\curvemesh.h">
 			</File>

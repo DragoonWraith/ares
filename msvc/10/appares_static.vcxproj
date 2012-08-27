@@ -476,6 +476,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\msvc\appares_static_static_glue_app.cpp" />
     <ClCompile Include="..\..\msvc\appares_static_static_glue_app_CRYSTAL.cpp" />
     <ClCompile Include="..\..\src\ares\actorsettings.cpp" />
     <ClCompile Include="..\..\src\ares\appares.cpp" />
@@ -490,9 +491,6 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ResourceCompile Include="..\..\msvc\appares_static.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="libcommon.vcxproj">
-      <Project>{5C8586A7-529C-7B0C-0178-3BEFF934F30B}</Project>
-    </ProjectReference>
     <ProjectReference Include="libcommon_static.vcxproj">
       <Project>{881C9242-68DE-7612-630E-827A40AB6F14}</Project>
     </ProjectReference>
@@ -510,6 +508,9 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </ProjectReference>
     <ProjectReference Include="libares_static_plugins_CRYSTAL.vcxproj">
       <Project>{D7E239E7-0180-8EF5-01E6-BA62F0FF2E6B}</Project>
+    </ProjectReference>
+    <ProjectReference Include="libares_static_plugins.vcxproj">
+      <Project>{3BC2428D-D476-C24F-9D36-091FAE040A84}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
