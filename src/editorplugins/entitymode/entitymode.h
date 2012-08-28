@@ -46,7 +46,7 @@ class TriggerPanel;
 class RewardPanel;
 class SequencePanel;
 class EntityTemplatePanel;
-class iAresEditor;
+struct iAresEditor;
 
 enum
 {

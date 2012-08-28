@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include "editor/iselection.h"
 
-class iDynamicObject;
+struct iDynamicObject;
 class AresEdit3DView;
 
 typedef csArray<iDynamicObject*>::Iterator SelectionIterator;

@@ -33,7 +33,7 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "editor/imode.h"
 
-class i3DView;
+struct i3DView;
 
 class EditingMode;
 
