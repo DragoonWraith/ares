@@ -570,7 +570,7 @@ IntAsset* AssetManager::FindSuitableAsset (iObject* resource)
     IntAsset* ia = static_cast<IntAsset*> (assets[i]);
     if (ia->IsWritable ())
     {
-      if (!writableAsset)
+      if (writableAsset)
 	return 0;
       writableAsset = ia;
     }
