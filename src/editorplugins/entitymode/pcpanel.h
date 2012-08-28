@@ -133,6 +133,7 @@ public:
   iCelPlLayer* GetPL () const { return pl; }
   iParameterManager* GetPM () const { return pm; }
   EntityMode* GetEntityMode () const { return emode; }
+  iCelEntityTemplate* GetTemplate () const { return tpl; }
 
   void UpdateWireMsg ();
   /// Return the property index of the currently selected message.

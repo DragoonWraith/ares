@@ -2,7 +2,7 @@
   <asset path="$#levels/scifilevel/" file="world" />
   <asset path="$#objects/modernmodels.zip" file="library" />
   <asset path="$#objects/militaryboxa.zip" file="library" />
-  <asset path="$#logic/" file="scifilogic.xml" dynfacts="true" templates="true" quests="true" lights="true" />
+  <asset path="$#logic/" file="scifilogic.xml" writable="true" />
   <dynworld lastid="1000030000">
     <cell name="outside">
       <obj fact="Player" m="0.986704 2.01681e-006 0.162528 -2.02537e-006 1 -1.13051e-007 -0.162528 -2.17631e-007 0.986704" v="5.52025 0.1 2.94952" id="1000010002" />

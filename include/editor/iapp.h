@@ -45,6 +45,11 @@ struct iAresEditor : public virtual iBase
   virtual bool ReportError (const char* description, ...) = 0;
 
   /**
+   * Register that a resource has been modified.
+   */
+  virtual void RegisterModification (iObject* resource) = 0;
+
+  /**
    * Set the focus to the 3d view so that keyboard commands work correctly.
    */
   virtual void SetFocus3D () = 0;

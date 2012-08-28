@@ -40,6 +40,7 @@ struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iCelSequenceFactory;
+struct iQuestFactory;
 struct iSeqOpFactory;
 struct iQuestManager;
 struct iUIDialog;
@@ -54,6 +55,7 @@ private:
   EntityMode* emode;
   wxSizer* parentSizer;
 
+  iQuestFactory* questFact;
   iCelSequenceFactory* sequence;
   csString GetCurrentSequenceType ();
 
@@ -71,12 +73,14 @@ public:
   ~SequencePanel();
 
   iCelPlLayer* GetPL () const { return pl; }
+  EntityMode* GetEntityMode () const { return emode; }
+  iQuestFactory* GetQuestFactory () const { return questFact; }
 
   /**
    * Possibly switch the type of the sequence. Do nothing if the sequence is
    * already of the right type. Otherwise clear all properties.
    */
-  void SwitchSequence (iCelSequenceFactory* sequence);
+  void SwitchSequence (iQuestFactory* questFact, iCelSequenceFactory* sequence);
   iCelSequenceFactory* GetCurrentSequence () const { return sequence; }
   iSeqOpFactory* GetSeqOpFactory ();
   iQuestManager* GetQuestManager () const;

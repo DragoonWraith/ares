@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "edcommon/tools.h"
 #include "editor/iuimanager.h"
 #include "editor/iuidialog.h"
+#include "editor/iapp.h"
 
 //--------------------------------------------------------------------------
 
@@ -55,8 +56,10 @@ iSeqOpFactory* SequencePanel::GetSeqOpFactory ()
   return sequence->GetSeqOpFactory (selection);
 }
 
-void SequencePanel::SwitchSequence (iCelSequenceFactory* sequence)
+void SequencePanel::SwitchSequence (iQuestFactory* questFact,
+    iCelSequenceFactory* sequence)
 {
+  SequencePanel::questFact = questFact;
   SequencePanel::sequence = sequence;
   operations->Refresh ();
 }
@@ -187,6 +190,15 @@ protected:
 public:
   SeqOpCollectionValue (SequencePanel* sequencePanel) : sequencePanel (sequencePanel) { }
   virtual ~SeqOpCollectionValue () { }
+
+  virtual void FireValueChanged ()
+  {
+    StandardCollectionValue::FireValueChanged ();
+    // @@@ This may be a bit too much. This also register a modification if we just look at the
+    // sequence.
+    sequencePanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	sequencePanel->GetQuestFactory ()->QueryObject ());
+  }
 
   virtual bool DeleteValue (Value* child)
   {

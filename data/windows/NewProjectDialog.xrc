@@ -241,49 +241,12 @@
 											<maxlength>0</maxlength>
 										</object>
 									</object>
-								</object>
-							</object>
-							<object class="sizeritem">
-								<option>0</option>
-								<flag>wxEXPAND</flag>
-								<border>5</border>
-								<object class="wxBoxSizer">
-									<orient>wxHORIZONTAL</orient>
 									<object class="sizeritem">
 										<option>0</option>
 										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 										<border>5</border>
-										<object class="wxCheckBox" name="dynfact_Check">
-											<tooltip>If checked then dynamic factories will save to this file</tooltip>
-											<label>Dynfacts</label>
-											<checked>0</checked>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-										<border>5</border>
-										<object class="wxCheckBox" name="entity_Check">
-											<tooltip>If checked then entity templates will save to this file.</tooltip>
-											<label>Templates</label>
-											<checked>0</checked>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-										<border>5</border>
-										<object class="wxCheckBox" name="light_Check">
-											<label>Lights</label>
-											<checked>0</checked>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>1</option>
-										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-										<border>5</border>
-										<object class="wxCheckBox" name="quest_Check">
-											<label>Quests</label>
+										<object class="wxCheckBox" name="writable_Check">
+											<label>Writable</label>
 											<checked>0</checked>
 										</object>
 									</object>

@@ -199,6 +199,8 @@ public:
   bool LoadFile (const char* filename);
   void ManageAssets (const csArray<BaseAsset>& assets);
 
+  virtual void RegisterModification (iObject* resource);
+
   void SwitchToMode (const char* name);
   virtual void SwitchToMainMode ();
   void SetCurveModeEnabled (bool cm);

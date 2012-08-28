@@ -1744,6 +1744,7 @@ bool NewLightChildAction::Do (View* view, wxWindow* component)
       return false;
     }
     view->SetSelectedValue (component, value);
+    dialog->GetApplication ()->RegisterModification (newFactory->QueryObject ());
   }
 
   delete dia;
@@ -1762,6 +1763,7 @@ bool EditLightChildAction::Do (View* view, wxWindow* component)
   LightDialog* dia = new LightDialog (component, dialog);
   if (dia->Show (lf))
   {
+    dialog->GetApplication ()->RegisterModification (lf->QueryObject ());
     dialog->AddDirtyFactory (fact);
   }
   delete dia;
@@ -1862,6 +1864,7 @@ void DynfactDialog::AddDirtyFactory (iDynamicFactory* fact)
     {
       dirtyFactories.Add (fact);
       dirtyFactoriesWeakArray.Push (fact);
+      app->RegisterModification (fact->QueryObject ());
     }
   }
 }

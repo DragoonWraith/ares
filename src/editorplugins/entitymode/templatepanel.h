@@ -63,6 +63,7 @@ public:
 
   iCelPlLayer* GetPL () const { return pl; }
   iUIManager* GetUIManager () const { return uiManager; }
+  EntityMode* GetEntityMode () const { return emode; }
 
   // Switch this dialog to editing of a template.
   void SwitchToTpl (iCelEntityTemplate* tpl);

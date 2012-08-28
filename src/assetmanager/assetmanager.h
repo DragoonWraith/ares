@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 struct iCurvedMeshCreator;
 struct iRoomMeshCreator;
+struct iCollection;
 
 class IntAsset : public scfImplementation1<IntAsset,iAsset>
 {
@@ -36,21 +37,18 @@ private:
   csString file;	// A simple filename ('library', 'world', ...)
   csString normPath;	// Normalized path for the file.
   csString mountPoint;	// If given then this mount point must be used.
-  bool saveDynfacts;
-  bool saveTemplates;
-  bool saveQuests;
-  bool saveLightFacts;
+  bool writable;
+  csRef<iCollection> collection;
 
 public:
-  IntAsset (const char* file,
-      bool saveDynfacts, bool saveTemplates, bool saveQuests,
-      bool saveLightFacts) :
+  IntAsset (const char* file, bool writable) :
     scfImplementationType (this),
-    file (file),
-    saveDynfacts (saveDynfacts), saveTemplates (saveTemplates),
-    saveQuests (saveQuests), saveLightFacts (saveLightFacts)
+    file (file), writable (writable)
   { }
   virtual ~IntAsset () { }
+
+  void SetCollection (iCollection* col) { collection = col; }
+  iCollection* GetCollection () const { return collection; }
 
   void SetNormalizedPath (const char* p) { normPath = p; }
   void SetMountPoint (const char* m) { mountPoint = m; }
@@ -59,17 +57,8 @@ public:
   virtual const csString& GetNormalizedPath () const { return normPath; }
   virtual const csString& GetMountPoint () const { return mountPoint; }
 
-  void SetDynfactSavefile (bool e) { saveDynfacts = e; }
-  virtual bool IsDynfactSavefile () const { return saveDynfacts; }
-
-  void SetTemplateSavefile (bool e) { saveTemplates = e; }
-  virtual bool IsTemplateSavefile () const { return saveTemplates; }
-
-  void SetQuestSavefile (bool e) { saveQuests = e; }
-  virtual bool IsQuestSavefile () const { return saveQuests; }
-
-  void SetLightFactSaveFile (bool e) { saveLightFacts = e; }
-  virtual bool IsLightFactSaveFile () const { return saveLightFacts; }
+  void SetWritable (bool e) { writable = e; }
+  virtual bool IsWritable () const { return writable; }
 };
 
 class AssetManager : public scfImplementation2<AssetManager,iAssetManager,iComponent>
@@ -85,17 +74,32 @@ private:
 
   int mntCounter;
   csRefArray<iAsset> assets;
+  int colCounter;
 
   csArray<iDynamicFactory*> curvedFactories;
   csArray<iDynamicFactory*> roomFactories;
 
   csRef<iDocument> SaveDoc ();
   bool LoadDoc (iDocument* doc);
-  bool LoadLibrary (const char* path, const char* file);
+  bool LoadLibrary (const char* path, const char* file, iCollection* collection);
 
   bool SaveAsset (iDocumentSystem* docsys, iAsset* asset);
   iAsset* HasAsset (const BaseAsset& a);
-  bool LoadAsset (const csString& normpath, const csString& file, const csString& mount);
+  bool LoadAsset (const csString& normpath, const csString& file, const csString& mount,
+      iCollection* collection);
+
+  /**
+   * Find a suitable asset to save this resource. Returns 0
+   * if there is none (more then one possibility). Otherwise the
+   * resource is attached to the asset.
+   */
+  IntAsset* FindSuitableAsset (iObject* resource);
+
+  /**
+   * Find an asset for this resource. If needed and possible the resource will
+   * be assigned to an asset. If this fails this function returns 0.
+   */
+  IntAsset* FindAssetForResource (iObject* resource);
 
 public:
   AssetManager (iBase* parent);
@@ -160,6 +164,11 @@ public:
 
   virtual const csArray<iDynamicFactory*> GetCurvedFactories () const { return curvedFactories; }
   virtual const csArray<iDynamicFactory*> GetRoomFactories () const { return roomFactories; }
+
+  virtual bool IsModifiable (iObject* resource);
+  virtual bool RegisterModification (iObject* resource);
+  virtual void PlaceResource (iObject* resource, iAsset* asset);
+  virtual iAsset* GetAssetForResource (iObject* resource);
 };
 
 #endif // __ASSETMANAGER_H__

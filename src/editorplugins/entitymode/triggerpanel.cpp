@@ -168,8 +168,10 @@ csString TriggerPanel::GetCurrentTriggerType ()
   return triggerS;
 }
 
-void TriggerPanel::SwitchTrigger (iQuestTriggerResponseFactory* triggerResp)
+void TriggerPanel::SwitchTrigger (iQuestFactory* questFact,
+    iQuestTriggerResponseFactory* triggerResp)
 {
+  TriggerPanel::questFact = questFact;
   TriggerPanel::triggerResp = triggerResp;
   UITools::SwitchPage (this, "triggerChoicebook", GetCurrentTriggerType ());
   UpdatePanel ();
@@ -278,6 +280,7 @@ void TriggerPanel::UpdateTrigger ()
   }
   wxString pageTxt = book->GetPageText (pageSel);
   iQuestManager* questMgr = emode->GetQuestManager ();
+  emode->GetApplication ()->RegisterModification (questFact->QueryObject ());
   csString type = (const char*)pageTxt.mb_str (wxConvUTF8);
   if (type != GetCurrentTriggerType ())
   {

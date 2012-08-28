@@ -122,6 +122,8 @@ void PropertyClassPanel::SwitchPCType (const char* pcType)
   pctpl->SetName (pcType);
   pctpl->RemoveAllProperties ();
   emode->PCWasEdited (pctpl);
+
+  emode->GetApplication ()->RegisterModification (tpl->QueryObject ());
 }
 
 // -----------------------------------------------------------------------
@@ -197,6 +199,8 @@ protected:
 	if (msgName == message && entName == entity && pars == parameters)
 	{
 	  pctpl->RemovePropertyByIndex (i);
+  	  pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	      pcPanel->GetTemplate ()->QueryObject ());
 	  return true;
 	}
       }
@@ -224,6 +228,8 @@ protected:
 
     RemoveActionWithName (message, entity, parameters);
     pctpl->PerformAction (actionID, params);
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	pcPanel->GetTemplate ()->QueryObject ());
     return true;
   }
 
@@ -620,6 +626,8 @@ protected:
 	"AddEntityTemplateType", "template", name);
     if (idx == csArrayItemNotFound) return false;
     pctpl->RemovePropertyByIndex (idx);
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+      pcPanel->GetTemplate ()->QueryObject ());
     return true;
   }
 
@@ -645,6 +653,8 @@ protected:
 
     RemoveActionWithName (name);
     pctpl->PerformAction (actionID, params);
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	pcPanel->GetTemplate ()->QueryObject ());
     return true;
   }
 
@@ -1029,6 +1039,8 @@ protected:
 	"AddTemplate", "name", name);
     if (idx == csArrayItemNotFound) return false;
     pctpl->RemovePropertyByIndex (idx);
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	pcPanel->GetTemplate ()->QueryObject ());
     return true;
   }
 
@@ -1059,6 +1071,8 @@ protected:
 
     RemoveActionWithName (name);
     pctpl->PerformAction (actionID, params);
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	pcPanel->GetTemplate ()->QueryObject ());
     return true;
   }
 
@@ -1174,6 +1188,8 @@ private:
     iCelPlLayer* pl = pcPanel->GetPL ();
     csStringID nameID = pl->FetchStringID (name);
     pctpl->RemoveProperty (nameID);
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	pcPanel->GetTemplate ()->QueryObject ());
     if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
     else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
     else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
@@ -1219,6 +1235,8 @@ public:
     Value* nameValue = child->GetChildByName ("Name");
     iCelPlLayer* pl = pcPanel->GetPL ();
     pctpl->RemoveProperty (pl->FetchStringID (nameValue->GetStringValue ()));
+    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
+	pcPanel->GetTemplate ()->QueryObject ());
     RemoveChild (child);
     return true;
   }
@@ -1311,6 +1329,7 @@ bool PropertyClassPanel::UpdatePC ()
     pctpl->SetTag (0);
   else
     pctpl->SetTag (tag);
+  emode->GetApplication ()->RegisterModification (tpl->QueryObject ());
 
   if (page == "pctools.properties") return UpdateProperties ();
   else if (page == "pctools.inventory") return UpdateInventory ();

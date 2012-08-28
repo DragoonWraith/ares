@@ -49,17 +49,10 @@ public:
   csString file;	// A simple filename ('library', 'world', ...)
   csString normPath;	// Normalized path for the file.
   csString mountPoint;	// If given then this mount point must be used.
-  bool saveDynfacts;
-  bool saveTemplates;
-  bool saveQuests;
-  bool saveLightFacts;
+  bool writable;
 
-  BaseAsset (const char* file,
-      bool saveDynfacts, bool saveTemplates, bool saveQuests,
-      bool saveLightFacts) :
-    file (file),
-    saveDynfacts (saveDynfacts), saveTemplates (saveTemplates),
-    saveQuests (saveQuests), saveLightFacts (saveLightFacts)
+  BaseAsset (const char* file, bool writable) :
+    file (file), writable (writable)
   { }
 
   void SetNormalizedPath (const char* p) { normPath = p; }
@@ -69,14 +62,8 @@ public:
   const csString& GetNormalizedPath () const { return normPath; }
   const csString& GetMountPoint () const { return mountPoint; }
 
-  void SetDynfactSavefile (bool e) { saveDynfacts = e; }
-  bool IsDynfactSavefile () const { return saveDynfacts; }
-  void SetTemplateSavefile (bool e) { saveTemplates = e; }
-  bool IsTemplateSavefile () const { return saveTemplates; }
-  void SetQuestSavefile (bool e) { saveQuests = e; }
-  bool IsQuestSavefile () const { return saveQuests; }
-  void SetLightFactSaveFile (bool e) { saveLightFacts = e; }
-  bool IsLightFactSaveFile () const { return saveLightFacts; }
+  void SetWritable (bool e) { writable = e; }
+  bool IsWritable () const { return writable; }
 };
 
 /**
@@ -84,24 +71,11 @@ public:
  */
 struct iAsset : public virtual iBase
 {
-  //void SetNormalizedPath (const char* p) { normPath = p; }
-  //void SetMountPoint (const char* m) { mountPoint = m; }
-
   virtual const csString& GetFile () const = 0;
   virtual const csString& GetNormalizedPath () const = 0;
   virtual const csString& GetMountPoint () const = 0;
 
-  //void SetDynfactSavefile (bool e) { saveDynfacts = e; }
-  virtual bool IsDynfactSavefile () const = 0;
-
-  //void SetTemplateSavefile (bool e) { saveTemplates = e; }
-  virtual bool IsTemplateSavefile () const = 0;
-
-  //void SetQuestSavefile (bool e) { saveQuests = e; }
-  virtual bool IsQuestSavefile () const = 0;
-
-  //void SetLightFactSaveFile (bool e) { saveLightFacts = e; }
-  virtual bool IsLightFactSaveFile () const = 0;
+  virtual bool IsWritable () const = 0;
 };
 
 /**
@@ -163,6 +137,32 @@ struct iAssetManager : public virtual iBase
 
   virtual const csArray<iDynamicFactory*> GetCurvedFactories () const = 0;
   virtual const csArray<iDynamicFactory*> GetRoomFactories () const = 0;
+
+  /**
+   * Check if a resource can be modified. If it is part of a readonly asset
+   * then this function will return false.
+   */
+  virtual bool IsModifiable (iObject* resource) = 0;
+
+  /**
+   * Register modified resource. Use this function to register that
+   * a resource has been modified or created. This function does not
+   * check if a resource can be modified (use IsModifiable() for that).
+   * This function returns false if the asset manager doesn't know
+   * where to put this resource.
+   */
+  virtual bool RegisterModification (iObject* resource) = 0;
+
+  /**
+   * Place a resource with some asset.
+   */
+  virtual void PlaceResource (iObject* resource, iAsset* asset) = 0;
+
+  /**
+   * Get the asset for this resource or 0 if the asset manager doesn't
+   * know where the resource belongs.
+   */
+  virtual iAsset* GetAssetForResource (iObject* resource) = 0;
 };
 
 #endif // __ARES_ASSETMANAGER_H__

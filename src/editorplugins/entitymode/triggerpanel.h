@@ -39,6 +39,7 @@ struct iCelPropertyClassTemplate;
 struct iCelParameterIterator;
 struct iParameter;
 struct iQuestTriggerResponseFactory;
+struct iQuestFactory;
 struct iUIDialog;
 struct iUIManager;
 class EntityMode;
@@ -51,6 +52,7 @@ private:
   EntityMode* emode;
   wxSizer* parentSizer;
 
+  iQuestFactory* questFact;
   iQuestTriggerResponseFactory* triggerResp;
   csString GetCurrentTriggerType ();
 
@@ -76,7 +78,8 @@ public:
    * Possibly switch the type of the trigger. Do nothing if the trigger is
    * already of the right type. Otherwise clear all properties.
    */
-  void SwitchTrigger (iQuestTriggerResponseFactory* triggerResp);
+  void SwitchTrigger (iQuestFactory* questFact,
+      iQuestTriggerResponseFactory* triggerResp);
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }

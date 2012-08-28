@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
 #include "tools/questmanager.h"
+#include "tools/dynworldload.h"
 
 SCF_IMPLEMENT_FACTORY (AssetManager)
 
@@ -47,14 +48,15 @@ bool AssetManager::Initialize (iObjectRegistry* object_reg)
   curvedMeshCreator = csQueryRegistry<iCurvedMeshCreator> (object_reg);
   roomMeshCreator = csQueryRegistry<iRoomMeshCreator> (object_reg);
   mntCounter = 0;
+  colCounter = 0;
   return true;
 }
 
-bool AssetManager::LoadLibrary (const char* path, const char* file)
+bool AssetManager::LoadLibrary (const char* path, const char* file, iCollection* collection)
 {
   // Set current VFS dir to the level dir, helps with relative paths in maps
   vfs->PushDir (path);
-  csLoadResult rc = loader->Load (file);
+  csLoadResult rc = loader->Load (file, collection);
   if (!rc.success)
   {
     vfs->PopDir ();
@@ -155,17 +157,17 @@ bool AssetManager::LoadDoc (iDocument* doc)
       csString normpath = child->GetAttributeValue ("path");
       csString file = child->GetAttributeValue ("file");
       csString mount = child->GetAttributeValue ("mount");
-      bool saveDynfacts = child->GetAttributeValueAsBool ("dynfacts");
-      bool saveTemplates = child->GetAttributeValueAsBool ("templates");
-      bool saveQuests = child->GetAttributeValueAsBool ("quests");
-      bool saveLights = child->GetAttributeValueAsBool ("lights");
-      LoadAsset (normpath, file, mount);
+      bool writable = child->GetAttributeValueAsBool ("writable");
+      csString colName;
+      colName.Format ("__col__%d__", colCounter++);
+      iCollection* collection = engine->CreateCollection (colName);
+      LoadAsset (normpath, file, mount, collection);
 
       csRef<IntAsset> asset;
-      asset.AttachNew (new IntAsset (file, saveDynfacts, saveTemplates, saveQuests,
-	    saveLights));
+      asset.AttachNew (new IntAsset (file, writable));
       asset->SetMountPoint (mount);
       asset->SetNormalizedPath (normpath);
+      asset->SetCollection (collection);
       assets.Push (asset);
     }
     // Ignore the other tags. These are processed below.
@@ -255,7 +257,8 @@ bool AssetManager::LoadFile (const char* filename)
   return false;
 }
 
-bool AssetManager::LoadAsset (const csString& normpath, const csString& file, const csString& mount)
+bool AssetManager::LoadAsset (const csString& normpath, const csString& file, const csString& mount,
+    iCollection* collection)
 {
   csRef<iString> path;
   if (!normpath.IsEmpty ())
@@ -294,7 +297,7 @@ bool AssetManager::LoadAsset (const csString& normpath, const csString& file, co
   vfs->PopDir ();
   if (exists)
   {
-    if (!LoadLibrary (rmount, file))
+    if (!LoadLibrary (rmount, file, collection))
       return false;
   }
   else
@@ -310,6 +313,13 @@ bool AssetManager::LoadAsset (const csString& normpath, const csString& file, co
 
 bool AssetManager::NewProject ()
 {
+  // @@@ Should this also unload all loaded data? Probably yes.
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->GetCollection ())
+      engine->RemoveCollection (ia->GetCollection ());
+  }
   assets.DeleteAll ();
   return true;
 }
@@ -324,10 +334,7 @@ iAsset* AssetManager::HasAsset (const BaseAsset& a)
     {
       // Update the asset we have with the new flags.
       IntAsset* ia = static_cast<IntAsset*> (assets[i]);
-      ia->SetDynfactSavefile (a.IsDynfactSavefile ());
-      ia->SetTemplateSavefile (a.IsTemplateSavefile ());
-      ia->SetQuestSavefile (a.IsQuestSavefile ());
-      ia->SetLightFactSaveFile (a.IsLightFactSaveFile ());
+      ia->SetWritable (a.IsWritable ());
       return assets[i];
     }
   }
@@ -339,6 +346,8 @@ bool AssetManager::UpdateAssets (const csArray<BaseAsset>& update)
   // @@@ Removing assets is not yet supported. At least they will not get unloaded.
   // The assets table will be updated however. So a Save/Load will remove the asset.
   csRefArray<iAsset> newassets;
+
+  // @@@ Remove the collection for removed assets!
 
   for (size_t i = 0 ; i < update.GetSize () ; i++)
   {
@@ -353,14 +362,17 @@ bool AssetManager::UpdateAssets (const csArray<BaseAsset>& update)
       csString normpath = a.GetNormalizedPath ();
       csString file = a.GetFile ();
       csString mount = a.GetMountPoint ();
-      if (!LoadAsset (normpath, file, mount))
+      csString colName;
+      colName.Format ("__col__%d__", colCounter++);
+      iCollection* collection = engine->CreateCollection (colName);
+      if (!LoadAsset (normpath, file, mount, collection))
 	return false;
 
       csRef<IntAsset> asset;
-      asset.AttachNew (new IntAsset (file, a.IsDynfactSavefile (), a.IsTemplateSavefile (),
-	    a.IsQuestSavefile (), a.IsLightFactSaveFile ()));
+      asset.AttachNew (new IntAsset (file, a.IsWritable ()));
       asset->SetMountPoint (mount);
       asset->SetNormalizedPath (normpath);
+      asset->SetCollection (collection);
       newassets.Push (asset);
     }
   }
@@ -372,66 +384,72 @@ bool AssetManager::UpdateAssets (const csArray<BaseAsset>& update)
 bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
 {
   csRef<iDocument> docasset = docsys->CreateDocument ();
+  IntAsset* ia = static_cast<IntAsset*> (asset);
+  iCollection* collection = ia->GetCollection ();
 
   csRef<iDocumentNode> root = docasset->CreateRoot ();
   csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
   rootNode->SetValue ("library");
-  if (asset->IsLightFactSaveFile ())
+
   {
     csRef<iSaver> saver = csQueryRegistryOrLoad<iSaver> (object_reg,
-    	"crystalspace.level.saver");
+	"crystalspace.level.saver");
     if (!saver)
     {
       printf ("ERROR! Saver plugin is missing. Cannot save!\n");
       return false;
     }
-    if (!saver->SaveLightFactories (0, rootNode))
+    if (!saver->SaveLightFactories (collection, rootNode))
     {
       printf ("ERROR! Error saving light factories!\n");
       return false;
     }
   }
-  if (asset->IsQuestSavefile ())
+
   {
     csRef<iQuestManager> questmgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
-    	"cel.manager.quests");
+	"cel.manager.quests");
     if (!questmgr) return false;
     csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
     addonNode->SetValue ("addon");
     addonNode->SetAttribute ("plugin", "cel.addons.questdef");
-    if (!questmgr->Save (addonNode))
+    if (!questmgr->Save (addonNode, collection))
       return false;
   }
-  if (asset->IsDynfactSavefile ())
+
   {
-    csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
+    csRef<iDynamicWorldSaver> saver = csLoadPluginCheck<iDynamicWorldSaver> (object_reg,
 	"cel.addons.dynamicworld.loader");
     if (!saver) return false;
     csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
     addonNode->SetValue ("addon");
     addonNode->SetAttribute ("plugin", "cel.addons.dynamicworld.loader");
-    if (!saver->WriteDown (dynworld, addonNode, 0))
+    if (!saver->WriteFactories (dynworld, addonNode, collection))
       return false;
   }
-  if (asset->IsTemplateSavefile ())
+
   {
     csRef<iSaverPlugin> saver = csLoadPluginCheck<iSaverPlugin> (object_reg,
 	"cel.addons.celentitytpl");
     if (!saver) return 0;
     csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
     csRef<iCelEntityTemplateIterator> tempIt = pl->GetEntityTemplates ();
-    // @@@ Todo: only save entities from read-only assets if they are modified.
     while (tempIt->HasNext ())
     {
       iCelEntityTemplate* temp = tempIt->Next ();
-      csString tempName = temp->GetName ();
-      csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
-      addonNode->SetValue ("addon");
-      addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
-      if (!saver->WriteDown (temp, addonNode, 0))
-	return false;
+      if (!collection || collection->IsParentOf (temp->QueryObject ()))
+      {
+        csString tempName = temp->GetName ();
+        csRef<iDocumentNode> addonNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+        addonNode->SetValue ("addon");
+        addonNode->SetAttribute ("plugin", "cel.addons.celentitytpl");
+        if (!saver->WriteDown (temp, addonNode, 0))
+	  return false;
+      }
     }
   }
+
+
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   docasset->Write (xml);
@@ -483,14 +501,8 @@ csRef<iDocument> AssetManager::SaveDoc ()
     assetNode->SetAttribute ("file", asset->GetFile ());
     if (!asset->GetMountPoint ().IsEmpty ())
       assetNode->SetAttribute ("mount", asset->GetMountPoint ());
-    if (asset->IsDynfactSavefile ())
-      assetNode->SetAttribute ("dynfacts", "true");
-    if (asset->IsTemplateSavefile ())
-      assetNode->SetAttribute ("templates", "true");
-    if (asset->IsQuestSavefile ())
-      assetNode->SetAttribute ("quests", "true");
-    if (asset->IsLightFactSaveFile ())
-      assetNode->SetAttribute ("lights", "true");
+    if (asset->IsWritable ())
+      assetNode->SetAttribute ("writable", "true");
     if (!asset->GetMountPoint ().IsEmpty ())
       assetNode->SetAttribute ("mount", asset->GetMountPoint ());
   }
@@ -512,8 +524,7 @@ csRef<iDocument> AssetManager::SaveDoc ()
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     iAsset* asset = assets[i];
-    if (asset->IsDynfactSavefile () || asset->IsTemplateSavefile ()
-	|| asset->IsQuestSavefile () || asset->IsLightFactSaveFile ())
+    if (asset->IsWritable ())
     {
       // @@@ Todo: proper error reporting.
       if (!SaveAsset (docsys, asset))
@@ -534,5 +545,85 @@ printf ("Writing '%s' at '%s\n", filename, vfs->GetCwd ());
   doc->Write (xml);
   vfs->WriteFile (filename, xml->GetData (), xml->Length ());
   return true;
+}
+
+bool AssetManager::IsModifiable (iObject* resource)
+{
+  iObject* parent = resource->GetObjectParent ();
+  if (!parent) return true;	// Not in any asset, so it can be modified.
+  csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
+  if (!collection) return true;	// Parent is not a collection, so it can be modified.
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->GetCollection () == collection)
+      return ia->IsWritable ();
+  }
+  return true;	// Couldn't find resource. Assume it can be modified.
+}
+
+IntAsset* AssetManager::FindSuitableAsset (iObject* resource)
+{
+  IntAsset* writableAsset = 0;
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->IsWritable ())
+    {
+      if (!writableAsset)
+	return 0;
+      writableAsset = ia;
+    }
+  }
+  if (!writableAsset) return 0;
+  writableAsset->GetCollection ()->Add (resource);
+  return writableAsset;
+}
+
+IntAsset* AssetManager::FindAssetForResource (iObject* resource)
+{
+  iObject* parent = resource->GetObjectParent ();
+  if (!parent) return FindSuitableAsset (resource);
+  csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
+  if (!collection) return FindSuitableAsset (resource);	// @@@Can this actually happen?
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->GetCollection () == collection)
+      return ia;
+  }
+  return 0;
+}
+
+bool AssetManager::RegisterModification (iObject* resource)
+{
+  IntAsset* asset = FindAssetForResource (resource);
+  if (asset)
+  {
+    // @@@ Register modified.
+    return true;
+  }
+  return false;
+}
+
+void AssetManager::PlaceResource (iObject* resource, iAsset* asset)
+{
+  IntAsset* ia = static_cast<IntAsset*> (asset);
+  ia->GetCollection ()->Add (resource);
+}
+
+iAsset* AssetManager::GetAssetForResource (iObject* resource)
+{
+  iObject* parent = resource->GetObjectParent ();
+  if (!parent) return 0;
+  csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
+  if (!collection) return 0;
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->GetCollection () == collection)
+      return ia;
+  }
+  return 0;
 }
 

@@ -795,6 +795,7 @@ void EntityMode::AskNewTemplate ()
       wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
       ListCtrlTools::SelectRow (list, (int)i, false);
       ActivateNode (0);
+      view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
     }
   }
 }
@@ -821,6 +822,7 @@ void EntityMode::OnDelete ()
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
     tpl->RemovePropertyClassTemplate (pctpl);
+    view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
     editQuestMode = false;
     RefreshView ();
   }
@@ -895,6 +897,7 @@ void EntityMode::OnCreatePC ()
         pc->SetTag (tag);
 
       RefreshView ();
+      view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
     }
 
   }
@@ -903,6 +906,9 @@ void EntityMode::OnCreatePC ()
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
   RefreshView (pctpl);
+
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
 }
 
 void EntityMode::ActivateNode (const char* nodeName)
@@ -933,7 +939,8 @@ printf ("node:%s\n", nodeName); fflush (stdout);
   {
     iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (activeNode);
     if (!resp || !resp->GetTriggerFactory ()) return;
-    triggerPanel->SwitchTrigger (resp);
+    iQuestFactory* questFact = GetSelectedQuest (activeNode);
+    triggerPanel->SwitchTrigger (questFact, resp);
     triggerPanel->Show ();
   }
   else if (type == 'r')
@@ -949,7 +956,8 @@ printf ("node:%s\n", nodeName); fflush (stdout);
   {
     iCelSequenceFactory* sequence = GetSelectedSequence (activeNode);
     if (!sequence) return;
-    sequencePanel->SwitchSequence (sequence);
+    iQuestFactory* questFact = GetSelectedQuest (activeNode);
+    sequencePanel->SwitchSequence (questFact, sequence);
     sequencePanel->Show ();
   }
 }
@@ -1027,6 +1035,10 @@ void EntityMode::OnDefaultState ()
   state = state.Slice (2);
   pctpl->RemoveProperty (pl->FetchStringID ("state"));
   pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
+
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+
   RefreshView (pctpl);
 }
 

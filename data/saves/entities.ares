@@ -1,8 +1,8 @@
 <dynlevel>
   <asset path="$#levels/simple/" file="level.xml" />
-  <asset path="$#logic/" file="entities.xml" templates="true" quests="true" />
+  <asset path="$#logic/" file="entities.xml" writable="true" />
   <asset path="$#objects/simple.zip" file="library" />
-  <asset path="$#logic/" file="entities_objects.xml" dynfacts="true" />
+  <asset path="$#logic/" file="entities_objects.xml" writable="true" />
   <dynworld lastid="1000080000">
     <cell name="outside">
       <obj fact="Barrel" m="0.960587 -1.56045e-06 0.27798 1.4305e-06 1 6.70279e-07 -0.27798 -2.46209e-07 0.960587" v="-8.21353 0.6 18.1272" id="1000070002" ent="PusherTwoState">

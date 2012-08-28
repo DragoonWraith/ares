@@ -220,14 +220,9 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
   for (int i = 0 ; i < assetList->GetItemCount () ; i++)
   {
     csStringArray row = ListCtrlTools::ReadRow (assetList, i);
-    bool saveDynfacts, saveTemplates, saveQuests, saveLights;
     csString flags = row[2];
-    saveDynfacts = flags.GetAt (0) == 'D';
-    saveTemplates = flags.GetAt (1) == 'T';
-    saveQuests = flags.GetAt (2) == 'Q';
-    saveLights = flags.GetAt (3) == 'L';
-    BaseAsset a = BaseAsset (row[1], saveDynfacts, saveTemplates,
-	  saveQuests, saveLights);
+    bool writable = flags == "RW";
+    BaseAsset a = BaseAsset (row[1], writable);
     a.SetNormalizedPath (row[0]);
     a.SetMountPoint (row[3]);
     assets.Push (a);
@@ -337,23 +332,16 @@ void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
 }
 
 void NewProjectDialog::SetPathFile (const char* file,
-    bool saveDynfacts, bool saveTemplates, bool saveQuests, bool saveLights,
-    const char* normPath, const char* mount)
+    bool writable, const char* normPath, const char* mount)
 {
   wxTextCtrl* normpathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
   wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
-  wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
-  wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
-  wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
-  wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
+  wxCheckBox* writableCheck = XRCCTRL (*this, "writable_Check", wxCheckBox);
   normpathText->SetValue (wxString::FromUTF8 (normPath));
   fileText->SetValue (wxString::FromUTF8 (file));
   mountText->SetValue (wxString::FromUTF8 (mount));
-  dynfactsCheck->SetValue (saveDynfacts);
-  templatesCheck->SetValue (saveTemplates);
-  questsCheck->SetValue (saveQuests);
-  lightsCheck->SetValue (saveLights);
+  writableCheck->SetValue (writable);
 
   if (file && *file && ((normPath && *normPath) || (mount && *mount)))
   {
@@ -384,30 +372,18 @@ void NewProjectDialog::SetPathFile (const char* file,
 }
 
 void NewProjectDialog::UpdateAsset (int idx, const char* file,
-    bool dynfacts, bool templates, bool quests, bool lights,
-    const char* normPath, const char* mount)
+    bool writable, const char* normPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  csString flags;
-  flags += dynfacts ? "D" : "-";
-  flags += templates ? "T" : "-";
-  flags += quests ? "Q" : "-";
-  flags += lights ? "L" : "-";
-  ListCtrlTools::ReplaceRow (assetList, idx, normPath, file, flags.GetData (), mount,
+  ListCtrlTools::ReplaceRow (assetList, idx, normPath, file, writable ? "RW" : "-", mount,
       (const char*)0);
 }
 
 void NewProjectDialog::AddAsset (const char* file,
-    bool dynfacts, bool templates, bool quests, bool lights,
-    const char* normPath, const char* mount)
+    bool writable, const char* normPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  csString flags;
-  flags += dynfacts ? "D" : "-";
-  flags += templates ? "T" : "-";
-  flags += quests ? "Q" : "-";
-  flags += lights ? "L" : "-";
-  ListCtrlTools::AddRow (assetList, normPath, file, flags.GetData (), mount,
+  ListCtrlTools::AddRow (assetList, normPath, file, writable ? "RW" : "-", mount,
       (const char*)0);
 }
 
@@ -416,22 +392,13 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   wxTextCtrl* normPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
   wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
   wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
-  wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
-  wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
-  wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
-  wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
+  wxCheckBox* writableCheck = XRCCTRL (*this, "writable_Check", wxCheckBox);
   csString file = (const char*)(fileText->GetValue ().mb_str (wxConvUTF8));
   csString normPath = (const char*)(normPathText->GetValue ().mb_str (wxConvUTF8));
   csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
-    bool dynfacts = dynfactsCheck->GetValue ();
-    bool templates = templatesCheck->GetValue ();
-    bool quests = questsCheck->GetValue ();
-    bool lights = lightsCheck->GetValue ();
-  AddAsset (
-      file,
-      dynfacts, templates, quests, lights,
-      normPath, mount);
-  SetPathFile (file, dynfacts, templates, quests, lights, normPath, mount);
+  bool writable = writableCheck->GetValue ();
+  AddAsset (file, writable, normPath, mount);
+  SetPathFile (file, writable, normPath, mount);
 }
 
 void NewProjectDialog::OnMoveUpButton (wxCommandEvent& event)
@@ -469,22 +436,15 @@ void NewProjectDialog::OnUpdateAssetButton (wxCommandEvent& event)
     wxTextCtrl* normPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
     wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
     wxTextCtrl* fileText = XRCCTRL (*this, "file_Text", wxTextCtrl);
-    wxCheckBox* dynfactsCheck = XRCCTRL (*this, "dynfact_Check", wxCheckBox);
-    wxCheckBox* templatesCheck = XRCCTRL (*this, "entity_Check", wxCheckBox);
-    wxCheckBox* questsCheck = XRCCTRL (*this, "quest_Check", wxCheckBox);
-    wxCheckBox* lightsCheck = XRCCTRL (*this, "light_Check", wxCheckBox);
+    wxCheckBox* writableCheck = XRCCTRL (*this, "writable_Check", wxCheckBox);
     csString file = (const char*)(fileText->GetValue ().mb_str (wxConvUTF8));
     csString normPath = (const char*)(normPathText->GetValue ().mb_str (wxConvUTF8));
     csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
-    bool dynfacts = dynfactsCheck->GetValue ();
-    bool templates = templatesCheck->GetValue ();
-    bool quests = questsCheck->GetValue ();
-    bool lights = lightsCheck->GetValue ();
+    bool writable = writableCheck->GetValue ();
     UpdateAsset (selIndex,
-        file,
-        dynfacts, templates, quests, lights,
+        file, writable,
         normPath, mount);
-    SetPathFile (file, dynfacts, templates, quests, lights, normPath, mount);
+    SetPathFile (file, writable, normPath, mount);
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     ListCtrlTools::SelectRow (assetList, selIndex);
   }
@@ -496,7 +456,7 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
   {
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     assetList->DeleteItem (selIndex);
-    SetPathFile ("", false, false, false, false, "", "");
+    SetPathFile ("", false, "", "");
     selIndex = -1;
   }
 }
@@ -530,20 +490,15 @@ void NewProjectDialog::OnAssetSelected (wxListEvent& event)
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   selIndex = event.GetIndex ();
   csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
-  bool saveDynfacts, saveTemplates, saveQuests, saveLights;
   csString flags = row[2];
-  saveDynfacts = flags.GetAt (0) == 'D';
-  saveTemplates = flags.GetAt (1) == 'T';
-  saveQuests = flags.GetAt (2) == 'Q';
-  saveLights = flags.GetAt (3) == 'L';
-  SetPathFile (row[1], saveDynfacts, saveTemplates, saveQuests,
-      saveLights, row[0], row[3]);
+  bool writable = flags == "RW";
+  SetPathFile (row[1], writable, row[0], row[3]);
 }
 
 void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
 {
   EnableAssetButtons (false);
-  SetPathFile ("", false, false, false, false, "", "");
+  SetPathFile ("", false, "", "");
 }
 
 void NewProjectDialog::Setup (NewProjectCallback* cb)
@@ -570,8 +525,7 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csRefArray<iAsset>& a
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     iAsset* a = assets[i];
-    AddAsset (a->GetFile (), a->IsDynfactSavefile (),
-	a->IsTemplateSavefile (), a->IsQuestSavefile (), a->IsLightFactSaveFile (),
+    AddAsset (a->GetFile (), a->IsWritable (),
 	a->GetNormalizedPath (), a->GetMountPoint ());
   }
   ShowModal ();

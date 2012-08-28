@@ -68,16 +68,13 @@ private:
   csRef<NewProjectCallback> callback;
 
   void SetPathFile (const char* file,
-      bool saveDynfacts, bool saveTemplates, bool saveQuests,
-      bool saveLights, const char* normPath, const char* mount);
+      bool writable, const char* normPath, const char* mount);
   void ScanLoadableFile (const char* path, const char* file);
   void ScanCSNode (csString& msg, iDocumentNode* node);
   void UpdateAsset (int idx, const char* file,
-      bool dynfacts, bool templates, bool quests, bool lights,
-      const char* normPath, const char* mount);
+      bool writable, const char* normPath, const char* mount);
   void AddAsset (const char* file,
-      bool dynfacts, bool templates, bool quests, bool lights,
-      const char* normPath, const char* mount);
+      bool writable, const char* normPath, const char* mount);
 
   /**
    * Try to find the manifest file and see what kind of information can

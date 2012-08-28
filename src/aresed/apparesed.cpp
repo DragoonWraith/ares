@@ -598,6 +598,49 @@ bool AppAresEditWX::InitPlugins ()
   return true;
 }
 
+void AppAresEditWX::RegisterModification (iObject* resource)
+{
+  if (!assetManager->RegisterModification (resource))
+  {
+    csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select an asset for this resource");
+    dialog->AddRow ();
+    csStringArray array;
+    const csRefArray<iAsset>& assets = assetManager->GetAssets ();
+    for (size_t i = 0 ; i < assets.GetSize () ; i++)
+      if (assets[i]->IsWritable ())
+      {
+	csString assetName;
+	// @@@ Using the index here is a bit hacky and ugly.
+        assetName.Format ("%d: %s/%s", int (i), assets[i]->GetNormalizedPath ().GetData (),
+	    assets[i]->GetFile ().GetData ());
+	array.Push (assetName);
+      }
+    if (array.GetSize () > 0)
+    {
+      dialog->AddChoice ("asset", array);
+      if (dialog->Show (0))
+      {
+        const DialogResult& rc = dialog->GetFieldContents ();
+	csString asset = rc.Get ("asset", (const char*)0);
+	int idx;
+	csScanStr (asset.Slice (0, asset.FindFirst (':')), "%d", &idx);
+	assetManager->PlaceResource (resource, assets[idx]);
+      }
+      else
+      {
+	// @@@ Make sure this message only appears once. Not every time a modification is made.
+        uiManager->Message ("Warning! This asset will not be saved!");
+      }
+    }
+    else
+    {
+      // @@@ Make sure this message only appears once. Not every time a modification is made.
+      uiManager->Message ("There are no writable assets where this resource can be saved!");
+    }
+  }
+  // @@@ TODO! Update title.
+}
+
 bool AppAresEditWX::InitWX ()
 {
   // Load the frame from an XRC file

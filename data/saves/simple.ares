@@ -1,6 +1,6 @@
 <dynlevel>
   <asset path="$#objects/simple.zip" file="library" />
-  <asset path="$#logic/" file="dynfact.xml" dynfacts="true" templates="true" quests="true" />
+  <asset path="$#logic/" file="dynfact.xml" writable="true" />
   <asset path="$#levels/simple/" file="level.xml" />
   <asset path="$#objects/modernmodels.zip" file="library" />
   <dynworld lastid="1000040000">
