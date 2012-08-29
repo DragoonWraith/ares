@@ -1,0 +1,3 @@
+include $(TOP)/mk/staticplugins/cel_staticplugins_msvc8.jam ;
+include $(TOP)/mk/staticplugins/cel_staticplugins_msvc9.jam ;
+include $(TOP)/mk/staticplugins/cel_staticplugins_msvc10.jam ;

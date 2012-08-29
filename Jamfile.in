@@ -94,6 +94,7 @@ for a in x86 x64
     ;
 }
 
+MsvcGenConfig CRYSTAL.STATICDEPS : $(TOP)/crystalspace_staticplugins_msvc.jam ;
 MsvcGenConfig HAVE_CS_STATIC_PLUGINS : yes ;
 
 if $(CEL.DESIRED) = yes
@@ -116,6 +117,7 @@ if $(CEL.DESIRED) = yes
     [ ConcatDirs .. .. .. cel out debug$(MSVC_VERSION) libs ]
     [ ConcatDirs "$(hash)(CEL)" out debug$(MSVC_VERSION) libs ]
     [ ConcatDirs "$(hash)(CEL)" libs ] ;
+  MsvcGenConfig CEL.STATICDEPS : $(TOP)/cel_staticplugins_msvc.jam ;
   MsvcGenConfig HAVE_CEL_STATIC_PLUGINS : yes ;
 }
 
