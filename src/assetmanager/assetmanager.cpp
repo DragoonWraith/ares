@@ -129,9 +129,10 @@ csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filena
 	sp = path.Slice (0, path.Length ()-1);
       else
 	sp = path;
-      if (stat (sp, &buf) == 0)
+      if (CS::Platform::Stat (sp, &buf) == 0)
       {
-	if (S_ISREG (buf.st_mode) || S_ISDIR (buf.st_mode))
+        if (CS::Platform::IsRegularFile (&buf)
+            || CS::Platform::IsDirectory (&buf))
 	  break;
       }
     }
