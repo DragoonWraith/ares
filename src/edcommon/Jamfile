@@ -4,5 +4,7 @@ Description edcommon : "AresEd common library" ;
 Library edcommon :
   [ Wildcard *.cpp *.h ] :
   shared ;
+CFlags edcommon : [ FDefines ARES_EDCOMMON_LIB ] ;
+MsvcDefine edcommon : ARES_EDCOMMON_LIB ;
 ExternalLibs edcommon : CRYSTAL CEL WX ;
 

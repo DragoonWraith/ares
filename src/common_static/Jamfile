@@ -12,6 +12,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     shared ;
   CFlags common_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine common_static : CS_STATIC_LINKED ;
+  CFlags common_static : [ FDefines ARES_COMMON_STATIC_LIB ] ;
+  MsvcDefine common_static : ARES_COMMON_STATIC_LIB ;
 
   #
   # The plugins that we need
