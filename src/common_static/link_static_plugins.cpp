@@ -26,7 +26,12 @@ THE SOFTWARE.
 
 #include "common_static/link_static_plugins.h"
 
-void AresLinkCommonStaticPlugins ()
+#ifdef ARES_BUILD_SHARED_LIBS
+CS_DECLARE_DEFAULT_STATIC_VARIABLE_REGISTRATION
+CS_DEFINE_STATIC_VARIABLE_REGISTRATION (csStaticVarCleanup_csutil);
+#endif
+
+void ARES_COMMON_STATIC_EXPORT AresLinkCommonStaticPlugins ()
 {
   /* Do nothing. But that's enough to make the static plugins registration
    * work, as the other objects from the lib are considered for static

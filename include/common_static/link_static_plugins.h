@@ -30,10 +30,14 @@ THE SOFTWARE.
  * ares and aresed. 
  */
 
-#ifdef ARES_COMMON_STATIC_LIB
-  #define ARES_COMMON_STATIC_EXPORT             CS_EXPORT_SYM
+#ifdef ARES_BUILD_SHARED_LIBS
+  #ifdef ARES_COMMON_STATIC_LIB
+    #define ARES_COMMON_STATIC_EXPORT             CS_EXPORT_SYM_DLL
+  #else
+    #define ARES_COMMON_STATIC_EXPORT             CS_IMPORT_SYM_DLL
+  #endif
 #else
-  #define ARES_COMMON_STATIC_EXPORT             CS_IMPORT_SYM
+  #define ARES_COMMON_STATIC_EXPORT
 #endif
 
 void ARES_COMMON_STATIC_EXPORT AresLinkCommonStaticPlugins ();
