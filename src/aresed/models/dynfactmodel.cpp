@@ -37,12 +37,19 @@ void CategoryCollectionValue::UpdateChildren ()
   if (!dirty) return;
   dirty = false;
   ReleaseChildren ();
+  iAssetManager* assetManager = aresed3d->GetApp ()->GetAssetManager ();
+  iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
+
   const csHash<csStringArray,csString>& categories = aresed3d->GetCategories ();
   const csStringArray& items = categories.Get (category, csStringArray ());
   for (size_t i = 0 ; i < items.GetSize () ; i++)
   {
     csRef<StringValue> strValue;
-    strValue.AttachNew (new StringValue (items[i]));
+    csString name = items[i];
+    iDynamicFactory* factory = dynworld->FindFactory (name);
+    if (factory && assetManager->IsModified (factory->QueryObject ()))
+      name += "*";
+    strValue.AttachNew (new StringValue (name));
     children.Push (strValue);
     strValue->SetParent (this);
   }
@@ -114,6 +121,8 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
       return false;
   }
   dynworld->RemoveFactory (factory);
+  aresed3d->GetApp ()->GetAssetManager ()->RegisterRemoval (factory->QueryObject ());
+
   aresed3d->RemoveItem (categoryValue->GetStringValue (), child->GetStringValue ());
 
   dirty = true;

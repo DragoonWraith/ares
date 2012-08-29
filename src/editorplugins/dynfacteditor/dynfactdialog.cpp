@@ -467,7 +467,6 @@ private:
 protected:
   virtual void ChildChanged (Value* child)
   {
-printf ("BoneJointValue::ChildChanged\n"); fflush (stdout);
     def.trans.SetOrigin (origin);
     CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
     if (bone && bone->GetBoneJoint ())
@@ -491,7 +490,6 @@ printf ("BoneJointValue::ChildChanged\n"); fflush (stdout);
     CS::Animation::iBodyBone* bone = dialog->GetCurrentBone ();
     if (bone && bone->GetBoneJoint ())
     {
-printf ("Yes we have a joint!\n"); fflush (stdout);
       CS::Animation::iBodyBoneJoint* joint = bone->GetBoneJoint ();
       def.trans = joint->GetTransform ();
       def.transX = joint->IsXTransConstrained ();
@@ -511,7 +509,6 @@ printf ("Yes we have a joint!\n"); fflush (stdout);
     }
     else
     {
-printf ("No joint!\n"); fflush (stdout);
       ClearDef ();
     }
   }
@@ -526,7 +523,6 @@ public:
 
   virtual void FireValueChanged ()
   {
-printf ("BoneJointValue::FireValueChanged\n"); fflush (stdout);
     SetBone ();
     TypedJointValue::FireValueChanged ();
   }
@@ -1045,10 +1041,10 @@ protected:
   }
   virtual void ChildChanged (Value* child)
   {
+    dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
     FireValueChanged ();
     i3DView* view3d = dialog->GetApplication ()->Get3DView ();
     view3d->RefreshFactorySettings (dialog->GetCurrentFactory ());
-    dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
   }
 
 public:
@@ -1080,8 +1076,8 @@ public:
     dynfact->AddRigidBox (c, s, 1.0f);
     idx = dynfact->GetBodyCount ()-1;
     Value* value = NewChild (idx);
-    FireValueChanged ();
     dialog->AddDirtyFactory (dynfact);
+    FireValueChanged ();
     return value;
   }
 
@@ -1163,8 +1159,8 @@ public:
     dialog->UpdateRagdoll ();
     idx = bone->GetBoneColliderCount ()-1;
     Value* value = NewChild (idx);
-    FireValueChanged ();
     dialog->AddDirtyFactory (dialog->GetCurrentFactory ());
+    FireValueChanged ();
     return value;
   }
 
@@ -1215,6 +1211,7 @@ public:
       dynfact->SetAttribute ("defaultstatic", f ? "true" : "false");
       //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
       //view3d->RefreshFactorySettings (dynfact);
+      dialog->AddDirtyFactory (dynfact);
       FireValueChanged ();
     }
   }
@@ -1243,6 +1240,7 @@ public:
       dynfact->SetColliderEnabled (f);
       //i3DView* view3d = dialog->GetApplication ()->Get3DView ();
       //view3d->RefreshFactorySettings (dynfact);
+      dialog->AddDirtyFactory (dynfact);
       FireValueChanged ();
     }
   }
@@ -1266,8 +1264,8 @@ public:
   {
     iDynamicFactory* dynfact = dialog->GetCurrentFactory ();
     if (dynfact) dynfact->SetImposterRadius (f);
-    FireValueChanged ();
     dialog->AddDirtyFactory (dynfact);
+    FireValueChanged ();
   }
   virtual float GetFloatValue ()
   {
@@ -1356,8 +1354,8 @@ public:
     bodySkel->CreateBodyBone (id);
 
     Value* value = NewCompositeChild (VALUE_STRING, "name", name.GetData (), VALUE_NONE);
-    FireValueChanged ();
     dialog->AddDirtyFactory (dynfact);
+    FireValueChanged ();
     return value;
   }
 };
@@ -1397,8 +1395,8 @@ void DynfactValue::ChildChanged (Value* child)
   if (dynfact)
   {
     i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    view3d->GetDynfactCollectionValue ()->Refresh ();
     view3d->RefreshFactorySettings (dynfact);
-    dialog->AddDirtyFactory (dynfact);
   }
 }
 
@@ -1885,6 +1883,7 @@ void DynfactDialog::OnOkButton (wxCommandEvent& event)
   dirtyFactories.DeleteAll ();
   dirtyFactoriesWeakArray.DeleteAll ();
   view3d->GetObjectsValue ()->Refresh ();
+  view3d->GetDynfactCollectionValue ()->Refresh ();
   EndModal (TRUE);
 }
 
@@ -1942,11 +1941,18 @@ CS::Animation::iSkeletonFactory* DynfactDialog::GetSkeletonFactory (const char* 
   return skelFact;
 }
 
+static void CorrectFactoryName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
 CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
 {
   if (!factorySelectedValue) return 0;
   csString selectedFactory = factorySelectedValue->GetStringValue ();
   if (selectedFactory.IsEmpty ()) return 0;
+  CorrectFactoryName (selectedFactory);
   CS::Animation::iBodySkeleton* bodySkel = bodyManager
       ->FindBodySkeleton (selectedFactory);
   if (!bodySkel) return 0;
@@ -1961,6 +1967,7 @@ CS::Animation::iBodySkeleton* DynfactDialog::GetCurrentBodySkeleton ()
   if (!factorySelectedValue) return 0;
   csString selectedFactory = factorySelectedValue->GetStringValue ();
   if (selectedFactory.IsEmpty ()) return 0;
+  CorrectFactoryName (selectedFactory);
   return bodyManager->FindBodySkeleton (selectedFactory);
 }
 
@@ -1969,6 +1976,7 @@ iDynamicFactory* DynfactDialog::GetCurrentFactory ()
   if (!factorySelectedValue) return 0;
   csString selectedFactory = factorySelectedValue->GetStringValue ();
   if (selectedFactory.IsEmpty ()) return 0;
+  CorrectFactoryName (selectedFactory);
   iPcDynamicWorld* dynworld = app->Get3DView ()->GetDynamicWorld ();
   iDynamicFactory* dynfact = dynworld->FindFactory (selectedFactory);
   return dynfact;

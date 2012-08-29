@@ -177,6 +177,9 @@ public:
     return false;
   }
 
+  /// Update the title of this frame.
+  void UpdateTitle ();
+
   /// Set the help status message at the bottom of the frame.
   virtual void SetStatus (const char* statusmsg, ...);
   /// Clear the help status message (go back to default).

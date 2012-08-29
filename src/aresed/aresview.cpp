@@ -48,6 +48,7 @@ THE SOFTWARE.
 #include "models/factories.h"
 #include "models/objects.h"
 #include "models/templates.h"
+#include "models/assets.h"
 #include "iassetmanager.h"
 #include "edcommon/transformtools.h"
 #include "edcommon/inspect.h"
@@ -661,6 +662,20 @@ void AresEdit3DView::CleanupWorld ()
 
 void AresEdit3DView::OnExit ()
 {
+}
+
+csRef<Ares::Value> AresEdit3DView::GetWritableAssetsValue () const
+{
+  csRef<Ares::Value> value;
+  value.AttachNew (new AssetsValue (app, true));
+  return value;
+}
+
+csRef<Ares::Value> AresEdit3DView::GetAssetsValue () const
+{
+  csRef<Ares::Value> value;
+  value.AttachNew (new AssetsValue (app, false));
+  return value;
 }
 
 Ares::Value* AresEdit3DView::GetDynfactCollectionValue () const

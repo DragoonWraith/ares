@@ -123,7 +123,7 @@ void PropertyClassPanel::SwitchPCType (const char* pcType)
   pctpl->RemoveAllProperties ();
   emode->PCWasEdited (pctpl);
 
-  emode->GetApplication ()->RegisterModification (tpl->QueryObject ());
+  emode->RegisterModification (tpl);
 }
 
 // -----------------------------------------------------------------------
@@ -199,8 +199,7 @@ protected:
 	if (msgName == message && entName == entity && pars == parameters)
 	{
 	  pctpl->RemovePropertyByIndex (i);
-  	  pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	      pcPanel->GetTemplate ()->QueryObject ());
+  	  pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
 	  return true;
 	}
       }
@@ -228,8 +227,7 @@ protected:
 
     RemoveActionWithName (message, entity, parameters);
     pctpl->PerformAction (actionID, params);
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
 
@@ -274,6 +272,7 @@ public:
     if (!RemoveActionWithName (message, entity, parameters))
       return false;
     RemoveChild (child);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
@@ -287,6 +286,7 @@ public:
 
     Value* child = NewChild (message, entity, "");
     FireValueChanged ();
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return child;
   }
 
@@ -302,6 +302,7 @@ public:
     selectedValue->GetChildByName ("Message")->SetStringValue (message);
     selectedValue->GetChildByName ("Entity")->SetStringValue (entity);
     FireValueChanged ();
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
 };
@@ -352,6 +353,7 @@ protected:
   bool RemoveParameter (const char* name)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return InspectTools::DeleteActionParameter (pl, pctpl, currentMessage, name);
   }
 
@@ -626,8 +628,7 @@ protected:
 	"AddEntityTemplateType", "template", name);
     if (idx == csArrayItemNotFound) return false;
     pctpl->RemovePropertyByIndex (idx);
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-      pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
 
@@ -653,8 +654,7 @@ protected:
 
     RemoveActionWithName (name);
     pctpl->PerformAction (actionID, params);
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
 
@@ -866,6 +866,7 @@ public:
     Value* nameValue = child->GetChildByName ("Name");
     if (!InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", nameValue->GetStringValue ()))
       return false;
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     RemoveChild (child);
     return true;
   }
@@ -882,6 +883,7 @@ public:
     if (!par) return 0;
     InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
 
     Value* child = NewChild (name, value, type);
     FireValueChanged ();
@@ -900,6 +902,7 @@ public:
     if (!par) return false;
     InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     selectedValue->GetChildByName ("Name")->SetStringValue (name);
     selectedValue->GetChildByName ("Value")->SetStringValue (value);
     selectedValue->GetChildByName ("Type")->SetStringValue (type);
@@ -1039,8 +1042,7 @@ protected:
 	"AddTemplate", "name", name);
     if (idx == csArrayItemNotFound) return false;
     pctpl->RemovePropertyByIndex (idx);
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
 
@@ -1071,8 +1073,7 @@ protected:
 
     RemoveActionWithName (name);
     pctpl->PerformAction (actionID, params);
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
 
@@ -1188,8 +1189,7 @@ private:
     iCelPlLayer* pl = pcPanel->GetPL ();
     csStringID nameID = pl->FetchStringID (name);
     pctpl->RemoveProperty (nameID);
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
     else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
     else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
@@ -1235,8 +1235,7 @@ public:
     Value* nameValue = child->GetChildByName ("Name");
     iCelPlLayer* pl = pcPanel->GetPL ();
     pctpl->RemoveProperty (pl->FetchStringID (nameValue->GetStringValue ()));
-    pcPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	pcPanel->GetTemplate ()->QueryObject ());
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     RemoveChild (child);
     return true;
   }
@@ -1329,7 +1328,7 @@ bool PropertyClassPanel::UpdatePC ()
     pctpl->SetTag (0);
   else
     pctpl->SetTag (tag);
-  emode->GetApplication ()->RegisterModification (tpl->QueryObject ());
+  emode->RegisterModification (tpl);
 
   if (page == "pctools.properties") return UpdateProperties ();
   else if (page == "pctools.inventory") return UpdateInventory ();

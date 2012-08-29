@@ -94,13 +94,6 @@ public:
    * the given value.
    */
   Value* GetCategoryForValue (Value* value);
-
-  virtual csString Dump (bool verbose = false)
-  {
-    csString dump = "[DFRoot*]";
-    dump += Ares::StandardCollectionValue::Dump (verbose);
-    return dump;
-  }
 };
 
 #endif // __aresed_dynfactmodel_h

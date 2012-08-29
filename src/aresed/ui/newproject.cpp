@@ -48,6 +48,14 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+static csString CorrectName (const char* n)
+{
+  csString name = n;
+  if (name[name.Length ()-1] == '*')
+    return name.Slice (0, name.Length ()-1);
+  return name;
+}
+
 csString NewProjectDialog::ConstructMountString (const char* path, const char* filePath,
     csString& file)
 {
@@ -222,7 +230,7 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
     csStringArray row = ListCtrlTools::ReadRow (assetList, i);
     csString flags = row[2];
     bool writable = flags == "RW";
-    BaseAsset a = BaseAsset (row[1], writable);
+    BaseAsset a = BaseAsset (CorrectName (row[1]), writable);
     a.SetNormalizedPath (row[0]);
     a.SetMountPoint (row[3]);
     assets.Push (a);
@@ -407,6 +415,7 @@ void NewProjectDialog::OnMoveUpButton (wxCommandEvent& event)
   {
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
+    row[1] = CorrectName (row[1]);
     assetList->DeleteItem (selIndex);
     ListCtrlTools::InsertRow (assetList, selIndex-1, row);
     selIndex--;
@@ -422,6 +431,7 @@ void NewProjectDialog::OnMoveDownButton (wxCommandEvent& event)
     if (selIndex >= assetList->GetItemCount ()-1)
       return;
     csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
+    row[1] = CorrectName (row[1]);
     assetList->DeleteItem (selIndex);
     ListCtrlTools::InsertRow (assetList, selIndex+1, row);
     selIndex++;
@@ -492,7 +502,7 @@ void NewProjectDialog::OnAssetSelected (wxListEvent& event)
   csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
   csString flags = row[2];
   bool writable = flags == "RW";
-  SetPathFile (row[1], writable, row[0], row[3]);
+  SetPathFile (CorrectName (row[1]), writable, row[0], row[3]);
 }
 
 void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
@@ -525,7 +535,7 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csRefArray<iAsset>& a
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     iAsset* a = assets[i];
-    AddAsset (a->GetFile (), a->IsWritable (),
+    AddAsset (a->IsModified () ? (a->GetFile () + "*") : a->GetFile (), a->IsWritable (),
 	a->GetNormalizedPath (), a->GetMountPoint ());
   }
   ShowModal ();
@@ -537,9 +547,9 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("NewProjectDialog"));
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (assetList, 0, "Path", 220);
-  ListCtrlTools::SetColumn (assetList, 1, "File", 100);
-  ListCtrlTools::SetColumn (assetList, 2, "Flags", 50);
+  ListCtrlTools::SetColumn (assetList, 0, "Path", 170);
+  ListCtrlTools::SetColumn (assetList, 1, "File", 150);
+  ListCtrlTools::SetColumn (assetList, 2, "Write", 50);
   ListCtrlTools::SetColumn (assetList, 3, "Mount", 100);
 
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);

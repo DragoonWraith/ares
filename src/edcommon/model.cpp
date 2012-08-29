@@ -475,7 +475,7 @@ bool AbstractNewAction::DoDialog (View* view, wxWindow* component, iUIDialog* di
 
   size_t idx = csArrayItemNotFound;
   wxListCtrl* listCtrl = 0;
-  wxTreeCtrl* treeCtrl = 0;
+  //wxTreeCtrl* treeCtrl = 0;
   if (component->IsKindOf (CLASSINFO (wxListCtrl)))
   {
     listCtrl = wxStaticCast (component, wxListCtrl);
@@ -483,7 +483,7 @@ bool AbstractNewAction::DoDialog (View* view, wxWindow* component, iUIDialog* di
   }
   else if (component->IsKindOf (CLASSINFO (wxTreeCtrl)))
   {
-    treeCtrl = wxStaticCast (component, wxTreeCtrl);
+    //treeCtrl = wxStaticCast (component, wxTreeCtrl);
   }
   DialogResult dialogResult;
   if (dialog) dialogResult = dialog->GetFieldContents ();
@@ -1080,7 +1080,7 @@ csRef<StringArrayValue> View::CreateStringArray (ValueType type, va_list args)
 	{
 	  bool value = va_arg (args, int);
 	  csString fmt;
-	  fmt.Format ("%ld", value);
+	  fmt.Format ("%d", int (value));
 	  array.Push (fmt);
 	  break;
 	}
@@ -1305,6 +1305,48 @@ void View::BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent)
   }
 }
 
+void View::UpdateTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent)
+{
+  csRef<ValueIterator> it = value->GetIterator ();
+  wxTreeItemIdValue cookie;
+  wxTreeItemId itemId = treeCtrl->GetFirstChild (parent, cookie);
+  bool addingnew = false;	// Set to true as soon as we're adding new items ourselves.
+  while (it->HasNext ())
+  {
+    Value* child = it->NextChild ();
+    wxString newLabel = wxString::FromUTF8 (child->GetStringValue ());
+    if ((!addingnew) && itemId.IsOk ())
+    {
+      wxString currentLabel = treeCtrl->GetItemText (itemId);
+      if (currentLabel != newLabel)
+      {
+        treeCtrl->SetItemText (itemId, newLabel);
+      }
+      UpdateTree (treeCtrl, child, itemId);
+      itemId = treeCtrl->GetNextChild (parent, cookie);
+    }
+    else
+    {
+      itemId = treeCtrl->AppendItem (parent, newLabel);
+      UpdateTree (treeCtrl, child, itemId);
+      addingnew = true;
+    }
+  }
+
+  if (!addingnew)
+  {
+    // Might have to remove stuff.
+    csArray<wxTreeItemId> toRemove;
+    while (itemId.IsOk ())
+    {
+      toRemove.Push (itemId);
+      itemId = treeCtrl->GetNextChild (parent, cookie);
+    }
+    for (size_t i = 0 ; i < toRemove.GetSize () ; i++)
+      treeCtrl->Delete (toRemove[i]);
+  }
+}
+
 bool View::IsValueBound (Value* value) const
 {
   csArray<Binding*> b;
@@ -1460,9 +1502,17 @@ void View::ValueChanged (Value* value)
       else if (comp->IsKindOf (CLASSINFO (wxTreeCtrl)))
       {
 	wxTreeCtrl* treeCtrl = wxStaticCast (comp, wxTreeCtrl);
-	treeCtrl->DeleteAllItems ();
-	wxTreeItemId rootId = treeCtrl->AddRoot (wxString::FromUTF8 (value->GetStringValue ()));
-	BuildTree (treeCtrl, value, rootId);
+	wxTreeItemId rootId = treeCtrl->GetRootItem ();
+	if (rootId.IsOk ())
+	{
+	  UpdateTree (treeCtrl, value, rootId);
+	}
+	else
+	{
+	  treeCtrl->DeleteAllItems ();
+	  rootId = treeCtrl->AddRoot (wxString::FromUTF8 (value->GetStringValue ()));
+	  BuildTree (treeCtrl, value, rootId);
+	}
       }
       else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
       {

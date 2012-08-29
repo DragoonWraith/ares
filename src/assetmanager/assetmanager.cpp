@@ -37,6 +37,7 @@ SCF_IMPLEMENT_FACTORY (AssetManager)
 
 AssetManager::AssetManager (iBase* parent) : scfImplementationType (this, parent)
 {
+  generallyModified = false;
 }
 
 bool AssetManager::Initialize (iObjectRegistry* object_reg)
@@ -461,14 +462,14 @@ bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
   csString normpath = asset->GetNormalizedPath ();
   if (normpath.IsEmpty ())
   {
-    printf ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetMountPoint ().GetData ());
+    printf ("### Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetMountPoint ().GetData ());
     vfs->PushDir (asset->GetMountPoint ());
     vfs->WriteFile (asset->GetFile (), xml->GetData (), xml->Length ());
     vfs->PopDir ();
   }
   else
   {
-    printf ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
+    printf ("### Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
     csRef<iString> path = FindAsset (assetPath, normpath, true);
 
@@ -524,13 +525,21 @@ csRef<iDocument> AssetManager::SaveDoc ()
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     iAsset* asset = assets[i];
-    if (asset->IsWritable ())
+    if (asset->IsWritable () && asset->IsModified ())
     {
       // @@@ Todo: proper error reporting.
       if (!SaveAsset (docsys, asset))
 	return 0;
     }
   }
+
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    ia->SetModified (false);
+    ia->GetModifiedResources ().DeleteAll ();
+  }
+  generallyModified = false;
 
   return doc;
 }
@@ -560,6 +569,35 @@ bool AssetManager::IsModifiable (iObject* resource)
       return ia->IsWritable ();
   }
   return true;	// Couldn't find resource. Assume it can be modified.
+}
+
+bool AssetManager::IsModified (iObject* resource)
+{
+  iObject* parent = resource->GetObjectParent ();
+  if (!parent) return true;	// Not in any asset, so it can be modified.
+  csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
+  if (!collection) return true;	// Parent is not a collection, so it can be modified.
+  // @@@ Avoid this loop?
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->GetCollection () == collection)
+    {
+      csSet<csPtrKey<iObject> >& modifiedResources = ia->GetModifiedResources ();
+      return modifiedResources.Contains (resource);
+    }
+  }
+  return true;	// Couldn't find resource. Assume it can be modified.
+}
+
+bool AssetManager::IsModified ()
+{
+  if (generallyModified)
+    return true;
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+    if (assets[i]->IsModified ())
+      return true;
+  return false;
 }
 
 IntAsset* AssetManager::FindSuitableAsset (iObject* resource)
@@ -600,10 +638,26 @@ bool AssetManager::RegisterModification (iObject* resource)
   IntAsset* asset = FindAssetForResource (resource);
   if (asset)
   {
-    // @@@ Register modified.
+    asset->SetModified (true);
+    csSet<csPtrKey<iObject> >& modifiedResources = asset->GetModifiedResources ();
+    modifiedResources.Add (resource);
     return true;
   }
   return false;
+}
+
+void AssetManager::RegisterModification ()
+{
+  generallyModified = true;
+}
+
+void AssetManager::RegisterRemoval (iObject* resource)
+{
+  IntAsset* asset = FindAssetForResource (resource);
+  if (asset)
+  {
+    asset->SetModified (true);
+  }
 }
 
 void AssetManager::PlaceResource (iObject* resource, iAsset* asset)

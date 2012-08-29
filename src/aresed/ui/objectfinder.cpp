@@ -47,6 +47,12 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+static void CorrectName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
 class ObjectFinderFilteredCollectionValue : public FilteredCollectionValue
 {
 private:
@@ -143,6 +149,7 @@ void ObjectFinderDialog::OnSearchTemplateButton (wxCommandEvent& event)
   {
     const DialogResult& result = dialog->GetFieldContents ();
     csString name = result.Get ("template", (const char*)0);
+    CorrectName (name);
     UITools::SetValue (this, "templateFilter_Text", name);
     filteredCollection->SetFilterTemplate (name);
   }
@@ -159,6 +166,7 @@ void ObjectFinderDialog::OnSearchDynfactButton (wxCommandEvent& event)
   {
     const DialogResult& result = dialog->GetFieldContents ();
     csString name = result.Get ("factory", (const char*)0);
+    CorrectName (name);
     UITools::SetValue (this, "factoryFilter_Text", name);
     filteredCollection->SetFilterFactory (name);
   }

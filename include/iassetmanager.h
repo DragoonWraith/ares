@@ -76,6 +76,7 @@ struct iAsset : public virtual iBase
   virtual const csString& GetMountPoint () const = 0;
 
   virtual bool IsWritable () const = 0;
+  virtual bool IsModified () const = 0;
 };
 
 /**
@@ -145,6 +146,16 @@ struct iAssetManager : public virtual iBase
   virtual bool IsModifiable (iObject* resource) = 0;
 
   /**
+   * Return true if a resource is marked as being modified.
+   */
+  virtual bool IsModified (iObject* resource) = 0;
+
+  /**
+   * Return true if there is a modification in general.
+   */
+  virtual bool IsModified () = 0;
+
+  /**
    * Register modified resource. Use this function to register that
    * a resource has been modified or created. This function does not
    * check if a resource can be modified (use IsModifiable() for that).
@@ -152,6 +163,17 @@ struct iAssetManager : public virtual iBase
    * where to put this resource.
    */
   virtual bool RegisterModification (iObject* resource) = 0;
+
+  /**
+   * Register a modification in general. This is useful if something
+   * outside of the regular assets is modified (like one of the dynamic objects).
+   */
+  virtual void RegisterModification () = 0;
+
+  /**
+   * Register the removal of some asset.
+   */
+  virtual void RegisterRemoval (iObject* resource) = 0;
 
   /**
    * Place a resource with some asset.

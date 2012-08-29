@@ -74,7 +74,7 @@ void ObjectsValue::BuildModel ()
     {
       csString tplName = obj->GetEntityTemplate ()->GetName ();
       if (obj->GetEntityParameters ())
-	tplName += '*';
+	tplName += '#';
       array.Push (tplName);
     }
     else

@@ -341,6 +341,7 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
   csString buttonLabel = (const char*)button->GetLabel ().mb_str (wxConvUTF8);
 
   fieldContents.DeleteAll ();
+  fieldValues.DeleteAll ();
   csHash<wxTextCtrl*,csString>::GlobalIterator itText = textFields.GetIterator ();
   while (itText.HasNext ())
   {
@@ -372,9 +373,10 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
     const ValueListInfo& info = itvLst.Next (name);
     long rowidx = ListCtrlTools::GetFirstSelectedRow (info.list);
     csString value;
+    Value* compositeValue = 0;
     if (rowidx != -1)
     {
-      Value* compositeValue = info.collectionValue->GetChild (rowidx);
+      compositeValue = info.collectionValue->GetChild (rowidx);
       if (info.col != csArrayItemNotFound)
       {
 	if (compositeValue->GetType () == VALUE_COMPOSITE)
@@ -399,6 +401,7 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
       }
     }
     fieldContents.Put (name, value);
+    fieldValues.Put (name, compositeValue);
   }
 
   if (buttonLabel == "Ok")

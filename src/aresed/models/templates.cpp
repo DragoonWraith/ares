@@ -49,6 +49,9 @@ void TemplatesValue::BuildModel ()
   objectsHash.DeleteAll ();
   ReleaseChildren ();
 
+  iAssetManager* assetManager = app->GetAssetManager ();
+  if (!assetManager) return;
+
   iCelPlLayer* pl = app->Get3DView ()->GetPL ();
   csRef<iCelEntityTemplateIterator> it = pl->GetEntityTemplates ();
   while (it->HasNext ())
@@ -57,7 +60,10 @@ void TemplatesValue::BuildModel ()
     csRef<GenericStringArrayValue<iCelEntityTemplate> > child;
     child.AttachNew (new GenericStringArrayValue<iCelEntityTemplate> (tpl));
     csStringArray& array = child->GetArray ();
-    array.Push (tpl->GetName ());
+    if (assetManager->IsModified (tpl->QueryObject ()))
+      array.Push (csString (tpl->GetName ()) + "*");
+    else
+      array.Push (tpl->GetName ());
     objectsHash.Put (tpl, child);
     values.Push (child);
   }

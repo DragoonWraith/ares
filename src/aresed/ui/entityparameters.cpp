@@ -137,6 +137,12 @@ void EntityParameterDialog::OnResetButton (wxCommandEvent& event)
   UITools::SetValue (this, "template_Text", "");
 }
 
+static void CorrectTemplateName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
 void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
 {
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a template");
@@ -149,6 +155,7 @@ void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
     const DialogResult& result = dialog->GetFieldContents ();
     csString name = result.Get ("template", (const char*)0);
     csString factoryName = object->GetFactory ()->GetName ();
+    CorrectTemplateName (name);
     if (factoryName != name)
     {
       UITools::SetValue (this, "template_Text", name);

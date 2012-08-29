@@ -34,6 +34,9 @@ class wxWindow;
 class wxListCtrl;
 class RowModel;
 
+typedef csHash<csString,csString> DialogResult;
+typedef csHash<csRef<Ares::Value>,csString> DialogValues;
+
 struct iUIDialog;
 
 struct iUIDialogCallback : public virtual iBase
@@ -109,6 +112,12 @@ struct iUIDialog : public virtual iBase
    * the contents of all text controls and choices.
    */
   virtual const DialogResult& GetFieldContents () const = 0;
+
+  /**
+   * When any button is pressed (including Ok and Cancel) this will return
+   * the contents of all values.
+   */
+  virtual const DialogValues& GetFieldValues () const = 0;
 
   /**
    * Fill this dialog with the DialogResult contents.

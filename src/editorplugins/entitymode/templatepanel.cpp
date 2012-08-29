@@ -99,8 +99,7 @@ public:
     iCelEntityTemplate* t = FindTemplate (nameValue->GetStringValue ());
     if (!t) return false;
     tpl->RemoveParent (t);
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     Refresh ();
     return true;
   }
@@ -111,8 +110,7 @@ public:
     iCelEntityTemplate* t = FindTemplate (name);
     if (!t) return 0;
     tpl->AddParent (t);
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     Value* value = NewCompositeChild (VALUE_STRING, "Template", name.GetData (), VALUE_NONE);
     FireValueChanged ();
     return value;
@@ -158,8 +156,7 @@ public:
     Value* nameValue = child->GetChildByName ("Name");
     iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
     chars->ClearCharacteristic (nameValue->GetStringValue ());
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     Refresh ();
     return true;
   }
@@ -172,8 +169,7 @@ public:
     float f;
     csScanStr (value, "%f", &f);
     chars->SetCharacteristic (name, f);
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     Value* child = NewChild (name, f);
     FireValueChanged ();
     return child;
@@ -187,8 +183,7 @@ public:
     csScanStr (value, "%f", &f);
     iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
     chars->SetCharacteristic (name, f);
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     selectedValue->GetChildByName ("Name")->SetStringValue (name);
     selectedValue->GetChildByName ("Value")->SetFloatValue (f);
     FireValueChanged ();
@@ -229,8 +224,7 @@ public:
     Value* nameValue = child->GetChildByName ("Class");
     csStringID id = pl->FetchStringID (nameValue->GetStringValue ());
     tpl->RemoveClass (id);
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     Refresh ();
     return true;
   }
@@ -241,8 +235,7 @@ public:
     csString name = suggestion.Get ("Class", (const char*)0);
     csStringID id = pl->FetchStringID (name);
     tpl->AddClass (id);
-    entPanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	tpl->QueryObject ());
+    entPanel->GetEntityMode ()->RegisterModification (tpl);
     Value* value = NewCompositeChild (VALUE_STRING, "Class", name.GetData (), VALUE_NONE);
     FireValueChanged ();
     return value;

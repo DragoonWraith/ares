@@ -622,12 +622,20 @@ void MainMode::Frame2D()
   ViewMode::Frame2D ();
 }
 
+static void CorrectFactoryName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
 csString MainMode::GetSelectedItem ()
 {
   wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
   wxTreeItemId id = tree->GetSelection ();
   if (!id.IsOk ()) return csString ();
-  return csString ((const char*)tree->GetItemText (id).mb_str (wxConvUTF8));
+  csString selection ((const char*)tree->GetItemText (id).mb_str (wxConvUTF8));
+  CorrectFactoryName (selection);
+  return selection;
 }
 
 void MainMode::SpawnSelectedItem ()

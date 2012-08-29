@@ -47,6 +47,7 @@ THE SOFTWARE.
 #include "selection.h"
 #include "models/dynfactmodel.h"
 #include "models/objects.h"
+#include "models/assets.h"
 #include "edcommon/transformtools.h"
 
 
@@ -216,6 +217,7 @@ bool AppAresEditWX::LoadFile (const char* filename)
   if (!aresed3d->PostLoadMap ())
     return false;
   RefreshModes ();
+  UpdateTitle ();
   return true;
 }
 
@@ -227,6 +229,7 @@ void AppAresEditWX::SaveFile (const char* filename)
     uiManager->Error ("Error saving file '%s' on path '%s'!", filename, currentPath.GetData ());
     return;
   }
+  UpdateTitle ();
 }
 
 void AppAresEditWX::ManageAssets ()
@@ -285,9 +288,17 @@ void AppAresEditWX::SetCurrentFile (const char* path, const char* file)
 {
   currentFile = file;
   currentPath = path;
+  UpdateTitle ();
+}
+
+void AppAresEditWX::UpdateTitle ()
+{
   csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
   csString title = cfgmgr->GetStr ("WindowTitle", "Please set WindowTitle in AppAresEdit.cfg");
-  title.AppendFmt (": %s%s", path, file);
+  if (!currentFile.IsEmpty ())
+    title.AppendFmt (": %s%s", currentPath.GetData (), currentFile.GetData ());
+  if (assetManager && assetManager->IsModified ())
+    title += "*";
   SetTitle (wxString::FromUTF8 (title));
 }
 
@@ -514,8 +525,7 @@ bool AppAresEditWX::Initialize ()
 
   // Set the window title.
   csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
-  SetTitle (wxString::FromUTF8 (cfgmgr->GetStr ("WindowTitle",
-          "Please set WindowTitle in AppAresEdit.cfg")));
+  UpdateTitle ();
 
   return true;
 }
@@ -602,43 +612,31 @@ void AppAresEditWX::RegisterModification (iObject* resource)
 {
   if (!assetManager->RegisterModification (resource))
   {
-    csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select an asset for this resource");
+    csString title;
+    title.Format ("Select an asset for this resource '%s'", resource->GetName ());
+    csRef<iUIDialog> dialog = uiManager->CreateDialog (title);
     dialog->AddRow ();
-    csStringArray array;
-    const csRefArray<iAsset>& assets = assetManager->GetAssets ();
-    for (size_t i = 0 ; i < assets.GetSize () ; i++)
-      if (assets[i]->IsWritable ())
-      {
-	csString assetName;
-	// @@@ Using the index here is a bit hacky and ugly.
-        assetName.Format ("%d: %s/%s", int (i), assets[i]->GetNormalizedPath ().GetData (),
-	    assets[i]->GetFile ().GetData ());
-	array.Push (assetName);
-      }
-    if (array.GetSize () > 0)
+    csRef<Ares::Value> assets = aresed3d->GetWritableAssetsValue ();
+    dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
+	ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
+    if (dialog->Show (0))
     {
-      dialog->AddChoice ("asset", array);
-      if (dialog->Show (0))
+      const DialogValues& result = dialog->GetFieldValues ();
+      Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
+      if (row)
       {
-        const DialogResult& rc = dialog->GetFieldContents ();
-	csString asset = rc.Get ("asset", (const char*)0);
-	int idx;
-	csScanStr (asset.Slice (0, asset.FindFirst (':')), "%d", &idx);
-	assetManager->PlaceResource (resource, assets[idx]);
-      }
-      else
-      {
-	// @@@ Make sure this message only appears once. Not every time a modification is made.
-        uiManager->Message ("Warning! This asset will not be saved!");
+        AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
+	iAsset* asset = av->GetObjectFromValue (row);
+	assetManager->PlaceResource (resource, asset);
+	UpdateTitle ();
+	return;
       }
     }
-    else
-    {
-      // @@@ Make sure this message only appears once. Not every time a modification is made.
-      uiManager->Message ("There are no writable assets where this resource can be saved!");
-    }
+
+    // @@@ Make sure this message only appears once. Not every time a modification is made.
+    uiManager->Message ("Warning! This asset will not be saved!");
   }
-  // @@@ TODO! Update title.
+  UpdateTitle ();
 }
 
 bool AppAresEditWX::InitWX ()

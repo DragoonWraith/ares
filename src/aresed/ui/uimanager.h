@@ -48,8 +48,6 @@ class wxCommandEvent;
 class wxWindow;
 class wxListCtrl;
 
-typedef csHash<csString,csString> DialogResult;
-
 struct ValueListInfo
 {
   wxListCtrl* list;
@@ -76,6 +74,7 @@ private:
   csRef<iUIDialogCallback> callback;
 
   DialogResult fieldContents;
+  DialogValues fieldValues;
 
   bool okCancelAdded;
   void AddOkCancel ();
@@ -145,6 +144,12 @@ public:
    * the contents of all text controls and choices.
    */
   virtual const DialogResult& GetFieldContents () const { return fieldContents; }
+
+  /**
+   * When any button is pressed (including Ok and Cancel) this will return
+   * the contents of all values.
+   */
+  virtual const DialogValues& GetFieldValues () const { return fieldValues; }
 
   /**
    * Fill this dialog with the DialogResult contents.

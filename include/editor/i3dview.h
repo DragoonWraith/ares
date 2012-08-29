@@ -76,6 +76,14 @@ enum FactoryValueColumns
   FACTORY_COL_USAGE,
 };
 
+enum AssetValueColumns
+{
+  ASSET_COL_WRITABLE = 0,
+  ASSET_COL_PATH,
+  ASSET_COL_FILE,
+  ASSET_COL_MOUNT,
+};
+
 /**
  * The 3D view in the editor.
  */
@@ -166,6 +174,16 @@ struct i3DView : public virtual iBase
    * Get the value for all the templates.
    */
   virtual Ares::Value* GetTemplatesValue () const = 0;
+
+  /**
+   * Get a value for writable assets.
+   */
+  virtual csRef<Ares::Value> GetWritableAssetsValue () const = 0;
+
+  /**
+   * Get a value for all assets.
+   */
+  virtual csRef<Ares::Value> GetAssetsValue () const = 0;
 
   /**
    * Given a value out of a component that was bound to the objects value

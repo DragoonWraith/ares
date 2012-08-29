@@ -155,6 +155,9 @@ public:
     return GetPCTemplate (GetContextMenuNode ());
   }
 
+  /// Register modification of the current template.
+  void RegisterModification (iCelEntityTemplate* tpl = 0);
+
   /// Refresh the view. The tiven pctpl is optional and will be used if given.
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
 

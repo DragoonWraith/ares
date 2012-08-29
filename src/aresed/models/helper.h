@@ -110,6 +110,11 @@ public:
         return i;
     return csArrayItemNotFound;
   }
+  T* GetObjectFromValue (Ares::Value* value)
+  {
+    GenericStringArrayValue<T>* v = static_cast<GenericStringArrayValue<T>*> (value);
+    return v->GetObject ();
+  }
 };
 
 #endif // __aresed_helper_h

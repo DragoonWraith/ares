@@ -1226,6 +1226,11 @@ private:
   void BuildTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent);
 
   /**
+   * Update a tree from a value.
+   */
+  void UpdateTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent);
+
+  /**
    * Destroy all bindings.
    */
   void DestroyBindings ();

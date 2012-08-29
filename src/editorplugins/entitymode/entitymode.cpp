@@ -763,6 +763,12 @@ iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
   return 0;
 }
 
+static void CorrectTemplateName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
 void EntityMode::OnTemplateSelect ()
 {
   if (!started) return;
@@ -770,9 +776,21 @@ void EntityMode::OnTemplateSelect ()
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
   csString templateName = v->GetStringArrayValue ()->Get (0);
-  editQuestMode = false;
-  BuildTemplateGraph (templateName);
-  ActivateNode (0);
+  CorrectTemplateName (templateName);
+  if (editQuestMode || currentTemplate != templateName)
+  {
+    editQuestMode = false;
+    BuildTemplateGraph (templateName);
+    ActivateNode (0);
+  }
+}
+
+void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
+{
+  if (!tpl)
+    tpl = pl->FindEntityTemplate (currentTemplate);
+  view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+  view3d->GetTemplatesValue ()->Refresh ();
 }
 
 void EntityMode::AskNewTemplate ()
@@ -795,7 +813,7 @@ void EntityMode::AskNewTemplate ()
       wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
       ListCtrlTools::SelectRow (list, (int)i, false);
       ActivateNode (0);
-      view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+      RegisterModification (tpl);
     }
   }
 }
@@ -822,7 +840,7 @@ void EntityMode::OnDelete ()
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
     tpl->RemovePropertyClassTemplate (pctpl);
-    view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+    RegisterModification (tpl);
     editQuestMode = false;
     RefreshView ();
   }
@@ -897,7 +915,7 @@ void EntityMode::OnCreatePC ()
         pc->SetTag (tag);
 
       RefreshView ();
-      view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+      RegisterModification (tpl);
     }
 
   }
@@ -906,9 +924,7 @@ void EntityMode::OnCreatePC ()
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
   RefreshView (pctpl);
-
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+  RegisterModification ();
 }
 
 void EntityMode::ActivateNode (const char* nodeName)
@@ -1036,8 +1052,7 @@ void EntityMode::OnDefaultState ()
   pctpl->RemoveProperty (pl->FetchStringID ("state"));
   pctpl->SetProperty (pl->FetchStringID ("state"), state.GetData ());
 
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+  RegisterModification ();
 
   RefreshView (pctpl);
 }

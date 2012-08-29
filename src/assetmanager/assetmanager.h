@@ -39,11 +39,14 @@ private:
   csString mountPoint;	// If given then this mount point must be used.
   bool writable;
   csRef<iCollection> collection;
+  bool modified;	// True if modified. Can be true even if there are no
+  			// modified resources because a resource could have been deleted.
+  csSet<csPtrKey<iObject> > modifiedResources;
 
 public:
   IntAsset (const char* file, bool writable) :
     scfImplementationType (this),
-    file (file), writable (writable)
+    file (file), writable (writable), modified (false)
   { }
   virtual ~IntAsset () { }
 
@@ -59,6 +62,10 @@ public:
 
   void SetWritable (bool e) { writable = e; }
   virtual bool IsWritable () const { return writable; }
+
+  void SetModified (bool m) { modified = m; }
+  virtual bool IsModified () const { return modified; }
+  csSet<csPtrKey<iObject> >& GetModifiedResources () { return modifiedResources; }
 };
 
 class AssetManager : public scfImplementation2<AssetManager,iAssetManager,iComponent>
@@ -75,6 +82,8 @@ private:
   int mntCounter;
   csRefArray<iAsset> assets;
   int colCounter;
+
+  bool generallyModified;	// A general modification outside of an asset has occured.
 
   csArray<iDynamicFactory*> curvedFactories;
   csArray<iDynamicFactory*> roomFactories;
@@ -166,7 +175,11 @@ public:
   virtual const csArray<iDynamicFactory*> GetRoomFactories () const { return roomFactories; }
 
   virtual bool IsModifiable (iObject* resource);
+  virtual bool IsModified (iObject* resource);
+  virtual bool IsModified ();
   virtual bool RegisterModification (iObject* resource);
+  virtual void RegisterModification ();
+  virtual void RegisterRemoval (iObject* resource);
   virtual void PlaceResource (iObject* resource, iAsset* asset);
   virtual iAsset* GetAssetForResource (iObject* resource);
 };

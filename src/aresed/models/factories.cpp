@@ -48,6 +48,7 @@ void FactoriesValue::BuildModel ()
   objectsHash.DeleteAll ();
   ReleaseChildren ();
 
+  iAssetManager* assetManager = app->GetAssetManager ();
   iPcDynamicWorld* dynworld = app->Get3DView ()->GetDynamicWorld ();
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
@@ -55,7 +56,10 @@ void FactoriesValue::BuildModel ()
     csRef<GenericStringArrayValue<iDynamicFactory> > child;
     child.AttachNew (new GenericStringArrayValue<iDynamicFactory> (fact));
     csStringArray& array = child->GetArray ();
-    array.Push (fact->GetName ());
+    if (assetManager->IsModified (fact->QueryObject ()))
+      array.Push (csString (fact->GetName ()) + "*");
+    else
+      array.Push (fact->GetName ());
     csString v;
     v.Format ("%d", fact->GetObjectCount ());
     array.Push (v);
