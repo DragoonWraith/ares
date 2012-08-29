@@ -196,14 +196,14 @@ projtypes = {
 #------------------------------------------------------------------------------
 mutators = [
   {
-    namesuffix => ' (with static libs)',
-    defines => ['CS_USE_STATIC_LIBS'],
+    namesuffix => 'WithStaticLibs',
+    defines => [''],
     library_static => 'library',
     library_shared => 'library'
   },
   {
-    namesuffix => ' (with DLLs)',
-    defines => ['CS_USE_SHARED_LIBS'],
+    namesuffix => 'WithDlls',
+    defines => ['ARES_BUILD_SHARED_LIBS'],
     library_static => 'library'
   }
 ];
