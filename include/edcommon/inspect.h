@@ -36,7 +36,7 @@ struct iParameterManager;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
-class ARES_EXPORT InspectTools
+class ARES_EDCOMMON_EXPORT InspectTools
 {
 public:
   static celData GetPropertyValue (iCelPlLayer* pl,

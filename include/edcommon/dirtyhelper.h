@@ -41,7 +41,7 @@ struct DirtyListener;
  * components. It remembers the current value of components and registers
  * listeners so that it knows when values change.
  */
-class ARES_EXPORT DirtyHelper : public wxEvtHandler
+class ARES_EDCOMMON_EXPORT DirtyHelper : public wxEvtHandler
 {
 private:
   csArray<wxCheckBox*> checkBoxes;

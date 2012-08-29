@@ -35,7 +35,7 @@ struct iNature;
 /**
  * Superclass for all modes that require the general 3D view.
  */
-class ViewMode : public EditingMode
+class ARES_EDCOMMON_EXPORT ViewMode : public EditingMode
 {
 private:
   csRef<iFont> font;

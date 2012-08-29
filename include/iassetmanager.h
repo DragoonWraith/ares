@@ -25,7 +25,6 @@ THE SOFTWARE.
 #ifndef __ARES_ASSETMANAGER_H__
 #define __ARES_ASSETMANAGER_H__
 
-#include "aresextern.h"
 #include "propclass/dynworld.h"
 
 struct iCurvedMeshCreator;
@@ -43,7 +42,7 @@ struct iRoomMeshCreator;
 //   will be indicated with $#. In addition slashes are all converted
 //   to '/'
 
-class ARES_EXPORT BaseAsset
+class BaseAsset
 {
 public:
   csString file;	// A simple filename ('library', 'world', ...)

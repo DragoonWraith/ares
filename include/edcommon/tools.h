@@ -28,7 +28,7 @@ THE SOFTWARE.
 #include "aresextern.h"
 #include "csutil/stringarray.h"
 
-class ARES_EXPORT Tools
+class ARES_EDCOMMON_EXPORT Tools
 {
 public:
   /**

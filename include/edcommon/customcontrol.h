@@ -35,7 +35,7 @@ using namespace Ares;
 /**
  * Base class for custom controls in Ares.
  */
-class ARES_EXPORT CustomControl : public wxWindow
+class ARES_EDCOMMON_EXPORT CustomControl : public wxWindow
 {
 DECLARE_DYNAMIC_CLASS(CustomControl)
 

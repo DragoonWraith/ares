@@ -37,7 +37,7 @@ struct i3DView;
 
 class EditingMode;
 
-class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
+class ARES_EDCOMMON_EXPORT MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
 {
 private:
   EditingMode* editmode;
@@ -55,7 +55,7 @@ public:
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area);
 };
 
-class EditingMode : public scfImplementation3<EditingMode, iEditingMode,
+class ARES_EDCOMMON_EXPORT EditingMode : public scfImplementation3<EditingMode, iEditingMode,
   iEditorPlugin, iCommandHandler>
 {
 protected:

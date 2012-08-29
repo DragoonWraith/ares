@@ -30,7 +30,7 @@ THE SOFTWARE.
 struct iSelection;
 class csVector3;
 
-class ARES_EXPORT TransformTools
+class ARES_EDCOMMON_EXPORT TransformTools
 {
 public:
   /**

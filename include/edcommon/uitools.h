@@ -33,7 +33,7 @@ class wxWindow;
 /**
  * Various tools for UI.
  */
-class ARES_EXPORT UITools
+class ARES_EDCOMMON_EXPORT UITools
 {
 public:
   /**

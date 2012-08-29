@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <wx/event.h>
 #include <wx/treectrl.h>
 
+#include "aresextern.h"
+
 class wxWindow;
 class wxTextCtrl;
 class wxChoice;
@@ -94,7 +96,7 @@ struct ValueIterator : public csRefCount
  * A standard value iterator that supports an array of children
  * with optional name.
  */
-class StandardValueIterator : public ValueIterator
+class ARES_EDCOMMON_EXPORT StandardValueIterator : public ValueIterator
 {
 private:
   csRefArray<Value> children;
@@ -160,7 +162,7 @@ enum ValueType
 /**
  * An interface representing a domain value.
  */
-class Value : public csRefCount
+class ARES_EDCOMMON_EXPORT Value : public csRefCount
 {
 protected:
   Value* parent;
@@ -500,7 +502,7 @@ public:
  * array of children the first time iteration is done or when
  * a child is fetched by index.
  */
-class StandardCollectionValue : public Value
+class ARES_EDCOMMON_EXPORT StandardCollectionValue : public Value
 {
 protected:
   csRefArray<Value> children;
@@ -573,7 +575,7 @@ public:
  * on some criteria. This is an abstract class that you need to
  * override in order to provide the actual filter.
  */
-class FilteredCollectionValue : public Value
+class ARES_EDCOMMON_EXPORT FilteredCollectionValue : public Value
 {
 protected:
   csRef<Value> collection;
@@ -632,7 +634,7 @@ public:
  * name and value of every child by index.
  * Subclasses must also override the standard Value::GetChild(idx).
  */
-class AbstractCompositeValue : public Value
+class ARES_EDCOMMON_EXPORT AbstractCompositeValue : public Value
 {
 private:
   size_t idx;
@@ -788,7 +790,7 @@ public:
  *
  * A MirrorValue also supports being a composite with mirrored children.
  */
-class MirrorValue : public Value
+class ARES_EDCOMMON_EXPORT MirrorValue : public Value
 {
 private:
   ValueType type;
@@ -913,7 +915,7 @@ class SelectedBoolValue;
  * a MirrorValue and if it represents a composite then you need to
  * set it up (manually or with SetupComposite()).
  */
-class ListSelectedValue : public wxEvtHandler, public MirrorValue
+class ARES_EDCOMMON_EXPORT ListSelectedValue : public wxEvtHandler, public MirrorValue
 {
 private:
   wxListCtrl* listCtrl;
@@ -944,7 +946,7 @@ public:
  * a MirrorValue and if it represents a composite then you need to
  * set it up (manually or with SetupComposite()).
  */
-class TreeSelectedValue : public wxEvtHandler, public MirrorValue
+class ARES_EDCOMMON_EXPORT TreeSelectedValue : public wxEvtHandler, public MirrorValue
 {
 private:
   wxTreeCtrl* treeCtrl;
@@ -995,7 +997,7 @@ public:
 /**
  * Superclass for the classes that handle new children.
  */
-class AbstractNewAction : public Action
+class ARES_EDCOMMON_EXPORT AbstractNewAction : public Action
 {
 protected:
   Value* collection;
@@ -1014,7 +1016,7 @@ public:
  * It assumes the collection supports the NewValue() method. It will
  * call the NewValue() method with an empty suggestion array.
  */
-class NewChildAction : public AbstractNewAction
+class ARES_EDCOMMON_EXPORT NewChildAction : public AbstractNewAction
 {
 public:
   NewChildAction (Value* collection) : AbstractNewAction (collection) { }
@@ -1028,10 +1030,11 @@ public:
  * on a suggestion from a dialog.
  * It assumes the collection supports the NewValue() method.
  */
-class NewChildDialogAction : public AbstractNewAction
+class ARES_EDCOMMON_EXPORT NewChildDialogAction : public AbstractNewAction
 {
 private:
-  csRef<iUIDialog> dialog;
+  // iBase to work around undefined type when building on MSVC w/ DLLs
+  csRef<iBase> dialog;
 
 public:
   NewChildDialogAction (Value* collection, iUIDialog* dialog);
@@ -1047,10 +1050,11 @@ public:
  * the same as NewChildDialogAction.
  * It assumes the collection supports the NewValue() method.
  */
-class EditChildDialogAction : public AbstractNewAction
+class ARES_EDCOMMON_EXPORT EditChildDialogAction : public AbstractNewAction
 {
 private:
-  csRef<iUIDialog> dialog;
+  // iBase to work around undefined type when building on MSVC w/ DLLs
+  csRef<iBase> dialog;
 
 public:
   EditChildDialogAction (Value* collection, iUIDialog* dialog);
@@ -1064,7 +1068,7 @@ public:
  * This standard action removes a child from a collection.
  * It assumes the collection supports the DeleteValue() method.
  */
-class DeleteChildAction : public Action
+class ARES_EDCOMMON_EXPORT DeleteChildAction : public Action
 {
 private:
   Value* collection;
@@ -1081,7 +1085,7 @@ public:
  * A view. This class keeps track of the bindings between
  * models and WX controls for a given logical unit (frame, dialog, panel, ...).
  */
-class View : public csRefCount
+class ARES_EDCOMMON_EXPORT View : public csRefCount
 {
 private:
   wxWindow* parent;

@@ -37,7 +37,7 @@ THE SOFTWARE.
 /**
  * Various tools for lists.
  */
-class ARES_EXPORT ListCtrlTools
+class ARES_EDCOMMON_EXPORT ListCtrlTools
 {
 public:
   /**

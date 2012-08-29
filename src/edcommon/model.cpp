@@ -519,7 +519,8 @@ NewChildDialogAction::~NewChildDialogAction ()
 
 bool NewChildDialogAction::Do (View* view, wxWindow* component)
 {
-  return DoDialog (view, component, dialog);
+  csRef<iUIDialog> dlg (scfQueryInterface<iUIDialog> (dialog));
+  return DoDialog (view, component, dlg);
 }
 
 EditChildDialogAction::EditChildDialogAction (Value* collection, iUIDialog* dialog) :
@@ -533,7 +534,8 @@ EditChildDialogAction::~EditChildDialogAction ()
 
 bool EditChildDialogAction::Do (View* view, wxWindow* component)
 {
-  return DoDialog (view, component, dialog, true);
+  csRef<iUIDialog> dlg (scfQueryInterface<iUIDialog> (dialog));
+  return DoDialog (view, component, dlg, true);
 }
 
 bool EditChildDialogAction::IsActive (View* view, wxWindow* component)
