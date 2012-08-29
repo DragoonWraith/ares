@@ -16,19 +16,19 @@
 namespace csStaticPluginInit
 {
 static char const metainfo_rooms[] =
-"<?xml version=\"1.0\"?>"
-"<!-- rooms.csplugin -->"
-"<plugin>"
-"  <scf>"
-"    <classes>"
-"      <class>"
-"        <name>utility.rooms</name>"
-"        <implementation>RoomMeshCreator</implementation>"
-"        <description>Rooms Mesh Plugin</description>"
-"      </class>"
-"    </classes>"
-"  </scf>"
-"</plugin>"
+"<?xml version=\"1.0\"?>"
+"<!-- rooms.csplugin -->"
+"<plugin>"
+"  <scf>"
+"    <classes>"
+"      <class>"
+"        <name>utility.rooms</name>"
+"        <implementation>RoomMeshCreator</implementation>"
+"        <description>Rooms Mesh Plugin</description>"
+"      </class>"
+"    </classes>"
+"  </scf>"
+"</plugin>"
 ;
   #ifndef RoomMeshCreator_FACTORY_REGISTER_DEFINED 
   #define RoomMeshCreator_FACTORY_REGISTER_DEFINED 

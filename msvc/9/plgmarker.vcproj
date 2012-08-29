@@ -12,7 +12,7 @@
   	</Platforms>
 	<Configurations>
             		<Configuration
-			Name="Release (with static libs)|Win32"
+			Name="ReleaseWithStaticLibs|Win32"
 			OutputDirectory="..\..\out\release9\build\plgmarker\"
 			IntermediateDirectory="..\..\out\release9\build\plgmarker\"
 			ConfigurationType="2"
@@ -27,7 +27,7 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				ProgramDataBaseFileName="..\..\out\release9\build\plgmarker\Win32\marker.pdb"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_STATIC_LIBS"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include"
@@ -89,7 +89,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
       		<Configuration
-			Name="Release (with DLLs)|Win32"
+			Name="ReleaseWithDlls|Win32"
 			OutputDirectory="..\..\out\release9\build\plgmarker\"
 			IntermediateDirectory="..\..\out\release9\build\plgmarker\"
 			ConfigurationType="2"
@@ -104,7 +104,7 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				ProgramDataBaseFileName="..\..\out\release9\build\plgmarker\Win32\marker.pdb"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_SHARED_LIBS"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include"
@@ -166,7 +166,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
                 		<Configuration
-			Name="Debug (with static libs)|Win32"
+			Name="DebugWithStaticLibs|Win32"
 			OutputDirectory="..\..\out\debug9\build\plgmarker\"
 			IntermediateDirectory="..\..\out\debug9\build\plgmarker\"
 			ConfigurationType="2"
@@ -180,7 +180,7 @@
 				RuntimeLibrary="3"
 
 				ProgramDataBaseFileName="..\..\out\debug9\build\plgmarker\Win32\marker.pdb"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_STATIC_LIBS"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include"
@@ -240,7 +240,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
       		<Configuration
-			Name="Debug (with DLLs)|Win32"
+			Name="DebugWithDlls|Win32"
 			OutputDirectory="..\..\out\debug9\build\plgmarker\"
 			IntermediateDirectory="..\..\out\debug9\build\plgmarker\"
 			ConfigurationType="2"
@@ -254,7 +254,7 @@
 				RuntimeLibrary="3"
 
 				ProgramDataBaseFileName="..\..\out\debug9\build\plgmarker\Win32\marker.pdb"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_SHARED_LIBS"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include"
@@ -314,7 +314,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
                         		<Configuration
-			Name="Release (with static libs)|x64"
+			Name="ReleaseWithStaticLibs|x64"
 			OutputDirectory="..\..\out\release9-x64\build\plgmarker\"
 			IntermediateDirectory="..\..\out\release9-x64\build\plgmarker\"
 			ConfigurationType="2"
@@ -329,7 +329,7 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				ProgramDataBaseFileName="..\..\out\release9-x64\build\plgmarker\x64\marker.pdb"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_STATIC_LIBS"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include"
@@ -391,7 +391,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
       		<Configuration
-			Name="Release (with DLLs)|x64"
+			Name="ReleaseWithDlls|x64"
 			OutputDirectory="..\..\out\release9-x64\build\plgmarker\"
 			IntermediateDirectory="..\..\out\release9-x64\build\plgmarker\"
 			ConfigurationType="2"
@@ -406,7 +406,7 @@
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
 				ProgramDataBaseFileName="..\..\out\release9-x64\build\plgmarker\x64\marker.pdb"
-				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_SHARED_LIBS"
+				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include"
@@ -468,7 +468,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
                 		<Configuration
-			Name="Debug (with static libs)|x64"
+			Name="DebugWithStaticLibs|x64"
 			OutputDirectory="..\..\out\debug9-x64\build\plgmarker\"
 			IntermediateDirectory="..\..\out\debug9-x64\build\plgmarker\"
 			ConfigurationType="2"
@@ -482,7 +482,7 @@
 				RuntimeLibrary="3"
 
 				ProgramDataBaseFileName="..\..\out\debug9-x64\build\plgmarker\x64\marker.pdb"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_STATIC_LIBS"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include"
@@ -542,7 +542,7 @@
 				Name="VCWebDeploymentTool"/>
 		</Configuration>
       		<Configuration
-			Name="Debug (with DLLs)|x64"
+			Name="DebugWithDlls|x64"
 			OutputDirectory="..\..\out\debug9-x64\build\plgmarker\"
 			IntermediateDirectory="..\..\out\debug9-x64\build\plgmarker\"
 			ConfigurationType="2"
@@ -556,7 +556,7 @@
 				RuntimeLibrary="3"
 
 				ProgramDataBaseFileName="..\..\out\debug9-x64\build\plgmarker\x64\marker.pdb"
-				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;CS_USE_SHARED_LIBS"
+				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include"

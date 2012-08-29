@@ -16,19 +16,19 @@
 namespace csStaticPluginInit
 {
 static char const metainfo_marker[] =
-"<?xml version=\"1.0\"?>"
-"<!-- marker.csplugin -->"
-"<plugin>"
-"  <scf>"
-"    <classes>"
-"      <class>"
-"        <name>utility.marker</name>"
-"        <implementation>MarkerManager</implementation>"
-"        <description>Marker Plugin</description>"
-"      </class>"
-"    </classes>"
-"  </scf>"
-"</plugin>"
+"<?xml version=\"1.0\"?>"
+"<!-- marker.csplugin -->"
+"<plugin>"
+"  <scf>"
+"    <classes>"
+"      <class>"
+"        <name>utility.marker</name>"
+"        <implementation>MarkerManager</implementation>"
+"        <description>Marker Plugin</description>"
+"      </class>"
+"    </classes>"
+"  </scf>"
+"</plugin>"
 ;
   #ifndef MarkerManager_FACTORY_REGISTER_DEFINED 
   #define MarkerManager_FACTORY_REGISTER_DEFINED 

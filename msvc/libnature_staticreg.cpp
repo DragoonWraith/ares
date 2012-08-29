@@ -16,19 +16,19 @@
 namespace csStaticPluginInit
 {
 static char const metainfo_nature[] =
-"<?xml version=\"1.0\"?>"
-"<!-- nature.csplugin -->"
-"<plugin>"
-"  <scf>"
-"    <classes>"
-"      <class>"
-"        <name>utility.nature</name>"
-"        <implementation>Nature</implementation>"
-"        <description>Nature Plugin</description>"
-"      </class>"
-"    </classes>"
-"  </scf>"
-"</plugin>"
+"<?xml version=\"1.0\"?>"
+"<!-- nature.csplugin -->"
+"<plugin>"
+"  <scf>"
+"    <classes>"
+"      <class>"
+"        <name>utility.nature</name>"
+"        <implementation>Nature</implementation>"
+"        <description>Nature Plugin</description>"
+"      </class>"
+"    </classes>"
+"  </scf>"
+"</plugin>"
 ;
   #ifndef Nature_FACTORY_REGISTER_DEFINED 
   #define Nature_FACTORY_REGISTER_DEFINED 

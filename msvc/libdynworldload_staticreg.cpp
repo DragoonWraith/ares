@@ -16,19 +16,19 @@
 namespace csStaticPluginInit
 {
 static char const metainfo_dynworldload[] =
-"<?xml version=\"1.0\"?>"
-"<!-- dynworldload.csplugin -->"
-"<plugin>"
-"  <scf>"
-"    <classes>"
-"      <class>"
-"        <name>ares.dynworld.loader.factories</name>"
-"        <implementation>DynamicWorldLoader</implementation>"
-"        <description>Dynamic World Loader Plugin</description>"
-"      </class>"
-"    </classes>"
-"  </scf>"
-"</plugin>"
+"<?xml version=\"1.0\"?>"
+"<!-- dynworldload.csplugin -->"
+"<plugin>"
+"  <scf>"
+"    <classes>"
+"      <class>"
+"        <name>ares.dynworld.loader.factories</name>"
+"        <implementation>DynamicWorldLoader</implementation>"
+"        <description>Dynamic World Loader Plugin</description>"
+"      </class>"
+"    </classes>"
+"  </scf>"
+"</plugin>"
 ;
   #ifndef DynamicWorldLoader_FACTORY_REGISTER_DEFINED 
   #define DynamicWorldLoader_FACTORY_REGISTER_DEFINED 

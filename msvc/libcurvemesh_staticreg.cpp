@@ -16,19 +16,19 @@
 namespace csStaticPluginInit
 {
 static char const metainfo_curvemesh[] =
-"<?xml version=\"1.0\"?>"
-"<!-- curvemesh.csplugin -->"
-"<plugin>"
-"  <scf>"
-"    <classes>"
-"      <class>"
-"        <name>utility.curvemesh</name>"
-"        <implementation>CurvedMeshCreator</implementation>"
-"        <description>Curved Mesh Plugin</description>"
-"      </class>"
-"    </classes>"
-"  </scf>"
-"</plugin>"
+"<?xml version=\"1.0\"?>"
+"<!-- curvemesh.csplugin -->"
+"<plugin>"
+"  <scf>"
+"    <classes>"
+"      <class>"
+"        <name>utility.curvemesh</name>"
+"        <implementation>CurvedMeshCreator</implementation>"
+"        <description>Curved Mesh Plugin</description>"
+"      </class>"
+"    </classes>"
+"  </scf>"
+"</plugin>"
 ;
   #ifndef CurvedMeshCreator_FACTORY_REGISTER_DEFINED 
   #define CurvedMeshCreator_FACTORY_REGISTER_DEFINED 
