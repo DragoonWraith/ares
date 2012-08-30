@@ -199,6 +199,7 @@ public:
   void OnIconize (wxIconizeEvent& event);
   void OnShow (wxShowEvent& event);
   void OnSize (wxSizeEvent& ev);
+  void OnIdle (wxIdleEvent& event);
   void SaveFile (const char* filename);
   bool LoadFile (const char* filename);
   void ManageAssets (const csArray<BaseAsset>& assets);

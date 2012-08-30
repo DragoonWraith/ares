@@ -136,6 +136,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (wxID_ANY, AppAresEditWX :: OnMenuItem)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
+  EVT_IDLE (AppAresEditWX::OnIdle)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(AppAresEditWX::Panel, wxPanel)
@@ -918,6 +919,11 @@ void AppAresEditWX::OnSize (wxSizeEvent& event)
   wxwindow->GetWindow ()->SetSize (size);
   aresed3d->ResizeView (size.x, size.y);
   // TODO: ... but here the CanvasResize event has still not been catched by iGraphics3D
+}
+
+void AppAresEditWX::OnIdle (wxIdleEvent& event)
+{
+  PushFrame();
 }
 
 void AppAresEditWX::OnClose (wxCloseEvent& event)

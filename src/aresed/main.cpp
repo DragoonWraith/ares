@@ -66,12 +66,11 @@ int main (int argc, const char* const argv[])
 class AppPump : public wxTimer
 {
 public:
-  AppAresEditWX* s;
   AppPump() { };
   virtual ~AppPump () { }
   virtual void Notify()
   {
-    s->PushFrame ();
+    wxWakeUpIdle ();
   }
 };
 
@@ -132,7 +131,6 @@ bool MyApp::OnInit (void)
   aresed->Initialize ();
 
   AppPump* p = new AppPump ();
-  p->s = aresed;
   p->Start (5);
 
   return true;
