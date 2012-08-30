@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "celldialog.h"
 #include "entityparameters.h"
 #include "objectfinder.h"
+#include "resourcemover.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/model.h"
 
@@ -461,6 +462,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   messageFrame = new MessageFrame (parent, this);
   entityParameterDialog = new EntityParameterDialog (parent, this);
   objectFinderDialog = new ObjectFinderDialog (parent, this);
+  resourceMoverDialog = new ResourceMoverDialog (parent, this);
   contextMenuID = ID_FirstContextItem;
 }
 
@@ -472,6 +474,7 @@ UIManager::~UIManager ()
   delete messageFrame;
   delete entityParameterDialog;
   delete objectFinderDialog;
+  delete resourceMoverDialog;
 }
 
 csRef<iString> UIManager::AskDialog (const char* description, const char* label)
@@ -525,15 +528,15 @@ bool UIManager::Ask (const char* description, ...)
   return answer == wxYES;
 }
 
-csPtr<iUIDialog> UIManager::CreateDialog (const char* title)
+csPtr<iUIDialog> UIManager::CreateDialog (const char* title, int width)
 {
-  UIDialog* dialog = new UIDialog (parent, title);
+  UIDialog* dialog = new UIDialog (parent, title, width);
   return static_cast<iUIDialog*> (dialog);
 }
 
-csPtr<iUIDialog> UIManager::CreateDialog (wxWindow* par, const char* title)
+csPtr<iUIDialog> UIManager::CreateDialog (wxWindow* par, const char* title, int width)
 {
-  UIDialog* dialog = new UIDialog (par, title);
+  UIDialog* dialog = new UIDialog (par, title, width);
   return static_cast<iUIDialog*> (dialog);
 }
 

@@ -39,6 +39,7 @@ class UIDialog;
 class SimpleListCtrlView;
 class EntityParameterDialog;
 class ObjectFinderDialog;
+class ResourceMoverDialog;
 
 class wxBoxSizer;
 class wxTextCtrl;
@@ -170,6 +171,7 @@ private:
   MessageFrame* messageFrame;
   EntityParameterDialog* entityParameterDialog;
   ObjectFinderDialog* objectFinderDialog;
+  ResourceMoverDialog* resourceMoverDialog;
 
   int contextMenuID;
 
@@ -190,10 +192,11 @@ public:
   MessageFrame* GetMessageFrame () const { return messageFrame; }
   EntityParameterDialog* GetEntityParameterDialog () const { return entityParameterDialog; }
   ObjectFinderDialog* GetObjectFinderDialog () const { return objectFinderDialog; }
+  ResourceMoverDialog* GetResourceMoverDialog () const { return resourceMoverDialog; }
 
   /// Create a dynamically buildable dialog.
-  virtual csPtr<iUIDialog> CreateDialog (const char* title);
-  virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title);
+  virtual csPtr<iUIDialog> CreateDialog (const char* title, int width = -1);
+  virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title, int width = -1);
 
   virtual int AllocContextMenuID () { contextMenuID++; return contextMenuID; }
 };

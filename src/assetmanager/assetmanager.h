@@ -51,7 +51,7 @@ public:
   virtual ~IntAsset () { }
 
   void SetCollection (iCollection* col) { collection = col; }
-  iCollection* GetCollection () const { return collection; }
+  virtual iCollection* GetCollection () const { return collection; }
 
   void SetNormalizedPath (const char* p) { normPath = p; }
   void SetMountPoint (const char* m) { mountPoint = m; }
@@ -109,6 +109,11 @@ private:
    * be assigned to an asset. If this fails this function returns 0.
    */
   IntAsset* FindAssetForResource (iObject* resource);
+
+  /**
+   * Find the asset representing this collection.
+   */
+  IntAsset* FindAssetForCollection (iCollection* collection);
 
 public:
   AssetManager (iBase* parent);

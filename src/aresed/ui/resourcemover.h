@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_objectfinder_h
-#define __appares_objectfinder_h
+#ifndef __appares_resourcemover_h
+#define __appares_resourcemover_h
 
 #include <crystalspace.h>
 
@@ -35,34 +35,24 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 class UIManager;
-class ObjectFinderFilteredCollectionValue;
 
 using namespace Ares;
 
-class ObjectFinderDialog : public wxDialog, public View
+class ResourceMoverDialog : public wxDialog, public View
 {
 private:
   UIManager* uiManager;
-  csRef<ObjectFinderFilteredCollectionValue> filteredCollection;
 
   void OnOkButton (wxCommandEvent& event);
-  void OnCancelButton (wxCommandEvent& event);
-
-  void OnSearchTemplateButton (wxCommandEvent& event);
-  void OnSearchDynfactButton (wxCommandEvent& event);
-  void OnResetTemplateButton (wxCommandEvent& event);
-  void OnResetDynfactButton (wxCommandEvent& event);
-  void OnResetRadiusButton (wxCommandEvent& event);
-  void OnChangeRadius (wxCommandEvent& event);
 
 public:
-  ObjectFinderDialog (wxWindow* parent, UIManager* uiManager);
-  ~ObjectFinderDialog ();
+  ResourceMoverDialog (wxWindow* parent, UIManager* uiManager);
+  ~ResourceMoverDialog ();
 
   void Show ();
 
   DECLARE_EVENT_TABLE ();
 };
 
-#endif // __appares_objectfinder_h
+#endif // __appares_resourcemover_h
 

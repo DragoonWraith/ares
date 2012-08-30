@@ -581,6 +581,23 @@ void View::DestroyBindings ()
   }
 }
 
+void View::RemoveBinding (wxWindow* component)
+{
+  Binding* binding = bindingsByComponent.Get (component, 0);
+  if (!binding) return;
+  binding->value->RemoveValueChangeListener (changeListener);
+  if (binding->eventType == wxEVT_COMMAND_TEXT_UPDATED ||
+      binding->eventType == wxEVT_COMMAND_LIST_ITEM_SELECTED ||
+      binding->eventType == wxEVT_COMMAND_CHOICE_SELECTED ||
+      binding->eventType == wxEVT_COMMAND_CHOICEBOOK_PAGE_CHANGED ||
+      binding->eventType == wxEVT_COMMAND_CHECKBOX_CLICKED)
+    component->Disconnect (binding->eventType,
+	wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
+  bindingsByComponent.Delete (component, binding);
+  bindingsByValue.Delete ((Value*)(binding->value), binding);
+  bindings.Delete (binding);
+}
+
 void View::DestroyActionBindings ()
 {
   while (rmbContexts.GetSize () > 0)
@@ -702,11 +719,7 @@ void View::RegisterBinding (Value* value, wxWindow* component, wxEventType event
   b->changeEnabled = changeEnabled;
   if (!changeEnabled)
     bindingsByComponent.Put (component, b);
-  if (!bindingsByValue.Contains (value))
-    bindingsByValue.Put (value, csArray<Binding*> ());
-  csArray<Binding*> temp;
-  bindingsByValue.Get (value, temp).Push (b);
-  CS_ASSERT (temp.GetSize () == 0);
+  bindingsByValue.Put (value, b);
   if (eventType != wxEVT_NULL)
     component->Connect (eventType, wxCommandEventHandler (EventHandler :: OnComponentChanged), 0, &eventHandler);
   value->AddValueChangeListener (changeListener);
@@ -1351,9 +1364,8 @@ void View::UpdateTree (wxTreeCtrl* treeCtrl, Value* value, wxTreeItemId& parent)
 
 bool View::IsValueBound (Value* value) const
 {
-  csArray<Binding*> b;
-  const csArray<Binding*>& bindings = bindingsByValue.Get (value, b);
-  return bindings.GetSize () > 0;
+  ValueToBinding::ConstIterator it = bindingsByValue.GetIterator (value);
+  return it.HasNext ();
 }
 
 bool View::CheckIfParentDisabled (wxWindow* window)
@@ -1413,18 +1425,18 @@ void View::ValueChanged (Value* value)
 #if DO_DEBUG
   printf ("View::ValueChanged: %s\n", value->Dump ().GetData ());
 #endif
-  csArray<Binding*> b;
-  csArray<Binding*>& bindings = bindingsByValue.Get (value, b);
-  if (!bindings.GetSize ())
+  ValueToBinding::Iterator it = bindingsByValue.GetIterator (value);
+  if (!it.HasNext ())
   {
     printf ("ValueChanged: Something went wrong! Called without a valid binding!\n");
     CS_ASSERT (false);
     return;
   }
-  for (size_t i = 0 ; i < bindings.GetSize () ; i++)
+  while (it.HasNext ())
   {
-    wxWindow* comp = bindings[i]->component;
-    if (bindings[i]->changeEnabled)
+    Binding* b = it.Next ();
+    wxWindow* comp = b->component;
+    if (b->changeEnabled)
     {
       // Modify disabled/enabled state instead of value.
       bool state = ValueToBool (value);
@@ -1432,39 +1444,39 @@ void View::ValueChanged (Value* value)
       continue;
     }
 
-    if (!bindings[i]->processing)
+    if (!b->processing)
     {
       if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
-	bindings[i]->processing = true;
+	b->processing = true;
 	wxTextCtrl* textCtrl = wxStaticCast (comp, wxTextCtrl);
 	csString text = ValueToString (value);
 	textCtrl->SetValue (wxString::FromUTF8 (text));
-	bindings[i]->processing = false;
+	b->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (wxChoice)))
       {
-	bindings[i]->processing = true;
+	b->processing = true;
 	wxChoice* choiceCtrl = wxStaticCast (comp, wxChoice);
 	csString text = ValueToString (value);
 	choiceCtrl->SetStringSelection (wxString::FromUTF8 (text));
-	bindings[i]->processing = false;
+	b->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (wxComboBox)))
       {
-	bindings[i]->processing = true;
+	b->processing = true;
 	wxComboBox* combo = wxStaticCast (comp, wxComboBox);
 	csString text = ValueToString (value);
 	combo->SetValue (wxString::FromUTF8 (text));
-	bindings[i]->processing = false;
+	b->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (wxCheckBox)))
       {
-	bindings[i]->processing = true;
+	b->processing = true;
 	wxCheckBox* checkBox = wxStaticCast (comp, wxCheckBox);
 	bool in = ValueToBool (value);
 	checkBox->SetValue (in);
-	bindings[i]->processing = false;
+	b->processing = false;
       }
       else if (comp->IsKindOf (CLASSINFO (CustomControl)))
       {
@@ -1489,6 +1501,7 @@ void View::ValueChanged (Value* value)
 //printf ("ValueChanged for component '%s'\n", compName.GetData ()); fflush (stdout);
 	wxListCtrl* listCtrl = wxStaticCast (comp, wxListCtrl);
 	long idx = ListCtrlTools::GetFirstSelectedRow (listCtrl);
+	listCtrl->Freeze ();
 	listCtrl->DeleteAllItems ();
 	ListHeading lhdef;
 	const ListHeading& lh = listToHeading.Get (listCtrl, lhdef);
@@ -1500,10 +1513,12 @@ void View::ValueChanged (Value* value)
 	}
 	if (idx != -1)
 	  ListCtrlTools::SelectRow (listCtrl, idx, true);
+	listCtrl->Thaw ();
       }
       else if (comp->IsKindOf (CLASSINFO (wxTreeCtrl)))
       {
 	wxTreeCtrl* treeCtrl = wxStaticCast (comp, wxTreeCtrl);
+	treeCtrl->Freeze ();
 	wxTreeItemId rootId = treeCtrl->GetRootItem ();
 	if (rootId.IsOk ())
 	{
@@ -1515,6 +1530,7 @@ void View::ValueChanged (Value* value)
 	  rootId = treeCtrl->AddRoot (wxString::FromUTF8 (value->GetStringValue ()));
 	  BuildTree (treeCtrl, value, rootId);
 	}
+	treeCtrl->Thaw ();
       }
       else if (comp->IsKindOf (CLASSINFO (wxChoicebook)))
       {
@@ -1721,6 +1737,13 @@ bool View::SetSelectedValue (wxWindow* component, Value* value)
   }
   printf ("SetSelectedValue: Unsupported type for component!\n");
   return false;
+}
+
+Value* View::GetValue (wxWindow* component)
+{
+  Binding* binding = bindingsByComponent.Get (component, 0);
+  if (!binding) return 0;
+  return binding->value;
 }
 
 Value* View::GetSelectedValue (wxWindow* component)

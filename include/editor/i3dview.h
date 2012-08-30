@@ -38,6 +38,7 @@ struct iELCM;
 struct iEditorCamera;
 struct iCelPlLayer;
 struct iCelEntityTemplate;
+struct iAsset;
 
 namespace Ares
 {
@@ -82,6 +83,15 @@ enum AssetValueColumns
   ASSET_COL_PATH,
   ASSET_COL_FILE,
   ASSET_COL_MOUNT,
+};
+
+enum ResourceValueColumns
+{
+  RESOURCE_COL_NAME = 0,
+  RESOURCE_COL_TYPE,
+  RESOURCE_COL_ASSET_PATH,
+  RESOURCE_COL_ASSET_FILE,
+  RESOURCE_COL_ASSET_MOUNT,
 };
 
 /**
@@ -186,10 +196,27 @@ struct i3DView : public virtual iBase
   virtual csRef<Ares::Value> GetAssetsValue () const = 0;
 
   /**
+   * Get a value for all resources.
+   */
+  virtual csRef<Ares::Value> GetResourcesValue () const = 0;
+
+  /**
    * Given a value out of a component that was bound to the objects value
    * this function returns the dynamic object corresponding with that value.
    */
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value) = 0;
+
+  /**
+   * Given a value out of a component that was bound to the resources value
+   * this function returns the resource corresponding with that value.
+   */
+  virtual iObject* GetResourceFromResources (Ares::Value* value) = 0;
+
+  /**
+   * Given a value out of a component that was bound to the assets value
+   * this function returns the asset corresponding with that value.
+   */
+  virtual iAsset* GetAssetFromAssets (Ares::Value* value) = 0;
 
   /**
    * Given a dynamic object, find the index of that object it would have in

@@ -549,12 +549,25 @@ bool AssetManager::SaveFile (const char* filename)
 {
   csRef<iDocument> doc = SaveDoc ();
 
-printf ("Writing '%s' at '%s\n", filename, vfs->GetCwd ());
+  // @@@ Message to reporter
+  printf ("Writing '%s' at '%s\n", filename, vfs->GetCwd ()); fflush (stdout);
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   doc->Write (xml);
   vfs->WriteFile (filename, xml->GetData (), xml->Length ());
   return true;
+}
+
+IntAsset* AssetManager::FindAssetForCollection (iCollection* collection)
+{
+  // @@@ Avoid this loop?
+  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
+    if (ia->GetCollection () == collection)
+      return ia;
+  }
+  return 0;
 }
 
 bool AssetManager::IsModifiable (iObject* resource)
@@ -563,30 +576,22 @@ bool AssetManager::IsModifiable (iObject* resource)
   if (!parent) return true;	// Not in any asset, so it can be modified.
   csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
   if (!collection) return true;	// Parent is not a collection, so it can be modified.
-  for (size_t i = 0 ; i < assets.GetSize () ; i++)
-  {
-    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
-    if (ia->GetCollection () == collection)
-      return ia->IsWritable ();
-  }
+  IntAsset* ia = FindAssetForCollection (collection);
+  if (ia) return ia->IsWritable ();
   return true;	// Couldn't find resource. Assume it can be modified.
 }
 
 bool AssetManager::IsModified (iObject* resource)
 {
   iObject* parent = resource->GetObjectParent ();
-  if (!parent) return true;	// Not in any asset, so it can be modified.
+  if (!parent) return false;	// Not in any asset, so it is considered not modified.
   csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
-  if (!collection) return true;	// Parent is not a collection, so it can be modified.
-  // @@@ Avoid this loop?
-  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  if (!collection) return false;	// Parent is not a collection, so it is considered not modified.
+  IntAsset* ia = FindAssetForCollection (collection);
+  if (ia)
   {
-    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
-    if (ia->GetCollection () == collection)
-    {
-      csSet<csPtrKey<iObject> >& modifiedResources = ia->GetModifiedResources ();
-      return modifiedResources.Contains (resource);
-    }
+    csSet<csPtrKey<iObject> >& modifiedResources = ia->GetModifiedResources ();
+    return modifiedResources.Contains (resource);
   }
   return true;	// Couldn't find resource. Assume it can be modified.
 }
@@ -625,17 +630,19 @@ IntAsset* AssetManager::FindAssetForResource (iObject* resource)
   if (!parent) return FindSuitableAsset (resource);
   csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
   if (!collection) return FindSuitableAsset (resource);	// @@@Can this actually happen?
-  for (size_t i = 0 ; i < assets.GetSize () ; i++)
-  {
-    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
-    if (ia->GetCollection () == collection)
-      return ia;
-  }
+  return FindAssetForCollection (collection);
+}
+
+iAsset* AssetManager::GetAssetForResource (iObject* resource)
+{
+  IntAsset* ia = FindAssetForResource (resource);
+  if (ia) return static_cast<iAsset*> (ia);
   return 0;
 }
 
 bool AssetManager::RegisterModification (iObject* resource)
 {
+  RegisterModification ();
   IntAsset* asset = FindAssetForResource (resource);
   if (asset)
   {
@@ -663,22 +670,23 @@ void AssetManager::RegisterRemoval (iObject* resource)
 
 void AssetManager::PlaceResource (iObject* resource, iAsset* asset)
 {
-  IntAsset* ia = static_cast<IntAsset*> (asset);
-  ia->GetCollection ()->Add (resource);
-}
-
-iAsset* AssetManager::GetAssetForResource (iObject* resource)
-{
   iObject* parent = resource->GetObjectParent ();
-  if (!parent) return 0;
-  csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
-  if (!collection) return 0;
-  for (size_t i = 0 ; i < assets.GetSize () ; i++)
+  if (parent)
   {
-    IntAsset* ia = static_cast<IntAsset*> (assets[i]);
-    if (ia->GetCollection () == collection)
-      return ia;
+    csRef<iCollection> collection = scfQueryInterface<iCollection> (parent);
+    if (collection)
+    {
+      IntAsset* ia = FindAssetForCollection (collection);
+      if (ia) ia->SetModified (true);
+    }
+    parent->ObjRemove (resource);
   }
-  return 0;
+
+  if (asset)
+  {
+    IntAsset* ia = static_cast<IntAsset*> (asset);
+    ia->GetCollection ()->Add (resource);
+    ia->SetModified (true);
+  }
 }
 

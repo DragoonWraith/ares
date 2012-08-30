@@ -22,47 +22,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_objectfinder_h
-#define __appares_objectfinder_h
-
-#include <crystalspace.h>
+#ifndef __aresed_resources_h
+#define __aresed_resources_h
 
 #include "edcommon/model.h"
+#include "helper.h"
 
-#include <wx/wx.h>
-#include <wx/imaglist.h>
-#include <wx/listctrl.h>
-#include <wx/xrc/xmlres.h>
+class AppAresEditWX;
+struct iObject;
 
-class UIManager;
-class ObjectFinderFilteredCollectionValue;
-
-using namespace Ares;
-
-class ObjectFinderDialog : public wxDialog, public View
+class ResourcesValue : public GenericStringArrayCollectionValue<iObject>
 {
 private:
-  UIManager* uiManager;
-  csRef<ObjectFinderFilteredCollectionValue> filteredCollection;
-
-  void OnOkButton (wxCommandEvent& event);
-  void OnCancelButton (wxCommandEvent& event);
-
-  void OnSearchTemplateButton (wxCommandEvent& event);
-  void OnSearchDynfactButton (wxCommandEvent& event);
-  void OnResetTemplateButton (wxCommandEvent& event);
-  void OnResetDynfactButton (wxCommandEvent& event);
-  void OnResetRadiusButton (wxCommandEvent& event);
-  void OnChangeRadius (wxCommandEvent& event);
+  void AddChild (const char* type, iObject* resource);
 
 public:
-  ObjectFinderDialog (wxWindow* parent, UIManager* uiManager);
-  ~ObjectFinderDialog ();
+  ResourcesValue (AppAresEditWX* app) : GenericStringArrayCollectionValue<iObject> (app) { }
+  virtual ~ResourcesValue () { }
 
-  void Show ();
-
-  DECLARE_EVENT_TABLE ();
+  virtual void BuildModel ();
+  virtual void RefreshModel ();
 };
 
-#endif // __appares_objectfinder_h
+#endif // __aresed_resources_h
 

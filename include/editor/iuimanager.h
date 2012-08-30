@@ -47,8 +47,8 @@ struct iUIManager : public virtual iBase
   /**
    * Create a dynamically buildable dialog.
    */
-  virtual csPtr<iUIDialog> CreateDialog (const char* title) = 0;
-  virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title) = 0;
+  virtual csPtr<iUIDialog> CreateDialog (const char* title, int width = -1) = 0;
+  virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title, int width = -1) = 0;
 
   /**
    * Allocate a new Id for a context menu.

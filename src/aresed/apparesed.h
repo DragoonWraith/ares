@@ -146,6 +146,7 @@ private:
 
   void NewProject ();
   void ManageAssets ();
+  void MoveResources ();
   void OpenFile ();
   void SaveFile ();
   void SaveCurrentFile ();
@@ -217,7 +218,7 @@ public:
 
   void DoFrame ();
 
-  iAssetManager* GetAssetManager () const { return assetManager; }
+  virtual iAssetManager* GetAssetManager () const { return assetManager; }
 
   AresEdit3DView* GetAresView () const { return aresed3d; }
   iVFS* GetVFS () const { return vfs; }

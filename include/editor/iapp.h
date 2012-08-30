@@ -31,6 +31,7 @@ THE SOFTWARE.
 struct iUIManager;
 struct iEditorConfig;
 struct i3DView;
+struct iAssetManager;
 
 /**
  * The editor application.
@@ -41,6 +42,7 @@ struct iAresEditor : public virtual iBase
 
   virtual iUIManager* GetUI () const = 0;
   virtual i3DView* Get3DView () const = 0;
+  virtual iAssetManager* GetAssetManager () const = 0;
 
   virtual bool ReportError (const char* description, ...) = 0;
 

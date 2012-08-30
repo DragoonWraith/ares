@@ -588,12 +588,9 @@ protected:
   void UpdateFilter ();
 
 public:
-  FilteredCollectionValue (Value* collection) : collection (collection)
+  FilteredCollectionValue ()
   {
     listener.AttachNew (new StandardChangeListener (this));
-    if (collection)
-      collection->AddValueChangeListener (listener);
-    UpdateFilter ();
   }
   virtual ~FilteredCollectionValue ()
   {
@@ -613,6 +610,10 @@ public:
     if (collection)
       collection->AddValueChangeListener (listener);
     FireValueChanged ();
+  }
+  Value* GetCollection () const
+  {
+    return collection;
   }
 
   virtual ValueType GetType () const { return VALUE_COLLECTION; }
@@ -1111,7 +1112,7 @@ private:
   };
   csPDelArray<Binding> bindings;
   typedef csHash<Binding*,csPtrKey<wxWindow> > ComponentToBinding;
-  typedef csHash<csArray<Binding*>,csPtrKey<Value> > ValueToBinding;
+  typedef csHash<Binding*,csPtrKey<Value> > ValueToBinding;
   ComponentToBinding bindingsByComponent;
   ValueToBinding bindingsByValue;
 
@@ -1390,6 +1391,13 @@ public:
   //----------------------------------------------------------------
 
   /**
+   * Remove a binding to some component.
+   */
+  void RemoveBinding (wxWindow* component);
+
+  //----------------------------------------------------------------
+
+  /**
    * Create a signal between a value to another value. This is a one-directional
    * connection which will cause the second value to get 'fired'
    * in case the first one is fired.
@@ -1496,6 +1504,12 @@ public:
    * is not in this component or the component is not a tree or list).
    */
   bool SetSelectedValue (wxWindow* component, Value* value);
+
+  /**
+   * Get the value which is bound to this component.
+   * Returns 0 if there is no such binding.
+   */
+  Value* GetValue (wxWindow* component);
 
   //----------------------------------------------------------------
 

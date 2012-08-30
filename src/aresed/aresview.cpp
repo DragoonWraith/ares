@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include "models/objects.h"
 #include "models/templates.h"
 #include "models/assets.h"
+#include "models/resources.h"
 #include "iassetmanager.h"
 #include "edcommon/transformtools.h"
 #include "edcommon/inspect.h"
@@ -668,6 +669,7 @@ csRef<Ares::Value> AresEdit3DView::GetWritableAssetsValue () const
 {
   csRef<Ares::Value> value;
   value.AttachNew (new AssetsValue (app, true));
+  value->Refresh ();
   return value;
 }
 
@@ -675,6 +677,15 @@ csRef<Ares::Value> AresEdit3DView::GetAssetsValue () const
 {
   csRef<Ares::Value> value;
   value.AttachNew (new AssetsValue (app, false));
+  value->Refresh ();
+  return value;
+}
+
+csRef<Ares::Value> AresEdit3DView::GetResourcesValue () const
+{
+  csRef<Ares::Value> value;
+  value.AttachNew (new ResourcesValue (app));
+  value->Refresh ();
   return value;
 }
 
@@ -708,6 +719,18 @@ void AresEdit3DView::RefreshObjectsValue ()
 iDynamicObject* AresEdit3DView::GetDynamicObjectFromObjects (Ares::Value* value)
 {
   GenericStringArrayValue<iDynamicObject>* dv = static_cast<GenericStringArrayValue<iDynamicObject>*> (value);
+  return dv->GetObject ();
+}
+
+iObject* AresEdit3DView::GetResourceFromResources (Ares::Value* value)
+{
+  GenericStringArrayValue<iObject>* dv = static_cast<GenericStringArrayValue<iObject>*> (value);
+  return dv->GetObject ();
+}
+
+iAsset* AresEdit3DView::GetAssetFromAssets (Ares::Value* value)
+{
+  GenericStringArrayValue<iAsset>* dv = static_cast<GenericStringArrayValue<iAsset>*> (value);
   return dv->GetObject ();
 }
 

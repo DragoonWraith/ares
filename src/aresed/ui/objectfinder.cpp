@@ -86,8 +86,7 @@ protected:
   }
 
 public:
-  ObjectFinderFilteredCollectionValue (i3DView* view3d) : FilteredCollectionValue (0),
-    view3d (view3d)
+  ObjectFinderFilteredCollectionValue (i3DView* view3d) : view3d (view3d)
   {
     maxradius = -1.0f;
   }
@@ -183,20 +182,39 @@ void ObjectFinderDialog::OnOkButton (wxCommandEvent& event)
     view3d->GetSelection ()->SetCurrentObject (dynobj);
   }
 
-  filteredCollection->SetCollection (0);
+  RemoveBinding (list);
+  filteredCollection = 0;
+
   EndModal (TRUE);
 }
 
 void ObjectFinderDialog::OnCancelButton (wxCommandEvent& event)
 {
-  filteredCollection->SetCollection (0);
+  wxListCtrl* list = XRCCTRL (*this, "object_List", wxListCtrl);
+  RemoveBinding (list);
+  filteredCollection = 0;
+
   EndModal (TRUE);
 }
 
 void ObjectFinderDialog::Show ()
 {
   Value* objectsValue = uiManager->GetApp ()->Get3DView ()->GetObjectsValue ();
+  filteredCollection.AttachNew (new ObjectFinderFilteredCollectionValue (
+	uiManager->GetApp ()->Get3DView ()));
   filteredCollection->SetCollection (objectsValue);
+  Bind (filteredCollection, "object_List");
+
+  filteredCollection->SetFilterFactory (UITools::GetValue (this, "factoryFilter_Text"));
+  filteredCollection->SetFilterTemplate (UITools::GetValue (this, "templateFilter_Text"));
+  float radius;
+  csString radiusstr = UITools::GetValue (this, "radiusFilter_Text");
+  if (radiusstr.IsEmpty ())
+    radius = -1.0f;
+  else
+    csScanStr (radiusstr, "%f", &radius);
+  filteredCollection->SetFilterRadius (radius);
+
   ShowModal ();
 }
 
@@ -206,7 +224,6 @@ ObjectFinderDialog::ObjectFinderDialog (wxWindow* parent, UIManager* uiManager) 
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("ObjectFinderDialog"));
 
-  filteredCollection.AttachNew (new ObjectFinderFilteredCollectionValue (uiManager->GetApp ()->Get3DView ()));
   DefineHeadingIndexed ("object_List",
       "Factory,Template,Entity,ID,X,Y,Z,Distance",
       DYNOBJ_COL_FACTORY,
@@ -217,7 +234,6 @@ ObjectFinderDialog::ObjectFinderDialog (wxWindow* parent, UIManager* uiManager) 
       DYNOBJ_COL_Y,
       DYNOBJ_COL_Z,
       DYNOBJ_COL_DISTANCE);
-  Bind (filteredCollection, "object_List");
 }
 
 ObjectFinderDialog::~ObjectFinderDialog ()

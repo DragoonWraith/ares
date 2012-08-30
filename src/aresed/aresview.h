@@ -405,8 +405,11 @@ public:
   virtual Ares::Value* GetTemplatesValue () const;
   virtual csRef<Ares::Value> GetWritableAssetsValue () const;
   virtual csRef<Ares::Value> GetAssetsValue () const;
+  virtual csRef<Ares::Value> GetResourcesValue () const;
   virtual void RefreshObjectsValue ();
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
+  virtual iObject* GetResourceFromResources (Ares::Value* value);
+  virtual iAsset* GetAssetFromAssets (Ares::Value* value);
   virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj);
   virtual size_t GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl);
 

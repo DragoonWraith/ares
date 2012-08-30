@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "ui/messageframe.h"
 #include "ui/celldialog.h"
 #include "ui/objectfinder.h"
+#include "ui/resourcemover.h"
 #include "camera.h"
 #include "editor/imode.h"
 #include "editor/iplugin.h"
@@ -237,6 +238,12 @@ void AppAresEditWX::ManageAssets ()
   csRef<ManageAssetsCallbackImp> cb;
   cb.AttachNew (new ManageAssetsCallbackImp (this));
   uiManager->GetNewProjectDialog ()->Show (cb, assetManager->GetAssets ());
+}
+
+void AppAresEditWX::MoveResources ()
+{
+  uiManager->GetResourceMoverDialog ()->Show ();
+  UpdateTitle ();
 }
 
 void AppAresEditWX::NewProject ()
@@ -614,7 +621,7 @@ void AppAresEditWX::RegisterModification (iObject* resource)
   {
     csString title;
     title.Format ("Select an asset for this resource '%s'", resource->GetName ());
-    csRef<iUIDialog> dialog = uiManager->CreateDialog (title);
+    csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
     dialog->AddRow ();
     csRef<Ares::Value> assets = aresed3d->GetWritableAssetsValue ();
     dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
@@ -655,6 +662,7 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("MessageFrame.xrc", searchPath)) return false;
   if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ObjectFinderDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("ResourceMoverDialog.xrc", searchPath)) return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -747,6 +755,7 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   csString c = name;
   if (c == "NewProject") NewProject ();
   else if (c == "ManageAssets") ManageAssets ();
+  else if (c == "MoveResources") MoveResources ();
   else if (c == "Open") OpenFile ();
   else if (c == "Save") SaveCurrentFile ();
   else if (c == "SaveAs") SaveFile ();

@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 struct iCurvedMeshCreator;
 struct iRoomMeshCreator;
+struct iCollection;
 
 // The asset manager knows four kinds of paths:
 // - VFS paths: this is a path on the VFS file system
@@ -76,6 +77,7 @@ struct iAsset : public virtual iBase
 
   virtual bool IsWritable () const = 0;
   virtual bool IsModified () const = 0;
+  virtual iCollection* GetCollection () const = 0;
 };
 
 /**
