@@ -22,7 +22,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   SubVariant static ;
 
   Description aresed_static : "The Ares Project Editor" ;
-  Application aresed_static : $(ARESED_SOURCES) ;
+  Application aresed_static : $(ARESED_SOURCES) : independent ;
   CFlags aresed_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine aresed_static : CS_STATIC_LINKED ;
   LinkWith aresed_static : edcommon common_static ;

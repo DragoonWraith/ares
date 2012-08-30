@@ -15,7 +15,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   SubVariant static ;
 
   Description ares_static : "The Ares Project Player" ;
-  Application ares_static : $(ARES_SOURCES) ;
+  Application ares_static : $(ARES_SOURCES) : independent ;
   CFlags ares_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine ares_static : CS_STATIC_LINKED ;
   LinkWith ares_static : common_static ;

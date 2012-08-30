@@ -9,7 +9,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   Description common_static : "Ares common static plugins" ;
   Library common_static :
     [ Wildcard *.cpp *.h ] :
-    shared ;
+    shared independent ;
   CFlags common_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine common_static : CS_STATIC_LINKED ;
   CFlags common_static : [ FDefines ARES_COMMON_STATIC_LIB ] ;
