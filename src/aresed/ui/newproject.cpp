@@ -535,8 +535,8 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csRefArray<iAsset>& a
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     iAsset* a = assets[i];
-    AddAsset (a->IsModified () ? (a->GetFile () + "*") : a->GetFile (), a->IsWritable (),
-	a->GetNormalizedPath (), a->GetMountPoint ());
+    AddAsset (a->IsModified () ? (a->GetFile () + "*").GetData () : a->GetFile ().GetData (),
+	a->IsWritable (), a->GetNormalizedPath (), a->GetMountPoint ());
   }
   ShowModal ();
 }
