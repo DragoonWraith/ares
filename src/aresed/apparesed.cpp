@@ -324,6 +324,7 @@ void AppAresEditWX::SaveCurrentFile ()
 
 void AppAresEditWX::Quit ()
 {
+  Close();
 }
 
 void AppAresEditWX::OnNotebookChange (wxNotebookEvent& event)
