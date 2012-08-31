@@ -115,6 +115,7 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   gridSize = 0.1;
   dyncell = 0;
   sector = 0;
+  terrainMesh = 0;
 }
 
 AresEdit3DView::~AresEdit3DView()

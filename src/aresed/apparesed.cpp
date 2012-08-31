@@ -153,6 +153,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   AppAresEditWX::object_reg = object_reg;
   camwin = 0;
   editMode = 0;
+  newprojectDialog = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
@@ -364,7 +365,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
 {
   if (ev.Name == Frame)
   {
-    editMode->FramePre ();
+    if (editMode) editMode->FramePre ();
     if (aresed3d) DoFrame ();
     return true;
   }
