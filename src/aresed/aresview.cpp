@@ -50,6 +50,7 @@ THE SOFTWARE.
 #include "models/templates.h"
 #include "models/assets.h"
 #include "models/resources.h"
+#include "models/quests.h"
 #include "iassetmanager.h"
 #include "edcommon/transformtools.h"
 #include "edcommon/inspect.h"
@@ -193,12 +194,14 @@ void AresEdit3DView::SetStaticSelectedObjects (bool st)
         dynobj->MakeDynamic ();
     }
   }
+  app->RegisterModification ();
 }
 
 void AresEdit3DView::ChangeNameSelectedObject (const char* name)
 {
   if (selection->GetSize () < 1) return;
   selection->GetFirst ()->SetEntityName (name);
+  objectsValue->BuildModel ();
 }
 
 iEditorCamera* AresEdit3DView::GetEditorCamera () const
@@ -252,6 +255,7 @@ void AresEdit3DView::CopySelection ()
 void AresEdit3DView::PasteSelection ()
 {
   if (todoSpawn.GetSize () <= 0) return;
+  app->RegisterModification ();
   csReversibleTransform trans = todoSpawn[0].trans;
   csArray<iDynamicObject*> newobjects;
   for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
@@ -686,6 +690,14 @@ csRef<Ares::Value> AresEdit3DView::GetResourcesValue () const
 {
   csRef<Ares::Value> value;
   value.AttachNew (new ResourcesValue (app));
+  value->Refresh ();
+  return value;
+}
+
+csRef<Ares::Value> AresEdit3DView::GetQuestsValue () const
+{
+  csRef<Ares::Value> value;
+  value.AttachNew (new QuestsValue (app));
   value->Refresh ();
   return value;
 }
@@ -1647,6 +1659,8 @@ void AresEdit3DView::EnablePhysics (bool e)
 {
   iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
   if (worldTpl)
+  {
+    app->RegisterModification (worldTpl->QueryObject ());
     for (size_t i = 0 ; i < worldTpl->GetPropertyClassTemplateCount () ; i++)
     {
       iCelPropertyClassTemplate* pctpl = worldTpl->GetPropertyClassTemplate (i);
@@ -1657,10 +1671,12 @@ void AresEdit3DView::EnablePhysics (bool e)
 	break;
       }
     }
+  }
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
     fact->SetColliderEnabled (!e);
+    app->RegisterModification (fact->QueryObject ());
   }
   dynworld->EnablePhysics (e);
 }
@@ -1669,6 +1685,7 @@ void AresEdit3DView::RemovePlayerMovementPropertyClasses ()
 {
   iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
   if (!playerTpl) return;
+  app->RegisterModification (playerTpl->QueryObject ());
   csRefArray<iCelPropertyClassTemplate> toDelete;
   for (size_t i = 0 ; i < playerTpl->GetPropertyClassTemplateCount () ; i++)
   {

@@ -86,7 +86,10 @@ void FoliageMode::Start ()
   UpdateTypeList ();
   // @@@ Hardcoded!
   iSector* sector = view3d->GetCsCamera ()->GetSector ();
-  meshgen = sector->GetMeshGeneratorByName ("grass");
+  if (sector)
+    meshgen = sector->GetMeshGeneratorByName ("grass");
+  else
+    meshgen = 0;
 }
 
 void FoliageMode::Stop ()

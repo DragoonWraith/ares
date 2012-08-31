@@ -71,6 +71,11 @@ enum TemplateValueColumns
   TEMPLATE_COL_NAME = 0,
 };
 
+enum QuestValueColumns
+{
+  QUEST_COL_NAME = 0,
+};
+
 enum FactoryValueColumns
 {
   FACTORY_COL_NAME = 0,
@@ -199,6 +204,11 @@ struct i3DView : public virtual iBase
    * Get a value for all resources.
    */
   virtual csRef<Ares::Value> GetResourcesValue () const = 0;
+
+  /**
+   * Get a value for all quests.
+   */
+  virtual csRef<Ares::Value> GetQuestsValue () const = 0;
 
   /**
    * Given a value out of a component that was bound to the objects value

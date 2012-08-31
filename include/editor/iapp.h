@@ -48,8 +48,9 @@ struct iAresEditor : public virtual iBase
 
   /**
    * Register that a resource has been modified.
+   * If the resource is not given then it just registers a general modification.
    */
-  virtual void RegisterModification (iObject* resource) = 0;
+  virtual void RegisterModification (iObject* resource = 0) = 0;
 
   /**
    * Set the focus to the 3d view so that keyboard commands work correctly.

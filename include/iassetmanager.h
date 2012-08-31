@@ -177,7 +177,9 @@ struct iAssetManager : public virtual iBase
   virtual void RegisterRemoval (iObject* resource) = 0;
 
   /**
-   * Place a resource with some asset.
+   * Place a resource with some asset. If the 'asset' is 0 then the asset
+   * manager will remember that the user specifically requested the resource not
+   * to belong in any asset.
    */
   virtual void PlaceResource (iObject* resource, iAsset* asset) = 0;
 
@@ -186,6 +188,16 @@ struct iAssetManager : public virtual iBase
    * know where the resource belongs.
    */
   virtual iAsset* GetAssetForResource (iObject* resource) = 0;
+
+  /**
+   * Is this a resource without an asset? This returns true if this
+   * resource has been explicitelly registered as not having an asset
+   * (PlaceResource() with asset parameter 0). This function returns false
+   * if the resource is placed with an asset. This function also returns
+   * false if the resouce is not placed with an asset but it was not marked
+   * as not requiring an asset.
+   */
+  virtual bool IsResourceWithoutAsset (iObject* resource) = 0;
 };
 
 #endif // __ARES_ASSETMANAGER_H__

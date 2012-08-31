@@ -61,7 +61,7 @@ bool AssetManager::LoadLibrary (const char* path, const char* file, iCollection*
   if (!rc.success)
   {
     vfs->PopDir ();
-    //@@@return ReportError("Couldn't load library file %s!", path);
+    //@@@return Error("Couldn't load library file %s!", path);
     return false;
   }
   vfs->PopDir ();
@@ -180,10 +180,7 @@ bool AssetManager::LoadDoc (iDocument* doc)
   {
     csRef<iString> error = curvedMeshCreator->Load (curveNode);
     if (error)
-    {
-      printf ("Error loading curves '%s'!", error->GetData ());
-      return false;
-    }
+      return Error ("Error loading curves '%s'!", error->GetData ());
   }
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryCount () ; i++)
@@ -202,10 +199,7 @@ bool AssetManager::LoadDoc (iDocument* doc)
   {
     csRef<iString> error = roomMeshCreator->Load (roomNode);
     if (error)
-    {
-      printf ("Error loading rooms '%s'!", error->GetData ());
-      return false;
-    }
+      return Error ("Error loading rooms '%s'!", error->GetData ());
   }
 
   for (size_t i = 0 ; i < roomMeshCreator->GetRoomFactoryCount () ; i++)
@@ -224,26 +218,14 @@ bool AssetManager::LoadDoc (iDocument* doc)
   {
     csRef<iString> error = dynworld->Load (dynworldNode);
     if (error)
-    {
-      printf ("Error loading dynworld '%s'!", error->GetData ());
-      fflush (stdout);
-      return false;
-    }
+      return Error ("Error loading dynworld '%s'!", error->GetData ());
   }
   return true;
 }
 
 bool AssetManager::LoadFile (const char* filename)
 {
-  assets.DeleteAll ();
-
-  curvedMeshCreator->DeleteFactories ();
-  curvedMeshCreator->DeleteCurvedFactoryTemplates ();
-  curvedFactories.DeleteAll ();
-
-  roomMeshCreator->DeleteFactories ();
-  roomMeshCreator->DeleteRoomFactoryTemplates ();
-  roomFactories.DeleteAll ();
+  NewProject ();
 
   csRef<iDocument> doc;
   csRef<iString> error = LoadDocument (object_reg, doc, 0, filename);
@@ -268,11 +250,7 @@ bool AssetManager::LoadAsset (const csString& normpath, const csString& file, co
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
     path = FindAsset (assetPath, normpath);
     if (!path)
-    {
-      // @@@ Proper reporting
-      printf ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
-      return false;
-    }
+      return Error ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
   }
 
   csString rmount;
@@ -290,6 +268,7 @@ bool AssetManager::LoadAsset (const csString& normpath, const csString& file, co
   {
     vfs->Mount (rmount, path->GetData ());
     printf ("Mounting '%s' to '%s'\n", path->GetData (), rmount.GetData ());
+    fflush (stdout);
   }
 
   vfs->PushDir (rmount);
@@ -304,7 +283,7 @@ bool AssetManager::LoadAsset (const csString& normpath, const csString& file, co
   }
   else
   {
-    printf ("Warning! File '%s/%s' does not exist!\n",
+    Warn ("Warning! File '%s/%s' does not exist!\n",
 	(!path) ? rmount.GetData () : path->GetData (), file.GetData ());
   }
 
@@ -323,6 +302,18 @@ bool AssetManager::NewProject ()
       engine->RemoveCollection (ia->GetCollection ());
   }
   assets.DeleteAll ();
+
+  curvedMeshCreator->DeleteFactories ();
+  curvedMeshCreator->DeleteCurvedFactoryTemplates ();
+  curvedFactories.DeleteAll ();
+
+  roomMeshCreator->DeleteFactories ();
+  roomMeshCreator->DeleteRoomFactoryTemplates ();
+  roomFactories.DeleteAll ();
+
+  resourcesWithoutAsset.DeleteAll ();
+  generallyModified = false;
+
   return true;
 }
 
@@ -397,15 +388,9 @@ bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
     csRef<iSaver> saver = csQueryRegistryOrLoad<iSaver> (object_reg,
 	"crystalspace.level.saver");
     if (!saver)
-    {
-      printf ("ERROR! Saver plugin is missing. Cannot save!\n");
-      return false;
-    }
+      return Error ("ERROR! Saver plugin is missing. Cannot save!");
     if (!saver->SaveLightFactories (collection, rootNode))
-    {
-      printf ("ERROR! Error saving light factories!\n");
-      return false;
-    }
+      return Error ("ERROR! Error saving light factories!\n");
   }
 
   {
@@ -463,14 +448,14 @@ bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
   csString normpath = asset->GetNormalizedPath ();
   if (normpath.IsEmpty ())
   {
-    printf ("### Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetMountPoint ().GetData ());
+    Report ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetMountPoint ().GetData ());
     vfs->PushDir (asset->GetMountPoint ());
     vfs->WriteFile (asset->GetFile (), xml->GetData (), xml->Length ());
     vfs->PopDir ();
   }
   else
   {
-    printf ("### Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
+    Report ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
     csRef<iString> path = FindAsset (assetPath, normpath, true);
 
@@ -549,8 +534,7 @@ bool AssetManager::SaveFile (const char* filename)
 {
   csRef<iDocument> doc = SaveDoc ();
 
-  // @@@ Message to reporter
-  printf ("Writing '%s' at '%s\n", filename, vfs->GetCwd ()); fflush (stdout);
+  Report ("Writing '%s' at '%s\n", filename, vfs->GetCwd ());
   csRef<iString> xml;
   xml.AttachNew (new scfString ());
   doc->Write (xml);
@@ -666,10 +650,12 @@ void AssetManager::RegisterRemoval (iObject* resource)
   {
     asset->SetModified (true);
   }
+  resourcesWithoutAsset.Delete (resource);
 }
 
 void AssetManager::PlaceResource (iObject* resource, iAsset* asset)
 {
+  bool wasModifiedInOriginalAsset = false;
   iObject* parent = resource->GetObjectParent ();
   if (parent)
   {
@@ -677,7 +663,12 @@ void AssetManager::PlaceResource (iObject* resource, iAsset* asset)
     if (collection)
     {
       IntAsset* ia = FindAssetForCollection (collection);
-      if (ia) ia->SetModified (true);
+      if (ia)
+      {
+	ia->SetModified (true);
+	wasModifiedInOriginalAsset = ia->GetModifiedResources ().Contains (resource);
+	ia->GetModifiedResources ().Delete (resource);
+      }
     }
     parent->ObjRemove (resource);
   }
@@ -687,6 +678,19 @@ void AssetManager::PlaceResource (iObject* resource, iAsset* asset)
     IntAsset* ia = static_cast<IntAsset*> (asset);
     ia->GetCollection ()->Add (resource);
     ia->SetModified (true);
+    if (wasModifiedInOriginalAsset)
+      ia->GetModifiedResources ().Add (resource);
+    resourcesWithoutAsset.Delete (resource);
+  }
+  else
+  {
+    resourcesWithoutAsset.Add (resource);
   }
 }
+
+bool AssetManager::IsResourceWithoutAsset (iObject* resource)
+{
+  return resourcesWithoutAsset.Contains (resource);
+}
+
 

@@ -204,7 +204,8 @@ public:
   bool LoadFile (const char* filename);
   void ManageAssets (const csArray<BaseAsset>& assets);
 
-  virtual void RegisterModification (iObject* resource);
+  virtual void RegisterModification (iObject* resource = 0);
+  bool IsCleanupAllowed ();
 
   void SwitchToMode (const char* name);
   virtual void SwitchToMainMode ();

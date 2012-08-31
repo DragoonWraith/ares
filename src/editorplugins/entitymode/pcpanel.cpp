@@ -84,19 +84,20 @@ static csColor ToColor (const char* value)
 
 BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
-  EVT_TEXT_ENTER (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_CHECKBOX (XRCID("physics_CheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRandomCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnUniqueCheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnNameCounterCheckBox"), PropertyClassPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("spawnInhibitText"), PropertyClassPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("spawnMinDelayText"), PropertyClassPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("spawnInhibitText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("spawnMinDelayText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
-  EVT_TEXT_ENTER (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
-  EVT_TEXT_ENTER (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_BUTTON (XRCID("questButton"), PropertyClassPanel :: OnChangeQuest)
+  EVT_TEXT (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
   EVT_COMBOBOX (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
@@ -769,11 +770,11 @@ void PropertyClassPanel::FillSpawn ()
   wxCheckBox* namecounterCB = XRCCTRL (*this, "spawnNameCounterCheckBox", wxCheckBox);
   namecounterCB->SetValue (false);
   wxTextCtrl* minDelayText = XRCCTRL (*this, "spawnMinDelayText", wxTextCtrl);
-  minDelayText->SetValue (wxT (""));
+  minDelayText->ChangeValue (wxT (""));
   wxTextCtrl* maxDelayText = XRCCTRL (*this, "spawnMaxDelayText", wxTextCtrl);
-  maxDelayText->SetValue (wxT (""));
+  maxDelayText->ChangeValue (wxT (""));
   wxTextCtrl* inhibitText = XRCCTRL (*this, "spawnInhibitText", wxTextCtrl);
-  inhibitText->SetValue (wxT (""));
+  inhibitText->ChangeValue (wxT (""));
 
   if (!pctpl || csString ("pclogic.spawn") != pctpl->GetName ()) return;
 
@@ -789,14 +790,14 @@ void PropertyClassPanel::FillSpawn ()
   if (valid)
   {
     csString s; s.Format ("%ld", mindelay);
-    minDelayText->SetValue (wxString::FromUTF8 (s));
+    minDelayText->ChangeValue (wxString::FromUTF8 (s));
   }
   long maxdelay = InspectTools::GetActionParameterValueLong (pl, pctpl,
       "SetTiming", "maxdelay", &valid);
   if (valid)
   {
     csString s; s.Format ("%ld", maxdelay);
-    maxDelayText->SetValue (wxString::FromUTF8 (s));
+    maxDelayText->ChangeValue (wxString::FromUTF8 (s));
   }
 
   bool unique = InspectTools::GetPropertyValueBool (pl, pctpl, "spawnunique");
@@ -809,7 +810,7 @@ void PropertyClassPanel::FillSpawn ()
   if (valid)
   {
     csString s; s.Format ("%ld", inhibit);
-    inhibitText->SetValue (wxString::FromUTF8 (s));
+    inhibitText->ChangeValue (wxString::FromUTF8 (s));
   }
 
   spawnCollectionValue->SetPC (pctpl);
@@ -927,6 +928,33 @@ iUIDialog* PropertyClassPanel::GetQuestDialog ()
   return questParDialog;
 }
 
+static void CorrectQuestName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
+void PropertyClassPanel::OnChangeQuest (wxCommandEvent& event)
+{
+  csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select a quest");
+  dialog->AddRow ();
+  csRef<Ares::Value> assets = emode->GetApplication ()->Get3DView ()->GetQuestsValue ();
+  dialog->AddListIndexed ("quest", assets, QUEST_COL_NAME, 300, "Name",
+      QUEST_COL_NAME);
+  if (dialog->Show (0))
+  {
+    const DialogResult& result = dialog->GetFieldContents ();
+    csString quest = result.Get ("quest", "");
+    if (!quest.IsEmpty ())
+    {
+      CorrectQuestName (quest);
+      wxTextCtrl* questText = XRCCTRL (*this, "questText", wxTextCtrl);
+      questText->ChangeValue (wxString::FromUTF8 (quest));
+      UpdateQuest ();
+    }
+  }
+}
+
 bool PropertyClassPanel::UpdateQuest ()
 {
   SwitchPCType ("pclogic.quest");
@@ -935,14 +963,16 @@ bool PropertyClassPanel::UpdateQuest ()
   csString questName = (const char*)questText->GetValue ().mb_str (wxConvUTF8);
   if (questName.IsEmpty ())
   {
-    uiManager->Error ("Empty quest name is not allowed!");
+    //uiManager->Error ("Empty quest name is not allowed!");
+    //@@@ Mark error some way!
     return false;
   }
 
   csRef<iParameter> par = pm->GetParameter (questName, CEL_DATA_STRING);
   if (!par)
   {
-    uiManager->Error ("Invalid quest name!");
+    //uiManager->Error ("Invalid quest name!");
+    //@@@ Mark error some way!
     return false;
   }
   InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
@@ -957,7 +987,7 @@ void PropertyClassPanel::FillQuest ()
   wxListCtrl* parList = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
   parList->DeleteAllItems ();
   wxTextCtrl* text = XRCCTRL (*this, "questText", wxTextCtrl);
-  text->SetValue (wxT (""));
+  text->ChangeValue (wxT (""));
 
   if (!pctpl || csString ("pclogic.quest") != pctpl->GetName ()) return;
 
@@ -969,7 +999,7 @@ void PropertyClassPanel::FillQuest ()
       "NewQuest", "name");
   if (!questName.IsEmpty ())
   {
-    text->SetValue (wxString::FromUTF8 (questName));
+    text->ChangeValue (wxString::FromUTF8 (questName));
     questFact = quest_mgr->GetQuestFactory (questName);
   }
   if (questFact)
@@ -1158,7 +1188,7 @@ void PropertyClassPanel::FillInventory ()
   wxListCtrl* list = XRCCTRL (*this, "inventoryTemplateListCtrl", wxListCtrl);
   list->DeleteAllItems ();
   wxTextCtrl* lootText = XRCCTRL (*this, "inventoryLootTextCtrl", wxTextCtrl);
-  lootText->SetValue (wxT (""));
+  lootText->ChangeValue (wxT (""));
 
   if (!pctpl || csString ("pctools.inventory") != pctpl->GetName ()) return;
 
@@ -1167,7 +1197,7 @@ void PropertyClassPanel::FillInventory ()
 
   csString lootName = InspectTools::GetActionParameterValueString (pl, pctpl,
       "SetLootGenerator", "name");
-  lootText->SetValue (wxString::FromUTF8 (lootName));
+  lootText->ChangeValue (wxString::FromUTF8 (lootName));
 }
 
 // -----------------------------------------------------------------------

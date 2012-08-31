@@ -211,7 +211,7 @@ void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
     if (child->IsKindOf (CLASSINFO (wxTextCtrl)))
     {
       wxTextCtrl* text = wxStaticCast (child, wxTextCtrl);
-      text->SetValue (wxvalue);
+      text->ChangeValue (wxvalue);
     }
     else if (child->IsKindOf (CLASSINFO (wxStaticText)))
     {

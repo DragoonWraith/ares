@@ -59,7 +59,6 @@ DynworldSnapshot::DynworldSnapshot (iPcDynamicWorld* dynworld)
         obj.templateName = dynobj->GetEntityTemplate ()->GetName ();
       obj.entityName = dynobj->GetEntityName ();
       obj.params = dynobj->GetEntityParameters ();
-printf ("snapshotting %d/%s\n", i, obj.entityName.GetData ()); fflush (stdout);
       for (size_t j = 0 ; j < dynobj->GetFactory ()->GetJointCount () ; j++)
       {
 	obj.connectedObjects.Push (FindObjIndex (dynobj->GetCell (), dynobj->GetConnectedObject (j)));
@@ -217,7 +216,7 @@ void PlayMode::Start ()
   if (mechPlayer)
   {
     body = mechPlayer->GetBody ();
-    csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
+    //csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
     //bulletBody->MakeKinematic ();
   }
 
@@ -231,9 +230,6 @@ void PlayMode::Start ()
     body->SetTransform (playerTrans);
   }
 
-  iELCM* elcm = view3d->GetELCM ();
-  elcm->SetPlayer (player);
-
   cellIt = dynworld->GetCells ();
   while (cellIt->HasNext ())
   {
@@ -246,6 +242,8 @@ void PlayMode::Start ()
     }
   }
 
+  iELCM* elcm = view3d->GetELCM ();
+  elcm->SetPlayer (player);
 }
 
 void PlayMode::Stop ()

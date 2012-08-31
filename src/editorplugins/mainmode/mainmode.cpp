@@ -412,6 +412,7 @@ void MainMode::SetDynObjOrigin (iDynamicObject* dynobj, const csVector3& pos)
     mov->GetTransform ().SetOrigin (pos);
     mov->UpdateMove ();
   }
+  app->RegisterModification ();
 }
 
 void MainMode::SetDynObjTransform (iDynamicObject* dynobj, const csReversibleTransform& trans)
@@ -430,6 +431,7 @@ void MainMode::SetDynObjTransform (iDynamicObject* dynobj, const csReversibleTra
     mov->SetTransform (trans);
     mov->UpdateMove ();
   }
+  app->RegisterModification ();
 }
 
 void MainMode::MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
@@ -495,6 +497,7 @@ void MainMode::StopDrag (bool cancel)
         iMeshWrapper* mesh = dynobj->GetMesh ();
 	mesh->GetMovable ()->SetTransform (dob.originalTransform);
 	mesh->GetMovable ()->UpdateMove ();
+	app->RegisterModification ();
       }
       dynobj->UndoKinematic ();
       dynobj->RecreatePivotJoints ();
@@ -663,6 +666,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
       else
 	dynobj->MakeStatic ();
     }
+    app->RegisterModification ();
     CurrentObjectsChanged (view3d->GetSelection ()->GetObjects ());
   }
   else if (code == 'h')

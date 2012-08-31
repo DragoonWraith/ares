@@ -76,6 +76,7 @@ void MessageFrame::OnClearButton (wxCommandEvent& event)
 
 void MessageFrame::ReceiveMessage (int severity, const char* msgID, const char* description)
 {
+  bool popup = true;
   if (severity != lastMessageSeverity || lastMessageID != msgID)
   {
     csString color;
@@ -85,7 +86,7 @@ void MessageFrame::ReceiveMessage (int severity, const char* msgID, const char* 
       case CS_REPORTER_SEVERITY_BUG: color = "green"; break;
       case CS_REPORTER_SEVERITY_ERROR: color = "red"; break;
       case CS_REPORTER_SEVERITY_WARNING: color = "orange"; break;
-      case CS_REPORTER_SEVERITY_NOTIFY: color = "black"; break;
+      case CS_REPORTER_SEVERITY_NOTIFY: color = "black"; popup = false; break;
       default: color = "green";
     }
     lastMessageSeverity = severity;
@@ -93,6 +94,14 @@ void MessageFrame::ReceiveMessage (int severity, const char* msgID, const char* 
     messages.AppendFmt ("<font color='%s'><b>%s</b></font><br>", color.GetData (), msgID);
   }
   messages.AppendFmt ("&nbsp;&nbsp;%s<br>", description);
+  if (popup)
+  {
+    if (!IsShown ())
+    {
+      wxFrame::Show (true);
+      Raise ();
+    }
+  }
   UpdateHtml ();
 }
 

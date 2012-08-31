@@ -162,6 +162,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
 
 AppAresEditWX::~AppAresEditWX ()
 {
+printf ("DESTROY AppAresEditWX\n"); fflush (stdout);
   delete camwin;
 }
 
@@ -248,8 +249,19 @@ void AppAresEditWX::MoveResources ()
   UpdateTitle ();
 }
 
+bool AppAresEditWX::IsCleanupAllowed ()
+{
+  if (assetManager->IsModified ())
+  {
+    return uiManager->Ask ("The current project was modified. Do you want to abandon changes?");
+  }
+  return true;
+}
+
 void AppAresEditWX::NewProject ()
 {
+  if (!IsCleanupAllowed ()) return;
+
   SetCurrentFile ("", "");
 
   aresed3d->SetupWorld ();
@@ -271,6 +283,8 @@ void AppAresEditWX::DoFrame ()
 
 void AppAresEditWX::OpenFile ()
 {
+  if (!IsCleanupAllowed ()) return;
+
   if (currentPath.IsEmpty ())
     vfs->ChDir ("/saves");
   else
@@ -325,6 +339,7 @@ void AppAresEditWX::SaveCurrentFile ()
 
 void AppAresEditWX::Quit ()
 {
+  if (!IsCleanupAllowed ()) return;
   Close();
 }
 
@@ -620,31 +635,38 @@ bool AppAresEditWX::InitPlugins ()
 
 void AppAresEditWX::RegisterModification (iObject* resource)
 {
-  if (!assetManager->RegisterModification (resource))
+  if (!resource)
   {
-    csString title;
-    title.Format ("Select an asset for this resource '%s'", resource->GetName ());
-    csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
-    dialog->AddRow ();
-    csRef<Ares::Value> assets = aresed3d->GetWritableAssetsValue ();
-    dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
-	ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
-    if (dialog->Show (0))
+    assetManager->RegisterModification ();
+  }
+  else if (!assetManager->RegisterModification (resource))
+  {
+    if (!assetManager->IsResourceWithoutAsset (resource))
     {
-      const DialogValues& result = dialog->GetFieldValues ();
-      Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
-      if (row)
+      csString title;
+      title.Format ("Select an asset for this resource '%s'", resource->GetName ());
+      csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
+      dialog->AddRow ();
+      csRef<Ares::Value> assets = aresed3d->GetWritableAssetsValue ();
+      dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
+	  ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
+      if (dialog->Show (0))
       {
-        AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
-	iAsset* asset = av->GetObjectFromValue (row);
-	assetManager->PlaceResource (resource, asset);
-	UpdateTitle ();
-	return;
+	const DialogValues& result = dialog->GetFieldValues ();
+	Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
+	if (row)
+	{
+	  AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
+	  iAsset* asset = av->GetObjectFromValue (row);
+	  assetManager->PlaceResource (resource, asset);
+	  UpdateTitle ();
+	  return;
+	}
       }
-    }
 
-    // @@@ Make sure this message only appears once. Not every time a modification is made.
-    uiManager->Message ("Warning! This asset will not be saved!");
+      uiManager->Message ("Warning! This asset will not be saved!");
+      assetManager->PlaceResource (resource, 0);
+    }
   }
   UpdateTitle ();
 }

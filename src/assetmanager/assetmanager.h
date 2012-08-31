@@ -81,6 +81,7 @@ private:
 
   int mntCounter;
   csRefArray<iAsset> assets;
+  csSet<csPtrKey<iObject> > resourcesWithoutAsset;
   int colCounter;
 
   bool generallyModified;	// A general modification outside of an asset has occured.
@@ -118,6 +119,34 @@ private:
 public:
   AssetManager (iBase* parent);
   virtual ~AssetManager () { }
+
+  bool Error (const char* description, ...)
+  {
+    va_list args;
+    va_start (args, description);
+    csReportV (object_reg, CS_REPORTER_SEVERITY_ERROR,
+      "ares.assetmanager", description, args);
+    va_end (args);
+    return false;
+  }
+
+  void Warn (const char* description, ...)
+  {
+    va_list args;
+    va_start (args, description);
+    csReportV (object_reg, CS_REPORTER_SEVERITY_WARNING,
+      "ares.assetmanager", description, args);
+    va_end (args);
+  }
+
+  void Report (const char* description, ...)
+  {
+    va_list args;
+    va_start (args, description);
+    csReportV (object_reg, CS_REPORTER_SEVERITY_NOTIFY,
+      "ares.assetmanager", description, args);
+    va_end (args);
+  }
 
   virtual bool Initialize (iObjectRegistry* object_reg);
 
@@ -187,6 +216,7 @@ public:
   virtual void RegisterRemoval (iObject* resource);
   virtual void PlaceResource (iObject* resource, iAsset* asset);
   virtual iAsset* GetAssetForResource (iObject* resource);
+  virtual bool IsResourceWithoutAsset (iObject* resource);
 };
 
 #endif // __ASSETMANAGER_H__
