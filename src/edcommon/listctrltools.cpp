@@ -103,7 +103,11 @@ long ListCtrlTools::InsertRow (wxListCtrl* list, int idx, const csStringArray& v
   for (size_t col = 1 ; col < values.GetSize () ; col++)
     list->SetItem (idx, col, wxString::FromUTF8 (values[col]));
   for (size_t i = 0 ; i < values.GetSize () ; i++)
+#ifdef OS_WIN32
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
+#else
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE);
+#endif
   return idx;
 }
 
@@ -130,7 +134,12 @@ void ListCtrlTools::ReplaceRow (wxListCtrl* list, int idx, const csStringArray& 
   for (size_t col = 1 ; col < values.GetSize () ; col++)
     list->SetItem (idx, col, wxString::FromUTF8 (values[col]));
   for (size_t i = 0 ; i < values.GetSize () ; i++)
+#ifdef OS_WIN32
     list->SetColumnWidth (i, wxLIST_AUTOSIZE_USEHEADER);
+#else
+    list->SetColumnWidth (i, wxLIST_AUTOSIZE);
+#endif
+
 }
 
 void ListCtrlTools::ColorRow (wxListCtrl* list, int idx,
