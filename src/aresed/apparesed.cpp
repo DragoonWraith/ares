@@ -148,7 +148,7 @@ AppAresEditWX* aresed = 0;
 
 AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (w, h)),
-    scfImplementationType (this)
+    scfImplementationType (this), ready (false)
 {
   AppAresEditWX::object_reg = object_reg;
   camwin = 0;
@@ -552,6 +552,8 @@ bool AppAresEditWX::Initialize ()
   csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
   UpdateTitle ();
 
+  ready = true;
+
   return true;
 }
 
@@ -911,6 +913,7 @@ void AppAresEditWX::SetMenuState ()
 
 void AppAresEditWX::PushFrame ()
 {
+  if (!ready) return;
   static bool lock = false;
   if (lock) return;
   lock = true;

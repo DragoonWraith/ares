@@ -112,6 +112,8 @@ private:
 
   csRef<iAssetManager> assetManager;
 
+  bool ready;	// True if we are ready to process events.
+
   csString currentPath;
   csString currentFile;
 
