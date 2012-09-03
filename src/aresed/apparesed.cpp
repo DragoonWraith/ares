@@ -719,9 +719,6 @@ bool AppAresEditWX::InitWX ()
   if (!panel) return ReportError ("Can't find main3DPanel!");
   panel->DragAcceptFiles (false);
 
-  wxSplitterWindow* topBottomSplitter = XRCCTRL (*this, "topBottom_Splitter", wxSplitterWindow);
-  topBottomSplitter->Unsplit ();
-
   // Create the wxgl canvas
   iGraphics2D* g2d = g3d->GetDriver2D ();
   g2d->AllowResize (true);
@@ -770,6 +767,10 @@ bool AppAresEditWX::InitWX ()
     return false;
 
   SwitchToMainMode ();
+
+  wxSplitterWindow* topBottomSplitter = XRCCTRL (*this, "topBottom_Splitter", wxSplitterWindow);
+  topBottomSplitter->Unsplit ();
+  ViewControls ();
 
   return true;
 }
@@ -899,6 +900,7 @@ void AppAresEditWX::ViewBottomPage (const char* name)
   else
   {
     wxSize totsize = GetSize ();
+    topBottomSplitter->Unsplit ();
     topBottomSplitter->SplitHorizontally (topPanel, bottomPanel, totsize.y - 250);
     notebook->ChangeSelection (idx);
   }
@@ -910,6 +912,7 @@ void AppAresEditWX::View3D ()
   wxPanel* leftPanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   wxPanel* rightPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
   wxSize size = leftPanel->GetMinSize ();
+  leftRightSplitter->Unsplit ();
   leftRightSplitter->SplitVertically (leftPanel, rightPanel, size.x);
 }
 
@@ -919,6 +922,7 @@ void AppAresEditWX::ViewControls ()
   wxPanel* leftPanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   wxPanel* rightPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
   wxSize size = leftPanel->GetMinSize ();
+  leftRightSplitter->Unsplit ();
   leftRightSplitter->SplitVertically (leftPanel, rightPanel, size.x);
 }
 
