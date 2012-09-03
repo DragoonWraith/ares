@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "uimanager.h"
 #include "filereq.h"
 #include "newproject.h"
-#include "messageframe.h"
 #include "celldialog.h"
 #include "entityparameters.h"
 #include "objectfinder.h"
@@ -459,7 +458,6 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
   newprojectDialog = new NewProjectDialog (parent, app->GetObjectRegistry (), this, app->GetVFS ());
   cellDialog = new CellDialog (parent, this);
-  messageFrame = new MessageFrame (parent, this);
   entityParameterDialog = new EntityParameterDialog (parent, this);
   objectFinderDialog = new ObjectFinderDialog (parent, this);
   resourceMoverDialog = new ResourceMoverDialog (parent, this);
@@ -471,7 +469,6 @@ UIManager::~UIManager ()
   delete filereqDialog;
   delete newprojectDialog;
   delete cellDialog;
-  delete messageFrame;
   delete entityParameterDialog;
   delete objectFinderDialog;
   delete resourceMoverDialog;

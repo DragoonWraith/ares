@@ -202,6 +202,7 @@ void AresEdit3DView::ChangeNameSelectedObject (const char* name)
   if (selection->GetSize () < 1) return;
   selection->GetFirst ()->SetEntityName (name);
   objectsValue->BuildModel ();
+  app->RegisterModification ();
 }
 
 iEditorCamera* AresEdit3DView::GetEditorCamera () const
@@ -827,7 +828,9 @@ printf ("view_wh=%d,%d new_wh=%d,%d\n", view_width, view_height, width, height);
   view_height = height;
 
   //view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
+  view->GetCamera ()->SetViewportSize (view_width, view_height);
   view->SetRectangle (0, 0, view_width, view_height, false);
+  view->GetCamera ()->SetFOV (view_height, view_width);
 }
 
 iAresEditor* AresEdit3DView::GetApplication  ()
@@ -956,9 +959,13 @@ bool AresEdit3DView::Setup ()
   iGraphics2D* g2d = g3d->GetDriver2D ();
   // We use the full window to draw the world.
   //view_width = (int)(g2d->GetWidth () * 0.86);
-  view_width = g2d->GetWidth ();
-  view_height = g2d->GetHeight ();
+  //view_width = g2d->GetWidth ();
+  //view_height = g2d->GetHeight ();
+  view_width = 640;
+  view_height = 480;
+  view->GetCamera ()->SetViewportSize (view_width, view_height);
   view->SetRectangle (0, 0, view_width, view_height);
+  view->GetCamera ()->SetFOV (view_height, view_width);
 
   markerMgr->SetView (view);
 

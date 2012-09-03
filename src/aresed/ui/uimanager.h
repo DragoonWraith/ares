@@ -33,7 +33,6 @@ THE SOFTWARE.
 class AppAresEditWX;
 class FileReq;
 class NewProjectDialog;
-class MessageFrame;
 class CellDialog;
 class UIDialog;
 class SimpleListCtrlView;
@@ -168,7 +167,6 @@ private:
   FileReq* filereqDialog;
   NewProjectDialog* newprojectDialog;
   CellDialog* cellDialog;
-  MessageFrame* messageFrame;
   EntityParameterDialog* entityParameterDialog;
   ObjectFinderDialog* objectFinderDialog;
   ResourceMoverDialog* resourceMoverDialog;
@@ -189,7 +187,6 @@ public:
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
-  MessageFrame* GetMessageFrame () const { return messageFrame; }
   EntityParameterDialog* GetEntityParameterDialog () const { return entityParameterDialog; }
   ObjectFinderDialog* GetObjectFinderDialog () const { return objectFinderDialog; }
   ResourceMoverDialog* GetResourceMoverDialog () const { return resourceMoverDialog; }

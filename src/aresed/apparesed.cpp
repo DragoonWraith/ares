@@ -23,12 +23,14 @@ THE SOFTWARE.
  */
 
 #include "apparesed.h"
+#include "imap/objectcomment.h"
+#include "cstool/objectcomment.h"
+
 #include "aresview.h"
 #include "include/imarker.h"
 #include "ui/uimanager.h"
 #include "ui/filereq.h"
 #include "ui/newproject.h"
-#include "ui/messageframe.h"
 #include "ui/celldialog.h"
 #include "ui/objectfinder.h"
 #include "ui/resourcemover.h"
@@ -58,10 +60,23 @@ THE SOFTWARE.
 #include <wx/imaglist.h>
 #include <wx/treectrl.h>
 #include <wx/notebook.h>
+#include <wx/splitter.h>
 #include <wx/xrc/xmlres.h>
+#include <wx/html/htmlwin.h>
 
 // Defined in mingw includes apparently.
 #undef SetJob
+
+static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
+{
+  wxString iname = wxString::FromUTF8 (name);
+  for (size_t i = 0 ; i < notebook->GetPageCount () ; i++)
+  {
+    wxString pageName = notebook->GetPageText (i);
+    if (pageName == iname) return i;
+  }
+  return csArrayItemNotFound;
+}
 
 void AppSelectionListener::SelectionChanged (
     const csArray<iDynamicObject*>& current_objects)
@@ -124,7 +139,7 @@ public:
 THREADED_CALLABLE_IMPL4(AresReporterListener, Report, iReporter*, int severity,
   const char* msgID, const char* description)
 {
-  app->GetUIManager ()->GetMessageFrame ()->ReceiveMessage (severity, msgID, description);
+  app->ReceiveMessage (severity, msgID, description);
   return true;
 }
 
@@ -136,6 +151,8 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_MENU (wxID_ANY, AppAresEditWX :: OnMenuItem)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
+  EVT_BUTTON (XRCID("messagesClear_Button"), AppAresEditWX :: OnClearMessages)
+  EVT_TEXT (XRCID("comments_Text"), AppAresEditWX :: OnChangeComment)
   EVT_IDLE (AppAresEditWX::OnIdle)
 END_EVENT_TABLE()
 
@@ -158,6 +175,8 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
   wantsFocus3D = 0;
+
+  lastMessageSeverity = -1;
 }
 
 AppAresEditWX::~AppAresEditWX ()
@@ -526,6 +545,8 @@ bool AppAresEditWX::Initialize ()
   engine = csQueryRegistry<iEngine> (object_reg);
   if (!engine) return ReportError ("Can't find the engine plugin!");
 
+  engine->SetSaveableFlag (true);
+
   if (!config->ReadConfig ())
     return false;
 
@@ -686,7 +707,6 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
   if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("MessageFrame.xrc", searchPath)) return false;
   if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ObjectFinderDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ResourceMoverDialog.xrc", searchPath)) return false;
@@ -698,6 +718,9 @@ bool AppAresEditWX::InitWX ()
   wxPanel* panel = XRCCTRL (*this, "main3DPanel", wxPanel);
   if (!panel) return ReportError ("Can't find main3DPanel!");
   panel->DragAcceptFiles (false);
+
+  wxSplitterWindow* topBottomSplitter = XRCCTRL (*this, "topBottom_Splitter", wxSplitterWindow);
+  topBottomSplitter->Unsplit ();
 
   // Create the wxgl canvas
   iGraphics2D* g2d = g3d->GetDriver2D ();
@@ -777,6 +800,128 @@ void AppAresEditWX::ClearStatus ()
     SetStatus ("");
 }
 
+void AppAresEditWX::SetObjectForComment (const char* type, iObject* objForComment)
+{
+  objectForComment = objForComment;
+  if (objectForComment)
+  {
+    csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (objectForComment);
+    csString commentString;
+    if (comment)
+      commentString = comment->GetComment ()->GetData ();
+    wxTextCtrl* comments_Text = XRCCTRL (*this, "comments_Text", wxTextCtrl);
+    comments_Text->ChangeValue (wxString::FromUTF8 (commentString));
+    wxStaticText* comments_Label = XRCCTRL (*this, "comments_Label", wxStaticText);
+    csString label;
+    label.Format ("Comment for %s %s", type, objectForComment->GetName ());
+    comments_Label->SetLabel (wxString::FromUTF8 (label));
+  }
+}
+
+void AppAresEditWX::OnChangeComment (wxCommandEvent& event)
+{
+  if (objectForComment)
+  {
+    wxTextCtrl* comments_Text = XRCCTRL (*this, "comments_Text", wxTextCtrl);
+    csString text = (const char*)comments_Text->GetValue ().mb_str (wxConvUTF8);
+    csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (objectForComment);
+    if (!comment)
+    {
+      comment.AttachNew (new csObjectComment ());
+      objectForComment->ObjAdd (comment->QueryObject ());
+    }
+    comment->GetComment ()->Replace (text);
+    RegisterModification (objectForComment);
+  }
+}
+
+void AppAresEditWX::ReceiveMessage (int severity, const char* msgID, const char* description)
+{
+  bool popup = false;
+  if (severity != lastMessageSeverity || lastMessageID != msgID)
+  {
+    popup = true;
+    csString color;
+    switch (severity)
+    {
+      case CS_REPORTER_SEVERITY_DEBUG: color = "green"; break;
+      case CS_REPORTER_SEVERITY_BUG: color = "green"; break;
+      case CS_REPORTER_SEVERITY_ERROR: color = "red"; break;
+      case CS_REPORTER_SEVERITY_WARNING: color = "orange"; break;
+      case CS_REPORTER_SEVERITY_NOTIFY: color = "black"; popup = false; break;
+      default: color = "green";
+    }
+    lastMessageSeverity = severity;
+    lastMessageID = msgID;
+    messages.AppendFmt ("<font color='%s'><b>%s</b></font><br>", color.GetData (), msgID);
+  }
+  messages.AppendFmt ("&nbsp;&nbsp;%s<br>", description);
+  if (popup)
+  {
+    ViewBottomPage ("Messages");
+  }
+
+  wxHtmlWindow* message_Html = XRCCTRL (*this, "message_Html", wxHtmlWindow);
+  message_Html->SetPage (wxString::FromUTF8 ("<html><body>"+messages+"</body></html>"));
+  message_Html->Scroll (0, 1000000000);
+}
+
+void AppAresEditWX::OnClearMessages (wxCommandEvent& event)
+{
+  messages = "";
+  lastMessageID = csInvalidStringID;
+  lastMessageSeverity = -1;
+  wxHtmlWindow* message_Html = XRCCTRL (*this, "message_Html", wxHtmlWindow);
+  message_Html->SetPage (wxString::FromUTF8 ("<html><body>"+messages+"</body></html>"));
+}
+
+void AppAresEditWX::ViewBottomPage (const char* name)
+{
+  wxSplitterWindow* topBottomSplitter = XRCCTRL (*this, "topBottom_Splitter", wxSplitterWindow);
+  wxPanel* topPanel = XRCCTRL (*this, "top_Panel", wxPanel);
+  wxPanel* bottomPanel = XRCCTRL (*this, "bottom_Panel", wxPanel);
+  wxNotebook* notebook = XRCCTRL (*this, "bottom_Notebook", wxNotebook);
+
+  size_t idx = FindNotebookPage (notebook, name);
+
+  if (bottomPanel->IsShown ())
+  {
+    wxWindow* page = notebook->GetCurrentPage ();
+    if (page == notebook->GetPage (idx))
+    {
+      topBottomSplitter->Unsplit ();
+    }
+    else
+    {
+      notebook->ChangeSelection (idx);
+    }
+  }
+  else
+  {
+    wxSize totsize = GetSize ();
+    topBottomSplitter->SplitHorizontally (topPanel, bottomPanel, totsize.y - 250);
+    notebook->ChangeSelection (idx);
+  }
+}
+
+void AppAresEditWX::View3D ()
+{
+  wxSplitterWindow* leftRightSplitter = XRCCTRL (*this, "leftRight_Splitter", wxSplitterWindow);
+  wxPanel* leftPanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
+  wxPanel* rightPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
+  wxSize size = leftPanel->GetMinSize ();
+  leftRightSplitter->SplitVertically (leftPanel, rightPanel, size.x);
+}
+
+void AppAresEditWX::ViewControls ()
+{
+  wxSplitterWindow* leftRightSplitter = XRCCTRL (*this, "leftRight_Splitter", wxSplitterWindow);
+  wxPanel* leftPanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
+  wxPanel* rightPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
+  wxSize size = leftPanel->GetMinSize ();
+  leftRightSplitter->SplitVertically (leftPanel, rightPanel, size.x);
+}
+
 bool AppAresEditWX::Command (const char* name, const char* args)
 {
   csString c = name;
@@ -798,8 +943,11 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   else if (c == "Unjoin") aresed3d->UnjoinObjects ();
   else if (c == "ManageCells") uiManager->GetCellDialog ()->Show ();
   else if (c == "SwitchMode") SwitchToMode (args);
-  else if (c == "Messages") uiManager->GetMessageFrame ()->Show ();
   else if (c == "EntityParameters") aresed3d->EntityParameters ();
+  else if (c == "ViewMessages") ViewBottomPage ("Messages");
+  else if (c == "ViewComments") ViewBottomPage ("Comments");
+  else if (c == "View3D") View3D ();
+  else if (c == "ViewControls") ViewControls ();
   else return false;
   return true;
 }
@@ -943,6 +1091,7 @@ void AppAresEditWX::OnSize (wxSizeEvent& event)
 
   wxSize size = event.GetSize();
   printf ("OnSize %d,%d\n", size.x, size.y); fflush (stdout);
+
   wxwindow->GetWindow ()->SetSize (size);
   aresed3d->ResizeView (size.x, size.y);
   // TODO: ... but here the CanvasResize event has still not been catched by iGraphics3D
@@ -978,17 +1127,6 @@ void AppAresEditWX::OnShow (wxShowEvent& event)
 iEditorConfig* AppAresEditWX::GetConfig () const
 {
   return static_cast<iEditorConfig*> (config);
-}
-
-static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
-{
-  wxString iname = wxString::FromUTF8 (name);
-  for (size_t i = 0 ; i < notebook->GetPageCount () ; i++)
-  {
-    wxString pageName = notebook->GetPageText (i);
-    if (pageName == iname) return i;
-  }
-  return csArrayItemNotFound;
 }
 
 void AppAresEditWX::SwitchToMainMode ()

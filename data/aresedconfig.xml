@@ -42,8 +42,6 @@
 	    <sep />
 	    <item name="&amp;Play	Ctrl+P" id="Preview" command="SwitchMode" args="Play" />
 	    <sep />
-	    <item name="&amp;Messages	Ctrl+M" command="Messages" />
-	    <sep />
 	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" />
 	    <item name="&amp;Save   	Ctrl+S" id="Save" command="Save" />
 	    <item name="&amp;Save As..." id="SaveAs" command="SaveAs" />
@@ -77,6 +75,12 @@
 	</menu>
 	<menu name="&amp;Logic">
 	    <item name="&amp;Entity Parameters..." command="EntityParameters" />
+	</menu>
+	<menu name="&amp;View">
+	    <item name="&amp;View Messages	Ctrl+M" command="ViewMessages" />
+	    <item name="&amp;View Comments" command="ViewComments" />
+	    <item name="&amp;View Controls" command="ViewControls" />
+	    <item name="&amp;View 3D" command="View3D" />
 	</menu>
 	<menu name="&amp;Help">
 	    <item name="&amp;Online Help" id="Help" target="Help" command="Show" />

@@ -142,6 +142,14 @@ private:
   iEditorPlugin* FindPlugin (const char* name);
   void RefreshModes ();
 
+  // For messages.
+  int lastMessageSeverity;
+  csString lastMessageID;
+  csString messages;
+
+  // For comments.
+  csWeakRef<iObject> objectForComment;
+
   csHash<MenuCommand,int> menuCommands;
   bool SetupMenuBar ();
   void OnMenuItem (wxCommandEvent& event);
@@ -158,6 +166,12 @@ private:
 
   void OnNotebookChange (wxNotebookEvent& event);
   void OnNotebookChanged (wxNotebookEvent& event);
+  void OnClearMessages (wxCommandEvent& event);
+  void OnChangeComment (wxCommandEvent& event);
+
+  void ViewBottomPage (const char* pagename);
+  void View3D ();
+  void ViewControls ();
 
 public:
   AppAresEditWX (iObjectRegistry* object_reg, int w, int h);
@@ -179,6 +193,11 @@ public:
     va_end (args);
     return false;
   }
+
+  /**
+   * A message was received from the reporter.
+   */
+  void ReceiveMessage (int severity, const char* msgID, const char* description);
 
   /// Update the title of this frame.
   void UpdateTitle ();
@@ -242,6 +261,8 @@ public:
   virtual void HideCameraWindow ();
 
   virtual void SetFocus3D ();
+
+  virtual void SetObjectForComment (const char* type, iObject* objForComment);
 
   UIManager* GetUIManager () const { return uiManager; }
   virtual iUIManager* GetUI () const;

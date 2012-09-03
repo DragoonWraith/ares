@@ -32,6 +32,7 @@ struct iUIManager;
 struct iEditorConfig;
 struct i3DView;
 struct iAssetManager;
+struct iObject;
 
 /**
  * The editor application.
@@ -77,6 +78,11 @@ struct iAresEditor : public virtual iBase
    * Switch to the main default mode.
    */
   virtual void SwitchToMainMode () = 0;
+
+  /**
+   * Set the current object comment.
+   */
+  virtual void SetObjectForComment (const char* type, iObject* objForComment) = 0;
 };
 
 

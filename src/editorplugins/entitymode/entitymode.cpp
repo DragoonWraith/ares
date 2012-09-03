@@ -23,6 +23,7 @@ THE SOFTWARE.
  */
 
 #include <crystalspace.h>
+#include "imap/objectcomment.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
 #include "entitymode.h"
@@ -596,6 +597,7 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
     BuildQuestGraph (questFact, pcKey, true, defaultState);
     graphView->FinishRefresh ();
     graphView->SetVisible (true);
+    app->SetObjectForComment ("quest", questFact->QueryObject ());
   }
   else
     BuildTemplateGraph (currentTemplate);
@@ -782,6 +784,8 @@ void EntityMode::OnTemplateSelect ()
     editQuestMode = false;
     BuildTemplateGraph (templateName);
     ActivateNode (0);
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    app->SetObjectForComment ("template", tpl->QueryObject ());
   }
 }
 
