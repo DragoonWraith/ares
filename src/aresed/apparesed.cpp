@@ -816,6 +816,8 @@ void AppAresEditWX::SetObjectForComment (const char* type, iObject* objForCommen
     csString label;
     label.Format ("Comment for %s %s", type, objectForComment->GetName ());
     comments_Label->SetLabel (wxString::FromUTF8 (label));
+    bool modifiable = assetManager->IsModifiable (objForComment);
+    comments_Text->SetEditable (modifiable);
   }
 }
 
@@ -828,7 +830,7 @@ void AppAresEditWX::OnChangeComment (wxCommandEvent& event)
     csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (objectForComment);
     if (!comment)
     {
-      comment.AttachNew (new csObjectComment ());
+      comment.AttachNew (new CS::Persistence::ObjectComment ());
       objectForComment->ObjAdd (comment->QueryObject ());
     }
     comment->GetComment ()->Replace (text);

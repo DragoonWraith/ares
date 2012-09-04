@@ -818,6 +818,7 @@ void EntityMode::AskNewTemplate ()
       ListCtrlTools::SelectRow (list, (int)i, false);
       ActivateNode (0);
       RegisterModification (tpl);
+      app->SetObjectForComment ("template", tpl->QueryObject ());
     }
   }
 }

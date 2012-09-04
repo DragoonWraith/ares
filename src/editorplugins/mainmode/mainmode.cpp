@@ -356,6 +356,15 @@ void MainMode::OnClearStatic ()
 void MainMode::OnTreeSelChanged (wxTreeEvent& event)
 {
   view3d->GetApplication ()->SetFocus3D ();
+  csString selection = GetSelectedItem ();
+  iObject* factObject = 0;
+  if (!selection.IsEmpty ())
+  {
+    iDynamicFactory* fact = view3d->GetDynamicWorld ()->FindFactory (selection);
+    if (fact)
+      factObject = fact->QueryObject ();
+  }
+  view3d->GetApplication ()->SetObjectForComment ("dynamic factory", factObject);
 }
 
 void MainMode::OnListSelChanged (wxListEvent& event)

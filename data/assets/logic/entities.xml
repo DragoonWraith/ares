@@ -56,6 +56,7 @@
     <dynworld name="World" />
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="PusherTwoState">
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.-->
     <propclass name="pclogic.quest" tag="PusherTwoState">
       <action name="NewQuest">
         <par name="name" string="PusherTwoState" />
