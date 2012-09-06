@@ -39,65 +39,8 @@ struct iEditorCamera;
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 struct iAsset;
-
-namespace Ares
-{
-  class Value;
-}
-
-/// Structured used to paste and spawn new information.
-struct PasteContents
-{
-  csString dynfactName;
-  bool useTransform;
-  csReversibleTransform trans;
-  bool isStatic;
-};
-
-enum DynObjValueColumns
-{
-  DYNOBJ_COL_ID = 0,
-  DYNOBJ_COL_ENTITY,
-  DYNOBJ_COL_TEMPLATE,
-  DYNOBJ_COL_FACTORY,
-  DYNOBJ_COL_X,
-  DYNOBJ_COL_Y,
-  DYNOBJ_COL_Z,
-  DYNOBJ_COL_DISTANCE,
-};
-
-enum TemplateValueColumns
-{
-  TEMPLATE_COL_NAME = 0,
-};
-
-enum QuestValueColumns
-{
-  QUEST_COL_NAME = 0,
-};
-
-enum FactoryValueColumns
-{
-  FACTORY_COL_NAME = 0,
-  FACTORY_COL_USAGE,
-};
-
-enum AssetValueColumns
-{
-  ASSET_COL_WRITABLE = 0,
-  ASSET_COL_PATH,
-  ASSET_COL_FILE,
-  ASSET_COL_MOUNT,
-};
-
-enum ResourceValueColumns
-{
-  RESOURCE_COL_NAME = 0,
-  RESOURCE_COL_TYPE,
-  RESOURCE_COL_ASSET_PATH,
-  RESOURCE_COL_ASSET_FILE,
-  RESOURCE_COL_ASSET_MOUNT,
-};
+struct iPaster;
+struct iModelRepository;
 
 /**
  * The 3D view in the editor.
@@ -120,13 +63,6 @@ struct i3DView : public virtual iBase
 
   /// Get the light that moves with the camera.
   virtual iLight* GetCameraLight () const = 0;
-
-  /// Show the constrain marker.
-  virtual void ShowConstrainMarker (bool constrainx, bool constrainy, bool constrainz) = 0;
-  /// Move the constrain marker.
-  virtual void MoveConstrainMarker (const csReversibleTransform& trans) = 0;
-  /// Hide the constrain marker.
-  virtual void HideConstrainMarker () = 0;
 
   /// Return true if we're in debug mode.
   virtual bool IsDebugMode () const = 0;
@@ -167,78 +103,6 @@ struct i3DView : public virtual iBase
    */
   virtual bool TraceBeamTerrain (const csVector3& start, const csVector3& end,
       csVector3& isect) = 0;
-
-  /**
-   * Get the value for the collection of dynamic factories.
-   * This version is useful for binding to a tree.
-   */
-  virtual Ares::Value* GetDynfactCollectionValue () const = 0;
-
-  /**
-   * Get the value for the collection of dynamic factories.
-   * This version is useful for binding to a list.
-   */
-  virtual Ares::Value* GetFactoriesValue () const = 0;
-
-  /**
-   * Get the value for all the objects.
-   */
-  virtual Ares::Value* GetObjectsValue () const = 0;
-
-  /**
-   * Get the value for all the templates.
-   */
-  virtual Ares::Value* GetTemplatesValue () const = 0;
-
-  /**
-   * Get a value for writable assets.
-   */
-  virtual csRef<Ares::Value> GetWritableAssetsValue () const = 0;
-
-  /**
-   * Get a value for all assets.
-   */
-  virtual csRef<Ares::Value> GetAssetsValue () const = 0;
-
-  /**
-   * Get a value for all resources.
-   */
-  virtual csRef<Ares::Value> GetResourcesValue () const = 0;
-
-  /**
-   * Get a value for all quests.
-   */
-  virtual csRef<Ares::Value> GetQuestsValue () const = 0;
-
-  /**
-   * Given a value out of a component that was bound to the objects value
-   * this function returns the dynamic object corresponding with that value.
-   */
-  virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value) = 0;
-
-  /**
-   * Given a value out of a component that was bound to the resources value
-   * this function returns the resource corresponding with that value.
-   */
-  virtual iObject* GetResourceFromResources (Ares::Value* value) = 0;
-
-  /**
-   * Given a value out of a component that was bound to the assets value
-   * this function returns the asset corresponding with that value.
-   */
-  virtual iAsset* GetAssetFromAssets (Ares::Value* value) = 0;
-
-  /**
-   * Given a dynamic object, find the index of that object it would have in
-   * the object list.
-   */
-  virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj) = 0;
-
-  /**
-   * Given a template, find the index of that object it would have in
-   * the template list.
-   */
-  virtual size_t GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl) = 0;
 
   /**
    * Get the current selection.
@@ -299,28 +163,8 @@ struct i3DView : public virtual iBase
    */
   virtual iELCM* GetELCM () const = 0;
 
-  // There are two paste buffers. One is the 'normal' paste buffer which is
-  // filled by doing a copy. We call this the clipboard. The other is the paste
-  // buffer that we're currently about to paste or spawn.
-
-  /// Start paste mode.
-  virtual void StartPasteSelection () = 0;
-  /// Start paste mode for a specific object.
-  virtual void StartPasteSelection (const char* name) = 0;
-  /// Paste mode active.
-  virtual bool IsPasteSelectionActive () const = 0;
-  /// Set the paste constrain mode. Use one of the CONSTRAIN_ constants.
-  virtual void SetPasteConstrain (int mode) = 0;
-  /// Get the current paste contrain mode.
-  virtual int GetPasteConstrain () const = 0;
-  /// Is there something in the clipboard?
-  virtual bool IsClipboardFull () const = 0;
-
-  /// Toggle grid movement on/off.
-  virtual void ToggleGridMode () = 0;
-  /// Return true if grid mode is enabled.
-  virtual bool IsGridModeEnabled () const = 0;
-  virtual float GetGridSize () const = 0;
+  /// Delete selected objects.
+  virtual void DeleteSelectedObjects () = 0;
 
   /**
    * Move an item to another category. If the item doesn't already exist
@@ -333,6 +177,16 @@ struct i3DView : public virtual iBase
    * we need to change various internal settings for this.
    */
   virtual void RefreshFactorySettings (iDynamicFactory* fact) = 0;
+
+  /**
+   * Get the paster.
+   */
+  virtual iPaster* GetPaster () = 0;
+
+  /**
+   * Get the model repository.
+   */
+  virtual iModelRepository* GetModelRepository () = 0;
 };
 
 

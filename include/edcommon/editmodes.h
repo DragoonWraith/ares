@@ -88,6 +88,8 @@ public:
       iSelection* selection, bool haspaste,
       const char* currentmode)
   {
+    csString c = name;
+    if (c == "Copy" || c == "Paste" || c == "Delete") return false;
     return true;
   }
 

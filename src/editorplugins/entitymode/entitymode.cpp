@@ -36,10 +36,13 @@ THE SOFTWARE.
 #include "editor/iapp.h"
 #include "editor/iuimanager.h"
 #include "editor/iuidialog.h"
+#include "editor/imodelrepository.h"
 
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
 #include "tools/questmanager.h"
+#include "tools/parameters.h"
+#include "propclass/chars.h"
 
 #include <wx/xrc/xmlres.h>
 #include <wx/listbox.h>
@@ -142,7 +145,7 @@ void EntityMode::SetParent (wxWindow* parent)
   graphView->SetVisible (false);
 
   view.DefineHeadingIndexed ("template_List", "Name", TEMPLATE_COL_NAME);
-  view.Bind (view3d->GetTemplatesValue (), "template_List");
+  view.Bind (view3d->GetModelRepository ()->GetTemplatesValue (), "template_List");
   wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
   view.AddAction (list, NEWREF(Ares::Action, new AddTemplateAction(this)));
 
@@ -287,7 +290,7 @@ void EntityMode::Start ()
 {
   started = true;
   view3d->GetApplication ()->HideCameraWindow ();
-  view3d->GetTemplatesValue ()->Refresh ();
+  view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
   graphView->SetVisible (true);
   pcPanel->Hide ();
   triggerPanel->Hide ();
@@ -794,7 +797,7 @@ void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
   if (!tpl)
     tpl = pl->FindEntityTemplate (currentTemplate);
   view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
-  view3d->GetTemplatesValue ()->Refresh ();
+  view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
 }
 
 void EntityMode::AskNewTemplate ()
@@ -812,8 +815,8 @@ void EntityMode::AskNewTemplate ()
       currentTemplate = name->GetData ();
       editQuestMode = false;
       BuildTemplateGraph (currentTemplate);
-      view3d->GetTemplatesValue ()->Refresh ();
-      size_t i = view3d->GetTemplateIndexFromTemplates (tpl);
+      view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
+      size_t i = view3d->GetModelRepository ()->GetTemplateIndexFromTemplates (tpl);
       wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
       ListCtrlTools::SelectRow (list, (int)i, false);
       ActivateNode (0);
@@ -832,8 +835,13 @@ void EntityMode::OnTemplateDel ()
 void EntityMode::OnDelete ()
 {
   if (GetContextMenuNode ().IsEmpty ()) return;
+  DeleteItem (contextMenuNode);
+}
+
+void EntityMode::DeleteItem (const char* item)
+{
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  const char type = contextMenuNode.operator[] (0);
+  const char type = item[0];
   if (type == 'T')
   {
     // Delete template.
@@ -843,7 +851,7 @@ void EntityMode::OnDelete ()
   {
     // Delete property class.
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (item);
     tpl->RemovePropertyClassTemplate (pctpl);
     RegisterModification (tpl);
     editQuestMode = false;
@@ -852,19 +860,19 @@ void EntityMode::OnDelete ()
   else if (type == 'S')
   {
     // Delete state.
-    csString state = GetSelectedStateName (GetContextMenuNode ());
-    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+    csString state = GetSelectedStateName (item);
+    iQuestFactory* questFact = GetSelectedQuest (item);
     questFact->RemoveState (state);
     RefreshView ();
   }
   else if (type == 't')
   {
     // Delete trigger.
-    csString state = GetSelectedStateName (GetContextMenuNode ());
-    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+    csString state = GetSelectedStateName (item);
+    iQuestFactory* questFact = GetSelectedQuest (item);
     iQuestStateFactory* questState = questFact->GetState (state);
     csRef<iQuestTriggerResponseFactoryArray> responses = questState->GetTriggerResponseFactories ();
-    iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (GetContextMenuNode ());
+    iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (item);
     responses->Delete (resp);
     RefreshView ();
   }
@@ -872,7 +880,7 @@ void EntityMode::OnDelete ()
   {
     // Delete reward.
     size_t idx;
-    csRef<iRewardFactoryArray> array = GetSelectedReward (GetContextMenuNode (), idx);
+    csRef<iRewardFactoryArray> array = GetSelectedReward (item, idx);
     if (!array) return;
     array->DeleteIndex (idx);
     RefreshView ();
@@ -880,8 +888,8 @@ void EntityMode::OnDelete ()
   else if (type == 's')
   {
     // Delete sequence.
-    iCelSequenceFactory* sequence = GetSelectedSequence (GetContextMenuNode ());
-    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+    iCelSequenceFactory* sequence = GetSelectedSequence (item);
+    iQuestFactory* questFact = GetSelectedQuest (item);
     questFact->RemoveSequence (sequence->GetName ());
     RefreshView ();
   }
@@ -932,6 +940,104 @@ void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
   RegisterModification ();
 }
 
+void EntityMode::ClearCopy ()
+{
+  entityCopy.name = "";
+  pcCopy.name = "";
+}
+
+void EntityMode::Copy (iCelParameterIterator* it, csArray<ParameterCopy>& parameters)
+{
+  if (it)
+    while (it->HasNext ())
+    {
+      ParameterCopy& parcopy = parameters[parameters.Push (ParameterCopy ())];
+      iParameter* par = it->Next (parcopy.id);
+      parcopy.originalExpression = par->GetOriginalExpression ();
+      parcopy.type = par->GetPossibleType ();
+    }
+}
+
+EntityCopy EntityMode::Copy (iCelEntityTemplate* tpl)
+{
+  EntityCopy copy;
+  copy.name = tpl->GetName ();
+
+  for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+    copy.propertyClasses.Push (Copy (tpl->GetPropertyClassTemplate (i)));
+
+  for (size_t i = 0 ; i < tpl->GetMessageCount () ; i++)
+  {
+    MessageCopy messagecopy;
+    csRef<iCelParameterIterator> it = tpl->GetMessage (i, messagecopy.id);
+    Copy (it, messagecopy.parameters);
+  }
+
+  copy.classes = tpl->GetClasses ();
+
+  csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
+  while (parentIt->HasNext ())
+  {
+    iCelEntityTemplate* parent = parentIt->Next ();
+    copy.parents.Push (parent->GetName ());
+  }
+
+  iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
+  csRef<iCharacteristicsIterator> charIt = chars->GetAllCharacteristics ();
+  while (charIt->HasNext ())
+  {
+    CharacteristicsCopy& charcopy = copy.characteristics[copy.characteristics.Push (CharacteristicsCopy ())];
+    charcopy.name = charIt->Next (charcopy.value);
+  }
+
+  return copy;
+}
+
+PropertyClassCopy EntityMode::Copy (iCelPropertyClassTemplate* pctpl)
+{
+  PropertyClassCopy copy;
+  copy.name = pctpl->GetName ();
+  copy.tag = pctpl->GetTag ();
+  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+  {
+    PropertyCopy& propcopy = copy.properties[copy.properties.Push (PropertyCopy ())];
+    csRef<iCelParameterIterator> it = pctpl->GetProperty (i, propcopy.id, propcopy.data);
+    Copy (it, propcopy.parameters);
+  }
+  return copy;
+}
+
+void EntityMode::CopySelected ()
+{
+  if (activeNode.IsEmpty ()) return;
+  const char type = activeNode.operator[] (0);
+  if (type == 'P')
+  {
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
+    ClearCopy ();
+    pcCopy = Copy (pctpl);
+  }
+  else if (type == 'T')
+  {
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    ClearCopy ();
+    entityCopy = Copy (tpl);
+  }
+  app->SetMenuState ();
+}
+
+void EntityMode::Paste ()
+{
+  // @@@ TODO
+}
+
+void EntityMode::DeleteSelected ()
+{
+  if (activeNode.IsEmpty ()) return;
+  DeleteItem (activeNode);
+  ActivateNode (0);
+}
+
 void EntityMode::ActivateNode (const char* nodeName)
 {
   tplPanel->Hide ();
@@ -939,8 +1045,9 @@ void EntityMode::ActivateNode (const char* nodeName)
   triggerPanel->Hide ();
   rewardPanel->Hide ();
   sequencePanel->Hide ();
+  activeNode = nodeName;
+  app->SetMenuState ();
   if (!nodeName) return;
-  csString activeNode = nodeName;
 printf ("node:%s\n", nodeName); fflush (stdout);
   const char type = activeNode.operator[] (0);
   if (type == 'P')
@@ -1112,6 +1219,36 @@ void EntityMode::OnEditQuest ()
 {
   editQuestMode = true;
   RefreshView ();
+}
+
+bool EntityMode::Command (const char* name, const char* args)
+{
+  csString c = name;
+  if (c == "Copy") { CopySelected (); return true; }
+  if (c == "Paste") { Paste (); return true; }
+  if (c == "Delete") { DeleteSelected (); return true; }
+  return false;
+}
+
+bool EntityMode::IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste,
+      const char* currentmode)
+{
+  csString c = name;
+  if (c == "Copy")
+  {
+    if (activeNode.IsEmpty ()) return false;
+    const char type = activeNode.operator[] (0);
+    return type == 'P' || type == 'T';
+  }
+  if (c == "Paste")
+  {
+    if (!entityCopy.IsEmpty ()) return true;
+    if (!pcCopy.IsEmpty ()) return true;
+    return false;
+  }
+  if (c == "Delete") return !activeNode.IsEmpty ();
+  return true;
 }
 
 void EntityMode::AllocContextHandlers (wxFrame* frame)

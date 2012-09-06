@@ -33,6 +33,8 @@ THE SOFTWARE.
 #include "editor/iuimanager.h"
 #include "editor/iuidialog.h"
 #include "editor/iapp.h"
+#include "editor/ipaster.h"
+#include "editor/imodelrepository.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -94,13 +96,13 @@ void MainMode::SetParent (wxWindow* parent)
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));
   view.SetParent (panel);
 
-  view.Bind (view3d->GetDynfactCollectionValue (), "factoryTree");
+  view.Bind (view3d->GetModelRepository ()->GetDynfactCollectionValue (), "factoryTree");
   wxTreeCtrl* factoryTree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
   view.AddAction (factoryTree, NEWREF(Ares::Action, new SpawnItemAction(this)));
 
   view.DefineHeadingIndexed ("objectList", "Factory,Template,Entity,ID",
       DYNOBJ_COL_FACTORY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_ENTITY,  DYNOBJ_COL_ID);
-  view.Bind (view3d->GetObjectsValue (), "objectList");
+  view.Bind (view3d->GetModelRepository ()->GetObjectsValue (), "objectList");
 }
 
 MainMode::~MainMode ()
@@ -198,7 +200,7 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 
 void MainMode::Refresh ()
 {
-  view3d->GetDynfactCollectionValue ()->Refresh ();
+  view3d->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
   wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
   wxTreeItemId rootId = tree->GetRootItem ();
   tree->SelectItem (rootId);
@@ -240,7 +242,7 @@ void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
     ListCtrlTools::ClearSelection (list, false);
     for (size_t i = 0 ; i < current.GetSize () ; i++)
     {
-      size_t index = view3d->GetDynamicObjectIndexFromObjects (current[i]);
+      size_t index = view3d->GetModelRepository ()->GetDynamicObjectIndexFromObjects (current[i]);
       if (index != csArrayItemNotFound)
         ListCtrlTools::SelectRow (list, (int)index, false, true);
     }
@@ -269,54 +271,25 @@ void MainMode::SetTransformationMarkerStatus ()
 bool MainMode::Command (const char* name, const char* args)
 {
   csString c = name;
-  if (c == "RotReset")
-  {
-    TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
-    return true;
-  }
-  if (c == "RotLeft")
-  {
-    TransformTools::Rotate (view3d->GetSelection (), PI/2.0);
-    return true;
-  }
-  if (c == "RotRight")
-  {
-    TransformTools::Rotate (view3d->GetSelection (), -PI/2.0);
-    return true;
-  }
-  if (c == "AlignObj")
-  {
-    TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
-    return true;
-  }
-  if (c == "AlignRot")
-  {
-    TransformTools::AlignSelectedObjects (view3d->GetSelection ());
-    return true;
-  }
-  if (c == "AlignHeight")
-  {
-    TransformTools::SameYSelectedObjects (view3d->GetSelection ());
-    return true;
-  }
-  if (c == "SnapObj")
-  {
-    OnSnapObjects ();
-    return true;
-  }
-  if (c == "StackObj")
-  {
-    TransformTools::StackSelectedObjects (view3d->GetSelection ());
-    return true;
-  }
-  return false;
+  if (c == "RotReset") TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
+  else if (c == "RotLeft") TransformTools::Rotate (view3d->GetSelection (), PI/2.0);
+  else if (c == "RotRight") TransformTools::Rotate (view3d->GetSelection (), -PI/2.0);
+  else if (c == "AlignObj") TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
+  else if (c == "AlignRot") TransformTools::AlignSelectedObjects (view3d->GetSelection ());
+  else if (c == "AlignHeight") TransformTools::SameYSelectedObjects (view3d->GetSelection ());
+  else if (c == "SnapObj") OnSnapObjects ();
+  else if (c == "StackObj") TransformTools::StackSelectedObjects (view3d->GetSelection ());
+  else if (c == "Copy") view3d->GetPaster ()->CopySelection ();
+  else if (c == "Paste") view3d->GetPaster ()->StartPasteSelection ();
+  else if (c == "Delete") view3d->DeleteSelectedObjects ();
+  else return false;
+  return true;
 }
 
 bool MainMode::IsCommandValid (const char* name, const char* args,
       iSelection* selection, bool haspaste, const char* currentmode)
 {
   if (!active) return false;
-  if (!selection->HasSelection ()) return false;
   csString c = name;
   int cnt = selection->GetSize ();
   if (c == "AlignObj") return cnt > 1;
@@ -324,6 +297,9 @@ bool MainMode::IsCommandValid (const char* name, const char* args,
   if (c == "AlignHeight") return cnt > 1;
   if (c == "SnapObj") return cnt > 1;
   if (c == "StackObj") return cnt > 1;
+  if (c == "Copy") return cnt > 0;
+  if (c == "Paste") return haspaste;
+  if (c == "Delete") return cnt > 0;
   return true;
 }
 
@@ -377,7 +353,7 @@ void MainMode::OnListSelChanged (wxListEvent& event)
   selection->SetCurrentObject (0);
   for (size_t i = 0 ; i < values.GetSize () ; i++)
   {
-    iDynamicObject* dynobj = view3d->GetDynamicObjectFromObjects (values[i]);
+    iDynamicObject* dynobj = view3d->GetModelRepository ()->GetDynamicObjectFromObjects (values[i]);
     if (dynobj)
       selection->AddCurrentObject (dynobj);
   }
@@ -516,7 +492,7 @@ void MainMode::StopDrag (bool cancel)
   }
   dragObjects.DeleteAll ();
   view3d->GetApplication ()->ClearStatus ();
-  view3d->HideConstrainMarker ();
+  view3d->GetPaster ()->HideConstrainMarker ();
   SetTransformationMarkerStatus ();
 }
 
@@ -575,9 +551,9 @@ void MainMode::HandleKinematicDragging ()
     newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
   }
 
-  if (view3d->IsGridModeEnabled ())
+  if (view3d->GetPaster ()->IsGridModeEnabled ())
   {
-    float gridSize = view3d->GetGridSize ();
+    float gridSize = view3d->GetPaster ()->GetGridSize ();
     float m;
     m = fmod (newPosition.x, gridSize);
     newPosition.x -= m;
@@ -597,7 +573,7 @@ void MainMode::HandleKinematicDragging ()
   const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetMesh ()->GetMovable ()->GetTransform ();
   csReversibleTransform tr;
   tr.SetOrigin (meshtrans.GetOrigin ());
-  view3d->MoveConstrainMarker (tr);
+  view3d->GetPaster ()->MoveConstrainMarker (tr);
 }
 
 void MainMode::HandlePhysicalDragging ()
@@ -654,7 +630,7 @@ void MainMode::SpawnSelectedItem ()
 {
   csString itemName = GetSelectedItem ();
   if (!itemName.IsEmpty ())
-    view3d->StartPasteSelection (itemName);
+    view3d->GetPaster ()->StartPasteSelection (itemName);
 }
 
 bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
@@ -702,8 +678,8 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   }
   else if (code == 'q')
   {
-    if (view3d->IsPasteSelectionActive () || do_kinematic_dragging)
-      view3d->ToggleGridMode ();
+    if (view3d->GetPaster ()->IsPasteSelectionActive () || do_kinematic_dragging)
+      view3d->GetPaster ()->ToggleGridMode ();
   }
   else if (code == 'g')
   {
@@ -715,44 +691,44 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   }
   else if (code == 'x')
   {
-    if (view3d->IsPasteSelectionActive ())
+    if (view3d->GetPaster ()->IsPasteSelectionActive ())
     {
-      int mode = view3d->GetPasteConstrain ();
-      view3d->SetPasteConstrain (
+      int mode = view3d->GetPaster ()->GetPasteConstrain ();
+      view3d->GetPaster ()->SetPasteConstrain (
 	  mode == CONSTRAIN_XPLANE ? CONSTRAIN_NONE : CONSTRAIN_XPLANE);
     }
     else if (do_kinematic_dragging)
     {
       doDragRestrictX = !doDragRestrictX;
-      view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+      view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
     }
   }
   else if (code == 'y')
   {
-    if (view3d->IsPasteSelectionActive ())
+    if (view3d->GetPaster ()->IsPasteSelectionActive ())
     {
-      int mode = view3d->GetPasteConstrain ();
-      view3d->SetPasteConstrain (
+      int mode = view3d->GetPaster ()->GetPasteConstrain ();
+      view3d->GetPaster ()->SetPasteConstrain (
 	  mode == CONSTRAIN_YPLANE ? CONSTRAIN_NONE : CONSTRAIN_YPLANE);
     }
     else if (do_kinematic_dragging)
     {
       doDragRestrictY = !doDragRestrictY;
-      view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+      view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
     }
   }
   else if (code == 'z')
   {
-    if (view3d->IsPasteSelectionActive ())
+    if (view3d->GetPaster ()->IsPasteSelectionActive ())
     {
-      int mode = view3d->GetPasteConstrain ();
-      view3d->SetPasteConstrain (
+      int mode = view3d->GetPaster ()->GetPasteConstrain ();
+      view3d->GetPaster ()->SetPasteConstrain (
 	  mode == CONSTRAIN_ZPLANE ? CONSTRAIN_NONE : CONSTRAIN_ZPLANE);
     }
     else if (do_kinematic_dragging)
     {
       doDragRestrictZ = !doDragRestrictZ;
-      view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+      view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
     }
   }
   else if (code == CSKEY_UP)
@@ -839,7 +815,7 @@ void MainMode::StartKinematicDragging (bool restrictY,
   doDragRestrictY = restrictY;
   doDragRestrictZ = false;
   dragRestrict = isect;
-  view3d->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+  view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
   SetTransformationMarkerStatus ();
 }
 

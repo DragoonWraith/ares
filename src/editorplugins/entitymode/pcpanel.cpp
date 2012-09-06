@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "editor/iconfig.h"
 #include "editor/iapp.h"
 #include "editor/i3dview.h"
+#include "editor/imodelrepository.h"
 
 //--------------------------------------------------------------------------
 
@@ -938,7 +939,8 @@ void PropertyClassPanel::OnChangeQuest (wxCommandEvent& event)
 {
   csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select a quest");
   dialog->AddRow ();
-  csRef<Ares::Value> assets = emode->GetApplication ()->Get3DView ()->GetQuestsValue ();
+  csRef<Ares::Value> assets = emode->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetQuestsValue ();
   dialog->AddListIndexed ("quest", assets, QUEST_COL_NAME, 300, "Name",
       QUEST_COL_NAME);
   if (dialog->Show (0))

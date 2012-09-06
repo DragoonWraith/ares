@@ -64,7 +64,7 @@ private:
 protected:
   virtual bool Filter (Value* child)
   {
-    iDynamicObject* dynobj = view3d->GetDynamicObjectFromObjects (child);
+    iDynamicObject* dynobj = view3d->GetModelRepository ()->GetDynamicObjectFromObjects (child);
     if (!templateName.IsEmpty ())
     {
       iCelEntityTemplate* tpl = dynobj->GetEntityTemplate ();
@@ -141,7 +141,8 @@ void ObjectFinderDialog::OnSearchTemplateButton (wxCommandEvent& event)
 {
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a template");
   dialog->AddRow ();
-  dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->GetTemplatesValue (),
+  dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->
+      GetModelRepository ()->GetTemplatesValue (),
       TEMPLATE_COL_NAME, 300, "Template", TEMPLATE_COL_NAME);
 
   if (dialog->Show (0) == 1)
@@ -158,7 +159,8 @@ void ObjectFinderDialog::OnSearchDynfactButton (wxCommandEvent& event)
 {
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a dynamic factory");
   dialog->AddRow ();
-  dialog->AddListIndexed ("factory", uiManager->GetApp ()->Get3DView ()->GetFactoriesValue (),
+  dialog->AddListIndexed ("factory", uiManager->GetApp ()->Get3DView ()->
+      GetModelRepository ()->GetFactoriesValue (),
       FACTORY_COL_NAME, 300, "Factory,Usage", FACTORY_COL_NAME, FACTORY_COL_USAGE);
 
   if (dialog->Show (0) == 1)
@@ -178,7 +180,7 @@ void ObjectFinderDialog::OnOkButton (wxCommandEvent& event)
   if (value)
   {
     i3DView* view3d = uiManager->GetApp ()->Get3DView ();
-    iDynamicObject* dynobj = view3d->GetDynamicObjectFromObjects (value);
+    iDynamicObject* dynobj = view3d->GetModelRepository ()->GetDynamicObjectFromObjects (value);
     view3d->GetSelection ()->SetCurrentObject (dynobj);
   }
 
@@ -199,7 +201,8 @@ void ObjectFinderDialog::OnCancelButton (wxCommandEvent& event)
 
 void ObjectFinderDialog::Show ()
 {
-  Value* objectsValue = uiManager->GetApp ()->Get3DView ()->GetObjectsValue ();
+  Value* objectsValue = uiManager->GetApp ()->Get3DView ()->
+    GetModelRepository ()->GetObjectsValue ();
   filteredCollection.AttachNew (new ObjectFinderFilteredCollectionValue (
 	uiManager->GetApp ()->Get3DView ()));
   filteredCollection->SetCollection (objectsValue);

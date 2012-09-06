@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "editor/iuidialog.h"
 #include "editor/iapp.h"
 #include "editor/i3dview.h"
+#include "editor/imodelrepository.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/uitools.h"
 #include "meshview.h"
@@ -1395,7 +1396,7 @@ void DynfactValue::ChildChanged (Value* child)
   if (dynfact)
   {
     i3DView* view3d = dialog->GetApplication ()->Get3DView ();
-    view3d->GetDynfactCollectionValue ()->Refresh ();
+    view3d->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
     view3d->RefreshFactorySettings (dynfact);
   }
 }
@@ -1484,8 +1485,8 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
     return uiManager->Error ("Please select a valid item!");
   }
 
-  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
-    ->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetDynfactCollectionValue ();
   Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
   {
@@ -1559,8 +1560,8 @@ bool EnableRagdollAction::IsActive (View* view, wxWindow* component)
   Value* value = view->GetSelectedValue (component);
   if (!value) return false;
 
-  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
-    ->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetDynfactCollectionValue ();
   Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
     return false;
@@ -1594,8 +1595,8 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     return uiManager->Error ("Please select a valid item!");
   }
 
-  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
-    ->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetDynfactCollectionValue ();
   Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
   {
@@ -1641,8 +1642,8 @@ bool EditCategoryAction::IsActive (View* view, wxWindow* component)
   Value* value = view->GetSelectedValue (component);
   if (!value) return false;
 
-  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()
-    ->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetDynfactCollectionValue ();
   Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue == value)
     return false;
@@ -1882,8 +1883,8 @@ void DynfactDialog::OnOkButton (wxCommandEvent& event)
   }
   dirtyFactories.DeleteAll ();
   dirtyFactoriesWeakArray.DeleteAll ();
-  view3d->GetObjectsValue ()->Refresh ();
-  view3d->GetDynfactCollectionValue ()->Refresh ();
+  view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
+  view3d->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
   EndModal (TRUE);
 }
 
@@ -1913,7 +1914,7 @@ void DynfactDialog::OnShowJoints (wxCommandEvent& event)
 
 void DynfactDialog::Show ()
 {
-  app->Get3DView ()->GetDynfactCollectionValue ()->Refresh ();
+  app->Get3DView ()->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
 
   csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (object_reg);
   timer->AddTimerEvent (timerOp, 25);
@@ -2170,7 +2171,7 @@ void DynfactDialog::SetupActions ()
   Value* joints = dynfactValue->GetChildByName ("joints");
   Value* bones = dynfactValue->GetChildByName ("bones");
   Value* boneColliders = boneValue->GetChildByName ("boneColliders");
-  Value* dynfactCollectionValue = app->Get3DView ()->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = app->Get3DView ()->GetModelRepository ()->GetDynfactCollectionValue ();
 
   wxListCtrl* bonesList = XRCCTRL (*this, "bones_List", wxListCtrl);
   wxListCtrl* jointsList = XRCCTRL (*this, "joints_List", wxListCtrl);
@@ -2344,7 +2345,7 @@ void DynfactDialog::SetParent (wxWindow* parent)
   SetupDialogs ();
 
   // Setup the dynamic factory tree.
-  Value* dynfactCollectionValue = app->Get3DView ()->GetDynfactCollectionValue ();
+  Value* dynfactCollectionValue = app->Get3DView ()->GetModelRepository ()->GetDynfactCollectionValue ();
   view.Bind (dynfactCollectionValue, "factoryTree");
   wxTreeCtrl* factoryTree = XRCCTRL (*this, "factoryTree", wxTreeCtrl);
   factorySelectedValue.AttachNew (new TreeSelectedValue (factoryTree, dynfactCollectionValue, VALUE_COLLECTION));

@@ -147,7 +147,8 @@ void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
 {
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a template");
   dialog->AddRow ();
-  dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->GetTemplatesValue (),
+  dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->
+      GetModelRepository ()->GetTemplatesValue (),
       TEMPLATE_COL_NAME, 300, "Template", TEMPLATE_COL_NAME);
 
   if (dialog->Show (0) == 1)
@@ -200,7 +201,7 @@ void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
       tplName.IsEmpty () ? 0 : tplName.GetData (),
       params);
 
-  uiManager->GetApp ()->Get3DView ()->GetObjectsValue ()->Refresh ();
+  uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetObjectsValue ()->Refresh ();
 
   EndModal (TRUE);
 }

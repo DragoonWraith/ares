@@ -54,6 +54,8 @@ public:
     csArray<Value*> values = view->GetSelectedValues (component);
     if (values.GetSize () == 0) return true;
 
+    iModelRepository* repository = view3d->GetModelRepository ();
+
     csString title;
     if (values.GetSize () == 1)
       title = "Select an asset for this resource";
@@ -61,7 +63,7 @@ public:
       title = "Select an asset for these resources";
     csRef<iUIDialog> dialog = view3d->GetApplication ()->GetUI ()->CreateDialog (title, 500);
     dialog->AddRow ();
-    csRef<Ares::Value> assets = view3d->GetAssetsValue ();
+    csRef<Ares::Value> assets = repository->GetAssetsValue ();
     dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
 	ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
     if (dialog->Show (0))
@@ -70,11 +72,11 @@ public:
       Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
       iAsset* asset = 0;
       if (row)
-	asset = view3d->GetAssetFromAssets (row);
+	asset = repository->GetAssetFromAssets (row);
       iAssetManager* assetManager = view3d->GetApplication ()->GetAssetManager ();
       for (size_t i = 0 ; i < values.GetSize () ; i++)
       {
-	iObject* resource = view3d->GetResourceFromResources (values[i]);
+	iObject* resource = repository->GetResourceFromResources (values[i]);
         assetManager->PlaceResource (resource, asset);
       }
       Value* list = view->GetValue (component);
@@ -105,10 +107,10 @@ protected:
     Value* selected = selection->GetMirrorValue ();
     iAsset* asset = 0;
     if (selected)
-      asset = view3d->GetAssetFromAssets (selected);
+      asset = view3d->GetModelRepository ()->GetAssetFromAssets (selected);
 
     if (!asset) return true;
-    iObject* resource = view3d->GetResourceFromResources (child);
+    iObject* resource = view3d->GetModelRepository ()->GetResourceFromResources (child);
     return asset->GetCollection ()->IsParentOf (resource);
   }
 
@@ -135,13 +137,13 @@ void ResourceMoverDialog::OnOkButton (wxCommandEvent& event)
 void ResourceMoverDialog::Show ()
 {
   wxListCtrl* assetList = XRCCTRL (*this, "asset_List", wxListCtrl);
-  csRef<Value> assetsValue = uiManager->GetApp ()->Get3DView ()->GetAssetsValue ();
+  csRef<Value> assetsValue = uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetAssetsValue ();
   Bind (assetsValue, "asset_List");
 
   csRef<ListSelectedValue> selValue;
   selValue.AttachNew (new ListSelectedValue (assetList, assetsValue, VALUE_STRINGARRAY));
 
-  csRef<Value> resourcesValue = uiManager->GetApp ()->Get3DView ()->GetResourcesValue ();
+  csRef<Value> resourcesValue = uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetResourcesValue ();
   csRef<ResourceFilterValue> resourceFilterValue;
   resourceFilterValue.AttachNew (new ResourceFilterValue (uiManager->GetApp ()->Get3DView (),
 	selValue));

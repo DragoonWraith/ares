@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "edcommon/editmodes.h"
 #include "edcommon/model.h"
+#include "physicallayer/datatype.h"
 
 struct iGeometryGenerator;
 struct iCelEntityTemplate;
@@ -40,6 +41,7 @@ struct iCelSequenceFactory;
 struct iTriggerFactory;
 struct iQuestManager;
 struct iQuestTriggerResponseFactory;
+struct iCelParameterIterator;
 
 class PropertyClassPanel;
 class TriggerPanel;
@@ -53,6 +55,55 @@ enum
   ID_Template_Add = wxID_HIGHEST + 10000,
   ID_Template_Delete,
 };
+
+//==================================================================================
+
+struct ParameterCopy
+{
+  csStringID id;
+  csString originalExpression;
+  celDataType type;
+};
+
+struct PropertyCopy
+{
+  csStringID id;
+  celData data;
+  csArray<ParameterCopy> parameters;
+};
+
+/// A copy of a property class template.
+struct PropertyClassCopy
+{
+  csString name;
+  csString tag;
+  csArray<PropertyCopy> properties;
+};
+
+struct MessageCopy
+{
+  csStringID id;
+  csArray<ParameterCopy> parameters;
+};
+
+struct CharacteristicsCopy
+{
+  csString name;
+  float value;
+};
+
+/// A copy of an entity template.
+struct EntityCopy
+{
+  csString name;
+  csArray<PropertyClassCopy> propertyClasses;
+  csArray<MessageCopy> messages;
+  csSet<csStringID> classes;
+  csStringArray parents;
+  csArray<CharacteristicsCopy> characteristics;
+};
+
+//==================================================================================
 
 class EntityMode : public scfImplementationExt1<EntityMode, EditingMode, iComponent>
 {
@@ -101,6 +152,7 @@ private:
     float r2, float g2, float b2, bool fill);
   void InitColors ();
 
+  csString activeNode;		// Currently selected node.
   csString currentTemplate;
   bool editQuestMode;		// If true we're editing a quest.
   csString contextMenuNode;	// Node that is being used for the context menu.
@@ -138,6 +190,18 @@ private:
 
   csRef<iQuestManager> questMgr;
 
+  void CopySelected ();
+  void DeleteSelected ();
+  void DeleteItem (const char* item);
+  void Paste ();
+
+  EntityCopy entityCopy;
+  PropertyClassCopy pcCopy;
+  EntityCopy Copy (iCelEntityTemplate* tpl);
+  PropertyClassCopy Copy (iCelPropertyClassTemplate* pctpl);
+  void Copy (iCelParameterIterator* it, csArray<ParameterCopy>& parameters);
+  void ClearCopy ();
+
 public:
   EntityMode (iBase* parent);
   virtual ~EntityMode ();
@@ -163,6 +227,11 @@ public:
 
   virtual void Start ();
   virtual void Stop ();
+
+  virtual bool Command (const char* name, const char* args);
+  virtual bool IsCommandValid (const char* name, const char* args,
+      iSelection* selection, bool haspaste,
+      const char* currentmode);
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);

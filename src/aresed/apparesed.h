@@ -89,7 +89,7 @@ enum
 
 struct MenuCommand
 {
-  csRef<iCommandHandler> target;
+  csRef<iCommandHandler> target;	// If 0 the command will be send to the current mode.
   csString command;
   csString args;
 };

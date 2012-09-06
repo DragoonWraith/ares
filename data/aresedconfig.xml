@@ -48,9 +48,9 @@
 	    <item name="&amp;Exit..." id="Exit" command="Exit" />
 	</menu>
 	<menu name="&amp;Edit">
-	    <item name="&amp;Copy	Ctrl+C" id="Copy" command="Copy" />
-	    <item name="&amp;Paste	Ctrl+V" id="Paste" command="Paste" />
-	    <item name="&amp;Delete" id="Delete" command="Delete" />
+	    <item name="&amp;Copy	Ctrl+C" target="*" id="Copy" command="Copy" />
+	    <item name="&amp;Paste	Ctrl+V" target="*" id="Paste" command="Paste" />
+	    <item name="&amp;Delete" id="Delete" target="*" command="Delete" />
 	    <sep />
 	    <!--<item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />-->
 	    <item name="&amp;Find Object...	Ctrl+F" id="Find" command="FindObjectDialog" />

@@ -104,16 +104,8 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   roomFactoryCounter = 0;
   selection = 0;
   FocusLost = csevFocusLost (object_reg);
-  dynfactCollectionValue.AttachNew (new DynfactCollectionValue (this));
-  factoriesValue.AttachNew (new FactoriesValue (app));
-  objectsValue.AttachNew (new ObjectsValue (app));
-  templatesValue.AttachNew (new TemplatesValue (app));
+  modelRepository.AttachNew (new ModelRepository (this, app));
   camera.AttachNew (new Camera (this));
-  pasteMarker = 0;
-  constrainMarker = 0;
-  pasteConstrainMode = CONSTRAIN_NONE;
-  gridMode = false;
-  gridSize = 0.1;
   dyncell = 0;
   sector = 0;
   terrainMesh = 0;
@@ -126,7 +118,7 @@ AresEdit3DView::~AresEdit3DView()
 
 void AresEdit3DView::Frame (iEditingMode* editMode)
 {
-  if (IsPasteSelectionActive ()) PlacePasteMarker ();
+  if (paster->IsPasteSelectionActive ()) paster->PlacePasteMarker ();
 
   g3d->BeginDraw( CSDRAW_3DGRAPHICS);
   if (GetCsCamera ()->GetSector () == 0)
@@ -201,7 +193,7 @@ void AresEdit3DView::ChangeNameSelectedObject (const char* name)
 {
   if (selection->GetSize () < 1) return;
   selection->GetFirst ()->SetEntityName (name);
-  objectsValue->BuildModel ();
+  modelRepository->RefreshObjectsValue ();
   app->RegisterModification ();
 }
 
@@ -212,7 +204,7 @@ iEditorCamera* AresEdit3DView::GetEditorCamera () const
 
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
-  objectsValue->RefreshModel ();
+  modelRepository->GetObjectsValueInt ()->RefreshModel ();
   if (app->GetCameraWindow ())
     app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
 
@@ -224,195 +216,6 @@ void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_o
     if (curvedMeshCreator->GetCurvedFactory (name)) curveTabEnable = true;
   }
   app->SetCurveModeEnabled (curveTabEnable);
-}
-
-void AresEdit3DView::StopPasteMode ()
-{
-  todoSpawn.Empty ();
-  pasteMarker->SetVisible (false);
-  constrainMarker->SetVisible (false);
-  app->SetMenuState ();
-  app->ClearStatus ();
-}
-
-void AresEdit3DView::CopySelection ()
-{
-  pastebuffer.Empty ();
-  csRef<iSelectionIterator> it = selection->GetIterator ();
-  while (it->HasNext ())
-  {
-    iDynamicObject* dynobj = it->Next ();
-    iDynamicFactory* dynfact = dynobj->GetFactory ();
-    PasteContents apc;
-    apc.useTransform = true;	// Use the transform defined in this paste buffer.
-    apc.dynfactName = dynfact->GetName ();
-    apc.trans = dynobj->GetTransform ();
-    apc.isStatic = dynobj->IsStatic ();
-    pastebuffer.Push (apc);
-  }
-  app->SetFocus3D ();
-}
-
-void AresEdit3DView::PasteSelection ()
-{
-  if (todoSpawn.GetSize () <= 0) return;
-  app->RegisterModification ();
-  csReversibleTransform trans = todoSpawn[0].trans;
-  csArray<iDynamicObject*> newobjects;
-  for (size_t i = 0 ; i < todoSpawn.GetSize () ; i++)
-  {
-    csReversibleTransform tr = todoSpawn[i].trans;
-    csReversibleTransform* transPtr = 0;
-    if (todoSpawn[i].useTransform)
-    {
-      tr.SetOrigin (tr.GetOrigin () - trans.GetOrigin ());
-      transPtr = &tr;
-    }
-    iDynamicObject* dynobj = SpawnItem (todoSpawn[i].dynfactName, transPtr);
-    if (todoSpawn[i].useTransform)
-    {
-      if (todoSpawn[i].isStatic)
-        dynobj->MakeStatic ();
-      else
-        dynobj->MakeDynamic ();
-    }
-    newobjects.Push (dynobj);
-  }
-
-  selection->SetCurrentObject (0);
-  for (size_t i = 0 ; i < newobjects.GetSize () ; i++)
-    selection->AddCurrentObject (newobjects[i]);
-}
-
-void AresEdit3DView::CreatePasteMarker ()
-{
-  if (currentPasteMarkerContext != todoSpawn[0].dynfactName)
-  {
-    iMarkerColor* white = markerMgr->FindMarkerColor ("white");
-
-    // We need to recreate the mesh in the paste marker.
-    pasteMarker->Clear ();
-    currentPasteMarkerContext = todoSpawn[0].dynfactName;
-    bool error = true;
-    iMeshFactoryWrapper* factory = engine->FindMeshFactory (currentPasteMarkerContext);
-    if (factory)
-    {
-      iMeshObjectFactory* fact = factory->GetMeshObjectFactory ();
-      iObjectModel* model = fact->GetObjectModel ();
-      if (model)
-      {
- 	csRef<iStringSet> strings = csQueryRegistryTagInterface<iStringSet> (
- 	   object_reg, "crystalspace.shared.stringset");
- 	csStringID baseId = strings->Request ("base");
-	iTriangleMesh* triangles = model->GetTriangleData (baseId);
-	if (triangles)
-	{
-	  error = false;
-	  pasteMarker->Mesh (MARKER_OBJECT, triangles, white);
-	}
-      }
-    }
-
-    if (error)
-    {
-      // @@@ Is this needed?
-      pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
-      pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
-      pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
-    }
-  }
-}
-
-void AresEdit3DView::ToggleGridMode ()
-{
-  gridMode = !gridMode;
-}
-
-
-void AresEdit3DView::ConstrainTransform (csReversibleTransform& tr,
-    int mode, const csVector3& constrain,
-    bool grid)
-{
-  csVector3 origin = tr.GetOrigin ();
-  if (grid)
-  {
-    float m;
-    m = fmod (origin.x, gridSize);
-    origin.x -= m;
-    m = fmod (origin.y, gridSize);
-    origin.y -= m;
-    m = fmod (origin.z, gridSize);
-    origin.z -= m;
-  }
-  switch (mode)
-  {
-    case CONSTRAIN_NONE:
-      break;
-    case CONSTRAIN_XPLANE:
-      origin.y = constrain.y;
-      origin.z = constrain.z;
-      break;
-    case CONSTRAIN_YPLANE:
-      origin.x = constrain.x;
-      origin.z = constrain.z;
-      break;
-    case CONSTRAIN_ZPLANE:
-      origin.x = constrain.x;
-      origin.y = constrain.y;
-      break;
-  }
-  tr.SetOrigin (origin);
-}
-
-void AresEdit3DView::PlacePasteMarker ()
-{
-  pasteMarker->SetVisible (true);
-  constrainMarker->SetVisible (true);
-  CreatePasteMarker ();
-
-  csReversibleTransform tr = GetSpawnTransformation ();
-  ConstrainTransform (tr, pasteConstrainMode, pasteConstrain, gridMode);
-  pasteMarker->SetTransform (tr);
-  csReversibleTransform ctr;
-  ctr.SetOrigin (tr.GetOrigin ());
-  constrainMarker->SetTransform (ctr);
-}
-
-void AresEdit3DView::StartPasteSelection ()
-{
-  if (!sector || !dyncell)
-  {
-    app->ReportError ("Can't paste when no cell is active!");
-    return;
-  }
-  pasteConstrainMode = CONSTRAIN_NONE;
-  ShowConstrainMarker (false, true, false);
-  todoSpawn = pastebuffer;
-  if (IsPasteSelectionActive ())
-    PlacePasteMarker ();
-  app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
-  app->SetFocus3D ();
-}
-
-void AresEdit3DView::StartPasteSelection (const char* name)
-{
-  if (!sector || !dyncell)
-  {
-    app->ReportError ("Can't paste when no cell is active!");
-    return;
-  }
-  pasteConstrainMode = CONSTRAIN_NONE;
-  ShowConstrainMarker (false, true, false);
-  todoSpawn.Empty ();
-  PasteContents apc;
-  apc.useTransform = false;
-  apc.dynfactName = name;
-  todoSpawn.Push (apc);
-  PlacePasteMarker ();
-  app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
-  app->SetFocus3D ();
 }
 
 bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
@@ -522,16 +325,16 @@ bool AresEdit3DView::OnMouseDown (iEvent& ev)
   mouseX = csMouseEventHelper::GetX (&ev);
   mouseY = csMouseEventHelper::GetY (&ev);
 
-  if (IsPasteSelectionActive ())
+  if (paster->IsPasteSelectionActive ())
   {
     if (but == csmbLeft)
     {
-      PasteSelection ();
-      StopPasteMode ();
+      paster->PasteSelection ();
+      paster->StopPasteMode ();
     }
     else if (but == csmbRight)
     {
-      StopPasteMode ();
+      paster->StopPasteMode ();
     }
     else camera->OnMouseDown (ev, but, mouseX, mouseY);
     return true;
@@ -622,7 +425,7 @@ void AresEdit3DView::DeleteSelectedObjects ()
     iDynamicObject* dynobj = it.Next ();
     dyncell->DeleteObject (dynobj);
   }
-  objectsValue->RefreshModel ();
+  modelRepository->GetObjectsValueInt ()->RefreshModel ();
 }
 
 void AresEdit3DView::CleanupWorld ()
@@ -656,8 +459,7 @@ void AresEdit3DView::CleanupWorld ()
   sector = 0;
   terrainMesh = 0;
 
-  pastebuffer.DeleteAll ();
-  todoSpawn.DeleteAll ();
+  paster->Cleanup ();
 
   dynSys = 0;
   bullet_dynSys = 0;
@@ -669,93 +471,6 @@ void AresEdit3DView::CleanupWorld ()
 
 void AresEdit3DView::OnExit ()
 {
-}
-
-csRef<Ares::Value> AresEdit3DView::GetWritableAssetsValue () const
-{
-  csRef<Ares::Value> value;
-  value.AttachNew (new AssetsValue (app, true));
-  value->Refresh ();
-  return value;
-}
-
-csRef<Ares::Value> AresEdit3DView::GetAssetsValue () const
-{
-  csRef<Ares::Value> value;
-  value.AttachNew (new AssetsValue (app, false));
-  value->Refresh ();
-  return value;
-}
-
-csRef<Ares::Value> AresEdit3DView::GetResourcesValue () const
-{
-  csRef<Ares::Value> value;
-  value.AttachNew (new ResourcesValue (app));
-  value->Refresh ();
-  return value;
-}
-
-csRef<Ares::Value> AresEdit3DView::GetQuestsValue () const
-{
-  csRef<Ares::Value> value;
-  value.AttachNew (new QuestsValue (app));
-  value->Refresh ();
-  return value;
-}
-
-Ares::Value* AresEdit3DView::GetDynfactCollectionValue () const
-{
-  return dynfactCollectionValue;
-}
-
-Ares::Value* AresEdit3DView::GetObjectsValue () const
-{
-  return objectsValue;
-}
-
-Ares::Value* AresEdit3DView::GetFactoriesValue () const
-{
-  factoriesValue->RefreshModel ();
-  return factoriesValue;
-}
-
-Ares::Value* AresEdit3DView::GetTemplatesValue () const
-{
-  templatesValue->RefreshModel ();
-  return templatesValue;
-}
-
-void AresEdit3DView::RefreshObjectsValue ()
-{
-  objectsValue->BuildModel ();
-}
-
-iDynamicObject* AresEdit3DView::GetDynamicObjectFromObjects (Ares::Value* value)
-{
-  GenericStringArrayValue<iDynamicObject>* dv = static_cast<GenericStringArrayValue<iDynamicObject>*> (value);
-  return dv->GetObject ();
-}
-
-iObject* AresEdit3DView::GetResourceFromResources (Ares::Value* value)
-{
-  GenericStringArrayValue<iObject>* dv = static_cast<GenericStringArrayValue<iObject>*> (value);
-  return dv->GetObject ();
-}
-
-iAsset* AresEdit3DView::GetAssetFromAssets (Ares::Value* value)
-{
-  GenericStringArrayValue<iAsset>* dv = static_cast<GenericStringArrayValue<iAsset>*> (value);
-  return dv->GetObject ();
-}
-
-size_t AresEdit3DView::GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj)
-{
-  return objectsValue->FindObject (dynobj);
-}
-
-size_t AresEdit3DView::GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl)
-{
-  return templatesValue->FindObject (tpl);
 }
 
 void AresEdit3DView::AddItem (const char* category, const char* itemname)
@@ -941,14 +656,8 @@ bool AresEdit3DView::Setup ()
   white->SetPenWidth (SELECTION_SELECTED, 2.0f);
   white->SetPenWidth (SELECTION_ACTIVE, 2.0f);
 
-  pasteMarker = markerMgr->CreateMarker ();
-  pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), white, true);
-  pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), white, true);
-  pasteMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), white, true);
-  pasteMarker->SetVisible (false);
-
-  constrainMarker = markerMgr->CreateMarker ();
-  HideConstrainMarker ();
+  paster.AttachNew (new Paster ());
+  paster->Setup (app, this);
 
   colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
@@ -956,7 +665,6 @@ bool AresEdit3DView::Setup ()
   // We need a View to the virtual world.
   view.AttachNew(new csView (engine, g3d));
   view->SetAutoResize (false);
-  iGraphics2D* g2d = g3d->GetDriver2D ();
   // We use the full window to draw the world.
   //view_width = (int)(g2d->GetWidth () * 0.86);
   //view_width = g2d->GetWidth ();
@@ -988,8 +696,8 @@ bool AresEdit3DView::Setup ()
   // such as OnKeyboard(), has asked the run loop to terminate.
   //Run();
 
-  objectsValue->FireValueChanged ();
-  templatesValue->FireValueChanged ();
+  modelRepository->GetObjectsValue ()->FireValueChanged ();
+  modelRepository->GetTemplatesValue ()->FireValueChanged ();
 
   return true;
 }
@@ -1201,8 +909,8 @@ bool AresEdit3DView::PostLoadMap ()
       return app->ReportError ("Error loading world library!");
   }
 
-  objectsValue->BuildModel ();
-  templatesValue->BuildModel ();
+  modelRepository->GetObjectsValueInt ()->BuildModel ();
+  modelRepository->GetTemplatesValueInt ()->BuildModel ();
 
   return true;
 }
@@ -1219,7 +927,7 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
 
   InitCell ();
 
-  objectsValue->BuildModel ();
+  modelRepository->GetObjectsValueInt ()->BuildModel ();
 }
 
 void AresEdit3DView::InitCell ()
@@ -1330,87 +1038,6 @@ csVector3 AresEdit3DView::GetBeamPosition (const char* fname)
   return newPosition;
 }
 
-void AresEdit3DView::ShowConstrainMarker (bool constrainx, bool constrainy, bool constrainz)
-{
-  constrainMarker->SetVisible (true);
-  constrainMarker->Clear ();
-  if (!constrainx)
-  {
-    iMarkerColor* red = markerMgr->FindMarkerColor ("red");
-    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (1,0,0), red, true);
-    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (-1,0,0), red, true);
-  }
-  if (!constrainy)
-  {
-    iMarkerColor* green = markerMgr->FindMarkerColor ("green");
-    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,1,0), green, true);
-    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,-1,0), green, true);
-  }
-  if (!constrainz)
-  {
-    iMarkerColor* blue = markerMgr->FindMarkerColor ("blue");
-    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,1), blue, true);
-    constrainMarker->Line (MARKER_OBJECT, csVector3 (0), csVector3 (0,0,-1), blue, true);
-  }
-}
-
-void AresEdit3DView::MoveConstrainMarker (const csReversibleTransform& trans)
-{
-  constrainMarker->SetTransform (trans);
-}
-
-void AresEdit3DView::HideConstrainMarker ()
-{
-  constrainMarker->SetVisible (false);
-}
-
-void AresEdit3DView::SetPasteConstrain (int mode)
-{
-  pasteConstrainMode = mode;
-  ShowConstrainMarker (mode & CONSTRAIN_ZPLANE, true, mode & CONSTRAIN_XPLANE);
-  if (todoSpawn[0].useTransform)
-    pasteConstrain = todoSpawn[0].trans.GetOrigin ();
-  else
-  {
-    csReversibleTransform tr = GetSpawnTransformation ();
-    pasteConstrain = tr.GetOrigin ();
-  }
-}
-
-csReversibleTransform AresEdit3DView::GetSpawnTransformation ()
-{
-  csReversibleTransform tr = todoSpawn[0].trans;
-  if (!todoSpawn[0].useTransform)
-  {
-    tr = GetCsCamera ()->GetTransform ();
-    csVector3 front = tr.GetFront ();
-    front.y = 0;
-    tr.LookAt (front, csVector3 (0, 1, 0));
-  }
-  tr.SetOrigin (csVector3 (0));
-
-  const char* name = todoSpawn[0].dynfactName;
-  csString fname;
-  CurvedFactoryCreator* cfc = FindFactoryCreator (name);
-  RoomFactoryCreator* rfc = FindRoomFactoryCreator (name);
-  if (cfc)
-    fname.Format("%s%d", name, curvedFactoryCounter+1);
-  else if (rfc)
-    fname.Format("%s%d", name, roomFactoryCounter+1);
-  else
-    fname = name;
-
-  csVector3 newPosition = GetBeamPosition (fname);
-
-  csReversibleTransform tc = GetCsCamera ()->GetTransform ();
-  csVector3 front = tc.GetFront ();
-  front.y = 0;
-  tc.LookAt (front, csVector3 (0, 1, 0));
-  tc = tr;
-  tc.SetOrigin (tc.GetOrigin () + newPosition);
-  return tc;
-}
-
 iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
     csReversibleTransform* trans)
 {
@@ -1469,7 +1096,7 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   {
     tc.SetOrigin (newPosition);
   }
-  ConstrainTransform (tc, pasteConstrainMode, pasteConstrain, gridMode);
+  paster->ConstrainTransform (tc);
   //pasteConstrainMode = CONSTRAIN_NONE;
 
   iDynamicObject* dynobj = dyncell->AddObject (fname, tc);

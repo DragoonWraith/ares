@@ -197,7 +197,7 @@ i3DView* AppAresEditWX::Get3DView () const
 
 void AppAresEditWX::FindObject ()
 {
-  aresed3d->RefreshObjectsValue ();
+  aresed3d->GetModelRepository ()->RefreshObjectsValue ();
   uiManager->GetObjectFinderDialog ()->Show ();
 }
 
@@ -431,7 +431,7 @@ bool AppAresEditWX::HandleEvent (iEvent& ev)
       if (!IsPlaying () &&
 	  but == csmbRight &&
 	  editMode->IsContextMenuAllowed () &&
-	  !aresed3d->IsPasteSelectionActive ())
+	  !aresed3d->GetPaster ()->IsPasteSelectionActive ())
       {
 	wxMenu contextMenu;
 	bool camwinVis = camwin->IsVisible ();
@@ -670,7 +670,7 @@ void AppAresEditWX::RegisterModification (iObject* resource)
       title.Format ("Select an asset for this resource '%s'", resource->GetName ());
       csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
       dialog->AddRow ();
-      csRef<Ares::Value> assets = aresed3d->GetWritableAssetsValue ();
+      csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
       dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
 	  ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
       if (dialog->Show (0))
@@ -938,9 +938,6 @@ bool AppAresEditWX::Command (const char* name, const char* args)
   else if (c == "Save") SaveCurrentFile ();
   else if (c == "SaveAs") SaveFile ();
   else if (c == "Exit") Quit ();
-  else if (c == "Copy") aresed3d->CopySelection ();
-  else if (c == "Paste") aresed3d->StartPasteSelection ();
-  else if (c == "Delete") aresed3d->DeleteSelectedObjects ();
   else if (c == "UpdateObjects") aresed3d->UpdateObjects ();
   else if (c == "FindObjectDialog") FindObject ();
   else if (c == "ConvertPhysics") aresed3d->ConvertPhysics ();
@@ -965,9 +962,6 @@ bool AppAresEditWX::IsCommandValid (const char* name, const char* args,
   size_t selsize = selection->GetSize ();
   csString mode = currentmode;
   csString c = name;
-  if (c == "Copy") return selsize > 0 && mode == "Main";
-  if (c == "Paste") return haspaste && mode == "Main";
-  if (c == "Delete") return selsize > 0 && mode == "Main";
   if (c == "Join") return selsize == 2 && mode == "Main";
   if (c == "Unjoin") return selsize > 0 && mode == "Main";
   if (c == "EntityParameters") return selsize == 1 && mode == "Main";
@@ -984,21 +978,28 @@ void AppAresEditWX::OnMenuItem (wxCommandEvent& event)
     fflush (stdout);
     return;
   }
-  mc.target->Command (mc.command, mc.args);
+  csRef<iCommandHandler> handler = mc.target;
+  if (editMode && !handler) handler = scfQueryInterface<iCommandHandler> (editMode);
+  if (handler)
+    handler->Command (mc.command, mc.args);
 }
 
 void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
     const char* targetName, const char* command, const char* args)
 {
   csRef<iCommandHandler> target;
-  if (targetName && *targetName)
+  if (targetName && *targetName == '*' && !*(targetName+1))
+  {
+    // Current editmode.
+  }
+  else if (targetName && *targetName)
   {
     iEditorPlugin* plug = FindPlugin (targetName);
     target = scfQueryInterface<iCommandHandler> (plug);
     if (!target)
       ReportError ("Target '%s' has no command handler!", targetName);
   }
-  if (!target) target = static_cast<iCommandHandler*> (this);
+  else if (!target) target = static_cast<iCommandHandler*> (this);
 
   menu->Append (id, wxString::FromUTF8 (label));
   MenuCommand mc;
@@ -1038,7 +1039,7 @@ void AppAresEditWX::SetMenuState ()
   if (!menuBar) return;
 
   // Should menus be globally disabled?
-  bool dis = aresed3d ? aresed3d->IsPasteSelectionActive () : true;
+  bool dis = aresed3d ? aresed3d->GetPaster ()->IsPasteSelectionActive () : true;
   if (IsPlaying ()) dis = true;
   if (dis)
   {
@@ -1059,8 +1060,10 @@ void AppAresEditWX::SetMenuState ()
   {
     int id;
     const MenuCommand& mc = it.Next (id);
-    bool enabled = mc.target->IsCommandValid (mc.command, mc.args,
-	aresed3d->GetSelection (), aresed3d->IsClipboardFull (), n);
+    csRef<iCommandHandler> handler = mc.target;
+    if (editMode && !handler) handler = scfQueryInterface<iCommandHandler> (editMode);
+    bool enabled = handler ? handler->IsCommandValid (mc.command, mc.args,
+	aresed3d->GetSelection (), aresed3d->GetPaster ()->IsClipboardFull (), n) : false;
     menuBar->Enable (id, enabled);
   }
 }

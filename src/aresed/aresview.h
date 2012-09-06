@@ -37,6 +37,8 @@ THE SOFTWARE.
 #include "camera.h"
 #include "selection.h"
 #include "config.h"
+#include "paster.h"
+#include "models/modelrepository.h"
 
 #include "propclass/dynworld.h"
 #include "tools/elcm.h"
@@ -55,10 +57,6 @@ class AppAresEditWX;
 class AresEdit3DView;
 class Asset;
 
-class DynfactCollectionValue;
-class FactoriesValue;
-class ObjectsValue;
-class TemplatesValue;
 class NewProjectDialog;
 class UIManager;
 
@@ -193,10 +191,6 @@ private:
 
   /// Categories with items.
   csHash<csStringArray,csString> categories;
-  csRef<DynfactCollectionValue> dynfactCollectionValue;
-  csRef<FactoriesValue> factoriesValue;
-  csRef<ObjectsValue> objectsValue;
-  csRef<TemplatesValue> templatesValue;
 
   /// Debug drawing enabled.
   bool do_debug;
@@ -230,47 +224,9 @@ private:
 
   int mouseX, mouseY;
 
-  /// Marker used for pasting.
-  iMarker* pasteMarker;
-  iMarker* constrainMarker;
-  csString currentPasteMarkerContext;	// Name of the dynfact mesh currently in pasteMarker.
-  int pasteConstrainMode;		// Current paste constrain mode.
-  csVector3 pasteConstrain;
-  bool gridMode;
-  float gridSize;
+  csRef<Paster> paster;
 
-  /// A paste buffer.
-  csArray<PasteContents> pastebuffer;
-
-  /// When there are items in this array we are waiting to spawn stuff.
-  csArray<PasteContents> todoSpawn;
-
-  /**
-   * Paste the current paste buffer at the mouse position. Usually you
-   * would not use this but use StartPasteSelection() instead.
-   */
-  void PasteSelection ();
-
-  /**
-   * Create the paste marker based on the current paste buffer (if needed).
-   */
-  void CreatePasteMarker ();
-
-  /**
-   * Make sure the paste marker is at the correct spot and active.
-   */
-  void PlacePasteMarker ();
-
-  /**
-   * Stop paste mode.
-   */
-  void StopPasteMode ();
-
-  /**
-   * Constrain a transform according to the given mode.
-   */
-  void ConstrainTransform (csReversibleTransform& tr, int mode, const csVector3& constrain,
-      bool grid);
+  csRef<ModelRepository> modelRepository;
 
   /**
    * Find the dynamic object representing the player in the given cell (if there
@@ -301,8 +257,6 @@ private:
    * with movement (both physics based as opcode based).
    */
   void RemovePlayerMovementPropertyClasses ();
-
-
 
 public:
   /**
@@ -361,10 +315,6 @@ public:
   virtual csTicks GetCurrentTime () const { return currentTime; }
   virtual bool IsSimulation () const { return do_simulation; }
 
-  virtual void ShowConstrainMarker (bool constrainx, bool constrainy, bool constrainz);
-  virtual void MoveConstrainMarker (const csReversibleTransform& trans);
-  virtual void HideConstrainMarker ();
-
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   iEngine* GetEngine () const { return engine; }
@@ -377,6 +327,7 @@ public:
   iRoomMeshCreator* GetRoomMeshCreator () const { return roomMeshCreator; }
   virtual iPcDynamicWorld* GetDynamicWorld () const { return dynworld; }
   virtual iDynamicCell* GetDynamicCell () const { return dyncell; }
+  iSector* GetSector () const { return sector; }
   iKeyboardDriver* GetKeyboardDriver () const { return kbd; }
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }
@@ -398,21 +349,6 @@ public:
 
   /// Get all categories.
   const csHash<csStringArray,csString>& GetCategories () const { return categories; }
-  /// Get the dynamic factory value.
-  virtual Ares::Value* GetDynfactCollectionValue () const;
-  virtual Ares::Value* GetFactoriesValue () const;
-  virtual Ares::Value* GetObjectsValue () const;
-  virtual Ares::Value* GetTemplatesValue () const;
-  virtual csRef<Ares::Value> GetWritableAssetsValue () const;
-  virtual csRef<Ares::Value> GetAssetsValue () const;
-  virtual csRef<Ares::Value> GetResourcesValue () const;
-  virtual csRef<Ares::Value> GetQuestsValue () const;
-  virtual void RefreshObjectsValue ();
-  virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
-  virtual iObject* GetResourceFromResources (Ares::Value* value);
-  virtual iAsset* GetAssetFromAssets (Ares::Value* value);
-  virtual size_t GetDynamicObjectIndexFromObjects (iDynamicObject* dynobj);
-  virtual size_t GetTemplateIndexFromTemplates (iCelEntityTemplate* tpl);
 
   /// Join two selected objects.
   void JoinObjects ();
@@ -455,9 +391,6 @@ public:
   /// Warp the camera to another cell.
   void WarpCell (iDynamicCell* cell);
 
-  /// Return where an item would be spawned if we were to spawn it now.
-  csReversibleTransform GetSpawnTransformation ();
-
   /// Get the spawn position for the current camera transform.
   csVector3 GetBeamPosition (const char* fname);
 
@@ -473,7 +406,7 @@ public:
   /**
    * Delete all currently selected objects.
    */
-  void DeleteSelectedObjects ();
+  virtual void DeleteSelectedObjects ();
 
   /**
    * Set the static state of the current selected objects.
@@ -515,22 +448,14 @@ public:
   virtual bool TraceBeamTerrain (const csVector3& start, const csVector3& end,
       csVector3& isect);
 
+  virtual iPaster* GetPaster () { return paster; }
+
+  virtual iModelRepository* GetModelRepository () { return modelRepository; }
+
   /**
    * Final cleanup.
    */
   void OnExit();
-
-  void CopySelection ();
-  virtual void StartPasteSelection ();
-  virtual void StartPasteSelection (const char* name);
-  virtual bool IsPasteSelectionActive () const { return todoSpawn.GetSize () > 0; }
-  virtual void SetPasteConstrain (int mode);
-  virtual int GetPasteConstrain () const { return pasteConstrainMode; }
-  virtual bool IsClipboardFull () const { return pastebuffer.GetSize () > 0; }
-
-  virtual void ToggleGridMode ();
-  virtual bool IsGridModeEnabled () const { return gridMode; }
-  virtual float GetGridSize () const { return gridSize; }
 };
 
 #endif // __aresview_h
