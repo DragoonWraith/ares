@@ -530,6 +530,7 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
     if (!result.body) return 0;
     hitBody = result.body->QueryRigidBody ();
     isect = result.isect;
+    if (!hitBody) return 0;
     return dynworld->FindObject (hitBody);
   }
   else
