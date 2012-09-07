@@ -1243,8 +1243,8 @@ bool EntityMode::IsCommandValid (const char* name, const char* args,
   }
   if (c == "Paste")
   {
-    if (!entityCopy.IsEmpty ()) return true;
-    if (!pcCopy.IsEmpty ()) return true;
+    if (!entityCopy.name.IsEmpty ()) return true;
+    if (!pcCopy.name.IsEmpty ()) return true;
     return false;
   }
   if (c == "Delete") return !activeNode.IsEmpty ();
