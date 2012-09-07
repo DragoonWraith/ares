@@ -332,7 +332,7 @@ public:
   iMarkerManager* GetMarkerManager () const { return markerMgr; }
   iNature* GetNature () const { return nature; }
   virtual iCelPlLayer* GetPL () const { return pl; }
-  iParameterManager* GetPM ();
+  virtual iParameterManager* GetPM ();
   virtual iELCM* GetELCM () const { return elcm; }
 
   int GetMouseX () const { return mouseX; }

@@ -142,9 +142,11 @@ public:
       const csReversibleTransform& transform);
   void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 
-  virtual bool Command (const char* name, const char* args);
-  virtual bool IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste, const char* currentmode);
+  virtual bool Command (csStringID id, const csString& args);
+  virtual bool IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize);
+  virtual csPtr<iString> GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize);
 
   class Panel : public wxPanel
   {

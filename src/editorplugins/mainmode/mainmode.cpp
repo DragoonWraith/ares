@@ -36,6 +36,8 @@ THE SOFTWARE.
 #include "editor/ipaster.h"
 #include "editor/imodelrepository.h"
 
+#include "physicallayer/pl.h"
+
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
@@ -52,6 +54,18 @@ BEGIN_EVENT_TABLE(MainMode::Panel, wxPanel)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (MainMode)
+
+static csStringID ID_RotReset = csInvalidStringID;
+static csStringID ID_RotLeft = csInvalidStringID;
+static csStringID ID_RotRight = csInvalidStringID;
+static csStringID ID_AlignObj = csInvalidStringID;
+static csStringID ID_AlignRot = csInvalidStringID;
+static csStringID ID_AlignHeight = csInvalidStringID;
+static csStringID ID_SnapObj = csInvalidStringID;
+static csStringID ID_StackObj = csInvalidStringID;
+static csStringID ID_Copy = csInvalidStringID;
+static csStringID ID_Paste = csInvalidStringID;
+static csStringID ID_Delete = csInvalidStringID;
 
 //---------------------------------------------------------------------------
 
@@ -86,6 +100,20 @@ MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
 bool MainMode::Initialize (iObjectRegistry* object_reg)
 {
   if (!ViewMode::Initialize (object_reg)) return false;
+
+  csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  ID_RotReset = pl->FetchStringID ("RotReset");
+  ID_RotLeft = pl->FetchStringID ("RotLeft");
+  ID_RotRight = pl->FetchStringID ("RotRight");
+  ID_AlignObj = pl->FetchStringID ("AlignObj");
+  ID_AlignRot = pl->FetchStringID ("AlignRot");
+  ID_AlignHeight = pl->FetchStringID ("AlignHeight");
+  ID_SnapObj = pl->FetchStringID ("SnapObj");
+  ID_StackObj = pl->FetchStringID ("StackObj");
+  ID_Copy = pl->FetchStringID ("Copy");
+  ID_Paste = pl->FetchStringID ("Paste");
+  ID_Delete = pl->FetchStringID ("Delete");
+
   return true;
 }
 
@@ -268,39 +296,53 @@ void MainMode::SetTransformationMarkerStatus ()
     transformationMarker->SetVisible (false);
 }
 
-bool MainMode::Command (const char* name, const char* args)
+bool MainMode::Command (csStringID id, const csString& args)
 {
-  csString c = name;
-  if (c == "RotReset") TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
-  else if (c == "RotLeft") TransformTools::Rotate (view3d->GetSelection (), PI/2.0);
-  else if (c == "RotRight") TransformTools::Rotate (view3d->GetSelection (), -PI/2.0);
-  else if (c == "AlignObj") TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
-  else if (c == "AlignRot") TransformTools::AlignSelectedObjects (view3d->GetSelection ());
-  else if (c == "AlignHeight") TransformTools::SameYSelectedObjects (view3d->GetSelection ());
-  else if (c == "SnapObj") OnSnapObjects ();
-  else if (c == "StackObj") TransformTools::StackSelectedObjects (view3d->GetSelection ());
-  else if (c == "Copy") view3d->GetPaster ()->CopySelection ();
-  else if (c == "Paste") view3d->GetPaster ()->StartPasteSelection ();
-  else if (c == "Delete") view3d->DeleteSelectedObjects ();
+  if (id == ID_RotReset) TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
+  else if (id == ID_RotLeft) TransformTools::Rotate (view3d->GetSelection (), PI/2.0);
+  else if (id == ID_RotRight) TransformTools::Rotate (view3d->GetSelection (), -PI/2.0);
+  else if (id == ID_AlignObj) TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
+  else if (id == ID_AlignRot) TransformTools::AlignSelectedObjects (view3d->GetSelection ());
+  else if (id == ID_AlignHeight) TransformTools::SameYSelectedObjects (view3d->GetSelection ());
+  else if (id == ID_SnapObj) OnSnapObjects ();
+  else if (id == ID_StackObj) TransformTools::StackSelectedObjects (view3d->GetSelection ());
+  else if (id == ID_Copy) view3d->GetPaster ()->CopySelection ();
+  else if (id == ID_Paste) view3d->GetPaster ()->StartPasteSelection ();
+  else if (id == ID_Delete) view3d->DeleteSelectedObjects ();
   else return false;
   return true;
 }
 
-bool MainMode::IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste, const char* currentmode)
+bool MainMode::IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize)
 {
   if (!active) return false;
-  csString c = name;
   int cnt = selection->GetSize ();
-  if (c == "AlignObj") return cnt > 1;
-  if (c == "AlignRot") return cnt > 1;
-  if (c == "AlignHeight") return cnt > 1;
-  if (c == "SnapObj") return cnt > 1;
-  if (c == "StackObj") return cnt > 1;
-  if (c == "Copy") return cnt > 0;
-  if (c == "Paste") return haspaste;
-  if (c == "Delete") return cnt > 0;
+  if (id == ID_AlignObj) return cnt > 1;
+  if (id == ID_AlignRot) return cnt > 1;
+  if (id == ID_AlignHeight) return cnt > 1;
+  if (id == ID_SnapObj) return cnt > 1;
+  if (id == ID_StackObj) return cnt > 1;
+  if (id == ID_Copy) return cnt > 0;
+  if (id == ID_Paste) return pastesize > 0;
+  if (id == ID_Delete) return cnt > 0;
   return true;
+}
+
+csPtr<iString> MainMode::GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize)
+{
+  if (id == ID_Paste)
+  {
+    if (pastesize == 0) return new scfString ("Paste\tCtrl+V");
+    else
+    {
+      scfString* label = new scfString ();
+      label->Format ("Paste %d objects\tCtrl+V", pastesize);
+      return label;
+    }
+  }
+  return 0;
 }
 
 void MainMode::OnStaticSelected ()

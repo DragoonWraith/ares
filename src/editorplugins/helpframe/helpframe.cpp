@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 #include <crystalspace.h>
 #include "helpframe.h"
+#include "physicallayer/pl.h"
 
 #include <wx/html/htmlwin.h>
 
@@ -35,6 +36,9 @@ BEGIN_EVENT_TABLE(HelpFrame, wxFrame)
   EVT_CLOSE(HelpFrame :: OnClose)
   //EVT_TOOL(id, func)
 END_EVENT_TABLE()
+
+csStringID HelpFrame::ID_Show = csInvalidStringID;
+csStringID HelpFrame::ID_About = csInvalidStringID;
 
 //--------------------------------------------------------------------------
 
@@ -74,6 +78,9 @@ void HelpFrame::About ()
 bool HelpFrame::Initialize (iObjectRegistry* object_reg)
 {
   HelpFrame::object_reg = object_reg;
+  csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  ID_Show = pl->FetchStringID ("Show");
+  ID_About = pl->FetchStringID ("About");
   return true;
 }
 

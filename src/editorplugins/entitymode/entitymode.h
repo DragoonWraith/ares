@@ -42,6 +42,8 @@ struct iTriggerFactory;
 struct iQuestManager;
 struct iQuestTriggerResponseFactory;
 struct iCelParameterIterator;
+struct iParameterManager;
+struct iParameter;
 
 class PropertyClassPanel;
 class TriggerPanel;
@@ -63,6 +65,9 @@ struct ParameterCopy
   csStringID id;
   csString originalExpression;
   celDataType type;
+
+  static csHash<csRef<iParameter>,csStringID> Create (iParameterManager* pm,
+      const csArray<ParameterCopy>& pars);
 };
 
 struct PropertyCopy
@@ -78,6 +83,9 @@ struct PropertyClassCopy
   csString name;
   csString tag;
   csArray<PropertyCopy> properties;
+
+  iCelPropertyClassTemplate* Create (iParameterManager* pm, iCelEntityTemplate* tpl,
+      const char* overridetag = 0);
 };
 
 struct MessageCopy
@@ -101,6 +109,8 @@ struct EntityCopy
   csSet<csStringID> classes;
   csStringArray parents;
   csArray<CharacteristicsCopy> characteristics;
+
+  iCelEntityTemplate* Create (iParameterManager* pm, iCelPlLayer* pl, const char* overridename);
 };
 
 //==================================================================================
@@ -157,6 +167,8 @@ private:
   bool editQuestMode;		// If true we're editing a quest.
   csString contextMenuNode;	// Node that is being used for the context menu.
   csString GetContextMenuNode ();
+
+  void SelectTemplate (iCelEntityTemplate* tpl);
 
   PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
@@ -228,10 +240,11 @@ public:
   virtual void Start ();
   virtual void Stop ();
 
-  virtual bool Command (const char* name, const char* args);
-  virtual bool IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste,
-      const char* currentmode);
+  virtual bool Command (csStringID id, const csString& args);
+  virtual bool IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize);
+  csPtr<iString> GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize);
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);

@@ -33,58 +33,57 @@
 
     <menus>
     	<menu name="&amp;File">
-	    <item name="&amp;New project" id="New" command="NewProject" />
-	    <item name="&amp;Manage Assets..." command="ManageAssets" />
-	    <item name="&amp;Move Resources..." command="MoveResources" />
-	    <!-- <item name="&amp;Manage Cells..." target="CellDialog" command="Show" />-->
-	    <item name="&amp;Manage Cells..." command="ManageCells" />
-	    <item name="&amp;Manage Dynamic Factories..." target="DynfactEditor" command="Show" />
+	    <item name="&amp;New project" id="New" command="NewProject" help="Open a new project" />
+	    <item name="&amp;Manage Assets..." command="ManageAssets" help="Add, remove and edit assets" />
+	    <item name="&amp;Move Resources..." command="MoveResources" help="Move resources from one asset to another" />
+	    <item name="&amp;Manage Cells..." command="ManageCells" help="Create and remove cells, set the default cell" />
+	    <item name="&amp;Manage Dynamic Factories..." target="DynfactEditor" command="Show" help="Create and remove dynamic factories and edit their attributes" />
 	    <sep />
-	    <item name="&amp;Play	Ctrl+P" id="Preview" command="SwitchMode" args="Play" />
+	    <item name="&amp;Play	Ctrl+P" id="Preview" command="SwitchMode" args="Play" help="Enter game preview mode" />
 	    <sep />
-	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" />
-	    <item name="&amp;Save   	Ctrl+S" id="Save" command="Save" />
-	    <item name="&amp;Save As..." id="SaveAs" command="SaveAs" />
-	    <item name="&amp;Exit..." id="Exit" command="Exit" />
+	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" help="Open a new project" />
+	    <item name="&amp;Save   	Ctrl+S" id="Save" command="Save" help="Save the current project and all modified and writable assets" />
+	    <item name="&amp;Save As..." id="SaveAs" command="SaveAs" help="Save the current project with a new name (doesn't affect assets)" />
+	    <item name="&amp;Exit..." id="Exit" command="Exit" help="Exit Ares Editor" />
 	</menu>
 	<menu name="&amp;Edit">
-	    <item name="&amp;Copy	Ctrl+C" target="*" id="Copy" command="Copy" />
-	    <item name="&amp;Paste	Ctrl+V" target="*" id="Paste" command="Paste" />
-	    <item name="&amp;Delete" id="Delete" target="*" command="Delete" />
+	    <item name="&amp;Copy	Ctrl+C" target="*" id="Copy" command="Copy" help="Copy the current selection" />
+	    <item name="&amp;Paste	Ctrl+V" target="*" id="Paste" command="Paste" help="Paste the contents of the clipboard" />
+	    <item name="&amp;Delete" id="Delete" target="*" command="Delete" help="Delete the current selection" />
 	    <sep />
 	    <!--<item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />-->
-	    <item name="&amp;Find Object...	Ctrl+F" id="Find" command="FindObjectDialog" />
-	    <item name="&amp;Update Objects" command="UpdateObjects" />
+	    <item name="&amp;Find Object...	Ctrl+F" id="Find" command="FindObjectDialog" help="Tool to help find objects in the world" />
+	    <item name="&amp;Update Objects" command="UpdateObjects" help="Update all objects after making changes to entities or dynamic factories" />
 	    <sep />
-	    <item name="&amp;Convert to Physics..." command="ConvertPhysics" />
-	    <item name="&amp;Convert to Opcode..." command="ConvertOpcode" />
+	    <item name="&amp;Convert to Physics..." command="ConvertPhysics" help="Convert the current project to using physics (Bullet)" />
+	    <item name="&amp;Convert to Opcode..." command="ConvertOpcode" help="Convert the current project to using simple collision detection (Opcode)" />
 	    <sep />
-	    <item name="&amp;Join	Ctrl+J" command="Join" />
-	    <item name="&amp;Unjoin" command="Unjoin" />
+	    <item name="&amp;Join	Ctrl+J" command="Join" help="Join two objects using a joint defined on the first object" />
+	    <item name="&amp;Unjoin" command="Unjoin" help="Remove the joint between two or more objects" />
 	</menu>
 	<menu name="&amp;Layout">
-	    <item name="&amp;Reset Rotation" target="Main" command="RotReset" />
-	    <item name="&amp;Rotate Left 90" target="Main" command="RotLeft" />
-	    <item name="&amp;Rotate Right 90" target="Main" command="RotRight" />
+	    <item name="&amp;Reset Rotation" target="Main" command="RotReset" help="Reset the rotation of the selected object(s) to standard" />
+	    <item name="&amp;Rotate Left 90" target="Main" command="RotLeft" help="Rotate the selected objects 90 degrees to the left" />
+	    <item name="&amp;Rotate Right 90" target="Main" command="RotRight" help="Rotate the selected objects 90 degrees to the right" />
 	    <sep />
-	    <item name="&amp;Align Objects" target="Main" command="AlignObj" />
-	    <item name="&amp;Align Rotation" target="Main" command="AlignRot" />
-	    <item name="&amp;Align Height" target="Main" command="AlignHeight" />
-	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" />
-	    <item name="&amp;Stack Objects" target="Main" command="StackObj" />
+	    <item name="&amp;Align Objects" target="Main" command="AlignObj" help="Align the position of selected objects so that the objects become adjacent with minimal movement (doesn't affect rotation)" />
+	    <item name="&amp;Align Rotation" target="Main" command="AlignRot" help="Align the rotation of selected objects to the first selected object (doesn't affect position)" />
+	    <item name="&amp;Align Height" target="Main" command="AlignHeight" help="Put all selected objects on the same height as the first selected object" />
+	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" help="Put all selected objects at exactly the same transformation as the first selected object" />
+	    <item name="&amp;Stack Objects" target="Main" command="StackObj" help="Stack all selected objects on the first selected object" />
 	</menu>
 	<menu name="&amp;Logic">
-	    <item name="&amp;Entity Parameters..." command="EntityParameters" />
+	    <item name="&amp;Entity Parameters..." command="EntityParameters" help="Set parameters for the entity template specific to this object" />
 	</menu>
 	<menu name="&amp;View">
-	    <item name="&amp;View Messages	Ctrl+M" command="ViewMessages" />
-	    <item name="&amp;View Comments" command="ViewComments" />
-	    <item name="&amp;View Controls" command="ViewControls" />
-	    <item name="&amp;View 3D" command="View3D" />
+	    <item name="&amp;View Messages	Ctrl+M" command="ViewMessages" help="Toggle the view of the message pane" />
+	    <item name="&amp;View Comments" command="ViewComments" help="Toggle the view of the comments pane" />
+	    <item name="&amp;View Controls" command="ViewControls" help="Unhide the controls pane (after it has been hidden)" />
+	    <item name="&amp;View 3D" command="View3D" help="Unhide the 3D view (after it has been hidden)" />
 	</menu>
 	<menu name="&amp;Help">
-	    <item name="&amp;Online Help" id="Help" target="Help" command="Show" />
-	    <item name="&amp;About" id="About" target="Help" command="About" />
+	    <item name="&amp;Online Help..." id="Help" target="Help" command="Show" help="Show online help in a seperate window" />
+	    <item name="&amp;About..." id="About" target="Help" command="About" help="Show the About page in the online help" />
 	</menu>
     </menus>
 

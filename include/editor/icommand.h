@@ -44,14 +44,20 @@ struct iCommandHandler : public virtual iBase
    * Accept a general command. Return false if command is not
    * understood.
    */
-  virtual bool Command (const char* name, const char* args) = 0;
+  virtual bool Command (csStringID id, const csString& args) = 0;
 
   /**
    * Check if the command is valid right now.
    */
-  virtual bool IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste,
-      const char* currentmode) = 0;
+  virtual bool IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize) = 0;
+
+  /**
+   * Return an alternative label if needed. If this returns 0 then the
+   * current label will be unchanged. Otherwise the label will change to this.
+   */
+  virtual csPtr<iString> GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize) = 0;
 };
 
 

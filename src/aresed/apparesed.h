@@ -91,7 +91,10 @@ struct MenuCommand
 {
   csRef<iCommandHandler> target;	// If 0 the command will be send to the current mode.
   csString command;
+  csStringID commandID;			// The ID of the command of the menu.
   csString args;
+  csString help;
+  MenuCommand () : commandID (csInvalidStringID) { }
 };
 
 class AppAresEditWX : public wxFrame, public scfImplementation2<AppAresEditWX,
@@ -152,6 +155,7 @@ private:
 
   csHash<MenuCommand,int> menuCommands;
   bool SetupMenuBar ();
+  void OnMenuUpdate (wxUpdateUIEvent& event);
   void OnMenuItem (wxCommandEvent& event);
 
   void NewProject ();
@@ -209,7 +213,7 @@ public:
 
   /// Append a menu item.
   void AppendMenuItem (wxMenu* menu, int id, const char* label,
-       const char* targetName, const char* command, const char* args);
+       const char* targetName, const char* command, const char* args, const char* help);
 
   bool Initialize ();
   bool ParseCommandLine ();
@@ -251,10 +255,14 @@ public:
   virtual void SetMenuState ();
 
   /// Command handler functions.
-  virtual bool Command (const char* name, const char* args);
-  virtual bool IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste,
-      const char* currentmode);
+  virtual bool Command (csStringID id, const csString& args);
+  virtual bool IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize);
+  virtual csPtr<iString> GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize)
+  {
+    return 0;
+  }
 
   CameraWindow* GetCameraWindow () const { return camwin; }
   virtual void ShowCameraWindow ();

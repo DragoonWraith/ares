@@ -474,20 +474,23 @@ UIManager::~UIManager ()
   delete resourceMoverDialog;
 }
 
-csRef<iString> UIManager::AskDialog (const char* description, const char* label)
+csRef<iString> UIManager::AskDialog (const char* description, const char* label, const char* value)
 {
-  csRef<iString> result;
-  result.AttachNew (new scfString (""));
   csRef<iUIDialog> dialog = CreateDialog (description);
   dialog->AddRow ();
   dialog->AddLabel (label);
   dialog->AddText ("name");
+  if (value)
+    dialog->SetValue ("name", value);
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csRef<iString> result;
+    result.AttachNew (new scfString ());
     result->Replace (fields.Get ("name", ""));
+    return result;
   }
-  return result;
+  return 0;
 }
 
 void UIManager::Message (const char* description, ...)

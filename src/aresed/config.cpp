@@ -220,11 +220,12 @@ bool AresConfig::ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode)
       csString idString = child->GetAttributeValue ("id");
       csString target = child->GetAttributeValue ("target");
       csString command = child->GetAttributeValue ("command");
+      csString help = child->GetAttributeValue ("help");
       csString args = child->GetAttributeValue ("args");
       int id = StringToId (idString);
       if (id == wxID_ANY)
 	id = app->GetUIManager ()->AllocContextMenuID ();
-      app->AppendMenuItem (menu, id, name, target, command, args);
+      app->AppendMenuItem (menu, id, name, target, command, args, help);
     }
     else if (value == "sep")
     {

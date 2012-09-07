@@ -148,6 +148,7 @@ THREADED_CALLABLE_IMPL4(AresReporterListener, Report, iReporter*, int severity,
 BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_SHOW (AppAresEditWX::OnShow)
   EVT_ICONIZE (AppAresEditWX::OnIconize)
+  EVT_UPDATE_UI (wxID_ANY, AppAresEditWX :: OnMenuUpdate)
   EVT_MENU (wxID_ANY, AppAresEditWX :: OnMenuItem)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
   EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
@@ -159,6 +160,27 @@ END_EVENT_TABLE()
 BEGIN_EVENT_TABLE(AppAresEditWX::Panel, wxPanel)
   EVT_SIZE(AppAresEditWX::Panel::OnSize)
 END_EVENT_TABLE()
+
+static csStringID ID_NewProject = csInvalidStringID;
+static csStringID ID_ManageAssets = csInvalidStringID;
+static csStringID ID_MoveResources = csInvalidStringID;
+static csStringID ID_Open = csInvalidStringID;
+static csStringID ID_Save = csInvalidStringID;
+static csStringID ID_SaveAs = csInvalidStringID;
+static csStringID ID_Exit = csInvalidStringID;
+static csStringID ID_UpdateObjects = csInvalidStringID;
+static csStringID ID_FindObjectDialog = csInvalidStringID;
+static csStringID ID_ConvertPhysics = csInvalidStringID;
+static csStringID ID_ConvertOpcode = csInvalidStringID;
+static csStringID ID_Join = csInvalidStringID;
+static csStringID ID_Unjoin = csInvalidStringID;
+static csStringID ID_ManageCells = csInvalidStringID;
+static csStringID ID_SwitchMode = csInvalidStringID;
+static csStringID ID_EntityParameters = csInvalidStringID;
+static csStringID ID_ViewMessages = csInvalidStringID;
+static csStringID ID_ViewComments = csInvalidStringID;
+static csStringID ID_View3D = csInvalidStringID;
+static csStringID ID_ViewControls = csInvalidStringID;
 
 // The global pointer to AresEd
 AppAresEditWX* aresed = 0;
@@ -547,6 +569,31 @@ bool AppAresEditWX::Initialize ()
 
   engine->SetSaveableFlag (true);
 
+  if (ID_NewProject == csInvalidStringID)
+  {
+    csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+    ID_NewProject = pl->FetchStringID ("NewProject");
+    ID_ManageAssets = pl->FetchStringID ("ManageAssets");
+    ID_MoveResources = pl->FetchStringID ("MoveResources");
+    ID_Open = pl->FetchStringID ("Open");
+    ID_Save = pl->FetchStringID ("Save");
+    ID_SaveAs = pl->FetchStringID ("SaveAs");
+    ID_Exit = pl->FetchStringID ("Exit");
+    ID_UpdateObjects = pl->FetchStringID ("UpdateObjects");
+    ID_FindObjectDialog = pl->FetchStringID ("FindObjectDialog");
+    ID_ConvertPhysics = pl->FetchStringID ("ConvertPhysics");
+    ID_ConvertOpcode = pl->FetchStringID ("ConvertOpcode");
+    ID_Join = pl->FetchStringID ("Join");
+    ID_Unjoin = pl->FetchStringID ("Unjoin");
+    ID_ManageCells = pl->FetchStringID ("ManageCells");
+    ID_SwitchMode = pl->FetchStringID ("SwitchMode");
+    ID_EntityParameters = pl->FetchStringID ("EntityParameters");
+    ID_ViewMessages = pl->FetchStringID ("ViewMessages");
+    ID_ViewComments = pl->FetchStringID ("ViewComments");
+    ID_View3D = pl->FetchStringID ("View3D");
+    ID_ViewControls = pl->FetchStringID ("ViewControls");
+  }
+
   if (!config->ReadConfig ())
     return false;
 
@@ -682,6 +729,7 @@ void AppAresEditWX::RegisterModification (iObject* resource)
 	  AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
 	  iAsset* asset = av->GetObjectFromValue (row);
 	  assetManager->PlaceResource (resource, asset);
+	  assetManager->RegisterModification (resource);
 	  UpdateTitle ();
 	  return;
 	}
@@ -928,51 +976,68 @@ void AppAresEditWX::ViewControls ()
   leftRightSplitter->SplitVertically (leftPanel, rightPanel, size.x);
 }
 
-bool AppAresEditWX::Command (const char* name, const char* args)
+bool AppAresEditWX::Command (csStringID id, const csString& args)
 {
-  csString c = name;
-  if (c == "NewProject") NewProject ();
-  else if (c == "ManageAssets") ManageAssets ();
-  else if (c == "MoveResources") MoveResources ();
-  else if (c == "Open") OpenFile ();
-  else if (c == "Save") SaveCurrentFile ();
-  else if (c == "SaveAs") SaveFile ();
-  else if (c == "Exit") Quit ();
-  else if (c == "UpdateObjects") aresed3d->UpdateObjects ();
-  else if (c == "FindObjectDialog") FindObject ();
-  else if (c == "ConvertPhysics") aresed3d->ConvertPhysics ();
-  else if (c == "ConvertOpcode") aresed3d->ConvertOpcode ();
-  else if (c == "Join") aresed3d->JoinObjects ();
-  else if (c == "Unjoin") aresed3d->UnjoinObjects ();
-  else if (c == "ManageCells") uiManager->GetCellDialog ()->Show ();
-  else if (c == "SwitchMode") SwitchToMode (args);
-  else if (c == "EntityParameters") aresed3d->EntityParameters ();
-  else if (c == "ViewMessages") ViewBottomPage ("Messages");
-  else if (c == "ViewComments") ViewBottomPage ("Comments");
-  else if (c == "View3D") View3D ();
-  else if (c == "ViewControls") ViewControls ();
+  if (id == ID_NewProject) NewProject ();
+  else if (id == ID_ManageAssets) ManageAssets ();
+  else if (id == ID_MoveResources) MoveResources ();
+  else if (id == ID_Open) OpenFile ();
+  else if (id == ID_Save) SaveCurrentFile ();
+  else if (id == ID_SaveAs) SaveFile ();
+  else if (id == ID_Exit) Quit ();
+  else if (id == ID_UpdateObjects) aresed3d->UpdateObjects ();
+  else if (id == ID_FindObjectDialog) FindObject ();
+  else if (id == ID_ConvertPhysics) aresed3d->ConvertPhysics ();
+  else if (id == ID_ConvertOpcode) aresed3d->ConvertOpcode ();
+  else if (id == ID_Join) aresed3d->JoinObjects ();
+  else if (id == ID_Unjoin) aresed3d->UnjoinObjects ();
+  else if (id == ID_ManageCells) uiManager->GetCellDialog ()->Show ();
+  else if (id == ID_SwitchMode) SwitchToMode (args);
+  else if (id == ID_EntityParameters) aresed3d->EntityParameters ();
+  else if (id == ID_ViewMessages) ViewBottomPage ("Messages");
+  else if (id == ID_ViewComments) ViewBottomPage ("Comments");
+  else if (id == ID_View3D) View3D ();
+  else if (id == ID_ViewControls) ViewControls ();
   else return false;
   return true;
 }
 
-bool AppAresEditWX::IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste,
-      const char* currentmode)
+bool AppAresEditWX::IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize)
 {
+  if (editMode != mainMode) return false;
   size_t selsize = selection->GetSize ();
-  csString mode = currentmode;
-  csString c = name;
-  if (c == "Join") return selsize == 2 && mode == "Main";
-  if (c == "Unjoin") return selsize > 0 && mode == "Main";
-  if (c == "EntityParameters") return selsize == 1 && mode == "Main";
+  if (id == ID_Join) return selsize == 2 && editMode == mainMode;
+  if (id == ID_Unjoin) return selsize > 0 && editMode == mainMode;
+  if (id == ID_EntityParameters) return selsize == 1 && editMode == mainMode;
+
   return true;
+}
+
+void AppAresEditWX::OnMenuUpdate (wxUpdateUIEvent& event)
+{
+  int id = event.GetId ();
+  MenuCommand mc = menuCommands.Get (id, MenuCommand ());
+  if (mc.commandID == csInvalidStringID) return;
+  csRef<iCommandHandler> handler = mc.target;
+  if (editMode && !handler) handler = scfQueryInterface<iCommandHandler> (editMode);
+  if (handler)
+  {
+    bool enabled = handler ? handler->IsCommandValid (mc.commandID, mc.args,
+	aresed3d->GetSelection (), aresed3d->GetPaster ()->GetClipboardSize ()) : false;
+    event.Enable (enabled);
+    csRef<iString> label = handler->GetAlternativeLabel (mc.commandID, aresed3d->GetSelection (),
+	aresed3d->GetPaster ()->GetClipboardSize ());
+    if (label)
+      event.SetText (wxString::FromUTF8 (label->GetData ()));
+  }
 }
 
 void AppAresEditWX::OnMenuItem (wxCommandEvent& event)
 {
   int id = event.GetId ();
   MenuCommand mc = menuCommands.Get (id, MenuCommand ());
-  if (mc.command.IsEmpty ())
+  if (mc.commandID == csInvalidStringID)
   {
     printf ("Unhandled menu item %d!\n", id);
     fflush (stdout);
@@ -981,11 +1046,11 @@ void AppAresEditWX::OnMenuItem (wxCommandEvent& event)
   csRef<iCommandHandler> handler = mc.target;
   if (editMode && !handler) handler = scfQueryInterface<iCommandHandler> (editMode);
   if (handler)
-    handler->Command (mc.command, mc.args);
+    handler->Command (mc.commandID, mc.args);
 }
 
 void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
-    const char* targetName, const char* command, const char* args)
+    const char* targetName, const char* command, const char* args, const char* help)
 {
   csRef<iCommandHandler> target;
   if (targetName && *targetName == '*' && !*(targetName+1))
@@ -1005,7 +1070,12 @@ void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
   MenuCommand mc;
   mc.target = target;
   mc.command = command;
+  csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  mc.commandID = pl->FetchStringID (command);
   mc.args = args;
+  mc.help = help;
+
+  menu->SetHelpString (id, wxString::FromUTF8 (mc.help));
 
   menuCommands.Put (id, mc);
 }
@@ -1047,25 +1117,6 @@ void AppAresEditWX::SetMenuState ()
     return;
   }
   menuBar->EnableTop (0, true);
-
-  csString n;
-  if (editMode)
-  {
-    csRef<iEditorPlugin> plug = scfQueryInterface<iEditorPlugin> (editMode);
-    n = plug->GetPluginName ();
-  }
-
-  csHash<MenuCommand,int>::GlobalIterator it = menuCommands.GetIterator ();
-  while (it.HasNext ())
-  {
-    int id;
-    const MenuCommand& mc = it.Next (id);
-    csRef<iCommandHandler> handler = mc.target;
-    if (editMode && !handler) handler = scfQueryInterface<iCommandHandler> (editMode);
-    bool enabled = handler ? handler->IsCommandValid (mc.command, mc.args,
-	aresed3d->GetSelection (), aresed3d->GetPaster ()->IsClipboardFull (), n) : false;
-    menuBar->Enable (id, enabled);
-  }
 }
 
 void AppAresEditWX::PushFrame ()

@@ -66,8 +66,8 @@ struct iPaster : public virtual iBase
   virtual void SetPasteConstrain (int mode) = 0;
   /// Get the current paste contrain mode.
   virtual int GetPasteConstrain () const = 0;
-  /// Is there something in the clipboard?
-  virtual bool IsClipboardFull () const = 0;
+  /// Return the number of items in the clipboard.
+  virtual size_t GetClipboardSize () const = 0;
 
   /// Toggle grid movement on/off.
   virtual void ToggleGridMode () = 0;

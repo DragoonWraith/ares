@@ -41,6 +41,7 @@ struct iCelEntityTemplate;
 struct iAsset;
 struct iPaster;
 struct iModelRepository;
+struct iParameterManager;
 
 /**
  * The 3D view in the editor.
@@ -57,6 +58,9 @@ struct i3DView : public virtual iBase
 
   /// Get the physical layer.
   virtual iCelPlLayer* GetPL () const = 0;
+
+  /// Get the parameter manager.
+  virtual iParameterManager* GetPM () = 0;
 
   /// Get the editor camera.
   virtual iEditorCamera* GetEditorCamera () const = 0;

@@ -42,7 +42,8 @@ struct iUIManager : public virtual iBase
   /**
    * Ask a question to the user and return the answer as a string.
    */
-  virtual csRef<iString> AskDialog (const char* description, const char* label) = 0;
+  virtual csRef<iString> AskDialog (const char* description, const char* label,
+      const char* value = 0) = 0;
 
   /**
    * Create a dynamically buildable dialog.

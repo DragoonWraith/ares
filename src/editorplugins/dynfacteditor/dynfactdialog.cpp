@@ -54,6 +54,8 @@ BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
   EVT_CHECKBOX (XRCID("showJointsCheck"), DynfactDialog :: OnShowJoints)
 END_EVENT_TABLE()
 
+csStringID DynfactDialog::ID_Show = csInvalidStringID;
+
 //--------------------------------------------------------------------------
 
 DynfactMeshView::DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object_reg, wxWindow* parent) :
@@ -1819,6 +1821,7 @@ public:
     iDynamicFactory* fact = dialog->GetCurrentFactory ();
     if (!fact) return false;
     csRef<iString> dimS = dialog->GetUIManager ()->AskDialog ("Thickness of box sides", "Thickness:");
+    if (!dimS) return false;
     if (dimS->IsEmpty ()) return false;
     float dim;
     csScanStr (dimS->GetData (), "%f", &dim);
@@ -2315,6 +2318,8 @@ bool DynfactDialog::Initialize (iObjectRegistry* object_reg)
   }
   engine = csQueryRegistry<iEngine> (object_reg);
   vc = csQueryRegistry<iVirtualClock> (object_reg);
+
+  ID_Show = pl->FetchStringID ("Show");
 
   return true;
 }

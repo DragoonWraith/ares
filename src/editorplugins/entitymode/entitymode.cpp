@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include "editor/iuidialog.h"
 #include "editor/imodelrepository.h"
 
+#include "celtool/stdparams.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
 #include "tools/questmanager.h"
@@ -54,6 +55,10 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
+
+static csStringID ID_Copy = csInvalidStringID;
+static csStringID ID_Paste = csInvalidStringID;
+static csStringID ID_Delete = csInvalidStringID;
 
 //---------------------------------------------------------------------------
 
@@ -106,6 +111,10 @@ bool EntityMode::Initialize (iObjectRegistry* object_reg)
   font = g2d->GetFontServer ()->LoadFont ("DejaVuSans", 10);
   fontBold = g2d->GetFontServer ()->LoadFont ("DejaVuSansBold", 10);
   fontLarge = g2d->GetFontServer ()->LoadFont ("DejaVuSans", 13);
+
+  ID_Copy = pl->FetchStringID ("Copy");
+  ID_Paste = pl->FetchStringID ("Paste");
+  ID_Delete = pl->FetchStringID ("Delete");
 
   questMgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
       "cel.manager.quests");
@@ -800,11 +809,24 @@ void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
 }
 
+void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
+{
+  currentTemplate = tpl->GetName ();
+  editQuestMode = false;
+  BuildTemplateGraph (currentTemplate);
+  view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
+  size_t i = view3d->GetModelRepository ()->GetTemplateIndexFromTemplates (tpl);
+  wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+  ListCtrlTools::SelectRow (list, (int)i, false);
+  ActivateNode (0);
+  app->SetObjectForComment ("template", tpl->QueryObject ());
+}
+
 void EntityMode::AskNewTemplate ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iString> name = ui->AskDialog ("New Template", "Name:");
-  if (!name->IsEmpty ())
+  if (name && !name->IsEmpty ())
   {
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (name->GetData ());
     if (tpl)
@@ -812,16 +834,8 @@ void EntityMode::AskNewTemplate ()
     else
     {
       tpl = pl->CreateEntityTemplate (name->GetData ());
-      currentTemplate = name->GetData ();
-      editQuestMode = false;
-      BuildTemplateGraph (currentTemplate);
-      view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
-      size_t i = view3d->GetModelRepository ()->GetTemplateIndexFromTemplates (tpl);
-      wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
-      ListCtrlTools::SelectRow (list, (int)i, false);
-      ActivateNode (0);
       RegisterModification (tpl);
-      app->SetObjectForComment ("template", tpl->QueryObject ());
+      SelectTemplate (tpl);
     }
   }
 }
@@ -1026,9 +1040,168 @@ void EntityMode::CopySelected ()
   app->SetMenuState ();
 }
 
+
+csHash<csRef<iParameter>,csStringID> ParameterCopy::Create (iParameterManager* pm,
+    const csArray<ParameterCopy>& pars)
+{
+  csHash<csRef<iParameter>,csStringID> params;
+  for (size_t i = 0 ; i < pars.GetSize () ; i++)
+  {
+    csRef<iParameter> par = pm->GetParameter (pars[i].originalExpression, pars[i].type);
+    params.Put (pars[i].id, par);
+  }
+  return params;
+}
+
+iCelPropertyClassTemplate* PropertyClassCopy::Create (iParameterManager* pm,
+    iCelEntityTemplate* tpl, const char* overridetag)
+{
+  iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
+  pctpl->SetName (name);
+  pctpl->SetTag (overridetag ? overridetag : tag.GetData ());
+
+  for (size_t i = 0 ; i < properties.GetSize () ; i++)
+  {
+    PropertyCopy& p = properties[i];
+    switch (p.data.type)
+    {
+      case CEL_DATA_LONG:
+      case CEL_DATA_ULONG:
+      case CEL_DATA_WORD:
+      case CEL_DATA_UWORD:
+      case CEL_DATA_BYTE:
+      case CEL_DATA_UBYTE:
+	{
+	  long l;
+	  celParameterTools::ToLong (p.data, l);
+	  pctpl->SetProperty (p.id, l);
+	}
+	break;
+      case CEL_DATA_FLOAT:
+	pctpl->SetProperty (p.id, p.data.value.f);
+	break;
+      case CEL_DATA_BOOL:
+	pctpl->SetProperty (p.id, p.data.value.bo);
+	break;
+      case CEL_DATA_STRING:
+	pctpl->SetProperty (p.id, p.data.value.s ? p.data.value.s->GetData () : (const char*)0);
+	break;
+      case CEL_DATA_VECTOR2:
+	{
+	  csVector2 v;
+	  celParameterTools::ToVector2 (p.data, v);
+	  pctpl->SetProperty (p.id, v);
+	}
+	break;
+      case CEL_DATA_VECTOR3:
+	{
+	  csVector3 v;
+	  celParameterTools::ToVector3 (p.data, v);
+	  pctpl->SetProperty (p.id, v);
+	}
+	break;
+      case CEL_DATA_COLOR:
+	{
+	  csColor v;
+	  celParameterTools::ToColor (p.data, v);
+	  pctpl->SetProperty (p.id, v);
+	}
+	break;
+      case CEL_DATA_ACTION:
+      case CEL_DATA_NONE:
+	{
+	  csHash<csRef<iParameter>,csStringID> params = ParameterCopy::Create (pm, p.parameters);
+	  pctpl->PerformAction (p.id, params);
+	}
+	break;
+      default:
+	printf ("Unsupported type '%d'!\n", p.data.type);
+	fflush (stdout);
+    }
+  }
+
+  return pctpl;
+}
+
+iCelEntityTemplate* EntityCopy::Create (iParameterManager* pm, iCelPlLayer* pl,
+    const char* overridename)
+{
+  iCelEntityTemplate* tpl = pl->CreateEntityTemplate (overridename);
+
+  for (size_t i = 0 ; i < propertyClasses.GetSize () ; i++)
+    propertyClasses[i].Create (pm, tpl);
+
+  for (size_t i = 0 ; i < messages.GetSize () ; i++)
+  {
+    csHash<csRef<iParameter>,csStringID> params = ParameterCopy::Create (pm, messages[i].parameters);
+    tpl->AddMessage (messages[i].id, params);
+  }
+
+  csSet<csStringID>::GlobalIterator it = classes.GetIterator ();
+  while (it.HasNext ())
+    tpl->AddClass (it.Next ());
+
+  for (size_t i = 0 ; i < parents.GetSize () ; i++)
+  {
+    iCelEntityTemplate* parent = pl->FindEntityTemplate (parents[i]);
+    if (!parent)
+    {
+      // @@@ Proper error reporting?
+      printf ("Can't find parent '%s'!\n", (const char*)parents[i]);
+      fflush (stdout);
+    }
+    else
+    {
+      tpl->AddParent (parent);
+    }
+  }
+
+  iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
+  for (size_t i = 0 ; i < characteristics.GetSize () ; i++)
+  {
+    chars->SetCharacteristic (characteristics[i].name, characteristics[i].value);
+  }
+
+  return tpl;
+}
+
 void EntityMode::Paste ()
 {
-  // @@@ TODO
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+
+  if (!pcCopy.name.IsEmpty ())
+  {
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    if (!tpl) return;
+    csString title;
+    title.Format ("Enter new tag for property class '%s'", pcCopy.name.GetData ());
+    csRef<iString> tag = ui->AskDialog (title, "Tag:", pcCopy.tag);
+    if (!tag) return;
+    iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pcCopy.name, tag->GetData ());
+    if (pc)
+    {
+      ui->Error ("Property class with this name and tag already exists!");
+      return;
+    }
+    pcCopy.Create (view3d->GetPM (), tpl, tag->GetData ());
+    RegisterModification (tpl);
+    RefreshView ();
+  }
+  else if (!entityCopy.name.IsEmpty ())
+  {
+    csString title = "Enter new name for entity template";
+    csRef<iString> name = ui->AskDialog (title, "Name:", entityCopy.name);
+    if (!name) return;
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (name->GetData ());
+    if (tpl)
+    {
+      ui->Error ("A template with this name already exists!");
+      return;
+    }
+    tpl = entityCopy.Create (view3d->GetPM (), pl, name->GetData ());
+    RegisterModification (tpl);
+    SelectTemplate (tpl);
+  }
 }
 
 void EntityMode::DeleteSelected ()
@@ -1178,6 +1351,7 @@ void EntityMode::OnNewSequence ()
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iString> name = ui->AskDialog ("New Sequence", "Name:");
+  if (!name) return;
   if (name->IsEmpty ()) return;
 
   iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
@@ -1201,6 +1375,7 @@ void EntityMode::OnNewState ()
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iString> name = ui->AskDialog ("New State", "Name:");
+  if (!name) return;
   if (name->IsEmpty ()) return;
 
   iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
@@ -1221,34 +1396,53 @@ void EntityMode::OnEditQuest ()
   RefreshView ();
 }
 
-bool EntityMode::Command (const char* name, const char* args)
+bool EntityMode::Command (csStringID id, const csString& args)
 {
-  csString c = name;
-  if (c == "Copy") { CopySelected (); return true; }
-  if (c == "Paste") { Paste (); return true; }
-  if (c == "Delete") { DeleteSelected (); return true; }
+  if (id == ID_Copy) { CopySelected (); return true; }
+  if (id == ID_Paste) { Paste (); return true; }
+  if (id == ID_Delete) { DeleteSelected (); return true; }
   return false;
 }
 
-bool EntityMode::IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste,
-      const char* currentmode)
+bool EntityMode::IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize)
 {
-  csString c = name;
-  if (c == "Copy")
+  if (id == ID_Copy)
   {
     if (activeNode.IsEmpty ()) return false;
     const char type = activeNode.operator[] (0);
     return type == 'P' || type == 'T';
   }
-  if (c == "Paste")
+  if (id == ID_Paste)
   {
     if (!entityCopy.name.IsEmpty ()) return true;
     if (!pcCopy.name.IsEmpty ()) return true;
     return false;
   }
-  if (c == "Delete") return !activeNode.IsEmpty ();
+  if (id == ID_Delete) return !activeNode.IsEmpty ();
   return true;
+}
+
+csPtr<iString> EntityMode::GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize)
+{
+  if (id == ID_Paste)
+  {
+    if (!entityCopy.name.IsEmpty ())
+    {
+      scfString* label = new scfString ();
+      label->Format ("Paste %s\tCtrl+V", entityCopy.name.GetData ());
+      return label;
+    }
+    if (!pcCopy.name.IsEmpty ())
+    {
+      scfString* label = new scfString ();
+      label->Format ("Paste %s\tCtrl+V", pcCopy.name.GetData ());
+      return label;
+    }
+    return new scfString ("Paste\tCtrl+V");
+  }
+  return 0;
 }
 
 void EntityMode::AllocContextHandlers (wxFrame* frame)

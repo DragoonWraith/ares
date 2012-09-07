@@ -182,7 +182,8 @@ public:
   virtual void Message (const char* description, ...);
   virtual bool Error (const char* description, ...);
   virtual bool Ask (const char* description, ...);
-  virtual csRef<iString> AskDialog (const char* description, const char* label);
+  virtual csRef<iString> AskDialog (const char* description, const char* label,
+      const char* value = 0);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }

@@ -279,6 +279,8 @@ private:
   csRef<iEngine> engine;
   csRef<iVirtualClock> vc;
 
+  static csStringID ID_Show;
+
   csRef<CS::Animation::iBodyManager> bodyManager;
 
   csSet<iDynamicFactory*> dirtyFactories;
@@ -321,16 +323,20 @@ public:
   virtual void SetApplication (iAresEditor* app);
   virtual void SetParent (wxWindow* parent);
   virtual const char* GetPluginName () const { return "DynfactEditor"; }
-  virtual bool Command (const char* name, const char* args)
+  virtual bool Command (csStringID id, const csString& args)
   {
-    csString c = name;
-    if (c == "Show") { Show (); return true; }
+    if (id == ID_Show) { Show (); return true; }
     return false;
   }
-  virtual bool IsCommandValid (const char* name, const char* args,
-      iSelection* selection, bool haspaste, const char* currentmode)
+  virtual bool IsCommandValid (csStringID id, const csString& args,
+      iSelection* selection, size_t pastesize)
   {
     return true;
+  }
+  virtual csPtr<iString> GetAlternativeLabel (csStringID id,
+      iSelection* selection, size_t pastesize)
+  {
+    return 0;
   }
 
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }

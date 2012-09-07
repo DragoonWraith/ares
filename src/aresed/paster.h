@@ -108,7 +108,7 @@ public:
   virtual bool IsPasteSelectionActive () const { return todoSpawn.GetSize () > 0; }
   virtual void SetPasteConstrain (int mode);
   virtual int GetPasteConstrain () const { return pasteConstrainMode; }
-  virtual bool IsClipboardFull () const { return pastebuffer.GetSize () > 0; }
+  virtual size_t GetClipboardSize () const { return pastebuffer.GetSize (); }
 
   virtual void ToggleGridMode ();
   virtual bool IsGridModeEnabled () const { return gridMode; }
