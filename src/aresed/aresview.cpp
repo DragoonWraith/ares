@@ -704,6 +704,10 @@ bool AresEdit3DView::Setup ()
 
 void AresEdit3DView::RefreshFactorySettings (iDynamicFactory* fact)
 {
+  csString category = fact->GetAttribute ("category");
+  if (!category) category = "Nodes";
+  AddItem (category, fact->GetName ());
+
   csBox3 bbox = fact->GetPhysicsBBox ();
   factory_to_origin_offset.PutUnique (fact->GetName (), bbox.MinY ());
   const char* st = fact->GetAttribute ("defaultstatic");
@@ -713,15 +717,31 @@ void AresEdit3DView::RefreshFactorySettings (iDynamicFactory* fact)
 
 bool AresEdit3DView::SetupDynWorld ()
 {
+  // See if we have to disable physics.
+  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
+  bool physics = true;
+  if (worldTpl)
+  {
+    for (size_t i = 0 ; i < worldTpl->GetPropertyClassTemplateCount () ; i++)
+    {
+      iCelPropertyClassTemplate* pctpl = worldTpl->GetPropertyClassTemplate (i);
+      csString pcName = pctpl->GetName ();
+      if (pcName == "pcworld.dynamic")
+      {
+	bool valid;
+	physics = InspectTools::GetPropertyValueBool (pl, pctpl, "physics", &valid);
+	if (!valid) physics = true;
+      }
+    }
+  }
+  dynworld->EnablePhysics (physics);
+
   for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
   {
     iDynamicFactory* fact = dynworld->GetFactory (i);
     if (curvedFactories.Find (fact) != csArrayItemNotFound) continue;
     if (roomFactories.Find (fact) != csArrayItemNotFound) continue;
     RefreshFactorySettings (fact);
-    const char* category = fact->GetAttribute ("category");
-    if (!category) category = "Nodes";
-    AddItem (category, fact->GetName ());
   }
 
   for (size_t i = 0 ; i < curvedMeshCreator->GetCurvedFactoryTemplateCount () ; i++)

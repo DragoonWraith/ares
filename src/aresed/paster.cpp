@@ -216,6 +216,11 @@ void Paster::StartPasteSelection (const char* name)
     app->ReportError ("Can't paste when no cell is active!");
     return;
   }
+  if (!view3d->GetDynamicWorld ()->FindFactory (name))
+  {
+    app->ReportError ("You cannot spawn categories!");
+    return;
+  }
   pasteConstrainMode = CONSTRAIN_NONE;
   ShowConstrainMarker (false, true, false);
   todoSpawn.Empty ();

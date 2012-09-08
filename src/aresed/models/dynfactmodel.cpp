@@ -154,7 +154,6 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
     return 0;
   }
 
-  aresed3d->AddItem (categoryValue->GetStringValue (), newname);
   csRef<StringValue> strValue;
   strValue.AttachNew (new StringValue (newname));
 
@@ -180,6 +179,7 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
 
   fact->SetAttribute ("category", categoryValue->GetStringValue ());
   aresed3d->RefreshFactorySettings (fact);
+  aresed3d->GetApp ()->RegisterModification (fact->QueryObject ());
 
   categoryValue->Refresh ();
   FireValueChanged ();

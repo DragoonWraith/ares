@@ -1704,6 +1704,66 @@ public:
 
 //--------------------------------------------------------------------------
 
+bool AutoNewChildAction::Do (View* view, wxWindow* component)
+{
+  if (dialog->GetUIManager ()->Ask ("This will automatically fill the current selected category with all missing factories. Are you sure?"))
+  {
+    Value* value = view->GetSelectedValue (component);
+    if (!value) return false;
+
+    i3DView* view3d = dialog->GetApplication ()->Get3DView ();
+    Value* dynfactCollectionValue = view3d->GetModelRepository ()->GetDynfactCollectionValue ();
+    Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
+    csString category = categoryValue->GetStringValue ();
+
+    iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+    iMeshFactoryList* list = dialog->GetEngine ()->GetMeshFactories ();
+    for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
+    {
+      iMeshFactoryWrapper* fact = list->Get (i);
+      const char* name = fact->QueryObject ()->GetName ();
+      if (!dynworld->FindFactory (name))
+      {
+	iDynamicFactory* fact = dynworld->AddFactory (name, 1.0f, 1.0f);
+        fact->SetAttribute ("category", category);
+	view3d->RefreshFactorySettings (fact);
+	dialog->GetApplication ()->RegisterModification (fact->QueryObject ());
+	if (dynworld->IsPhysicsEnabled ())
+	{
+	  const csBox3& bbox = fact->GetBBox ();
+	  csVector3 c = bbox.GetCenter ();
+	  csVector3 s = bbox.GetSize ();
+	  fact->AddRigidBox (c, s, 1.0f);
+	}
+	else
+	{
+	  fact->SetColliderEnabled (true);
+	}
+      }
+    }
+    categoryValue->Refresh ();
+    dynfactCollectionValue->FireValueChanged ();
+    return true;
+  }
+  return false;
+}
+
+bool AutoNewChildAction::IsActive (View* view, wxWindow* component)
+{
+  Value* value = view->GetSelectedValue (component);
+  if (!value) return false;
+
+  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetDynfactCollectionValue ();
+  Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
+  if (!categoryValue || categoryValue != value)
+    return false;
+
+  return true;
+}
+
+//--------------------------------------------------------------------------
+
 bool NewInvisibleChildAction::Do (View* view, wxWindow* component)
 {
   csRef<iUIDialog> dia = dialog->GetUIManager ()->CreateDialog (component, "Factory name");
@@ -2195,6 +2255,7 @@ void DynfactDialog::SetupActions ()
   view.AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
   view.AddAction (bonesList, NEWREF(Action, new CreateJointAction (this)));
   view.AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
+  view.AddAction (factoryTree, NEWREF(Action, new AutoNewChildAction (this)));
   view.AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (this, dynfactCollectionValue)));
   view.AddAction (factoryTree, NEWREF(Action, new NewLightChildAction (this, dynfactCollectionValue)));
   view.AddAction (factoryTree, NEWREF(Action, new EditLightChildAction (this, dynfactCollectionValue)));

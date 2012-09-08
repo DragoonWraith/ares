@@ -213,6 +213,22 @@ public:
 };
 
 /**
+ * Automatically populate a category with children.
+ */
+class AutoNewChildAction : public Action
+{
+private:
+  DynfactDialog* dialog;
+
+public:
+  AutoNewChildAction (DynfactDialog* dialog) : dialog (dialog) { }
+  virtual ~AutoNewChildAction () { }
+  virtual const char* GetName () const { return "Automatic Factories"; }
+  virtual bool Do (View* view, wxWindow* component);
+  virtual bool IsActive (View* view, wxWindow* component);
+};
+
+/**
  * Create an invisible dynamic factory.
  */
 class NewInvisibleChildAction : public AbstractNewAction
