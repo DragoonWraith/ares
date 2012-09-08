@@ -3,9 +3,9 @@
   <asset path="$#logic/" file="entities.xml" writable="true" />
   <asset path="$#objects/simple.zip" file="library" />
   <asset path="$#logic/" file="entities_objects.xml" writable="true" />
-  <dynworld lastid="1000080000">
+  <dynworld lastid="1000090000">
     <cell name="outside">
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-8.21349 0.6 18.1272" id="1000070002" ent="PusherTwoState">
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-8.21349 0.6 18.1272" id="1000080002" ent="PusherTwoState">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="1" />
@@ -13,7 +13,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Player" m="0.991223 1.81961e-006 -0.132202 -1.85173e-006 1 -1.20023e-007 0.132202 3.63772e-007 0.991223" v="-8.47626 0.1 16.0339" id="1000070003" ent="Player" />
+      <obj fact="Player" m="0.991223 1.81961e-06 -0.132202 -1.85173e-06 1 -1.20023e-07 0.132202 3.63772e-07 0.991223" v="-8.47626 0.1 16.0339" id="1000080003" ent="Player" />
     </cell>
   </dynworld>
   <curves />

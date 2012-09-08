@@ -3,11 +3,11 @@
     <quest name="PusherTwoState">
       <state name="on">
         <oninit>
-          <reward type="cel.rewards.sequence" entity="$this" sequence="moveOn" entity_tag="PusherTwoState" />
+          <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
           <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
-          <fireon entity="$this" entity_tag="PusherTwoState" sequence="moveOn" />
+          <fireon entity="$this" entity_tag="sequencer" sequence="one" />
           <reward type="cel.rewards.debugprint" message="On Done" />
           <reward type="cel.rewards.newstate" state="waitOff" />
         </trigger>
@@ -29,22 +29,24 @@
       </state>
       <state name="off">
         <oninit>
-          <reward type="cel.rewards.sequence" entity="$this" sequence="moveOff" entity_tag="PusherTwoState" />
+          <reward type="cel.rewards.sequence" entity="$this" sequence="two" entity_tag="sequencer" />
           <reward type="cel.rewards.debugprint" message="off started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
-          <fireon entity="$this" entity_tag="PusherTwoState" sequence="moveOff" />
+          <fireon entity="$this" entity_tag="sequencer" sequence="two" />
           <reward type="cel.rewards.debugprint" message="Off Done" />
           <reward type="cel.rewards.newstate" state="init" />
         </trigger>
       </state>
-      <sequence name="moveOn">
+    </quest>
+    <quest name="MoveSequencer">
+      <sequence name="one">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
           <v x="$x" y="$y" z="$z" />
         </op>
         <delay time="$duration" />
       </sequence>
-      <sequence name="moveOff">
+      <sequence name="two">
         <op duration="$duration" type="cel.seqops.transform" entity="$this" reversed="true">
           <v x="$x" y="$y" z="$z" />
         </op>
@@ -60,13 +62,18 @@
     <propclass name="pclogic.quest" tag="PusherTwoState">
       <action name="NewQuest">
         <par name="name" string="PusherTwoState" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
+        <par name="name" string="MoveSequencer" />
+      </action>
+    </propclass>
   </addon>
 </library>
