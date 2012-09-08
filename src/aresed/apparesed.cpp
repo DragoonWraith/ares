@@ -703,6 +703,56 @@ bool AppAresEditWX::InitPlugins ()
   return true;
 }
 
+void AppAresEditWX::RegisterModification (const csArray<iObject*>& resources)
+{
+  if (resources.GetSize () == 0) return;
+  iAsset* asset = 0;
+  bool noplace = false;
+  for (size_t i = 0 ; i < resources.GetSize () ; i++)
+  {
+    iObject* resource = resources[i];
+    if (!assetManager->RegisterModification (resource))
+    {
+      if (!assetManager->IsResourceWithoutAsset (resource))
+      {
+	if (asset || noplace)
+	{
+	  assetManager->PlaceResource (resource, asset);
+	  assetManager->RegisterModification (resource);
+	}
+	else
+	{
+	  csString title = "Select an asset for these resources";
+	  csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
+	  dialog->AddRow ();
+	  csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
+	  dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
+	      ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
+	  if (dialog->Show (0))
+	  {
+	    const DialogValues& result = dialog->GetFieldValues ();
+	    Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
+	    if (row)
+	    {
+	      AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
+	      asset = av->GetObjectFromValue (row);
+	      assetManager->PlaceResource (resource, asset);
+	      assetManager->RegisterModification (resource);
+	    }
+	  }
+	  if (!asset)
+	  {
+	    uiManager->Message ("Warning! These assets will not be saved!");
+	    assetManager->PlaceResource (resource, 0);
+	    noplace = true;
+	  }
+	}
+      }
+    }
+  }
+  UpdateTitle ();
+}
+
 void AppAresEditWX::RegisterModification (iObject* resource)
 {
   if (!resource)

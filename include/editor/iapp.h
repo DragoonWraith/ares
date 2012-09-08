@@ -54,6 +54,13 @@ struct iAresEditor : public virtual iBase
   virtual void RegisterModification (iObject* resource = 0) = 0;
 
   /**
+   * Register that a series of resources has been modified.
+   * This version will only ask for a new asset once and use that
+   * for all subsequent resources.
+   */
+  virtual void RegisterModification (const csArray<iObject*>& resources) = 0;
+
+  /**
    * Set the focus to the 3d view so that keyboard commands work correctly.
    */
   virtual void SetFocus3D () = 0;

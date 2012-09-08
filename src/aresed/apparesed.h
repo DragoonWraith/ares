@@ -230,6 +230,7 @@ public:
   void ManageAssets (const csArray<BaseAsset>& assets);
 
   virtual void RegisterModification (iObject* resource = 0);
+  virtual void RegisterModification (const csArray<iObject*>& resources);
   bool IsCleanupAllowed ();
 
   void SwitchToMode (const char* name);

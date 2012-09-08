@@ -1718,6 +1718,7 @@ bool AutoNewChildAction::Do (View* view, wxWindow* component)
 
     iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
     iMeshFactoryList* list = dialog->GetEngine ()->GetMeshFactories ();
+    csArray<iObject*> resources;
     for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
     {
       iMeshFactoryWrapper* fact = list->Get (i);
@@ -1727,7 +1728,6 @@ bool AutoNewChildAction::Do (View* view, wxWindow* component)
 	iDynamicFactory* fact = dynworld->AddFactory (name, 1.0f, 1.0f);
         fact->SetAttribute ("category", category);
 	view3d->RefreshFactorySettings (fact);
-	dialog->GetApplication ()->RegisterModification (fact->QueryObject ());
 	if (dynworld->IsPhysicsEnabled ())
 	{
 	  const csBox3& bbox = fact->GetBBox ();
@@ -1739,8 +1739,10 @@ bool AutoNewChildAction::Do (View* view, wxWindow* component)
 	{
 	  fact->SetColliderEnabled (true);
 	}
+	resources.Push (fact->QueryObject ());
       }
     }
+    dialog->GetApplication ()->RegisterModification (resources);
     categoryValue->Refresh ();
     dynfactCollectionValue->FireValueChanged ();
     return true;
