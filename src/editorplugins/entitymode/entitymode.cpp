@@ -52,6 +52,7 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LIST_ITEM_SELECTED (XRCID("template_List"), EntityMode::Panel::OnTemplateSelect)
+  EVT_LIST_ITEM_SELECTED (XRCID("quest_List"), EntityMode::Panel::OnQuestSelect)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
@@ -153,13 +154,19 @@ void EntityMode::SetParent (wxWindow* parent)
 
   graphView->SetVisible (false);
 
-  view.DefineHeadingIndexed ("template_List", "Name", TEMPLATE_COL_NAME);
+  view.DefineHeadingIndexed ("template_List", "Template", TEMPLATE_COL_NAME);
   view.Bind (view3d->GetModelRepository ()->GetTemplatesValue (), "template_List");
   wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
   view.AddAction (list, NEWREF(Ares::Action, new AddTemplateAction(this)));
 
+  view.DefineHeadingIndexed ("quest_List", "Quest", QUEST_COL_NAME);
+  questsValue = view3d->GetModelRepository ()->GetQuestsValue ();
+  view.Bind (questsValue, "quest_List");
+  list = XRCCTRL (*panel, "quest_List", wxListCtrl);
+  //view.AddAction (list, NEWREF(Ares::Action, new AddQuestAction(this)));
+
   InitColors ();
-  editQuestMode = false;
+  editQuestMode = 0;
 }
 
 EntityMode::~EntityMode ()
@@ -307,6 +314,7 @@ void EntityMode::Start ()
   sequencePanel->Hide ();
   tplPanel->Hide ();
   contextMenuNode = "";
+  questsValue->Refresh ();
 }
 
 void EntityMode::Stop ()
@@ -523,6 +531,7 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
 
 csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
 {
+  if (!pctpl) return "";
   csString pcName = pctpl->GetName ();
   if (pcName == "pclogic.quest")
   {
@@ -534,14 +543,14 @@ csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
 void EntityMode::GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& pcKey, csString& pcLabel)
 {
   csString pcShortName;
-  csString pcName = pctpl->GetName ();
+  csString pcName = pctpl ? pctpl->GetName () : "";
   size_t lastDot = pcName.FindLast ('.');
   if (lastDot != csArrayItemNotFound)
     pcShortName = pcName.Slice (lastDot+1);
 
   pcKey.Format ("P:%s", pcName.GetData ());
   pcLabel = pcShortName;
-  if (pctpl->GetTag () != 0)
+  if (pctpl && pctpl->GetTag () != 0)
   {
     pcKey.AppendFmt (":%s", pctpl->GetTag ());
     pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
@@ -591,12 +600,12 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
       if (GetContextMenuNode ().IsEmpty ()) return;
       pctpl = GetPCTemplate (GetContextMenuNode ());
     }
-    csString questName = GetQuestName (pctpl);
-    if (questName.IsEmpty ()) return;
+    //csString questName = GetQuestName (pctpl);
+    //if (questName.IsEmpty ()) return;
 
-    iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
-    if (!questFact)
-      questFact = questMgr->CreateQuestFactory (questName);
+    //iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+    //if (!questFact)
+      //questFact = questMgr->CreateQuestFactory (questName);
 
     graphView->StartRefresh ();
     graphView->SetVisible (false);
@@ -606,10 +615,10 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
     graphView->CreateNode (pcKey, pcLabel, stylePC);
 
     csString defaultState;	// Empty: we have no default state here.
-    BuildQuestGraph (questFact, pcKey, true, defaultState);
+    BuildQuestGraph (editQuestMode, pcKey, true, defaultState);
     graphView->FinishRefresh ();
     graphView->SetVisible (true);
-    app->SetObjectForComment ("quest", questFact->QueryObject ());
+    app->SetObjectForComment ("quest", editQuestMode->QueryObject ());
   }
   else
     BuildTemplateGraph (currentTemplate);
@@ -777,10 +786,23 @@ iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
   return 0;
 }
 
-static void CorrectTemplateName (csString& name)
+static void CorrectName (csString& name)
 {
   if (name[name.Length ()-1] == '*')
     name = name.Slice (0, name.Length ()-1);
+}
+
+void EntityMode::OnQuestSelect ()
+{
+  if (!started) return;
+  wxListCtrl* list = XRCCTRL (*panel, "quest_List", wxListCtrl);
+  Ares::Value* v = view.GetSelectedValue (list);
+  if (!v) return;
+  csString questName = v->GetStringArrayValue ()->Get (0);
+  CorrectName (questName);
+
+  editQuestMode = questMgr->GetQuestFactory (questName);
+  RefreshView ();
 }
 
 void EntityMode::OnTemplateSelect ()
@@ -790,10 +812,10 @@ void EntityMode::OnTemplateSelect ()
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
   csString templateName = v->GetStringArrayValue ()->Get (0);
-  CorrectTemplateName (templateName);
+  CorrectName (templateName);
   if (editQuestMode || currentTemplate != templateName)
   {
-    editQuestMode = false;
+    editQuestMode = 0;
     BuildTemplateGraph (templateName);
     ActivateNode (0);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
@@ -809,10 +831,16 @@ void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
 }
 
+void EntityMode::RegisterModification (iQuestFactory* quest)
+{
+  GetApplication ()->RegisterModification (quest->QueryObject ());
+  questsValue->Refresh ();
+}
+
 void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
 {
   currentTemplate = tpl->GetName ();
-  editQuestMode = false;
+  editQuestMode = 0;
   BuildTemplateGraph (currentTemplate);
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
   size_t i = view3d->GetModelRepository ()->GetTemplateIndexFromTemplates (tpl);
@@ -868,7 +896,7 @@ void EntityMode::DeleteItem (const char* item)
     iCelPropertyClassTemplate* pctpl = GetPCTemplate (item);
     tpl->RemovePropertyClassTemplate (pctpl);
     RegisterModification (tpl);
-    editQuestMode = false;
+    editQuestMode = 0;
     RefreshView ();
   }
   else if (type == 'S')
@@ -1392,7 +1420,15 @@ void EntityMode::OnNewState ()
 
 void EntityMode::OnEditQuest ()
 {
-  editQuestMode = true;
+  if (GetContextMenuNode ().IsEmpty ()) return;
+  iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return;
+
+  editQuestMode = questMgr->GetQuestFactory (questName);
+  if (!editQuestMode)
+    editQuestMode = questMgr->CreateQuestFactory (questName);
+
   RefreshView ();
 }
 

@@ -7,10 +7,46 @@
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
 				<option>1</option>
-				<flag>wxALL|wxEXPAND</flag>
+				<flag>wxEXPAND | wxALL</flag>
 				<border>5</border>
-				<object class="wxListCtrl" name="template_List">
-					<style>wxLC_ICON|wxLC_REPORT</style>
+				<object class="wxChoicebook" name="templateQuest_ChoiceBook">
+					<style>wxCHB_BOTTOM|wxCHB_DEFAULT</style>
+					<object class="choicebookpage">
+						<label>Templates</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="templateList_Panel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="template_List">
+										<style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
+					<object class="choicebookpage">
+						<label>Quests</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="questList_Panel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="quest_List">
+										<style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
 				</object>
 			</object>
 		</object>

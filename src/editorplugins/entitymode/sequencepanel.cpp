@@ -196,8 +196,7 @@ public:
     StandardCollectionValue::FireValueChanged ();
     // @@@ This may be a bit too much. This also register a modification if we just look at the
     // sequence.
-    sequencePanel->GetEntityMode ()->GetApplication ()->RegisterModification (
-	sequencePanel->GetQuestFactory ()->QueryObject ());
+    sequencePanel->GetEntityMode ()->RegisterModification (sequencePanel->GetQuestFactory ());
   }
 
   virtual bool DeleteValue (Value* child)

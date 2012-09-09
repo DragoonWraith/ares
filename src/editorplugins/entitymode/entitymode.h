@@ -121,6 +121,7 @@ private:
   csRef<iCelPlLayer> pl;
 
   Ares::View view;
+  csRef<Ares::Value> questsValue;
 
   bool started;
 
@@ -164,7 +165,7 @@ private:
 
   csString activeNode;		// Currently selected node.
   csString currentTemplate;
-  bool editQuestMode;		// If true we're editing a quest.
+  iQuestFactory* editQuestMode;	// If true we're editing a quest.
   csString contextMenuNode;	// Node that is being used for the context menu.
   csString GetContextMenuNode ();
 
@@ -233,6 +234,8 @@ public:
 
   /// Register modification of the current template.
   void RegisterModification (iCelEntityTemplate* tpl = 0);
+  /// Register modification of a quest.
+  void RegisterModification (iQuestFactory* quest);
 
   /// Refresh the view. The tiven pctpl is optional and will be used if given.
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
@@ -258,6 +261,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   void OnTemplateSelect ();
+  void OnQuestSelect ();
   void OnDelete ();
   void OnCreatePC ();
   void OnEditQuest ();
@@ -291,6 +295,7 @@ public:
     void OnCreateRewardOnInit (wxCommandEvent& event) { s->OnCreateReward (1); }
     void OnCreateRewardOnExit (wxCommandEvent& event) { s->OnCreateReward (2); }
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
+    void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
     void OnTemplateDel (wxCommandEvent& event) { s->OnTemplateDel (); }
 
   private:
