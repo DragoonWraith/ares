@@ -488,7 +488,10 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
 
 csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 {
-  return InspectTools::GetActionParameterValueString (pl, pctpl,
+  if (editQuestMode)
+    return editQuestMode->GetName ();
+  else
+    return InspectTools::GetActionParameterValueString (pl, pctpl,
       "NewQuest", "name");
 }
 
@@ -531,7 +534,6 @@ void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
 
 csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
 {
-  if (!pctpl) return "";
   csString pcName = pctpl->GetName ();
   if (pcName == "pclogic.quest")
   {
@@ -543,14 +545,14 @@ csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
 void EntityMode::GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& pcKey, csString& pcLabel)
 {
   csString pcShortName;
-  csString pcName = pctpl ? pctpl->GetName () : "";
+  csString pcName = pctpl->GetName ();
   size_t lastDot = pcName.FindLast ('.');
   if (lastDot != csArrayItemNotFound)
     pcShortName = pcName.Slice (lastDot+1);
 
   pcKey.Format ("P:%s", pcName.GetData ());
   pcLabel = pcShortName;
-  if (pctpl && pctpl->GetTag () != 0)
+  if (pctpl->GetTag () != 0)
   {
     pcKey.AppendFmt (":%s", pctpl->GetTag ());
     pcLabel.AppendFmt (" (%s)", pctpl->GetTag ());
@@ -595,23 +597,12 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
   if (!started) return;
   if (editQuestMode)
   {
-    if (!pctpl)
-    {
-      if (GetContextMenuNode ().IsEmpty ()) return;
-      pctpl = GetPCTemplate (GetContextMenuNode ());
-    }
-    //csString questName = GetQuestName (pctpl);
-    //if (questName.IsEmpty ()) return;
-
-    //iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
-    //if (!questFact)
-      //questFact = questMgr->CreateQuestFactory (questName);
-
     graphView->StartRefresh ();
     graphView->SetVisible (false);
 
-    csString pcKey, pcLabel;
-    GetPCKeyLabel (pctpl, pcKey, pcLabel);
+    csString pcKey = "P:pclogic.quest";
+    csString pcLabel = "quest\n";
+    pcLabel += editQuestMode->GetName ();
     graphView->CreateNode (pcKey, pcLabel, stylePC);
 
     csString defaultState;	// Empty: we have no default state here.
@@ -626,6 +617,7 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
 
 iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
 {
+  if (editQuestMode) return editQuestMode;
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (key);
   csString questName = GetQuestName (pctpl);
   iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
@@ -656,9 +648,6 @@ bool EntityMode::IsOnExit (const char* key)
 
 iCelSequenceFactory* EntityMode::GetSelectedSequence (const char* key)
 {
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (!tpl) return 0;
-
   csStringArray ops (key, ",");
   for (size_t i = 0 ; i < ops.GetSize () ; i++)
   {
@@ -677,9 +666,6 @@ iCelSequenceFactory* EntityMode::GetSelectedSequence (const char* key)
 csRef<iRewardFactoryArray> EntityMode::GetSelectedReward (const char* key,
     size_t& idx)
 {
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (!tpl) return 0;
-
   csStringArray ops (key, ",");
   for (size_t i = 0 ; i < ops.GetSize () ; i++)
   {
@@ -715,9 +701,6 @@ csRef<iRewardFactoryArray> EntityMode::GetSelectedReward (const char* key,
 
 iQuestTriggerResponseFactory* EntityMode::GetSelectedTriggerResponse (const char* key)
 {
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (!tpl) return 0;
-
   csStringArray ops (key, ",");
   for (size_t i = 0 ; i < ops.GetSize () ; i++)
   {
@@ -738,9 +721,6 @@ iQuestTriggerResponseFactory* EntityMode::GetSelectedTriggerResponse (const char
 
 csString EntityMode::GetSelectedStateName (const char* key)
 {
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (!tpl) return "";
-
   csStringArray ops (key, ",");
   for (size_t i = 0 ; i < ops.GetSize () ; i++)
   {
@@ -892,10 +872,18 @@ void EntityMode::DeleteItem (const char* item)
   else if (type == 'P')
   {
     // Delete property class.
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    iCelPropertyClassTemplate* pctpl = GetPCTemplate (item);
-    tpl->RemovePropertyClassTemplate (pctpl);
-    RegisterModification (tpl);
+    if (editQuestMode)
+    {
+      // @@@ TODO, remove quest
+      ui->Message ("Not implemented yet!");
+    }
+    else
+    {
+      iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+      iCelPropertyClassTemplate* pctpl = GetPCTemplate (item);
+      tpl->RemovePropertyClassTemplate (pctpl);
+      RegisterModification (tpl);
+    }
     editQuestMode = 0;
     RefreshView ();
   }
@@ -905,6 +893,7 @@ void EntityMode::DeleteItem (const char* item)
     csString state = GetSelectedStateName (item);
     iQuestFactory* questFact = GetSelectedQuest (item);
     questFact->RemoveState (state);
+    RegisterModification (questFact);
     RefreshView ();
   }
   else if (type == 't')
@@ -916,6 +905,7 @@ void EntityMode::DeleteItem (const char* item)
     csRef<iQuestTriggerResponseFactoryArray> responses = questState->GetTriggerResponseFactories ();
     iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (item);
     responses->Delete (resp);
+    RegisterModification (questFact);
     RefreshView ();
   }
   else if (type == 'r')
@@ -925,6 +915,8 @@ void EntityMode::DeleteItem (const char* item)
     csRef<iRewardFactoryArray> array = GetSelectedReward (item, idx);
     if (!array) return;
     array->DeleteIndex (idx);
+    iQuestFactory* questFact = GetSelectedQuest (item);
+    RegisterModification (questFact);
     RefreshView ();
   }
   else if (type == 's')
@@ -933,6 +925,7 @@ void EntityMode::DeleteItem (const char* item)
     iCelSequenceFactory* sequence = GetSelectedSequence (item);
     iQuestFactory* questFact = GetSelectedQuest (item);
     questFact->RemoveSequence (sequence->GetName ());
+    RegisterModification (questFact);
     RefreshView ();
   }
 }
@@ -1064,6 +1057,11 @@ void EntityMode::CopySelected ()
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     ClearCopy ();
     entityCopy = Copy (tpl);
+  }
+  else
+  {
+    iUIManager* ui = view3d->GetApplication ()->GetUI ();
+    ui->Message ("Not implemented yet!");
   }
   app->SetMenuState ();
 }
@@ -1249,14 +1247,16 @@ void EntityMode::ActivateNode (const char* nodeName)
   activeNode = nodeName;
   app->SetMenuState ();
   if (!nodeName) return;
-printf ("node:%s\n", nodeName); fflush (stdout);
   const char type = activeNode.operator[] (0);
   if (type == 'P')
   {
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
-    pcPanel->SwitchToPC (tpl, pctpl);
-    pcPanel->Show ();
+    if (!editQuestMode)
+    {
+      iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+      iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
+      pcPanel->SwitchToPC (tpl, pctpl);
+      pcPanel->Show ();
+    }
   }
   else if (type == 'T')
   {
@@ -1319,6 +1319,8 @@ void EntityMode::OnCreateReward (int type)
       if (type == 1) state->AddInitRewardFactory (fact);
       else state->AddExitRewardFactory (fact);
     }
+    iQuestFactory* questFact = GetSelectedQuest (activeNode);
+    RegisterModification (questFact);
     RefreshView ();
   }
 }
@@ -1344,6 +1346,7 @@ void EntityMode::OnCreateTrigger ()
     iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+name);
     csRef<iTriggerFactory> triggerFact = triggertype->CreateTriggerFactory ();
     resp->SetTriggerFactory (triggerFact);
+    RegisterModification (questFact);
     RefreshView ();
   }
 }
@@ -1391,6 +1394,7 @@ void EntityMode::OnNewSequence ()
     return;
   }
   questFact->CreateSequence (name->GetData ());
+  RegisterModification (questFact);
   RefreshView (pctpl);
 }
 
@@ -1415,6 +1419,7 @@ void EntityMode::OnNewState ()
     return;
   }
   questFact->CreateState (name->GetData ());
+  RegisterModification (questFact);
   RefreshView (pctpl);
 }
 
@@ -1532,37 +1537,55 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
   contextMenuNode = graphView->FindHitNode (mouseX, mouseY);
   if (!contextMenuNode.IsEmpty ())
   {
+    wxMenuItem* item;
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
+
     contextMenu->AppendSeparator ();
 
     const char type = contextMenuNode.operator[] (0);
-    if (strchr ("TPSstier", type))
-      contextMenu->Append (idDelete, wxT ("Delete"));
-    if (type == 'T')
-      contextMenu->Append (idCreate, wxT ("Create Property Class..."));
-    if (type == 'P' && contextMenuNode.StartsWith ("P:pclogic.quest"))
+    switch (type)
     {
-      contextMenu->Append (idEditQuest, wxT ("Edit quest"));
-      contextMenu->Append (idNewState, wxT ("New state..."));
-      contextMenu->Append (idNewSequence, wxT ("New sequence..."));
-    }
-    if (type == 'S')
-    {
-      contextMenu->Append (idDefaultState, wxT ("Set default state"));
-      contextMenu->Append (idCreateTrigger, wxT ("Create trigger..."));
-      contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
-      contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
-    }
-    if (type == 'i')
-    {
-      contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
-    }
-    if (type == 'e')
-    {
-      contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
-    }
-    if (type == 't')
-    {
-      contextMenu->Append (idCreateReward, wxT ("Create reward..."));
+      case 'T':
+        contextMenu->Append (idDelete, wxT ("Delete Template"));
+        contextMenu->Append (idCreate, wxT ("Create Property Class..."));
+	break;
+      case 'P':
+        if (pctpl)
+          contextMenu->Append (idDelete, wxT ("Delete Property Class"));
+        else
+          contextMenu->Append (idDelete, wxT ("Delete Quest"));
+        if (contextMenuNode.StartsWith ("P:pclogic.quest"))
+        {
+          item = contextMenu->Append (idEditQuest, wxT ("Edit quest"));
+          item->Enable (pctpl != 0);
+          contextMenu->Append (idNewState, wxT ("New state..."));
+          contextMenu->Append (idNewSequence, wxT ("New sequence..."));
+        }
+	break;
+      case 'S':
+        contextMenu->Append (idDelete, wxT ("Delete State"));
+        item = contextMenu->Append (idDefaultState, wxT ("Set default state"));
+        item->Enable (pctpl != 0);
+        contextMenu->Append (idCreateTrigger, wxT ("Create trigger..."));
+        contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
+        contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
+	break;
+      case 's':
+        contextMenu->Append (idDelete, wxT ("Delete Sequence"));
+	break;
+      case  'r':
+        contextMenu->Append (idDelete, wxT ("Delete Reward"));
+	break;
+      case 'i':
+        contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
+	break;
+      case 'e':
+        contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
+	break;
+      case 't':
+        contextMenu->Append (idDelete, wxT ("Delete Trigger"));
+        contextMenu->Append (idCreateReward, wxT ("Create reward..."));
+	break;
     }
   }
 }
