@@ -149,7 +149,7 @@ void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
   dialog->AddRow ();
   dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->
       GetModelRepository ()->GetTemplatesValue (),
-      TEMPLATE_COL_NAME, 300, "Template", TEMPLATE_COL_NAME);
+      TEMPLATE_COL_NAME, false, 300, "Template", TEMPLATE_COL_NAME);
 
   if (dialog->Show (0) == 1)
   {

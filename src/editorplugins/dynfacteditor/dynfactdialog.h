@@ -213,17 +213,21 @@ public:
 };
 
 /**
- * Automatically populate a category with children.
+ * Add one or more new factories.
  */
-class AutoNewChildAction : public Action
+class MultiNewChildAction : public Action
 {
 private:
-  DynfactDialog* dialog;
+  DynfactDialog* dynfact;
+  csRef<iUIDialog> dialog;
+
+  void AddFactory (const char* name, const char* category, csArray<iObject*>& resources);
 
 public:
-  AutoNewChildAction (DynfactDialog* dialog) : dialog (dialog) { }
-  virtual ~AutoNewChildAction () { }
-  virtual const char* GetName () const { return "Automatic Factories"; }
+  MultiNewChildAction (DynfactDialog* dynfact, iUIDialog* dialog) :
+    dynfact (dynfact), dialog (dialog) { }
+  virtual ~MultiNewChildAction () { }
+  virtual const char* GetName () const { return "New..."; }
   virtual bool Do (View* view, wxWindow* component);
   virtual bool IsActive (View* view, wxWindow* component);
 };

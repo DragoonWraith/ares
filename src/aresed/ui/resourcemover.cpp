@@ -64,7 +64,7 @@ public:
     csRef<iUIDialog> dialog = view3d->GetApplication ()->GetUI ()->CreateDialog (title, 500);
     dialog->AddRow ();
     csRef<Ares::Value> assets = repository->GetAssetsValue ();
-    dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
+    dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, false, 300, "Writable,Path,File,Mount",
 	ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
     if (dialog->Show (0))
     {

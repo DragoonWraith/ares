@@ -941,7 +941,7 @@ void PropertyClassPanel::OnChangeQuest (wxCommandEvent& event)
   dialog->AddRow ();
   csRef<Ares::Value> assets = emode->GetApplication ()->Get3DView ()->
     GetModelRepository ()->GetQuestsValue ();
-  dialog->AddListIndexed ("quest", assets, QUEST_COL_NAME, 300, "Name",
+  dialog->AddListIndexed ("quest", assets, QUEST_COL_NAME, false, 300, "Name",
       QUEST_COL_NAME);
   if (dialog->Show (0))
   {

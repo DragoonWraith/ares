@@ -1704,63 +1704,73 @@ public:
 
 //--------------------------------------------------------------------------
 
-bool AutoNewChildAction::Do (View* view, wxWindow* component)
+void MultiNewChildAction::AddFactory (const char* name, const char* category,
+    csArray<iObject*>& resources)
 {
-  if (dialog->GetUIManager ()->Ask ("This will automatically fill the current selected category with all missing factories. Are you sure?"))
+  i3DView* view3d = dynfact->GetApplication ()->Get3DView ();
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+  if (!dynworld->FindFactory (name))
   {
-    Value* value = view->GetSelectedValue (component);
-    if (!value) return false;
-
-    i3DView* view3d = dialog->GetApplication ()->Get3DView ();
-    Value* dynfactCollectionValue = view3d->GetModelRepository ()->GetDynfactCollectionValue ();
-    Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
-    csString category = categoryValue->GetStringValue ();
-
-    iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
-    iMeshFactoryList* list = dialog->GetEngine ()->GetMeshFactories ();
-    csArray<iObject*> resources;
-    for (size_t i = 0 ; i < size_t (list->GetCount ()) ; i++)
+    iDynamicFactory* fact = dynworld->AddFactory (name, 1.0f, 1.0f);
+    fact->SetAttribute ("category", category);
+    view3d->RefreshFactorySettings (fact);
+    if (dynworld->IsPhysicsEnabled ())
     {
-      iMeshFactoryWrapper* fact = list->Get (i);
-      const char* name = fact->QueryObject ()->GetName ();
-      if (!dynworld->FindFactory (name))
-      {
-	iDynamicFactory* fact = dynworld->AddFactory (name, 1.0f, 1.0f);
-        fact->SetAttribute ("category", category);
-	view3d->RefreshFactorySettings (fact);
-	if (dynworld->IsPhysicsEnabled ())
-	{
-	  const csBox3& bbox = fact->GetBBox ();
-	  csVector3 c = bbox.GetCenter ();
-	  csVector3 s = bbox.GetSize ();
-	  fact->AddRigidBox (c, s, 1.0f);
-	}
-	else
-	{
-	  fact->SetColliderEnabled (true);
-	}
-	resources.Push (fact->QueryObject ());
-      }
+      const csBox3& bbox = fact->GetBBox ();
+      csVector3 c = bbox.GetCenter ();
+      csVector3 s = bbox.GetSize ();
+      fact->AddRigidBox (c, s, 1.0f);
     }
-    dialog->GetApplication ()->RegisterModification (resources);
-    categoryValue->Refresh ();
-    dynfactCollectionValue->FireValueChanged ();
-    return true;
+    else
+    {
+      fact->SetColliderEnabled (true);
+    }
+    resources.Push (fact->QueryObject ());
   }
-  return false;
 }
 
-bool AutoNewChildAction::IsActive (View* view, wxWindow* component)
+bool MultiNewChildAction::IsActive (View* view, wxWindow* component)
 {
   Value* value = view->GetSelectedValue (component);
   if (!value) return false;
 
-  Value* dynfactCollectionValue = dialog->GetApplication ()->Get3DView ()->
+  Value* dynfactCollectionValue = dynfact->GetApplication ()->Get3DView ()->
     GetModelRepository ()->GetDynfactCollectionValue ();
   Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
   if (!categoryValue || categoryValue != value)
     return false;
 
+  return true;
+}
+
+bool MultiNewChildAction::Do (View* view, wxWindow* component)
+{
+  Value* value = view->GetSelectedValue (component);
+  if (!value) return false;
+
+  dialog->Clear ();
+  if (!dialog->Show (0))
+    return false;
+
+  i3DView* view3d = dynfact->GetApplication ()->Get3DView ();
+  Value* dynfactCollectionValue = view3d->GetModelRepository ()->GetDynfactCollectionValue ();
+  Value* categoryValue = GetCategoryForValue (dynfactCollectionValue, value);
+  csString category = categoryValue->GetStringValue ();
+
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+  const DialogValues& values = dialog->GetFieldValues ();
+
+  csArray<iObject*> resources;
+  DialogValues::ConstIterator it = values.GetIterator ("name");
+  while (it.HasNext ())
+  {
+    Value* row = it.Next ();
+    csString name = row->GetChild (0)->GetStringValue ();
+    AddFactory (name, category, resources);
+  }
+  dynfact->GetApplication ()->RegisterModification (resources);
+  categoryValue->Refresh ();
+  dynfactCollectionValue->FireValueChanged ();
   return true;
 }
 
@@ -2152,7 +2162,7 @@ void DynfactDialog::SetupDialogs ()
   factoryDialog->AddRow (1);
   factoryDialog->AddLabel ("Name:");
   factoryDialog->AddList ("name", NEWREF(Value,new MeshCollectionValue (engine,
-	  app->Get3DView ()->GetDynamicWorld ())), 0, 300,
+	  app->Get3DView ()->GetDynamicWorld ())), 0, true, 300,
       "Name", "name");
 
   // The dialog for editing new attributes.
@@ -2167,7 +2177,7 @@ void DynfactDialog::SetupDialogs ()
   // The dialog for selecting a bone.
   selectBoneDialog = app->GetUI ()->CreateDialog (this, "Select Bone");
   selectBoneDialog->AddRow ();
-  selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0, 200,
+  selectBoneDialog->AddList ("name", NEWREF(Value,new FactoryBoneCollectionValue(this)), 0, false, 200,
       "Name", "name");
 }
 
@@ -2256,8 +2266,7 @@ void DynfactDialog::SetupActions ()
   view.AddAction (jointsList, NEWREF(Action, new DeleteChildAction (joints)));
   view.AddAction (bonesList, NEWREF(Action, new NewChildDialogAction (bones, selectBoneDialog)));
   view.AddAction (bonesList, NEWREF(Action, new CreateJointAction (this)));
-  view.AddAction (factoryTree, NEWREF(Action, new NewChildDialogAction (dynfactCollectionValue, factoryDialog)));
-  view.AddAction (factoryTree, NEWREF(Action, new AutoNewChildAction (this)));
+  view.AddAction (factoryTree, NEWREF(Action, new MultiNewChildAction (this, factoryDialog)));
   view.AddAction (factoryTree, NEWREF(Action, new NewInvisibleChildAction (this, dynfactCollectionValue)));
   view.AddAction (factoryTree, NEWREF(Action, new NewLightChildAction (this, dynfactCollectionValue)));
   view.AddAction (factoryTree, NEWREF(Action, new EditLightChildAction (this, dynfactCollectionValue)));

@@ -726,7 +726,7 @@ void AppAresEditWX::RegisterModification (const csArray<iObject*>& resources)
 	  csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
 	  dialog->AddRow ();
 	  csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
-	  dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
+	  dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, false, 300, "Writable,Path,File,Mount",
 	      ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
 	  if (dialog->Show (0))
 	  {
@@ -768,7 +768,7 @@ void AppAresEditWX::RegisterModification (iObject* resource)
       csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
       dialog->AddRow ();
       csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
-      dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, 300, "Writable,Path,File,Mount",
+      dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, false, 300, "Writable,Path,File,Mount",
 	  ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
       if (dialog->Show (0))
       {

@@ -77,11 +77,13 @@ struct iUIDialog : public virtual iBase
    * from the model. The value should be a collection with composites
    * as children and the requested value out of the composite should
    * be a string.
+   * If 'multi' is true then this is a multiselection list and the value
+   * returned can hold multiple values.
    */
   virtual void AddList (const char* name, Ares::Value* collectionValue,
-      size_t valueColumn, int height, const char* heading, const char* names) = 0;
+      size_t valueColumn, bool multi, int height, const char* heading, const char* names) = 0;
   virtual void AddListIndexed (const char* name, Ares::Value* collectionValue,
-      size_t valueColumn, int height, const char* heading, ...) = 0;
+      size_t valueColumn, bool multi, int height, const char* heading, ...) = 0;
 
   // Clear all input fields to empty or default values.
   virtual void Clear () = 0;

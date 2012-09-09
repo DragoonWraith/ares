@@ -143,7 +143,7 @@ void ObjectFinderDialog::OnSearchTemplateButton (wxCommandEvent& event)
   dialog->AddRow ();
   dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->
       GetModelRepository ()->GetTemplatesValue (),
-      TEMPLATE_COL_NAME, 300, "Template", TEMPLATE_COL_NAME);
+      TEMPLATE_COL_NAME, false, 300, "Template", TEMPLATE_COL_NAME);
 
   if (dialog->Show (0) == 1)
   {
@@ -161,7 +161,7 @@ void ObjectFinderDialog::OnSearchDynfactButton (wxCommandEvent& event)
   dialog->AddRow ();
   dialog->AddListIndexed ("factory", uiManager->GetApp ()->Get3DView ()->
       GetModelRepository ()->GetFactoriesValue (),
-      FACTORY_COL_NAME, 300, "Factory,Usage", FACTORY_COL_NAME, FACTORY_COL_USAGE);
+      FACTORY_COL_NAME, false, 300, "Factory,Usage", FACTORY_COL_NAME, FACTORY_COL_USAGE);
 
   if (dialog->Show (0) == 1)
   {

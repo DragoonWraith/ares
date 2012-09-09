@@ -171,17 +171,18 @@ void UIDialog::AddChoice (const char* name, ...)
 using namespace Ares;
 
 void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueColumn,
-    int height, const char* heading, const char* names)
+    bool multi, int height, const char* heading, const char* names)
 {
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
   wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
-      wxDefaultSize, wxLC_REPORT);
+      wxDefaultSize, wxLC_REPORT | (multi ? 0 : wxLC_SINGLE_SEL));
   list->SetMinSize (wxSize (-1, height));
   lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   ValueListInfo info;
   info.list = list;
   info.col = valueColumn;
+  info.multi = multi;
   info.collectionValue = collectionValue;
   valueListFields.Put (name, info);
   view.DefineHeading (list, heading, names);
@@ -189,17 +190,18 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
 }
 
 void UIDialog::AddListIndexed (const char* name, Value* collectionValue, size_t valueColumn,
-    int height, const char* heading, ...)
+    bool multi, int height, const char* heading, ...)
 {
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
   wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
-      wxDefaultSize, wxLC_REPORT);
+      wxDefaultSize, wxLC_REPORT | (multi ? 0 : wxLC_SINGLE_SEL));
   list->SetMinSize (wxSize (-1, height));
   lastRowSizer->Add (list, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
   ValueListInfo info;
   info.list = list;
   info.col = valueColumn;
+  info.multi = multi;
   info.collectionValue = collectionValue;
   valueListFields.Put (name, info);
 
@@ -298,7 +300,6 @@ void UIDialog::SetFieldContents (const DialogResult& result)
   {
     csString name;
     csString value = it.Next (name);
-printf ("SetFieldContents %s %s\n", name.GetData (), value.GetData ()); fflush (stdout);
     SetValue (name, value);
   }
 }
@@ -371,37 +372,26 @@ void UIDialog::OnButtonClicked (wxCommandEvent& event)
   {
     csString name;
     const ValueListInfo& info = itvLst.Next (name);
-    long rowidx = ListCtrlTools::GetFirstSelectedRow (info.list);
-    csString value;
-    Value* compositeValue = 0;
-    if (rowidx != -1)
+    csArray<Value*> values = view.GetSelectedValues (info.list);
+    for (size_t i = 0 ; i < values.GetSize () ; i++)
     {
-      compositeValue = info.collectionValue->GetChild (rowidx);
-      if (info.col != csArrayItemNotFound)
+      Value* value = values[i];
+      csString strval;
+      if (info.col == csArrayItemNotFound)
+	strval = view.ValueToString (value);
+      else if (value->GetType () == VALUE_COMPOSITE)
+	strval = view.ValueToString (value->GetChild (info.col));
+      else if (value->GetType () == VALUE_STRINGARRAY)
       {
-	if (compositeValue->GetType () == VALUE_COMPOSITE)
-	{
-          Value* child = compositeValue->GetChild (info.col);
-          value = view.ValueToString (child);
-	}
-	else if (compositeValue->GetType () == VALUE_STRINGARRAY)
-	{
-	  const csStringArray* array = compositeValue->GetStringArrayValue ();
-	  if (array)
-	    value = array->Get (info.col);
-	}
-	else
-	{
-	  value = view.ValueToString (compositeValue);
-	}
+	const csStringArray* array = value->GetStringArrayValue ();
+	if (array)
+	  strval = array->Get (info.col);
       }
       else
-      {
-	value = view.ValueToString (compositeValue);
-      }
+	strval = view.ValueToString (value);
+      fieldContents.Put (name, strval);
+      fieldValues.Put (name, value);
     }
-    fieldContents.Put (name, value);
-    fieldValues.Put (name, compositeValue);
   }
 
   if (buttonLabel == "Ok")
