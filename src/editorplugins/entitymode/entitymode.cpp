@@ -37,6 +37,7 @@ THE SOFTWARE.
 #include "editor/iuimanager.h"
 #include "editor/iuidialog.h"
 #include "editor/imodelrepository.h"
+#include "iassetmanager.h"
 
 #include "celtool/stdparams.h"
 #include "physicallayer/pl.h"
@@ -61,6 +62,13 @@ static csStringID ID_Copy = csInvalidStringID;
 static csStringID ID_Paste = csInvalidStringID;
 static csStringID ID_Delete = csInvalidStringID;
 
+static void CorrectName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
+
 //---------------------------------------------------------------------------
 
 class GraphNodeCallback : public iGraphNodeCallback
@@ -74,6 +82,140 @@ public:
   virtual void ActivateNode (const char* nodeName)
   {
     emode->ActivateNode (nodeName);
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RenameQuestAction : public Ares::Action
+{
+private:
+  EntityMode* entityMode;
+
+public:
+  RenameQuestAction (EntityMode* entityMode) : entityMode (entityMode) { }
+  virtual ~RenameQuestAction () { }
+  virtual const char* GetName () const { return "Rename Quest..."; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    if (value)
+    {
+      csString questName = value->GetStringArrayValue ()->Get (0);
+      CorrectName (questName);
+      entityMode->OnRenameQuest (questName);
+    }
+    return true;
+  }
+  virtual bool IsActive (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    return value != 0;
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class DeleteQuestAction : public Ares::Action
+{
+private:
+  EntityMode* entityMode;
+
+public:
+  DeleteQuestAction (EntityMode* entityMode) : entityMode (entityMode) { }
+  virtual ~DeleteQuestAction () { }
+  virtual const char* GetName () const { return "Delete Quest..."; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    if (value)
+    {
+      csString questName = value->GetStringArrayValue ()->Get (0);
+      CorrectName (questName);
+      entityMode->OnQuestDel (questName);
+    }
+    return true;
+  }
+  virtual bool IsActive (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    return value != 0;
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class AddQuestAction : public Ares::Action
+{
+private:
+  EntityMode* entityMode;
+
+public:
+  AddQuestAction (EntityMode* entityMode) : entityMode (entityMode) { }
+  virtual ~AddQuestAction () { }
+  virtual const char* GetName () const { return "Add Quest..."; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    entityMode->AskNewQuest ();
+    return true;
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RenameTemplateAction : public Ares::Action
+{
+private:
+  EntityMode* entityMode;
+
+public:
+  RenameTemplateAction (EntityMode* entityMode) : entityMode (entityMode) { }
+  virtual ~RenameTemplateAction () { }
+  virtual const char* GetName () const { return "Rename Template..."; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    if (value)
+    {
+      csString tplName = value->GetStringArrayValue ()->Get (0);
+      CorrectName (tplName);
+      entityMode->OnRenameTemplate (tplName);
+    }
+    return true;
+  }
+  virtual bool IsActive (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    return value != 0;
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class DeleteTemplateAction : public Ares::Action
+{
+private:
+  EntityMode* entityMode;
+
+public:
+  DeleteTemplateAction (EntityMode* entityMode) : entityMode (entityMode) { }
+  virtual ~DeleteTemplateAction () { }
+  virtual const char* GetName () const { return "Delete Template..."; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    if (value)
+    {
+      csString templateName = value->GetStringArrayValue ()->Get (0);
+      CorrectName (templateName);
+      entityMode->OnTemplateDel (templateName);
+    }
+    return true;
+  }
+  virtual bool IsActive (Ares::View* view, wxWindow* component)
+  {
+    Ares::Value* value = view->GetSelectedValue (component);
+    return value != 0;
   }
 };
 
@@ -157,13 +299,17 @@ void EntityMode::SetParent (wxWindow* parent)
   view.DefineHeadingIndexed ("template_List", "Template", TEMPLATE_COL_NAME);
   view.Bind (view3d->GetModelRepository ()->GetTemplatesValue (), "template_List");
   wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
-  view.AddAction (list, NEWREF(Ares::Action, new AddTemplateAction(this)));
+  view.AddAction (list, NEWREF(Ares::Action, new AddTemplateAction (this)));
+  view.AddAction (list, NEWREF(Ares::Action, new DeleteTemplateAction (this)));
+  view.AddAction (list, NEWREF(Ares::Action, new RenameTemplateAction (this)));
 
   view.DefineHeadingIndexed ("quest_List", "Quest", QUEST_COL_NAME);
   questsValue = view3d->GetModelRepository ()->GetQuestsValue ();
   view.Bind (questsValue, "quest_List");
   list = XRCCTRL (*panel, "quest_List", wxListCtrl);
-  //view.AddAction (list, NEWREF(Ares::Action, new AddQuestAction(this)));
+  view.AddAction (list, NEWREF(Ares::Action, new AddQuestAction (this)));
+  view.AddAction (list, NEWREF(Ares::Action, new DeleteQuestAction (this)));
+  view.AddAction (list, NEWREF(Ares::Action, new RenameQuestAction (this)));
 
   InitColors ();
   editQuestMode = 0;
@@ -766,12 +912,6 @@ iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
   return 0;
 }
 
-static void CorrectName (csString& name)
-{
-  if (name[name.Length ()-1] == '*')
-    name = name.Slice (0, name.Length ()-1);
-}
-
 void EntityMode::OnQuestSelect ()
 {
   if (!started) return;
@@ -817,6 +957,28 @@ void EntityMode::RegisterModification (iQuestFactory* quest)
   questsValue->Refresh ();
 }
 
+void EntityMode::SelectQuest (iQuestFactory* questFact)
+{
+  currentTemplate = "";
+  editQuestMode = questFact;
+  BuildTemplateGraph (currentTemplate);
+  questsValue->Refresh ();
+  csRef<Ares::ValueIterator> it = questsValue->GetIterator ();
+  size_t i = 0;
+  while (it->HasNext ())
+  {
+    Ares::Value* c = it->NextChild ();
+    csString questName = c->GetStringArrayValue ()->Get (0);
+    if (questName == questFact->GetName ()) break;
+    i++;
+  }
+  wxListCtrl* list = XRCCTRL (*panel, "quest_List", wxListCtrl);
+  ListCtrlTools::SelectRow (list, (int)i, false);
+  ActivateNode (0);
+  app->SetObjectForComment ("quest", questFact->QueryObject ());
+  RefreshView ();
+}
+
 void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
 {
   currentTemplate = tpl->GetName ();
@@ -828,6 +990,152 @@ void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
   ListCtrlTools::SelectRow (list, (int)i, false);
   ActivateNode (0);
   app->SetObjectForComment ("template", tpl->QueryObject ());
+}
+
+void EntityMode::AskNewQuest ()
+{
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iString> name = ui->AskDialog ("New Quest", "Name:");
+  if (name && !name->IsEmpty ())
+  {
+    iQuestFactory* questFact = questMgr->GetQuestFactory (name->GetData ());
+    if (questFact)
+      ui->Error ("A quest with this name already exists!");
+    else
+    {
+      questFact = questMgr->CreateQuestFactory (name->GetData ());
+      RegisterModification (questFact);
+      SelectQuest (questFact);
+    }
+  }
+}
+
+void EntityMode::OnRenameTemplate (const char* tplName)
+{
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
+  if (!tpl) return;
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iString> name = ui->AskDialog ("New template name", "New name:", tplName);
+  if (name && !name->IsEmpty ())
+  {
+    if (csString (tplName) == name->GetData ())
+      return;
+    if (pl->FindEntityTemplate (name->GetData ()))
+    {
+      ui->Error ("A template with this name already exists!");
+      return;
+    }
+    tpl->QueryObject ()->SetName (name->GetData ());
+    RegisterModification (tpl);
+    view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
+    RefreshView ();
+  }
+}
+
+void EntityMode::OnRenameQuest (const char* questName)
+{
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+  if (!questFact) return;
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iString> name = ui->AskDialog ("New quest name", "New name:", questName);
+  if (name && !name->IsEmpty ())
+  {
+    if (csString (questName) == name->GetData ())
+      return;
+    if (questMgr->GetQuestFactory (name->GetData ()))
+    {
+      ui->Error ("A quest with this name already exists!");
+      return;
+    }
+    questFact->QueryObject ()->SetName (name->GetData ());
+    RegisterModification (questFact);
+
+    csString pcLogicQuest = "pclogic.quest";
+    csRef<iCelEntityTemplateIterator> tplIt = pl->GetEntityTemplates ();
+    while (tplIt->HasNext ())
+    {
+      iCelEntityTemplate* tpl = tplIt->Next ();
+      for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+      {
+        iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+        if (pcLogicQuest == pctpl->GetName ())
+        {
+	  csString n = InspectTools::GetActionParameterValueString (pl, pctpl, "NewQuest", "name");
+	  if (n == questName)
+	  {
+	    csRef<iParameter> par = view3d->GetPM ()->GetParameter (name->GetData (), CEL_DATA_STRING);
+	    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
+	    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", "name", par);
+	  }
+        }
+      }
+    }
+
+    questsValue->Refresh ();
+    RefreshView ();
+  }
+}
+
+void EntityMode::OnQuestDel (const char* questName)
+{
+  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+  if (!questFact) return;
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csString pcLogicQuest = "pclogic.quest";
+
+  int cnt = 0;
+  csRef<iCelEntityTemplateIterator> tplIt = pl->GetEntityTemplates ();
+  while (tplIt->HasNext ())
+  {
+    iCelEntityTemplate* tpl = tplIt->Next ();
+    for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+    {
+      iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+      if (pcLogicQuest == pctpl->GetName ())
+      {
+	csString n = InspectTools::GetActionParameterValueString (pl, pctpl, "NewQuest", "name");
+	if (n == questName) cnt++;
+      }
+    }
+  }
+
+  bool yes;
+  if (cnt > 0)
+    yes = ui->Ask ("There are %d usages of this quest. Are you sure you want to remove the '%s' quest?",
+	cnt, questName);
+  else
+    yes = ui->Ask ("Are you sure you want to remove the '%s' quest?", questName);
+  if (yes)
+  {
+    view3d->GetApplication ()->GetAssetManager ()->RegisterRemoval (questFact->QueryObject ());
+#if 0
+    if (cnt > 0)
+    {
+      tplIt = pl->GetEntityTemplates ();
+      while (tplIt->HasNext ())
+      {
+	iCelEntityTemplate* tpl = tplIt->Next ();
+	for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+	{
+	  iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+	  if (pcLogicQuest == pctpl->GetName ())
+	  {
+	    csString n = InspectTools::GetActionParameterValueString (pl, pctpl, "NewQuest", "name");
+	    if (n == questName) cnt++;
+	  }
+	}
+      }
+    }
+#endif
+    questMgr->RemoveQuestFactory (questName);
+    questsValue->Refresh ();
+    editQuestMode = 0;
+    ActivateNode (0);
+    RefreshView ();
+  }
 }
 
 void EntityMode::AskNewTemplate ()
@@ -848,10 +1156,76 @@ void EntityMode::AskNewTemplate ()
   }
 }
 
-void EntityMode::OnTemplateDel ()
+void EntityMode::OnTemplateDel (const char* tplName)
 {
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
+  if (!tpl) return;
+
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  ui->Message ("Not implemented yet!");
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+
+  // Count the usages.
+  int cntDynobj = 0, cntParent = 0, cntFact = 0;
+  csRef<iDynamicCellIterator> cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      if (dynobj->GetEntityTemplate () == tpl) cntDynobj++;
+    }
+  }
+  csRef<iCelEntityTemplateIterator> tplIt = pl->GetEntityTemplates ();
+  while (tplIt->HasNext ())
+  {
+    iCelEntityTemplate* t = tplIt->Next ();
+    csRef<iCelEntityTemplateIterator> parentsIt = t->GetParents ();
+    while (parentsIt->HasNext ())
+    {
+      iCelEntityTemplate* p = parentsIt->Next ();
+      if (p == tpl) cntParent++;
+    }
+  }
+  if (dynworld->FindFactory (tpl->GetName ())) cntFact++;
+  int cnt = cntDynobj + cntParent + cntFact;
+
+
+  bool yes;
+  if (cnt > 0)
+    yes = ui->Ask ("There are %d usages of this template (%d times as parent and %d times in an object). Are you sure you want to remove the '%s' template?",
+	cnt, cntParent, cntDynobj, tpl->GetName ());
+  else
+    yes = ui->Ask ("Are you sure you want to remove the '%s' template?", tpl->GetName ());
+  if (yes)
+  {
+    view3d->GetApplication ()->GetAssetManager ()->RegisterRemoval (tpl->QueryObject ());
+    if (cnt > 0)
+    {
+      cellIt = dynworld->GetCells ();
+      while (cellIt->HasNext ())
+      {
+	iDynamicCell* cell = cellIt->NextCell ();
+	for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+	{
+	  iDynamicObject* dynobj = cell->GetObject (i);
+	  if (dynobj->GetEntityTemplate () == tpl)
+	    dynobj->SetEntity (dynobj->GetEntityName (), dynobj->GetFactory ()->GetName (),
+		dynobj->GetEntityParameters ());
+	}
+      }
+      tplIt = pl->GetEntityTemplates ();
+      while (tplIt->HasNext ())
+      {
+        iCelEntityTemplate* t = tplIt->Next ();
+	t->RemoveParent (tpl);
+      }
+    }
+    pl->RemoveEntityTemplate (tpl);
+    view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
+    view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
+    ActivateNode (0);
+  }
 }
 
 void EntityMode::OnDelete ()
@@ -862,20 +1236,18 @@ void EntityMode::OnDelete ()
 
 void EntityMode::DeleteItem (const char* item)
 {
-  iUIManager* ui = view3d->GetApplication ()->GetUI ();
   const char type = item[0];
   if (type == 'T')
   {
     // Delete template.
-    ui->Message ("Not implemented yet!");
+    OnTemplateDel (currentTemplate);
   }
   else if (type == 'P')
   {
     // Delete property class.
     if (editQuestMode)
     {
-      // @@@ TODO, remove quest
-      ui->Message ("Not implemented yet!");
+      OnQuestDel (editQuestMode->GetName ());
     }
     else
     {

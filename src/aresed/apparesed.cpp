@@ -1055,7 +1055,6 @@ bool AppAresEditWX::Command (csStringID id, const csString& args)
 bool AppAresEditWX::IsCommandValid (csStringID id, const csString& args,
       iSelection* selection, size_t pastesize)
 {
-  if (editMode != mainMode) return false;
   size_t selsize = selection->GetSize ();
   if (id == ID_Join) return selsize == 2 && editMode == mainMode;
   if (id == ID_Unjoin) return selsize > 0 && editMode == mainMode;

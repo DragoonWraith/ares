@@ -170,6 +170,7 @@ private:
   csString GetContextMenuNode ();
 
   void SelectTemplate (iCelEntityTemplate* tpl);
+  void SelectQuest (iQuestFactory* tpl);
 
   PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
@@ -272,7 +273,11 @@ public:
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
 
   void AskNewTemplate ();
-  void OnTemplateDel ();
+  void OnTemplateDel (const char* tplName);
+  void AskNewQuest ();
+  void OnQuestDel (const char* questName);
+  void OnRenameQuest (const char* questName);
+  void OnRenameTemplate (const char* questName);
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
   void ActivateNode (const char* nodeName);
@@ -296,7 +301,6 @@ public:
     void OnCreateRewardOnExit (wxCommandEvent& event) { s->OnCreateReward (2); }
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
-    void OnTemplateDel (wxCommandEvent& event) { s->OnTemplateDel (); }
 
   private:
     EntityMode* s;

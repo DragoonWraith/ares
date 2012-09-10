@@ -40,6 +40,7 @@ THE SOFTWARE.
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
 #include "tools/parameters.h"
+#include "tools/questmanager.h"
 
 #include <csgeom/math3d.h>
 #include "camerawin.h"
@@ -142,7 +143,7 @@ bool AresEdit3DView::OnMouseMove (iEvent& ev)
 
 #if 1
   csSectorHitBeamResult result = GetCsCamera ()->GetSector()->HitBeamPortals (
-      beam.Start (), beam.End ());
+      beam.Start (), beam.End (), true);
   if (result.mesh)
   {
     printf ("hit!\n"); fflush (stdout);
@@ -244,59 +245,39 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
 
 bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 {
-  if (!bullet_dynSys) return false;
-  csVector3 isect1, isect2;
-
-  // Trace the physical beam
-  CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (
-      beam.Start (), beam.End ());
-  if (result.body)
-    isect1 = result.isect;
-
-  csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
-      beam.Start (), beam.End ());
-  if (result2.mesh)
-    isect2 = result2.isect;
-
-  if (!result2.mesh && !result.body) return false;
-  if (!result2.mesh) { isect = isect1; return true; }
-  if (!result.body) { isect = isect2; return true; }
-  float sqdist1 = csSquaredDist::PointPoint (beam.Start (), isect1);
-  float sqdist2 = csSquaredDist::PointPoint (beam.Start (), isect2);
-  if (sqdist1 < sqdist2)
+  csSectorHitBeamResult result = GetCsCamera ()->GetSector ()->HitBeamPortals (
+      beam.Start (), beam.End (), true);
+  if (result.mesh)
   {
-    isect = isect1;
+    isect = result.isect;
     return true;
   }
-  else
-  {
-    isect = isect2;
-    return true;
-  }
+  return false;
 }
 
 iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 {
-  if (!bullet_dynSys) return 0;
-
   csVector3 isect1, isect2;
   iDynamicObject* obj1 = 0, * obj2 = 0;
 
   // Trace the physical beam
-  CS::Physics::Bullet::HitBeamResult result = GetBulletSystem ()->HitBeam (
-      beam.Start (), beam.End ());
-  if (result.body)
+  if (bullet_dynSys)
   {
-    iRigidBody* hitBody = result.body->QueryRigidBody ();
-    if (hitBody)
+    CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (
+	beam.Start (), beam.End ());
+    if (result.body)
     {
-      isect1 = result.isect;
-      obj1 = dynworld->FindObject (hitBody);
+      iRigidBody* hitBody = result.body->QueryRigidBody ();
+      if (hitBody)
+      {
+        isect1 = result.isect;
+        obj1 = dynworld->FindObject (hitBody);
+      }
     }
   }
 
   csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
-      beam.Start (), beam.End ());
+      beam.Start (), beam.End (), true);
   if (result2.mesh)
   {
     obj2 = dynworld->FindObject (result2.mesh);
@@ -305,18 +286,13 @@ iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& is
 
   if (!obj2) { isect = isect1; return obj1; }
   if (!obj1) { isect = isect2; return obj2; }
-  float sqdist1 = csSquaredDist::PointPoint (beam.Start (), isect1);
-  float sqdist2 = csSquaredDist::PointPoint (beam.Start (), isect2);
-  if (sqdist1 < sqdist2)
-  {
-    isect = isect1;
-    return obj1;
-  }
-  else
-  {
-    isect = isect2;
-    return obj2;
-  }
+
+  // If both beams hit something but the object they hit differs then
+  // it will be the physics hit that gets precendence. Otherwise we
+  // will pick the hit from the mesh since that one respects backface culling.
+  if (obj1 != obj2) { isect = isect1; return obj1; }
+  isect = isect2;
+  return obj2;
 }
 
 bool AresEdit3DView::OnMouseDown (iEvent& ev)
@@ -455,6 +431,9 @@ void AresEdit3DView::CleanupWorld ()
   engine->GetTextureList ()->RemoveAll ();
 
   pl->RemoveEntityTemplates ();
+  csRef<iQuestManager> questMgr = csQueryRegistryOrLoad<iQuestManager> (object_reg,
+      "cel.manager.quests");
+  questMgr->RemoveQuestFactories ();
 
   sector = 0;
   terrainMesh = 0;
@@ -1038,7 +1017,7 @@ csVector3 AresEdit3DView::GetBeamPosition (const char* fname)
 {
   // Use the camera transform.
   csSegment3 beam = GetMouseBeam (50.0f);
-  csSectorHitBeamResult result = sector->HitBeamPortals (beam.Start (), beam.End ());
+  csSectorHitBeamResult result = sector->HitBeamPortals (beam.Start (), beam.End (), true);
 
   float yorigin = factory_to_origin_offset.Get (fname, 1000000.0);
 

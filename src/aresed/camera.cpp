@@ -472,8 +472,9 @@ void Camera::CamZoom (int x, int y, bool forward)
   // that we are focusing on. If we are close enough we slow down
   // the movement a bit to make it more precise.
   csVector3 isect;
-  aresed3d->TraceBeamHit (aresed3d->GetBeam (x, y), isect);
-  float camdist = sqrt (csSquaredDist::PointPoint (isect, camera->GetTransform ().GetOrigin ()));
+  float camdist = 20.0f;
+  if (aresed3d->TraceBeamHit (aresed3d->GetBeam (x, y), isect))
+    camdist = sqrt (csSquaredDist::PointPoint (isect, camera->GetTransform ().GetOrigin ()));
   if (camdist < 20)
   {
     camdist = camdist / 2.0f;
