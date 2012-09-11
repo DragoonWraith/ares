@@ -65,6 +65,14 @@ UIDialog::~UIDialog ()
   for (size_t i = 0 ; i < buttons.GetSize () ; i++)
     buttons[i]->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
 	wxCommandEventHandler (UIDialog::OnButtonClicked), 0, this);
+  csHash<wxTextCtrl*,csString>::GlobalIterator itText = textFields.GetIterator ();
+  while (itText.HasNext ())
+  {
+    csString name;
+    wxTextCtrl* text = itText.Next (name);
+    text->Disconnect (wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler (
+	  UIDialog::OnEnterPressed), 0, this);
+  }
 }
 
 void UIDialog::AddOkCancel ()
@@ -92,12 +100,19 @@ void UIDialog::AddLabel (const char* str)
   lastRowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
 }
 
-void UIDialog::AddText (const char* name)
+void UIDialog::AddText (const char* name, bool enterIsOk)
 {
   CS_ASSERT (lastRowSizer != 0);
   wxTextCtrl* text = new wxTextCtrl (mainPanel, wxID_ANY, wxEmptyString,
-      wxDefaultPosition, wxDefaultSize, 0);
+      wxDefaultPosition, wxDefaultSize, enterIsOk ? wxTE_PROCESS_ENTER : 0);
   lastRowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+
+  if (enterIsOk)
+  {
+    text->Connect (wxEVT_COMMAND_TEXT_ENTER, wxCommandEventHandler (
+	  UIDialog::OnEnterPressed), 0, this);
+  }
+
   textFields.Put (name, text);
 }
 
@@ -336,11 +351,21 @@ void UIDialog::Clear ()
   }
 }
 
+void UIDialog::OnEnterPressed (wxCommandEvent& event)
+{
+  csString ok = "Ok";
+  ProcessButton (ok);
+}
+
 void UIDialog::OnButtonClicked (wxCommandEvent& event)
 {
   wxButton* button = static_cast<wxButton*> (event.GetEventObject ());
   csString buttonLabel = (const char*)button->GetLabel ().mb_str (wxConvUTF8);
+  ProcessButton (buttonLabel);
+}
 
+void UIDialog::ProcessButton (const csString& buttonLabel)
+{
   fieldContents.DeleteAll ();
   fieldValues.DeleteAll ();
   csHash<wxTextCtrl*,csString>::GlobalIterator itText = textFields.GetIterator ();
@@ -466,10 +491,10 @@ UIManager::~UIManager ()
 
 csRef<iString> UIManager::AskDialog (const char* description, const char* label, const char* value)
 {
-  csRef<iUIDialog> dialog = CreateDialog (description);
+  csRef<iUIDialog> dialog = CreateDialog (description, 600);
   dialog->AddRow ();
   dialog->AddLabel (label);
-  dialog->AddText ("name");
+  dialog->AddText ("name", true);
   if (value)
     dialog->SetValue ("name", value);
   if (dialog->Show (0))

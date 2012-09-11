@@ -361,6 +361,8 @@ bool AssetManager::UpdateAssets (const csArray<BaseAsset>& update)
       if (!LoadAsset (normpath, file, mount, collection))
 	return false;
 
+      RegisterModification ();
+
       csRef<IntAsset> asset;
       asset.AttachNew (new IntAsset (file, a.IsWritable ()));
       asset->SetMountPoint (mount);

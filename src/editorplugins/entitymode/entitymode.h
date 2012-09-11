@@ -113,6 +113,16 @@ struct EntityCopy
   iCelEntityTemplate* Create (iParameterManager* pm, iCelPlLayer* pl, const char* overridename);
 };
 
+/// A copy of a quest factory.
+struct QuestCopy
+{
+  csString name;
+  csRef<iDocument> doc;
+  csRef<iDocumentNode> node;
+
+  iQuestFactory* Create (iQuestManager* questMgr, const char* overridename);
+};
+
 //==================================================================================
 
 class EntityMode : public scfImplementationExt1<EntityMode, EditingMode, iComponent>
@@ -191,6 +201,13 @@ private:
   // Get the current quest.
   iQuestFactory* GetSelectedQuest (const char* key);
 
+  /**
+   * Smart way to get the active node. If no active node is set then
+   * this function will check if there is a selected quest or template and then
+   * construct a node string from that.
+   */
+  csString GetActiveNode ();
+
   // Get the name of the trigger.
   iQuestTriggerResponseFactory* GetSelectedTriggerResponse (const char* key);
   bool IsOnInit (const char* key);
@@ -209,12 +226,15 @@ private:
   void DeleteItem (const char* item);
   void Paste ();
 
+  QuestCopy questCopy;
   EntityCopy entityCopy;
   PropertyClassCopy pcCopy;
+  QuestCopy Copy (iQuestFactory* questFact);
   EntityCopy Copy (iCelEntityTemplate* tpl);
   PropertyClassCopy Copy (iCelPropertyClassTemplate* pctpl);
   void Copy (iCelParameterIterator* it, csArray<ParameterCopy>& parameters);
   void ClearCopy ();
+  bool HasPaste ();
 
 public:
   EntityMode (iBase* parent);
@@ -240,6 +260,9 @@ public:
 
   /// Refresh the view. The tiven pctpl is optional and will be used if given.
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
+
+  /// Refresh the mode.
+  virtual void Refresh ();
 
   virtual void Start ();
   virtual void Stop ();

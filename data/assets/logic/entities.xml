@@ -1,6 +1,6 @@
 <library>
   <addon plugin="cel.addons.questdef">
-    <quest name="PusherTwoState">
+    <quest name="StandardActivator">
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
@@ -39,7 +39,23 @@
         </trigger>
       </state>
     </quest>
+    <quest name="RotateYSequencer">
+      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
+      <sequence name="one">
+        <op duration="$duration" type="cel.seqops.transform" entity="$this">
+          <roty angle="$angle" />
+        </op>
+        <delay time="$duration" />
+      </sequence>
+      <sequence name="two">
+        <op duration="$duration" type="cel.seqops.transform" entity="$this" reversed="true">
+          <roty angle="$angle" />
+        </op>
+        <delay time="$duration" />
+      </sequence>
+    </quest>
     <quest name="MoveSequencer">
+      <!--This quest moves the mesh a relative amount (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'x', 'y', 'z' (float).-->
       <sequence name="one">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
           <v x="$x" y="$y" z="$z" />
@@ -57,11 +73,11 @@
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="World" />
   </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="PusherTwoState">
+  <addon plugin="cel.addons.celentitytpl" entityname="StandardMover">
     <!--A template hosting a quest that can move an object between two positions based on an activation message.-->
-    <propclass name="pclogic.quest" tag="PusherTwoState">
+    <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
-        <par name="name" string="PusherTwoState" />
+        <par name="name" string="StandardActivator" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -73,6 +89,23 @@
         <par name="y" float="@y" />
         <par name="z" float="@z" />
         <par name="name" string="MoveSequencer" />
+      </action>
+    </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="StandardRotator">
+    <!--A template hosting a quest that can rotate an object back and forth based on an activation message.-->
+    <propclass name="pclogic.quest" tag="activator">
+      <action name="NewQuest">
+        <par name="name" string="StandardActivator" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="angle" float="@angle" />
+        <par name="name" string="RotateYSequencer" />
       </action>
     </propclass>
   </addon>

@@ -231,6 +231,8 @@ void AppAresEditWX::RefreshModes ()
     if (mode)
       mode->Refresh ();
   }
+  UpdateTitle ();
+  aresed3d->GetModelRepository ()->Refresh ();
 }
 
 void AppAresEditWX::ManageAssets (const csArray<BaseAsset>& assets)
@@ -262,7 +264,6 @@ bool AppAresEditWX::LoadFile (const char* filename)
   if (!aresed3d->PostLoadMap ())
     return false;
   RefreshModes ();
-  UpdateTitle ();
   return true;
 }
 
@@ -274,7 +275,7 @@ void AppAresEditWX::SaveFile (const char* filename)
     uiManager->Error ("Error saving file '%s' on path '%s'!", filename, currentPath.GetData ());
     return;
   }
-  UpdateTitle ();
+  RefreshModes ();
 }
 
 void AppAresEditWX::ManageAssets ()
@@ -617,7 +618,6 @@ bool AppAresEditWX::Initialize ()
     return false;
 
   // Set the window title.
-  csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
   UpdateTitle ();
 
   ready = true;

@@ -133,6 +133,11 @@ struct iModelRepository : public virtual iBase
   virtual csRef<Ares::Value> GetQuestsValue () const = 0;
 
   /**
+   * Refresh all standard values.
+   */
+  virtual void Refresh () = 0;
+
+  /**
    * Refresh the objects value.
    */
   virtual void RefreshObjectsValue () = 0;

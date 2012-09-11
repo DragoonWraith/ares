@@ -47,6 +47,14 @@ ModelRepository::~ModelRepository ()
 {
 }
 
+void ModelRepository::Refresh ()
+{
+  dynfactCollectionValue->Refresh ();
+  factoriesValue->Refresh ();
+  objectsValue->Refresh ();
+  templatesValue->Refresh ();
+}
+
 csRef<Ares::Value> ModelRepository::GetWritableAssetsValue () const
 {
   csRef<Ares::Value> value;

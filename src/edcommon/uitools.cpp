@@ -174,9 +174,16 @@ csString UITools::GetValue (wxWindow* parent, const char* name)
     wxChoice* cb = wxStaticCast (child, wxChoice);
     return (const char*)cb->GetStringSelection ().mb_str (wxConvUTF8);
   }
+  else if (child->IsKindOf (CLASSINFO (wxNotebook)))
+  {
+    wxNotebook* cb = wxStaticCast (child, wxNotebook);
+    if (cb->GetSelection () == -1) return "";
+    wxString str = cb->GetPageText (cb->GetSelection ());
+    return (const char*)str.mb_str (wxConvUTF8);
+  }
   else
   {
-    printf ("Can't set value for '%s', unknown type!\n", name);
+    printf ("Can't get value for '%s', unknown type!\n", name);
     fflush (stdout);
     return "";
   }
@@ -232,6 +239,10 @@ void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
     {
       wxChoice* cb = wxStaticCast (child, wxChoice);
       cb->SetStringSelection (wxvalue);
+    }
+    else if (child->IsKindOf (CLASSINFO (wxNotebook)))
+    {
+      SwitchPage (parent, name, value);
     }
     else
     {

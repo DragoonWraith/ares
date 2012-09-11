@@ -510,7 +510,7 @@ public:
     SetStr ("vectorx", sequence->GetVectorX ());
     SetStr ("vectory", sequence->GetVectorY ());
     SetStr ("vectorz", sequence->GetVectorZ ());
-    static const char* axisStr[] = { "none", "0", "1", "2" };
+    static const char* axisStr[] = { "none", "x", "y", "z" };
     int axis = sequence->GetRotationAxis ();
     if (axis >= -1)
       SetStr ("axis", axisStr[axis+1]);

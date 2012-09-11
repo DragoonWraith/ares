@@ -30,8 +30,8 @@
       </box>
     </factory>
     <factory name="MetalDoor" maxradius="1" imposterradius="0" mass="1">
-      <attr name="ares.dragtype" value="roty" />
       <attr name="category" value="Doors" />
+      <attr name="ares.dragtype" value="roty" />
       <box>
         <offset x="-0.5" y="1" z="-1.49943e-007" />
         <size x="1" y="2" z="0.050001" />
@@ -42,8 +42,8 @@
         <min x="-1" y="0" z="-0.025" />
         <max x="0" y="2" z="0.025" />
       </logicbox>
-      <attr name="defaultstatic" value="true" />
       <attr name="category" value="Doors" />
+      <attr name="defaultstatic" value="true" />
       <box>
         <offset x="0.05" y="1" z="0" />
         <size x="0.1" y="2" z="0.05" />
@@ -87,7 +87,6 @@
     <propclass name="ares.gamecontrol" />
     <propclass name="pctools.messenger">
       <action name="DefineSlot">
-        <par name="name" string="top" />
         <par name="position" vector2="0,20" />
         <par name="screenanchor" string="n" />
         <par name="boxanchor" string="n" />
@@ -100,6 +99,7 @@
         <par name="roundness" long="10" />
         <par name="boxcolor" color4="0.2,0.2,0.2,0.7" />
         <par name="bordercolor" color4="1,0.2,0.2,0.7" />
+        <par name="name" string="top" />
       </action>
       <action name="DefineType">
         <par name="type" string="std" />
@@ -116,6 +116,7 @@
       </action>
     </propclass>
   </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="MetalDoor" />
   <addon plugin="cel.addons.celentitytpl" entityname="RedChair2">
     <class>ares.pickup</class>
   </addon>

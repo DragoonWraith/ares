@@ -58,8 +58,11 @@ struct iUIDialog : public virtual iBase
 
   /// Add a label in the current row.
   virtual void AddLabel (const char* str) = 0;
-  /// Add a single line text control in the current row.
-  virtual void AddText (const char* name) = 0;
+  /**
+   * Add a single line text control in the current row.
+   * if 'enterIsOk' is true then pressing enter in this text control will confirm the dialog.
+   */
+  virtual void AddText (const char* name, bool enterIsOk = false) = 0;
   /// Add a multi line text control in the current row.
   virtual void AddMultiText (const char* name) = 0;
   /// Add a button in the current row.

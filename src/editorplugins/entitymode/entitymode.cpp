@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "imap/objectcomment.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
+#include "edcommon/uitools.h"
 #include "entitymode.h"
 #include "templatepanel.h"
 #include "pcpanel.h"
@@ -738,6 +739,13 @@ void EntityMode::BuildTemplateGraph (const char* templateName)
   graphView->SetVisible (true);
 }
 
+void EntityMode::Refresh ()
+{
+  questsValue->Refresh ();
+  ActivateNode (0);
+  RefreshView ();
+}
+
 void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
 {
   if (!started) return;
@@ -969,6 +977,7 @@ void EntityMode::SelectQuest (iQuestFactory* questFact)
   {
     Ares::Value* c = it->NextChild ();
     csString questName = c->GetStringArrayValue ()->Get (0);
+    CorrectName (questName);
     if (questName == questFact->GetName ()) break;
     i++;
   }
@@ -1029,6 +1038,7 @@ void EntityMode::OnRenameTemplate (const char* tplName)
     tpl->QueryObject ()->SetName (name->GetData ());
     RegisterModification (tpl);
     view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
+    SelectTemplate (tpl);
     RefreshView ();
   }
 }
@@ -1074,6 +1084,7 @@ void EntityMode::OnRenameQuest (const char* questName)
     }
 
     questsValue->Refresh ();
+    SelectQuest (questFact);
     RefreshView ();
   }
 }
@@ -1111,25 +1122,6 @@ void EntityMode::OnQuestDel (const char* questName)
   if (yes)
   {
     view3d->GetApplication ()->GetAssetManager ()->RegisterRemoval (questFact->QueryObject ());
-#if 0
-    if (cnt > 0)
-    {
-      tplIt = pl->GetEntityTemplates ();
-      while (tplIt->HasNext ())
-      {
-	iCelEntityTemplate* tpl = tplIt->Next ();
-	for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
-	{
-	  iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-	  if (pcLogicQuest == pctpl->GetName ())
-	  {
-	    csString n = InspectTools::GetActionParameterValueString (pl, pctpl, "NewQuest", "name");
-	    if (n == questName) cnt++;
-	  }
-	}
-      }
-    }
-#endif
     questMgr->RemoveQuestFactory (questName);
     questsValue->Refresh ();
     editQuestMode = 0;
@@ -1255,9 +1247,9 @@ void EntityMode::DeleteItem (const char* item)
       iCelPropertyClassTemplate* pctpl = GetPCTemplate (item);
       tpl->RemovePropertyClassTemplate (pctpl);
       RegisterModification (tpl);
+      editQuestMode = 0;
+      RefreshView ();
     }
-    editQuestMode = 0;
-    RefreshView ();
   }
   else if (type == 'S')
   {
@@ -1351,6 +1343,36 @@ void EntityMode::ClearCopy ()
 {
   entityCopy.name = "";
   pcCopy.name = "";
+  questCopy.name = "";
+  questCopy.doc = 0;
+  questCopy.node = 0;
+}
+
+bool EntityMode::HasPaste ()
+{
+  if (!entityCopy.name.IsEmpty ()) return true;
+  if (!pcCopy.name.IsEmpty ()) return true;
+  if (questCopy.node) return true;
+  return false;
+}
+
+QuestCopy EntityMode::Copy (iQuestFactory* questFact)
+{
+  QuestCopy copy;
+  copy.name = questFact->GetName ();
+
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  copy.doc = docsys->CreateDocument ();
+  csRef<iDocumentNode> root = copy.doc->CreateRoot ();
+  copy.node = root->CreateNodeBefore (CS_NODE_ELEMENT);
+  copy.node->SetValue ("quest");
+  questFact->Save (copy.node);
+
+  return copy;
 }
 
 void EntityMode::Copy (iCelParameterIterator* it, csArray<ParameterCopy>& parameters)
@@ -1416,11 +1438,19 @@ PropertyClassCopy EntityMode::Copy (iCelPropertyClassTemplate* pctpl)
 
 void EntityMode::CopySelected ()
 {
-  if (activeNode.IsEmpty ()) return;
-  const char type = activeNode.operator[] (0);
-  if (type == 'P')
+  csString a = GetActiveNode ();
+  if (a.IsEmpty ()) return;
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  const char type = a.operator[] (0);
+  if (type == 'P' && editQuestMode)
   {
-    iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
+    ClearCopy ();
+    questCopy = Copy (editQuestMode);
+  }
+  else if (type == 'P')
+  {
+    iCelPropertyClassTemplate* pctpl = GetPCTemplate (a);
+    if (!pctpl) return;
     ClearCopy ();
     pcCopy = Copy (pctpl);
   }
@@ -1432,7 +1462,6 @@ void EntityMode::CopySelected ()
   }
   else
   {
-    iUIManager* ui = view3d->GetApplication ()->GetUI ();
     ui->Message ("Not implemented yet!");
   }
   app->SetMenuState ();
@@ -1563,11 +1592,33 @@ iCelEntityTemplate* EntityCopy::Create (iParameterManager* pm, iCelPlLayer* pl,
   return tpl;
 }
 
+iQuestFactory* QuestCopy::Create (iQuestManager* questMgr, const char* overridename)
+{
+  iQuestFactory* questFact = questMgr->CreateQuestFactory (overridename);
+  questFact->Load (node);
+  return questFact;
+}
+
 void EntityMode::Paste ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
-  if (!pcCopy.name.IsEmpty ())
+  if (questCopy.node)
+  {
+    csString title = "Enter new name for quest factory";
+    csRef<iString> name = ui->AskDialog (title, "Name:", questCopy.name);
+    if (!name) return;
+    iQuestFactory* questFact = questMgr->GetQuestFactory (name->GetData ());
+    if (questFact)
+    {
+      ui->Error ("A quest factory with this name already exists!");
+      return;
+    }
+    questFact = questCopy.Create (questMgr, name->GetData ());
+    RegisterModification (questFact);
+    SelectQuest (questFact);
+  }
+  else if (!pcCopy.name.IsEmpty ())
   {
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     if (!tpl) return;
@@ -1604,9 +1655,33 @@ void EntityMode::Paste ()
 
 void EntityMode::DeleteSelected ()
 {
-  if (activeNode.IsEmpty ()) return;
-  DeleteItem (activeNode);
+  csString a = GetActiveNode ();
+  if (a.IsEmpty ()) return;
+  DeleteItem (a);
   ActivateNode (0);
+}
+
+csString EntityMode::GetActiveNode ()
+{
+  if (activeNode) return activeNode;
+  csString page = UITools::GetValue (panel, "type_Notebook");
+  if (page == "Templates")
+  {
+    wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+    Ares::Value* v = view.GetSelectedValue (list);
+    if (!v) return "";
+    csString templateName = v->GetStringArrayValue ()->Get (0);
+    CorrectName (templateName);
+    return csString ("T:") + templateName;
+  }
+  else if (page == "Quests")
+  {
+    wxListCtrl* list = XRCCTRL (*panel, "quest_List", wxListCtrl);
+    Ares::Value* v = view.GetSelectedValue (list);
+    if (!v) return "";
+    return "P:pclogic.quest";
+  }
+  else return "";
 }
 
 void EntityMode::ActivateNode (const char* nodeName)
@@ -1619,6 +1694,7 @@ void EntityMode::ActivateNode (const char* nodeName)
   activeNode = nodeName;
   app->SetMenuState ();
   if (!nodeName) return;
+  printf ("ActivateNode %s\n", nodeName); fflush (stdout);
   const char type = activeNode.operator[] (0);
   if (type == 'P')
   {
@@ -1822,17 +1898,13 @@ bool EntityMode::IsCommandValid (csStringID id, const csString& args,
 {
   if (id == ID_Copy)
   {
-    if (activeNode.IsEmpty ()) return false;
-    const char type = activeNode.operator[] (0);
+    csString a = GetActiveNode ();
+    if (a.IsEmpty ()) return false;
+    const char type = a.operator[] (0);
     return type == 'P' || type == 'T';
   }
-  if (id == ID_Paste)
-  {
-    if (!entityCopy.name.IsEmpty ()) return true;
-    if (!pcCopy.name.IsEmpty ()) return true;
-    return false;
-  }
-  if (id == ID_Delete) return !activeNode.IsEmpty ();
+  if (id == ID_Paste) return HasPaste ();
+  if (id == ID_Delete) return !GetActiveNode ().IsEmpty ();
   return true;
 }
 
@@ -1841,7 +1913,13 @@ csPtr<iString> EntityMode::GetAlternativeLabel (csStringID id,
 {
   if (id == ID_Paste)
   {
-    if (!entityCopy.name.IsEmpty ())
+    if (questCopy.node)
+    {
+      scfString* label = new scfString ();
+      label->Format ("Paste %s\tCtrl+V", questCopy.name.GetData ());
+      return label;
+    }
+    else if (!entityCopy.name.IsEmpty ())
     {
       scfString* label = new scfString ();
       label->Format ("Paste %s\tCtrl+V", entityCopy.name.GetData ());

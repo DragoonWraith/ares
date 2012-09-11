@@ -245,7 +245,10 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
 
 bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 {
-  csSectorHitBeamResult result = GetCsCamera ()->GetSector ()->HitBeamPortals (
+  iSector* sector = GetCsCamera ()->GetSector ();
+  if (!sector) return false;
+
+  csSectorHitBeamResult result = sector->HitBeamPortals (
       beam.Start (), beam.End (), true);
   if (result.mesh)
   {
@@ -257,6 +260,9 @@ bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 
 iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)
 {
+  iSector* sector = GetCsCamera ()->GetSector ();
+  if (!sector) return 0;
+
   csVector3 isect1, isect2;
   iDynamicObject* obj1 = 0, * obj2 = 0;
 
@@ -276,7 +282,7 @@ iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& is
     }
   }
 
-  csSectorHitBeamResult result2 = GetCsCamera ()->GetSector ()->HitBeamPortals (
+  csSectorHitBeamResult result2 = sector->HitBeamPortals (
       beam.Start (), beam.End (), true);
   if (result2.mesh)
   {
@@ -907,9 +913,6 @@ bool AresEdit3DView::PostLoadMap ()
     if (!LoadLibrary ("/appdata/", "world.xml"))
       return app->ReportError ("Error loading world library!");
   }
-
-  modelRepository->GetObjectsValueInt ()->BuildModel ();
-  modelRepository->GetTemplatesValueInt ()->BuildModel ();
 
   return true;
 }

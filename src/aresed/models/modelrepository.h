@@ -55,6 +55,9 @@ public:
   ObjectsValue* GetObjectsValueInt () { return objectsValue; }
   TemplatesValue* GetTemplatesValueInt () { return templatesValue; }
 
+  // Refresh the models after load or save.
+  virtual void Refresh ();
+
   virtual Ares::Value* GetDynfactCollectionValue () const;
   virtual Ares::Value* GetFactoriesValue () const;
   virtual Ares::Value* GetObjectsValue () const;

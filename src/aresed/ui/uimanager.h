@@ -81,6 +81,8 @@ private:
   void AddOkCancel ();
 
   virtual void OnButtonClicked (wxCommandEvent& event);
+  virtual void OnEnterPressed (wxCommandEvent& event);
+  virtual void ProcessButton (const csString& buttonLabel);
 
 public:
   UIDialog (wxWindow* parent, const char* title, int width = -1, int height = -1);
@@ -92,7 +94,7 @@ public:
   /// Add a label in the current row.
   virtual void AddLabel (const char* str);
   /// Add a single line text control in the current row.
-  virtual void AddText (const char* name);
+  virtual void AddText (const char* name, bool enterIsOk = false);
   /// Add a multi line text control in the current row.
   virtual void AddMultiText (const char* name);
   /// Add a button in the current row.
