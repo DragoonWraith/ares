@@ -5,7 +5,7 @@
   <asset path="$#logic/" file="entities_objects.xml" writable="true" />
   <dynworld lastid="1000100000">
     <cell name="outside">
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-8.97916 0.6 17.0725" id="1000090001" ent="StandardMover">
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-8.97916 0.6 17.0725" id="1000090001" ent="StandardMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="1" />
@@ -13,8 +13,8 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Player" m="0.991223 1.81961e-006 -0.132202 -1.85173e-006 1 -1.20023e-007 0.132202 3.63772e-007 0.991223" v="-8.47626 0.1 16.0339" id="1000090002" ent="Player" />
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-7.18494 0.6 17.7478" id="1000090003" ent="StandardRotator">
+      <obj fact="Player" m="0.991223 1.81961e-06 -0.132202 -1.85173e-06 1 -1.20023e-07 0.132202 3.63772e-07 0.991223" v="-8.47626 0.1 16.0339" id="1000090002" ent="Player" />
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-7.18494 0.6 17.7478" id="1000090003" ent="StandardYRotator">
         <params>
           <par name="duration" long="1000" />
           <par name="angle" float="1" />

@@ -39,6 +39,21 @@
         </trigger>
       </state>
     </quest>
+    <quest name="RotateZSequencer">
+      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
+      <sequence name="one">
+        <op duration="$duration" type="cel.seqops.transform" entity="$this">
+          <rotz angle="$angle" />
+        </op>
+        <delay time="$duration" />
+      </sequence>
+      <sequence name="two">
+        <op duration="$duration" type="cel.seqops.transform" entity="$this" reversed="true">
+          <rotz angle="$angle" />
+        </op>
+        <delay time="$duration" />
+      </sequence>
+    </quest>
     <quest name="RotateYSequencer">
       <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
       <sequence name="one">
@@ -50,6 +65,21 @@
       <sequence name="two">
         <op duration="$duration" type="cel.seqops.transform" entity="$this" reversed="true">
           <roty angle="$angle" />
+        </op>
+        <delay time="$duration" />
+      </sequence>
+    </quest>
+    <quest name="RotateXSequencer">
+      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
+      <sequence name="one">
+        <op duration="$duration" type="cel.seqops.transform" entity="$this">
+          <rotx angle="$angle" />
+        </op>
+        <delay time="$duration" />
+      </sequence>
+      <sequence name="two">
+        <op duration="$duration" type="cel.seqops.transform" entity="$this" reversed="true">
+          <rotx angle="$angle" />
         </op>
         <delay time="$duration" />
       </sequence>
@@ -92,7 +122,7 @@
       </action>
     </propclass>
   </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="StandardRotator">
+  <addon plugin="cel.addons.celentitytpl" entityname="StandardYRotator">
     <!--A template hosting a quest that can rotate an object back and forth based on an activation message.-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
