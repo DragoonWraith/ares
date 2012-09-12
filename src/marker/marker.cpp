@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "marker.h"
 
 #include "csutil/event.h"
+#include "csutil/weakref.h"
 #include "csgeom/spline.h"
 #include "csgeom/math3d.h"
 #include "csgeom/math2d.h"
@@ -792,7 +793,7 @@ void GraphView::FinishRefresh ()
 class MarkerCallback : public scfImplementation1<MarkerCallback,iMarkerCallback>
 {
 private:
-  GraphView* view;
+  csWeakRef<GraphView> view;
 
 public:
   MarkerCallback (GraphView* view) : scfImplementationType (this),
@@ -801,8 +802,11 @@ public:
   virtual void StartDragging (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos, uint button, uint32 modifiers)
   {
-    view->ActivateMarker (marker);
-    view->SetDraggingMarker (marker);
+    if (view)
+    {
+      view->ActivateMarker (marker);
+      view->SetDraggingMarker (marker);
+    }
   }
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos)
@@ -813,7 +817,8 @@ public:
       const csReversibleTransform& transform) { }
   virtual void StopDragging (iMarker* marker, iMarkerHitArea* area)
   {
-    view->SetDraggingMarker (0);
+    if (view)
+      view->SetDraggingMarker (0);
   }
 };
 

@@ -107,6 +107,10 @@ private:
   bool UpdateSpawn ();
   void FillSpawn ();
 
+  // Trigger.
+  bool UpdateTrigger ();
+  void FillTrigger ();
+
   // Wire.
   csRef<WireMsgCollectionValue> wireMsgCollectionValue;
   csRef<WireParCollectionValue> wireParCollectionValue;

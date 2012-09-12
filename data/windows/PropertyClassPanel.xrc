@@ -572,6 +572,460 @@
 							<style>wxTAB_TRAVERSAL</style>
 						</object>
 					</object>
+					<object class="choicebookpage">
+						<label>pclogic.trigger</label>
+						<selected>0</selected>
+						<object class="wxPanel" name="triggerPanel">
+							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText58">
+												<label>Entity:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="entity_Trig_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>Name of the entity we want to monitor. If empty then we will monitor all entities</tooltip>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText86">
+												<label>Class:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="class_Trig_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>Monitor all enities of a given class</tooltip>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText581">
+												<label>Delay:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="delay_Trig_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>The delay (in milliseconds) before we check the trigger again</tooltip>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<object class="wxStaticText" name="m_staticText861">
+												<label>Jitter:</label>
+												<wrap>-1</wrap>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxTextCtrl" name="jitter_Trig_Text">
+												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>A random jitter to add to that delay</tooltip>
+												<value></value>
+												<maxlength>0</maxlength>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxEXPAND | wxALL</flag>
+									<border>5</border>
+									<object class="wxChoicebook" name="type_Trig_Choicebook">
+										<style>wxCHB_DEFAULT</style>
+										<object class="choicebookpage">
+											<label>Sphere</label>
+											<selected>0</selected>
+											<object class="wxPanel" name="sphere_Trig_Panel">
+												<style>wxTAB_TRAVERSAL</style>
+												<object class="wxBoxSizer">
+													<orient>wxVERTICAL</orient>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText92">
+																	<label>Radius:</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="radius_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText94111">
+																	<label>Center:</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="centerx_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="centery_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="centerz_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+												</object>
+											</object>
+										</object>
+										<object class="choicebookpage">
+											<label>Box</label>
+											<selected>0</selected>
+											<object class="wxPanel" name="box_Trig_Panel">
+												<style>wxTAB_TRAVERSAL</style>
+												<object class="wxBoxSizer">
+													<orient>wxVERTICAL</orient>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText94">
+																	<label>P1</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="x1_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="y1_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="z1_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText941">
+																	<label>P2</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="x2_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="y2_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="z2_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+												</object>
+											</object>
+										</object>
+										<object class="choicebookpage">
+											<label>Beam</label>
+											<selected>0</selected>
+											<object class="wxPanel" name="beam_Trig_Panel">
+												<style>wxTAB_TRAVERSAL</style>
+												<object class="wxBoxSizer">
+													<orient>wxVERTICAL</orient>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText942">
+																	<label>Start:</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="startx_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="starty_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="startz_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText9411">
+																	<label>Stop:</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="stopx_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="stopy_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="stopz_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+												</object>
+											</object>
+										</object>
+										<object class="choicebookpage">
+											<label>Above</label>
+											<selected>0</selected>
+											<object class="wxPanel" name="above_Trig_Panel">
+												<style>wxTAB_TRAVERSAL</style>
+												<object class="wxBoxSizer">
+													<orient>wxVERTICAL</orient>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText582">
+																	<label>Entity:</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="aboveEntity_Trig_Text">
+																	<style>wxTE_PROCESS_ENTER</style>
+																	<tooltip>Name of the entity that we want to use as the source of the trigger. The trigger will fire if we are above the mesh of that entity.</tooltip>
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+													<object class="sizeritem">
+														<option>0</option>
+														<flag>wxEXPAND</flag>
+														<border>5</border>
+														<object class="wxBoxSizer">
+															<orient>wxHORIZONTAL</orient>
+															<object class="sizeritem">
+																<option>0</option>
+																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																<border>5</border>
+																<object class="wxStaticText" name="m_staticText105">
+																	<label>Distance:</label>
+																	<wrap>-1</wrap>
+																</object>
+															</object>
+															<object class="sizeritem">
+																<option>1</option>
+																<flag>wxALL</flag>
+																<border>5</border>
+																<object class="wxTextCtrl" name="distance_Trig_Text">
+																	<value></value>
+																	<maxlength>0</maxlength>
+																</object>
+															</object>
+														</object>
+													</object>
+												</object>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+						</object>
+					</object>
 				</object>
 			</object>
 		</object>

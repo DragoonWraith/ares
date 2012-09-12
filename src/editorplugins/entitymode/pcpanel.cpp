@@ -38,6 +38,8 @@ THE SOFTWARE.
 #include "editor/i3dview.h"
 #include "editor/imodelrepository.h"
 
+#include "propclass/trigger.h"
+
 //--------------------------------------------------------------------------
 
 static bool ToBool (csString& value)
@@ -102,6 +104,30 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_COMBOBOX (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
+
+  EVT_TEXT (XRCID("delay_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("jitter_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("entity_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("class_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("type_Trig_Choicebook"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("radius_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("aboveEntity_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("distance_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("centerx_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("centery_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("centerz_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("x1_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("y1_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("z1_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("x2_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("y2_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("z2_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("startx_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("starty_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("startz_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("stopx_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("stopy_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("stopz_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -489,7 +515,7 @@ bool PropertyClassPanel::UpdateWire ()
 {
   SwitchPCType ("pclogic.wire");
 
-  pctpl->RemoveProperty (pl->FetchStringID ("AddInput"));
+  pctpl->RemoveAllProperties ();
 
   wxComboBox* inputMaskCombo = XRCCTRL (*this, "wireInputMaskCombo", wxComboBox);
 
@@ -552,6 +578,153 @@ void PropertyClassPanel::FillDynworld ()
   bool physics = InspectTools::GetPropertyValueBool (pl, pctpl, "physics", &valid);
   if (!valid) physics = true;	// True is default.
   physicsCB->SetValue (physics);
+}
+
+// -----------------------------------------------------------------------
+
+bool PropertyClassPanel::UpdateTrigger ()
+{
+  SwitchPCType ("pclogic.trigger");
+
+  pctpl->RemoveAllProperties ();
+
+  pctpl->SetProperty (pl->FetchStringID ("follow"), true);
+  pctpl->SetProperty (pl->FetchStringID ("strict"), false);
+
+  csString monitor = UITools::GetValue (this, "entity_Trig_Text");
+  if (monitor)
+    pctpl->SetProperty (pl->FetchStringID ("monitor"), monitor.GetData ());
+
+  csString clazz = UITools::GetValue (this, "class_Trig_Text");
+  if (clazz)
+    pctpl->SetProperty (pl->FetchStringID ("class"), clazz.GetData ());
+
+  csString delayStr = UITools::GetValue (this, "delay_Trig_Text");
+  if (delayStr)
+  {
+    long delay;
+    csScanStr (delayStr, "%d", &delay);
+    pctpl->SetProperty (pl->FetchStringID ("delay"), delay);
+  }
+
+  csString jitterStr = UITools::GetValue (this, "jitter_Trig_Text");
+  if (jitterStr)
+  {
+    long jitter;
+    csScanStr (jitterStr, "%d", &jitter);
+    pctpl->SetProperty (pl->FetchStringID ("jitter"), jitter);
+  }
+
+  wxChoicebook* typeChoicebook = XRCCTRL (*this, "type_Trig_Choicebook", wxChoicebook);
+  int typeSel = typeChoicebook->GetSelection ();
+  csString typeName = (const char*)typeChoicebook->GetPageText (typeSel).mb_str(wxConvUTF8);
+  TriggerType type;
+  if (typeName == "Sphere") type = TRIGGER_SPHERE;
+  else if (typeName == "Box") type = TRIGGER_BOX;
+  else if (typeName == "Beam") type = TRIGGER_BEAM;
+  else if (typeName == "Above") type = TRIGGER_ABOVE;
+  else { printf ("Hmm? Weird type '%s'!\n", typeName.GetData ()); fflush (stdout); return false; }
+
+  switch (type)
+  {
+    case TRIGGER_SPHERE:
+      {
+	csString radius = UITools::GetValue (this, "radius_Trig_Text");
+	csString x = UITools::GetValue (this, "centerx_Trig_Text");
+	csString y = UITools::GetValue (this, "centery_Trig_Text");
+	csString z = UITools::GetValue (this, "centerz_Trig_Text");
+	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerSphere",
+	    CEL_DATA_FLOAT, "radius", radius.GetData (),
+	    CEL_DATA_VECTOR3, "position", (x+","+y+","+z).GetData (),
+	    CEL_DATA_NONE);
+      }
+      break;
+    case TRIGGER_BOX:
+      {
+	csString x1 = UITools::GetValue (this, "x1_Trig_Text");
+	csString y1 = UITools::GetValue (this, "y1_Trig_Text");
+	csString z1 = UITools::GetValue (this, "z1_Trig_Text");
+	csString x2 = UITools::GetValue (this, "x2_Trig_Text");
+	csString y2 = UITools::GetValue (this, "y2_Trig_Text");
+	csString z2 = UITools::GetValue (this, "z2_Trig_Text");
+	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerBox",
+	    CEL_DATA_VECTOR3, "minbox", (x1+","+y1+","+z1).GetData (),
+	    CEL_DATA_VECTOR3, "maxbox", (x2+","+y2+","+z2).GetData (),
+	    CEL_DATA_NONE);
+      }
+      break;
+    case TRIGGER_BEAM:
+      {
+	csString x1 = UITools::GetValue (this, "startx1_Trig_Text");
+	csString y1 = UITools::GetValue (this, "starty1_Trig_Text");
+	csString z1 = UITools::GetValue (this, "startz1_Trig_Text");
+	csString x2 = UITools::GetValue (this, "stopx2_Trig_Text");
+	csString y2 = UITools::GetValue (this, "stopy2_Trig_Text");
+	csString z2 = UITools::GetValue (this, "stopz2_Trig_Text");
+	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerBeam",
+	    CEL_DATA_VECTOR3, "start", (x1+","+y1+","+z1).GetData (),
+	    CEL_DATA_VECTOR3, "end", (x2+","+y2+","+z2).GetData (),
+	    CEL_DATA_NONE);
+      }
+      break;
+    case TRIGGER_ABOVE:
+      {
+	csString distance = UITools::GetValue (this, "distance_Trig_Text");
+	csString aboveEntity = UITools::GetValue (this, "aboveEntity_Trig_Text");
+	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerAboveMesh",
+	    CEL_DATA_STRING, "entity", aboveEntity.GetData (),
+	    CEL_DATA_FLOAT, "maxdistance", distance.GetData (),
+	    CEL_DATA_NONE);
+      }
+      break;
+    default:
+      printf ("Oh no!\n");
+      fflush (stdout);
+      break;
+  }
+
+  emode->PCWasEdited (pctpl);
+  return true;
+}
+
+void PropertyClassPanel::FillTrigger ()
+{
+  if (!pctpl || csString ("pclogic.trigger") != pctpl->GetName ()) return;
+
+  bool valid;
+  csString delay = InspectTools::GetPropertyValueString (pl, pctpl, "delay", &valid);
+  UITools::SetValue (this, "delay_Trig_Text", valid ? delay.GetData () : "200");
+  csString jitter = InspectTools::GetPropertyValueString (pl, pctpl, "jitter", &valid);
+  UITools::SetValue (this, "jitter_Trig_Text", valid ? jitter.GetData () : "10");
+  csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor");
+  UITools::SetValue (this, "entity_Trig_Text", monitor);
+  csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class");
+  UITools::SetValue (this, "class_Trig_Text", clazz);
+
+  if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
+  {
+    UITools::SwitchPage (this, "type_Trig_Choicebook", "Sphere");
+    csString radius = InspectTools::GetActionParameterValueString (pl, pctpl,
+      "SetupTriggerSphere", "radius");
+    UITools::SetValue (this, "radius_Trig_Text", radius);
+  }
+  else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
+  {
+    UITools::SwitchPage (this, "type_Trig_Choicebook", "Box");
+  }
+  else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
+  {
+    UITools::SwitchPage (this, "type_Trig_Choicebook", "Beam");
+  }
+  else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
+  {
+    UITools::SwitchPage (this, "type_Trig_Choicebook", "Above");
+  }
+
+  csString modeName = InspectTools::GetActionParameterValueString (pl, pctpl,
+      "SetCamera", "modename");
+  wxChoice* modeChoice = XRCCTRL (*this, "modeChoice", wxChoice);
+  modeChoice->SetStringSelection (wxString::FromUTF8 (modeName));
 }
 
 // -----------------------------------------------------------------------
@@ -702,10 +875,7 @@ bool PropertyClassPanel::UpdateSpawn ()
 {
   SwitchPCType ("pclogic.spawn");
 
-  pctpl->RemoveProperty (pl->FetchStringID ("SetTiming"));
-  pctpl->RemoveProperty (pl->FetchStringID ("Inhibit"));
-  pctpl->RemoveProperty (pl->FetchStringID ("spawnunique"));
-  pctpl->RemoveProperty (pl->FetchStringID ("namecounter"));
+  pctpl->RemoveAllProperties ();
 
   wxCheckBox* repeatCB = XRCCTRL (*this, "spawnRepeatCheckBox", wxCheckBox);
   wxCheckBox* randomCB = XRCCTRL (*this, "spawnRandomCheckBox", wxCheckBox);
@@ -961,6 +1131,8 @@ bool PropertyClassPanel::UpdateQuest ()
 {
   SwitchPCType ("pclogic.quest");
 
+  pctpl->RemoveAllProperties ();
+
   wxTextCtrl* questText = XRCCTRL (*this, "questText", wxTextCtrl);
   csString questName = (const char*)questText->GetValue ().mb_str (wxConvUTF8);
   if (questName.IsEmpty ())
@@ -1167,7 +1339,7 @@ bool PropertyClassPanel::UpdateInventory ()
 {
   SwitchPCType ("pctools.inventory");
 
-  pctpl->RemoveProperty (pl->FetchStringID ("SetLootGenerator"));
+  pctpl->RemoveAllProperties ();
 
   wxTextCtrl* lootText = XRCCTRL (*this, "inventoryLootTextCtrl", wxTextCtrl);
   csString loot = (const char*)lootText->GetValue ().mb_str (wxConvUTF8);
@@ -1367,6 +1539,7 @@ bool PropertyClassPanel::UpdatePC ()
   else if (page == "pclogic.wire") return UpdateWire ();
   else if (page == "pclogic.quest") return UpdateQuest ();
   else if (page == "pclogic.spawn") return UpdateSpawn ();
+  else if (page == "pclogic.trigger") return UpdateTrigger ();
   else if (page == "pccamera.old") return UpdateOldCamera ();
   else if (page == "pcworld.dynamic") return UpdateDynworld ();
   else
@@ -1395,6 +1568,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
   FillInventory ();
   FillQuest ();
   FillSpawn ();
+  FillTrigger ();
   FillWire ();
   FillOldCamera ();
   FillDynworld ();

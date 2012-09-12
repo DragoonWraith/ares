@@ -923,20 +923,25 @@ iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
 void EntityMode::OnQuestSelect ()
 {
   if (!started) return;
-  wxListCtrl* list = XRCCTRL (*panel, "quest_List", wxListCtrl);
+  wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+  ListCtrlTools::ClearSelection (list);
+  list = XRCCTRL (*panel, "quest_List", wxListCtrl);
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
   csString questName = v->GetStringArrayValue ()->Get (0);
   CorrectName (questName);
 
   editQuestMode = questMgr->GetQuestFactory (questName);
+  currentTemplate = "";
   RefreshView ();
 }
 
 void EntityMode::OnTemplateSelect ()
 {
   if (!started) return;
-  wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
+  wxListCtrl* list = XRCCTRL (*panel, "quest_List", wxListCtrl);
+  ListCtrlTools::ClearSelection (list);
+  list = XRCCTRL (*panel, "template_List", wxListCtrl);
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
   csString templateName = v->GetStringArrayValue ()->Get (0);
@@ -1301,7 +1306,7 @@ void EntityMode::OnCreatePC ()
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "pcobject.mesh", "pctools.properties",
-      "pctools.inventory", "pclogic.quest", "pclogic.spawn",
+      "pctools.inventory", "pclogic.quest", "pclogic.spawn", "pclogic.trigger",
       "pclogic.wire", "pctools.messenger",
       "pcinput.standard", "pcphysics.object", "pcphysics.system", "pccamera.old",
       "pcmove.actor.dynamic", "pcmove.actor.standard", "pcmove.actor.wasd",
@@ -1881,6 +1886,8 @@ void EntityMode::OnEditQuest ()
   editQuestMode = questMgr->GetQuestFactory (questName);
   if (!editQuestMode)
     editQuestMode = questMgr->CreateQuestFactory (questName);
+
+  currentTemplate = "";
 
   RefreshView ();
 }

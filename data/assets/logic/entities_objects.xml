@@ -22,6 +22,20 @@
         <offset x="0" y="0" z="0" />
       </cylinder>
     </factory>
+    <factory name="Box" maxradius="1" imposterradius="0" collider="true" mass="1">
+      <attr name="category" value="Clutter" />
+      <box>
+        <offset x="0" y="0.3" z="0" />
+        <size x="1" y="0.6" z="1" />
+      </box>
+    </factory>
+    <factory name="MicroBox" maxradius="1" imposterradius="0" collider="true" mass="1">
+      <attr name="category" value="Clutter" />
+      <box>
+        <offset x="0" y="0.07" z="0" />
+        <size x="0.14" y="0.14" z="0.14" />
+      </box>
+    </factory>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="World">
     <propclass name="pcworld.dynamic">
@@ -31,7 +45,6 @@
     <propclass name="ares.gamecontrol" />
     <propclass name="pctools.messenger">
       <action name="DefineSlot">
-        <par name="name" string="top" />
         <par name="position" vector2="0,20" />
         <par name="screenanchor" string="n" />
         <par name="boxanchor" string="n" />
@@ -44,6 +57,7 @@
         <par name="roundness" long="10" />
         <par name="boxcolor" color4="0.2,0.2,0.2,0.7" />
         <par name="bordercolor" color4="1,0.2,0.2,0.7" />
+        <par name="name" string="top" />
       </action>
       <action name="DefineType">
         <par name="type" string="std" />
@@ -51,12 +65,27 @@
         <par name="timeout" float="5" />
       </action>
       <action name="DefineType">
-        <par name="textcolor" color4="1,0,0,1" />
         <par name="type" string="error" />
         <par name="slot" string="top" />
         <par name="timeout" float="5" />
         <par name="font" string="DejaVuSansBold" />
         <par name="fontsize" long="12" />
+        <par name="textcolor" color4="1,0,0,1" />
+      </action>
+    </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="TestTrigger">
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.trigger">
+      <property name="follow" bool="1" />
+      <property name="strict" bool="0" />
+      <property name="monitor" string="Player" />
+      <property name="class" string="" />
+      <property name="delay" long="1000" />
+      <property name="jitter" long="10" />
+      <action name="SetupTriggerSphere">
+        <par name="position" vector3="0,0,0" />
+        <par name="radius" float="6" />
       </action>
     </propclass>
   </addon>
@@ -166,14 +195,14 @@
         <par name="msgid" string="cel.move.actor.action.MouseMove" />
       </action>
       <action name="MapParameter">
+        <par name="dest" string="x" />
         <par name="id" long="0" />
         <par name="source" string="x" />
-        <par name="dest" string="x" />
       </action>
       <action name="MapParameter">
+        <par name="dest" string="y" />
         <par name="id" long="0" />
         <par name="source" string="y" />
-        <par name="dest" string="y" />
       </action>
     </propclass>
     <propclass name="pcmove.linear">
