@@ -733,25 +733,7 @@
 																<option>1</option>
 																<flag>wxALL</flag>
 																<border>5</border>
-																<object class="wxTextCtrl" name="centerx_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="centery_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="centerz_Trig_Text">
+																<object class="wxTextCtrl" name="position_Trig_Text">
 																	<value></value>
 																	<maxlength>0</maxlength>
 																</object>
@@ -779,7 +761,7 @@
 																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 																<border>5</border>
 																<object class="wxStaticText" name="m_staticText94">
-																	<label>P1</label>
+																	<label>Min:</label>
 																	<wrap>-1</wrap>
 																</object>
 															</object>
@@ -787,25 +769,7 @@
 																<option>1</option>
 																<flag>wxALL</flag>
 																<border>5</border>
-																<object class="wxTextCtrl" name="x1_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="y1_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="z1_Trig_Text">
+																<object class="wxTextCtrl" name="minbox_Trig_Text">
 																	<value></value>
 																	<maxlength>0</maxlength>
 																</object>
@@ -823,7 +787,7 @@
 																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 																<border>5</border>
 																<object class="wxStaticText" name="m_staticText941">
-																	<label>P2</label>
+																	<label>Max:</label>
 																	<wrap>-1</wrap>
 																</object>
 															</object>
@@ -831,25 +795,7 @@
 																<option>1</option>
 																<flag>wxALL</flag>
 																<border>5</border>
-																<object class="wxTextCtrl" name="x2_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="y2_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="z2_Trig_Text">
+																<object class="wxTextCtrl" name="maxbox_Trig_Text">
 																	<value></value>
 																	<maxlength>0</maxlength>
 																</object>
@@ -885,25 +831,7 @@
 																<option>1</option>
 																<flag>wxALL</flag>
 																<border>5</border>
-																<object class="wxTextCtrl" name="startx_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="starty_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="startz_Trig_Text">
+																<object class="wxTextCtrl" name="start_Trig_Text">
 																	<value></value>
 																	<maxlength>0</maxlength>
 																</object>
@@ -929,25 +857,7 @@
 																<option>1</option>
 																<flag>wxALL</flag>
 																<border>5</border>
-																<object class="wxTextCtrl" name="stopx_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="stopy_Trig_Text">
-																	<value></value>
-																	<maxlength>0</maxlength>
-																</object>
-															</object>
-															<object class="sizeritem">
-																<option>1</option>
-																<flag>wxALL</flag>
-																<border>5</border>
-																<object class="wxTextCtrl" name="stopz_Trig_Text">
+																<object class="wxTextCtrl" name="end_Trig_Text">
 																	<value></value>
 																	<maxlength>0</maxlength>
 																</object>

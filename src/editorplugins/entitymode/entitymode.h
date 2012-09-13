@@ -50,6 +50,7 @@ class TriggerPanel;
 class RewardPanel;
 class SequencePanel;
 class EntityTemplatePanel;
+class EntityMode;
 struct iAresEditor;
 
 enum
@@ -60,57 +61,26 @@ enum
 
 //==================================================================================
 
-struct ParameterCopy
-{
-  csStringID id;
-  csString originalExpression;
-  celDataType type;
-
-  static csHash<csRef<iParameter>,csStringID> Create (iParameterManager* pm,
-      const csArray<ParameterCopy>& pars);
-};
-
-struct PropertyCopy
-{
-  csStringID id;
-  celData data;
-  csArray<ParameterCopy> parameters;
-};
-
 /// A copy of a property class template.
 struct PropertyClassCopy
 {
   csString name;
   csString tag;
-  csArray<PropertyCopy> properties;
+  csRef<iDocument> doc;
+  csRef<iDocumentNode> node;
 
-  iCelPropertyClassTemplate* Create (iParameterManager* pm, iCelEntityTemplate* tpl,
+  iCelPropertyClassTemplate* Create (EntityMode* em, iCelEntityTemplate* tpl,
       const char* overridetag = 0);
-};
-
-struct MessageCopy
-{
-  csStringID id;
-  csArray<ParameterCopy> parameters;
-};
-
-struct CharacteristicsCopy
-{
-  csString name;
-  float value;
 };
 
 /// A copy of an entity template.
 struct EntityCopy
 {
   csString name;
-  csArray<PropertyClassCopy> propertyClasses;
-  csArray<MessageCopy> messages;
-  csSet<csStringID> classes;
-  csStringArray parents;
-  csArray<CharacteristicsCopy> characteristics;
+  csRef<iDocument> doc;
+  csRef<iDocumentNode> node;
 
-  iCelEntityTemplate* Create (iParameterManager* pm, iCelPlLayer* pl, const char* overridename);
+  iCelEntityTemplate* Create (EntityMode* em, const char* overridename);
 };
 
 /// A copy of a quest factory.
@@ -232,7 +202,6 @@ private:
   QuestCopy Copy (iQuestFactory* questFact);
   EntityCopy Copy (iCelEntityTemplate* tpl);
   PropertyClassCopy Copy (iCelPropertyClassTemplate* pctpl);
-  void Copy (iCelParameterIterator* it, csArray<ParameterCopy>& parameters);
   void ClearCopy ();
   bool HasPaste ();
 

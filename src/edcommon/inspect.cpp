@@ -143,6 +143,22 @@ float InspectTools::GetActionParameterValueFloat (iCelPlLayer* pl,
   return 0.0f;
 }
 
+csVector3 InspectTools::GetActionParameterValueVector3 (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
+      bool* valid)
+{
+  iParameter* par = GetActionParameterValue (pl, pctpl, actionName, parName);
+  if (valid) *valid = par != 0;
+  if (par)
+  {
+    const celData* data = par->GetData (0);
+    csVector3 v;
+    celParameterTools::ToVector3 (*data, v);
+    return v;
+  }
+  return csVector3 (0.0f);
+}
+
 bool InspectTools::DeleteActionParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName)
 {

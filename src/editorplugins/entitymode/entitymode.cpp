@@ -45,6 +45,7 @@ THE SOFTWARE.
 #include "physicallayer/entitytpl.h"
 #include "tools/questmanager.h"
 #include "tools/parameters.h"
+#include "tools/entitytplloader.h"
 #include "propclass/chars.h"
 
 #include <wx/xrc/xmlres.h>
@@ -1347,7 +1348,11 @@ void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 void EntityMode::ClearCopy ()
 {
   entityCopy.name = "";
+  entityCopy.doc = 0;
+  entityCopy.node = 0;
   pcCopy.name = "";
+  pcCopy.doc = 0;
+  pcCopy.node = 0;
   questCopy.name = "";
   questCopy.doc = 0;
   questCopy.node = 0;
@@ -1380,49 +1385,24 @@ QuestCopy EntityMode::Copy (iQuestFactory* questFact)
   return copy;
 }
 
-void EntityMode::Copy (iCelParameterIterator* it, csArray<ParameterCopy>& parameters)
-{
-  if (it)
-    while (it->HasNext ())
-    {
-      ParameterCopy& parcopy = parameters[parameters.Push (ParameterCopy ())];
-      iParameter* par = it->Next (parcopy.id);
-      parcopy.originalExpression = par->GetOriginalExpression ();
-      parcopy.type = par->GetPossibleType ();
-    }
-}
-
 EntityCopy EntityMode::Copy (iCelEntityTemplate* tpl)
 {
   EntityCopy copy;
   copy.name = tpl->GetName ();
 
-  for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
-    copy.propertyClasses.Push (Copy (tpl->GetPropertyClassTemplate (i)));
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
 
-  for (size_t i = 0 ; i < tpl->GetMessageCount () ; i++)
-  {
-    MessageCopy messagecopy;
-    csRef<iCelParameterIterator> it = tpl->GetMessage (i, messagecopy.id);
-    Copy (it, messagecopy.parameters);
-  }
+  csRef<iEntityTemplateLoader> tplldr = csQueryRegistryOrLoad<iEntityTemplateLoader> (
+      object_reg, "cel.addons.celentitytpl");
 
-  copy.classes = tpl->GetClasses ();
-
-  csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
-  while (parentIt->HasNext ())
-  {
-    iCelEntityTemplate* parent = parentIt->Next ();
-    copy.parents.Push (parent->GetName ());
-  }
-
-  iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
-  csRef<iCharacteristicsIterator> charIt = chars->GetAllCharacteristics ();
-  while (charIt->HasNext ())
-  {
-    CharacteristicsCopy& charcopy = copy.characteristics[copy.characteristics.Push (CharacteristicsCopy ())];
-    charcopy.name = charIt->Next (charcopy.value);
-  }
+  copy.doc = docsys->CreateDocument ();
+  csRef<iDocumentNode> root = copy.doc->CreateRoot ();
+  copy.node = root->CreateNodeBefore (CS_NODE_ELEMENT);
+  copy.node->SetValue ("template");
+  tplldr->Save (tpl, copy.node);
 
   return copy;
 }
@@ -1432,12 +1412,21 @@ PropertyClassCopy EntityMode::Copy (iCelPropertyClassTemplate* pctpl)
   PropertyClassCopy copy;
   copy.name = pctpl->GetName ();
   copy.tag = pctpl->GetTag ();
-  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
-  {
-    PropertyCopy& propcopy = copy.properties[copy.properties.Push (PropertyCopy ())];
-    csRef<iCelParameterIterator> it = pctpl->GetProperty (i, propcopy.id, propcopy.data);
-    Copy (it, propcopy.parameters);
-  }
+
+  csRef<iDocumentSystem> docsys;
+  docsys = csQueryRegistry<iDocumentSystem> (object_reg);
+  if (!docsys)
+    docsys.AttachNew (new csTinyDocumentSystem ());
+
+  csRef<iEntityTemplateLoader> tplldr = csQueryRegistryOrLoad<iEntityTemplateLoader> (
+      object_reg, "cel.addons.celentitytpl");
+
+  copy.doc = docsys->CreateDocument ();
+  csRef<iDocumentNode> root = copy.doc->CreateRoot ();
+  copy.node = root->CreateNodeBefore (CS_NODE_ELEMENT);
+  copy.node->SetValue ("propclass");
+  tplldr->Save (pctpl, copy.node);
+
   return copy;
 }
 
@@ -1473,126 +1462,25 @@ void EntityMode::CopySelected ()
 }
 
 
-csHash<csRef<iParameter>,csStringID> ParameterCopy::Create (iParameterManager* pm,
-    const csArray<ParameterCopy>& pars)
-{
-  csHash<csRef<iParameter>,csStringID> params;
-  for (size_t i = 0 ; i < pars.GetSize () ; i++)
-  {
-    csRef<iParameter> par = pm->GetParameter (pars[i].originalExpression, pars[i].type);
-    params.Put (pars[i].id, par);
-  }
-  return params;
-}
-
-iCelPropertyClassTemplate* PropertyClassCopy::Create (iParameterManager* pm,
+iCelPropertyClassTemplate* PropertyClassCopy::Create (EntityMode* em,
     iCelEntityTemplate* tpl, const char* overridetag)
 {
-  iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
-  pctpl->SetName (name);
-  pctpl->SetTag (overridetag ? overridetag : tag.GetData ());
+  csRef<iEntityTemplateLoader> tplldr = csQueryRegistryOrLoad<iEntityTemplateLoader> (
+      em->GetObjectRegistry (), "cel.addons.celentitytpl");
 
-  for (size_t i = 0 ; i < properties.GetSize () ; i++)
-  {
-    PropertyCopy& p = properties[i];
-    switch (p.data.type)
-    {
-      case CEL_DATA_LONG:
-      case CEL_DATA_ULONG:
-      case CEL_DATA_WORD:
-      case CEL_DATA_UWORD:
-      case CEL_DATA_BYTE:
-      case CEL_DATA_UBYTE:
-	{
-	  long l;
-	  celParameterTools::ToLong (p.data, l);
-	  pctpl->SetProperty (p.id, l);
-	}
-	break;
-      case CEL_DATA_FLOAT:
-	pctpl->SetProperty (p.id, p.data.value.f);
-	break;
-      case CEL_DATA_BOOL:
-	pctpl->SetProperty (p.id, p.data.value.bo);
-	break;
-      case CEL_DATA_STRING:
-	pctpl->SetProperty (p.id, p.data.value.s ? p.data.value.s->GetData () : (const char*)0);
-	break;
-      case CEL_DATA_VECTOR2:
-	{
-	  csVector2 v;
-	  celParameterTools::ToVector2 (p.data, v);
-	  pctpl->SetProperty (p.id, v);
-	}
-	break;
-      case CEL_DATA_VECTOR3:
-	{
-	  csVector3 v;
-	  celParameterTools::ToVector3 (p.data, v);
-	  pctpl->SetProperty (p.id, v);
-	}
-	break;
-      case CEL_DATA_COLOR:
-	{
-	  csColor v;
-	  celParameterTools::ToColor (p.data, v);
-	  pctpl->SetProperty (p.id, v);
-	}
-	break;
-      case CEL_DATA_ACTION:
-      case CEL_DATA_NONE:
-	{
-	  csHash<csRef<iParameter>,csStringID> params = ParameterCopy::Create (pm, p.parameters);
-	  pctpl->PerformAction (p.id, params);
-	}
-	break;
-      default:
-	printf ("Unsupported type '%d'!\n", p.data.type);
-	fflush (stdout);
-    }
-  }
-
+  if (overridetag)
+    node->SetAttribute ("tag", overridetag);
+  iCelPropertyClassTemplate* pctpl = tplldr->Load (tpl, node, 0);
   return pctpl;
 }
 
-iCelEntityTemplate* EntityCopy::Create (iParameterManager* pm, iCelPlLayer* pl,
-    const char* overridename)
+iCelEntityTemplate* EntityCopy::Create (EntityMode* em, const char* overridename)
 {
-  iCelEntityTemplate* tpl = pl->CreateEntityTemplate (overridename);
+  csRef<iEntityTemplateLoader> tplldr = csQueryRegistryOrLoad<iEntityTemplateLoader> (
+      em->GetObjectRegistry (), "cel.addons.celentitytpl");
 
-  for (size_t i = 0 ; i < propertyClasses.GetSize () ; i++)
-    propertyClasses[i].Create (pm, tpl);
-
-  for (size_t i = 0 ; i < messages.GetSize () ; i++)
-  {
-    csHash<csRef<iParameter>,csStringID> params = ParameterCopy::Create (pm, messages[i].parameters);
-    tpl->AddMessage (messages[i].id, params);
-  }
-
-  csSet<csStringID>::GlobalIterator it = classes.GetIterator ();
-  while (it.HasNext ())
-    tpl->AddClass (it.Next ());
-
-  for (size_t i = 0 ; i < parents.GetSize () ; i++)
-  {
-    iCelEntityTemplate* parent = pl->FindEntityTemplate (parents[i]);
-    if (!parent)
-    {
-      // @@@ Proper error reporting?
-      printf ("Can't find parent '%s'!\n", (const char*)parents[i]);
-      fflush (stdout);
-    }
-    else
-    {
-      tpl->AddParent (parent);
-    }
-  }
-
-  iTemplateCharacteristics* chars = tpl->GetCharacteristics ();
-  for (size_t i = 0 ; i < characteristics.GetSize () ; i++)
-  {
-    chars->SetCharacteristic (characteristics[i].name, characteristics[i].value);
-  }
+  node->SetAttribute ("entityname", overridename);
+  iCelEntityTemplate* tpl = tplldr->Load (node, 0);
 
   return tpl;
 }
@@ -1637,7 +1525,7 @@ void EntityMode::Paste ()
       ui->Error ("Property class with this name and tag already exists!");
       return;
     }
-    pcCopy.Create (view3d->GetPM (), tpl, tag->GetData ());
+    pcCopy.Create (this, tpl, tag->GetData ());
     RegisterModification (tpl);
     RefreshView ();
   }
@@ -1652,7 +1540,7 @@ void EntityMode::Paste ()
       ui->Error ("A template with this name already exists!");
       return;
     }
-    tpl = entityCopy.Create (view3d->GetPM (), pl, name->GetData ());
+    tpl = entityCopy.Create (this, name->GetData ());
     RegisterModification (tpl);
     SelectTemplate (tpl);
   }

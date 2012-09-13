@@ -592,15 +592,15 @@ bool PropertyClassPanel::UpdateTrigger ()
   pctpl->SetProperty (pl->FetchStringID ("strict"), false);
 
   csString monitor = UITools::GetValue (this, "entity_Trig_Text");
-  if (monitor)
+  if (!monitor.IsEmpty ())
     pctpl->SetProperty (pl->FetchStringID ("monitor"), monitor.GetData ());
 
   csString clazz = UITools::GetValue (this, "class_Trig_Text");
-  if (clazz)
+  if (!clazz.IsEmpty ())
     pctpl->SetProperty (pl->FetchStringID ("class"), clazz.GetData ());
 
   csString delayStr = UITools::GetValue (this, "delay_Trig_Text");
-  if (delayStr)
+  if (!delayStr.IsEmpty ())
   {
     long delay;
     csScanStr (delayStr, "%d", &delay);
@@ -608,7 +608,7 @@ bool PropertyClassPanel::UpdateTrigger ()
   }
 
   csString jitterStr = UITools::GetValue (this, "jitter_Trig_Text");
-  if (jitterStr)
+  if (!jitterStr.IsEmpty ())
   {
     long jitter;
     csScanStr (jitterStr, "%d", &jitter);
@@ -630,40 +630,30 @@ bool PropertyClassPanel::UpdateTrigger ()
     case TRIGGER_SPHERE:
       {
 	csString radius = UITools::GetValue (this, "radius_Trig_Text");
-	csString x = UITools::GetValue (this, "centerx_Trig_Text");
-	csString y = UITools::GetValue (this, "centery_Trig_Text");
-	csString z = UITools::GetValue (this, "centerz_Trig_Text");
+	csString position = UITools::GetValue (this, "position_Trig_Text");
 	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerSphere",
 	    CEL_DATA_FLOAT, "radius", radius.GetData (),
-	    CEL_DATA_VECTOR3, "position", (x+","+y+","+z).GetData (),
+	    CEL_DATA_VECTOR3, "position", position.GetData (),
 	    CEL_DATA_NONE);
       }
       break;
     case TRIGGER_BOX:
       {
-	csString x1 = UITools::GetValue (this, "x1_Trig_Text");
-	csString y1 = UITools::GetValue (this, "y1_Trig_Text");
-	csString z1 = UITools::GetValue (this, "z1_Trig_Text");
-	csString x2 = UITools::GetValue (this, "x2_Trig_Text");
-	csString y2 = UITools::GetValue (this, "y2_Trig_Text");
-	csString z2 = UITools::GetValue (this, "z2_Trig_Text");
+	csString minbox = UITools::GetValue (this, "minbox_Trig_Text");
+	csString maxbox = UITools::GetValue (this, "maxbox_Trig_Text");
 	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerBox",
-	    CEL_DATA_VECTOR3, "minbox", (x1+","+y1+","+z1).GetData (),
-	    CEL_DATA_VECTOR3, "maxbox", (x2+","+y2+","+z2).GetData (),
+	    CEL_DATA_VECTOR3, "minbox", minbox.GetData (),
+	    CEL_DATA_VECTOR3, "maxbox", maxbox.GetData (),
 	    CEL_DATA_NONE);
       }
       break;
     case TRIGGER_BEAM:
       {
-	csString x1 = UITools::GetValue (this, "startx1_Trig_Text");
-	csString y1 = UITools::GetValue (this, "starty1_Trig_Text");
-	csString z1 = UITools::GetValue (this, "startz1_Trig_Text");
-	csString x2 = UITools::GetValue (this, "stopx2_Trig_Text");
-	csString y2 = UITools::GetValue (this, "stopy2_Trig_Text");
-	csString z2 = UITools::GetValue (this, "stopz2_Trig_Text");
+	csString start = UITools::GetValue (this, "start_Trig_Text");
+	csString stop = UITools::GetValue (this, "stop_Trig_Text");
 	InspectTools::AddAction (pl, pm, pctpl, "SetupTriggerBeam",
-	    CEL_DATA_VECTOR3, "start", (x1+","+y1+","+z1).GetData (),
-	    CEL_DATA_VECTOR3, "end", (x2+","+y2+","+z2).GetData (),
+	    CEL_DATA_VECTOR3, "start", start.GetData (),
+	    CEL_DATA_VECTOR3, "end", stop.GetData (),
 	    CEL_DATA_NONE);
       }
       break;
@@ -701,24 +691,46 @@ void PropertyClassPanel::FillTrigger ()
   csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class");
   UITools::SetValue (this, "class_Trig_Text", clazz);
 
+  iParameter* par;
   if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
   {
     UITools::SwitchPage (this, "type_Trig_Choicebook", "Sphere");
-    csString radius = InspectTools::GetActionParameterValueString (pl, pctpl,
-      "SetupTriggerSphere", "radius");
-    UITools::SetValue (this, "radius_Trig_Text", radius);
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "radius");
+    if (par)
+      UITools::SetValue (this, "radius_Trig_Text", par->GetOriginalExpression ());
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "position");
+    if (par)
+      UITools::SetValue (this, "position_Trig_Text", par->GetOriginalExpression ());
   }
   else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
   {
     UITools::SwitchPage (this, "type_Trig_Choicebook", "Box");
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "minbox");
+    if (par)
+      UITools::SetValue (this, "minbox_Trig_Text", par->GetOriginalExpression ());
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "maxbox");
+    if (par)
+      UITools::SetValue (this, "maxbox_Trig_Text", par->GetOriginalExpression ());
   }
   else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
   {
     UITools::SwitchPage (this, "type_Trig_Choicebook", "Beam");
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "start");
+    if (par)
+      UITools::SetValue (this, "start_Trig_Text", par->GetOriginalExpression ());
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "end");
+    if (par)
+      UITools::SetValue (this, "end_Trig_Text", par->GetOriginalExpression ());
   }
   else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
   {
     UITools::SwitchPage (this, "type_Trig_Choicebook", "Above");
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "entity");
+    if (par)
+      UITools::SetValue (this, "aboveEntity_Trig_Text", par->GetOriginalExpression ());
+    par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
+    if (par)
+      UITools::SetValue (this, "distance_Trig_Text", par->GetOriginalExpression ());
   }
 
   csString modeName = InspectTools::GetActionParameterValueString (pl, pctpl,

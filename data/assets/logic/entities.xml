@@ -255,7 +255,7 @@
   <addon plugin="cel.addons.celentitytpl" entityname="TriggerMover">
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
-        <par name="entity" string="@entity" />
+        <par name="trigger" string="@trigger" />
         <par name="name" string="DblActivatorTrigger" />
       </action>
       <property name="state" string="init" />

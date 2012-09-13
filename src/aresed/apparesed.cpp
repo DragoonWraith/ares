@@ -959,7 +959,7 @@ void AppAresEditWX::ReceiveMessage (int severity, const char* msgID, const char*
   messages.AppendFmt ("&nbsp;&nbsp;%s<br>", description);
   if (popup)
   {
-    ViewBottomPage ("Messages");
+    ViewBottomPage ("Messages", false);
   }
 
   wxHtmlWindow* message_Html = XRCCTRL (*this, "message_Html", wxHtmlWindow);
@@ -976,7 +976,7 @@ void AppAresEditWX::OnClearMessages (wxCommandEvent& event)
   message_Html->SetPage (wxString::FromUTF8 ("<html><body>"+messages+"</body></html>"));
 }
 
-void AppAresEditWX::ViewBottomPage (const char* name)
+void AppAresEditWX::ViewBottomPage (const char* name, bool toggle)
 {
   wxSplitterWindow* topBottomSplitter = XRCCTRL (*this, "topBottom_Splitter", wxSplitterWindow);
   wxPanel* topPanel = XRCCTRL (*this, "top_Panel", wxPanel);
@@ -990,7 +990,8 @@ void AppAresEditWX::ViewBottomPage (const char* name)
     wxWindow* page = notebook->GetCurrentPage ();
     if (page == notebook->GetPage (idx))
     {
-      topBottomSplitter->Unsplit ();
+      if (toggle)
+        topBottomSplitter->Unsplit ();
     }
     else
     {
@@ -1044,8 +1045,8 @@ bool AppAresEditWX::Command (csStringID id, const csString& args)
   else if (id == ID_ManageCells) uiManager->GetCellDialog ()->Show ();
   else if (id == ID_SwitchMode) SwitchToMode (args);
   else if (id == ID_EntityParameters) aresed3d->EntityParameters ();
-  else if (id == ID_ViewMessages) ViewBottomPage ("Messages");
-  else if (id == ID_ViewComments) ViewBottomPage ("Comments");
+  else if (id == ID_ViewMessages) ViewBottomPage ("Messages", true);
+  else if (id == ID_ViewComments) ViewBottomPage ("Comments", true);
   else if (id == ID_View3D) View3D ();
   else if (id == ID_ViewControls) ViewControls ();
   else return false;

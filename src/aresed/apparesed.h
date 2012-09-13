@@ -173,7 +173,9 @@ private:
   void OnClearMessages (wxCommandEvent& event);
   void OnChangeComment (wxCommandEvent& event);
 
-  void ViewBottomPage (const char* pagename);
+  // View the specific bottom page. If toggle is true then the
+  // page will close if it was already open.
+  void ViewBottomPage (const char* pagename, bool toggle);
   void View3D ();
   void ViewControls ();
 

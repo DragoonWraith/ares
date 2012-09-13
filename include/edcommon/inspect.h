@@ -115,6 +115,9 @@ public:
   static float GetActionParameterValueFloat (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
       bool* valid = 0);
+  static csVector3 GetActionParameterValueVector3 (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
+      bool* valid = 0);
 
   static const char* TypeToString (celDataType type)
   {
