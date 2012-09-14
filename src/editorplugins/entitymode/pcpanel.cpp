@@ -1516,6 +1516,50 @@ void PropertyClassPanel::FillProperties ()
 
 // -----------------------------------------------------------------------
 
+void PropertyClassPanel::SuggestParameters ()
+{
+  csString questName = UITools::GetValue (this, "questText");
+  if (questName.IsEmpty ()) return;
+
+  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+    emode->GetObjectRegistry (), "cel.manager.quests");
+  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  if (!questFact) return;
+
+  csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (questFact->QueryObject ());
+  if (!comment) return;
+  csArray<celParSpec> suggestions = InspectTools::GetParameterSuggestions (pl, comment);
+  for (size_t i = 0 ; i < suggestions.GetSize () ; i++)
+  {
+    celParSpec& ps = suggestions[i];
+    csString name = pl->FetchString (ps.id);
+    csRef<iParameter> par = pm->GetParameter (ps.value, ps.type);
+    if (!par) break;	// @@@ Report error?
+    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
+    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+  }
+  emode->RegisterModification (tpl);
+  questCollectionValue->Refresh ();
+}
+
+class SuggestQuestParametersAction : public Ares::Action
+{
+private:
+  PropertyClassPanel* pcPanel;
+
+public:
+  SuggestQuestParametersAction (PropertyClassPanel* pcPanel) : pcPanel (pcPanel) { }
+  virtual ~SuggestQuestParametersAction () { }
+  virtual const char* GetName () const { return "Suggest Parameters"; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    pcPanel->SuggestParameters ();
+    return true;
+  }
+};
+
+// -----------------------------------------------------------------------
+
 bool PropertyClassPanel::UpdatePC ()
 {
   if (!tpl || !pctpl) return true;
@@ -1610,6 +1654,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
 
+  wxListCtrl* list;
+
   wxComboBox* wireInputMaskCombo = XRCCTRL (*this, "wireInputMaskCombo", wxComboBox);
   iEditorConfig* config = emode->GetApplication ()->GetConfig ();
   const csArray<KnownMessage>& messages = config->GetMessages ();
@@ -1631,6 +1677,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   questCollectionValue.AttachNew (new QuestCollectionValue (this));
   SetupList ("questParameterListCtrl", "Name,Value,Type", "Name,Value,Type",
       questCollectionValue, GetQuestDialog ());
+  list = XRCCTRL (*this, "questParameterListCtrl", wxListCtrl);
+  AddAction (list, NEWREF(Action, new SuggestQuestParametersAction (this)));
 
   wireMsgCollectionValue.AttachNew (new WireMsgCollectionValue (this));
   SetupList ("wireMessageListCtrl", "Message,Entity,Parameters", "Message,Entity,Parameters",
@@ -1638,7 +1686,7 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   wireParCollectionValue.AttachNew (new WireParCollectionValue (this));
   SetupList ("wireParameterListCtrl", "Name,Value,Type", "Name,Value,Type",
       wireParCollectionValue, GetWireParDialog ());
-  wxListCtrl* list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
+  list = XRCCTRL (*this, "wireMessageListCtrl", wxListCtrl);
   wireMsgSelectedValue.AttachNew (new Ares::ListSelectedValue (list, wireMsgCollectionValue,
 	VALUE_COMPOSITE));
   Signal (wireMsgSelectedValue, wireParCollectionValue);

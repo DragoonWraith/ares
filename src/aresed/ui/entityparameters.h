@@ -58,6 +58,8 @@ public:
   EntityParameterDialog (wxWindow* parent, UIManager* uiManager);
   ~EntityParameterDialog ();
 
+  void SuggestParameters ();
+
   void Show (iDynamicObject* object);
 
   DECLARE_EVENT_TABLE ();

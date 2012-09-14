@@ -66,7 +66,10 @@
       </state>
     </quest>
     <quest name="DblSequencerRotateX">
-      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
+      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator).
+@param duration,long,1000 is the duration of the sequence
+@param angle,float,3,1415
+-->
       <sequence name="one">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
           <rotx angle="$angle" />
@@ -82,7 +85,7 @@
     </quest>
     <quest name="DblActivatorTrigger">
       <!--This quest works in combination with a double sequencer and serves as a way to activate the sequence between the two states ('one' and 'two'). Use this in combination with a 'DblSequencer...' quest with tag 'sequencer'. This version is based on a timer.
-@param timeout is a long parameter indicating how long to wait before the trigger.-->
+@param trigger,string is the name of the entity containing the trigger property class-->
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
@@ -122,7 +125,10 @@
       </state>
     </quest>
     <quest name="DblSequencerRotateY">
-      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
+      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator).
+@param duration,long,1000 is the duration of the sequence
+@param angle,float,3,1415
+-->
       <sequence name="one">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
           <roty angle="$angle" />
@@ -138,7 +144,7 @@
     </quest>
     <quest name="DblActivatorTimer">
       <!--This quest works in combination with a double sequencer and serves as a way to activate the sequence between the two states ('one' and 'two'). Use this in combination with a 'DblSequencer...' quest with tag 'sequencer'. This version is based on a timer.
-@param timeout is a long parameter indicating how long to wait before the trigger.-->
+@param timeout,long,0 indicates how long to wait before switching (in ms)-->
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
@@ -178,7 +184,10 @@
       </state>
     </quest>
     <quest name="DblSequencerRotateZ">
-      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'angle' (float).-->
+      <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator).
+@param duration,long,1000 is the duration of the sequence
+@param angle,float,3,1415
+-->
       <sequence name="one">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
           <rotz angle="$angle" />
@@ -193,7 +202,11 @@
       </sequence>
     </quest>
     <quest name="DblSequencerMove">
-      <!--This quest moves the mesh a relative amount (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator). Parameters are 'duration' (long) and 'x', 'y', 'z' (float).-->
+      <!--This quest moves the mesh a relative amount (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator).
+@param duration,long,1000 is the duration of the sequence
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0-->
       <sequence name="one">
         <op duration="$duration" type="cel.seqops.transform" entity="$this">
           <v x="$x" y="$y" z="$z" />
@@ -209,7 +222,7 @@
     </quest>
     <quest name="DblActivatorOtherStandard">
       <!--This quest works in combination with a double sequencer and serves as a way to activate the sequence between the two states ('one' and 'two'). Use this in combination with a 'DblSequencer...' quest with tag 'sequencer'. This version is based on the standard activation message from the game controller. This version works on the sequencer of another entity.
-@param target is the name of the target entity.-->
+@param target,string is the name of the target entity.-->
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$target" sequence="one" entity_tag="sequencer" />
@@ -253,6 +266,13 @@
     <dynworld name="World" />
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="TriggerMover">
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.
+@param trigger,string is the name of the entity that holds the trigger property class
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="trigger" string="@trigger" />
@@ -272,6 +292,9 @@
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="StandardOtherMover">
+    <!--A template hosting a quest that can move another object between two positions based on an activation message. This is useful for a switch (for example) to turn on a light or to open a door.
+@param target,string is the name of the entity that holds the sequencer quest
+-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="target" string="@target" />
@@ -282,7 +305,10 @@
     <propclass name="pcobject.mesh" />
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="TimedYRotator">
-    <!--A template hosting a quest that can rotate an object back and forth based on a timer.-->
+    <!--A template hosting a quest that can rotate an object back and forth based on a timer.
+@param duration,long,1000 duration for the sequencer
+@param angle,float,3.1415 angle for the sequencer
+@param timeout,long,1000 timeout to wait before firing the sequence-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="timeout" long="@timeout" />
@@ -300,7 +326,12 @@
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="StandardMover">
-    <!--A template hosting a quest that can move an object between two positions based on an activation message.-->
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="name" string="DblActivatorStandard" />
@@ -319,7 +350,10 @@
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="StandardYRotator">
-    <!--A template hosting a quest that can rotate an object back and forth based on an activation message.-->
+    <!--A template hosting a quest that can rotate an object back and forth based on an activation message.
+A template hosting a quest that can rotate an object back and forth in a loop.
+@param duration,long,1000 duration for the sequencer
+@param angle,float,3.1415 angle for the sequencer-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="name" string="DblActivatorStandard" />
@@ -336,7 +370,9 @@
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="LoopedYRotator">
-    <!--A template hosting a quest that can rotate an object back and forth in a loop.-->
+    <!--A template hosting a quest that can rotate an object back and forth in a loop.
+@param duration,long,1000 duration for the sequencer
+@param angle,float,3.1415 angle for the sequencer-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="name" string="DblActivatorLoop" />

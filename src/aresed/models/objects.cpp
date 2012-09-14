@@ -61,6 +61,7 @@ void ObjectsValue::BuildModel ()
   for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
   {
     iDynamicObject* obj = cell->GetObject (i);
+    if (withentities && !obj->GetEntityName ()) continue;
 
     csRef<GenericStringArrayValue<iDynamicObject> > child;
     child.AttachNew (new GenericStringArrayValue<iDynamicObject> (obj));
@@ -107,6 +108,11 @@ void ObjectsValue::RefreshModel ()
 {
   iDynamicCell* cell = app->GetAresView ()->GetDynamicCell ();
   if (!cell)
+  {
+    BuildModel ();
+    return;
+  }
+  if (withentities)
   {
     BuildModel ();
     return;

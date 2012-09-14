@@ -26,6 +26,10 @@ THE SOFTWARE.
 #include "aresview.h"
 #include "include/imarker.h"
 #include "paster.h"
+#include "edcommon/model.h"
+
+#include "physicallayer/entitytpl.h"
+#include "celtool/stdparams.h"
 
 // =========================================================================
 
@@ -64,6 +68,9 @@ void Paster::CopySelection ()
     apc.dynfactName = dynfact->GetName ();
     apc.trans = dynobj->GetTransform ();
     apc.isStatic = dynobj->IsStatic ();
+    if (dynobj->GetEntityTemplate ())
+    apc.tplName = dynobj->GetEntityTemplate ()->GetName ();
+    apc.params = dynobj->GetEntityParameters ();
     pastebuffer.Push (apc);
   }
   app->SetFocus3D ();
@@ -92,12 +99,19 @@ void Paster::PasteSelection ()
       else
         dynobj->MakeDynamic ();
     }
+    if (!todoSpawn[i].tplName.IsEmpty ())
+    {
+      dynobj->SetEntity (0, todoSpawn[i].tplName, todoSpawn[i].params);
+    }
+
     newobjects.Push (dynobj);
   }
 
   view3d->GetSelection ()->SetCurrentObject (0);
   for (size_t i = 0 ; i < newobjects.GetSize () ; i++)
     view3d->GetSelection ()->AddCurrentObject (newobjects[i]);
+
+  view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
 }
 
 void Paster::CreatePasteMarker ()

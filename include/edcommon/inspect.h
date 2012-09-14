@@ -28,11 +28,13 @@ THE SOFTWARE.
 #include <crystalspace.h>
 #include "aresextern.h"
 #include "physicallayer/datatype.h"
+#include "celtool/stdparams.h"
 
 struct iCelPropertyClassTemplate;
 struct iCelPlLayer;
 struct iParameter;
 struct iParameterManager;
+struct iObjectComment;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
@@ -146,6 +148,11 @@ public:
     if (type == "color") return CEL_DATA_COLOR;
     return CEL_DATA_NONE;
   }
+
+  /**
+   * Get parameter suggestions out of a comment block.
+   */
+  static csArray<celParSpec> GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment);
 };
 
 #endif // __appares_inspect_h

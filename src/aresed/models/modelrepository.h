@@ -66,6 +66,7 @@ public:
   virtual csRef<Ares::Value> GetAssetsValue () const;
   virtual csRef<Ares::Value> GetResourcesValue () const;
   virtual csRef<Ares::Value> GetQuestsValue () const;
+  virtual csRef<Ares::Value> GetObjectsWithEntityValue () const;
   virtual void RefreshObjectsValue ();
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
   virtual iObject* GetResourceFromResources (Ares::Value* value);

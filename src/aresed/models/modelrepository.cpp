@@ -55,6 +55,14 @@ void ModelRepository::Refresh ()
   templatesValue->Refresh ();
 }
 
+csRef<Ares::Value> ModelRepository::GetObjectsWithEntityValue () const
+{
+  csRef<Ares::Value> value;
+  value.AttachNew (new ObjectsValue (app, true));
+  value->Refresh ();
+  return value;
+}
+
 csRef<Ares::Value> ModelRepository::GetWritableAssetsValue () const
 {
   csRef<Ares::Value> value;

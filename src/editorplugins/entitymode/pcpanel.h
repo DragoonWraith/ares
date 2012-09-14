@@ -132,6 +132,8 @@ public:
   PropertyClassPanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
   ~PropertyClassPanel();
 
+  void SuggestParameters ();
+
   // Switch this dialog to editing of a PC.
   void SwitchToPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
   iUIManager* GetUIManager () const { return uiManager; }

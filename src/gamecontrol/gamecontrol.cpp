@@ -533,13 +533,14 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
     if (!hitBody) return 0;
     return dynworld->FindObject (hitBody);
   }
-  else
+  else if (cam->GetSector ())
   {
     csSectorHitBeamResult result = cam->GetSector ()->HitBeamPortals (start, end);
     if (!result.mesh) return 0;
     isect = result.isect;
     return dynworld->FindObject (result.mesh);
   }
+  else return 0;
 }
 
 bool celPcGameController::StartDrag ()

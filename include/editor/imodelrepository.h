@@ -108,6 +108,11 @@ struct iModelRepository : public virtual iBase
   virtual Ares::Value* GetObjectsValue () const = 0;
 
   /**
+   * Get a value with all objects that have an entity.
+   */
+  virtual csRef<Ares::Value> GetObjectsWithEntityValue () const = 0;
+
+  /**
    * Get the value for all the templates.
    */
   virtual Ares::Value* GetTemplatesValue () const = 0;

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "uimanager.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/uitools.h"
+#include "edcommon/inspect.h"
 
 #include "celtool/stdparams.h"
 #include "physicallayer/entitytpl.h"
@@ -130,6 +131,60 @@ public:
 };
 
 
+// -----------------------------------------------------------------------
+
+void EntityParameterDialog::SuggestParameters ()
+{
+  csString tplName = UITools::GetValue (this, "template_Text");
+  if (tplName.IsEmpty ()) return;
+
+  csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (uiManager->GetApp ()->GetObjectRegistry ());
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
+  if (!tpl) return;
+
+  csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (tpl->QueryObject ());
+  if (!comment) return;
+  csArray<Par>& params = parameters->GetParameters ();
+  csArray<celParSpec> suggestions = InspectTools::GetParameterSuggestions (pl, comment);
+  for (size_t i = 0 ; i < suggestions.GetSize () ; i++)
+  {
+    celParSpec& ps = suggestions[i];
+    csString name = pl->FetchString (ps.id);
+    bool found = false;
+    for (size_t j = 0 ; j < params.GetSize () ; j++)
+      if (params[j].name == name)
+      {
+	found = true;
+	break;
+      }
+    if (!found)
+    {
+      Par p;
+      p.name = name;
+      p.type = ps.type;
+      p.value = ps.value;
+      params.Push (p);
+    }
+  }
+  parameters->Refresh ();
+}
+
+class SuggestTplParametersAction : public Ares::Action
+{
+private:
+  EntityParameterDialog* dialog;
+
+public:
+  SuggestTplParametersAction (EntityParameterDialog* dialog) : dialog (dialog) { }
+  virtual ~SuggestTplParametersAction () { }
+  virtual const char* GetName () const { return "Suggest Parameters"; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    dialog->SuggestParameters ();
+    return true;
+  }
+};
+
 //--------------------------------------------------------------------------
 
 void EntityParameterDialog::OnResetButton (wxCommandEvent& event)
@@ -201,6 +256,7 @@ void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
       tplName.IsEmpty () ? 0 : tplName.GetData (),
       params);
 
+  uiManager->GetApp ()->RegisterModification ();
   uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetObjectsValue ()->Refresh ();
 
   EndModal (TRUE);
@@ -273,6 +329,7 @@ EntityParameterDialog::EntityParameterDialog (wxWindow* parent, UIManager* uiMan
   AddAction (parameter_List, NEWREF (Action, new NewChildDialogAction (parameters, dialog)));
   AddAction (parameter_List, NEWREF (Action, new EditChildDialogAction (parameters, dialog)));
   AddAction (parameter_List, NEWREF (Action, new DeleteChildAction (parameters)));
+  AddAction (parameter_List, NEWREF (Action, new SuggestTplParametersAction (this)));
 }
 
 EntityParameterDialog::~EntityParameterDialog ()

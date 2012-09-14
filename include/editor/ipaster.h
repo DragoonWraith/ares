@@ -27,6 +27,8 @@ THE SOFTWARE.
 
 #include "csutil/scf.h"
 
+struct iCelParameterBlock;
+
 /// Structured used to paste and spawn new information.
 struct PasteContents
 {
@@ -34,6 +36,9 @@ struct PasteContents
   bool useTransform;
   csReversibleTransform trans;
   bool isStatic;
+
+  csString tplName;
+  csRef<iCelParameterBlock> params;
 };
 
 /**

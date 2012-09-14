@@ -34,8 +34,12 @@ struct iDynamicObject;
 
 class ObjectsValue : public GenericStringArrayCollectionValue<iDynamicObject>
 {
+private:
+  bool withentities;
+
 public:
-  ObjectsValue (AppAresEditWX* app) : GenericStringArrayCollectionValue<iDynamicObject> (app) { }
+  ObjectsValue (AppAresEditWX* app, bool withentities = false) :
+    GenericStringArrayCollectionValue<iDynamicObject> (app), withentities (withentities) { }
   virtual ~ObjectsValue () { }
 
   virtual void BuildModel ();

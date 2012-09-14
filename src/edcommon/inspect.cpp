@@ -273,3 +273,30 @@ size_t InspectTools::FindActionWithParameter (iCelPlLayer* pl,
   return csArrayItemNotFound;
 }
 
+csArray<celParSpec> InspectTools::GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment)
+{
+  csArray<celParSpec> suggestions;
+  using namespace CS::Utility;
+  StringArray<> lines (comment->GetComment ()->GetData (), "\n",
+      StringArray<>::delimIgnore);
+  for (size_t i = 0 ; i < lines.GetSize () ; i++)
+  {
+    csString line = lines[i];
+    if (line.StartsWith ("@param "))
+    {
+      StringArray<> tokens (line, " ", StringArray<>::delimIgnore);
+      StringArray<> parspecs (tokens[1], ",");
+      csStringID id = pl->FetchStringID (parspecs[0]);
+      celDataType type = CEL_DATA_STRING;
+      csString value;
+      if (parspecs.GetSize () > 1)
+        type = celParameterTools::GetType (parspecs[1]);
+      if (parspecs.GetSize () > 2)
+        value = parspecs[2];
+      suggestions.Push (celParSpec (type, id, value));
+    }
+  }
+  return suggestions;
+}
+
+
