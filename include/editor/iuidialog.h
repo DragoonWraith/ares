@@ -87,6 +87,8 @@ struct iUIDialog : public virtual iBase
       size_t valueColumn, bool multi, int height, const char* heading, const char* names) = 0;
   virtual void AddListIndexed (const char* name, Ares::Value* collectionValue,
       size_t valueColumn, bool multi, int height, const char* heading, ...) = 0;
+  virtual void AddListIndexed (const char* name, Ares::Value* collectionValue,
+      size_t valueColumn, bool multi, int height, const char* heading, va_list args) = 0;
 
   // Clear all input fields to empty or default values.
   virtual void Clear () = 0;

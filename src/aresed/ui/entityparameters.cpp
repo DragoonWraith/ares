@@ -200,26 +200,18 @@ static void CorrectTemplateName (csString& name)
 
 void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
 {
-  csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Select a template");
-  dialog->AddRow ();
-  dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->
-      GetModelRepository ()->GetTemplatesValue (),
-      TEMPLATE_COL_NAME, false, 300, "Template", TEMPLATE_COL_NAME);
-
-  if (dialog->Show (0) == 1)
+  Ares::Value* templates = uiManager->GetApp ()->Get3DView ()->
+      GetModelRepository ()->GetTemplatesValue ();
+  Value* tpl = uiManager->AskDialog ("Select a template", templates, "Template", TEMPLATE_COL_NAME);
+  if (tpl)
   {
-    const DialogResult& result = dialog->GetFieldContents ();
-    csString name = result.Get ("template", (const char*)0);
-    csString factoryName = object->GetFactory ()->GetName ();
+    csString name = tpl->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
     CorrectTemplateName (name);
+    csString factoryName = object->GetFactory ()->GetName ();
     if (factoryName != name)
-    {
       UITools::SetValue (this, "template_Text", name);
-    }
     else
-    {
       UITools::SetValue (this, "template_Text", "");
-    }
   }
 }
 

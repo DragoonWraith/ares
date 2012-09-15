@@ -117,6 +117,8 @@ public:
       size_t valueColumn, bool multi, int height, const char* heading, const char* names);
   virtual void AddListIndexed (const char* name, Ares::Value* collectionValue,
       size_t valueColumn, bool multi, int height, const char* heading, ...);
+  virtual void AddListIndexed (const char* name, Ares::Value* collectionValue,
+      size_t valueColumn, bool multi, int height, const char* heading, va_list args);
 
   // Clear all input fields to empty or default values.
   virtual void Clear ();
@@ -187,6 +189,8 @@ public:
   virtual bool Ask (const char* description, ...);
   virtual csRef<iString> AskDialog (const char* description, const char* label,
       const char* value = 0);
+  virtual Ares::Value* AskDialog (const char* description, Ares::Value* collection,
+      const char* heading, ...);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }

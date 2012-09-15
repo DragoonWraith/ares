@@ -207,6 +207,15 @@ void UIDialog::AddList (const char* name, Value* collectionValue, size_t valueCo
 void UIDialog::AddListIndexed (const char* name, Value* collectionValue, size_t valueColumn,
     bool multi, int height, const char* heading, ...)
 {
+  va_list args;
+  va_start (args, heading);
+  AddListIndexed (name, collectionValue, valueColumn, multi, height, heading, args);
+  va_end (args);
+}
+
+void UIDialog::AddListIndexed (const char* name, Value* collectionValue, size_t valueColumn,
+    bool multi, int height, const char* heading, va_list args)
+{
   CS_ASSERT (collectionValue->GetType () == VALUE_COLLECTION);
   CS_ASSERT (lastRowSizer != 0);
   wxListCtrl* list = new wxListCtrl (mainPanel, wxID_ANY, wxDefaultPosition,
@@ -220,10 +229,7 @@ void UIDialog::AddListIndexed (const char* name, Value* collectionValue, size_t 
   info.collectionValue = collectionValue;
   valueListFields.Put (name, info);
 
-  va_list args;
-  va_start (args, heading);
   view.DefineHeadingIndexed (list, heading, args);
-  va_end (args);
 
   view.Bind (collectionValue, list);
 }
@@ -504,6 +510,24 @@ csRef<iString> UIManager::AskDialog (const char* description, const char* label,
     result.AttachNew (new scfString ());
     result->Replace (fields.Get ("name", ""));
     return result;
+  }
+  return 0;
+}
+
+Value* UIManager::AskDialog (const char* description, Value* collection,
+    const char* heading, ...)
+{
+  csRef<iUIDialog> dialog = CreateDialog (description, 400);
+  dialog->AddRow ();
+  va_list args;
+  va_start (args, heading);
+  dialog->AddListIndexed ("name", collection, csArrayItemNotFound, false, 400, heading, args);
+  va_end (args);
+  if (dialog->Show (0))
+  {
+    const DialogValues& result = dialog->GetFieldValues ();
+    Value* row = result.Get ("name", (Ares::Value*)0);
+    return row;
   }
   return 0;
 }

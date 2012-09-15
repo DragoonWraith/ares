@@ -585,21 +585,15 @@ void PropertyClassPanel::FillDynworld ()
 
 void PropertyClassPanel::OnSearchEntityTrigger (wxCommandEvent& event)
 {
-  csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select an entity");
-  dialog->AddRow ();
   csRef<Ares::Value> objects = emode->GetApplication ()->Get3DView ()->
     GetModelRepository ()->GetObjectsWithEntityValue ();
-  dialog->AddListIndexed ("name", objects, DYNOBJ_COL_ENTITY, false, 300, "Entity,Template,Dynfact",
+  Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact",
       DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
-  if (dialog->Show (0))
+  if (entity)
   {
-    const DialogResult& result = dialog->GetFieldContents ();
-    csString name = result.Get ("name", "");
-    if (!name.IsEmpty ())
-    {
-      UITools::SetValue (this, "entity_Trig_Text", name);
-      UpdateTrigger ();
-    }
+    csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
+    UITools::SetValue (this, "entity_Trig_Text", name);
+    UpdateTrigger ();
   }
 }
 
@@ -1140,23 +1134,15 @@ static void CorrectQuestName (csString& name)
 
 void PropertyClassPanel::OnChangeQuest (wxCommandEvent& event)
 {
-  csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select a quest");
-  dialog->AddRow ();
-  csRef<Ares::Value> assets = emode->GetApplication ()->Get3DView ()->
+  csRef<Ares::Value> quests = emode->GetApplication ()->Get3DView ()->
     GetModelRepository ()->GetQuestsValue ();
-  dialog->AddListIndexed ("quest", assets, QUEST_COL_NAME, false, 300, "Name",
-      QUEST_COL_NAME);
-  if (dialog->Show (0))
+  Value* quest = uiManager->AskDialog ("Select a quest", quests, "Name", QUEST_COL_NAME);
+  if (quest)
   {
-    const DialogResult& result = dialog->GetFieldContents ();
-    csString quest = result.Get ("quest", "");
-    if (!quest.IsEmpty ())
-    {
-      CorrectQuestName (quest);
-      wxTextCtrl* questText = XRCCTRL (*this, "questText", wxTextCtrl);
-      questText->ChangeValue (wxString::FromUTF8 (quest));
-      UpdateQuest ();
-    }
+    csString name = quest->GetStringArrayValue ()->Get (QUEST_COL_NAME);
+    CorrectQuestName (name);
+    UITools::SetValue (this, "questText", name);
+    UpdateQuest ();
   }
 }
 

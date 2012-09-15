@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 #include <wx/wx.h>
 
+#include "edcommon/model.h"
+
 /**
  * The UI Manager.
  */
@@ -44,6 +46,13 @@ struct iUIManager : public virtual iBase
    */
   virtual csRef<iString> AskDialog (const char* description, const char* label,
       const char* value = 0) = 0;
+
+  /**
+   * Ask the user to select a value out of a list and return the selected
+   * value. This only works with indexed values.
+   */
+  virtual Ares::Value* AskDialog (const char* description, Ares::Value* collection,
+      const char* heading, ...) = 0;
 
   /**
    * Create a dynamically buildable dialog.

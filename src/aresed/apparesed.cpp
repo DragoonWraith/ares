@@ -723,23 +723,16 @@ void AppAresEditWX::RegisterModification (const csArray<iObject*>& resources)
 	else
 	{
 	  csString title = "Select an asset for these resources";
-	  csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
-	  dialog->AddRow ();
 	  csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
-	  dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, false, 300, "Writable,Path,File,Mount",
+          Value* assetVal = uiManager->AskDialog (title, assets, "Writable,Path,File,Mount",
 	      ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
-	  if (dialog->Show (0))
-	  {
-	    const DialogValues& result = dialog->GetFieldValues ();
-	    Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
-	    if (row)
-	    {
-	      AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
-	      asset = av->GetObjectFromValue (row);
-	      assetManager->PlaceResource (resource, asset);
-	      assetManager->RegisterModification (resource);
-	    }
-	  }
+          if (assetVal)
+          {
+	    AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
+	    asset = av->GetObjectFromValue (assetVal);
+	    assetManager->PlaceResource (resource, asset);
+	    assetManager->RegisterModification (resource);
+          }
 	  if (!asset)
 	  {
 	    uiManager->Message ("Warning! These assets will not be saved!");
@@ -765,24 +758,17 @@ void AppAresEditWX::RegisterModification (iObject* resource)
     {
       csString title;
       title.Format ("Select an asset for this resource '%s'", resource->GetName ());
-      csRef<iUIDialog> dialog = uiManager->CreateDialog (title, 500);
-      dialog->AddRow ();
       csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
-      dialog->AddListIndexed ("asset", assets, ASSET_COL_FILE, false, 300, "Writable,Path,File,Mount",
-	  ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
-      if (dialog->Show (0))
+      Value* assetVal = uiManager->AskDialog (title, assets, "Writable,Path,File,Mount",
+	      ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
+      if (assetVal)
       {
-	const DialogValues& result = dialog->GetFieldValues ();
-	Ares::Value* row = result.Get ("asset", (Ares::Value*)0);
-	if (row)
-	{
-	  AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
-	  iAsset* asset = av->GetObjectFromValue (row);
-	  assetManager->PlaceResource (resource, asset);
-	  assetManager->RegisterModification (resource);
-	  UpdateTitle ();
-	  return;
-	}
+	AssetsValue* av = static_cast<AssetsValue*> ((Ares::Value*)assets);
+	iAsset* asset = av->GetObjectFromValue (assetVal);
+	assetManager->PlaceResource (resource, asset);
+	assetManager->RegisterModification (resource);
+	UpdateTitle ();
+	return;
       }
 
       uiManager->Message ("Warning! This asset will not be saved!");
