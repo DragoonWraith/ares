@@ -221,6 +221,7 @@
 											<border>5</border>
 											<object class="wxTextCtrl" name="questText">
 												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>The name of the quest for this property class</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -230,6 +231,7 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL|wxEXPAND</flag>
 											<border>5</border>
 											<object class="wxButton" name="questButton">
+												<tooltip>A list of quests from which to choose</tooltip>
 												<label>Quest...</label>
 												<default>0</default>
 											</object>
@@ -280,6 +282,7 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxCheckBox" name="spawnRepeatCheckBox">
+												<tooltip>Repeat spawning</tooltip>
 												<label>Repeat</label>
 												<checked>0</checked>
 											</object>
@@ -289,6 +292,7 @@
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxCheckBox" name="spawnRandomCheckBox">
+												<tooltip>Select spawned items random from the list. Otherwise sequentially</tooltip>
 												<label>Random</label>
 												<checked>0</checked>
 											</object>
@@ -349,7 +353,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>1</option>
+											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="spawnSectorText">
@@ -359,7 +363,7 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
+											<option>1</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="spawnPositionText">
@@ -391,6 +395,7 @@
 											<border>5</border>
 											<object class="wxTextCtrl" name="spawnInhibitText">
 												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>Maximum number of spawned entities in existance at the same time</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -418,6 +423,7 @@
 											<border>5</border>
 											<object class="wxTextCtrl" name="spawnMinDelayText">
 												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>Minimum time to wait before next spawn</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -428,6 +434,7 @@
 											<border>5</border>
 											<object class="wxTextCtrl" name="spawnMaxDelayText">
 												<style>wxTE_PROCESS_ENTER</style>
+												<tooltip>Maximum time to wait before next spawn</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
 											</object>
@@ -595,8 +602,8 @@
 											</object>
 										</object>
 										<object class="sizeritem">
-											<option>0</option>
-											<flag>wxALL</flag>
+											<option>1</option>
+											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxTextCtrl" name="entity_Trig_Text">
 												<style>wxTE_PROCESS_ENTER</style>
@@ -605,6 +612,23 @@
 												<maxlength>0</maxlength>
 											</object>
 										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="searchEntity_Trig_Button">
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxBoxSizer">
+										<orient>wxHORIZONTAL</orient>
 										<object class="sizeritem">
 											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
@@ -849,7 +873,7 @@
 																<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 																<border>5</border>
 																<object class="wxStaticText" name="m_staticText9411">
-																	<label>Stop:</label>
+																	<label>End:</label>
 																	<wrap>-1</wrap>
 																</object>
 															</object>

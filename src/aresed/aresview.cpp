@@ -1111,7 +1111,7 @@ iDynamicObject* AresEdit3DView::SpawnItem (const csString& name,
   csString tplName = dynobj->GetFactory ()->GetDefaultEntityTemplate ();
   if (tplName.IsEmpty ())
     tplName = fname;
-  dynobj->SetEntity (0, tplName, 0);
+  dynobj->SetEntity (tplName == "Player" ? "Player" : 0, tplName, 0);
   dynworld->ForceVisible (dynobj);
 
   if (!static_factories.In (fname))

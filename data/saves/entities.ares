@@ -3,9 +3,9 @@
   <asset path="$#logic/" file="entities.xml" writable="true" />
   <asset path="$#objects/simple.zip" file="library" />
   <asset path="$#logic/" file="entities_objects.xml" writable="true" />
-  <dynworld lastid="1000160000">
+  <dynworld lastid="1000170000">
     <cell name="outside">
-      <obj fact="Barrel" name="Mover" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-8.82366 0.739043 17.175" id="1000150024" ent="StandardMover">
+      <obj fact="Barrel" name="Mover" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-8.82366 0.739043 17.175" id="1000160001" ent="StandardMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="1" />
@@ -13,33 +13,32 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Player" m="0.991223 1.81961e-006 -0.132202 -1.85173e-006 1 -1.20023e-007 0.132202 3.63772e-007 0.991223" v="-8.47626 0.1 16.0339" id="1000150025" ent="Player" />
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-7.18494 0.6 17.7478" id="1000150026" ent="StandardYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-7.18494 0.6 17.7478" id="1000160002" ent="StandardYRotator">
         <params>
           <par name="duration" long="1000" />
           <par name="angle" float="1" />
         </params>
       </obj>
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-6.08234 0.6 14.4268" id="1000150027" ent="LoopedYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-6.08234 0.6 14.4268" id="1000160003" ent="LoopedYRotator">
         <params>
           <par name="duration" long="10000" />
           <par name="angle" float="3" />
         </params>
       </obj>
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-10.0078 0.6 14.3983" id="1000150028" ent="TimedYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-10.0078 0.6 14.3983" id="1000160004" ent="TimedYRotator">
         <params>
           <par name="duration" long="200" />
           <par name="angle" float="1" />
           <par name="timeout" long="500" />
         </params>
       </obj>
-      <obj fact="MicroBox" m="0.988222 0 -0.153026 -0 1 -0 0.153026 -0 0.988222" v="-6.74988 0 16.2918" id="1000150029" ent="StandardOtherMover">
+      <obj fact="MicroBox" m="0.988222 0 -0.153026 -0 1 -0 0.153026 -0 0.988222" v="-6.74988 0 16.2918" id="1000160005" ent="StandardOtherMover">
         <params>
           <par name="target" string="Mover" />
         </params>
       </obj>
-      <obj fact="Box" name="TriggerBox" m="0.99456 -0 0.104163 0 1 -0 -0.104163 -0 0.99456" v="-16.1855 0 27.7976" id="1000150030" ent="TestTrigger" />
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-15.4211 0.6 30.1138" id="1000150031" ent="TriggerMover">
+      <obj fact="Box" name="TriggerBox" m="0.99456 -0 0.104163 0 1 -0 -0.104163 -0 0.99456" v="-16.1855 0 27.7976" id="1000160006" ent="TestTrigger" />
+      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-15.4211 0.6 30.1138" id="1000160007" ent="TriggerMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="2" />
@@ -48,6 +47,7 @@
           <par name="trigger" string="TriggerBox" />
         </params>
       </obj>
+      <obj fact="Player" name="Player" m="0.331961 -0 0.943293 0 1 -0 -0.943293 -0 0.331961" v="-5.20402 -0.129172 13.159" id="1000160008" ent="Player" />
     </cell>
   </dynworld>
   <curves />

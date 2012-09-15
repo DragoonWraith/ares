@@ -105,6 +105,7 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
 
   EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
 
+  EVT_BUTTON (XRCID("searchEntity_Trig_Button"), PropertyClassPanel :: OnSearchEntityTrigger)
   EVT_TEXT (XRCID("delay_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("jitter_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
@@ -581,6 +582,26 @@ void PropertyClassPanel::FillDynworld ()
 }
 
 // -----------------------------------------------------------------------
+
+void PropertyClassPanel::OnSearchEntityTrigger (wxCommandEvent& event)
+{
+  csRef<iUIDialog> dialog = uiManager->CreateDialog ("Select an entity");
+  dialog->AddRow ();
+  csRef<Ares::Value> objects = emode->GetApplication ()->Get3DView ()->
+    GetModelRepository ()->GetObjectsWithEntityValue ();
+  dialog->AddListIndexed ("name", objects, DYNOBJ_COL_ENTITY, false, 300, "Entity,Template,Dynfact",
+      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
+  if (dialog->Show (0))
+  {
+    const DialogResult& result = dialog->GetFieldContents ();
+    csString name = result.Get ("name", "");
+    if (!name.IsEmpty ())
+    {
+      UITools::SetValue (this, "entity_Trig_Text", name);
+      UpdateTrigger ();
+    }
+  }
+}
 
 bool PropertyClassPanel::UpdateTrigger ()
 {
