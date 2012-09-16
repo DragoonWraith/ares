@@ -215,7 +215,9 @@ void GraphView::ActivateMarker (iMarker* marker, const char* node)
     }
   }
   for (size_t i = 0 ; i < callbacks.GetSize () ; i++)
+  {
     callbacks[i]->ActivateNode (node);
+  }
 }
 
 void GraphView::AddNodeActivationCallback (iGraphNodeCallback* cb)
@@ -803,10 +805,9 @@ public:
       const csVector3& pos, uint button, uint32 modifiers)
   {
     if (view)
-    {
       view->ActivateMarker (marker);
+    if (view)
       view->SetDraggingMarker (marker);
-    }
   }
   virtual void MarkerWantsMove (iMarker* marker, iMarkerHitArea* area,
       const csVector3& pos)
@@ -1927,8 +1928,11 @@ bool MarkerManager::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
 	  hitArea->GetSpace (), hitArea->GetCenter ());
       dragDistance = (dragRestrict - camtrans.GetOrigin ()).Norm ();
       if (dm->cb)
+      {
+	csRef<iMarkerCallback> cb = dm->cb;	// Prevently untimely cleanup.
         dm->cb->StartDragging (hitArea->GetMarker (), hitArea, dragRestrict,
 	    but, mod);
+      }
       return true;
     }
   }

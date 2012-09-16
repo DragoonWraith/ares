@@ -185,6 +185,7 @@ protected:
   virtual void ChildChanged (Value* child)
   {
     FireValueChanged ();
+    sequencePanel->RegisterModification ();
   }
 
 public:
@@ -194,9 +195,6 @@ public:
   virtual void FireValueChanged ()
   {
     StandardCollectionValue::FireValueChanged ();
-    // @@@ This may be a bit too much. This also register a modification if we just look at the
-    // sequence.
-    sequencePanel->GetEntityMode ()->RegisterModification (sequencePanel->GetQuestFactory ());
   }
 
   virtual bool DeleteValue (Value* child)
@@ -207,6 +205,7 @@ public:
     seqFact->RemoveSeqOpFactory (indexValue->GetLongValue ());
     dirty = true;
     FireValueChanged ();
+    sequencePanel->RegisterModification ();
     return true;
   }
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
@@ -226,6 +225,7 @@ public:
     }
     Value* child = NewChild (type, duration, seqFact->GetSeqOpFactoryCount ()-1);
     FireValueChanged ();
+    sequencePanel->RegisterModification ();
     return child;
   }
 
@@ -308,6 +308,7 @@ protected:
   {
     if (updating || !GetSequence ()) return;
     sequence->SetMessageParameter (GetStr ("message"));
+    sequencePanel->RegisterModification ();
   }
 
 public:
@@ -342,6 +343,7 @@ protected:
 	this->GetStr ("relblue"));
     this->sequence->SetAbsColorParameter (this->GetStr ("absred"), this->GetStr ("absgreen"),
 	this->GetStr ("absblue"));
+    this->sequencePanel->RegisterModification ();
   }
 
 public:
@@ -400,6 +402,7 @@ protected:
   {
     if (updating || !GetSequence ()) return;
     sequence->SetEntityParameter (GetStr ("entity"), GetStr ("tag"));
+    sequencePanel->RegisterModification ();
     // @@@ Todo path
   }
 
@@ -438,6 +441,7 @@ protected:
     sequence->SetVector3Parameter (GetStr ("vectorx"), GetStr ("vectory"),
 	GetStr ("vectorz"));
     sequence->SetRelative (GetBool ("relative"));
+    sequencePanel->RegisterModification ();
   }
 
 public:
@@ -490,6 +494,7 @@ protected:
     
     csString r = GetStr ("reversed");
     sequence->SetReversed (r == "true");
+    sequencePanel->RegisterModification ();
   }
 
 public:
@@ -521,6 +526,11 @@ public:
 };
 
 // -----------------------------------------------------------------------
+
+void SequencePanel::RegisterModification ()
+{
+  GetEntityMode ()->RegisterModification (GetQuestFactory ());
+}
 
 SequencePanel::SequencePanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :

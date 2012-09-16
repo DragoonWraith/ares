@@ -72,6 +72,8 @@ public:
   SequencePanel (wxWindow* parent, iUIManager* uiManager, EntityMode* emode);
   ~SequencePanel();
 
+  void RegisterModification ();
+
   iCelPlLayer* GetPL () const { return pl; }
   EntityMode* GetEntityMode () const { return emode; }
   iQuestFactory* GetQuestFactory () const { return questFact; }

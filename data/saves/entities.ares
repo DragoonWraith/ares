@@ -47,7 +47,7 @@
           <par name="trigger" string="TriggerBox" />
         </params>
       </obj>
-      <obj fact="Player" name="Player" m="0.331961 -0 0.943293 0 1 -0 -0.943293 -0 0.331961" v="-5.20402 -0.129172 13.159" id="1000160008" ent="Player" />
+      <obj fact="Player" name="Player" m="0.331961 -0 0.943293 0 1 -0 -0.943293 -0 0.331961" v="-5.20402 0.110444 13.159" id="1000160008" ent="Player" />
     </cell>
   </dynworld>
   <curves />
