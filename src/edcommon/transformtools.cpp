@@ -231,6 +231,8 @@ void TransformTools::StackSelectedObjects (iSelection* selection)
 
   csReversibleTransform firstTrans = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ();
   csBox3 firstBbox = selection->GetFirst ()->GetFactory ()->GetPhysicsBBox ();
+  firstBbox = firstTrans.This2Other (firstBbox);
+  float cury = firstBbox.MaxY ();
 
   csRef<iSelectionIterator> it = selection->GetIterator ();
   while (it->HasNext ())
@@ -241,18 +243,55 @@ void TransformTools::StackSelectedObjects (iSelection* selection)
     if (!mesh) continue;
     dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
-    const csBox3& bbox = dynobj->GetFactory ()->GetPhysicsBBox ();
+
     csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
+    csBox3 bbox = dynobj->GetFactory ()->GetPhysicsBBox ();
+    bbox = tr.This2Other (bbox);
+
     csVector3 v = firstTrans.GetOrigin ();
-    v.y = firstTrans.GetOrigin ().y + firstBbox.MaxY () - bbox.MinY ();
+    v.y = cury + tr.GetOrigin ().y - bbox.MinY ();
     tr.SetOrigin (v);
+    cury += bbox.MaxY ()-bbox.MinY ();
+
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
     dynobj->RecreatePivotJoints ();
 
     // Next stack we perform relative to the previous one we stacked.
     firstTrans = tr;
-    firstBbox = bbox;
+  }
+}
+
+void TransformTools::SpreadSelectedObjects (iSelection* selection)
+{
+  if (selection->GetSize () <= 1) return;
+  if (!selection->GetFirst ()->GetMesh ()) return;
+  if (!selection->GetLast ()->GetMesh ()) return;
+
+  csVector3 first = selection->GetFirst ()->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
+  csVector3 last = selection->GetLast ()->GetMesh ()->GetMovable ()->GetTransform ().GetOrigin ();
+
+  float maxdist = sqrt (csSquaredDist::PointPoint (first, last));
+  float step = maxdist / float (selection->GetSize ()-1);
+
+  size_t i = 0;
+  csRef<iSelectionIterator> it = selection->GetIterator ();
+  while (it->HasNext ())
+  {
+    iDynamicObject* dynobj = it->Next ();
+    i++;
+    if (dynobj == selection->GetFirst () || dynobj == selection->GetLast ()) continue;
+    iMeshWrapper* mesh = dynobj->GetMesh ();
+    if (!mesh) continue;
+    dynobj->RemovePivotJoints ();
+    dynobj->MakeKinematic ();
+
+    csReversibleTransform& tr = mesh->GetMovable ()->GetTransform ();
+    tr.SetOrigin (first + (last-first) * float (i-1) * step / maxdist);
+
+    mesh->GetMovable ()->UpdateMove ();
+    dynobj->UndoKinematic ();
+    dynobj->RecreatePivotJoints ();
   }
 }
 

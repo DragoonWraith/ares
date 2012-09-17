@@ -550,6 +550,8 @@ bool celPcGameController::StartDrag ()
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
   {
+    if (obj->IsStatic ())
+      return true;	// No dragging.
     if (obj->GetEntity ())
     {
       csRef<iPcProperties> prop = celQueryPropertyClassEntity<iPcProperties> (obj->GetEntity ());

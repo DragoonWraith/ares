@@ -66,6 +66,11 @@ struct iSelection : public virtual iBase
   virtual iDynamicObject* GetFirst () const = 0;
 
   /**
+   * Get the last selected object.
+   */
+  virtual iDynamicObject* GetLast () const = 0;
+
+  /**
    * Get the number of selected objects.
    */
   virtual size_t GetSize () const = 0;

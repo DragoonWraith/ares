@@ -160,6 +160,7 @@ private:
 
   int idDelete, idCreate, idEditQuest, idNewState, idNewSequence, idDefaultState;
   int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;
+  int idRewardUp, idRewardDown;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -263,6 +264,7 @@ public:
   void OnDefaultState ();
   void OnCreateTrigger ();
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
+  void OnRewardMove (int dir);
 
   void AskNewTemplate ();
   void OnTemplateDel (const char* tplName);
@@ -291,6 +293,8 @@ public:
     void OnCreateReward (wxCommandEvent& event) { s->OnCreateReward (0); }
     void OnCreateRewardOnInit (wxCommandEvent& event) { s->OnCreateReward (1); }
     void OnCreateRewardOnExit (wxCommandEvent& event) { s->OnCreateReward (2); }
+    void OnRewardUp (wxCommandEvent& event) { s->OnRewardMove (-1); }
+    void OnRewardDown (wxCommandEvent& event) { s->OnRewardMove (1); }
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
 

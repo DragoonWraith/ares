@@ -61,6 +61,7 @@ static csStringID ID_RotRight = csInvalidStringID;
 static csStringID ID_AlignObj = csInvalidStringID;
 static csStringID ID_AlignRot = csInvalidStringID;
 static csStringID ID_AlignHeight = csInvalidStringID;
+static csStringID ID_Spread = csInvalidStringID;
 static csStringID ID_SnapObj = csInvalidStringID;
 static csStringID ID_StackObj = csInvalidStringID;
 static csStringID ID_Copy = csInvalidStringID;
@@ -108,6 +109,7 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
   ID_AlignObj = pl->FetchStringID ("AlignObj");
   ID_AlignRot = pl->FetchStringID ("AlignRot");
   ID_AlignHeight = pl->FetchStringID ("AlignHeight");
+  ID_Spread = pl->FetchStringID ("Spread");
   ID_SnapObj = pl->FetchStringID ("SnapObj");
   ID_StackObj = pl->FetchStringID ("StackObj");
   ID_Copy = pl->FetchStringID ("Copy");
@@ -304,6 +306,7 @@ bool MainMode::Command (csStringID id, const csString& args)
   else if (id == ID_AlignObj) TransformTools::SetPosSelectedObjects (view3d->GetSelection ());
   else if (id == ID_AlignRot) TransformTools::AlignSelectedObjects (view3d->GetSelection ());
   else if (id == ID_AlignHeight) TransformTools::SameYSelectedObjects (view3d->GetSelection ());
+  else if (id == ID_Spread) TransformTools::SpreadSelectedObjects (view3d->GetSelection ());
   else if (id == ID_SnapObj) OnSnapObjects ();
   else if (id == ID_StackObj) TransformTools::StackSelectedObjects (view3d->GetSelection ());
   else if (id == ID_Copy) view3d->GetPaster ()->CopySelection ();
@@ -321,6 +324,7 @@ bool MainMode::IsCommandValid (csStringID id, const csString& args,
   if (id == ID_AlignObj) return cnt > 1;
   if (id == ID_AlignRot) return cnt > 1;
   if (id == ID_AlignHeight) return cnt > 1;
+  if (id == ID_Spread) return cnt > 2;
   if (id == ID_SnapObj) return cnt > 1;
   if (id == ID_StackObj) return cnt > 1;
   if (id == ID_Copy) return cnt > 0;

@@ -5,22 +5,18 @@
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="one" />
-          <reward type="cel.rewards.debugprint" message="On Done" />
           <reward type="cel.rewards.newstate" state="off" />
         </trigger>
       </state>
       <state name="off">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="two" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="off started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="two" />
-          <reward type="cel.rewards.debugprint" message="Off Done" />
           <reward type="cel.rewards.newstate" state="on" />
         </trigger>
       </state>
@@ -30,18 +26,13 @@
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="one" />
-          <reward type="cel.rewards.debugprint" message="On Done" />
           <reward type="cel.rewards.newstate" state="waitOff" />
         </trigger>
       </state>
       <state name="init">
-        <oninit>
-          <reward type="cel.rewards.debugprint" message="starting quest" />
-        </oninit>
         <trigger type="cel.triggers.message">
           <fireon entity="$this" mask="ares.Activate" />
           <reward type="cel.rewards.newstate" state="on" />
@@ -56,11 +47,9 @@
       <state name="off">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="two" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="off started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="two" />
-          <reward type="cel.rewards.debugprint" message="Off Done" />
           <reward type="cel.rewards.newstate" state="init" />
         </trigger>
       </state>
@@ -89,18 +78,13 @@
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="one" />
-          <reward type="cel.rewards.debugprint" message="On Done" />
           <reward type="cel.rewards.newstate" state="waitOff" />
         </trigger>
       </state>
       <state name="init">
-        <oninit>
-          <reward type="cel.rewards.debugprint" message="starting quest" />
-        </oninit>
         <trigger type="cel.triggers.trigger">
           <fireon entity="$trigger" />
           <reward type="cel.rewards.newstate" state="on" />
@@ -115,11 +99,9 @@
       <state name="off">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="two" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="off started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="two" />
-          <reward type="cel.rewards.debugprint" message="Off Done" />
           <reward type="cel.rewards.newstate" state="init" />
         </trigger>
       </state>
@@ -148,18 +130,13 @@
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="one" />
-          <reward type="cel.rewards.debugprint" message="On Done" />
           <reward type="cel.rewards.newstate" state="waitOff" />
         </trigger>
       </state>
       <state name="init">
-        <oninit>
-          <reward type="cel.rewards.debugprint" message="starting quest" />
-        </oninit>
         <trigger type="cel.triggers.timeout">
           <fireon timeout="$timeout" />
           <reward type="cel.rewards.newstate" state="on" />
@@ -174,11 +151,9 @@
       <state name="off">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$this" sequence="two" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="off started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$this" entity_tag="sequencer" sequence="two" />
-          <reward type="cel.rewards.debugprint" message="Off Done" />
           <reward type="cel.rewards.newstate" state="init" />
         </trigger>
       </state>
@@ -220,24 +195,68 @@
         <delay time="$duration" />
       </sequence>
     </quest>
+    <quest name="DblActivatorMessage">
+      <!--This quest works in combination with a double sequencer and serves as a way to activate the sequence between the two states ('one' and 'two'). Use this in combination with a 'DblSequencer...' quest with tag 'sequencer'. This version is based on the 'activator.toggle' message.-->
+      <state name="on">
+        <oninit>
+          <reward type="cel.rewards.sequence" entity="$this" sequence="one" entity_tag="sequencer" />
+        </oninit>
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="one" />
+          <reward type="cel.rewards.newstate" state="waitOff" />
+        </trigger>
+      </state>
+      <state name="init">
+        <trigger type="cel.triggers.message">
+          <fireon entity="$this" mask="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="on" />
+        </trigger>
+      </state>
+      <state name="waitOff">
+        <trigger type="cel.triggers.message">
+          <fireon entity="$this" mask="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="off" />
+        </trigger>
+      </state>
+      <state name="off">
+        <oninit>
+          <reward type="cel.rewards.sequence" entity="$this" sequence="two" entity_tag="sequencer" />
+        </oninit>
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="two" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+      </state>
+    </quest>
+    <quest name="BridgeSequencerToToggleMessage">
+      <!--This quest acts as a bridge between the sequencer (on the same entity as this quest) and a DblActivatorMessage quest on another entity.
+@param bar,string is the name of the entity containing the DblActivatorMessage-->
+      <state name="init">
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="one" />
+          <reward type="cel.rewards.message" entity="$bar" id="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="two" />
+          <reward type="cel.rewards.message" entity="$bar" id="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+      </state>
+    </quest>
     <quest name="DblActivatorOtherStandard">
       <!--This quest works in combination with a double sequencer and serves as a way to activate the sequence between the two states ('one' and 'two'). Use this in combination with a 'DblSequencer...' quest with tag 'sequencer'. This version is based on the standard activation message from the game controller. This version works on the sequencer of another entity.
 @param target,string is the name of the target entity.-->
       <state name="on">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$target" sequence="one" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="on started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$target" entity_tag="sequencer" sequence="one" />
-          <reward type="cel.rewards.debugprint" message="On Done" />
           <reward type="cel.rewards.newstate" state="waitOff" />
         </trigger>
       </state>
       <state name="init">
-        <oninit>
-          <reward type="cel.rewards.debugprint" message="starting quest" />
-        </oninit>
         <trigger type="cel.triggers.message">
           <fireon entity="$this" mask="ares.Activate" />
           <reward type="cel.rewards.newstate" state="on" />
@@ -252,11 +271,9 @@
       <state name="off">
         <oninit>
           <reward type="cel.rewards.sequence" entity="$target" sequence="two" entity_tag="sequencer" />
-          <reward type="cel.rewards.debugprint" message="off started" />
         </oninit>
         <trigger type="cel.triggers.sequencefinish">
           <fireon entity="$target" entity_tag="sequencer" sequence="two" />
-          <reward type="cel.rewards.debugprint" message="Off Done" />
           <reward type="cel.rewards.newstate" state="init" />
         </trigger>
       </state>
@@ -264,6 +281,30 @@
   </addon>
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="World" />
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="MessageMover">
+    <!--A template hosting a quest that can move an object between two positions based on an activator.toggle message.
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
+    <propclass name="pclogic.quest" tag="activator">
+      <action name="NewQuest">
+        <par name="name" string="DblActivatorMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
+        <par name="name" string="DblSequencerMove" />
+      </action>
+    </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="TriggerMover">
     <!--A template hosting a quest that can move an object between two positions based on an activation message.

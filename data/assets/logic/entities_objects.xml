@@ -36,6 +36,12 @@
         <size x="0.14" y="0.14" z="0.14" />
       </box>
     </factory>
+    <factory name="Wall" maxradius="1" imposterradius="0" collider="true" mass="0">
+      <attr name="category" value="Clutter" />
+    </factory>
+    <factory name="Bar" maxradius="1" imposterradius="0" collider="true" mass="0">
+      <attr name="category" value="Clutter" />
+    </factory>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="World">
     <propclass name="pcworld.dynamic">
@@ -74,6 +80,82 @@
       </action>
     </propclass>
   </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar23">
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
+    <propclass name="pclogic.quest" tag="activator">
+      <action name="NewQuest">
+        <par name="name" string="DblActivatorStandard" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
+        <par name="name" string="DblSequencerMove" />
+      </action>
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar2">
+      <action name="NewQuest">
+        <par name="bar" string="Bar2" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar3">
+      <action name="NewQuest">
+        <par name="bar" string="Bar3" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar25">
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
+    <propclass name="pclogic.quest" tag="activator">
+      <action name="NewQuest">
+        <par name="name" string="DblActivatorStandard" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
+        <par name="name" string="DblSequencerMove" />
+      </action>
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar2">
+      <action name="NewQuest">
+        <par name="bar" string="Bar2" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar5">
+      <action name="NewQuest">
+        <par name="bar" string="Bar5" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+  </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="TestTrigger">
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.trigger">
@@ -87,6 +169,89 @@
         <par name="position" vector3="0,0,0" />
         <par name="radius" float="6" />
       </action>
+    </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar13">
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
+    <propclass name="pclogic.quest" tag="activator">
+      <action name="NewQuest">
+        <par name="name" string="DblActivatorStandard" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
+        <par name="name" string="DblSequencerMove" />
+      </action>
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar1">
+      <action name="NewQuest">
+        <par name="bar" string="Bar1" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar3">
+      <action name="NewQuest">
+        <par name="bar" string="Bar3" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar145">
+    <!--A template hosting a quest that can move an object between two positions based on an activation message.
+@param duration,long,1000 duration for the sequencer
+@param x,float,0.0
+@param y,float,0.0
+@param z,float,0.0
+-->
+    <propclass name="pclogic.quest" tag="activator">
+      <action name="NewQuest">
+        <par name="name" string="DblActivatorStandard" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.quest" tag="sequencer">
+      <action name="NewQuest">
+        <par name="duration" long="@duration" />
+        <par name="x" float="@x" />
+        <par name="y" float="@y" />
+        <par name="z" float="@z" />
+        <par name="name" string="DblSequencerMove" />
+      </action>
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar1">
+      <action name="NewQuest">
+        <par name="bar" string="Bar1" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar4">
+      <action name="NewQuest">
+        <par name="bar" string="Bar5" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.quest" tag="moveBar5">
+      <action name="NewQuest">
+        <par name="bar" string="Bar4" />
+        <par name="name" string="DblSequenceFinishToToggleMessage" />
+      </action>
+      <property name="state" string="init" />
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="Player">

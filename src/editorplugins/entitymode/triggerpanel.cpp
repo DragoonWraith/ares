@@ -155,7 +155,9 @@ void TriggerPanel::OnSetThisWatch (wxCommandEvent& event)
 void TriggerPanel::OnSetThisQuest (wxCommandEvent& event)
 {
   UITools::SetValue (this, "entity_Sf_Text", "$this");
-  UITools::SetValue (this, "tag_Sf_Text", emode->GetSelectedPC ()->GetTag ());
+  iCelPropertyClassTemplate* pctpl = emode->GetSelectedPC ();
+  if (pctpl)
+    UITools::SetValue (this, "tag_Sf_Text", pctpl->GetTag ());
 }
 
 csString TriggerPanel::GetCurrentTriggerType ()

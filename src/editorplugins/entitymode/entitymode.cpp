@@ -1632,6 +1632,26 @@ void EntityMode::ActivateNode (const char* nodeName)
   }
 }
 
+void EntityMode::OnRewardMove (int dir)
+{
+  if (GetContextMenuNode ().IsEmpty ()) return;
+  size_t idx;
+  csRef<iRewardFactoryArray> array = GetSelectedReward (GetContextMenuNode (), idx);
+  if (!array) return;
+  if (dir == -1 && idx <= 0) return;
+  if (dir == 1 && idx >= array->GetSize ()-1) return;
+
+  csRef<iRewardFactory> rf = array->Get (idx);
+  array->DeleteIndex (idx);
+  array->Insert (idx + dir, rf);
+
+  iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+  RegisterModification (questFact);
+  graphView->ActivateNode (0);
+  ActivateNode (0);
+  RefreshView ();
+}
+
 void EntityMode::OnCreateReward (int type)
 {
   if (GetContextMenuNode ().IsEmpty ()) return;
@@ -1865,6 +1885,12 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idCreateRewardOnExit = ui->AllocContextMenuID ();
   frame->Connect (idCreateRewardOnExit, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnCreateRewardOnExit), 0, panel);
+  idRewardUp = ui->AllocContextMenuID ();
+  frame->Connect (idRewardUp, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnRewardUp), 0, panel);
+  idRewardDown = ui->AllocContextMenuID ();
+  frame->Connect (idRewardDown, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnRewardDown), 0, panel);
 }
 
 csString EntityMode::GetContextMenuNode ()
@@ -1919,7 +1945,15 @@ void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
         contextMenu->Append (idDelete, wxT ("Delete Sequence"));
 	break;
       case  'r':
-        contextMenu->Append (idDelete, wxT ("Delete Reward"));
+	{
+          contextMenu->Append (idDelete, wxT ("Delete Reward"));
+          size_t idx;
+          csRef<iRewardFactoryArray> array = GetSelectedReward (GetContextMenuNode (), idx);
+          item = contextMenu->Append (idRewardUp, wxT ("Move Up"));
+	  item->Enable (idx > 0);
+          item = contextMenu->Append (idRewardDown, wxT ("Move Down"));
+	  item->Enable (idx < array->GetSize ()-1);
+	}
 	break;
       case 'i':
         contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));

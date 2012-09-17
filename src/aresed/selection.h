@@ -80,6 +80,7 @@ public:
   virtual const csArray<iDynamicObject*>& GetObjects () const { return current_objects; }
   virtual size_t GetSize () const { return current_objects.GetSize (); }
   virtual iDynamicObject* GetFirst () const { return current_objects[0]; }
+  virtual iDynamicObject* GetLast () const { return current_objects[current_objects.GetSize ()-1]; }
   virtual bool HasSelection () const { return GetSize () > 0; }
 
   virtual void SetCurrentObject (iDynamicObject* dynobj);

@@ -44,6 +44,13 @@ public:
   static void StackSelectedObjects (iSelection* selection);
 
   /**
+   * Spread all selected objects so that they are evenly distributed
+   * between the first selected object and the last selected object (these
+   * two don't move). Rotation isn't affected.
+   */
+  static void SpreadSelectedObjects (iSelection* selection);
+
+  /**
    * Move all selected objects to the same heigh.
    */
   static void SameYSelectedObjects (iSelection* selection);
