@@ -105,13 +105,17 @@
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar2">
       <action name="NewQuest">
+        <par name="bar" string="Bar2" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar3">
       <action name="NewQuest">
+        <par name="bar" string="Bar3" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar25">
@@ -139,13 +143,17 @@
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar2">
       <action name="NewQuest">
+        <par name="bar" string="Bar2" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar5">
       <action name="NewQuest">
+        <par name="bar" string="Bar5" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="TestTrigger">
@@ -188,13 +196,17 @@
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar1">
       <action name="NewQuest">
+        <par name="bar" string="Bar1" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar3">
       <action name="NewQuest">
+        <par name="bar" string="Bar3" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar145">
@@ -222,18 +234,24 @@
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar1">
       <action name="NewQuest">
+        <par name="bar" string="Bar1" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar4">
       <action name="NewQuest">
+        <par name="bar" string="Bar4" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar5">
       <action name="NewQuest">
+        <par name="bar" string="Bar5" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
       </action>
+      <property name="state" string="init" />
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="Player">
