@@ -5,7 +5,7 @@
   <asset path="$#logic/" file="entities_objects.xml" writable="true" />
   <dynworld lastid="1000260000">
     <cell name="outside">
-      <obj fact="Barrel" name="Mover" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-8.82366 0.739043 17.175" id="1000250026" ent="StandardMover">
+      <obj fact="Barrel" name="Mover" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-8.82366 0.739043 17.175" id="1000250026" ent="StandardMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="1" />
@@ -13,19 +13,19 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-7.18494 0.6 17.7478" id="1000250027" ent="StandardYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-7.18494 0.6 17.7478" id="1000250027" ent="StandardYRotator">
         <params>
           <par name="duration" long="1000" />
           <par name="angle" float="1" />
         </params>
       </obj>
-      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-6.08234 0.6 14.4268" id="1000250028" ent="LoopedYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-6.08234 0.6 14.4268" id="1000250028" ent="LoopedYRotator">
         <params>
           <par name="duration" long="10000" />
           <par name="angle" float="3" />
         </params>
       </obj>
-      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-10.0078 0.6 14.3983" id="1000250029" ent="TimedYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-10.0078 0.6 14.3983" id="1000250029" ent="TimedYRotator">
         <params>
           <par name="duration" long="200" />
           <par name="angle" float="1" />
@@ -38,7 +38,7 @@
         </params>
       </obj>
       <obj fact="Box" name="TriggerBox" m="0.99456 -0 0.104163 0 1 -0 -0.104163 -0 0.99456" v="-16.1855 0 27.7976" id="1000250031" ent="TestTrigger" />
-      <obj fact="Barrel" m="0.960359 -2.64804e-06 0.278767 2.38534e-06 1 1.28154e-06 -0.278767 -5.65785e-07 0.960359" v="-15.4211 0.6 30.1138" id="1000250032" ent="TriggerMover">
+      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-15.4211 0.6 30.1138" id="1000250032" ent="TriggerMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="2" />
@@ -88,7 +88,7 @@
       <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-12.7577 1.98288 10.5493" id="1000250043" />
       <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-13.1262 1.9829 11.4789" id="1000250044" />
       <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-14.5509 0 11.1008" id="1000250045" />
-      <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-13.6511 2.38419e-07 8.92129" id="1000250046" />
+      <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-13.6511 2.38419e-007 8.92129" id="1000250046" />
       <obj fact="Bar" static="true" name="Bar5" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.8117 0 11.148" id="1000250047" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
@@ -97,7 +97,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Bar" static="true" name="Bar4" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.7058 4.76837e-07 10.8567" id="1000250048" ent="MessageMover">
+      <obj fact="Bar" static="true" name="Bar4" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.7058 4.76837e-007 10.8567" id="1000250048" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
@@ -105,7 +105,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Bar" static="true" name="Bar3" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.5999 4.76837e-07 10.5653" id="1000250049" ent="MessageMover">
+      <obj fact="Bar" static="true" name="Bar3" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.5999 4.76837e-007 10.5653" id="1000250049" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
