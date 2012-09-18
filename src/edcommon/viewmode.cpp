@@ -56,11 +56,13 @@ bool ViewMode::Initialize (iObjectRegistry* object_reg)
 
 void ViewMode::Start ()
 {
+  EditingMode::Start ();
   view3d->GetApplication ()->ShowCameraWindow ();
 }
 
 void ViewMode::Stop ()
 {
+  EditingMode::Stop ();
 }
 
 void ViewMode::FramePre ()

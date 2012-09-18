@@ -244,7 +244,6 @@ public:
 EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Entity";
-  started = false;
 }
 
 bool EntityMode::Initialize (iObjectRegistry* object_reg)
@@ -452,7 +451,7 @@ void EntityMode::InitColors ()
 
 void EntityMode::Start ()
 {
-  started = true;
+  EditingMode::Start ();
   view3d->GetApplication ()->HideCameraWindow ();
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
   graphView->SetVisible (true);
@@ -467,8 +466,8 @@ void EntityMode::Start ()
 
 void EntityMode::Stop ()
 {
+  EditingMode::Stop ();
   graphView->SetVisible (false);
-  started = false;
 }
 
 const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
@@ -1084,6 +1083,7 @@ void EntityMode::OnRenameQuest (const char* questName)
 	    csRef<iParameter> par = view3d->GetPM ()->GetParameter (name->GetData (), CEL_DATA_STRING);
 	    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
 	    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", "name", par);
+	    RegisterModification (tpl);
 	  }
         }
       }

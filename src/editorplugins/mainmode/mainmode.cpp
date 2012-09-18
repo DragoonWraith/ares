@@ -96,6 +96,8 @@ MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
   transformationMarker = 0;
   active = false;
   changing3DSelection = 0;
+  labelMgr = 0;
+  showLabels = true;
 }
 
 bool MainMode::Initialize (iObjectRegistry* object_reg)
@@ -115,6 +117,8 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
   ID_Copy = pl->FetchStringID ("Copy");
   ID_Paste = pl->FetchStringID ("Paste");
   ID_Delete = pl->FetchStringID ("Delete");
+
+  labelMgr = new LabelManager (object_reg);
 
   return true;
 }
@@ -137,6 +141,7 @@ void MainMode::SetParent (wxWindow* parent)
 
 MainMode::~MainMode ()
 {
+  delete labelMgr;
 }
 
 void MainMode::CreateMarkers ()
@@ -193,6 +198,7 @@ void MainMode::Stop ()
   transformationMarker->AttachMesh (0);
   //pasteMarker->SetVisible (false);
   active = false;
+  labelMgr->Cleanup ();
 }
 
 void MainMode::OnListContext (wxListEvent& event)
@@ -231,10 +237,13 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 void MainMode::Refresh ()
 {
   view3d->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
-  wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
-  wxTreeItemId rootId = tree->GetRootItem ();
-  tree->SelectItem (rootId);
-  tree->Expand (rootId);
+  if (started)
+  {
+    wxTreeCtrl* tree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
+    wxTreeItemId rootId = tree->GetRootItem ();
+    tree->SelectItem (rootId);
+    tree->Expand (rootId);
+  }
 }
 
 void MainMode::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
@@ -644,6 +653,8 @@ void MainMode::FramePre()
   {
     HandleKinematicDragging ();
   }
+  if (showLabels)
+    labelMgr->FramePre (view3d->GetDynamicWorld (), view3d->GetCsCamera ());
 }
 
 void MainMode::Frame3D()
@@ -717,6 +728,11 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
       dragJoint = 0;
       do_dragging = false;
     }
+  }
+  else if (code == 'l')
+  {
+    labelMgr->Cleanup ();
+    showLabels = !showLabels;
   }
   else if (code == 'e')
   {

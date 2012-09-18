@@ -69,6 +69,7 @@ protected:
   csString name;
   int mouseX, mouseY;
   int colorWhite;
+  bool started;
 
 public:
   EditingMode (i3DView* view, iObjectRegistry* object_reg, const char* name);
@@ -101,8 +102,8 @@ public:
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY) { }
   virtual bool IsContextMenuAllowed () { return true; }
 
-  virtual void Start () { }
-  virtual void Stop () { }
+  virtual void Start () { started = true; }
+  virtual void Stop () { started = false; }
   virtual void Refresh () { }
 
   virtual csRef<iString> GetStatusLine ()

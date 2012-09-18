@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "csutil/scfstr.h"
 #include "edcommon/viewmode.h"
 
+#include "labelmanager.h"
+
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/treectrl.h>
@@ -68,6 +70,9 @@ private:
   csVector3 dragRestrict;
 
   int idSetStatic, idClearStatic;
+
+  bool showLabels;
+  LabelManager* labelMgr;
 
   void CreateMarkers ();
   iMarker* transformationMarker;

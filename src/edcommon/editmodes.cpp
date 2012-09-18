@@ -58,10 +58,12 @@ EditingMode::EditingMode (i3DView* view, iObjectRegistry* object_reg,
   scfImplementationType (this), object_reg (object_reg), view3d (view), name (name)
 {
   Initialize (object_reg);
+  started = false;
 }
 
 EditingMode::EditingMode (iBase* parent) : scfImplementationType (this, parent)
 {
+  started = false;
 }
 
 bool EditingMode::Initialize (iObjectRegistry* object_reg)

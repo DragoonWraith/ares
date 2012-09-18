@@ -103,8 +103,6 @@ private:
   Ares::View view;
   csRef<Ares::Value> questsValue;
 
-  bool started;
-
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
   void BuildRewardGraph (iRewardFactoryArray* rewards,
       const char* parentKey, const char* pcKey);
