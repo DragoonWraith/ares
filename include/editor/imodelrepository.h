@@ -48,6 +48,7 @@ enum DynObjValueColumns
   DYNOBJ_COL_Y,
   DYNOBJ_COL_Z,
   DYNOBJ_COL_DISTANCE,
+  DYNOBJ_COL_LOGIC,
 };
 
 enum TemplateValueColumns

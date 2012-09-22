@@ -800,7 +800,8 @@ bool AresEdit3DView::PostLoadMap ()
 {
   if (!dynworld->FindFactory ("Node"))
   {
-    iDynamicFactory* fact = dynworld->AddFactory ("Node", 1.0, -1);
+    iDynamicFactory* fact = dynworld->AddLogicFactory ("Node", 1.0, -1,
+	csBox3 (csVector3 (-0.1f), csVector3 (0.1f, .02f, .03f)));
     fact->AddRigidBox (csVector3 (0.0f), csVector3 (0.2f), 1.0f);
   }
   if (!dynworld->FindFactory ("Player"))
@@ -900,7 +901,7 @@ bool AresEdit3DView::PostLoadMap ()
   // Setup the cell.
   InitCell ();
 
-  // Make the 'Player' and 'World' entity templates if they don't already
+  // Make the 'Player', 'World', and 'Node' entity templates if they don't already
   // exist. It is possible that they exist because we loaded a project that defined
   // them.
   if (!pl->FindEntityTemplate ("Player"))
@@ -912,6 +913,11 @@ bool AresEdit3DView::PostLoadMap ()
   {
     if (!LoadLibrary ("/appdata/", "world.xml"))
       return app->ReportError ("Error loading world library!");
+  }
+  if (!pl->FindEntityTemplate ("Node"))
+  {
+    if (!LoadLibrary ("/appdata/", "node.xml"))
+      return app->ReportError ("Error loading node library!");
   }
 
   return true;

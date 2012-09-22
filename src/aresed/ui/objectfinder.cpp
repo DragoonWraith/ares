@@ -228,10 +228,11 @@ ObjectFinderDialog::ObjectFinderDialog (wxWindow* parent, UIManager* uiManager) 
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("ObjectFinderDialog"));
 
   DefineHeadingIndexed ("object_List",
-      "Factory,Template,Entity,ID,X,Y,Z,Distance",
+      "Factory,Template,Entity,Logic,ID,X,Y,Z,Distance",
       DYNOBJ_COL_FACTORY,
       DYNOBJ_COL_TEMPLATE,
       DYNOBJ_COL_ENTITY,
+      DYNOBJ_COL_LOGIC,
       DYNOBJ_COL_ID,
       DYNOBJ_COL_X,
       DYNOBJ_COL_Y,

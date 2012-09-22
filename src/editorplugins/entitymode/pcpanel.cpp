@@ -587,8 +587,8 @@ void PropertyClassPanel::OnSearchEntityTrigger (wxCommandEvent& event)
 {
   csRef<Ares::Value> objects = emode->GetApplication ()->Get3DView ()->
     GetModelRepository ()->GetObjectsWithEntityValue ();
-  Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact",
-      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
+  Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
+      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
   if (entity)
   {
     csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);

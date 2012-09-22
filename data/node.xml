@@ -1,0 +1,4 @@
+<library>
+    <addon plugin="cel.addons.celentitytpl" entityname="Node" >
+    </addon>
+</library>

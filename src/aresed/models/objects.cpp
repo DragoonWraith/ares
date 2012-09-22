@@ -97,6 +97,13 @@ void ObjectsValue::BuildModel ()
     fmt.Format ("%g", dist);
     array.Push (fmt);
 
+    if (fact->IsLogicFactory ())
+      array.Push ("Logic");
+    if (fact->IsLightFactory ())
+      array.Push ("Light");
+    else
+      array.Push ("");
+
     objectsHash.Put (obj, child);
     values.Push (child);
   }
