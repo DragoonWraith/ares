@@ -429,4 +429,16 @@ A template hosting a quest that can rotate an object back and forth in a loop.
       </action>
     </propclass>
   </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="Teleporter">
+    <propclass name="pclogic.wire">
+      <action name="AddInput">
+        <par name="mask" string="ares.Activate" />
+      </action>
+      <action name="AddOutput">
+        <par name="msgid" string="ares.controller.Teleport" />
+        <par name="entity" string="World" />
+        <par name="destination" string="@destination" />
+      </action>
+    </propclass>
+  </addon>
 </library>

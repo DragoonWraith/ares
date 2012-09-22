@@ -398,7 +398,8 @@ protected:
   }
 
 public:
-  WireParCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  WireParCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel),
+     currentMessage (csArrayItemNotFound) { }
   virtual ~WireParCollectionValue () { }
 
   virtual bool DeleteValue (Value* child)

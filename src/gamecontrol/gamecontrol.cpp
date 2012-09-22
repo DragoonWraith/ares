@@ -46,6 +46,8 @@ THE SOFTWARE.
 #include "propclass/dynmove.h"
 #include "propclass/prop.h"
 #include "propclass/inv.h"
+#include "propclass/mesh.h"
+#include "propclass/mechsys.h"
 #include "propclass/messenger.h"
 #include "ivaria/dynamics.h"
 
@@ -128,6 +130,7 @@ public:
 csStringID celPcGameController::id_name = csInvalidStringID;
 csStringID celPcGameController::id_template = csInvalidStringID;
 csStringID celPcGameController::id_factory = csInvalidStringID;
+csStringID celPcGameController::id_destination = csInvalidStringID;
 
 PropertyHolder celPcGameController::propinfo;
 
@@ -140,6 +143,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     id_name = pl->FetchStringID ("name");
     id_template = pl->FetchStringID ("template");
     id_factory = pl->FetchStringID ("factory");
+    id_destination = pl->FetchStringID ("destination");
   }
 
   propholder = &propinfo;
@@ -156,6 +160,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
     AddAction (action_spawn, "Spawn");
     AddAction (action_createentity, "CreateEntity");
     AddAction (action_inventory, "Inventory");
+    AddAction (action_teleport, "Teleport");
   }
 
   // For properties.
@@ -274,6 +279,43 @@ void celPcGameController::Activate ()
   }
 }
 
+void celPcGameController::Teleport (const char* entityname)
+{
+  printf ("Teleport to '%s'\n", entityname); fflush (stdout);
+  iCelEntity* entity = pl->FindEntity (entityname);
+  if (!entity)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR, "ares.gamecontroller",
+	"Teleport: Cannot find entity '%s'!\n", entityname);
+    return;
+  }
+  iDynamicObject* dynobj = dynworld->FindObject (entity);
+  if (!dynobj)
+  {
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR, "ares.gamecontroller",
+	"Teleport: Cannot find dynamic object for entity '%s'!\n", entityname);
+    return;
+  }
+
+  iDynamicCell* cell = dynobj->GetCell ();
+  csReversibleTransform trans = dynobj->GetTransform ();
+
+  if (cell != dynworld->GetCurrentCell ())
+    dynworld->SetCurrentCell (cell);
+
+  csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
+  csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
+  iRigidBody* body = 0;
+  if (mechPlayer)
+    body = mechPlayer->GetBody ();
+  pcmesh->MoveMesh (cell->GetSector (), trans.GetOrigin ());
+  if (body)
+  {
+    trans.RotateThis (csVector3 (0, 1, 0), M_PI);
+    body->SetTransform (trans);
+  }
+}
+
 void celPcGameController::Spawn (const char* factname)
 {
   TryGetCamera ();
@@ -295,7 +337,8 @@ void celPcGameController::CreateEntity (const char* tmpname, const char* name)
   iCelEntityTemplate* temp = pl->FindEntityTemplate (tmpname);
   if (!temp)
   {
-    printf ("Error! Game controller: cannot find entity template '%s'!\n", tmpname);
+    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR, "ares.gamecontroller",
+	"CreateEntity: Cannot find entity template '%s'!\n", tmpname);
     return;
   }
   pl->CreateEntity (temp, name);
@@ -446,6 +489,13 @@ bool celPcGameController::PerformActionIndexed (int idx,
       return true;
     case action_inventory:
       Inventory ();
+      return true;
+    case action_teleport:
+      {
+	csString destination;
+	if (!Fetch (destination, params, id_destination)) return false;
+        Teleport (destination);
+      }
       return true;
     case action_activate:
       Activate ();

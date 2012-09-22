@@ -43,6 +43,7 @@ THE SOFTWARE.
  * - Activate: if the object can be picked up (has class 'ares.pickup') then it will
  *   be picked up. Else it will try to drag it.
  * - Inventory: no parameters. Open the inventory.
+ * - Teleport: parameters 'destination' (string). Teleport to the destination entity.
  * - Spawn: parameters 'factory' (string). Spawn a new object in front of the player.
  * - CreateEntity: parameters 'template' (string), 'name' (string). Create an entity.
  *
@@ -85,6 +86,11 @@ struct iPcGameController : public virtual iBase
    * Open the inventory.
    */
   virtual void Inventory () = 0;
+
+  /**
+   * Teleport the player to the given entity.
+   */
+  virtual void Teleport (const char* entityname) = 0;
 
   /**
    * Spawn a dynamic object in front of the player.

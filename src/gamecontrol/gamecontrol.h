@@ -76,6 +76,7 @@ private:
   static csStringID id_name;
   static csStringID id_template;
   static csStringID id_factory;
+  static csStringID id_destination;
 
   csRef<iGraphics3D> g3d;
   csRef<iGraphics2D> g2d;
@@ -134,6 +135,7 @@ private:
     action_spawn,
     action_createentity,
     action_inventory,
+    action_teleport,
   };
 
   // For properties.
@@ -167,6 +169,7 @@ public:
   virtual void Inventory ();
   virtual void Spawn (const char* factname);
   virtual void CreateEntity (const char* tmpname, const char* name);
+  virtual void Teleport (const char* entityname);
 
   virtual bool PerformActionIndexed (int idx,
       iCelParameterBlock* params, celData& ret);
