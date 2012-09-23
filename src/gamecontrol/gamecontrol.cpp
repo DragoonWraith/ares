@@ -282,14 +282,7 @@ void celPcGameController::Activate ()
 void celPcGameController::Teleport (const char* entityname)
 {
   printf ("Teleport to '%s'\n", entityname); fflush (stdout);
-  iCelEntity* entity = pl->FindEntity (entityname);
-  if (!entity)
-  {
-    csReport (object_reg, CS_REPORTER_SEVERITY_ERROR, "ares.gamecontroller",
-	"Teleport: Cannot find entity '%s'!\n", entityname);
-    return;
-  }
-  iDynamicObject* dynobj = dynworld->FindObject (entity);
+  iDynamicObject* dynobj = dynworld->FindObject (entityname);
   if (!dynobj)
   {
     csReport (object_reg, CS_REPORTER_SEVERITY_ERROR, "ares.gamecontroller",
