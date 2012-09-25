@@ -58,6 +58,21 @@ LabelManager::~LabelManager ()
   Cleanup ();
 }
 
+void LabelManager::GetLabelAndColor (iDynamicObject* dynobj, csStringArray& arr,
+    iMarkerColor*& color)
+{
+  if (dynobj->GetEntityName () && *dynobj->GetEntityName ())
+  {
+    color = entityColor;
+    arr.Push (dynobj->GetEntityName ());
+  }
+  else
+  {
+    color = factoryColor;
+    arr.Push (dynobj->GetFactory ()->GetName ());
+  }
+}
+
 void LabelManager::FramePre (iPcDynamicWorld* dynworld, iCamera* camera)
 {
   updatecounter--;
@@ -65,8 +80,8 @@ void LabelManager::FramePre (iPcDynamicWorld* dynworld, iCamera* camera)
   updatecounter = UPDATECOUNTER;
 
   if (!camera->GetSector ()) return;
-  csHash<iMarker*, csPtrKey<iMeshWrapper> > oldMarkers = markers;
-  markers.Empty ();
+
+  Cleanup ();
 
   csRef<iMeshWrapperIterator> it = engine->GetNearbyMeshes (camera->GetSector (),
       camera->GetTransform ().GetOrigin (), labelRadius, false);
@@ -76,40 +91,15 @@ void LabelManager::FramePre (iPcDynamicWorld* dynworld, iCamera* camera)
     iDynamicObject* dynobj = dynworld->FindObject (mesh);
     if (dynobj)
     {
-      if (oldMarkers.Contains (mesh))
-      {
-	iMarker* marker = oldMarkers.Get (mesh, 0);
-	marker->SetSelectionLevel (dynobj->IsHilight () ? SELECTION_ACTIVE : SELECTION_NONE);
-        markers.Put (mesh, marker);
-        oldMarkers.DeleteAll (mesh);
-      }
-      else
-      {
-        iMarker* marker = markerMgr->CreateMarker ();
-	marker->SetSelectionLevel (dynobj->IsHilight () ? SELECTION_ACTIVE : SELECTION_NONE);
-        marker->AttachMesh (mesh);
-        csStringArray t;
-	iMarkerColor* color;
-	if (dynobj->GetEntityName ())
-	{
-          t.Push (dynobj->GetEntityName ());
-	  color = entityColor;
-	}
-	else
-	{
-	  t.Push (dynobj->GetFactory ()->GetName ());
-	  color = factoryColor;
-	}
-        marker->Text (MARKER_OBJECT, csVector3 (0), t, color);
-        markers.Put (mesh, marker);
-      }
+      iMarker* marker = markerMgr->CreateMarker ();
+      marker->SetSelectionLevel (dynobj->IsHilight () ? SELECTION_ACTIVE : SELECTION_NONE);
+      marker->AttachMesh (mesh);
+      iMarkerColor* color;
+      csStringArray t (1);
+      GetLabelAndColor (dynobj, t, color);
+      marker->Text (MARKER_OBJECT, csVector3 (0), t, color);
+      markers.Put (mesh, marker);
     }
-  }
-  csHash<iMarker*, csPtrKey<iMeshWrapper> >::GlobalIterator mIt = oldMarkers.GetIterator ();
-  while (mIt.HasNext ())
-  {
-    iMarker* marker = mIt.Next ();
-    markerMgr->DestroyMarker (marker);
   }
 }
 

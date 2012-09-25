@@ -33,6 +33,7 @@ struct iMarkerColor;
 struct iMarker;
 struct iEngine;
 struct iPcDynamicWorld;
+struct iDynamicObject;
 struct iCamera;
 
 #define UPDATECOUNTER 10
@@ -50,6 +51,8 @@ private:
 
   float labelRadius;
   int updatecounter;
+
+  void GetLabelAndColor (iDynamicObject* dynobj, csStringArray& arr, iMarkerColor*& color);
 
 public:
   LabelManager (iObjectRegistry* object_reg);

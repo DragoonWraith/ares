@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #include "celtool/persisthelper.h"
 #include "tools/billboard.h"
+#include "tools/elcm.h"
 #include "physicallayer/pl.h"
 #include "physicallayer/propfact.h"
 #include "physicallayer/propclas.h"
@@ -345,12 +346,11 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_REPORTER,
 	CS_REQUEST_REPORTERLISTENER,
 	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
+	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
 	CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
-	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode",
-		iCollideSystem),
+	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
-	CS_REQUEST_PLUGIN ("crystalspace.sndsys.renderer.software",
-		iSndSysRenderer),
+	//CS_REQUEST_PLUGIN ("crystalspace.sndsys.renderer.software", iSndSysRenderer),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
