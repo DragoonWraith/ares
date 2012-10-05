@@ -206,11 +206,11 @@ void PlayMode::Start ()
   }
 
   world = pl->FindEntity ("World");
-  pl->ApplyTemplate (world, pl->FindEntityTemplate ("World"), 0);
+  pl->ApplyTemplate (world, pl->FindEntityTemplate ("World"), (iCelParameterBlock*)0);
   csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
   mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
 
-  player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", 0);
+  player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", (iCelParameterBlock*)0);
   csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
   iRigidBody* body = 0;
   if (mechPlayer)

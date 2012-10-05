@@ -64,6 +64,25 @@ THE SOFTWARE.
 
 //-----------------------------------------------------------------------------
 
+class AresDynamicCellCreator : public scfImplementation1<AresDynamicCellCreator,
+  iDynamicCellCreator>
+{
+private:
+  AppAres* ares;
+
+public:
+  AresDynamicCellCreator (AppAres* ares) :
+    scfImplementationType (this), ares (ares) { }
+  virtual ~AresDynamicCellCreator () { }
+  virtual iDynamicCell* CreateCell (const char* name)
+  {
+    return ares->CreateCell (name);
+  }
+  virtual void FillCell (iDynamicCell* cell) { }
+};
+
+//-----------------------------------------------------------------------------
+
 AppAres::AppAres ()
 {
   SetApplicationName ("Ares");
@@ -158,6 +177,7 @@ void AppAres::CreateSettingBar ()
 
 void AppAres::CreateActor ()
 {
+#if 0
   // The Real Camera
   entity_cam = pl->CreateEntity ("camera", 0, 0,
     "pcinput.standard",
@@ -246,10 +266,12 @@ void AppAres::CreateActor ()
   csRef<iPcTrigger> trigger = celQueryPropertyClassEntity<iPcTrigger> (entity_cam);
   trigger->SetupTriggerSphere (0, csVector3 (0), 1.0);
   trigger->SetFollowEntity (true);
+#endif
 }
 
 void AppAres::ConnectWires ()
 {
+#if 0
   iCelEntity* action_icon = pl->FindEntity ("action_icon");
 
   iCelPropertyClass* pc;
@@ -295,6 +317,7 @@ void AppAres::ConnectWires ()
   wire->AddInput ("cel.input.action.up");
   params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("msgid"), "cel.game.action"));
   wire->AddOutput (pl->FetchStringID ("cel.bag.action.SendMessage"), 0, params);
+#endif
 }
 
 bool AppAres::InitPhysics ()
@@ -313,6 +336,38 @@ bool AppAres::InitPhysics ()
   bullet_dynSys->SetStepParameters (0.005f, 2, 10);
 
   return true;
+}
+
+iDynamicCell* AppAres::CreateCell (const char* name)
+{
+  iSector* s = engine->FindSector (name);
+  if (!s)
+    s = engine->CreateSector (name);
+
+  dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
+  if (!dyn) { ReportError ("Error loading bullet plugin!"); return 0; }
+
+  csString systemname = "ares.dynamics.system.";
+  systemname += name;
+  csRef<iDynamicSystem> ds = dyn->FindSystem (systemname);
+  if (!ds)
+  {
+    ds = dyn->CreateSystem ();
+    ds->QueryObject ()->SetName (systemname);
+  }
+  if (!ds) { ReportError ("Error creating dynamic system!"); return 0; }
+
+  //ds->SetLinearDampener(.3f);
+  ds->SetRollingDampener(.995f);
+  ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
+
+  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_ds = scfQueryInterface<
+    CS::Physics::Bullet::iDynamicSystem> (ds);
+  //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
+  bullet_ds->SetStepParameters (0.005f, 2, 10);
+
+  iDynamicCell* cell = dynworld->AddCell (name, s, ds);
+  return cell;
 }
 
 bool AppAres::LoadLibrary (const char* path, const char* file)
@@ -354,6 +409,8 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
+	CS_REQUEST_PLUGIN("utility.rooms", iRoomMeshCreator),
+	CS_REQUEST_PLUGIN("utility.assetmanager", iAssetManager),
 	CS_REQUEST_END))
   {
     return ReportError ("Can't initialize plugins!");
@@ -372,33 +429,63 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 
 bool AppAres::PostLoadMap ()
 {
-  dyncell = dynworld->AddCell ("outside", sector, dynSys);
-  dynworld->SetCurrentCell (dyncell);
+  iDynamicCell* dyncell = 0;
+  // Pick the first cell containing the player or else
+  // the first cell.
+  iDynamicFactory* playerFact = dynworld->FindFactory ("Player");
+  csRef<iDynamicCellIterator> it = dynworld->GetCells ();
+  while (it->HasNext ())
+  {
+    csRef<iDynamicCell> cell = it->NextCell ();
+    if (!dyncell) dyncell = cell;
+    iDynamicObject* playerObj = 0;
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      if (dynobj->GetFactory () == playerFact)
+      {
+	playerObj = dynobj;
+	break;
+      }
+    }
+    if (playerObj)
+    {
+      dyncell = cell;
+      break;
+    }
+  }
+
+  if (dyncell)
+  {
+    dynworld->SetCurrentCell (dyncell);
+    sector = dyncell->GetSector ();
+  }
+  else
+  {
+    return ReportError ("Can't find suitable start location!");
+  }
 
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
-  CreateActor ();
+  //CreateActor ();
 
-  // Find the terrain mesh
+  // Find the terrain mesh. @@@ HARDCODED!
   csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
-  if (!terrainWrapper)
+  if (terrainWrapper)
   {
-    ReportError("Error cannot find the terrain mesh!");
-    return false;
-  }
+    csRef<iTerrainSystem> terrain =
+      scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
+    if (!terrain)
+    {
+      ReportError("Error cannot find the terrain interface!");
+      return false;
+    }
 
-  csRef<iTerrainSystem> terrain =
-    scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
-  if (!terrain)
-  {
-    ReportError("Error cannot find the terrain interface!");
-    return false;
+    // Create a terrain collider for each cell of the terrain
+    for (size_t i = 0; i < terrain->GetCellCount (); i++)
+      bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
   }
-
-  // Create a terrain collider for each cell of the terrain
-  for (size_t i = 0; i < terrain->GetCellCount (); i++)
-    bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
 
   nature->InitSector (sector);
 
@@ -447,23 +534,53 @@ bool AppAres::Application ()
   iNativeWindow* nw = g3d->GetDriver2D()->GetNativeWindow ();
   if (nw) nw->SetTitle ("Ares");
 
-  // Create the scene
-  zoneEntity = pl->CreateEntity ("zone", 0, 0,
-      "pcworld.dynamic", CEL_PROPCLASS_END);
-  if (!zoneEntity) return ReportError ("Failed to create zone entity!");
-  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (entity_cam);
+  if (!LoadLibrary ("/aresnode/", "library"))
+    return ReportError ("Error loading library!");
 
   nature = csQueryRegistry<iNature> (object_reg);
-  if (!nature) return ReportError("Failed to locate nature plugin!");
+  if (!nature)
+    return ReportError("Failed to locate nature plugin!");
+
+  world = pl->CreateEntity ("World", 0, 0, "pcworld.dynamic", CEL_PROPCLASS_END);
+  if (!world)
+    return ReportError ("Failed to create World entity!");
+  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (world);
+  {
+    csRef<iDynamicCellCreator> cellCreator;
+    cellCreator.AttachNew (new AresDynamicCellCreator (this));
+    dynworld->SetDynamicCellCreator (cellCreator);
+  }
 
   assetManager = csQueryRegistry<iAssetManager> (object_reg);
   assetManager->SetZone (dynworld);
+  if (!assetManager->LoadFile ("/saves/scifi.ares"))
+    return ReportError ("Error loading scifi.ares!");
+
+  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
+  if (!worldTpl)
+  {
+    if (!LoadLibrary ("/appdata/", "world.xml"))
+      return ReportError ("Error loading world library!");
+    worldTpl = pl->FindEntityTemplate ("World");
+  }
+
+  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
+  if (!playerTpl)
+  {
+    if (!LoadLibrary ("/appdata/", "player.xml"))
+      return ReportError ("Error loading player library!");
+    playerTpl = pl->FindEntityTemplate ("Player");
+  }
 
   if (!InitPhysics ())
     return false;
 
-  assetManager->LoadFile ("/saves/testworld");
-  sector = engine->FindSector ("room");
+  // Create the scene
+  pl->ApplyTemplate (world, worldTpl, (iCelParameterBlock*)0);
+
+  player = pl->CreateEntity (playerTpl, "Player", (iCelParameterBlock*)0);
+  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (player);
+  camera = cam->GetCamera ();
 
   if (!PostLoadMap ())
     return ReportError ("Error during PostLoadMap()!");

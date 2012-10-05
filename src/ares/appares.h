@@ -82,8 +82,8 @@ private:
   csTicks currentTime;
 
   csRef<iCelPlLayer> pl;
-  csRef<iCelEntity> entity_cam;
-  csRef<iCelEntity> zoneEntity;
+  csRef<iCelEntity> player;
+  csRef<iCelEntity> world;
 
   csRef<iAssetManager> assetManager;
 
@@ -124,6 +124,8 @@ private:
 public:
   AppAres ();
   virtual ~AppAres ();
+
+  iDynamicCell* CreateCell (const char* name);
 
   /**
    * Final cleanup.

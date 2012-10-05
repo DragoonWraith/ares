@@ -50,7 +50,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   # No ares-exclusive CEL plugins
 
   LinkStaticPlugins ares_static :
+    roommode
     assetmanager
+    gamecontrol
     ;
 
   ExternalLibs ares_static : CRYSTAL CEL CEGUI ;
