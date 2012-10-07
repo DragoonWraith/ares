@@ -57,6 +57,7 @@ THE SOFTWARE.
 #include "propclass/wire.h"
 #include "propclass/billboard.h"
 #include "propclass/prop.h"
+#include "propclass/mechsys.h"
 
 #include "iassetmanager.h"
 
@@ -322,18 +323,21 @@ void AppAres::ConnectWires ()
 
 bool AppAres::InitPhysics ()
 {
-  dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
-  if (!dyn) return ReportError ("Error loading bullet plugin!");
+  if (dynworld->IsPhysicsEnabled ())
+  {
+    dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
+    if (!dyn) return ReportError ("Error loading bullet plugin!");
 
-  dynSys = dyn->CreateSystem ();
-  if (!dynSys) return ReportError ("Error creating dynamic system!");
-  //dynSys->SetLinearDampener(.3f);
-  dynSys->SetRollingDampener(.995f);
-  dynSys->SetGravity (csVector3 (0.0f, -9.81f, 0.0f));
+    dynSys = dyn->CreateSystem ();
+    if (!dynSys) return ReportError ("Error creating dynamic system!");
+    //dynSys->SetLinearDampener(.3f);
+    dynSys->SetRollingDampener(.995f);
+    dynSys->SetGravity (csVector3 (0.0f, -9.81f, 0.0f));
 
-  bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
-  bullet_dynSys->SetInternalScale (1.0f);
-  bullet_dynSys->SetStepParameters (0.005f, 2, 10);
+    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+    bullet_dynSys->SetInternalScale (1.0f);
+    bullet_dynSys->SetStepParameters (0.005f, 2, 10);
+  }
 
   return true;
 }
@@ -344,27 +348,31 @@ iDynamicCell* AppAres::CreateCell (const char* name)
   if (!s)
     s = engine->CreateSector (name);
 
-  dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
-  if (!dyn) { ReportError ("Error loading bullet plugin!"); return 0; }
-
-  csString systemname = "ares.dynamics.system.";
-  systemname += name;
-  csRef<iDynamicSystem> ds = dyn->FindSystem (systemname);
-  if (!ds)
+  csRef<iDynamicSystem> ds;
+  if (dynworld->IsPhysicsEnabled ())
   {
-    ds = dyn->CreateSystem ();
-    ds->QueryObject ()->SetName (systemname);
+    dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
+    if (!dyn) { ReportError ("Error loading bullet plugin!"); return 0; }
+
+    csString systemname = "ares.dynamics.system.";
+    systemname += name;
+    csRef<iDynamicSystem> ds = dyn->FindSystem (systemname);
+    if (!ds)
+    {
+      ds = dyn->CreateSystem ();
+      ds->QueryObject ()->SetName (systemname);
+    }
+    if (!ds) { ReportError ("Error creating dynamic system!"); return 0; }
+
+    //ds->SetLinearDampener(.3f);
+    ds->SetRollingDampener(.995f);
+    ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
+
+    csRef<CS::Physics::Bullet::iDynamicSystem> bullet_ds = scfQueryInterface<
+      CS::Physics::Bullet::iDynamicSystem> (ds);
+    //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
+    bullet_ds->SetStepParameters (0.005f, 2, 10);
   }
-  if (!ds) { ReportError ("Error creating dynamic system!"); return 0; }
-
-  //ds->SetLinearDampener(.3f);
-  ds->SetRollingDampener(.995f);
-  ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
-
-  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_ds = scfQueryInterface<
-    CS::Physics::Bullet::iDynamicSystem> (ds);
-  //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
-  bullet_ds->SetStepParameters (0.005f, 2, 10);
 
   iDynamicCell* cell = dynworld->AddCell (name, s, ds);
   return cell;
@@ -433,12 +441,12 @@ bool AppAres::PostLoadMap ()
   // Pick the first cell containing the player or else
   // the first cell.
   iDynamicFactory* playerFact = dynworld->FindFactory ("Player");
+  iDynamicObject* playerObj = 0;
   csRef<iDynamicCellIterator> it = dynworld->GetCells ();
   while (it->HasNext ())
   {
     csRef<iDynamicCell> cell = it->NextCell ();
     if (!dyncell) dyncell = cell;
-    iDynamicObject* playerObj = 0;
     for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
     {
       iDynamicObject* dynobj = cell->GetObject (i);
@@ -454,16 +462,30 @@ bool AppAres::PostLoadMap ()
       break;
     }
   }
-
-  if (dyncell)
-  {
-    dynworld->SetCurrentCell (dyncell);
-    sector = dyncell->GetSector ();
-  }
-  else
-  {
+  
+  if (!dyncell)
     return ReportError ("Can't find suitable start location!");
+  if (!playerObj)
+    return ReportError ("Can't find player!");
+
+  dynworld->SetCurrentCell (dyncell);
+  sector = dyncell->GetSector ();
+
+  csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
+  // @@@ Need support for setting transform on pcmesh.
+  csReversibleTransform playerTrans = playerObj->GetTransform ();
+  pcmesh->MoveMesh (sector, playerTrans.GetOrigin ());
+
+  if (dynworld->IsPhysicsEnabled ())
+  {
+    csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
+    iRigidBody* body = mechPlayer->GetBody ();
+    playerTrans.RotateThis (csVector3 (0, 1, 0), M_PI);
+    body->SetTransform (playerTrans);
   }
+
+  csRef<iELCM> elcm = csQueryRegistry<iELCM> (object_reg);
+  elcm->SetPlayer (player);
 
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
@@ -553,8 +575,8 @@ bool AppAres::Application ()
 
   assetManager = csQueryRegistry<iAssetManager> (object_reg);
   assetManager->SetZone (dynworld);
-  if (!assetManager->LoadFile ("/saves/scifi.ares"))
-    return ReportError ("Error loading scifi.ares!");
+  if (!assetManager->LoadFile ("/saves/entities.ares"))
+    return ReportError ("Error loading entities.ares!");
 
   iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
   if (!worldTpl)
