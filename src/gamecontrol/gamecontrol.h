@@ -123,6 +123,8 @@ private:
   csWeakRef<iPcCamera> pccamera;
   csWeakRef<iPcDynamicMove> pcdynmove;
   void TryGetCamera ();
+  void TryGetDynmove ();
+  bool FindPlayer ();
 
   // For actions.
   enum actionids

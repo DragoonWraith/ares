@@ -448,18 +448,30 @@ void celPcGameController::TryGetDynworld ()
   }
 }
 
-void celPcGameController::TryGetCamera ()
+bool celPcGameController::FindPlayer ()
 {
-  if (player && pccamera && pcdynmove) return;
-  if (!player)
-    player = pl->FindEntity ("Player");
+  if (player) return true;
+  player = pl->FindEntity ("Player");
   if (!player)
   {
     printf ("Can't find entity 'Player'!\n");
     fflush (stdout);
-    return;
+    return false;
   }
+  return true;
+}
+
+void celPcGameController::TryGetCamera ()
+{
+  if (player && pccamera) return;
+  if (!FindPlayer ()) return;
   pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
+}
+
+void celPcGameController::TryGetDynmove ()
+{
+  if (player && pcdynmove) return;
+  if (!FindPlayer ()) return;
   pcdynmove = celQueryPropertyClassEntity<iPcDynamicMove> (player);
 }
 
@@ -615,6 +627,7 @@ bool celPcGameController::StartDrag ()
     {
       printf ("Start roty drag!\n"); fflush (stdout);
       dragType = DRAGTYPE_ROTY;
+      TryGetDynmove ();
       pcdynmove->EnableMouselook (false);
       isect.y = dragOrigin.y;
       dragAnchor.y = dragOrigin.y;
@@ -676,7 +689,10 @@ void celPcGameController::StopDrag ()
   }
   dragobj = 0;
   if (dragType == DRAGTYPE_ROTY)
+  {
+    TryGetDynmove ();
     pcdynmove->EnableMouselook (true);
+  }
 }
 
 void celPcGameController::TickEveryFrame ()

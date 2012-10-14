@@ -575,7 +575,7 @@ bool AppAres::Application ()
 
   assetManager = csQueryRegistry<iAssetManager> (object_reg);
   assetManager->SetZone (dynworld);
-  if (!assetManager->LoadFile ("/saves/entities.ares"))
+  if (!assetManager->LoadFile ("/saves/bla.ares"))
     return ReportError ("Error loading entities.ares!");
 
   iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
