@@ -261,6 +261,7 @@ void celPcGameController::Inventory ()
 
 void celPcGameController::Activate ()
 {
+printf ("#######################################################\n");
   iRigidBody* hitBody;
   csVector3 start, isect;
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
@@ -572,12 +573,9 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
   TryGetDynworld ();
   iCamera* cam = pccamera->GetCamera ();
   if (!cam) return 0;
-  int x = mouse->GetLastX ();
-  int y = mouse->GetLastY ();
-  csVector2 v2d (x, g2d->GetHeight () - y);
-  csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
   start = cam->GetTransform ().GetOrigin ();
-  csVector3 end = cam->GetTransform ().This2Other (v3d);
+  csVector3 end = cam->GetTransform ().This2Other (csVector3 (0.0f, 0.0f, 3.0f));
+  //printf ("end=%s\n", end.Description().GetData());
   // Trace the physical beam
   if (bullet_dynSys)
   {

@@ -476,6 +476,9 @@ bool AppAres::PostLoadMap ()
   csReversibleTransform playerTrans = playerObj->GetTransform ();
   pcmesh->MoveMesh (sector, playerTrans.GetOrigin ());
 
+  // Now delete the dummy player object.
+  dyncell->DeleteObject (playerObj);
+
   if (dynworld->IsPhysicsEnabled ())
   {
     csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
