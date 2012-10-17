@@ -29,7 +29,6 @@ THE SOFTWARE.
 
 // CEL Includes
 #include "physicallayer/messaging.h"
-#include "actorsettings.h"
 
 #include "include/icurvemesh.h"
 #include "include/irooms.h"
@@ -57,6 +56,18 @@ struct iCelPropertyClass;
 struct iCelPropertyClassFactory;
 
 struct iAssetManager;
+
+struct MenuEntry
+{
+  csString name;
+  int x1, y1;
+  int x2, y2;
+};
+
+#define MENU_GAME 0
+#define MENU_LIST 1
+#define MENU_WAIT1 2
+#define MENU_WAIT2 3
 
 /**
  * Main application class of AppAres.
@@ -87,7 +98,12 @@ private:
 
   csRef<iAssetManager> assetManager;
 
-  ActorSettings actorsettings;
+  int menu;
+  csArray<MenuEntry> menuGames;
+  csRef<iFont> menuFont;
+  bool SetupMenu ();
+  int mouseX, mouseY;
+  csString gameFile;
 
   iSector* sector;
   iCamera* camera;
@@ -104,19 +120,13 @@ private:
    */
   virtual void Frame ();
 
-  /**
-   * Handle keyboard events - ie key presses and releases.
-   * This routine is called from the event handler in response to a 
-   * csevKeyboard event.
-   */
   virtual bool OnKeyboard (iEvent &event);
+  virtual bool OnMouseMove (iEvent &event);
+  virtual bool OnMouseDown (iEvent &event);
 
   bool PostLoadMap ();
   bool InitPhysics ();
-  void CreateActor ();
-  void CreateActionIcon ();
-  void CreateSettingBar ();
-  void ConnectWires ();
+  bool StartGame (const char* filename);
 
   /// Load a library file with the given VFS path.
   bool LoadLibrary (const char* path, const char* file);

@@ -88,6 +88,9 @@ AppAres::AppAres ()
 {
   SetApplicationName ("Ares");
   currentTime = 31000;
+  menu = MENU_LIST;
+  mouseX = 0;
+  mouseY = 0;
 }
 
 AppAres::~AppAres ()
@@ -102,20 +105,79 @@ void AppAres::OnExit ()
 
 void AppAres::Frame ()
 {
-  // We let the entity system do this so there is nothing here.
-  float elapsed_time = vc->GetElapsedSeconds ();
-  nature->UpdateTime (currentTime, camera);
-  currentTime += csTicks (elapsed_time * 1000);
-
-  //if (do_simulation)
+  if (menu == MENU_LIST)
   {
-    float dynamicSpeed = 1.0f;
-    dyn->Step (elapsed_time / dynamicSpeed);
+    iGraphics2D* g2d = g3d->GetDriver2D ();
+    g2d->Clear (g2d->FindRGB (0, 0, 0));
+    int fg = g2d->FindRGB (255, 255, 255);
+    int fgSel = g2d->FindRGB (0, 0, 0);
+    int bg = g2d->FindRGB (0, 0, 0);
+    int bgSel = g2d->FindRGB (128, 128, 128);
+    for (size_t i = 0 ; i < menuGames.GetSize () ; i++)
+    {
+      const MenuEntry& me = menuGames[i];
+      if (mouseX >= me.x1 && mouseX <= me.x2 && mouseY >= me.y1 && mouseY <= me.y2)
+        g2d->Write (menuFont, me.x1, me.y1, fgSel, bgSel, me.name);
+      else
+        g2d->Write (menuFont, me.x1, me.y1, fg, bg, me.name);
+    }
   }
+  else if (menu == MENU_WAIT1)
+  {
+    iGraphics2D* g2d = g3d->GetDriver2D ();
+    g2d->Clear (g2d->FindRGB (0, 0, 0));
+    g2d->Write (menuFont, 100, 100, g2d->FindRGB (255, 128, 128), g2d->FindRGB (0, 0, 0),
+	"Loading ...");
+    menu = MENU_WAIT2;
+  }
+  else if (menu == MENU_WAIT2)
+  {
+    if (gameFile)
+      StartGame (gameFile);
+  }
+  else
+  {
+    // We let the entity system do this so there is nothing here.
+    float elapsed_time = vc->GetElapsedSeconds ();
+    nature->UpdateTime (currentTime, camera);
+    currentTime += csTicks (elapsed_time * 1000);
 
-  dynworld->PrepareView (camera, elapsed_time);
+    //if (do_simulation)
+    {
+      float dynamicSpeed = 1.0f;
+      dyn->Step (elapsed_time / dynamicSpeed);
+    }
+
+    dynworld->PrepareView (camera, elapsed_time);
+  }
 }
 
+
+bool AppAres::OnMouseMove (iEvent& ev)
+{
+  if (menu != MENU_LIST) return false;
+  mouseX = csMouseEventHelper::GetX (&ev);
+  mouseY = csMouseEventHelper::GetY (&ev);
+  return false;
+}
+
+bool AppAres::OnMouseDown (iEvent &ev)
+{
+  if (menu != MENU_LIST) return false;
+  mouseX = csMouseEventHelper::GetX (&ev);
+  mouseY = csMouseEventHelper::GetY (&ev);
+  for (size_t i = 0 ; i < menuGames.GetSize () ; i++)
+  {
+    const MenuEntry& me = menuGames[i];
+    if (mouseX >= me.x1 && mouseX <= me.x2 && mouseY >= me.y1 && mouseY <= me.y2)
+    {
+      gameFile = me.name;
+      menu = MENU_WAIT1;
+      return true;
+    }
+  }
+  return false;
+}
 
 bool AppAres::OnKeyboard (iEvent &ev)
 {
@@ -136,189 +198,6 @@ bool AppAres::OnKeyboard (iEvent &ev)
     }
   }
   return false;
-}
-
-void AppAres::CreateActionIcon ()
-{
-  csRef<iCelEntity> entity = pl->CreateEntity ("action_icon", 0, 0,
-      "pc2d.billboard",
-      CEL_PROPCLASS_END);
-  if (!entity) return;
-
-  iTextureWrapper* txt = engine->CreateTexture ("action_icon", "/lib/stdtex/tile.png",
-      0, CS_TEXTURE_2D);
-  txt->Register (g3d->GetTextureManager ());
-  engine->CreateMaterial ("action_icon", txt);
-
-  csRef<iPcBillboard> pcbb = celQueryPropertyClassEntity<iPcBillboard> (entity);
-  pcbb->SetBillboardName ("action_icon");
-  iBillboard* bb = pcbb->GetBillboard ();
-  bb->SetMaterialName ("action_icon");
-  bb->SetPosition (1000, 1000);
-  bb->SetSize (30000, 30000);
-  //bb->GetFlags ().SetAll (CEL_BILLBOARD_VISIBLE);
-  bb->GetFlags ().SetAll (0);
-}
-
-void AppAres::CreateSettingBar ()
-{
-  csRef<iCelEntity> entity = pl->CreateEntity ("setting_bar", 0, 0,
-      "pc2d.billboard",
-      CEL_PROPCLASS_END);
-  if (!entity) return;
-
-  csRef<iPcBillboard> pcbb = celQueryPropertyClassEntity<iPcBillboard> (entity);
-  pcbb->SetBillboardName ("setting_bar");
-  iBillboard* bb = pcbb->GetBillboard ();
-  bb->SetText ("Setting:");
-  bb->SetPosition (100000, 1000);
-  bb->SetSize (200000, 30000);
-  bb->GetFlags ().SetAll (0);
-}
-
-void AppAres::CreateActor ()
-{
-#if 0
-  // The Real Camera
-  entity_cam = pl->CreateEntity ("camera", 0, 0,
-    "pcinput.standard",
-    "pcmove.analogmotion",
-    "pcmove.jump",
-    "pcmove.grab",
-    "pccamera.delegate",
-    "pccamera.mode.tracking",
-    "pcobject.mesh",
-    "pcobject.mesh.select",
-    "pcmove.linear",
-    "pcmove.actor.wasd",
-    //"pc2d.tooltip",
-    "pctools.inventory",
-    "pctools.timer",
-    "pcsound.listener",
-    "pclogic.trigger",
-    "pcmisc.test",
-    "pctools.properties",
-    "pctools.bag",
-    CEL_PROPCLASS_END);
-  if (!entity_cam) return;
-
-  csRef<iPcCommandInput> pcinp = celQueryPropertyClassEntity<iPcCommandInput> (entity_cam);
-  pcinp->Bind ("JoystickButton4", "ready");
-  pcinp->Bind ("JoystickButton6", "lockon");
-  pcinp->Bind ("JoystickButton2", "resetcam");
-  pcinp->Bind ("JoystickAxis0", "joyaxis0");
-  pcinp->Bind ("JoystickAxis1", "joyaxis1");
-  pcinp->Bind ("MouseAxis0_centered", "mouseaxis0");
-
-  pcinp->Bind ("e", "action");
-  pcinp->Bind ("z", "ready");
-  pcinp->Bind ("x", "lockon");
-  pcinp->Bind ("c", "resetcam");
-  pcinp->Bind ("left", "left");
-  pcinp->Bind ("right", "right");
-  pcinp->Bind ("up", "up");
-  pcinp->Bind ("down", "down");
-  pcinp->Bind ("a", "left");
-  pcinp->Bind ("d", "right");
-  pcinp->Bind ("w", "up");
-  pcinp->Bind ("s", "down");
-  pcinp->Bind ("space", "jump");
-  pcinp->Bind ("m", "freeze");
-  pcinp->Bind ("shift", "roll");
-  pcinp->Bind ("`", "showstates");
-  pcinp->Bind ("[", "camleft");
-  pcinp->Bind ("]", "camright");
-  pcinp->Bind ("pageup", "camup");
-  pcinp->Bind ("pagedown", "camdown");
-
-  pcinp->Bind ("pad5", "settings");
-  pcinp->Bind ("pad2", "settings_down");
-  pcinp->Bind ("pad8", "settings_up");
-  pcinp->Bind ("pad4", "settings_left");
-  pcinp->Bind ("pad6", "settings_right");
-  pcinp->Bind ("pad7", "settings_fastleft");
-  pcinp->Bind ("pad9", "settings_fastright");
-  pcinp->Bind ("pad1", "settings_slowleft");
-  pcinp->Bind ("pad3", "settings_slowright");
-
-  csRef<iPcJump> jump = celQueryPropertyClassEntity<iPcJump> (entity_cam);
-  jump->SetBoostJump (false);
-  jump->SetJumpHeight (1.0f);
-  //jump->SetDoubleJumpSpeed (7.0f);
-
-  csRef<iPcTrackingCamera> trackcam = celQueryPropertyClassEntity<iPcTrackingCamera> (entity_cam);
-  trackcam->SetPanSpeed (2.5f);
-  trackcam->SetTiltSpeed (1.2f);
-
-  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (entity_cam);
-  camera = cam->GetCamera ();
-
-  csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (entity_cam);
-  pcmesh->SetPath ("/lib/kwartz");
-  pcmesh->SetMesh ("kwartz_fact", "kwartz.lib");
-  pcmesh->MoveMesh (sector, csVector3 (0, 10, 0));
-
-  csRef<iPcLinearMovement> pclinmove = celQueryPropertyClassEntity<iPcLinearMovement> (entity_cam);
-  pclinmove->InitCD (
-      csVector3 (0.5f,  0.8f, 0.5f),
-      csVector3 (0.5f,  0.4f, 0.5f),
-      csVector3 (0.0f, -0.4f, 0.0f));
-
-  csRef<iPcTrigger> trigger = celQueryPropertyClassEntity<iPcTrigger> (entity_cam);
-  trigger->SetupTriggerSphere (0, csVector3 (0), 1.0);
-  trigger->SetFollowEntity (true);
-#endif
-}
-
-void AppAres::ConnectWires ()
-{
-#if 0
-  iCelEntity* action_icon = pl->FindEntity ("action_icon");
-
-  iCelPropertyClass* pc;
-  csRef<iPcWire> wire;
-  csRef<celOneParameterBlock> params;
-  size_t idx;
-
-  pc = pl->CreatePropertyClass (entity_cam, "pclogic.wire");
-  // 1: For debugging, print out when we are near an entity.
-  wire = scfQueryInterface<iPcWire> (pc);
-  wire->AddInput ("cel.trigger.entity.enter");
-  idx = wire->AddOutput (pl->FetchStringID ("cel.test.action.Print"));
-  wire->MapParameterExpression (idx, "message", "'We found '+@entity");
-  // 2: Add the name of the entity to the bag.
-  idx = wire->AddOutput (pl->FetchStringID ("cel.bag.action.AddString"));
-  wire->MapParameterExpression (idx, "value", "entname(@entity)");
-  // 3: Set the visibility state of the billboard.
-  params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("name"), "visible"));
-  idx = wire->AddOutput (pl->FetchStringID ("cel.billboard.action.SetProperty"),
-      action_icon->QueryMessageChannel (), params);
-  // Use > 1 because there is also the 'camera' entity itself.
-  wire->MapParameterExpression (idx, "value", "property(pc(pctools.bag),id(size))>1");
-
-  // 1: For debugging, print out when we are far from an entity.
-  pc = pl->CreatePropertyClass (entity_cam, "pclogic.wire");
-  wire = scfQueryInterface<iPcWire> (pc);
-  wire->AddInput ("cel.trigger.entity.leave");
-  idx = wire->AddOutput (pl->FetchStringID ("cel.test.action.Print"));
-  wire->MapParameterExpression (idx, "message", "'We leave '+@entity");
-  // 2: Remove the name of the entity from the bag.
-  idx = wire->AddOutput (pl->FetchStringID ("cel.bag.action.RemoveString"));
-  wire->MapParameterExpression (idx, "value", "entname(@entity)");
-  // 3: Set the visibility state of the billboard.
-  params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("name"), "visible"));
-  idx = wire->AddOutput (pl->FetchStringID ("cel.billboard.action.SetProperty"),
-      action_icon->QueryMessageChannel (), params);
-  // Use > 1 because there is also the 'camera' entity itself.
-  wire->MapParameterExpression (idx, "value", "property(pc(pctools.bag),id(size))>1");
-
-  // If the action key is pressed we send out a 'cel.game.action' to the current entities.
-  pc = pl->CreatePropertyClass (entity_cam, "pclogic.wire");
-  wire = scfQueryInterface<iPcWire> (pc);
-  wire->AddInput ("cel.input.action.up");
-  params.AttachNew (new celOneParameterBlock (pl->FetchStringID ("msgid"), "cel.game.action"));
-  wire->AddOutput (pl->FetchStringID ("cel.bag.action.SendMessage"), 0, params);
-#endif
 }
 
 bool AppAres::InitPhysics ()
@@ -493,8 +372,6 @@ bool AppAres::PostLoadMap ()
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
 
-  //CreateActor ();
-
   // Find the terrain mesh. @@@ HARDCODED!
   csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
   if (terrainWrapper)
@@ -516,6 +393,84 @@ bool AppAres::PostLoadMap ()
 
   engine->Prepare ();
   //CS::Lighting::SimpleStaticLighter::ShineLights (sector, engine, 4);
+
+  return true;
+}
+
+bool AppAres::SetupMenu ()
+{
+  menuGames.Empty ();
+  csRef<iStringArray> vfsFiles = vfs->FindFiles ("/saves/");
+  for (size_t i = 0; i < vfsFiles->GetSize(); i++)
+  {
+    csString file = (char*)vfsFiles->Get(i);
+    if (file.Length () == 0) continue;
+    if (!file.EndsWith (".ares")) continue;
+    MenuEntry entry;
+    entry.name = file;
+    entry.x1 = 10;
+    entry.x2 = g3d->GetDriver2D ()->GetWidth ()-20;
+    entry.y1 = 10 + i*30;
+    entry.y2 = 10 + i*30 + 26;
+    menuGames.Push (entry);
+  }
+
+  menu = MENU_LIST;
+
+  return true;
+}
+
+bool AppAres::StartGame (const char* filename)
+{
+  nature = csQueryRegistry<iNature> (object_reg);
+  if (!nature)
+    return ReportError("Failed to locate nature plugin!");
+
+  world = pl->CreateEntity ("World", 0, 0, "pcworld.dynamic", CEL_PROPCLASS_END);
+  if (!world)
+    return ReportError ("Failed to create World entity!");
+  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (world);
+  {
+    csRef<iDynamicCellCreator> cellCreator;
+    cellCreator.AttachNew (new AresDynamicCellCreator (this));
+    dynworld->SetDynamicCellCreator (cellCreator);
+  }
+
+  assetManager = csQueryRegistry<iAssetManager> (object_reg);
+  assetManager->SetZone (dynworld);
+  if (!assetManager->LoadFile (filename))
+    return ReportError ("Error loading '%s'!", filename);
+
+  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
+  if (!worldTpl)
+  {
+    if (!LoadLibrary ("/appdata/", "world.xml"))
+      return ReportError ("Error loading world library!");
+    worldTpl = pl->FindEntityTemplate ("World");
+  }
+
+  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
+  if (!playerTpl)
+  {
+    if (!LoadLibrary ("/appdata/", "player.xml"))
+      return ReportError ("Error loading player library!");
+    playerTpl = pl->FindEntityTemplate ("Player");
+  }
+
+  if (!InitPhysics ())
+    return false;
+
+  // Create the scene
+  pl->ApplyTemplate (world, worldTpl, (iCelParameterBlock*)0);
+
+  player = pl->CreateEntity (playerTpl, "Player", (iCelParameterBlock*)0);
+  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (player);
+  camera = cam->GetCamera ();
+
+  if (!PostLoadMap ())
+    return ReportError ("Error during PostLoadMap()!");
+
+  menu = MENU_GAME;
 
   return true;
 }
@@ -562,53 +517,10 @@ bool AppAres::Application ()
   if (!LoadLibrary ("/aresnode/", "library"))
     return ReportError ("Error loading library!");
 
-  nature = csQueryRegistry<iNature> (object_reg);
-  if (!nature)
-    return ReportError("Failed to locate nature plugin!");
+  menuFont = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_LARGE);
 
-  world = pl->CreateEntity ("World", 0, 0, "pcworld.dynamic", CEL_PROPCLASS_END);
-  if (!world)
-    return ReportError ("Failed to create World entity!");
-  dynworld = celQueryPropertyClassEntity<iPcDynamicWorld> (world);
-  {
-    csRef<iDynamicCellCreator> cellCreator;
-    cellCreator.AttachNew (new AresDynamicCellCreator (this));
-    dynworld->SetDynamicCellCreator (cellCreator);
-  }
-
-  assetManager = csQueryRegistry<iAssetManager> (object_reg);
-  assetManager->SetZone (dynworld);
-  if (!assetManager->LoadFile ("/saves/entities.ares"))
-    return ReportError ("Error loading entities.ares!");
-
-  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
-  if (!worldTpl)
-  {
-    if (!LoadLibrary ("/appdata/", "world.xml"))
-      return ReportError ("Error loading world library!");
-    worldTpl = pl->FindEntityTemplate ("World");
-  }
-
-  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
-  if (!playerTpl)
-  {
-    if (!LoadLibrary ("/appdata/", "player.xml"))
-      return ReportError ("Error loading player library!");
-    playerTpl = pl->FindEntityTemplate ("Player");
-  }
-
-  if (!InitPhysics ())
+  if (!SetupMenu ())
     return false;
-
-  // Create the scene
-  pl->ApplyTemplate (world, worldTpl, (iCelParameterBlock*)0);
-
-  player = pl->CreateEntity (playerTpl, "Player", (iCelParameterBlock*)0);
-  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (player);
-  camera = cam->GetCamera ();
-
-  if (!PostLoadMap ())
-    return ReportError ("Error during PostLoadMap()!");
 
   printer.AttachNew (new FramePrinter (object_reg));
 
