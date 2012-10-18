@@ -60,8 +60,27 @@ struct iAssetManager;
 struct MenuEntry
 {
   csString name;
+  csString filename;
   int x1, y1;
-  int x2, y2;
+  int dx, dy;
+  int w, h;
+  int alpha;
+  bool active;
+  int fontw, fonth;
+
+  int src_w, dest_w;
+  int src_h, dest_h;
+  int src_dx, dest_dx;
+  int src_dy, dest_dy;
+  float totaltime, currenttime;
+
+  MenuEntry () : dx (0), dy (0), alpha (0), active (false),
+  	totaltime (0.0f), currenttime (0.0f)
+  { }
+
+  void Move (int x, int y, int screenw);
+  void StartInterpolate (int destdx, int destdy, int destw, int desth, float seconds);
+  void Step (float seconds);
 };
 
 #define MENU_GAME 0
@@ -69,13 +88,48 @@ struct MenuEntry
 #define MENU_WAIT1 2
 #define MENU_WAIT2 3
 
+class AppAres;
+
+/**
+ * Menu handling.
+ */
+class AresMenu
+{
+private:
+  AppAres* app;
+  int menuMode;
+  csArray<MenuEntry> menuGames;
+  csRef<iFont> menuFont;
+  int mouseX, mouseY;
+  csString gameFile;
+  float menuActive;		// Active menu entry
+
+  csSimplePixmap* menuBox;
+  csSimplePixmap* menuLoading;
+
+  void ActivateMenuEntry (float entry);
+
+public:
+  AresMenu (AppAres* app);
+  ~AresMenu ();
+
+  bool SetupMenu ();
+  void CleanupMenu ();
+
+  void MenuFrame ();
+  void OnMouseMove (iEvent& ev);
+  bool OnMouseDown (iEvent& ev);
+
+  int GetMode () const { return menuMode; }
+};
+
 /**
  * Main application class of AppAres.
  */
 class AppAres : public csApplicationFramework,
 		public csBaseEventHandler
 {
-private:
+public:
   csRef<iEngine> engine;
   csRef<iLoader> loader;
   csRef<iGraphics3D> g3d;
@@ -84,8 +138,9 @@ private:
   csRef<FramePrinter> printer;
   csRef<iVFS> vfs;
   csRef<iCollideSystem> cdsys;
-
   csRef<iPcDynamicWorld> dynworld;
+
+private:
   iDynamicCell* dyncell;
   csRef<iCurvedMeshCreator> curvedMeshCreator;
 
@@ -98,13 +153,6 @@ private:
 
   csRef<iAssetManager> assetManager;
 
-  int menu;
-  csArray<MenuEntry> menuGames;
-  csRef<iFont> menuFont;
-  bool SetupMenu ();
-  int mouseX, mouseY;
-  csString gameFile;
-
   iSector* sector;
   iCamera* camera;
 
@@ -112,6 +160,8 @@ private:
   csRef<iDynamics> dyn;
   csRef<iDynamicSystem> dynSys;
   csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
+
+  AresMenu menu;
 
   /**
    * Setup everything that needs to be rendered on screen. This routine
@@ -126,7 +176,6 @@ private:
 
   bool PostLoadMap ();
   bool InitPhysics ();
-  bool StartGame (const char* filename);
 
   /// Load a library file with the given VFS path.
   bool LoadLibrary (const char* path, const char* file);
@@ -136,6 +185,8 @@ public:
   virtual ~AppAres ();
 
   iDynamicCell* CreateCell (const char* name);
+
+  bool StartGame (const char* filename);
 
   /**
    * Final cleanup.

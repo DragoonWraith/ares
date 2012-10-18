@@ -84,13 +84,246 @@ public:
 
 //-----------------------------------------------------------------------------
 
-AppAres::AppAres ()
+void MenuEntry::Move (int x, int y, int screenw)
+{
+  x1 = x;
+  y1 = y;
+  int xx = x + w/2;
+  int a = int (255.0 * float (ABS (screenw/2 - xx)) / float (screenw/2));
+  if (a < 0) a = 0;
+  else if (a > 255) a = 255;
+  alpha = a;
+}
+
+void MenuEntry::StartInterpolate (int destdx, int destdy, int destw, int desth, float seconds)
+{
+  currenttime = 0;
+  totaltime = seconds;
+  src_dx = dx;
+  src_dy = dy;
+  src_w = w;
+  src_h = h;
+  dest_dx = destdx;
+  dest_dy = destdy;
+  dest_w = destw;
+  dest_h = desth;
+}
+
+void MenuEntry::Step (float seconds)
+{
+  if (fabs (totaltime) >= .001)
+  {
+    currenttime += seconds;
+    if (currenttime >= totaltime)
+    {
+      dx = dest_dx;
+      dy = dest_dy;
+      w = dest_w;
+      h = dest_h;
+    }
+    else
+    {
+      float f1 = (totaltime-currenttime)/totaltime;
+      float f2 = currenttime/totaltime;
+      dx = src_dx*f1 + dest_dx*f2;
+      dy = src_dy*f1 + dest_dy*f2;
+      w = src_w*f1 + dest_w*f2;
+      h = src_h*f1 + dest_h*f2;
+    }
+  }
+}
+
+bool AresMenu::OnMouseDown (iEvent &ev)
+{
+  mouseX = csMouseEventHelper::GetX (&ev);
+  mouseY = csMouseEventHelper::GetY (&ev);
+  for (size_t i = 0 ; i < menuGames.GetSize () ; i++)
+  {
+    const MenuEntry& me = menuGames[i];
+    int x = me.x1 + me.dx;
+    int y = me.y1 + me.dy;
+    if (mouseX >= x && mouseX <= x+me.w && mouseY >= y && mouseY <= y+me.h)
+    {
+      gameFile = me.filename;
+      menuMode = MENU_WAIT1;
+      return true;
+    }
+  }
+  return false;
+}
+
+//-----------------------------------------------------------------------------
+
+#define SCROLLMARGIN 40
+#define WSEL 200
+#define WUNSEL 140
+
+AresMenu::AresMenu (AppAres* app)
+{
+  AresMenu::app = app;
+  menuMode = MENU_LIST;
+  mouseX = 0;
+  mouseY = 0;
+  menuBox = 0;
+  menuLoading = 0;
+}
+
+AresMenu::~AresMenu ()
+{
+  CleanupMenu ();
+}
+
+static csString ExtractName (const csString& n)
+{
+  csString name = n;
+  size_t idx = name.FindLast ('.');
+  if (idx != csArrayItemNotFound) name = name.Slice (0, idx);
+  idx = name.FindLast ('/');
+  if (idx != csArrayItemNotFound) name = name.Slice (idx+1);
+  return name;
+}
+
+bool AresMenu::SetupMenu ()
+{
+  menuFont = app->g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_LARGE);
+
+  iTextureWrapper* txt = app->engine->CreateTexture ("bigicon_aresmenu",
+      "/icons/bigicon_aresmenu.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (app->g3d->GetTextureManager ());
+  menuBox = new csSimplePixmap (txt->GetTextureHandle ());
+
+  txt = app->engine->CreateTexture ("bigicon_loading",
+      "/icons/bigicon_loading.png", 0, CS_TEXTURE_2D | CS_TEXTURE_NOMIPMAPS);
+  txt->Register (app->g3d->GetTextureManager ());
+  menuLoading = new csSimplePixmap (txt->GetTextureHandle ());
+
+  menuGames.Empty ();
+  csRef<iStringArray> vfsFiles = app->vfs->FindFiles ("/saves/");
+  size_t idx = 0;
+  for (size_t i = 0 ; i < vfsFiles->GetSize() ; i++)
+  {
+    csString file = (char*)vfsFiles->Get(i);
+    if (file.Length () == 0) continue;
+    if (!file.EndsWith (".ares")) continue;
+    MenuEntry entry;
+    entry.name = ExtractName (file);
+    entry.filename = file;
+    entry.x1 = 10;
+    entry.y1 = 10;
+    entry.w = WUNSEL;
+    entry.h = WUNSEL;
+    entry.alpha = 100;
+    menuFont->GetDimensions (entry.name, entry.fontw, entry.fonth);
+    menuGames.Push (entry);
+    idx++;
+  }
+
+  menuMode = MENU_LIST;
+
+  ActivateMenuEntry (0.0f);
+
+  return true;
+}
+
+void AresMenu::MenuFrame ()
+{
+  iGraphics3D* g3d = app->g3d;
+  if (menuMode == MENU_LIST)
+  {
+    float elapsed_time = app->vc->GetElapsedSeconds ();
+
+    int w = g3d->GetDriver2D ()->GetWidth ();
+    if (mouseX > w/2+SCROLLMARGIN)
+      ActivateMenuEntry (menuActive + 10.0 * elapsed_time * float (mouseX - (w/2+SCROLLMARGIN)) / float (w));
+    else if (mouseX < w/2-SCROLLMARGIN)
+      ActivateMenuEntry (menuActive - 10.0 * elapsed_time * float ((w/2-SCROLLMARGIN) - mouseX) / float (w));
+
+    g3d->BeginDraw (CSDRAW_2DGRAPHICS | CSDRAW_CLEARSCREEN | CSDRAW_CLEARZBUFFER);
+    iGraphics2D* g2d = g3d->GetDriver2D ();
+    int fg = g2d->FindRGB (255, 255, 255);
+    int bg = -1;
+    for (size_t i = 0 ; i < menuGames.GetSize () ; i++)
+    {
+      MenuEntry& me = menuGames[i];
+      int x = me.x1 + me.dx;
+      int y = me.y1 + me.dy;
+      me.Step (elapsed_time);
+      menuBox->DrawScaled (g3d, x, y, me.w, me.h, me.alpha);
+      if (mouseX >= x && mouseX <= x+me.w && mouseY >= y && mouseY <= y+me.h)
+      {
+	if (!me.active)
+	{
+          me.StartInterpolate (-(WSEL-WUNSEL)/2, -(WSEL-WUNSEL)/2, WSEL, WSEL, 0.1);
+	  me.active = true;
+	}
+      }
+      else
+      {
+	if (me.active)
+	{
+          me.StartInterpolate (0, 0, WUNSEL, WUNSEL, 0.1);
+	  me.active = false;
+	}
+      }
+      g2d->Write (menuFont,
+	    x + (me.w>>1) - (me.fontw>>1), y + (me.h>>1) - (me.fonth>>1),
+	    fg, bg, me.name);
+    }
+  }
+  else if (menuMode == MENU_WAIT1)
+  {
+    g3d->BeginDraw (CSDRAW_2DGRAPHICS | CSDRAW_CLEARSCREEN | CSDRAW_CLEARZBUFFER);
+    int w = g3d->GetDriver2D ()->GetWidth ();
+    int h = g3d->GetDriver2D ()->GetHeight ();
+    menuLoading->Draw (g3d, (w-menuLoading->Width ())/2, (h-menuLoading->Height ())/2);
+    menuMode = MENU_WAIT2;
+  }
+  else if (menuMode == MENU_WAIT2)
+  {
+    if (gameFile)
+    {
+      menuMode = MENU_GAME;
+      app->StartGame (gameFile);
+    }
+  }
+}
+
+void AresMenu::OnMouseMove (iEvent& ev)
+{
+  mouseX = csMouseEventHelper::GetX (&ev);
+  mouseY = csMouseEventHelper::GetY (&ev);
+}
+
+void AresMenu::ActivateMenuEntry (float entry)
+{
+  if (entry <= 0.0f) entry = 0.0f;
+  else if (entry >= float (menuGames.GetSize ())) entry = float (menuGames.GetSize ());
+  int w = app->g3d->GetDriver2D ()->GetWidth ();
+  int h = app->g3d->GetDriver2D ()->GetHeight ();
+  menuActive = entry;
+  for (int i = 0 ; i < int (menuGames.GetSize ()) ; i++)
+  {
+    MenuEntry& me = menuGames[i];
+    int x = (float (i)-menuActive)*190.0f + w/2;
+    int y = (h-WUNSEL)/2;
+    me.Move (x, y, w);
+  }
+}
+
+void AresMenu::CleanupMenu ()
+{
+  delete menuBox;
+  menuBox = 0;
+  delete menuLoading;
+  menuLoading = 0;
+}
+
+//-----------------------------------------------------------------------------
+
+AppAres::AppAres () : menu (this)
 {
   SetApplicationName ("Ares");
   currentTime = 31000;
-  menu = MENU_LIST;
-  mouseX = 0;
-  mouseY = 0;
 }
 
 AppAres::~AppAres ()
@@ -105,35 +338,9 @@ void AppAres::OnExit ()
 
 void AppAres::Frame ()
 {
-  if (menu == MENU_LIST)
+  if (menu.GetMode () != MENU_GAME)
   {
-    iGraphics2D* g2d = g3d->GetDriver2D ();
-    g2d->Clear (g2d->FindRGB (0, 0, 0));
-    int fg = g2d->FindRGB (255, 255, 255);
-    int fgSel = g2d->FindRGB (0, 0, 0);
-    int bg = g2d->FindRGB (0, 0, 0);
-    int bgSel = g2d->FindRGB (128, 128, 128);
-    for (size_t i = 0 ; i < menuGames.GetSize () ; i++)
-    {
-      const MenuEntry& me = menuGames[i];
-      if (mouseX >= me.x1 && mouseX <= me.x2 && mouseY >= me.y1 && mouseY <= me.y2)
-        g2d->Write (menuFont, me.x1, me.y1, fgSel, bgSel, me.name);
-      else
-        g2d->Write (menuFont, me.x1, me.y1, fg, bg, me.name);
-    }
-  }
-  else if (menu == MENU_WAIT1)
-  {
-    iGraphics2D* g2d = g3d->GetDriver2D ();
-    g2d->Clear (g2d->FindRGB (0, 0, 0));
-    g2d->Write (menuFont, 100, 100, g2d->FindRGB (255, 128, 128), g2d->FindRGB (0, 0, 0),
-	"Loading ...");
-    menu = MENU_WAIT2;
-  }
-  else if (menu == MENU_WAIT2)
-  {
-    if (gameFile)
-      StartGame (gameFile);
+    menu.MenuFrame ();
   }
   else
   {
@@ -155,27 +362,15 @@ void AppAres::Frame ()
 
 bool AppAres::OnMouseMove (iEvent& ev)
 {
-  if (menu != MENU_LIST) return false;
-  mouseX = csMouseEventHelper::GetX (&ev);
-  mouseY = csMouseEventHelper::GetY (&ev);
+  if (menu.GetMode () == MENU_LIST)
+    menu.OnMouseMove (ev);
   return false;
 }
 
 bool AppAres::OnMouseDown (iEvent &ev)
 {
-  if (menu != MENU_LIST) return false;
-  mouseX = csMouseEventHelper::GetX (&ev);
-  mouseY = csMouseEventHelper::GetY (&ev);
-  for (size_t i = 0 ; i < menuGames.GetSize () ; i++)
-  {
-    const MenuEntry& me = menuGames[i];
-    if (mouseX >= me.x1 && mouseX <= me.x2 && mouseY >= me.y1 && mouseY <= me.y2)
-    {
-      gameFile = me.name;
-      menu = MENU_WAIT1;
-      return true;
-    }
-  }
+  if (menu.GetMode () == MENU_LIST)
+    return menu.OnMouseDown (ev);
   return false;
 }
 
@@ -289,7 +484,7 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_REPORTERLISTENER,
 	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
 	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
-	CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
+	//CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
 	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
 	//CS_REQUEST_PLUGIN ("crystalspace.sndsys.renderer.software", iSndSysRenderer),
@@ -397,31 +592,10 @@ bool AppAres::PostLoadMap ()
   return true;
 }
 
-bool AppAres::SetupMenu ()
-{
-  menuGames.Empty ();
-  csRef<iStringArray> vfsFiles = vfs->FindFiles ("/saves/");
-  for (size_t i = 0; i < vfsFiles->GetSize(); i++)
-  {
-    csString file = (char*)vfsFiles->Get(i);
-    if (file.Length () == 0) continue;
-    if (!file.EndsWith (".ares")) continue;
-    MenuEntry entry;
-    entry.name = file;
-    entry.x1 = 10;
-    entry.x2 = g3d->GetDriver2D ()->GetWidth ()-20;
-    entry.y1 = 10 + i*30;
-    entry.y2 = 10 + i*30 + 26;
-    menuGames.Push (entry);
-  }
-
-  menu = MENU_LIST;
-
-  return true;
-}
-
 bool AppAres::StartGame (const char* filename)
 {
+  menu.CleanupMenu ();
+
   nature = csQueryRegistry<iNature> (object_reg);
   if (!nature)
     return ReportError("Failed to locate nature plugin!");
@@ -470,16 +644,43 @@ bool AppAres::StartGame (const char* filename)
   if (!PostLoadMap ())
     return ReportError ("Error during PostLoadMap()!");
 
-  menu = MENU_GAME;
+  csRef<iNativeWindow> natwin = scfQueryInterface<iNativeWindow> (g3d->GetDriver2D ());
+  if (natwin)
+  {
+    natwin->SetWindowTransparent (false);
+  }
+
+  // The window is open, so lets make it disappear! 
+  if (natwin)
+  {
+    natwin->SetWindowDecoration (iNativeWindow::decoCaption, true);
+    natwin->SetWindowDecoration (iNativeWindow::decoClientFrame, true);
+  }
 
   return true;
 }
 
 bool AppAres::Application ()
 {
+  g3d = csQueryRegistry<iGraphics3D> (object_reg);
+  if (!g3d) return ReportError ("No iGraphics3D plugin!");
+
+  csRef<iNativeWindow> natwin = scfQueryInterface<iNativeWindow> (g3d->GetDriver2D ());
+  if (natwin)
+  {
+    natwin->SetWindowTransparent (true);
+  }
+
   // i.e. all windows will be opened.
   if (!OpenApplication (object_reg))
     return ReportError ("Error opening system!");
+
+  // The window is open, so lets make it disappear! 
+  if (natwin)
+  {
+    natwin->SetWindowDecoration (iNativeWindow::decoCaption, false);
+    natwin->SetWindowDecoration (iNativeWindow::decoClientFrame, false);
+  }
 
   // The virtual clock.
   vc = csQueryRegistry<iVirtualClock> (object_reg);
@@ -498,9 +699,6 @@ bool AppAres::Application ()
   loader = csQueryRegistry<iLoader> (object_reg);
   if (!loader) return ReportError ("No iLoader plugin!");
 
-  g3d = csQueryRegistry<iGraphics3D> (object_reg);
-  if (!g3d) return ReportError ("No iGraphics3D plugin!");
-
   kbd = csQueryRegistry<iKeyboardDriver> (object_reg);
   if (!kbd) return ReportError ("No iKeyboardDriver plugin!");
 
@@ -517,9 +715,7 @@ bool AppAres::Application ()
   if (!LoadLibrary ("/aresnode/", "library"))
     return ReportError ("Error loading library!");
 
-  menuFont = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_LARGE);
-
-  if (!SetupMenu ())
+  if (!menu.SetupMenu ())
     return false;
 
   printer.AttachNew (new FramePrinter (object_reg));
