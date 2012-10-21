@@ -395,27 +395,6 @@ bool AppAres::OnKeyboard (iEvent &ev)
   return false;
 }
 
-bool AppAres::InitPhysics ()
-{
-  if (dynworld->IsPhysicsEnabled ())
-  {
-    dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
-    if (!dyn) return ReportError ("Error loading bullet plugin!");
-
-    dynSys = dyn->CreateSystem ();
-    if (!dynSys) return ReportError ("Error creating dynamic system!");
-    //dynSys->SetLinearDampener(.3f);
-    dynSys->SetRollingDampener(.995f);
-    dynSys->SetGravity (csVector3 (0.0f, -9.81f, 0.0f));
-
-    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
-    bullet_dynSys->SetInternalScale (1.0f);
-    bullet_dynSys->SetStepParameters (0.005f, 2, 10);
-  }
-
-  return true;
-}
-
 iDynamicCell* AppAres::CreateCell (const char* name)
 {
   iSector* s = engine->FindSector (name);
@@ -442,10 +421,9 @@ iDynamicCell* AppAres::CreateCell (const char* name)
     ds->SetRollingDampener(.995f);
     ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
 
-    csRef<CS::Physics::Bullet::iDynamicSystem> bullet_ds = scfQueryInterface<
-      CS::Physics::Bullet::iDynamicSystem> (ds);
+    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (ds);
     //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
-    bullet_ds->SetStepParameters (0.005f, 2, 10);
+    bullet_dynSys->SetStepParameters (0.005f, 2, 10);
   }
 
   iDynamicCell* cell = dynworld->AddCell (name, s, ds);
@@ -487,7 +465,6 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	//CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
 	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
-	//CS_REQUEST_PLUGIN ("crystalspace.sndsys.renderer.software", iSndSysRenderer),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
@@ -511,6 +488,11 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 
 bool AppAres::PostLoadMap ()
 {
+  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
+  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
+
+  pl->ApplyTemplate (world, worldTpl, (iCelParameterBlock*)0);
+
   iDynamicCell* dyncell = 0;
   // Pick the first cell containing the player or else
   // the first cell.
@@ -544,6 +526,13 @@ bool AppAres::PostLoadMap ()
 
   dynworld->SetCurrentCell (dyncell);
   sector = dyncell->GetSector ();
+
+  csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
+  mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
+
+  player = pl->CreateEntity (playerTpl, "Player", (iCelParameterBlock*)0);
+  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (player);
+  camera = cam->GetCamera ();
 
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
   // @@@ Need support for setting transform on pcmesh.
@@ -612,34 +601,17 @@ bool AppAres::StartGame (const char* filename)
 
   assetManager = csQueryRegistry<iAssetManager> (object_reg);
   assetManager->SetZone (dynworld);
+
   if (!assetManager->LoadFile (filename))
     return ReportError ("Error loading '%s'!", filename);
 
-  iCelEntityTemplate* worldTpl = pl->FindEntityTemplate ("World");
-  if (!worldTpl)
-  {
+  if (!pl->FindEntityTemplate ("World"))
     if (!LoadLibrary ("/appdata/", "world.xml"))
       return ReportError ("Error loading world library!");
-    worldTpl = pl->FindEntityTemplate ("World");
-  }
 
-  iCelEntityTemplate* playerTpl = pl->FindEntityTemplate ("Player");
-  if (!playerTpl)
-  {
+  if (!pl->FindEntityTemplate ("Player"))
     if (!LoadLibrary ("/appdata/", "player.xml"))
       return ReportError ("Error loading player library!");
-    playerTpl = pl->FindEntityTemplate ("Player");
-  }
-
-  if (!InitPhysics ())
-    return false;
-
-  // Create the scene
-  pl->ApplyTemplate (world, worldTpl, (iCelParameterBlock*)0);
-
-  player = pl->CreateEntity (playerTpl, "Player", (iCelParameterBlock*)0);
-  csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (player);
-  camera = cam->GetCamera ();
 
   if (!PostLoadMap ())
     return ReportError ("Error during PostLoadMap()!");

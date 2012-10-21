@@ -175,7 +175,6 @@ private:
   virtual bool OnMouseDown (iEvent &event);
 
   bool PostLoadMap ();
-  bool InitPhysics ();
 
   /// Load a library file with the given VFS path.
   bool LoadLibrary (const char* path, const char* file);
