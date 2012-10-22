@@ -409,7 +409,7 @@ iDynamicCell* AppAres::CreateCell (const char* name)
 
     csString systemname = "ares.dynamics.system.";
     systemname += name;
-    csRef<iDynamicSystem> ds = dyn->FindSystem (systemname);
+    ds = dyn->FindSystem (systemname);
     if (!ds)
     {
       ds = dyn->CreateSystem ();
@@ -421,9 +421,27 @@ iDynamicCell* AppAres::CreateCell (const char* name)
     ds->SetRollingDampener(.995f);
     ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
 
-    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (ds);
+    csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys = scfQueryInterface<
+      CS::Physics::Bullet::iDynamicSystem> (ds);
     //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
     bullet_dynSys->SetStepParameters (0.005f, 2, 10);
+
+    // Find the terrain mesh. @@@ HARDCODED!
+    csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
+    if (terrainWrapper)
+    {
+      csRef<iTerrainSystem> terrain =
+        scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
+      if (!terrain)
+      {
+        ReportError("Error cannot find the terrain interface!");
+        return 0;
+      }
+
+      // Create a terrain collider for each cell of the terrain
+      for (size_t i = 0; i < terrain->GetCellCount (); i++)
+        bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
+    }
   }
 
   iDynamicCell* cell = dynworld->AddCell (name, s, ds);
@@ -462,7 +480,6 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_REPORTERLISTENER,
 	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
 	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
-	//CS_REQUEST_PLUGIN ("cel.persistence.xml", iCelPersistence),
 	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
@@ -555,23 +572,6 @@ bool AppAres::PostLoadMap ()
 
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
-
-  // Find the terrain mesh. @@@ HARDCODED!
-  csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
-  if (terrainWrapper)
-  {
-    csRef<iTerrainSystem> terrain =
-      scfQueryInterface<iTerrainSystem> (terrainWrapper->GetMeshObject ());
-    if (!terrain)
-    {
-      ReportError("Error cannot find the terrain interface!");
-      return false;
-    }
-
-    // Create a terrain collider for each cell of the terrain
-    for (size_t i = 0; i < terrain->GetCellCount (); i++)
-      bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
-  }
 
   nature->InitSector (sector);
 

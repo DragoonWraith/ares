@@ -158,8 +158,6 @@ private:
 
   /// Physics.
   csRef<iDynamics> dyn;
-  csRef<iDynamicSystem> dynSys;
-  csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
 
   AresMenu menu;
 
