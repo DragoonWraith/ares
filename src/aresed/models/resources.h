@@ -34,7 +34,7 @@ struct iObject;
 class ResourcesValue : public GenericStringArrayCollectionValue<iObject>
 {
 private:
-  void AddChild (const char* type, iObject* resource);
+  void AddChild (const char* type, iObject* resource, int usage);
 
 public:
   ResourcesValue (AppAresEditWX* app) : GenericStringArrayCollectionValue<iObject> (app) { }

@@ -169,11 +169,12 @@ ResourceMoverDialog::ResourceMoverDialog (wxWindow* parent, UIManager* uiManager
       ASSET_COL_FILE,
       ASSET_COL_MOUNT);
   DefineHeadingIndexed ("resource_List",
-      "Name,Type,Path,File,Mount",
+      "Name,Type,Usage,File,Path,Mount",
       RESOURCE_COL_NAME,
       RESOURCE_COL_TYPE,
-      RESOURCE_COL_ASSET_PATH,
+      RESOURCE_COL_USAGE,
       RESOURCE_COL_ASSET_FILE,
+      RESOURCE_COL_ASSET_PATH,
       RESOURCE_COL_ASSET_MOUNT);
 
   wxListCtrl* resourceList = XRCCTRL (*this, "resource_List", wxListCtrl);
