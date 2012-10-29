@@ -198,6 +198,22 @@ struct iAssetManager : public virtual iBase
    * as not requiring an asset.
    */
   virtual bool IsResourceWithoutAsset (iObject* resource) = 0;
+
+  /**
+   * Lock a resource. This means that the resources will not be cleaned out
+   * in case so-called unused resources are purged.
+   */
+  virtual void Lock (iObject* resource) = 0;
+
+  /**
+   * Unlock a resource.
+   */
+  virtual void Unlock (iObject* resource) = 0;
+
+  /**
+   * Check if a resource is locked.
+   */
+  virtual bool IsLocked (iObject* resource) = 0;
 };
 
 #endif // __ARES_ASSETMANAGER_H__

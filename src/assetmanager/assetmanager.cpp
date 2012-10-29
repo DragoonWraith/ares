@@ -220,6 +220,53 @@ bool AssetManager::LoadDoc (iDocument* doc)
     if (error)
       return Error ("Error loading dynworld '%s'!", error->GetData ());
   }
+
+  csRef<iDocumentNode> locksNode = dynlevelNode->GetNode ("locks");
+  if (locksNode)
+  {
+    csRef<iQuestManager> questMgr = csQueryRegistry<iQuestManager> (object_reg);
+    csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
+    csRef<iDocumentNodeIterator> it = locksNode->GetNodes ();
+    while (it->HasNext ())
+    {
+      csRef<iDocumentNode> child = it->Next ();
+      if (child->GetType () != CS_NODE_ELEMENT) continue;
+      csString value = child->GetValue ();
+      iObject* resource = 0;
+      if (value == "template")
+      {
+	iCelEntityTemplate* tpl = pl->FindEntityTemplate (child->GetAttributeValue ("name"));
+	if (tpl) resource = tpl->QueryObject ();
+      }
+      else if (value == "dynfact")
+      {
+	iDynamicFactory* df = dynworld->FindFactory (child->GetAttributeValue ("name"));
+	if (df) resource = df->QueryObject ();
+      }
+      else if (value == "quest")
+      {
+	iQuestFactory* qf = questMgr->GetQuestFactory (child->GetAttributeValue ("name"));
+	if (qf) resource = qf->QueryObject ();
+      }
+      else if (value == "lightfact")
+      {
+	iLightFactory* lf = engine->FindLightFactory (child->GetAttributeValue ("name"));
+	if (lf) resource = lf->QueryObject ();
+      }
+      else
+        return Error ("Unexpected token '%s'!", value.GetData ());
+      if (resource)
+      {
+	Lock (resource);
+      }
+      else
+      {
+        Warn ("Can't lock resource '%s' with type '%s'!", child->GetAttributeValue ("name"),
+	    value.GetData ());
+      }
+    }
+  }
+
   return true;
 }
 
@@ -527,6 +574,54 @@ csRef<iDocument> AssetManager::SaveDoc ()
     ia->SetModified (false);
     ia->GetModifiedResources ().DeleteAll ();
   }
+
+  if (lockedResources.GetSize () > 0)
+  {
+    csRef<iDocumentNode> locksNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+    locksNode->SetValue ("locks");
+    csSet<csPtrKey<iObject> >::GlobalIterator it = lockedResources.GetIterator ();
+    while (it.HasNext ())
+    {
+      iObject* resource = it.Next ();
+      csRef<iDocumentNode> resNode = locksNode->CreateNodeBefore (CS_NODE_ELEMENT);
+
+      csRef<iCelEntityTemplate> tpl = scfQueryInterface<iCelEntityTemplate> (resource);
+      if (tpl)
+      {
+        resNode->SetValue ("template");
+	resNode->SetAttribute ("name", resource->GetName ());
+	continue;
+      }
+
+      csRef<iDynamicFactory> df = scfQueryInterface<iDynamicFactory> (resource);
+      if (df)
+      {
+        resNode->SetValue ("dynfact");
+	resNode->SetAttribute ("name", resource->GetName ());
+	continue;
+      }
+
+      csRef<iQuestFactory> qf = scfQueryInterface<iQuestFactory> (resource);
+      if (qf)
+      {
+        resNode->SetValue ("quest");
+	resNode->SetAttribute ("name", resource->GetName ());
+	continue;
+      }
+
+      csRef<iLightFactory> lf = scfQueryInterface<iLightFactory> (resource);
+      if (lf)
+      {
+	resNode->SetValue ("light");
+	resNode->SetAttribute ("name", resource->GetName ());
+	continue;
+      }
+
+      printf ("WHAT!\n"); fflush (stdout);
+      CS_ASSERT (false);
+    }
+  }
+
   generallyModified = false;
 
   return doc;
@@ -695,4 +790,19 @@ bool AssetManager::IsResourceWithoutAsset (iObject* resource)
   return resourcesWithoutAsset.Contains (resource);
 }
 
+void AssetManager::Lock (iObject* resource)
+{
+  if (lockedResources.Contains (resource))
+    return;
+  lockedResources.Add (resource);
+  RegisterModification ();
+}
+
+void AssetManager::Unlock (iObject* resource)
+{
+  if (!lockedResources.Contains (resource))
+    return;
+  lockedResources.Delete (resource);
+  RegisterModification ();
+}
 

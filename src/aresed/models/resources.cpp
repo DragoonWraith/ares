@@ -76,17 +76,14 @@ void ResourcesValue::AddChild (const char* type, iObject* resource, int usage)
   csString usageStr;
   if (usage >= 0)
     usageStr.Format ("%d", usage);
+  if (assetManager->IsLocked (resource))
+    usageStr.Append (" LOCK");
   array.Push (usageStr);
 
   objectsHash.Put (resource, child);
   values.Push (child);
 }
 
-static void inc (csHash<int,csString>& counter, const char* name)
-{
-  if (name)
-    counter.PutUnique (name, counter.Get (name, 0)+1);
-}
 
 void ResourcesValue::BuildModel ()
 {
@@ -102,52 +99,26 @@ void ResourcesValue::BuildModel ()
   iCelPlLayer* pl = app->Get3DView ()->GetPL ();
   iPcDynamicWorld* dynworld = app->Get3DView ()->GetDynamicWorld ();
 
-  csHash<int,csString> templateCounter;
+  ResourceCounter counter (app->GetObjectRegistry (), dynworld);
+  counter.CountResources ();
+  const csHash<int,csString>& templateCounter = counter.GetTemplateCounter ();
+  const csHash<int,csString>& questCounter = counter.GetQuestCounter ();
+  const csHash<int,csString>& lightCounter = counter.GetLightCounter ();
 
   {
     for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
     {
       iDynamicFactory* fact = dynworld->GetFactory (i);
       AddChild ("dynfact", fact->QueryObject (), fact->GetObjectCount ());
-      inc (templateCounter, fact->GetDefaultEntityTemplate ());
-      inc (templateCounter, fact->QueryObject ()->GetName ());
     }
   }
-
-  {
-    csRef<iDynamicCellIterator> it = dynworld->GetCells ();
-    while (it->HasNext ())
-    {
-      iDynamicCell* cell = it->NextCell ();
-      for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
-      {
-	iDynamicObject* dynobj = cell->GetObject (i);
-	iCelEntityTemplate* tpl = dynobj->GetEntityTemplate ();
-	if (tpl)
-	  inc (templateCounter, tpl->QueryObject ()->GetName ());
-      }
-    }
-  }
-
-  csHash<int,csString> questCounter;
 
   {
     csRef<iCelEntityTemplateIterator> it = pl->GetEntityTemplates ();
     while (it->HasNext ())
     {
-      iCelEntityTemplate* tpl = it->Next ();
-      AddChild ("template", tpl->QueryObject (),
-	  templateCounter.Get (tpl->QueryObject ()->GetName (), 0));
-      for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
-      {
-	iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-	csString name = pctpl->GetName ();
-	if (name == "pclogic.quest")
-	{
-	  csString questName = InspectTools::GetActionParameterValueString (pl, pctpl, "NewQuest", "name");
-	  inc (questCounter, questName);
-	}
-      }
+      iObject* o = it->Next ()->QueryObject ();
+      AddChild ("template", o, templateCounter.Get (o->GetName (), 0));
     }
   }
 
@@ -157,16 +128,18 @@ void ResourcesValue::BuildModel ()
     csRef<iQuestFactoryIterator> it = questMgr->GetQuestFactories ();
     while (it->HasNext ())
     {
-      iQuestFactory* tpl = it->Next ();
-      AddChild ("quest", tpl->QueryObject (),
-	  questCounter.Get (tpl->QueryObject ()->GetName (), 0));
+      iObject* o = it->Next ()->QueryObject ();
+      AddChild ("quest", o, questCounter.Get (o->GetName (), 0));
     }
   }
 
   {
     iLightFactoryList* lf = app->GetEngine ()->GetLightFactories ();
     for (size_t i = 0 ; i < (size_t)lf->GetCount () ; i++)
-      AddChild ("lightfact", lf->Get (i)->QueryObject (), -1);
+    {
+      iObject* o = lf->Get (i)->QueryObject ();
+      AddChild ("lightfact", o, lightCounter.Get (o->GetName (), 0));
+    }
   }
 
   values.Sort (CompareResourceValues);

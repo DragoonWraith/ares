@@ -3,7 +3,7 @@
 	<object class="wxDialog" name="ResourceMoverDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
 		<size>700,500</size>
-		<title>Resource Mover</title>
+		<title>Resource Manager</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
 			<orient>wxVERTICAL</orient>

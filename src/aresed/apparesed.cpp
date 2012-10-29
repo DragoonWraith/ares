@@ -163,7 +163,7 @@ END_EVENT_TABLE()
 
 static csStringID ID_NewProject = csInvalidStringID;
 static csStringID ID_ManageAssets = csInvalidStringID;
-static csStringID ID_MoveResources = csInvalidStringID;
+static csStringID ID_ManageResources = csInvalidStringID;
 static csStringID ID_Open = csInvalidStringID;
 static csStringID ID_Save = csInvalidStringID;
 static csStringID ID_SaveAs = csInvalidStringID;
@@ -285,7 +285,7 @@ void AppAresEditWX::ManageAssets ()
   uiManager->GetNewProjectDialog ()->Show (cb, assetManager->GetAssets ());
 }
 
-void AppAresEditWX::MoveResources ()
+void AppAresEditWX::ManageResources ()
 {
   uiManager->GetResourceMoverDialog ()->Show ();
   UpdateTitle ();
@@ -575,7 +575,7 @@ bool AppAresEditWX::Initialize ()
     csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
     ID_NewProject = pl->FetchStringID ("NewProject");
     ID_ManageAssets = pl->FetchStringID ("ManageAssets");
-    ID_MoveResources = pl->FetchStringID ("MoveResources");
+    ID_ManageResources = pl->FetchStringID ("ManageResources");
     ID_Open = pl->FetchStringID ("Open");
     ID_Save = pl->FetchStringID ("Save");
     ID_SaveAs = pl->FetchStringID ("SaveAs");
@@ -1017,7 +1017,7 @@ bool AppAresEditWX::Command (csStringID id, const csString& args)
 {
   if (id == ID_NewProject) NewProject ();
   else if (id == ID_ManageAssets) ManageAssets ();
-  else if (id == ID_MoveResources) MoveResources ();
+  else if (id == ID_ManageResources) ManageResources ();
   else if (id == ID_Open) OpenFile ();
   else if (id == ID_Save) SaveCurrentFile ();
   else if (id == ID_SaveAs) SaveFile ();

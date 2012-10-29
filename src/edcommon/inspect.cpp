@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "physicallayer/entitytpl.h"
 #include "celtool/stdparams.h"
 #include "tools/questmanager.h"
+#include "propclass/dynworld.h"
 
 celData InspectTools::GetPropertyValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* propName, bool* valid)
@@ -299,4 +300,242 @@ csArray<celParSpec> InspectTools::GetParameterSuggestions (iCelPlLayer* pl, iObj
   return suggestions;
 }
 
+//---------------------------------------------------------------------------------------
+
+ResourceCounter::ResourceCounter (iObjectRegistry* object_reg, iPcDynamicWorld* dynworld) :
+  object_reg (object_reg), dynworld (dynworld), filter (0)
+{
+  pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  questMgr = csQueryRegistry<iQuestManager> (object_reg);
+  engine = csQueryRegistry<iEngine> (object_reg);
+}
+
+bool ResourceCounter::inc (csHash<int,csString>& counter, iObject* object, const char* name)
+{
+  if (name)
+  {
+    counter.PutUnique (name, counter.Get (name, 0)+1);
+    if (filter && filter == object) return true;
+  }
+  return false;
+}
+
+void ResourceCounter::CountResourcesInFactories ()
+{
+  for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
+  {
+    iDynamicFactory* fact = dynworld->GetFactory (i);
+    iObject* tplObject = 0;
+    if (filter)
+    {
+      iCelEntityTemplate* tpl;
+      if (fact->GetDefaultEntityTemplate ())
+	tpl = pl->FindEntityTemplate (fact->GetDefaultEntityTemplate ());
+      else
+	tpl = pl->FindEntityTemplate (fact->QueryObject ()->GetName ());
+      if (tpl)
+	tplObject = tpl->QueryObject ();
+    }
+
+    bool report;
+    if (fact->GetDefaultEntityTemplate ())
+      report = inc (templateCounter, tplObject, fact->GetDefaultEntityTemplate ());
+    else
+      report = inc (templateCounter, tplObject, fact->QueryObject ()->GetName ());
+    if (report)
+      csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	    "    Used in factory '%s'", fact->QueryObject ()->GetName ());
+
+    if (fact->IsLightFactory ())
+    {
+      iObject* tplLight = 0;
+      if (filter)
+      {
+	iLightFactory* lf = engine->FindLightFactory (fact->QueryObject ()->GetName ());
+	if (lf)
+	  tplLight = lf->QueryObject ();
+      }
+      if (inc (lightCounter, tplLight, fact->QueryObject ()->GetName ()))
+        csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	    "    Used in factory '%s'", fact->QueryObject ()->GetName ());
+    }
+  }
+}
+
+void ResourceCounter::CountResourcesInObjects ()
+{
+  int cntUnnamed = 0;
+  csRef<iDynamicCellIterator> it = dynworld->GetCells ();
+  while (it->HasNext ())
+  {
+    iDynamicCell* cell = it->NextCell ();
+    for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    {
+      iDynamicObject* dynobj = cell->GetObject (i);
+      iCelEntityTemplate* tpl = dynobj->GetEntityTemplate ();
+      if (tpl)
+	if (inc (templateCounter, tpl->QueryObject (), tpl->QueryObject ()->GetName ()))
+	{
+	  if (dynobj->GetEntityName ())
+            csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used in object '%s'", dynobj->GetEntityName ());
+	  else
+	    cntUnnamed++;
+	}
+    }
+  }
+  if (cntUnnamed)
+    csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used in %d unnamed objects", cntUnnamed);
+}
+
+void ResourceCounter::CountTemplatesInPC (
+      iCelPropertyClassTemplate* pctpl,
+      const char* nameField,
+      const char* nameAction,
+      const char* tplName)
+{
+  csStringID nameID = pl->FetchStringID (nameField);
+  for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+    csString name = pl->FetchString (id);
+    if (name == nameAction)
+    {
+      while (params->HasNext ())
+      {
+	csStringID parid;
+	iParameter* par = params->Next (parid);
+	if (parid == nameID)
+	{
+	  csString parName = par->GetOriginalExpression ();
+	  iObject* tplObject = 0;
+	  if (filter)
+	  {
+	    iCelEntityTemplate* tpl = pl->FindEntityTemplate (parName);
+	    if (tpl)
+	      tplObject = tpl->QueryObject ();
+	  }
+
+	  if (inc (templateCounter, tplObject, parName))
+	    csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used in template '%s' (property class '%s')", tplName,
+	      pctpl->GetName ());
+	}
+      }
+    }
+  }
+}
+
+void ResourceCounter::CountResourcesInTemplates ()
+{
+  csRef<iCelEntityTemplateIterator> it = pl->GetEntityTemplates ();
+  while (it->HasNext ())
+  {
+    iCelEntityTemplate* tpl = it->Next ();
+    for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+    {
+      iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+      csString name = pctpl->GetName ();
+      if (name == "pclogic.quest")
+      {
+	csString questName = InspectTools::GetActionParameterValueString (pl, pctpl, "NewQuest", "name");
+	iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+	if (inc (questCounter, questFact ? questFact->QueryObject () : 0, questName))
+	  csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used in template '%s'", tpl->QueryObject ()->GetName ());
+      }
+      else if (name == "pclogic.spawn")
+      {
+	CountTemplatesInPC (pctpl, "template", "AddEntityTemplateType", tpl->QueryObject ()->GetName ());
+      }
+      else if (name == "pctools.inventory")
+      {
+	CountTemplatesInPC (pctpl, "name", "AddTemplate", tpl->QueryObject ()->GetName ());
+      }
+    }
+    csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
+    while (parentIt->HasNext ())
+    {
+      csString parentName = parentIt->Next ()->GetName ();
+      iCelEntityTemplate* parent = pl->FindEntityTemplate (parentName);
+      if (inc (templateCounter, parent ? parent->QueryObject () : 0, parentName))
+	csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used (as parent) in template '%s'", tpl->QueryObject ()->GetName ());
+    }
+  }
+}
+
+void ResourceCounter::CountResourcesInRewards (iRewardFactoryArray* rewards,
+    iQuestFactory* questFact)
+{
+  for (size_t i = 0 ; i < rewards->GetSize () ; i++)
+  {
+    iRewardFactory* reward = rewards->Get (i);
+    csString name = reward->GetRewardType ()->GetName ();
+    if (name.StartsWith ("cel.rewards."))
+      name = name.GetData ()+12;
+    if (name == "createentity")
+    {
+      csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (reward);
+      csString tplName = tf->GetEntityTemplate ();
+      iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
+      if (inc (templateCounter, tpl ? tpl->QueryObject () : 0, tplName))
+	csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used in quest '%s' (reward '%s')", questFact->QueryObject ()->GetName (),
+	      name.GetData ());
+    }
+  }
+}
+
+void ResourceCounter::CountResourcesInTrigger (iTriggerFactory* trigger,
+    iQuestFactory* questFact)
+{
+  csString name = trigger->GetTriggerType ()->GetName ();
+  if (name.StartsWith ("cel.triggers."))
+    name = name.GetData ()+13;
+  if (name == "inventory")
+  {
+    csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (trigger);
+      csString tplName = tf->GetChildTemplate ();
+      iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
+    if (inc (templateCounter, tpl ? tpl->QueryObject () : 0, tplName))
+	csReport (object_reg, CS_REPORTER_SEVERITY_NOTIFY, "ares.usage",
+	      "    Used in quest '%s' (trigger '%s')", questFact->QueryObject ()->GetName (),
+	      name.GetData ());
+  }
+}
+
+void ResourceCounter::CountResourcesInQuests ()
+{
+  if (questMgr)
+  {
+    csRef<iQuestFactoryIterator> it = questMgr->GetQuestFactories ();
+    while (it->HasNext ())
+    {
+      iQuestFactory* fact = it->Next ();
+      csRef<iQuestStateFactoryIterator> stateIt = fact->GetStates ();
+      while (stateIt->HasNext ())
+      {
+	iQuestStateFactory* state = stateIt->Next ();
+	csRef<iQuestTriggerResponseFactoryArray> triggerResponses = state->GetTriggerResponseFactories ();
+	for (size_t i = 0 ; i < triggerResponses->GetSize () ; i++)
+	{
+	  iQuestTriggerResponseFactory* triggerResponse = triggerResponses->Get (i);
+	  iTriggerFactory* trigger = triggerResponse->GetTriggerFactory ();
+	  CountResourcesInTrigger (trigger, fact);
+	  csRef<iRewardFactoryArray> rewards = triggerResponse->GetRewardFactories ();
+	  CountResourcesInRewards (rewards, fact);
+	}
+
+	csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
+	CountResourcesInRewards (initRewards, fact);
+	csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
+	CountResourcesInRewards (exitRewards, fact);
+      }
+    }
+  }
+}
 

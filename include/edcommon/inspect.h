@@ -31,10 +31,16 @@ THE SOFTWARE.
 #include "celtool/stdparams.h"
 
 struct iCelPropertyClassTemplate;
+struct iRewardFactoryArray;
+struct iTriggerFactory;
 struct iCelPlLayer;
 struct iParameter;
 struct iParameterManager;
 struct iObjectComment;
+struct iPcDynamicWorld;
+struct iQuestManager;
+struct iEngine;
+struct iQuestFactory;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
@@ -153,6 +159,61 @@ public:
    * Get parameter suggestions out of a comment block.
    */
   static csArray<celParSpec> GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment);
+};
+
+class ARES_EDCOMMON_EXPORT ResourceCounter
+{
+private:
+  iObjectRegistry* object_reg;
+  iPcDynamicWorld* dynworld;
+  csRef<iCelPlLayer> pl;
+  csRef<iQuestManager> questMgr;
+  csRef<iEngine> engine;
+
+  iObject* filter;
+
+  csHash<int,csString> templateCounter;
+  csHash<int,csString> questCounter;
+  csHash<int,csString> lightCounter;
+
+  void CountTemplatesInPC (
+      iCelPropertyClassTemplate* pctpl,
+      const char* nameField,
+      const char* nameAction,
+      const char* tplName);
+  void CountResourcesInRewards (iRewardFactoryArray* rewards, iQuestFactory* questFact);
+  void CountResourcesInTrigger (iTriggerFactory* trigger, iQuestFactory* questFact);
+
+  bool inc (csHash<int,csString>& counter, iObject* object, const char* name);
+
+public:
+  ResourceCounter (iObjectRegistry* object_reg, iPcDynamicWorld* dynworld);
+
+  /**
+   * Set a filter to only look at the given resource. Note that in this
+   * case the counter will be verbose and report every usage it finds to the
+   * reporter.
+   */
+  void SetFilter (iObject* filter)
+  {
+    ResourceCounter::filter = filter;
+  }
+
+  const csHash<int,csString>& GetTemplateCounter () const { return templateCounter; }
+  const csHash<int,csString>& GetQuestCounter () const { return questCounter; }
+  const csHash<int,csString>& GetLightCounter () { return lightCounter; }
+
+  void CountResourcesInFactories ();
+  void CountResourcesInObjects ();
+  void CountResourcesInTemplates ();
+  void CountResourcesInQuests ();
+  void CountResources ()
+  {
+    CountResourcesInFactories ();
+    CountResourcesInObjects ();
+    CountResourcesInTemplates ();
+    CountResourcesInQuests ();
+  }
 };
 
 #endif // __appares_inspect_h

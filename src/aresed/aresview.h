@@ -317,7 +317,7 @@ public:
 
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
-  iEngine* GetEngine () const { return engine; }
+  virtual iEngine* GetEngine () const { return engine; }
   virtual iDynamicSystem* GetDynamicSystem () const { return dynSys; }
   virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const
   { return bullet_dynSys; }

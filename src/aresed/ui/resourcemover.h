@@ -42,12 +42,15 @@ class ResourceMoverDialog : public wxDialog, public View
 {
 private:
   UIManager* uiManager;
+  Value* resourcesValue;
 
   void OnOkButton (wxCommandEvent& event);
 
 public:
   ResourceMoverDialog (wxWindow* parent, UIManager* uiManager);
   ~ResourceMoverDialog ();
+
+  Value* GetResourcesValue () const { return resourcesValue; }
 
   void Show ();
 

@@ -56,10 +56,8 @@ struct i3DView : public virtual iBase
   /// Get the view.
   virtual iView* GetView () const = 0;
 
-  /// Get the physical layer.
   virtual iCelPlLayer* GetPL () const = 0;
-
-  /// Get the parameter manager.
+  virtual iEngine* GetEngine () const = 0;
   virtual iParameterManager* GetPM () = 0;
 
   /// Get the editor camera.

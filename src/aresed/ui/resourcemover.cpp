@@ -28,15 +28,138 @@ THE SOFTWARE.
 #include "uimanager.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/uitools.h"
+#include "edcommon/inspect.h"
 
 #include "celtool/stdparams.h"
 #include "physicallayer/entitytpl.h"
+#include "tools/questmanager.h"
 
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(ResourceMoverDialog, wxDialog)
   EVT_BUTTON (XRCID("ok_Button"), ResourceMoverDialog :: OnOkButton)
 END_EVENT_TABLE()
+
+//--------------------------------------------------------------------------
+
+class RemoveUnusedAction : public Action
+{
+private:
+  i3DView* view3d;
+  ResourceMoverDialog* dialog;
+
+public:
+  RemoveUnusedAction (i3DView* view3d, ResourceMoverDialog* dialog) :
+    view3d (view3d),
+    dialog (dialog) { }
+  virtual ~RemoveUnusedAction () { }
+  virtual const char* GetName () const { return "Remove Unused Resources..."; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    iCelPlLayer* pl = view3d->GetPL ();
+    iEngine* engine = view3d->GetEngine ();
+    iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+    iObjectRegistry* object_reg = view3d->GetApplication ()->GetObjectRegistry ();
+    csRef<iQuestManager> questMgr = csQueryRegistry<iQuestManager> (object_reg);
+    iAssetManager* assetMgr = view3d->GetApplication ()->GetAssetManager ();
+
+    ResourceCounter counter (object_reg, dynworld);
+
+    counter.CountResources ();
+
+    csSet<csPtrKey<iObject> > resources;
+
+    for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
+    {
+      iObject* resource = dynworld->GetFactory (i)->QueryObject ();
+      if (dynworld->GetFactory (i)->GetObjectCount () == 0 && assetMgr->IsModifiable (resource)
+	  && !assetMgr->IsLocked (resource))
+        resources.Add (resource);
+    }
+
+    csRef<iCelEntityTemplateIterator> tplIt = pl->GetEntityTemplates ();
+    while (tplIt->HasNext ())
+    {
+      iObject* resource = tplIt->Next ()->QueryObject ();
+      if (counter.GetTemplateCounter ().Get (resource->GetName (), 0) == 0 &&
+	  assetMgr->IsModifiable (resource) && !assetMgr->IsLocked (resource))
+        resources.Add (resource);
+    }
+
+    csRef<iQuestFactoryIterator> qIt = questMgr->GetQuestFactories ();
+    while (qIt->HasNext ())
+    {
+      iObject* resource = qIt->Next ()->QueryObject ();
+      if (counter.GetQuestCounter ().Get (resource->GetName (), 0) == 0 &&
+	  assetMgr->IsModifiable (resource) && !assetMgr->IsLocked (resource))
+        resources.Add (resource);
+    }
+
+    iLightFactoryList* lf = engine->GetLightFactories ();
+    for (size_t i = 0 ; i < (size_t)lf->GetCount () ; i++)
+    {
+      iObject* resource = lf->Get (i)->QueryObject ();
+      if (counter.GetLightCounter ().Get (resource->GetName (), 0) == 0 &&
+	  assetMgr->IsModifiable (resource) && !assetMgr->IsLocked (resource))
+        resources.Add (resource);
+    }
+
+
+    if (!view3d->GetApplication ()->GetUI ()->Ask ("Are you sure you want to remove %d unused resources (from writable assets)?", (int)resources.GetSize ()))
+      return true;
+
+    csSet<csPtrKey<iObject> >::GlobalIterator it = resources.GetIterator ();
+    while (it.HasNext ())
+    {
+      iObject* resource = it.Next ();
+      assetMgr->RegisterRemoval (resource);
+      engine->RemoveObject (resource);
+    }
+    dialog->GetResourcesValue ()->Refresh ();
+    return true;
+  }
+
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    return true;
+  }
+};
+
+//--------------------------------------------------------------------------
+
+class ShowUsagesAction : public Action
+{
+private:
+  i3DView* view3d;
+
+public:
+  ShowUsagesAction (i3DView* view3d) : view3d (view3d) { }
+  virtual ~ShowUsagesAction () { }
+  virtual const char* GetName () const { return "Show Usages"; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () != 1) return true;
+
+    ResourceCounter counter (view3d->GetApplication ()->GetObjectRegistry (),
+	view3d->GetDynamicWorld ());
+
+    iModelRepository* repository = view3d->GetModelRepository ();
+    iObject* resource = repository->GetResourceFromResources (values[0]);
+    counter.SetFilter (resource);
+    csReport (view3d->GetApplication ()->GetObjectRegistry (), CS_REPORTER_SEVERITY_NOTIFY,
+	"ares.usage", "Usages for object '%s'", resource->GetName ());
+    counter.CountResources ();
+    return true;
+  }
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () != 1) return false;
+    return true;
+  }
+};
+
 
 //--------------------------------------------------------------------------
 
@@ -88,6 +211,82 @@ public:
   }
   virtual bool IsActive (View* view, wxWindow* component)
   {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () == 0) return false;
+    return true;
+  }
+};
+
+//--------------------------------------------------------------------------
+
+class LockAction : public Action
+{
+private:
+  i3DView* view3d;
+  ResourceMoverDialog* dialog;
+
+public:
+  LockAction (i3DView* view3d, ResourceMoverDialog* dialog) : view3d (view3d), dialog (dialog) { }
+  virtual ~LockAction () { }
+  virtual const char* GetName () const { return "Lock Resources"; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () == 0) return true;
+
+    iModelRepository* repository = view3d->GetModelRepository ();
+    iAssetManager* assetManager = view3d->GetApplication ()->GetAssetManager ();
+    for (size_t i = 0 ; i < values.GetSize () ; i++)
+    {
+      iObject* resource = repository->GetResourceFromResources (values[i]);
+      assetManager->Lock (resource);
+    }
+
+    dialog->GetResourcesValue ()->Refresh ();
+
+    return true;
+  }
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () == 0) return false;
+    return true;
+  }
+};
+
+//--------------------------------------------------------------------------
+
+class UnlockAction : public Action
+{
+private:
+  i3DView* view3d;
+  ResourceMoverDialog* dialog;
+
+public:
+  UnlockAction (i3DView* view3d, ResourceMoverDialog* dialog) : view3d (view3d), dialog (dialog) { }
+  virtual ~UnlockAction () { }
+  virtual const char* GetName () const { return "Unlock Resources"; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () == 0) return true;
+
+    iModelRepository* repository = view3d->GetModelRepository ();
+    iAssetManager* assetManager = view3d->GetApplication ()->GetAssetManager ();
+    for (size_t i = 0 ; i < values.GetSize () ; i++)
+    {
+      iObject* resource = repository->GetResourceFromResources (values[i]);
+      assetManager->Unlock (resource);
+    }
+
+    dialog->GetResourcesValue ()->Refresh ();
+
+    return true;
+  }
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () == 0) return false;
     return true;
   }
 };
@@ -143,7 +342,9 @@ void ResourceMoverDialog::Show ()
   csRef<ListSelectedValue> selValue;
   selValue.AttachNew (new ListSelectedValue (assetList, assetsValue, VALUE_STRINGARRAY));
 
-  csRef<Value> resourcesValue = uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetResourcesValue ();
+  csRef<Value> rv = uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetResourcesValue ();
+  resourcesValue = rv;
+
   csRef<ResourceFilterValue> resourceFilterValue;
   resourceFilterValue.AttachNew (new ResourceFilterValue (uiManager->GetApp ()->Get3DView (),
 	selValue));
@@ -177,9 +378,12 @@ ResourceMoverDialog::ResourceMoverDialog (wxWindow* parent, UIManager* uiManager
       RESOURCE_COL_ASSET_PATH,
       RESOURCE_COL_ASSET_MOUNT);
 
-  wxListCtrl* resourceList = XRCCTRL (*this, "resource_List", wxListCtrl);
-  AddAction (resourceList, NEWREF (Action, new MoveToAssetAction (
-	  uiManager->GetApp ()->Get3DView ())));
+  wxListCtrl* rl = XRCCTRL (*this, "resource_List", wxListCtrl);
+  AddAction (rl, NEWREF (Action, new MoveToAssetAction (uiManager->GetApp ()->Get3DView ())));
+  AddAction (rl, NEWREF (Action, new ShowUsagesAction (uiManager->GetApp ()->Get3DView ())));
+  AddAction (rl, NEWREF (Action, new RemoveUnusedAction (uiManager->GetApp ()->Get3DView (), this)));
+  AddAction (rl, NEWREF (Action, new LockAction (uiManager->GetApp ()->Get3DView (), this)));
+  AddAction (rl, NEWREF (Action, new UnlockAction (uiManager->GetApp ()->Get3DView (), this)));
 }
 
 ResourceMoverDialog::~ResourceMoverDialog ()

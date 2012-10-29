@@ -160,7 +160,7 @@ private:
 
   void NewProject ();
   void ManageAssets ();
-  void MoveResources ();
+  void ManageResources ();
   void OpenFile ();
   void SaveFile ();
   void SaveCurrentFile ();
@@ -252,7 +252,7 @@ public:
 
   AresEdit3DView* GetAresView () const { return aresed3d; }
   iVFS* GetVFS () const { return vfs; }
-  iObjectRegistry* GetObjectRegistry () const { return object_reg; }
+  virtual iObjectRegistry* GetObjectRegistry () const { return object_reg; }
   iGraphics3D* GetG3D () const { return g3d; }
 
   virtual void SetMenuState ();

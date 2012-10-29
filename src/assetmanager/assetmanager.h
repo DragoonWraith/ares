@@ -82,6 +82,7 @@ private:
   int mntCounter;
   csRefArray<iAsset> assets;
   csSet<csPtrKey<iObject> > resourcesWithoutAsset;
+  csSet<csPtrKey<iObject> > lockedResources;
   int colCounter;
 
   bool generallyModified;	// A general modification outside of an asset has occured.
@@ -217,6 +218,13 @@ public:
   virtual void PlaceResource (iObject* resource, iAsset* asset);
   virtual iAsset* GetAssetForResource (iObject* resource);
   virtual bool IsResourceWithoutAsset (iObject* resource);
+
+  virtual void Lock (iObject* resource);
+  virtual void Unlock (iObject* resource);
+  virtual bool IsLocked (iObject* resource)
+  {
+    return lockedResources.Contains (resource);
+  }
 };
 
 #endif // __ASSETMANAGER_H__

@@ -41,6 +41,7 @@ struct iAresEditor : public virtual iBase
 {
   SCF_INTERFACE(iAresEditor,0,0,1);
 
+  virtual iObjectRegistry* GetObjectRegistry () const = 0;
   virtual iUIManager* GetUI () const = 0;
   virtual i3DView* Get3DView () const = 0;
   virtual iAssetManager* GetAssetManager () const = 0;
