@@ -58,17 +58,19 @@ by the copyright holders.
 @menu
 * Introduction::
 * New Project::
-* Moving Around::
 * Working With Objects::
+* Moving Around::
+* Entities::
 * Index::
 @end menu
 
 @imports{intro,chapter.txi}
 @imports{using,newproject.txi}
-@imports{using,camera.txi}
 @imports{using,objects.txi}
+@imports{using,camera.txi}
+@imports{using,entities.txi}
 
-@node Index, , Working With Objects, Top
+@node Index, , Entities, Top
 @unnumbered Index
 
 @printindex cp

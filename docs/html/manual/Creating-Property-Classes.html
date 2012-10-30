@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 5.3 Creating Property Classes</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 5.3 Creating Property Classes">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.3 Creating Property Classes">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Creating-Property-Classes"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-Entity-Templates.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Editing-Quests.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 5.3 Creating Property Classes </h2>
+
+<p>To create a property class you can use the context menu on the template node. Note that it is
+allowed to have multiple property classes of the same type on a template but in order to do
+that they need a different <samp>&lsquo;tag&rsquo;</samp>. The following property classes are currently supported:
+</p>
+<ul>
+<li> <samp>&lsquo;pcobject.mesh&rsquo;</samp>
+The presence of this property class indicates that the entity has a visual representation.
+In Ares this property class is optional (as opposed to <small>CEL</small>) because Ares uses dynamic
+objects to control the visual appearance. But it is still possible and sometimes useful
+to be explicit and add this property class as it allows more control in some situations.
+</li><li> <samp>&lsquo;pctools.properties&rsquo;</samp>
+Use this property class to have the ability to store properties with the entity. These
+properties are persisted and can be used in quests. Common usage are for counters (i.e. how
+many times has the user used a certain object) or flags to indicate if some area is open or not.
+</li><li> <samp>&lsquo;pctools.inventory&rsquo;</samp>
+If you want your object to be able to hold other objects then this is a useful property class
+for you. The inventory property class is pretty powerful but currently AresEd doesn't yet
+allow editing the full potential. In the future it will be possible to define <samp>&lsquo;loot packages&rsquo;</samp>
+for example. At this moment it is already possible to put other objects in an inventory using
+AresEd.
+</li><li> <samp>&lsquo;pctools.messenger&rsquo;</samp>
+This property class is usually not used for general entities. The standard <samp>&lsquo;World&rsquo;</samp> template
+uses the messenger property class to provide the player with a nice looking message system.
+</li><li> <samp>&lsquo;pclogic.quest&rsquo;</samp>
+This important property class allows you to assign a quest to this template. Note that this
+property class doesn't actually contain the definition of the quest itself. It only contains
+a reference to the actual quest. In addition it defines the starting state of the quest and
+you can also supply the quest with parameters (which can itself come from parameters given
+to the template).
+</li><li> <samp>&lsquo;pclogic.spawn&rsquo;</samp>
+Using this property class you can define a spawning point for other entities. There are various
+parameters that you can set like the frequency, the maximum amount of objects to spawn and
+also which objects that can be spawned.
+</li><li> <samp>&lsquo;pclogic.trigger&rsquo;</samp>
+A trigger is a area in space which reacts to entities arriving in that area. There are
+a few types of triggers that you can define (like sphere, box, beam, and above) and you can
+also control the frequency at which the trigger checks. The trigger can watch a specific
+entity (like for example the player) or else it can watch any entity. When something happens
+with the trigger (like an entity entering or leaving the trigger) it will send out a message.
+A quest can react to this message to do something.
+</li><li> <samp>&lsquo;pclogic.wire&rsquo;</samp>
+Using the wire property class you can connect messages from one source to another. The wire
+property class allows you to react to some type of message and then immediatelly send out
+another message in reeturn. Wires can often be used instead of quests for simpler things.
+For example, you can use a wire to send out an <samp>&lsquo;Activate&rsquo;</samp> message to some object as
+soon as a trigger fires. This can also be done with a quest but a wire is simpler for easy
+situations like this.
+</li><li> <samp>&lsquo;pcinput.standard&rsquo;</samp>
+Using this property class you can react to user input. The standard <samp>&lsquo;Player&rsquo;</samp> template
+already has this property class attached so typically you don't need this yourselves.
+</li><li> <samp>&lsquo;pcphysics.object&rsquo;</samp>
+Just like <samp>&lsquo;pcobject.mesh&rsquo;</samp> this property class is optional with Ares but you can use it
+in case you want a bit more control. Most of the time you will not need this.
+</li><li> <samp>&lsquo;pcphysics.system&rsquo;</samp>
+This property class is already used inside the <samp>&lsquo;World&rsquo;</samp> template and should not be
+used.
+</li><li> <samp>&lsquo;pccamera.old&rsquo;</samp>
+This property class represents the camera system as used by the standard <samp>&lsquo;Player&rsquo;</samp> template.
+You normally don't have to use this yourselves.
+</li><li> <samp>&lsquo;pcactor.move.dynamic&rsquo;</samp>
+This property class is used by the <samp>&lsquo;Player&rsquo;</samp> template in physics mode.
+</li><li> <samp>&lsquo;pcactor.move.wasd&rsquo;</samp>
+This property class is used by the <samp>&lsquo;Player&rsquo;</samp> template.
+</li><li> <samp>&lsquo;pcactor.move.standard&rsquo;</samp>
+This property class is used by the <samp>&lsquo;Player&rsquo;</samp> template.
+</li><li> <samp>&lsquo;pcworld.dynamic&rsquo;</samp>
+This property class is used by the <samp>&lsquo;World&rsquo;</samp> template.
+</li><li> <samp>&lsquo;ares.gamecontrol&rsquo;</samp>
+This property class is used by the <samp>&lsquo;Player&rsquo;</samp> template.
+</li></ul>
+
+<hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-Entity-Templates.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Editing-Quests.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

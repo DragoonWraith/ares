@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 5.2 Creating Entity Templates</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 5.2 Creating Entity Templates">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.2 Creating Entity Templates">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Creating-Entity-Templates"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Entity-Introduction.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 5.2 Creating Entity Templates </h2>
+
+<p>If you switch to the <samp>&lsquo;Entity&rsquo;</samp> mode (tab button on the top-left of the screen) you switch
+to a graphical editor for entity templates. On the left side there is a list with all templates
+that already exist. If you started with a new project this list will probably be empty.
+</p>
+<p>Using the context menu you can create a new entity template. Depending on how you set up the
+project it is possible that AresEd will now ask in which asset you want to place the new
+template. After creating the template it appears in the list and is automatically selected.
+In the large grey area you can now see a single node with the name of the template that you
+chose.
+</p>
+<p>Selecting that node will give you the opportunity to edit a few template parameters. First it
+is possible for templates to <samp>&lsquo;inherit&rsquo;</samp> from other templates. This is useful if you have
+common functionality that you want to reuse for many other templates. In the list of
+characteristics you can define various floating point characteristics for your template. This
+is sometimes used for controlling the weight of objects or for other purposes.
+Finally there is also a list of <samp>&lsquo;classes&rsquo;</samp>. A class is basically a string that you can
+attach to a template. These strings can be used for various things. The Ares Game Controller
+property class (more on this later) supports a few builtin classes but you are free to define
+and use your own:
+</p>
+<ul>
+<li> <samp>&lsquo;ares.note&rsquo;</samp>
+This indicates that the template represents a note. Currently this has the only effect that
+the cursor will change into the <samp>&lsquo;note&rsquo;</samp> icon when the user hovers over this item.
+</li><li> <samp>&lsquo;ares.info&rsquo;</samp>
+This indicates that there is extra information present in this object. This will cause the
+cursor to change into the <samp>&lsquo;info&rsquo;</samp> icon and also causes the <samp>&lsquo;Examine&rsquo;</samp> action (see
+the documentation on game controller for more information) to examine the <samp>&lsquo;ares.info&rsquo;</samp>
+property to show that information.
+</li><li> <samp>&lsquo;ares.pickup&rsquo;</samp>
+This indicates that this is an item that can be picked up and put in the inventory.
+</li></ul>
+
+<hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Entity-Introduction.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

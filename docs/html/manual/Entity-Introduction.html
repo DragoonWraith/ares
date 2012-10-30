@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 5.1 Introduction on Entities</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 5.1 Introduction on Entities">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.1 Introduction on Entities">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Entity-Introduction"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Entities.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-Entity-Templates.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 5.1 Introduction on Entities </h2>
+
+<p>Ares uses entities from the <small>CEL</small> project for game logic. An entity is basically an object
+in your game. Many entities have some visual representation (for example, objects you can
+interact with, the player, a door, a note on a table) but it is also possible to have
+entities that are invisible and serve to control various aspects of the game.
+</p>
+<p>Before you can assign entities to objects you have to define an <samp>&lsquo;entity template&rsquo;</samp> for
+the given entity. A template is basically a blueprint for the entities. Once you have defined
+a template you can reuse it for many objects. Templates can also have parameters so that it
+is possible to configure an entity from a template based on various configuration parameters.
+</p>
+<p>An entity template is constructed out of <samp>&lsquo;property classes&rsquo;</samp>. A property class is basically
+a piece of logic dedicated to a specific task. There are property classes for listening to
+input, for sending out messages, for coupling quests, for defining triggers and so on. By
+attaching multiple property classes to an entity template you can create the blue print for
+an object in the game.
+</p>
+<p>One of the most important property classes is the <samp>&lsquo;pclogic.quest&rsquo;</samp> property class. This
+property class allows you to assign a <samp>&lsquo;quest&rsquo;</samp> to an entity template. A quest is a state
+machine which have a powerful trigger/reward system that allows you to define how the quest
+transitions from one state to the other. Quests are a very important aspect of controlling
+the game logic. Using quests it is possible to do a kind of programming.
+</p>
+<hr size="1">
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

@@ -1,14 +1,73 @@
 @c -*-texinfo-*-
-@node Moving Around, Working With Objects, New Project, Top
+@node Moving Around, Entities, Working With Objects, Top
 @chapter Moving Around
 @cindex Moving Around
 
 @menu
+* Moving the Camera::
 * Locating Objects::
 @end menu
 
-@node Locating Objects, , Moving Around, Moving Around
-@section Locating Objects
+@node Moving the Camera, Locating Objects, Moving Around, Moving Around
+@section Moving the Camera
+@cindex camera
 
-todo.
+There are many ways to move the camera in the 3D view.
+
+Using the middle mouse button you can select a point in the world and then pan the
+camera in 3D around that point. If you do this in combination with the @samp{shift}
+key you will slide the world.
+
+Using the mouse wheel you can zoom in towards the point where the mouse points or away
+from that point.
+
+It is also possible to move the camera using the classical @samp{WASD} keys. Use this
+in combination with @samp{Ctrl} to slow down movement. Use this in combination with @samp{Shift}
+to pan the view. @samp{PgDn} and @samp{PgUp} are also usable to look down/up. If @samp{Pan}
+is enabled in the camera panel below the object list then these keys act differently if
+an object is selected. In that case the camera will always look at the selected object(s) and
+the @samp{WASD} keys will simply pan around that object.
+
+If you have an object selected you get various tools to reposition the camera based on
+that selection:
+
+@itemize @bullet
+@item @samp{Look at selection}:
+Look at the selected object(s) without moving the camera. This functionality is also present
+as a button (@samp{Look}) on the left side below the object list.
+@item @samp{Move to selection}:
+With this option you can move the camera near the selected object(s) and reposition the camera
+so that it faces those objects. This functionality is also present as a button (@samp{Move})
+on the left side below the object list.
+@item @samp{Top of selection}:
+Move the camera above the selection, looking down.
+@end itemize
+
+In addition you can also select @samp{Top of the world} which will move the camera very high
+above the world.
+
+Using the camera panel below the object list there are also some other things you can do.
+Using the @samp{N}, @samp{S}, @samp{E}, and @samp{W} buttons you can orient the camera directly
+towards a specific direction without changing position.
+
+Using the three @samp{S} and @samp{R} keys you can @samp{Store} and @samp{Remember} a camera
+location.
+
+
+@node Locating Objects, , Moving the Camera, Moving Around
+@section Locating Objects
+@cindex locating objects
+
+There are a few ways to locate objects (besides using the controls in the previous section
+to simply search the object). You can find the object in the object list on the left side
+of the screen and then use the @samp{Look} or @samp{Move} buttons to quickly look at the
+object or move the camera towards the object.
+
+There is also the @samp{Find Objects} menu in (@samp{Edit}) which can also be accessed using
+@samp{Ctrl-F}. This brings up an object finder dialog. This dialog shows all objects that
+exist in the current cell and allows you to filter on various criteria like template and
+factory name. It is also possible to only show all objects that are within a certain radius
+of the camera. You can then select one or more objects in this list and use the @samp{Select}
+button to close the object finder and select the objects in the 3D view.
+
 

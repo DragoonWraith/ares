@@ -1,16 +1,110 @@
 @c -*-texinfo-*-
-@node Working With Objects, Index, Moving Around, Top
+@node Working With Objects, Moving Around, New Project, Top
 @chapter Working With Objects
 @cindex Working With Objects
 
 @menu
 * Creating New Objects::
+* Selecting Objects::
+* Moving Objects::
+* Static Objects::
+* Deleting Objects::
+* Copy Pasting Objects::
+* Object Layout Tools::
 @end menu
 
-@node Creating New Objects, , Working With Objects, Working With Objects
+@node Creating New Objects, Selecting Objects, Working With Objects, Working With Objects
 @section Creating New Objects
 
 Once you have created your project you can place objects in your world.
 After selecting the right factory in the factory tree on the left you can now
-use the @samp{e} key to spawn new objects.
+use the @samp{e} key to spawn new objects. You can also use the @samp{Spawn Item}
+menu to achieve the same result.
+
+After selecting the option to create a new object the 3D view switches to a special mode.
+You can see a grey wireframe of the new object. As soon as you press the left mouse button
+the object will be created at that spot. The right mouse button can be used to cancel
+object creation.
+
+During object creation the @samp{x} and @samp{z} keys can be used to constrain movement.
+It is not possible to constrain movement to the y-axis since spawning items always occurs
+on top of the object the mouse is pointing at.
+The @samp{q} key can be used to enable grid-based movement.
+
+@node Selecting Objects, Moving Objects, Creating New Objects, Working With Objects
+@section Selecting Objects
+
+You can select objects in the 3D view by using left mouse button. Using @samp{shift} allows
+you to select multiple objects. You can also use the object list on the left side of the
+screen.
+
+@node Moving Objects, Static Objects, Selecting Objects, Working With Objects
+@section Moving Objects
+
+Pressing the @samp{g} key will enable movement for the selected objects. Again you can use
+@samp{x} and @samp{z} to constrain movement. In addition you can now also constrain movement
+to the y-axis by pressing the @samp{y} key. It is possible to constrain on multiple axis at
+the same time.
+The @samp{q} key can be used to enable grid-based movement.
+
+Pressing the right mouse button will again cancel the movement and the objects will go
+back to their original location.
+
+It is also possible to move all selected objects in small steps by using the arrow keys
+(for movement on the @samp{x}/@samp{z} plane) and the @samp{,} or @samp{.} keys (or
+@samp{<} and @samp{>}) for movement on the @samp{y} axis. Using these keys in combination
+with @samp{ctrl} will slow down movement. Using these keys in combination with @samp{shift}
+will cause faster movement.
+
+@node Static Objects, Deleting Objects, Moving Objects, Working With Objects
+@section Static Objects
+
+By default most objects will be created as dynamic (unless the factory has been configured
+with @samp{static} as default). This means they can be moved around freely and (usually) be
+interacted with dynamically in the game. Especially if the game uses physics mode the possible
+interactions are very big.
+
+If you want you can make an object @samp{static} by using the @samp{Static} checkbox. Using
+the context menu on selected objects you can also make a group of objects @samp{static} at once.
+
+@node Deleting Objects, Copy Pasting Objects, Static Objects, Working With Objects
+@section Deleting Objects
+
+If you select one or more objects then you can use the context menu (right mouse button)
+to delete the objects. You can also do this from the object list on the left side.
+
+@node Copy Pasting Objects, Object Layout Tools, Deleting Objects, Working With Objects
+@section Copy Pasting Objects
+
+Using the @samp{Copy} and @samp{Paste} menus (or the @samp{Ctrl-C} and @samp{Ctrl-V} keyboard
+shortcuts) you can copy the current selected objects and paste them elsewhere.
+
+@node Object Layout Tools, , Copy Pasting Objects, Working With Objects
+@section Object Layout Tools
+
+In the @samp{Layout} menu there are a number of other tools you can use to move around objects.
+First there are a few menu items that can be used to reset the orientation and also rotate the
+object 90 degrees left or right.
+
+The menu also contains a number of other tools that operate on multiple selected objects:
+
+@itemize @bullet
+@item @samp{Spread Objects}:
+Take the first and last selected objects and reposition all other objects so that they
+are spread evenly between these two.
+@item @samp{Align Rotation}:
+Align the orientation of all selected objects so it is equal to the orientation of the first
+selected object.
+@item @samp{Align Objects}:
+Without rotating the objects it tries to align the selected objects so that they become
+adjacent with minimal movement. The first object will never move.
+@item @samp{Align Height}:
+Place all selected objects at the same height as the first one.
+@item @samp{Snap Objects}:
+Move all selected objects to the exact position and orientation as the first one.
+@item @samp{Stack Objects}:
+Put all selected objects on top of each other, starting with the first selected object.
+@end itemize
+
+
 

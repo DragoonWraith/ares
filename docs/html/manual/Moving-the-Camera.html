@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 4.1 Moving the Camera</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 4.1 Moving the Camera">
+<meta name="keywords" content="Ares Editor 0.0.1: 4.1 Moving the Camera">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Moving-the-Camera"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Locating-Objects.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 4.1 Moving the Camera </h2>
+
+<p>There are many ways to move the camera in the 3D view.
+</p>
+<p>Using the middle mouse button you can select a point in the world and then pan the
+camera in 3D around that point. If you do this in combination with the <samp>&lsquo;shift&rsquo;</samp>
+key you will slide the world.
+</p>
+<p>Using the mouse wheel you can zoom in towards the point where the mouse points or away
+from that point.
+</p>
+<p>It is also possible to move the camera using the classical <samp>&lsquo;WASD&rsquo;</samp> keys. Use this
+in combination with <samp>&lsquo;Ctrl&rsquo;</samp> to slow down movement. Use this in combination with <samp>&lsquo;Shift&rsquo;</samp>
+to pan the view. <samp>&lsquo;PgDn&rsquo;</samp> and <samp>&lsquo;PgUp&rsquo;</samp> are also usable to look down/up. If <samp>&lsquo;Pan&rsquo;</samp>
+is enabled in the camera panel below the object list then these keys act differently if
+an object is selected. In that case the camera will always look at the selected object(s) and
+the <samp>&lsquo;WASD&rsquo;</samp> keys will simply pan around that object.
+</p>
+<p>If you have an object selected you get various tools to reposition the camera based on
+that selection:
+</p>
+<ul>
+<li> <samp>&lsquo;Look at selection&rsquo;</samp>:
+Look at the selected object(s) without moving the camera. This functionality is also present
+as a button (<samp>&lsquo;Look&rsquo;</samp>) on the left side below the object list.
+</li><li> <samp>&lsquo;Move to selection&rsquo;</samp>:
+With this option you can move the camera near the selected object(s) and reposition the camera
+so that it faces those objects. This functionality is also present as a button (<samp>&lsquo;Move&rsquo;</samp>)
+on the left side below the object list.
+</li><li> <samp>&lsquo;Top of selection&rsquo;</samp>:
+Move the camera above the selection, looking down.
+</li></ul>
+
+<p>In addition you can also select <samp>&lsquo;Top of the world&rsquo;</samp> which will move the camera very high
+above the world.
+</p>
+<p>Using the camera panel below the object list there are also some other things you can do.
+Using the <samp>&lsquo;N&rsquo;</samp>, <samp>&lsquo;S&rsquo;</samp>, <samp>&lsquo;E&rsquo;</samp>, and <samp>&lsquo;W&rsquo;</samp> buttons you can orient the camera directly
+towards a specific direction without changing position.
+</p>
+<p>Using the three <samp>&lsquo;S&rsquo;</samp> and <samp>&lsquo;R&rsquo;</samp> keys you can <samp>&lsquo;Store&rsquo;</samp> and <samp>&lsquo;Remember&rsquo;</samp> a camera
+location.
+</p>
+
+<hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Locating-Objects.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Moving-Around.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

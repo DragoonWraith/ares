@@ -1,0 +1,195 @@
+@c -*-texinfo-*-
+@node Entities, Index, Moving Around, Top
+@chapter Entities
+@cindex Entities
+
+@menu
+* Entity Introduction:: Introduction on Entities
+* Creating Entity Templates::
+* Creating Property Classes::
+* Editing Quests::
+@end menu
+
+@node Entity Introduction, Creating Entity Templates, Entities, Entities
+@section Introduction on Entities
+
+Ares uses entities from the @sc{cel} project for game logic. An entity is basically an object
+in your game. Many entities have some visual representation (for example, objects you can
+interact with, the player, a door, a note on a table) but it is also possible to have
+entities that are invisible and serve to control various aspects of the game.
+
+Before you can assign entities to objects you have to define an @samp{entity template} for
+the given entity. A template is basically a blueprint for the entities. Once you have defined
+a template you can reuse it for many objects. Templates can also have parameters so that it
+is possible to configure an entity from a template based on various configuration parameters.
+
+An entity template is constructed out of @samp{property classes}. A property class is basically
+a piece of logic dedicated to a specific task. There are property classes for listening to
+input, for sending out messages, for coupling quests, for defining triggers and so on. By
+attaching multiple property classes to an entity template you can create the blue print for
+an object in the game.
+
+One of the most important property classes is the @samp{pclogic.quest} property class. This
+property class allows you to assign a @samp{quest} to an entity template. A quest is a state
+machine which have a powerful trigger/reward system that allows you to define how the quest
+transitions from one state to the other. Quests are a very important aspect of controlling
+the game logic. Using quests it is possible to do a kind of programming.
+
+@node Creating Entity Templates, Creating Property Classes, Entity Introduction, Entities
+@section Creating Entity Templates
+
+If you switch to the @samp{Entity} mode (tab button on the top-left of the screen) you switch
+to a graphical editor for entity templates. On the left side there is a list with all templates
+that already exist. If you started with a new project this list will probably be empty.
+
+Using the context menu you can create a new entity template. Depending on how you set up the
+project it is possible that AresEd will now ask in which asset you want to place the new
+template. After creating the template it appears in the list and is automatically selected.
+In the large grey area you can now see a single node with the name of the template that you
+chose.
+
+Selecting that node will give you the opportunity to edit a few template parameters. First it
+is possible for templates to @samp{inherit} from other templates. This is useful if you have
+common functionality that you want to reuse for many other templates. In the list of
+characteristics you can define various floating point characteristics for your template. This
+is sometimes used for controlling the weight of objects or for other purposes.
+Finally there is also a list of @samp{classes}. A class is basically a string that you can
+attach to a template. These strings can be used for various things. The Ares Game Controller
+property class (more on this later) supports a few builtin classes but you are free to define
+and use your own:
+
+@itemize @bullet
+@item @samp{ares.note}
+This indicates that the template represents a note. Currently this has the only effect that
+the cursor will change into the @samp{note} icon when the user hovers over this item.
+@item @samp{ares.info}
+This indicates that there is extra information present in this object. This will cause the
+cursor to change into the @samp{info} icon and also causes the @samp{Examine} action (see
+the documentation on game controller for more information) to examine the @samp{ares.info}
+property to show that information.
+@item @samp{ares.pickup}
+This indicates that this is an item that can be picked up and put in the inventory.
+@end itemize
+
+@node Creating Property Classes, Editing Quests, Creating Entity Templates, Entities
+@section Creating Property Classes
+
+To create a property class you can use the context menu on the template node. Note that it is
+allowed to have multiple property classes of the same type on a template but in order to do
+that they need a different @samp{tag}. The following property classes are currently supported:
+
+@itemize @bullet
+@item @samp{pcobject.mesh}
+The presence of this property class indicates that the entity has a visual representation.
+In Ares this property class is optional (as opposed to @sc{cel}) because Ares uses dynamic
+objects to control the visual appearance. But it is still possible and sometimes useful
+to be explicit and add this property class as it allows more control in some situations.
+@item @samp{pctools.properties}
+Use this property class to have the ability to store properties with the entity. These
+properties are persisted and can be used in quests. Common usage are for counters (i.e. how
+many times has the user used a certain object) or flags to indicate if some area is open or not.
+@item @samp{pctools.inventory}
+If you want your object to be able to hold other objects then this is a useful property class
+for you. The inventory property class is pretty powerful but currently AresEd doesn't yet
+allow editing the full potential. In the future it will be possible to define @samp{loot packages}
+for example. At this moment it is already possible to put other objects in an inventory using
+AresEd.
+@item @samp{pctools.messenger}
+This property class is usually not used for general entities. The standard @samp{World} template
+uses the messenger property class to provide the player with a nice looking message system.
+@item @samp{pclogic.quest}
+This important property class allows you to assign a quest to this template. Note that this
+property class doesn't actually contain the definition of the quest itself. It only contains
+a reference to the actual quest. In addition it defines the starting state of the quest and
+you can also supply the quest with parameters (which can itself come from parameters given
+to the template).
+@item @samp{pclogic.spawn}
+Using this property class you can define a spawning point for other entities. There are various
+parameters that you can set like the frequency, the maximum amount of objects to spawn and
+also which objects that can be spawned.
+@item @samp{pclogic.trigger}
+A trigger is a area in space which reacts to entities arriving in that area. There are
+a few types of triggers that you can define (like sphere, box, beam, and above) and you can
+also control the frequency at which the trigger checks. The trigger can watch a specific
+entity (like for example the player) or else it can watch any entity. When something happens
+with the trigger (like an entity entering or leaving the trigger) it will send out a message.
+A quest can react to this message to do something.
+@item @samp{pclogic.wire}
+Using the wire property class you can connect messages from one source to another. The wire
+property class allows you to react to some type of message and then immediatelly send out
+another message in reeturn. Wires can often be used instead of quests for simpler things.
+For example, you can use a wire to send out an @samp{Activate} message to some object as
+soon as a trigger fires. This can also be done with a quest but a wire is simpler for easy
+situations like this.
+@item @samp{pcinput.standard}
+Using this property class you can react to user input. The standard @samp{Player} template
+already has this property class attached so typically you don't need this yourselves.
+@item @samp{pcphysics.object}
+Just like @samp{pcobject.mesh} this property class is optional with Ares but you can use it
+in case you want a bit more control. Most of the time you will not need this.
+@item @samp{pcphysics.system}
+This property class is already used inside the @samp{World} template and should not be
+used.
+@item @samp{pccamera.old}
+This property class represents the camera system as used by the standard @samp{Player} template.
+You normally don't have to use this yourselves.
+@item @samp{pcactor.move.dynamic}
+This property class is used by the @samp{Player} template in physics mode.
+@item @samp{pcactor.move.wasd}
+This property class is used by the @samp{Player} template.
+@item @samp{pcactor.move.standard}
+This property class is used by the @samp{Player} template.
+@item @samp{pcworld.dynamic}
+This property class is used by the @samp{World} template.
+@item @samp{ares.gamecontrol}
+This property class is used by the @samp{Player} template.
+@end itemize
+
+@node Editing Quests, , Creating Property Classes, Entities
+@section Editing Quests
+
+On the bottom of the list of templates you can switch the list to showing a list of
+quests. Before you can use a quest in a quest property class you need to create it here.
+
+Inside a quest you have @samp{states} and @samp{sequences}. The states control the basic
+flow of the quest. This is where you program the game logic associated with that quest.
+The sequences are used for continuous operations. For example, if you create a quest to
+open a door then the states will be used to control the door. Typically such a quest would
+have five states: @samp{locked}, @samp{closed}, @samp{opened}, @samp{closing}, and
+@samp{opening}. The sequence would do the actual movement of the door. For example, rotating
+to open or sliding if it is a sliding door. A pseudo-code description of this quest might
+go as follows:
+
+@itemize @bullet
+@item @samp{state: locked}
+In this state the quest doesn't react to events. Another quest is needed to unlock the door.
+In this case there could be a key object that has a quest to unlock the door as soon as the
+key objects enters the inventory of the player.
+@item @samp{state: closed}
+The door is no longer locked but it is closed. In this state the quest will wait for an action
+from the user to open the door. Typically this is an @samp{Activate} message from the game
+controller but it could also be a trigger if you want to have a door that opens on proximity.
+When that happens two things will happen: first the quest will start the
+@samp{opening} sequence to do the actual animation of an opening door. And secondly the
+quest will switch to the @samp{opening} state.
+@item @samp{state: opening}
+In this state the quest waits until the sequence has finished. When it has it will switch
+to the @samp{opened} state.
+@item @samp{state: opened}
+Again the quest waits from some kind of signal to close again. This could be an @samp{Activate}
+message again or even a timeout so that the door closes again after a while. When it gets
+such a message it will start the @samp{closing} sequence and also switch the quest to the
+@samp{closing} state.
+@item @samp{state: closing}
+In this state the quest waits until the sequence has finished. When it has it will switch
+to the @samp{closed} state again.
+@item @samp{sequence: opening}
+This sequence describes the animation for the door to open.
+@item @samp{sequence: closing}
+This sequence describes the animation for the door to close.
+@end itemize
+
+Using the graphical quest editor it is possible to edit the above in a graphical manner.
+
+TODO describe rewards, triggers, ...
+

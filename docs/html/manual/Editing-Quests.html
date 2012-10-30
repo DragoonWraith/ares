@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 5.4 Editing Quests</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 5.4 Editing Quests">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.4 Editing Quests">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Editing-Quests"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 5.4 Editing Quests </h2>
+
+<p>On the bottom of the list of templates you can switch the list to showing a list of
+quests. Before you can use a quest in a quest property class you need to create it here.
+</p>
+<p>Inside a quest you have <samp>&lsquo;states&rsquo;</samp> and <samp>&lsquo;sequences&rsquo;</samp>. The states control the basic
+flow of the quest. This is where you program the game logic associated with that quest.
+The sequences are used for continuous operations. For example, if you create a quest to
+open a door then the states will be used to control the door. Typically such a quest would
+have five states: <samp>&lsquo;locked&rsquo;</samp>, <samp>&lsquo;closed&rsquo;</samp>, <samp>&lsquo;opened&rsquo;</samp>, <samp>&lsquo;closing&rsquo;</samp>, and
+<samp>&lsquo;opening&rsquo;</samp>. The sequence would do the actual movement of the door. For example, rotating
+to open or sliding if it is a sliding door. A pseudo-code description of this quest might
+go as follows:
+</p>
+<ul>
+<li> <samp>&lsquo;state: locked&rsquo;</samp>
+In this state the quest doesn't react to events. Another quest is needed to unlock the door.
+In this case there could be a key object that has a quest to unlock the door as soon as the
+key objects enters the inventory of the player.
+</li><li> <samp>&lsquo;state: closed&rsquo;</samp>
+The door is no longer locked but it is closed. In this state the quest will wait for an action
+from the user to open the door. Typically this is an <samp>&lsquo;Activate&rsquo;</samp> message from the game
+controller but it could also be a trigger if you want to have a door that opens on proximity.
+When that happens two things will happen: first the quest will start the
+<samp>&lsquo;opening&rsquo;</samp> sequence to do the actual animation of an opening door. And secondly the
+quest will switch to the <samp>&lsquo;opening&rsquo;</samp> state.
+</li><li> <samp>&lsquo;state: opening&rsquo;</samp>
+In this state the quest waits until the sequence has finished. When it has it will switch
+to the <samp>&lsquo;opened&rsquo;</samp> state.
+</li><li> <samp>&lsquo;state: opened&rsquo;</samp>
+Again the quest waits from some kind of signal to close again. This could be an <samp>&lsquo;Activate&rsquo;</samp>
+message again or even a timeout so that the door closes again after a while. When it gets
+such a message it will start the <samp>&lsquo;closing&rsquo;</samp> sequence and also switch the quest to the
+<samp>&lsquo;closing&rsquo;</samp> state.
+</li><li> <samp>&lsquo;state: closing&rsquo;</samp>
+In this state the quest waits until the sequence has finished. When it has it will switch
+to the <samp>&lsquo;closed&rsquo;</samp> state again.
+</li><li> <samp>&lsquo;sequence: opening&rsquo;</samp>
+This sequence describes the animation for the door to open.
+</li><li> <samp>&lsquo;sequence: closing&rsquo;</samp>
+This sequence describes the animation for the door to close.
+</li></ul>
+
+<p>Using the graphical quest editor it is possible to edit the above in a graphical manner.
+</p>
+<p>TODO describe rewards, triggers, ...
+</p>
+
+
+<hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

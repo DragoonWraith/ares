@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@node New Project, Moving Around, Introduction, Top
+@node New Project, Working With Objects, Introduction, Top
 @chapter New Project
 @cindex New Project
 
@@ -8,6 +8,7 @@ In this section we describe how you can create and set up a new project.
 @menu
 * Creating a New Project::
 * Asset Manager::
+* Resource Manager::
 * Cell Manager::
 * Dynamic Factory Manager::
 @end menu
@@ -20,10 +21,10 @@ This is simply. Just use the @samp{New Project} menu item. This will create a
 new empty project. After starting AresEd you will also end up in an empty project
 so you don't have to use this menu in that case.
 
-@node Asset Manager, Cell Manager, Creating a New Project, New Project
+@node Asset Manager, Resource Manager, Creating a New Project, New Project
 @section Asset Manager
 
-The first thing you need to do after creating a new project is to load assets.
+After creating a new project you need to load assets.
 There are basically three kinds of assets at this moment:
 
 @itemize @bullet
@@ -53,7 +54,23 @@ When picking assets for your project it is preferable to pick assets from the as
 as then the project will remember the location of these assets using a relative location.
 That makes it easier to move the project (and later the game) to different locations.
 
-@node Cell Manager, Dynamic Factory Manager, Asset Manager, New Project
+@node Resource Manager, Cell Manager, Asset Manager, New Project
+@section Resource Manager
+
+With the resource manager you can manage the individual resources (like dynamic factories,
+templates, light factories and quests). You can move resources between assets, delete resources,
+purge unused resources and so on.
+
+The resource manager also attempts to show how many times each resource has been used.
+While this works in most situations it is possible that this is not 100% accurate. The
+resource usage counter doesn't take variables and parameters into account and so it is possible
+that (for example) to have a template that apparently isn't used but it is still needed because
+the template name itself is given as a parameter through some other mechanism.
+If you want to keep using the option to remove unused resources then one way to solve this problem
+is to @sc{lock} the resource. Locked resources will never be removed accidently.
+
+
+@node Cell Manager, Dynamic Factory Manager, Resource Manager, New Project
 @section Cell Manager
 
 If you load an asset that has one or more sectors then at least one cell will be
@@ -69,7 +86,7 @@ Using the @samp{Set default} button you can switch to another cell in the editor
 @node Dynamic Factory Manager, , Cell Manager, New Project
 @section Dynamic Factory Manager
 
-In AresEd it is not possible to directly put objects in the world unless you defined a
+In AresEd it is not possible to directly put objects in the world unless you define a
 dynamic factory for them. This can be done with the @samp{Manage Dynamic Factories} dialog.
 This window has four major sections:
 
