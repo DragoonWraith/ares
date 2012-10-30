@@ -135,15 +135,22 @@ void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& curren
   wxButton* moveToButton = XRCCTRL (*panel, "moveButton", wxButton);
   if (current.GetSize () == 0)
   {
-    panCheck->Disable();
     lookAtButton->Disable();
     moveToButton->Disable();
   }
   else
   {
-    panCheck->Enable();
     lookAtButton->Enable();
     moveToButton->Enable();
+  }
+
+  if (panCheck->IsChecked ())
+  {
+    if (current.GetSize () > 0)
+    {
+      csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
+      aresed3d->GetCamera ()->EnablePanning (center);
+    }
   }
 }
 

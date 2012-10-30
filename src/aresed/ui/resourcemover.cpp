@@ -42,6 +42,100 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
+class RemoveResourcesAction : public Action
+{
+private:
+  i3DView* view3d;
+  ResourceMoverDialog* dialog;
+
+public:
+  RemoveResourcesAction (i3DView* view3d, ResourceMoverDialog* dialog) :
+    view3d (view3d),
+    dialog (dialog) { }
+  virtual ~RemoveResourcesAction () { }
+  virtual const char* GetName () const { return "Remove Resources..."; }
+  virtual bool Do (View* view, wxWindow* component)
+  {
+    iCelPlLayer* pl = view3d->GetPL ();
+    iEngine* engine = view3d->GetEngine ();
+    iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+    iObjectRegistry* object_reg = view3d->GetApplication ()->GetObjectRegistry ();
+    csRef<iQuestManager> questMgr = csQueryRegistry<iQuestManager> (object_reg);
+    iAssetManager* assetMgr = view3d->GetApplication ()->GetAssetManager ();
+
+    ResourceCounter counter (object_reg, dynworld);
+    counter.CountResources ();
+
+    iModelRepository* repository = view3d->GetModelRepository ();
+
+    csSet<csPtrKey<iObject> > resources;
+    csArray<Value*> values = view->GetSelectedValues (component);
+    for (size_t i = 0 ; i < values.GetSize () ; i++)
+    {
+      iObject* resource = repository->GetResourceFromResources (values[i]);
+      resources.Add (resource);
+    }
+
+    int cntUsed = 0;
+    int cntLocked = 0;
+
+    csSet<csPtrKey<iObject> >::GlobalIterator it = resources.GetIterator ();
+    while (it.HasNext ())
+    {
+      iObject* resource = it.Next ();
+      if (assetMgr->IsLocked (resource)) cntLocked++;
+    }
+
+    for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
+    {
+      iObject* resource = dynworld->GetFactory (i)->QueryObject ();
+      if (resources.Contains (resource) && dynworld->GetFactory (i)->GetObjectCount () > 0)
+	cntUsed++;
+    }
+
+    csRef<iCelEntityTemplateIterator> tplIt = pl->GetEntityTemplates ();
+    while (tplIt->HasNext ())
+    {
+      iObject* resource = tplIt->Next ()->QueryObject ();
+      if (resources.Contains (resource) && counter.GetTemplateCounter ().Get (resource->GetName (), 0) > 0)
+	cntUsed++;
+    }
+
+    csRef<iQuestFactoryIterator> qIt = questMgr->GetQuestFactories ();
+    while (qIt->HasNext ())
+    {
+      iObject* resource = qIt->Next ()->QueryObject ();
+      if (resources.Contains (resource) && counter.GetQuestCounter ().Get (resource->GetName (), 0) > 0)
+	cntUsed++;
+    }
+
+    iLightFactoryList* lf = engine->GetLightFactories ();
+    for (size_t i = 0 ; i < (size_t)lf->GetCount () ; i++)
+    {
+      iObject* resource = lf->Get (i)->QueryObject ();
+      if (resources.Contains (resource) && counter.GetLightCounter ().Get (resource->GetName (), 0) > 0)
+	cntUsed++;
+    }
+
+
+    if (!view3d->GetApplication ()->GetUI ()->Ask ("Are you sure you want to remove %d resources (%d used and %d locked)?", (int)resources.GetSize (), cntUsed, cntLocked))
+      return true;
+
+    view3d->RemoveResources (resources);
+    dialog->GetResourcesValue ()->Refresh ();
+    return true;
+  }
+
+  virtual bool IsActive (View* view, wxWindow* component)
+  {
+    csArray<Value*> values = view->GetSelectedValues (component);
+    if (values.GetSize () == 0) return false;
+    return true;
+  }
+};
+
+//--------------------------------------------------------------------------
+
 class RemoveUnusedAction : public Action
 {
 private:
@@ -108,13 +202,7 @@ public:
     if (!view3d->GetApplication ()->GetUI ()->Ask ("Are you sure you want to remove %d unused resources (from writable assets)?", (int)resources.GetSize ()))
       return true;
 
-    csSet<csPtrKey<iObject> >::GlobalIterator it = resources.GetIterator ();
-    while (it.HasNext ())
-    {
-      iObject* resource = it.Next ();
-      assetMgr->RegisterRemoval (resource);
-      engine->RemoveObject (resource);
-    }
+    view3d->RemoveResources (resources);
     dialog->GetResourcesValue ()->Refresh ();
     return true;
   }
@@ -382,6 +470,7 @@ ResourceMoverDialog::ResourceMoverDialog (wxWindow* parent, UIManager* uiManager
   AddAction (rl, NEWREF (Action, new MoveToAssetAction (uiManager->GetApp ()->Get3DView ())));
   AddAction (rl, NEWREF (Action, new ShowUsagesAction (uiManager->GetApp ()->Get3DView ())));
   AddAction (rl, NEWREF (Action, new RemoveUnusedAction (uiManager->GetApp ()->Get3DView (), this)));
+  AddAction (rl, NEWREF (Action, new RemoveResourcesAction (uiManager->GetApp ()->Get3DView (), this)));
   AddAction (rl, NEWREF (Action, new LockAction (uiManager->GetApp ()->Get3DView (), this)));
   AddAction (rl, NEWREF (Action, new UnlockAction (uiManager->GetApp ()->Get3DView (), this)));
 }

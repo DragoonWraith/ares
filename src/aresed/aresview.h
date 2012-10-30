@@ -378,6 +378,12 @@ public:
    */
   virtual void ChangeCategory (const char* newCategory, const char* itemname);
 
+  /**
+   * Property remove a series of resources and make sure everything is correctly
+   * fixed for this removal.
+   */
+  virtual void RemoveResources (const csSet<csPtrKey<iObject> >& resources);
+
   /// Spawn an item. 'trans' is an optional relative transform to use for the new item.
   virtual iDynamicObject* SpawnItem (const csString& name,
       csReversibleTransform* trans = 0);

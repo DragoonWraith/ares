@@ -169,6 +169,12 @@ struct i3DView : public virtual iBase
   virtual void DeleteSelectedObjects () = 0;
 
   /**
+   * Property remove a series of resources and make sure everything is correctly
+   * fixed for this removal.
+   */
+  virtual void RemoveResources (const csSet<csPtrKey<iObject> >& resources) = 0;
+
+  /**
    * Move an item to another category. If the item doesn't already exist
    * then this is equivalent to calling AddItem().
    */

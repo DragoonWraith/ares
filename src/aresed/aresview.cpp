@@ -478,6 +478,26 @@ void AresEdit3DView::RemoveItem (const char* category, const char* itemname)
     items.DeleteIndex (idx);
 }
 
+void AresEdit3DView::RemoveResources (const csSet<csPtrKey<iObject> >& resources)
+{
+  iAssetManager* assetMgr = app->GetAssetManager ();
+  csSet<csPtrKey<iObject> >::GlobalIterator it = resources.GetIterator ();
+  while (it.HasNext ())
+  {
+    iObject* resource = it.Next ();
+    csRef<iDynamicFactory> fact = scfQueryInterface<iDynamicFactory> (resource);
+    if (fact)
+    {
+      csString category = fact->GetAttribute ("category");
+      if (!category) category = "Nodes";
+      RemoveItem (category, fact->GetName ());
+    }
+    assetMgr->RegisterRemoval (resource);
+    engine->RemoveObject (resource);
+  }
+  modelRepository->GetDynfactCollectionValue ()->Refresh ();
+}
+
 void AresEdit3DView::ChangeCategory (const char* newCategory, const char* itemname)
 {
   csHash<csStringArray,csString>::GlobalIterator it = categories.GetIterator ();

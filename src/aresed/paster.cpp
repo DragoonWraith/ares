@@ -219,7 +219,7 @@ void Paster::StartPasteSelection ()
   if (IsPasteSelectionActive ())
     PlacePasteMarker ();
   app->SetMenuState ();
-  app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. # for grid");
+  app->SetStatus ("Left mouse to place objects. Right button to cancel. x/z to constrain placement. q for grid");
   app->SetFocus3D ();
 }
 

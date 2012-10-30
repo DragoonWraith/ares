@@ -87,7 +87,8 @@ void TransformTools::Move (iSelection* selection,
     dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
     csReversibleTransform& trans = mesh->GetMovable ()->GetTransform ();
-    trans.Translate (trans.This2OtherRelative (vector));
+    //trans.Translate (trans.This2OtherRelative (vector));
+    trans.Translate (vector);
     mesh->GetMovable ()->UpdateMove ();
     dynobj->UndoKinematic ();
     dynobj->RecreatePivotJoints ();

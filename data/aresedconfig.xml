@@ -69,7 +69,6 @@
 	    <item name="&amp;Spread Objects" target="Main" command="Spread" help="Spread the selected objects so that their position is evenly distributed between the first and last selected objects (doesn't affect rotation)" />
 	    <item name="&amp;Align Rotation" target="Main" command="AlignRot" help="Align the rotation of selected objects to the first selected object (doesn't affect position)" />
 	    <item name="&amp;Align Objects" target="Main" command="AlignObj" help="Align the position of selected objects so that the objects become adjacent with minimal movement (doesn't affect rotation)" />
-	    <item name="&amp;Align Rotation" target="Main" command="AlignRot" help="Align the rotation of selected objects to the first selected object (doesn't affect position)" />
 	    <item name="&amp;Align Height" target="Main" command="AlignHeight" help="Put all selected objects on the same height as the first selected object" />
 	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" help="Put all selected objects at exactly the same transformation as the first selected object" />
 	    <item name="&amp;Stack Objects" target="Main" command="StackObj" help="Stack all selected objects on the first selected object" />

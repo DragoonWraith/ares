@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "editor/iapp.h"
 #include "editor/ipaster.h"
 #include "editor/imodelrepository.h"
+#include "iassetmanager.h"
 
 #include "physicallayer/pl.h"
 
@@ -88,6 +89,24 @@ public:
 
 //---------------------------------------------------------------------------
 
+class RemoveItemAction : public Ares::Action
+{
+private:
+  MainMode* mainMode;
+
+public:
+  RemoveItemAction (MainMode* mainMode) : mainMode (mainMode) { }
+  virtual ~RemoveItemAction () { }
+  virtual const char* GetName () const { return "Remove Factory"; }
+  virtual bool Do (Ares::View* view, wxWindow* component)
+  {
+    mainMode->RemoveSelectedFactory ();
+    return true;
+  }
+};
+
+//---------------------------------------------------------------------------
+
 MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Main";
@@ -132,7 +151,8 @@ void MainMode::SetParent (wxWindow* parent)
 
   view.Bind (view3d->GetModelRepository ()->GetDynfactCollectionValue (), "factoryTree");
   wxTreeCtrl* factoryTree = XRCCTRL (*panel, "factoryTree", wxTreeCtrl);
-  view.AddAction (factoryTree, NEWREF(Ares::Action, new SpawnItemAction(this)));
+  view.AddAction (factoryTree, NEWREF(Ares::Action, new SpawnItemAction (this)));
+  view.AddAction (factoryTree, NEWREF(Ares::Action, new RemoveItemAction (this)));
 
   view.DefineHeadingIndexed ("objectList", "Factory,Template,Entity,Logic",
       DYNOBJ_COL_FACTORY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_ENTITY,  DYNOBJ_COL_LOGIC);
@@ -681,6 +701,31 @@ csString MainMode::GetSelectedItem ()
   csString selection ((const char*)tree->GetItemText (id).mb_str (wxConvUTF8));
   CorrectFactoryName (selection);
   return selection;
+}
+
+void MainMode::RemoveSelectedFactory ()
+{
+  csString itemName = GetSelectedItem ();
+  if (!itemName.IsEmpty ())
+  {
+    iDynamicFactory* fact = view3d->GetDynamicWorld ()->FindFactory (itemName);
+    if (fact)
+    {
+      iUIManager* ui = view3d->GetApplication ()->GetUI ();
+      if (view3d->GetApplication ()->GetAssetManager ()->IsLocked (fact->QueryObject ()))
+	if (!ui->Ask ("Are you sure you want to remove a locked factory?"))
+	  return;
+      if (fact->GetObjectCount () > 0)
+      {
+	ui->Message ("There are %d objects using this factory. Delete those objects first!",
+	    fact->GetObjectCount ());
+	return;
+      }
+      csSet<csPtrKey<iObject> > resources;
+      resources.Add (fact->QueryObject ());
+      view3d->RemoveResources (resources);
+    }
+  }
 }
 
 void MainMode::SpawnSelectedItem ()

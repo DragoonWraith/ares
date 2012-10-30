@@ -125,6 +125,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   void SpawnSelectedItem ();
+  void RemoveSelectedFactory ();
 
   void OnSnapObjects ();
   void OnStaticSelected ();
