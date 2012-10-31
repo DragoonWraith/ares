@@ -44,11 +44,11 @@ ul.toc {list-style: none}
 <a name="0"></a>
 <table cellpadding="1" cellspacing="1" border="0">
 <tr><td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Previous section in reading order"> &lt; </a>]</td>
-<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-New-States.html#0" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -67,8 +67,18 @@ quests. Before you can use a quest in a quest property class you need to create 
 <p>Inside a quest you have <samp>&lsquo;states&rsquo;</samp> and <samp>&lsquo;sequences&rsquo;</samp>. The states control the basic
 flow of the quest. This is where you program the game logic associated with that quest.
 The sequences are used for continuous operations. For example, if you create a quest to
-open a door then the states will be used to control the door. Typically such a quest would
-have five states: <samp>&lsquo;locked&rsquo;</samp>, <samp>&lsquo;closed&rsquo;</samp>, <samp>&lsquo;opened&rsquo;</samp>, <samp>&lsquo;closing&rsquo;</samp>, and
+open a door then the states will be used to control what the door is doing and what the
+user can do with the door.
+</p>
+<p>To do this there are two important concepts: a <samp>&lsquo;trigger&rsquo;</samp> and a <samp>&lsquo;reward&rsquo;</samp>. Triggers
+are events that happen in the game world. For example, something is selected, a timer
+fires, a trigger is entered. A reward is an action that the quest can do. Rewards are associated
+with triggers so that when the trigger fires the rewards associated with that trigger are
+executed. In addition it is also possible to attach <samp>&lsquo;oninit&rsquo;</samp> and <samp>&lsquo;onexit&rsquo;</samp> rewards
+to a state.
+</p>
+<p>Below you can see the pseudo-code for a quest that could be used to control a door. This
+quest could have five states: <samp>&lsquo;locked&rsquo;</samp>, <samp>&lsquo;closed&rsquo;</samp>, <samp>&lsquo;opened&rsquo;</samp>, <samp>&lsquo;closing&rsquo;</samp>, and
 <samp>&lsquo;opening&rsquo;</samp>. The sequence would do the actual movement of the door. For example, rotating
 to open or sliding if it is a sliding door. A pseudo-code description of this quest might
 go as follows:
@@ -104,18 +114,14 @@ This sequence describes the animation for the door to close.
 
 <p>Using the graphical quest editor it is possible to edit the above in a graphical manner.
 </p>
-<p>TODO describe rewards, triggers, ...
-</p>
-
-
 <hr size="1">
 <table cellpadding="1" cellspacing="1" border="0">
 <tr><td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Previous section in reading order"> &lt; </a>]</td>
-<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-New-States.html#0" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
-<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>

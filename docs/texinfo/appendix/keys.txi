@@ -1,0 +1,34 @@
+@c -*-texinfo-*-
+@node Keys, Bugs, Entities, Top
+@chapter Keys
+@cindex Keys
+
+Here is a list of all keys supported by AresEd:
+
+@itemize @bullet
+@item @samp{1}: Toggle debug mode.
+@item @samp{2}: Toggle static/dynamic state of current selected object(s).
+@item @samp{F2}: Increase the current time for the nature system.
+@item @samp{F3}: Toggle automatic time progression for the nature system.
+@item @samp{F4}: Decrease foliage density factory.
+@item @samp{F5}: Increase foliage density factory.
+@item @samp{p}: Toggle panning around selected object(s) (equivalent to the @samp{pan}
+checkbox that you can find on the camera panel on the left side).
+@item @samp{l}: Toggle display of labels in 3D view.
+@item @samp{e}: Spawn a new item from the currently selected factory in the factory tree.
+@item @samp{g}: Start grabbing the current selected object(s) (movement).
+@item @samp{q}: While grabbing, pasting, or spawning a new item this toggles grid mode.
+@item @samp{x}: While grabbing, pasting, or spawning a new item this toggles X-axis constraint.
+@item @samp{y}: While grabbing, pasting, or spawning a new item this toggles Y-axis constraint.
+@item @samp{z}: While grabbing, pasting, or spawning a new item this toggles Z-axis constraint.
+@item @samp{Up}: Move the selected object(s) along the world Z-axis (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{Down}: Move the selected object(s) along the world Z-axis (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{Left}: Move the selected object(s) along the world X-axis (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{Right}: Move the selected object(s) along the world X-axis (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{<} or @samp{,}: Move the selected object(s) along the world Y-axis (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{>} or @samp{.}: Move the selected object(s) along the world Y-axis (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{ESC}: Use this key to exit play mode.
+@item @samp{w}, @samp{a}, @samp{s}, @samp{d}: If panning is disabled these keys control WASD movement for the camera. With panning enabled these keys move around the selected object(s). (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@item @samp{PgDn}, @samp{PgUp}: If panning is disabled these keys look up/down with the camera. With panning enabled these keys move around the selected object(s). (@samp{Ctrl} to slow down, @samp{Shift} to speed up).
+@end itemize
+

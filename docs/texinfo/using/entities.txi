@@ -1,5 +1,5 @@
 @c -*-texinfo-*-
-@node Entities, Index, Moving Around, Top
+@node Entities, Keys, Moving Around, Top
 @chapter Entities
 @cindex Entities
 
@@ -8,6 +8,10 @@
 * Creating Entity Templates::
 * Creating Property Classes::
 * Editing Quests::
+* Creating New States::
+* Creating Triggers::
+* Creating Rewards::
+* Creating Sequences::
 @end menu
 
 @node Entity Introduction, Creating Entity Templates, Entities, Entities
@@ -145,7 +149,7 @@ This property class is used by the @samp{World} template.
 This property class is used by the @samp{Player} template.
 @end itemize
 
-@node Editing Quests, , Creating Property Classes, Entities
+@node Editing Quests, Creating New States, Creating Property Classes, Entities
 @section Editing Quests
 
 On the bottom of the list of templates you can switch the list to showing a list of
@@ -154,8 +158,18 @@ quests. Before you can use a quest in a quest property class you need to create 
 Inside a quest you have @samp{states} and @samp{sequences}. The states control the basic
 flow of the quest. This is where you program the game logic associated with that quest.
 The sequences are used for continuous operations. For example, if you create a quest to
-open a door then the states will be used to control the door. Typically such a quest would
-have five states: @samp{locked}, @samp{closed}, @samp{opened}, @samp{closing}, and
+open a door then the states will be used to control what the door is doing and what the
+user can do with the door.
+
+To do this there are two important concepts: a @samp{trigger} and a @samp{reward}. Triggers
+are events that happen in the game world. For example, something is selected, a timer
+fires, a trigger is entered. A reward is an action that the quest can do. Rewards are associated
+with triggers so that when the trigger fires the rewards associated with that trigger are
+executed. In addition it is also possible to attach @samp{oninit} and @samp{onexit} rewards
+to a state.
+
+Below you can see the pseudo-code for a quest that could be used to control a door. This
+quest could have five states: @samp{locked}, @samp{closed}, @samp{opened}, @samp{closing}, and
 @samp{opening}. The sequence would do the actual movement of the door. For example, rotating
 to open or sliding if it is a sliding door. A pseudo-code description of this quest might
 go as follows:
@@ -191,5 +205,150 @@ This sequence describes the animation for the door to close.
 
 Using the graphical quest editor it is possible to edit the above in a graphical manner.
 
-TODO describe rewards, triggers, ...
+@node Creating New States, Creating Triggers, Editing Quests, Entities
+@section Creating New States
+
+Creating a new state is very easy. Just select @samp{New State} from the context menu
+you get on the quest node. States must have a unique name.
+
+@node Creating Triggers, Creating Rewards, Creating New States, Entities
+@section Creating Triggers
+
+A trigger is what causes something to happen with a quest. As soon as a state is activated
+the following happens:
+
+@itemize @bullet
+@item
+All @samp{oninit} rewards are executed.
+@item
+All triggers are enabled.
+@end itemize
+
+At this moment the following triggers from @sc{cel} are supported:
+
+@itemize @bullet
+@item @samp{entersector}: Fires as soon as the camera enters a sector.
+@item @samp{meshentersector}: Fires as soon as some entity enters a sector.
+@item @samp{inventory}: Fires as soon as some entity or template enters an inventory.
+@item @samp{meshselect}: Fires as soon as some entity is selected.
+@item @samp{message}: Fires as soon as a message is received. You can define your own
+custom messages but there are also a number of predefined messages. A list of these can
+be found below.
+@item @samp{operation}: Not implemented yet.
+@item @samp{propertychange}: Fires as soon as a property on some entity changes. It is possible
+to control this trigger to fire based on various conditions.
+@item @samp{sequencefinish}: Fires as soon as a specific sequence finishes executing.
+@item @samp{timeout}: Fires as soon as a certain time has elapsed.
+@item @samp{trigger}: This works in concert with an associated @samp{pclogic.trigger} property
+class and will fire as soon as the trigger itself fires.
+@item @samp{watch}: This fires as soon as a certain entity comes close enough to another
+entity. There are various parameters that you can use to control this trigger.
+@end itemize
+
+The @samp{message} trigger understands the following standard messages:
+
+@itemize @bullet
+@item @samp{ares.Activate}: This message is sent by the Ares Game Controller whenever
+an object is activated.
+@end itemize
+
+@node Creating Rewards, Creating Sequences, Creating Triggers, Entities
+@section Creating Rewards
+
+You can create rewards inside a trigger (select the context menu for a trigger) but you
+can also create rewards directly in a state (select @samp{oninit} or @samp{onexit} reward
+in the context menu for the state).
+
+Currently the following rewards from @sc{cel} are supported:
+
+@itemize @bullet
+@item @samp{newstate}: With this reward you can change the state of the quest. This reward
+is typically the last reward assigned to a trigger.
+@item @samp{action}: Execute a @sc{cel} action on some entity.
+@item @samp{changeproperty}: This reward can change a property in some entity. It can either
+set the property to some specific value or else modify the property using some operators.
+@item @samp{createentity}: Create an entity from a given template.
+@item @samp{destroyentity}: Destroy an entity.
+@item @samp{debugprint}: This can be useful to debug quests. Basically this reward will print
+out a message on the standard output. When you use this make sure that you fire AresEd from
+the commandline so that you can actually see the standard output.
+@item @samp{inventory}: Add an entity to an inventory.
+@item @samp{message}: Send a message to some entity. You can define your own custom messages
+or you can use some of the predefined messages. A list of predefined messages can be found
+below.
+@item @samp{cssequence}: Start a CS sequence. This is not the same as a quest sequence. Crystal
+Space also supports sequences but they work differently. Using this reward you can fire
+a CS sequence. Note that AresEd currently has no support for editing CS sequences but if
+you have an asset that has such a CS sequence then you can use it.
+@item @samp{sequence}: Start a quest sequence.
+@item @samp{sequencefinish}: Force a quest sequence to finish. Be careful with this as it may
+cause the object to be in the middle of an animation and resuming the sequence later will
+very likely not have desired results.
+@end itemize
+
+The @samp{message} reward understands the following standard messages:
+
+@itemize @bullet
+@item @samp{cel.messenger.action.Message}: This message is typically sent to the @samp{World}
+entity. It will cause a message to appear for the player.
+@item @samp{ares.controller.Spawn}: Spawn a dynamic object in the vicinity of the player.
+In the future it will be possible to spawn objects elsewhere but currently that's not possible
+yet.
+@item @samp{ares.controller.CreateEntity}: Create an entity with a given name from a
+given template. This action is ment for entities with no visual representation.
+@item @samp{ares.controller.StartDrag}: Start dragging for the object that the player is
+aiming at.
+@item @samp{ares.controller.StopDrag}: Stop dragging.
+@item @samp{ares.controller.Examine}: Examine the object that the player is aiming at.
+@item @samp{ares.controller.Pickup}: Pick up the object that the player is aiming at.
+@item @samp{ares.controller.Activate}: Activate the object that the player is aiming at.
+First this causes the @samp{ares.Activate} message to be sent to that object.
+If the object has the class @samp{ares.pickup} then the object will also be picked up and
+put in the player inventory. If the object is draggable then this will cause dragging mode
+to be enabled. This can be prevented by by attaching a property @samp{ares.inhibitdrag} to
+the entity.
+@item @samp{ares.controller.Inventory}: Open the player inventory.
+@item @samp{ares.controller.Teleport}: Teleport the player to some destination dynamic
+object.
+@item @samp{ares.Activate}: This message is normally sent by the Ares Game Controller
+whenever an object is activated but it is also possible to send this yourselves to simulate
+activate of an object directly.
+@end itemize
+
+@node Creating Sequences, , Creating Rewards, Entities
+@section Creating Sequences
+
+You can create a sequence by selecting the context menu of the quest. A sequence is basically
+a list of operations. If you select the sequence node you can edit this list as it appears
+on the left side just below the list of quests.
+
+Operations are time based. As soon as a sequence starts it will fire up all operations
+that are at time-index 0. Then it waits until enough time is passed to fire up remaining
+operations in the sequence. As soon as the last operation has finished executing the sequence stops
+automatically.
+
+So every operation has a starting time and a duration. Several operations can be executing
+at the same time if they all start at the same time. Also it is possible for an operation to
+start while other operations from the same sequence are still active.
+
+
+Using the context menu in that list allows you to add a new operation. The following operations
+are currently supported:
+
+@itemize @bullet
+@item @samp{delay}: This is the only operation that modifies the current time index in the
+sequence. If you don't use delay then all operations will start at the same time. It is not
+needed to put a delay at the end of the sequence as the sequence will only finish when all
+operations have finished. However, you can use a delay at the end of the sequence to make the
+sequence last a little longer if that's desired.
+@item @samp{debugprint}: This sequence prints out some debug info while it executes. This
+can be useful for debugging but you must start AresEd from the commandline if you want to be
+able to see this information.
+@item @samp{ambientmesh}: Animate the ambient color of a mesh. This can be used to achieve
+a glowing/pulsating effect on an object.
+@item @samp{light}: Animate the color of a light.
+@item @samp{movepath}: Currently not supported in AresEd.
+@item @samp{property}: Animate the value of a property.
+@item @samp{transform}: Animate the transform (position and orientation) of an object.
+@end itemize
 

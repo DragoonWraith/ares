@@ -1,0 +1,32 @@
+@c -*-texinfo-*-
+@node Bugs, Index, Keys, Top
+@chapter Known Bugs and Issues
+@cindex Bugs
+
+AresEd is beta software and in full development. There are undoubtedly many unknown problems
+and bugs but there are a number of known issues. These are listed here:
+
+@itemize @bullet
+@item
+AresEd doesn't exit cleanly. You'll get a crash as soon as you try to exit AresEd.
+@item
+When auto-suggesting parameters for a quest or template the type of these parameters
+is sometimes not set right.
+@item
+The foliage painter does not work right now.
+@item
+Keys like @samp{g} and @samp{e} are supposed to work in the 3d view. They only work when
+the 3d view is active. Unfortunatelly using UI elements outside the 3d view (like the
+buttons in the camera panel) may cause the 3d view to become inactive. Several UI elements
+already attempt to put focus back to the 3d view to make sure that you can use these shortcut
+keys however not all do. And in that case you have to click on the 3d view to give it
+focus which might mess up selection.
+@end itemize
+
+There are also a lot of missing features. The major ones are listed here:
+
+@itemize @bullet
+@item
+There is no support for editing loot and loot packages yet.
+@end itemize
+

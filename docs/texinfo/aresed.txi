@@ -61,6 +61,8 @@ by the copyright holders.
 * Working With Objects::
 * Moving Around::
 * Entities::
+* Keys::
+* Bugs:: Known Bugs and Issues
 * Index::
 @end menu
 
@@ -69,8 +71,10 @@ by the copyright holders.
 @imports{using,objects.txi}
 @imports{using,camera.txi}
 @imports{using,entities.txi}
+@imports{appendix,keys.txi}
+@imports{appendix,bugs.txi}
 
-@node Index, , Entities, Top
+@node Index, , Bugs, Top
 @unnumbered Index
 
 @printindex cp

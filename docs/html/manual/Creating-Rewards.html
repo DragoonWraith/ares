@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html401/loose.dtd">
+<html>
+<!-- Created by texi2html 1.76 -->
+<!--
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Many creative people <dev@texi2html.cvshome.org>
+Send bugs and suggestions to <users@texi2html.cvshome.org>
+
+-->
+<head>
+<title>Ares Editor 0.0.1: 5.7 Creating Rewards</title>
+
+<meta name="description" content="Ares Editor 0.0.1: 5.7 Creating Rewards">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.7 Creating Rewards">
+<meta name="resource-type" content="document">
+<meta name="distribution" content="global">
+<meta name="Generator" content="texi2html 1.76">
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<style type="text/css">
+<!--
+a.summary-letter {text-decoration: none}
+pre.display {font-family: serif}
+pre.format {font-family: serif}
+pre.menu-comment {font-family: serif}
+pre.menu-preformatted {font-family: serif}
+pre.smalldisplay {font-family: serif; font-size: smaller}
+pre.smallexample {font-size: smaller}
+pre.smallformat {font-family: serif; font-size: smaller}
+pre.smalllisp {font-size: smaller}
+span.sansserif {font-family:sans-serif; font-weight:normal;}
+ul.toc {list-style: none}
+-->
+</style>
+
+
+</head>
+
+<body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
+
+<a name="Creating-Rewards"></a>
+<a name="0"></a>
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-Triggers.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-Sequences.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<hr size="1">
+<h2 class="section"> 5.7 Creating Rewards </h2>
+
+<p>You can create rewards inside a trigger (select the context menu for a trigger) but you
+can also create rewards directly in a state (select <samp>&lsquo;oninit&rsquo;</samp> or <samp>&lsquo;onexit&rsquo;</samp> reward
+in the context menu for the state).
+</p>
+<p>Currently the following rewards from <small>CEL</small> are supported:
+</p>
+<ul>
+<li> <samp>&lsquo;newstate&rsquo;</samp>: With this reward you can change the state of the quest. This reward
+is typically the last reward assigned to a trigger.
+</li><li> <samp>&lsquo;action&rsquo;</samp>: Execute a <small>CEL</small> action on some entity.
+</li><li> <samp>&lsquo;changeproperty&rsquo;</samp>: This reward can change a property in some entity. It can either
+set the property to some specific value or else modify the property using some operators.
+</li><li> <samp>&lsquo;createentity&rsquo;</samp>: Create an entity from a given template.
+</li><li> <samp>&lsquo;destroyentity&rsquo;</samp>: Destroy an entity.
+</li><li> <samp>&lsquo;debugprint&rsquo;</samp>: This can be useful to debug quests. Basically this reward will print
+out a message on the standard output. When you use this make sure that you fire AresEd from
+the commandline so that you can actually see the standard output.
+</li><li> <samp>&lsquo;inventory&rsquo;</samp>: Add an entity to an inventory.
+</li><li> <samp>&lsquo;message&rsquo;</samp>: Send a message to some entity. You can define your own custom messages
+or you can use some of the predefined messages. A list of predefined messages can be found
+below.
+</li><li> <samp>&lsquo;cssequence&rsquo;</samp>: Start a CS sequence. This is not the same as a quest sequence. Crystal
+Space also supports sequences but they work differently. Using this reward you can fire
+a CS sequence. Note that AresEd currently has no support for editing CS sequences but if
+you have an asset that has such a CS sequence then you can use it.
+</li><li> <samp>&lsquo;sequence&rsquo;</samp>: Start a quest sequence.
+</li><li> <samp>&lsquo;sequencefinish&rsquo;</samp>: Force a quest sequence to finish. Be careful with this as it may
+cause the object to be in the middle of an animation and resuming the sequence later will
+very likely not have desired results.
+</li></ul>
+
+<p>The <samp>&lsquo;message&rsquo;</samp> reward understands the following standard messages:
+</p>
+<ul>
+<li> <samp>&lsquo;cel.messenger.action.Message&rsquo;</samp>: This message is typically sent to the <samp>&lsquo;World&rsquo;</samp>
+entity. It will cause a message to appear for the player.
+</li><li> <samp>&lsquo;ares.controller.Spawn&rsquo;</samp>: Spawn a dynamic object in the vicinity of the player.
+In the future it will be possible to spawn objects elsewhere but currently that's not possible
+yet.
+</li><li> <samp>&lsquo;ares.controller.CreateEntity&rsquo;</samp>: Create an entity with a given name from a
+given template. This action is ment for entities with no visual representation.
+</li><li> <samp>&lsquo;ares.controller.StartDrag&rsquo;</samp>: Start dragging for the object that the player is
+aiming at.
+</li><li> <samp>&lsquo;ares.controller.StopDrag&rsquo;</samp>: Stop dragging.
+</li><li> <samp>&lsquo;ares.controller.Examine&rsquo;</samp>: Examine the object that the player is aiming at.
+</li><li> <samp>&lsquo;ares.controller.Pickup&rsquo;</samp>: Pick up the object that the player is aiming at.
+</li><li> <samp>&lsquo;ares.controller.Activate&rsquo;</samp>: Activate the object that the player is aiming at.
+First this causes the <samp>&lsquo;ares.Activate&rsquo;</samp> message to be sent to that object.
+If the object has the class <samp>&lsquo;ares.pickup&rsquo;</samp> then the object will also be picked up and
+put in the player inventory. If the object is draggable then this will cause dragging mode
+to be enabled. This can be prevented by by attaching a property <samp>&lsquo;ares.inhibitdrag&rsquo;</samp> to
+the entity.
+</li><li> <samp>&lsquo;ares.controller.Inventory&rsquo;</samp>: Open the player inventory.
+</li><li> <samp>&lsquo;ares.controller.Teleport&rsquo;</samp>: Teleport the player to some destination dynamic
+object.
+</li><li> <samp>&lsquo;ares.Activate&rsquo;</samp>: This message is normally sent by the Ares Game Controller
+whenever an object is activated but it is also possible to send this yourselves to simulate
+activate of an object directly.
+</li></ul>
+
+<hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-Triggers.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-Sequences.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
+<p>
+ <font size="-1">
+  This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.
+ </font>
+ <br>
+
+</p>
+</body>
+</html>

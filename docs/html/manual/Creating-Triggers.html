@@ -11,10 +11,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 -->
 <head>
-<title>Ares Editor 0.0.1: 5.1 Introduction on Entities</title>
+<title>Ares Editor 0.0.1: 5.6 Creating Triggers</title>
 
-<meta name="description" content="Ares Editor 0.0.1: 5.1 Introduction on Entities">
-<meta name="keywords" content="Ares Editor 0.0.1: 5.1 Introduction on Entities">
+<meta name="description" content="Ares Editor 0.0.1: 5.6 Creating Triggers">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.6 Creating Triggers">
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="texi2html 1.76">
@@ -40,11 +40,11 @@ ul.toc {list-style: none}
 
 <body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
 
-<a name="Entity-Introduction"></a>
+<a name="Creating-Triggers"></a>
 <a name="0"></a>
 <table cellpadding="1" cellspacing="1" border="0">
-<tr><td valign="middle" align="left">[<a href="Entities.html#0" title="Previous section in reading order"> &lt; </a>]</td>
-<td valign="middle" align="left">[<a href="Creating-Entity-Templates.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<tr><td valign="middle" align="left">[<a href="Creating-New-States.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Creating-Rewards.html#0" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
@@ -59,30 +59,46 @@ ul.toc {list-style: none}
 <td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
 <hr size="1">
-<h2 class="section"> 5.1 Introduction on Entities </h2>
+<h2 class="section"> 5.6 Creating Triggers </h2>
 
-<p>Ares uses entities from the <small>CEL</small> project for game logic. An entity is basically an object
-in your game. Many entities have some visual representation (for example, objects you can
-interact with, the player, a door, a note on a table) but it is also possible to have
-entities that are invisible and serve to control various aspects of the game.
+<p>A trigger is what causes something to happen with a quest. As soon as a state is activated
+the following happens:
 </p>
-<p>Before you can assign entities to objects you have to define an <samp>&lsquo;entity template&rsquo;</samp> for
-the given entity. A template is basically a blueprint for the entities. Once you have defined
-a template you can reuse it for many objects. Templates can also have parameters so that it
-is possible to configure an entity from a template based on various configuration parameters.
+<ul>
+<li>
+All <samp>&lsquo;oninit&rsquo;</samp> rewards are executed.
+</li><li>
+All triggers are enabled.
+</li></ul>
+
+<p>At this moment the following triggers from <small>CEL</small> are supported:
 </p>
-<p>An entity template is constructed out of <samp>&lsquo;property classes&rsquo;</samp>. A property class is basically
-a piece of logic dedicated to a specific task. There are property classes for listening to
-input, for sending out messages, for coupling quests, for defining triggers and so on. By
-attaching multiple property classes to an entity template you can create the blue print for
-an object in the game.
+<ul>
+<li> <samp>&lsquo;entersector&rsquo;</samp>: Fires as soon as the camera enters a sector.
+</li><li> <samp>&lsquo;meshentersector&rsquo;</samp>: Fires as soon as some entity enters a sector.
+</li><li> <samp>&lsquo;inventory&rsquo;</samp>: Fires as soon as some entity or template enters an inventory.
+</li><li> <samp>&lsquo;meshselect&rsquo;</samp>: Fires as soon as some entity is selected.
+</li><li> <samp>&lsquo;message&rsquo;</samp>: Fires as soon as a message is received. You can define your own
+custom messages but there are also a number of predefined messages. A list of these can
+be found below.
+</li><li> <samp>&lsquo;operation&rsquo;</samp>: Not implemented yet.
+</li><li> <samp>&lsquo;propertychange&rsquo;</samp>: Fires as soon as a property on some entity changes. It is possible
+to control this trigger to fire based on various conditions.
+</li><li> <samp>&lsquo;sequencefinish&rsquo;</samp>: Fires as soon as a specific sequence finishes executing.
+</li><li> <samp>&lsquo;timeout&rsquo;</samp>: Fires as soon as a certain time has elapsed.
+</li><li> <samp>&lsquo;trigger&rsquo;</samp>: This works in concert with an associated <samp>&lsquo;pclogic.trigger&rsquo;</samp> property
+class and will fire as soon as the trigger itself fires.
+</li><li> <samp>&lsquo;watch&rsquo;</samp>: This fires as soon as a certain entity comes close enough to another
+entity. There are various parameters that you can use to control this trigger.
+</li></ul>
+
+<p>The <samp>&lsquo;message&rsquo;</samp> trigger understands the following standard messages:
 </p>
-<p>One of the most important property classes is the <samp>&lsquo;pclogic.quest&rsquo;</samp> property class. This
-property class allows you to assign a <samp>&lsquo;quest&rsquo;</samp> to an entity template. A quest is a state
-machine which have a powerful trigger/reward system that allows you to define how the quest
-transitions from one state to the other. Quests are a very important aspect of controlling
-the game logic. Using quests it is possible to do a kind of programming.
-</p>
+<ul>
+<li> <samp>&lsquo;ares.Activate&rsquo;</samp>: This message is sent by the Ares Game Controller whenever
+an object is activated.
+</li></ul>
+
 <hr size="1">
 <p>
  <font size="-1">

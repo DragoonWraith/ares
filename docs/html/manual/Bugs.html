@@ -11,10 +11,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 -->
 <head>
-<title>Ares Editor 0.0.1: 1.1 What Is AresEd</title>
+<title>Ares Editor 0.0.1: 7. Known Bugs and Issues</title>
 
-<meta name="description" content="Ares Editor 0.0.1: 1.1 What Is AresEd">
-<meta name="keywords" content="Ares Editor 0.0.1: 1.1 What Is AresEd">
+<meta name="description" content="Ares Editor 0.0.1: 7. Known Bugs and Issues">
+<meta name="keywords" content="Ares Editor 0.0.1: 7. Known Bugs and Issues">
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="texi2html 1.76">
@@ -40,14 +40,14 @@ ul.toc {list-style: none}
 
 <body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
 
-<a name="What-Is-CEL"></a>
+<a name="Bugs"></a>
 <a name="0"></a>
 <table cellpadding="1" cellspacing="1" border="0">
-<tr><td valign="middle" align="left">[<a href="Introduction.html#0" title="Previous section in reading order"> &lt; </a>]</td>
-<td valign="middle" align="left">[<a href="Concepts.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<tr><td valign="middle" align="left">[<a href="Keys.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
-<td valign="middle" align="left">[<a href="Introduction.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
-<td valign="middle" align="left">[<a href="Introduction.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Up section"> Up </a>]</td>
 <td valign="middle" align="left">[<a href="cs_Index.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left"> &nbsp; </td>
@@ -59,20 +59,37 @@ ul.toc {list-style: none}
 <td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
 <hr size="1">
-<h2 class="section"> 1.1 What Is AresEd </h2>
+<h1 class="chapter"> 7. Known Bugs and Issues </h1>
 
-<p>Ares Editor is a set ...
+<p>AresEd is beta software and in full development. There are undoubtedly many unknown problems
+and bugs but there are a number of known issues. These are listed here:
 </p>
-<p>Crystal Space is a portable modular 3D SDK, including many components for 
-building various applications and games.  For more information on Crystal 
-Space please see the
-<a href="http://www.crystalspace3d.org/">Crystal Space web page</a>.
+<ul>
+<li>
+AresEd doesn't exit cleanly. You'll get a crash as soon as you try to exit AresEd.
+</li><li>
+When auto-suggesting parameters for a quest or template the type of these parameters
+is sometimes not set right.
+</li><li>
+The foliage painter does not work right now.
+</li><li>
+Keys like <samp>&lsquo;g&rsquo;</samp> and <samp>&lsquo;e&rsquo;</samp> are supposed to work in the 3d view. They only work when
+the 3d view is active. Unfortunatelly using UI elements outside the 3d view (like the
+buttons in the camera panel) may cause the 3d view to become inactive. Several UI elements
+already attempt to put focus back to the 3d view to make sure that you can use these shortcut
+keys however not all do. And in that case you have to click on the 3d view to give it
+focus which might mess up selection.
+</li></ul>
+
+<p>There are also a lot of missing features. The major ones are listed here:
 </p>
-<p>Crystal Entity Layer is still in development.  It's development efforts are
-currently hosted by SourceForge.  Anybody wishing to contribute should visit
-the <a href="http://cel.crystalspace3d.org/">Crystal Entity Layer</a> project page and
-<a href="http://www.sourceforge.net/">SourceForge</a>.
-</p>
+<ul>
+<li>
+There is no support for editing loot and loot packages yet.
+</li></ul>
+
+
+
 <hr size="1">
 <p>
  <font size="-1">

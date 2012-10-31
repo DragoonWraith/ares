@@ -4,23 +4,11 @@
 @cindex Introduction
 
 @menu
-* About::
 * What Is AresEd:: What Is Ares Editor
 * Concepts::
 @end menu
 
-@node About, What Is AresEd, Introduction, Introduction
-@section About
-
-Ares Editor version 0.1 (alpha software)
-
-Copyright Jorrit Tyberghein (2012)
-
-Source code under The MIT License
-
-Most art work is licensed under one of the Creative Commons licenses.
-
-@node What Is AresEd, Concepts, About, Introduction
+@node What Is AresEd, Concepts, Introduction, Introduction
 @section What Is Ares Editor
 
 Ares Editor is a 3D Game Creation Kit. What this means is that with AresEd

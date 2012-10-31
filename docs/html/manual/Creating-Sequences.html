@@ -11,10 +11,10 @@ Send bugs and suggestions to <users@texi2html.cvshome.org>
 
 -->
 <head>
-<title>Ares Editor 0.0.1: 5.2 Creating Entity Templates</title>
+<title>Ares Editor 0.0.1: 5.8 Creating Sequences</title>
 
-<meta name="description" content="Ares Editor 0.0.1: 5.2 Creating Entity Templates">
-<meta name="keywords" content="Ares Editor 0.0.1: 5.2 Creating Entity Templates">
+<meta name="description" content="Ares Editor 0.0.1: 5.8 Creating Sequences">
+<meta name="keywords" content="Ares Editor 0.0.1: 5.8 Creating Sequences">
 <meta name="resource-type" content="document">
 <meta name="distribution" content="global">
 <meta name="Generator" content="texi2html 1.76">
@@ -40,11 +40,11 @@ ul.toc {list-style: none}
 
 <body lang="en" bgcolor="#FFFFFF" text="#000000" link="#0000FF" vlink="#800080" alink="#FF0000">
 
-<a name="Creating-Entity-Templates"></a>
+<a name="Creating-Sequences"></a>
 <a name="0"></a>
 <table cellpadding="1" cellspacing="1" border="0">
-<tr><td valign="middle" align="left">[<a href="Entity-Introduction.html#0" title="Previous section in reading order"> &lt; </a>]</td>
-<td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<tr><td valign="middle" align="left">[<a href="Creating-Rewards.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
@@ -59,45 +59,47 @@ ul.toc {list-style: none}
 <td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
 </tr></table>
 <hr size="1">
-<h2 class="section"> 5.2 Creating Entity Templates </h2>
+<h2 class="section"> 5.8 Creating Sequences </h2>
 
-<p>If you switch to the <samp>&lsquo;Entity&rsquo;</samp> mode (tab button on the top-left of the screen) you switch
-to a graphical editor for entity templates. On the left side there is a list with all templates
-that already exist. If you started with a new project this list will probably be empty.
+<p>You can create a sequence by selecting the context menu of the quest. A sequence is basically
+a list of operations. If you select the sequence node you can edit this list as it appears
+on the left side just below the list of quests.
 </p>
-<p>Using the context menu you can create a new entity template. Depending on how you set up the
-project it is possible that AresEd will now ask in which asset you want to place the new
-template. After creating the template it appears in the list and is automatically selected.
-In the large grey area you can now see a single node with the name of the template that you
-chose.
+<p>Operations are time based. As soon as a sequence starts it will fire up all operations
+that are at time-index 0. Then it waits until enough time is passed to fire up remaining
+operations in the sequence. As soon as the last operation has finished executing the sequence stops
+automatically.
 </p>
-<p>Selecting that node will give you the opportunity to edit a few template parameters. First it
-is possible for templates to <samp>&lsquo;inherit&rsquo;</samp> from other templates. This is useful if you have
-common functionality that you want to reuse for many other templates. In the list of
-characteristics you can define various floating point characteristics for your template. This
-is sometimes used for controlling the weight of objects or for other purposes.
-Finally there is also a list of <samp>&lsquo;classes&rsquo;</samp>. A class is basically a string that you can
-attach to a template. These strings can be used for various things. The Ares Game Controller
-property class (more on this later) supports a few builtin classes but you are free to define
-and use your own:
+<p>So every operation has a starting time and a duration. Several operations can be executing
+at the same time if they all start at the same time. Also it is possible for an operation to
+start while other operations from the same sequence are still active.
+</p>
+
+<p>Using the context menu in that list allows you to add a new operation. The following operations
+are currently supported:
 </p>
 <ul>
-<li> <samp>&lsquo;ares.note&rsquo;</samp>
-This indicates that the template represents a note. Currently this has the only effect that
-the cursor will change into the <samp>&lsquo;note&rsquo;</samp> icon when the user hovers over this item.
-</li><li> <samp>&lsquo;ares.info&rsquo;</samp>
-This indicates that there is extra information present in this object. This will cause the
-cursor to change into the <samp>&lsquo;info&rsquo;</samp> icon and also causes the <samp>&lsquo;Examine&rsquo;</samp> action (see
-the documentation on game controller for more information) to examine the <samp>&lsquo;ares.info&rsquo;</samp>
-property to show that information.
-</li><li> <samp>&lsquo;ares.pickup&rsquo;</samp>
-This indicates that this is an item that can be picked up and put in the inventory.
+<li> <samp>&lsquo;delay&rsquo;</samp>: This is the only operation that modifies the current time index in the
+sequence. If you don't use delay then all operations will start at the same time. It is not
+needed to put a delay at the end of the sequence as the sequence will only finish when all
+operations have finished. However, you can use a delay at the end of the sequence to make the
+sequence last a little longer if that's desired.
+</li><li> <samp>&lsquo;debugprint&rsquo;</samp>: This sequence prints out some debug info while it executes. This
+can be useful for debugging but you must start AresEd from the commandline if you want to be
+able to see this information.
+</li><li> <samp>&lsquo;ambientmesh&rsquo;</samp>: Animate the ambient color of a mesh. This can be used to achieve
+a glowing/pulsating effect on an object.
+</li><li> <samp>&lsquo;light&rsquo;</samp>: Animate the color of a light.
+</li><li> <samp>&lsquo;movepath&rsquo;</samp>: Currently not supported in AresEd.
+</li><li> <samp>&lsquo;property&rsquo;</samp>: Animate the value of a property.
+</li><li> <samp>&lsquo;transform&rsquo;</samp>: Animate the transform (position and orientation) of an object.
 </li></ul>
+
 
 <hr size="1">
 <table cellpadding="1" cellspacing="1" border="0">
-<tr><td valign="middle" align="left">[<a href="Entity-Introduction.html#0" title="Previous section in reading order"> &lt; </a>]</td>
-<td valign="middle" align="left">[<a href="Creating-Property-Classes.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<tr><td valign="middle" align="left">[<a href="Creating-Rewards.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Keys.html#0" title="Next section in reading order"> &gt; </a>]</td>
 <td valign="middle" align="left"> &nbsp; </td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
 <td valign="middle" align="left">[<a href="Entities.html#0" title="Up section"> Up </a>]</td>
