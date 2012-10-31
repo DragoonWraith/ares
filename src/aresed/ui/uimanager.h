@@ -184,6 +184,7 @@ public:
 
   AppAresEditWX* GetApp () const { return app; }
 
+  virtual void About ();
   virtual void Message (const char* description, ...);
   virtual bool Error (const char* description, ...);
   virtual bool Ask (const char* description, ...);

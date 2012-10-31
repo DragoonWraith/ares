@@ -48,9 +48,9 @@ private:
   iAresEditor* app;
   iObjectRegistry* object_reg;
   static csStringID ID_Show;
-  static csStringID ID_About;
 
   void OnClose (wxCloseEvent& event);
+  void LoadHelpFile (const char* helpfile);
 
 public:
   HelpFrame (iBase* parent);
@@ -64,7 +64,6 @@ public:
   virtual bool Command (csStringID id, const csString& args)
   {
     if (id == ID_Show) { Show (); return true; }
-    if (id == ID_About) { About (); return true; }
     return false;
   }
   virtual bool IsCommandValid (csStringID id, const csString& args,
@@ -83,7 +82,6 @@ public:
   iUIManager* GetUIManager () const { return app->GetUI (); }
 
   void Show ();
-  void About ();
 
   DECLARE_EVENT_TABLE ();
 };

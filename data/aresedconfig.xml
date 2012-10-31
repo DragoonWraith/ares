@@ -21,6 +21,7 @@
 	  <resource file="RewardPanel.xrc" />
 	  <resource file="EntityTemplatePanel.xrc" />
       </plugin>
+      <!--
       <plugin plugin="ares.editor.modes.curve" notebook="True"
       		tooltip="Editing of curved streets">
 	  <resource file="CurveModePanel.xrc" />
@@ -29,6 +30,7 @@
       		tooltip="Foliage painter">
 	  <resource file="FoliageModePanel.xrc" />
       </plugin>
+-->
     </plugins>
 
     <menus>
@@ -83,8 +85,8 @@
 	    <item name="&amp;View 3D" command="View3D" help="Unhide the 3D view (after it has been hidden)" />
 	</menu>
 	<menu name="&amp;Help">
-	    <item name="&amp;Online Help..." id="Help" target="Help" command="Show" help="Show online help in a seperate window" />
-	    <item name="&amp;About..." id="About" target="Help" command="About" help="Show the About page in the online help" />
+	    <item name="&amp;Online Help...	F1" id="Help" target="Help" command="Show" help="Show online help in a seperate window" />
+	    <item name="&amp;About..." id="About" command="About" help="Show the About window" />
 	</menu>
     </menus>
 

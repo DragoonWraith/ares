@@ -38,7 +38,6 @@ BEGIN_EVENT_TABLE(HelpFrame, wxFrame)
 END_EVENT_TABLE()
 
 csStringID HelpFrame::ID_Show = csInvalidStringID;
-csStringID HelpFrame::ID_About = csInvalidStringID;
 
 //--------------------------------------------------------------------------
 
@@ -60,19 +59,19 @@ void HelpFrame::OnClose (wxCloseEvent& event)
   }
 }
 
+void HelpFrame::LoadHelpFile (const char* helpfile)
+{
+  wxHtmlWindow* help_Html = XRCCTRL (*this, "help_Html", wxHtmlWindow);
+  csRef<iVFS> vfs = csQueryRegistry<iVFS> (object_reg);
+  csRef<iDataBuffer> path = vfs->GetRealPath (helpfile);
+  help_Html->LoadPage (wxString::FromUTF8 (path->GetData ()));
+}
+
 void HelpFrame::Show ()
 {
   wxFrame::Show (true);
   Raise ();
-  wxHtmlWindow* help_Html = XRCCTRL (*this, "help_Html", wxHtmlWindow);
-  help_Html->LoadPage (wxString::FromUTF8 ("docs/html/manual/index.html"));
-}
-
-void HelpFrame::About ()
-{
-  wxFrame::Show (true);
-  wxHtmlWindow* help_Html = XRCCTRL (*this, "help_Html", wxHtmlWindow);
-  help_Html->LoadPage (wxString::FromUTF8 ("docs/html/manual/About.html"));
+  LoadHelpFile ("/aresdocs/index.html");
 }
 
 bool HelpFrame::Initialize (iObjectRegistry* object_reg)
@@ -80,7 +79,6 @@ bool HelpFrame::Initialize (iObjectRegistry* object_reg)
   HelpFrame::object_reg = object_reg;
   csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
   ID_Show = pl->FetchStringID ("Show");
-  ID_About = pl->FetchStringID ("About");
   return true;
 }
 
@@ -93,12 +91,11 @@ void HelpFrame::SetParent (wxWindow* parent)
 {
   wxXmlResource::Get()->LoadFrame (this, parent, wxT ("HelpFrame"));
 
-  wxHtmlWindow* help_Html = XRCCTRL (*this, "help_Html", wxHtmlWindow);
-  help_Html->LoadPage (wxString::FromUTF8 ("docs/html/manual/index.html"));
+  LoadHelpFile ("/aresdocs/index.html");
 
   Layout ();
   Fit ();
-  SetSize (700, 600);
+  SetSize (900, 800);
 }
 
 HelpFrame::~HelpFrame ()

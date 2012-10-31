@@ -362,13 +362,19 @@ void NewProjectDialog::SetPathFile (const char* file,
     }
     else
     {
+      csRef<iStringArray> assetLocalPath = vfs->GetRealMountPaths ("/assetslocal/");
       csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-      csRef<iString> p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetPath, normPath);
+      csRef<iString> p;
+      p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetLocalPath, normPath);
       if (!p)
       {
-        // @@@ Proper reporting
-        printf ("Cannot find asset '%s' in the asset path!\n", normPath);
-        return;
+        p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetPath, normPath);
+        if (!p)
+        {
+          // @@@ Proper reporting
+          printf ("Cannot find asset '%s' in the asset path!\n", normPath);
+          return;
+        }
       }
       path = p->GetData ();
       printf ("### LoadManifest path=%s %s\n", path.GetData (), file);
@@ -562,10 +568,15 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
   csRef<iCommandLineParser> cmdline = csQueryRegistry<iCommandLineParser> (object_reg);
   appDir = cmdline->GetAppDir ();
   wxString defaultdir;
+  csRef<iStringArray> localpath = vfs->GetRealMountPaths ("/assetslocal/");
   csRef<iStringArray> path = vfs->GetRealMountPaths ("/assets/");
-  for (size_t i = 0 ; i < path->GetSize () ; i++)
+  for (size_t i = 0 ; i < (path->GetSize () + localpath->GetSize ()) ; i++)
   {
-    csString p = path->Get (i);
+    csString p;
+    if (i >= path->GetSize ())
+      p = localpath->Get (i-path->GetSize ());
+    else
+      p = path->Get (i);
     // To work around a problem on linux where sometimes assets have a './' in the path
     // we replace '/./' with '/'.
     p.ReplaceAll ("/./", "/");

@@ -294,10 +294,18 @@ bool AssetManager::LoadAsset (const csString& normpath, const csString& file, co
   csRef<iString> path;
   if (!normpath.IsEmpty ())
   {
-    csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-    path = FindAsset (assetPath, normpath);
+    csRef<iStringArray> assetLocalPath = vfs->GetRealMountPaths ("/assetslocal/");
+    if (!assetLocalPath->IsEmpty ())
+    {
+      path = FindAsset (assetLocalPath, normpath);
+    }
     if (!path)
-      return Error ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
+    {
+      csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+      path = FindAsset (assetPath, normpath);
+      if (!path)
+        return Error ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
+    }
   }
 
   csString rmount;

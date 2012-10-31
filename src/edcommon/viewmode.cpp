@@ -104,7 +104,7 @@ void ViewMode::Frame3D()
 {
   iView* view = view3d->GetView ();
   view->Draw ();
-  if (view3d->IsDebugMode ())
+  if (view3d->IsDebugMode () && view3d->GetBulletSystem ())
     view3d->GetBulletSystem ()->DebugDraw (view);
 }
 

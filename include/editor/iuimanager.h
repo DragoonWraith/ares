@@ -37,6 +37,7 @@ struct iUIManager : public virtual iBase
 {
   SCF_INTERFACE(iUIManager,0,0,1);
 
+  virtual void About () = 0;
   virtual void Message (const char* description, ...) = 0;
   virtual bool Error (const char* description, ...) = 0;
   virtual bool Ask (const char* description, ...) = 0;

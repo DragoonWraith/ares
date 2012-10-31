@@ -256,6 +256,7 @@ void MainMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 
 void MainMode::Refresh ()
 {
+  labelMgr->Cleanup ();
   view3d->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
   if (started)
   {
@@ -446,51 +447,26 @@ void MainMode::MarkerStartDragging (iMarker* marker, iMarkerHitArea* area,
     iDynamicObject* dynobj = it->Next ();
     dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
-    iMeshWrapper* mesh = dynobj->GetMesh ();
-    csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
     AresDragObject dob;
+    dob.originalTransform = dynobj->GetTransform ();
+    csVector3 meshpos = dob.originalTransform.GetOrigin ();
     dob.kineOffset = pos - meshpos;
     dob.dynobj = dynobj;
-    dob.originalTransform = mesh->GetMovable ()->GetTransform ();
     dragObjects.Push (dob);
   }
 }
 
 void MainMode::SetDynObjOrigin (iDynamicObject* dynobj, const csVector3& pos)
 {
-  iMeshWrapper* mesh = dynobj->GetMesh ();
-  if (mesh)
-  {
-    iMovable* mov = mesh->GetMovable ();
-    mov->GetTransform ().SetOrigin (pos);
-    mov->UpdateMove ();
-  }
-  iLight* light = dynobj->GetLight ();
-  if (light)
-  {
-    iMovable* mov = light->GetMovable ();
-    mov->GetTransform ().SetOrigin (pos);
-    mov->UpdateMove ();
-  }
+  csReversibleTransform tr = dynobj->GetTransform ();
+  tr.SetOrigin (pos);
+  dynobj->SetTransform (tr);
   app->RegisterModification ();
 }
 
 void MainMode::SetDynObjTransform (iDynamicObject* dynobj, const csReversibleTransform& trans)
 {
-  iMeshWrapper* mesh = dynobj->GetMesh ();
-  if (mesh)
-  {
-    iMovable* mov = mesh->GetMovable ();
-    mov->SetTransform (trans);
-    mov->UpdateMove ();
-  }
-  iLight* light = dynobj->GetLight ();
-  if (light)
-  {
-    iMovable* mov = light->GetMovable ();
-    mov->SetTransform (trans);
-    mov->UpdateMove ();
-  }
+  dynobj->SetTransform (trans);
   app->RegisterModification ();
 }
 
@@ -554,9 +530,7 @@ void MainMode::StopDrag (bool cancel)
       if (cancel)
       {
     	AresDragObject& dob = dragObjects[i];
-        iMeshWrapper* mesh = dynobj->GetMesh ();
-	mesh->GetMovable ()->SetTransform (dob.originalTransform);
-	mesh->GetMovable ()->UpdateMove ();
+	dynobj->SetTransform (dob.originalTransform);
 	app->RegisterModification ();
       }
       dynobj->UndoKinematic ();
@@ -621,9 +595,10 @@ void MainMode::HandleKinematicDragging ()
   }
   else
   {
-    newPosition = beam.End () - beam.Start ();
-    newPosition.Normalize ();
-    newPosition = camera->GetTransform ().GetOrigin () + newPosition * dragDistance;
+    csPlane3 zplane (0, 0, -1, dragDistance);
+    zplane = camera->GetTransform ().This2Other (zplane);
+    csIntersect3::SegmentPlane (zplane, beam);
+    newPosition = beam.Start ();
   }
 
   if (view3d->GetPaster ()->IsGridModeEnabled ())
@@ -645,7 +620,7 @@ void MainMode::HandleKinematicDragging ()
     if (kinematicFirstOnly) break;
   }
 
-  const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetMesh ()->GetMovable ()->GetTransform ();
+  const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetTransform ();
   csReversibleTransform tr;
   tr.SetOrigin (meshtrans.GetOrigin ());
   view3d->GetPaster ()->MoveConstrainMarker (tr);
@@ -792,8 +767,10 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   {
     if (view3d->GetSelection ()->HasSelection ())
     {
-      csSegment3 seg = view3d->GetMouseBeam (10);
-      StartKinematicDragging (false, seg, seg.End (), false);
+      csSegment3 seg = view3d->GetMouseBeam (500);
+      csVector3 isect;
+      view3d->TraceBeamHit (seg, isect);
+      StartKinematicDragging (false, seg, isect, false);
     }
   }
   else if (code == 'x')
@@ -907,12 +884,11 @@ void MainMode::StartKinematicDragging (bool restrictY,
     // First remove all pivot joints before starting to drag.
     dynobj->RemovePivotJoints ();
     dynobj->MakeKinematic ();
-    iMeshWrapper* mesh = dynobj->GetMesh ();
-    csVector3 meshpos = mesh->GetMovable ()->GetTransform ().GetOrigin ();
     AresDragObject dob;
+    dob.originalTransform = dynobj->GetTransform ();
+    csVector3 meshpos = dob.originalTransform.GetOrigin ();
     dob.kineOffset = isect - meshpos;
     dob.dynobj = dynobj;
-    dob.originalTransform = mesh->GetMovable ()->GetTransform ();
     dragObjects.Push (dob);
     if (kinematicFirstOnly) break;
   }

@@ -252,6 +252,10 @@ void Paster::Cleanup ()
 {
   pastebuffer.DeleteAll ();
   todoSpawn.DeleteAll ();
+  if (pasteMarker)
+    pasteMarker->AttachMesh (0);
+  if (constrainMarker)
+    constrainMarker->AttachMesh (0);
 }
 
 bool Paster::Setup (AppAresEditWX* app, AresEdit3DView* view3d)

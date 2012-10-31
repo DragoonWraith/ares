@@ -162,6 +162,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX::Panel, wxPanel)
 END_EVENT_TABLE()
 
 static csStringID ID_NewProject = csInvalidStringID;
+static csStringID ID_About = csInvalidStringID;
 static csStringID ID_ManageAssets = csInvalidStringID;
 static csStringID ID_ManageResources = csInvalidStringID;
 static csStringID ID_Open = csInvalidStringID;
@@ -574,6 +575,7 @@ bool AppAresEditWX::Initialize ()
   {
     csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
     ID_NewProject = pl->FetchStringID ("NewProject");
+    ID_About = pl->FetchStringID ("About");
     ID_ManageAssets = pl->FetchStringID ("ManageAssets");
     ID_ManageResources = pl->FetchStringID ("ManageResources");
     ID_Open = pl->FetchStringID ("Open");
@@ -620,7 +622,13 @@ bool AppAresEditWX::Initialize ()
   // Set the window title.
   UpdateTitle ();
 
+  csRef<iDataBuffer> path = vfs->GetRealPath ("/icons/aresed_logo.gif");
+  wxIcon icon (wxString::FromUTF8 (path->GetData ()), wxBITMAP_TYPE_GIF);
+  SetIcon (icon);
+
   ready = true;
+
+  uiManager->About ();
 
   return true;
 }
@@ -1016,6 +1024,7 @@ void AppAresEditWX::ViewControls ()
 bool AppAresEditWX::Command (csStringID id, const csString& args)
 {
   if (id == ID_NewProject) NewProject ();
+  else if (id == ID_About) uiManager->About ();
   else if (id == ID_ManageAssets) ManageAssets ();
   else if (id == ID_ManageResources) ManageResources ();
   else if (id == ID_Open) OpenFile ();
@@ -1234,9 +1243,12 @@ void AppAresEditWX::SetCurveModeEnabled (bool cm)
 {
   wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
   size_t pageIdx = FindNotebookPage (notebook, "Curve");
-  wxNotebookPage* page = notebook->GetPage (pageIdx);
-  if (cm) page->Enable ();
-  else page->Disable ();
+  if (pageIdx != csArrayItemNotFound)
+  {
+    wxNotebookPage* page = notebook->GetPage (pageIdx);
+    if (cm) page->Enable ();
+    else page->Disable ();
+  }
 }
 
 iEditorPlugin* AppAresEditWX::FindPlugin (const char* name)
