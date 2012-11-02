@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_newproject_h
-#define __appares_newproject_h
+#ifndef __appares_manageassets_h
+#define __appares_manageassets_h
 
 #include <crystalspace.h>
 
@@ -37,12 +37,12 @@ class UIManager;
 class BaseAsset;
 struct iAsset;
 
-struct NewProjectCallback : public csRefCount
+struct ManageAssetsCallback : public csRefCount
 {
   virtual void OkPressed (const csArray<BaseAsset>& assets) = 0;
 };
 
-class NewProjectDialog : public wxDialog
+class ManageAssetsDialog : public wxDialog
 {
 private:
   iObjectRegistry* object_reg;
@@ -65,7 +65,7 @@ private:
   void OnPathSelected (wxCommandEvent& event);
 
   long selIndex;
-  csRef<NewProjectCallback> callback;
+  csRef<ManageAssetsCallback> callback;
 
   void SetPathFile (const char* file,
       bool writable, const char* normPath, const char* mount);
@@ -100,7 +100,7 @@ private:
    */
   csString ConstructRelativePath (const char* path, const char* filePath);
 
-  void Setup (NewProjectCallback* cb);
+  void Setup (ManageAssetsCallback* cb);
 
   /**
    * Enable/disable buttons that have to be enabled when an asset is selected.
@@ -108,15 +108,15 @@ private:
   void EnableAssetButtons (bool e);
 
 public:
-  NewProjectDialog (wxWindow* parent, iObjectRegistry* object_reg, UIManager* uiManager, iVFS* vfs);
-  ~NewProjectDialog();
+  ManageAssetsDialog (wxWindow* parent, iObjectRegistry* object_reg, UIManager* uiManager, iVFS* vfs);
+  ~ManageAssetsDialog ();
 
-  void Show (NewProjectCallback* cb);
-  void Show (NewProjectCallback* cb, const csRefArray<iAsset>& assets);
+  void Show (ManageAssetsCallback* cb);
+  void Show (ManageAssetsCallback* cb, const csRefArray<iAsset>& assets);
   //void SetFilename (const char* filename);
 
   DECLARE_EVENT_TABLE ();
 };
 
-#endif // __appares_newproject_h
+#endif // __appares_manageassets_h
 

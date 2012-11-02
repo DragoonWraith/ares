@@ -1198,6 +1198,7 @@ void EntityMode::OnTemplateDel (const char* tplName)
   if (yes)
   {
     view3d->GetApplication ()->GetAssetManager ()->RegisterRemoval (tpl->QueryObject ());
+    view3d->GetApplication ()->UpdateTitle ();
     if (cnt > 0)
     {
       cellIt = dynworld->GetCells ();

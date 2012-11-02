@@ -22,42 +22,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __appares_resourcemover_h
-#define __appares_resourcemover_h
+#ifndef __appares_projectdata_h
+#define __appares_projectdata_h
 
 #include <crystalspace.h>
-
-#include "edcommon/model.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/listctrl.h>
 #include <wx/xrc/xmlres.h>
+#include <wx/dirctrl.h>
 
 class UIManager;
 
-using namespace Ares;
-
-class ResourceMoverDialog : public wxDialog, public View
+class ProjectDataDialog : public wxDialog
 {
 private:
+  iObjectRegistry* object_reg;
   UIManager* uiManager;
-  Value* resourcesValue;
-  Value* resourceFilterValue;
 
   void OnOkButton (wxCommandEvent& event);
-  void OnTypeChanged (wxCommandEvent& event);
+  void OnCancelButton (wxCommandEvent& event);
 
 public:
-  ResourceMoverDialog (wxWindow* parent, UIManager* uiManager);
-  ~ResourceMoverDialog ();
-
-  Value* GetResourcesValue () const { return resourcesValue; }
+  ProjectDataDialog (wxWindow* parent, iObjectRegistry* object_reg, UIManager* uiManager);
+  ~ProjectDataDialog ();
 
   void Show ();
 
   DECLARE_EVENT_TABLE ();
 };
 
-#endif // __appares_resourcemover_h
+#endif // __appares_projectdata_h
 

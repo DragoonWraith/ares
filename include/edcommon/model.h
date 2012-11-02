@@ -584,6 +584,13 @@ protected:
 
   /// Filter a child. Returns true if the child should be visible.
   virtual bool Filter (Value* child) = 0;
+  /**
+   * Setup that is called before the filter is used. This can be useful
+   * to precompute computationally expensive filter options before filtering
+   * a lot of data. It is an optional function that subclasses don't have
+   * to override.
+   */
+  virtual void FilterSetup () { }
 
   void UpdateFilter ();
 

@@ -30,7 +30,8 @@ THE SOFTWARE.
 #include "include/imarker.h"
 #include "ui/uimanager.h"
 #include "ui/filereq.h"
-#include "ui/newproject.h"
+#include "ui/manageassets.h"
+#include "ui/projectdata.h"
 #include "ui/celldialog.h"
 #include "ui/objectfinder.h"
 #include "ui/resourcemover.h"
@@ -85,7 +86,7 @@ void AppSelectionListener::SelectionChanged (
   app->GetMainMode ()->CurrentObjectsChanged (current_objects);
 }
 
-struct ManageAssetsCallbackImp : public NewProjectCallback
+struct ManageAssetsCallbackImp : public ManageAssetsCallback
 {
   AppAresEditWX* ares;
   ManageAssetsCallbackImp (AppAresEditWX* ares) : ares (ares) { }
@@ -162,6 +163,7 @@ BEGIN_EVENT_TABLE(AppAresEditWX::Panel, wxPanel)
 END_EVENT_TABLE()
 
 static csStringID ID_NewProject = csInvalidStringID;
+static csStringID ID_ProjectData = csInvalidStringID;
 static csStringID ID_About = csInvalidStringID;
 static csStringID ID_ManageAssets = csInvalidStringID;
 static csStringID ID_ManageResources = csInvalidStringID;
@@ -193,7 +195,6 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
   AppAresEditWX::object_reg = object_reg;
   camwin = 0;
   editMode = 0;
-  newprojectDialog = 0;
   //oldPageIdx = csArrayItemNotFound;
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
@@ -283,7 +284,7 @@ void AppAresEditWX::ManageAssets ()
 {
   csRef<ManageAssetsCallbackImp> cb;
   cb.AttachNew (new ManageAssetsCallbackImp (this));
-  uiManager->GetNewProjectDialog ()->Show (cb, assetManager->GetAssets ());
+  uiManager->GetManageAssetsDialog ()->Show (cb, assetManager->GetAssets ());
 }
 
 void AppAresEditWX::ManageResources ()
@@ -310,6 +311,9 @@ void AppAresEditWX::NewProject ()
   aresed3d->SetupWorld ();
   assetManager->NewProject ();
   aresed3d->PostLoadMap ();
+
+  uiManager->GetProjectDataDialog ()->Show ();
+  UpdateTitle ();
 
   RefreshModes ();
 }
@@ -383,7 +387,7 @@ void AppAresEditWX::SaveCurrentFile ()
 void AppAresEditWX::Quit ()
 {
   if (!IsCleanupAllowed ()) return;
-  Close();
+  Close ();
 }
 
 void AppAresEditWX::OnNotebookChange (wxNotebookEvent& event)
@@ -575,6 +579,7 @@ bool AppAresEditWX::Initialize ()
   {
     csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (object_reg);
     ID_NewProject = pl->FetchStringID ("NewProject");
+    ID_ProjectData = pl->FetchStringID ("ProjectData");
     ID_About = pl->FetchStringID ("About");
     ID_ManageAssets = pl->FetchStringID ("ManageAssets");
     ID_ManageResources = pl->FetchStringID ("ManageResources");
@@ -797,7 +802,8 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("AresMainFrame.xrc", searchPath)) return false;
   if (!LoadResourceFile ("FileRequester.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CameraPanel.xrc", searchPath)) return false;
-  if (!LoadResourceFile ("NewProjectDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("ManageAssetsDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("ProjectDataDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("CellDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ObjectFinderDialog.xrc", searchPath)) return false;
@@ -1024,6 +1030,11 @@ void AppAresEditWX::ViewControls ()
 bool AppAresEditWX::Command (csStringID id, const csString& args)
 {
   if (id == ID_NewProject) NewProject ();
+  else if (id == ID_ProjectData)
+  {
+    uiManager->GetProjectDataDialog ()->Show ();
+    UpdateTitle ();
+  }
   else if (id == ID_About) uiManager->About ();
   else if (id == ID_ManageAssets) ManageAssets ();
   else if (id == ID_ManageResources) ManageResources ();

@@ -38,6 +38,7 @@ SCF_IMPLEMENT_FACTORY (AssetManager)
 AssetManager::AssetManager (iBase* parent) : scfImplementationType (this, parent)
 {
   generallyModified = false;
+  projectData.AttachNew (new ProjectData ());
 }
 
 bool AssetManager::Initialize (iObjectRegistry* object_reg)
@@ -131,8 +132,7 @@ csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filena
 	sp = path;
       if (CS::Platform::Stat (sp, &buf) == 0)
       {
-        if (CS::Platform::IsRegularFile (&buf)
-            || CS::Platform::IsDirectory (&buf))
+        if (CS::Platform::IsRegularFile (&buf) || CS::Platform::IsDirectory (&buf))
 	  break;
       }
     }
@@ -173,6 +173,14 @@ bool AssetManager::LoadDoc (iDocument* doc)
       assets.Push (asset);
     }
     // Ignore the other tags. These are processed below.
+  }
+
+  csRef<iDocumentNode> metaNode = dynlevelNode->GetNode ("meta");
+  if (metaNode)
+  {
+    projectData->SetName (metaNode->GetAttributeValue ("name"));
+    projectData->SetShortDescription (metaNode->GetAttributeValue ("short"));
+    projectData->SetDescription (metaNode->GetAttributeValue ("description"));
   }
 
   csRef<iDocumentNode> curveNode = dynlevelNode->GetNode ("curves");
@@ -369,6 +377,10 @@ bool AssetManager::NewProject ()
   resourcesWithoutAsset.DeleteAll ();
   generallyModified = false;
 
+  projectData->SetName ("");
+  projectData->SetShortDescription ("");
+  projectData->SetDescription ("");
+
   return true;
 }
 
@@ -513,8 +525,23 @@ bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
   else
   {
     Report ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
+    csRef<iStringArray> assetlocalPath = vfs->GetRealMountPaths ("/assetslocal/");
     csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-    csRef<iString> path = FindAsset (assetPath, normpath, true);
+    csRef<iString> path;
+    if (assetlocalPath->GetSize () > 0)
+    {
+      path = FindAsset (assetlocalPath, normpath, false);
+      if (!path)
+      {
+        path = FindAsset (assetPath, normpath, false);
+	if (!path)
+          path = FindAsset (assetlocalPath, normpath, true);
+      }
+    }
+    else
+    {
+      path = FindAsset (assetPath, normpath, true);
+    }
 
     vfs->Mount ("/assets/__mnt_wl__", path->GetData ());
     vfs->PushDir ("/assets/__mnt_wl__");
@@ -534,6 +561,12 @@ csRef<iDocument> AssetManager::SaveDoc ()
   csRef<iDocumentNode> root = doc->CreateRoot ();
   csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
   rootNode->SetValue ("dynlevel");
+
+  csRef<iDocumentNode> metaNode = rootNode->CreateNodeBefore (CS_NODE_ELEMENT);
+  metaNode->SetValue ("meta");
+  metaNode->SetAttribute ("name", projectData->GetName ());
+  metaNode->SetAttribute ("short", projectData->GetShortDescription ());
+  metaNode->SetAttribute ("description", projectData->GetDescription ());
 
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {

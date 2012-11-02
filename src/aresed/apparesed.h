@@ -58,7 +58,6 @@ class Asset;
 
 class DynfactCollectionValue;
 class ObjectsValue;
-class NewProjectDialog;
 class UIManager;
 
 struct iEditorPlugin;
@@ -134,8 +133,6 @@ private:
 
   int wantsFocus3D;
 
-  NewProjectDialog* newprojectDialog;
-
   csRefArray<iEditorPlugin> plugins;
   csRef<iEditingMode> mainMode;
   csString mainModeName;
@@ -206,7 +203,7 @@ public:
   void ReceiveMessage (int severity, const char* msgID, const char* description);
 
   /// Update the title of this frame.
-  void UpdateTitle ();
+  virtual void UpdateTitle ();
 
   /// Set the help status message at the bottom of the frame.
   virtual void SetStatus (const char* statusmsg, ...);

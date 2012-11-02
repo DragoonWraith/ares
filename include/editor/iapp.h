@@ -68,6 +68,11 @@ struct iAresEditor : public virtual iBase
 
   /// Set the state of the menus correctly depending on context.
   virtual void SetMenuState () = 0;
+  /**
+   * Update the title of this frame. Useful to call after making a modification to
+   * make sure the '*' is added.
+   */
+  virtual void UpdateTitle () = 0;
 
   /// Set the help status message at the bottom of the frame.
   virtual void SetStatus (const char* statusmsg, ...) = 0;

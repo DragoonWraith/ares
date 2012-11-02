@@ -71,6 +71,8 @@ public:
  */
 struct iAsset : public virtual iBase
 {
+  SCF_INTERFACE(iAsset, 0, 0, 1);
+
   virtual const csString& GetFile () const = 0;
   virtual const csString& GetNormalizedPath () const = 0;
   virtual const csString& GetMountPoint () const = 0;
@@ -81,10 +83,34 @@ struct iAsset : public virtual iBase
 };
 
 /**
+ * Project meta data.
+ */
+struct iProjectData : public virtual iBase
+{
+  SCF_INTERFACE(iProjectData, 0, 0, 1);
+
+  virtual void SetName (const char* n) = 0;
+  virtual const char* GetName () const = 0;
+
+  virtual void SetShortDescription (const char* n) = 0;
+  virtual const char* GetShortDescription () const = 0;
+
+  virtual void SetDescription (const char* n) = 0;
+  virtual const char* GetDescription () const = 0;
+};
+
+/**
  * The asset manager.
  */
 struct iAssetManager : public virtual iBase
 {
+  SCF_INTERFACE(iAssetManager, 0, 0, 1);
+
+  /**
+   * Get the project meta data.
+   */
+  virtual iProjectData* GetProjectData () = 0;
+
   /**
    * Set the zone on which to operate.
    */

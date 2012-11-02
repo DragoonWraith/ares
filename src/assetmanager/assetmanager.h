@@ -68,6 +68,27 @@ public:
   csSet<csPtrKey<iObject> >& GetModifiedResources () { return modifiedResources; }
 };
 
+class ProjectData : public scfImplementation1<ProjectData, iProjectData>
+{
+private:
+  csString name;
+  csString shortDescription;
+  csString description;
+
+public:
+  ProjectData () : scfImplementationType (this) { }
+  virtual ~ProjectData () { }
+
+  virtual void SetName (const char* n) { name = n; }
+  virtual const char* GetName () const { return name; }
+
+  virtual void SetShortDescription (const char* n) { shortDescription = n; }
+  virtual const char* GetShortDescription () const { return shortDescription; }
+
+  virtual void SetDescription (const char* n) { description = n; }
+  virtual const char* GetDescription () const { return description; }
+};
+
 class AssetManager : public scfImplementation2<AssetManager,iAssetManager,iComponent>
 {
 private:
@@ -78,6 +99,8 @@ private:
   csRef<iCurvedMeshCreator> curvedMeshCreator;
   csRef<iRoomMeshCreator> roomMeshCreator;
   csRef<iPcDynamicWorld> dynworld;
+
+  csRef<ProjectData> projectData;
 
   int mntCounter;
   csRefArray<iAsset> assets;
@@ -120,6 +143,11 @@ private:
 public:
   AssetManager (iBase* parent);
   virtual ~AssetManager () { }
+
+  virtual iProjectData* GetProjectData ()
+  {
+    return projectData;
+  }
 
   bool Error (const char* description, ...)
   {

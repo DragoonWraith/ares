@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="ResourceMoverDialog">
-		<style>wxDEFAULT_DIALOG_STYLE</style>
+		<style>wxDEFAULT_DIALOG_STYLE|wxRESIZE_BORDER</style>
 		<size>700,500</size>
 		<title>Resource Manager</title>
 		<centered>1</centered>
@@ -13,6 +13,38 @@
 				<border>5</border>
 				<object class="wxListCtrl" name="asset_List">
 					<style>wxLC_REPORT</style>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>0</option>
+				<flag>wxEXPAND</flag>
+				<border>5</border>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<object class="wxStaticText" name="m_staticText22">
+							<label>Type filter:</label>
+							<wrap>-1</wrap>
+						</object>
+					</object>
+					<object class="sizeritem">
+						<option>0</option>
+						<flag>wxALL|wxEXPAND</flag>
+						<border>5</border>
+						<object class="wxChoice" name="type_Choice">
+							<selection>0</selection>
+							<content>
+								<item>All</item>
+								<item>Templates</item>
+								<item>Dynamic Factories</item>
+								<item>Quests</item>
+								<item>Light Factories</item>
+							</content>
+						</object>
+					</object>
 				</object>
 			</object>
 			<object class="sizeritem">

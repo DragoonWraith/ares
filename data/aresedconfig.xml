@@ -35,7 +35,9 @@
 
     <menus>
     	<menu name="&amp;File">
-	    <item name="&amp;New project" id="New" command="NewProject" help="Open a new project" />
+	    <item name="&amp;New project..." id="New" command="NewProject" help="Open a new project" />
+	    <item name="&amp;Project Data..." command="ProjectData" help="Examine and set project data" />
+	    <sep />
 	    <item name="&amp;Manage Assets..." command="ManageAssets" help="Add, remove and edit assets" />
 	    <item name="&amp;Manage Resources..." command="ManageResources" help="Manage resources (move, remove, ...)" />
 	    <item name="&amp;Manage Cells..." command="ManageCells" help="Create and remove cells, set the default cell" />

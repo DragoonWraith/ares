@@ -223,6 +223,7 @@ void FilteredCollectionValue::UpdateFilter ()
 {
   filteredChildren.DeleteAll ();
   if (!collection) return;
+  FilterSetup ();
   csRef<ValueIterator> it = collection->GetIterator ();
   while (it->HasNext ())
   {

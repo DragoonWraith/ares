@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#include "newproject.h"
+#include "manageassets.h"
 #include "uimanager.h"
 #include "edcommon/listctrltools.h"
 #include "../apparesed.h"
@@ -33,17 +33,17 @@ THE SOFTWARE.
 
 //--------------------------------------------------------------------------
 
-BEGIN_EVENT_TABLE(NewProjectDialog, wxDialog)
-  EVT_BUTTON (XRCID("okButton"), NewProjectDialog :: OnOkButton)
-  EVT_BUTTON (XRCID("cancelButton"), NewProjectDialog :: OnCancelButton)
-  EVT_BUTTON (XRCID("addAssetButton"), NewProjectDialog :: OnAddAssetButton)
-  EVT_BUTTON (XRCID("delAssetButton"), NewProjectDialog :: OnDelAssetButton)
-  EVT_BUTTON (XRCID("updateButton"), NewProjectDialog :: OnUpdateAssetButton)
-  EVT_BUTTON (XRCID("moveUpButton"), NewProjectDialog :: OnMoveUpButton)
-  EVT_BUTTON (XRCID("moveDownButton"), NewProjectDialog :: OnMoveDownButton)
-  EVT_COMBOBOX (XRCID("path_Combo"), NewProjectDialog :: OnPathSelected)
-  EVT_LIST_ITEM_SELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetSelected)
-  EVT_LIST_ITEM_DESELECTED (XRCID("assetListCtrl"), NewProjectDialog :: OnAssetDeselected)
+BEGIN_EVENT_TABLE(ManageAssetsDialog, wxDialog)
+  EVT_BUTTON (XRCID("okButton"), ManageAssetsDialog :: OnOkButton)
+  EVT_BUTTON (XRCID("cancelButton"), ManageAssetsDialog :: OnCancelButton)
+  EVT_BUTTON (XRCID("addAssetButton"), ManageAssetsDialog :: OnAddAssetButton)
+  EVT_BUTTON (XRCID("delAssetButton"), ManageAssetsDialog :: OnDelAssetButton)
+  EVT_BUTTON (XRCID("updateButton"), ManageAssetsDialog :: OnUpdateAssetButton)
+  EVT_BUTTON (XRCID("moveUpButton"), ManageAssetsDialog :: OnMoveUpButton)
+  EVT_BUTTON (XRCID("moveDownButton"), ManageAssetsDialog :: OnMoveDownButton)
+  EVT_COMBOBOX (XRCID("path_Combo"), ManageAssetsDialog :: OnPathSelected)
+  EVT_LIST_ITEM_SELECTED (XRCID("assetListCtrl"), ManageAssetsDialog :: OnAssetSelected)
+  EVT_LIST_ITEM_DESELECTED (XRCID("assetListCtrl"), ManageAssetsDialog :: OnAssetDeselected)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -56,7 +56,7 @@ static csString CorrectName (const char* n)
   return name;
 }
 
-csString NewProjectDialog::ConstructMountString (const char* path, const char* filePath,
+csString ManageAssetsDialog::ConstructMountString (const char* path, const char* filePath,
     csString& file)
 {
   csString mountable = path;
@@ -99,7 +99,7 @@ csString NewProjectDialog::ConstructMountString (const char* path, const char* f
   return mountable;
 }
 
-csString NewProjectDialog::ConstructRelativePath (const char* path, const char* filePath)
+csString ManageAssetsDialog::ConstructRelativePath (const char* path, const char* filePath)
 {
   csString stripped = path;
   for (size_t i = 0 ; i < assetPath.GetSize () ; i++)
@@ -120,14 +120,14 @@ csString NewProjectDialog::ConstructRelativePath (const char* path, const char* 
   return stripped;
 }
 
-void NewProjectDialog::OnPathSelected (wxCommandEvent& event)
+void ManageAssetsDialog::OnPathSelected (wxCommandEvent& event)
 {
   csString path = UITools::GetValue (this, "path_Combo");
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   dir->ExpandPath (wxString::FromUTF8 (path));
 }
 
-void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
+void ManageAssetsDialog::OnDirSelChange (wxCommandEvent& event)
 {
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   csString path = (const char*)(dir->GetPath ().mb_str (wxConvUTF8));
@@ -152,7 +152,7 @@ void NewProjectDialog::OnDirSelChange (wxCommandEvent& event)
   LoadManifest ("/tmp/__mnt__", file, true);
 }
 
-void NewProjectDialog::LoadManifest (const char* path, const char* file, bool override)
+void ManageAssetsDialog::LoadManifest (const char* path, const char* file, bool override)
 {
   csString descriptionText, mountText, fileText;
 
@@ -220,7 +220,7 @@ void NewProjectDialog::LoadManifest (const char* path, const char* file, bool ov
   ScanLoadableFile (path, fileText);
 }
 
-void NewProjectDialog::OnOkButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnOkButton (wxCommandEvent& event)
 {
   csArray<BaseAsset> assets;
 
@@ -241,13 +241,13 @@ void NewProjectDialog::OnOkButton (wxCommandEvent& event)
   EndModal (TRUE);
 }
 
-void NewProjectDialog::OnCancelButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnCancelButton (wxCommandEvent& event)
 {
   callback = 0;
   EndModal (TRUE);
 }
 
-void NewProjectDialog::ScanLoadableFile (const char* path, const char* file)
+void ManageAssetsDialog::ScanLoadableFile (const char* path, const char* file)
 {
 printf ("path=%s file=%s\n", path, file); fflush (stdout);
   csRef<iDocument> doc;
@@ -290,7 +290,7 @@ printf ("path=%s file=%s\n", path, file); fflush (stdout);
   contents->SetLabel (wxString::FromUTF8 (msg.GetData ()));
 }
 
-void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
+void ManageAssetsDialog::ScanCSNode (csString& msg, iDocumentNode* node)
 {
   bool hasTexturesMaterials = false;
   bool hasSounds = false;
@@ -339,7 +339,7 @@ void NewProjectDialog::ScanCSNode (csString& msg, iDocumentNode* node)
   if (cntUnkownAddons) msg.AppendFmt (", %d unknown", cntUnkownAddons);
 }
 
-void NewProjectDialog::SetPathFile (const char* file,
+void ManageAssetsDialog::SetPathFile (const char* file,
     bool writable, const char* normPath, const char* mount)
 {
   wxTextCtrl* normpathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
@@ -385,7 +385,7 @@ void NewProjectDialog::SetPathFile (const char* file,
   }
 }
 
-void NewProjectDialog::UpdateAsset (int idx, const char* file,
+void ManageAssetsDialog::UpdateAsset (int idx, const char* file,
     bool writable, const char* normPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
@@ -393,7 +393,7 @@ void NewProjectDialog::UpdateAsset (int idx, const char* file,
       (const char*)0);
 }
 
-void NewProjectDialog::AddAsset (const char* file,
+void ManageAssetsDialog::AddAsset (const char* file,
     bool writable, const char* normPath, const char* mount)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
@@ -401,7 +401,7 @@ void NewProjectDialog::AddAsset (const char* file,
       (const char*)0);
 }
 
-void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnAddAssetButton (wxCommandEvent& event)
 {
   wxTextCtrl* normPathText = XRCCTRL (*this, "realPath_Text", wxTextCtrl);
   wxTextCtrl* mountText = XRCCTRL (*this, "mount_Text", wxTextCtrl);
@@ -415,7 +415,7 @@ void NewProjectDialog::OnAddAssetButton (wxCommandEvent& event)
   SetPathFile (file, writable, normPath, mount);
 }
 
-void NewProjectDialog::OnMoveUpButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnMoveUpButton (wxCommandEvent& event)
 {
   if (selIndex > 0)
   {
@@ -429,7 +429,7 @@ void NewProjectDialog::OnMoveUpButton (wxCommandEvent& event)
   }
 }
 
-void NewProjectDialog::OnMoveDownButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnMoveDownButton (wxCommandEvent& event)
 {
   if (selIndex >= 0)
   {
@@ -445,7 +445,7 @@ void NewProjectDialog::OnMoveDownButton (wxCommandEvent& event)
   }
 }
 
-void NewProjectDialog::OnUpdateAssetButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnUpdateAssetButton (wxCommandEvent& event)
 {
   if (selIndex >= 0)
   {
@@ -466,7 +466,7 @@ void NewProjectDialog::OnUpdateAssetButton (wxCommandEvent& event)
   }
 }
 
-void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
+void ManageAssetsDialog::OnDelAssetButton (wxCommandEvent& event)
 {
   if (selIndex >= 0)
   {
@@ -477,7 +477,7 @@ void NewProjectDialog::OnDelAssetButton (wxCommandEvent& event)
   }
 }
 
-void NewProjectDialog::EnableAssetButtons (bool e)
+void ManageAssetsDialog::EnableAssetButtons (bool e)
 {
   wxButton* delButton = XRCCTRL (*this, "delAssetButton", wxButton);
   wxButton* moveUpButton = XRCCTRL (*this, "moveUpButton", wxButton);
@@ -499,7 +499,7 @@ void NewProjectDialog::EnableAssetButtons (bool e)
   }
 }
 
-void NewProjectDialog::OnAssetSelected (wxListEvent& event)
+void ManageAssetsDialog::OnAssetSelected (wxListEvent& event)
 {
   EnableAssetButtons (true);
 
@@ -511,13 +511,13 @@ void NewProjectDialog::OnAssetSelected (wxListEvent& event)
   SetPathFile (CorrectName (row[1]), writable, row[0], row[3]);
 }
 
-void NewProjectDialog::OnAssetDeselected (wxListEvent& event)
+void ManageAssetsDialog::OnAssetDeselected (wxListEvent& event)
 {
   EnableAssetButtons (false);
   SetPathFile ("", false, "", "");
 }
 
-void NewProjectDialog::Setup (NewProjectCallback* cb)
+void ManageAssetsDialog::Setup (ManageAssetsCallback* cb)
 {
   this->callback = cb;
   EnableAssetButtons (false);
@@ -529,13 +529,13 @@ void NewProjectDialog::Setup (NewProjectCallback* cb)
   vfs->ChDir (currentPath);
 }
 
-void NewProjectDialog::Show (NewProjectCallback* cb)
+void ManageAssetsDialog::Show (ManageAssetsCallback* cb)
 {
   Setup (cb);
   ShowModal ();
 }
 
-void NewProjectDialog::Show (NewProjectCallback* cb, const csRefArray<iAsset>& assets)
+void ManageAssetsDialog::Show (ManageAssetsCallback* cb, const csRefArray<iAsset>& assets)
 {
   Setup (cb);
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
@@ -547,10 +547,10 @@ void NewProjectDialog::Show (NewProjectCallback* cb, const csRefArray<iAsset>& a
   ShowModal ();
 }
 
-NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_reg,
+ManageAssetsDialog::ManageAssetsDialog (wxWindow* parent, iObjectRegistry* object_reg,
     UIManager* uiManager, iVFS* vfs) : object_reg (object_reg), uiManager (uiManager), vfs (vfs)
 {
-  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("NewProjectDialog"));
+  wxXmlResource::Get()->LoadDialog (this, parent, wxT ("ManageAssetsDialog"));
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   ListCtrlTools::SetColumn (assetList, 0, "Path", 170);
@@ -560,7 +560,7 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
 
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   dir->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,
-	  wxCommandEventHandler (NewProjectDialog :: OnDirSelChange), 0, this);
+	  wxCommandEventHandler (ManageAssetsDialog :: OnDirSelChange), 0, this);
 
   wxComboBox* path_Combo = XRCCTRL (*this, "path_Combo", wxComboBox);
   path_Combo->Clear ();
@@ -590,13 +590,15 @@ NewProjectDialog::NewProjectDialog (wxWindow* parent, iObjectRegistry* object_re
     defaultdir = wxString::FromUTF8 (appDir);
   dir->SetDefaultPath (defaultdir);
   dir->SetPath (defaultdir);
+
+  SetSize (900, 700);
 }
 
-NewProjectDialog::~NewProjectDialog ()
+ManageAssetsDialog::~ManageAssetsDialog ()
 {
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   dir->Disconnect (wxEVT_COMMAND_TREE_SEL_CHANGED,
-	  wxCommandEventHandler (NewProjectDialog :: OnDirSelChange), 0, this);
+	  wxCommandEventHandler (ManageAssetsDialog :: OnDirSelChange), 0, this);
 }
 
 

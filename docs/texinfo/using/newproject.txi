@@ -18,8 +18,12 @@ In this section we describe how you can create and set up a new project.
 
 The first thing you want to do after starting AresEd is creating a new project.
 This is simply. Just use the @samp{New Project} menu item. This will create a
-new empty project. After starting AresEd you will also end up in an empty project
-so you don't have to use this menu in that case.
+new empty project and automatically open the @samp{project data} dialog where you can
+set the name, a short description and a longer description. After starting AresEd you will
+also end up in an empty project so you don't have to use this menu in that case.
+
+Using the @samp{Project Data} menu you can later set or change the project data (name
+and description).
 
 @node Asset Manager, Resource Manager, Creating a New Project, New Project
 @section Asset Manager

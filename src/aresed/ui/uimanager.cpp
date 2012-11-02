@@ -26,7 +26,8 @@ THE SOFTWARE.
 #include "../apparesed.h"
 #include "uimanager.h"
 #include "filereq.h"
-#include "newproject.h"
+#include "manageassets.h"
+#include "projectdata.h"
 #include "celldialog.h"
 #include "entityparameters.h"
 #include "objectfinder.h"
@@ -478,7 +479,9 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   app (app), parent (parent)
 {
   filereqDialog = new FileReq (parent, app->GetVFS (), "/saves");
-  newprojectDialog = new NewProjectDialog (parent, app->GetObjectRegistry (), this, app->GetVFS ());
+  manageassetsDialog = new ManageAssetsDialog (parent, app->GetObjectRegistry (),
+      this, app->GetVFS ());
+  projectdataDialog = new ProjectDataDialog (parent, app->GetObjectRegistry (), this);
   cellDialog = new CellDialog (parent, this);
   entityParameterDialog = new EntityParameterDialog (parent, this);
   objectFinderDialog = new ObjectFinderDialog (parent, this);
@@ -489,7 +492,8 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
 UIManager::~UIManager ()
 {
   delete filereqDialog;
-  delete newprojectDialog;
+  delete manageassetsDialog;
+  delete projectdataDialog;
   delete cellDialog;
   delete entityParameterDialog;
   delete objectFinderDialog;

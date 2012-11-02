@@ -27,7 +27,6 @@ THE SOFTWARE.
 #include "include/imarker.h"
 #include "ui/uimanager.h"
 #include "ui/filereq.h"
-#include "ui/newproject.h"
 #include "ui/celldialog.h"
 #include "ui/entityparameters.h"
 #include "camera.h"
@@ -496,6 +495,7 @@ void AresEdit3DView::RemoveResources (const csSet<csPtrKey<iObject> >& resources
     engine->RemoveObject (resource);
   }
   modelRepository->GetDynfactCollectionValue ()->Refresh ();
+  app->UpdateTitle ();
 }
 
 void AresEdit3DView::ChangeCategory (const char* newCategory, const char* itemname)

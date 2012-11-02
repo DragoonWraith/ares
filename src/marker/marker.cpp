@@ -601,12 +601,10 @@ void GraphView::Render3D ()
     csVector2 spos1, spos2;
     if (!GetNodeLinkPosition (l.node1, pos1, secondary1, spos1))
     {
-      printf ("Link: node '%s' does not exist!\n", l.node1.GetData ());
       continue;
     }
     if (!GetNodeLinkPosition (l.node2, pos2, secondary2, spos2))
     {
-      printf ("Link: node '%s' does not exist!\n", l.node2.GetData ());
       continue;
     }
     iMarkerColor* color = l.color;

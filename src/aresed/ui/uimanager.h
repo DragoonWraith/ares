@@ -32,7 +32,8 @@ THE SOFTWARE.
 
 class AppAresEditWX;
 class FileReq;
-class NewProjectDialog;
+class ManageAssetsDialog;
+class ProjectDataDialog;
 class CellDialog;
 class UIDialog;
 class SimpleListCtrlView;
@@ -170,7 +171,8 @@ private:
   wxWindow* parent;
 
   FileReq* filereqDialog;
-  NewProjectDialog* newprojectDialog;
+  ManageAssetsDialog* manageassetsDialog;
+  ProjectDataDialog* projectdataDialog;
   CellDialog* cellDialog;
   EntityParameterDialog* entityParameterDialog;
   ObjectFinderDialog* objectFinderDialog;
@@ -194,7 +196,8 @@ public:
       const char* heading, ...);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
-  NewProjectDialog* GetNewProjectDialog () const { return newprojectDialog; }
+  ManageAssetsDialog* GetManageAssetsDialog () const { return manageassetsDialog; }
+  ProjectDataDialog* GetProjectDataDialog () const { return projectdataDialog; }
   CellDialog* GetCellDialog () const { return cellDialog; }
   EntityParameterDialog* GetEntityParameterDialog () const { return entityParameterDialog; }
   ObjectFinderDialog* GetObjectFinderDialog () const { return objectFinderDialog; }

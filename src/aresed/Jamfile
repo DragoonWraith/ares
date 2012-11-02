@@ -54,6 +54,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     helpframe
     mainmode
     playmode
+    marker
     ;
 
   ExternalLibs aresed_static : CRYSTAL CEL WX ;

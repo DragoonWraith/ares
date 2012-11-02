@@ -38,6 +38,7 @@ THE SOFTWARE.
 
 BEGIN_EVENT_TABLE(ResourceMoverDialog, wxDialog)
   EVT_BUTTON (XRCID("ok_Button"), ResourceMoverDialog :: OnOkButton)
+  EVT_CHOICE (XRCID("type_Choice"), ResourceMoverDialog :: OnTypeChanged)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -387,23 +388,45 @@ class ResourceFilterValue : public FilteredCollectionValue
 private:
   i3DView* view3d;
   csRef<ListSelectedValue> selection;
+  wxChoice* typeChoice;
+
+  // Filter settings computed in FilterSetup()
+  iAsset* asset;
+  char typeFilter;	// First character of the type to be used for the filter
+  			// ('d', 'q', 't', 'l') or 0 if no filter on type.
 
 protected:
   virtual bool Filter (Value* child)
   {
-    Value* selected = selection->GetMirrorValue ();
-    iAsset* asset = 0;
-    if (selected)
-      asset = view3d->GetModelRepository ()->GetAssetFromAssets (selected);
-
+    if (typeFilter != 0)
+    {
+      char t = child->GetStringArrayValue ()->Get (RESOURCE_COL_TYPE)[0];
+      if (typeFilter != t) return false;
+    }
     if (!asset) return true;
     iObject* resource = view3d->GetModelRepository ()->GetResourceFromResources (child);
     return asset->GetCollection ()->IsParentOf (resource);
   }
 
+  virtual void FilterSetup ()
+  {
+    Value* selected = selection->GetMirrorValue ();
+    if (selected)
+      asset = view3d->GetModelRepository ()->GetAssetFromAssets (selected);
+    else
+      asset = 0;
+
+    csString type = (const char*)typeChoice->GetStringSelection ().mb_str (wxConvUTF8);
+    if (type == "Templates") typeFilter = 't';
+    else if (type == "Dynamic Factories") typeFilter = 'd';
+    else if (type == "Quests") typeFilter = 'q';
+    else if (type == "Light Factories") typeFilter = 'l';
+    else typeFilter = 0;
+  }
+
 public:
-  ResourceFilterValue (i3DView* view3d, ListSelectedValue* selection)
-    : view3d (view3d), selection (selection)
+  ResourceFilterValue (i3DView* view3d, ListSelectedValue* selection, wxChoice* typeChoice)
+    : view3d (view3d), selection (selection), typeChoice (typeChoice)
   {
   }
   virtual ~ResourceFilterValue () { }
@@ -421,6 +444,11 @@ void ResourceMoverDialog::OnOkButton (wxCommandEvent& event)
   EndModal (TRUE);
 }
 
+void ResourceMoverDialog::OnTypeChanged (wxCommandEvent& event)
+{
+  resourceFilterValue->FireValueChanged ();
+}
+
 void ResourceMoverDialog::Show ()
 {
   wxListCtrl* assetList = XRCCTRL (*this, "asset_List", wxListCtrl);
@@ -433,10 +461,12 @@ void ResourceMoverDialog::Show ()
   csRef<Value> rv = uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetResourcesValue ();
   resourcesValue = rv;
 
-  csRef<ResourceFilterValue> resourceFilterValue;
-  resourceFilterValue.AttachNew (new ResourceFilterValue (uiManager->GetApp ()->Get3DView (),
-	selValue));
-  resourceFilterValue->SetCollection (resourcesValue);
+  wxChoice* typeChoice = XRCCTRL (*this, "type_Choice", wxChoice);
+  csRef<ResourceFilterValue> rfv;
+  rfv.AttachNew (new ResourceFilterValue (uiManager->GetApp ()->Get3DView (), selValue,
+	typeChoice));
+  rfv->SetCollection (resourcesValue);
+  resourceFilterValue = rfv;
 
   Signal (selValue, resourceFilterValue);
 
@@ -473,6 +503,8 @@ ResourceMoverDialog::ResourceMoverDialog (wxWindow* parent, UIManager* uiManager
   AddAction (rl, NEWREF (Action, new RemoveResourcesAction (uiManager->GetApp ()->Get3DView (), this)));
   AddAction (rl, NEWREF (Action, new LockAction (uiManager->GetApp ()->Get3DView (), this)));
   AddAction (rl, NEWREF (Action, new UnlockAction (uiManager->GetApp ()->Get3DView (), this)));
+
+  SetSize (800, 600);
 }
 
 ResourceMoverDialog::~ResourceMoverDialog ()

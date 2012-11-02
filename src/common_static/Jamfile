@@ -175,7 +175,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     curvemesh
     dynworldload
     gamecontrol
-    marker
     nature
     rooms
     roommode
