@@ -54,9 +54,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     helpframe
     mainmode
     playmode
-    roommode
-    assetmanager
-    gamecontrol
     ;
 
   ExternalLibs aresed_static : CRYSTAL CEL WX ;

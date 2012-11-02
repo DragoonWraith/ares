@@ -178,6 +178,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     marker
     nature
     rooms
+    roommode
+    assetmanager
+    gamecontrol
     ;
 
   ExternalLibs common_static : CRYSTAL CEL ;
