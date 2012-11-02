@@ -32,7 +32,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     csddsimg
     csfont
     csgifimg
-    csjngimg
     csjpgimg
     csopcode
     csparser
@@ -97,6 +96,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   #
   STATIC.OPTIONALPLUGINLIST =
     bullet
+    csjngimg
     cspython
     glshader_cg
     glshader_ps1
