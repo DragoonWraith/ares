@@ -494,6 +494,11 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 
   csBaseEventHandler::Initialize (object_reg);
 
+  csRef<iStandardReporterListener> stdrep = csQueryRegistry<iStandardReporterListener> (object_reg);
+  stdrep->SetPopupOutput (CS_REPORTER_SEVERITY_ERROR, false);
+  stdrep->SetPopupOutput (CS_REPORTER_SEVERITY_WARNING, false);
+  stdrep->SetPopupOutput (CS_REPORTER_SEVERITY_NOTIFY, false);
+
   // Now we need to setup an event handler for our application.
   // Crystal Space is fully event-driven. Everything (except for this
   // initialization) happens in an event.

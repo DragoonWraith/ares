@@ -609,11 +609,16 @@ bool AppAresEditWX::Initialize ()
     return false;
 
   csRef<iStandardReporterListener> stdrep = csQueryRegistry<iStandardReporterListener> (object_reg);
+  stdrep->SetPopupOutput (CS_REPORTER_SEVERITY_ERROR, false);
+  stdrep->SetPopupOutput (CS_REPORTER_SEVERITY_WARNING, false);
+  stdrep->SetPopupOutput (CS_REPORTER_SEVERITY_NOTIFY, false);
+
   stdrep->RemoveMessages (CS_REPORTER_SEVERITY_BUG, false);
   stdrep->RemoveMessages (CS_REPORTER_SEVERITY_ERROR, false);
   stdrep->RemoveMessages (CS_REPORTER_SEVERITY_WARNING, false);
   stdrep->RemoveMessages (CS_REPORTER_SEVERITY_NOTIFY, false);
   stdrep->RemoveMessages (CS_REPORTER_SEVERITY_DEBUG, false);
+
   csRef<iReporter> reporter = csQueryRegistry<iReporter> (object_reg);
   csRef<AresReporterListener> repListener;
   repListener.AttachNew (new AresReporterListener (this));
