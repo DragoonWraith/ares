@@ -49,13 +49,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
 
   # No ares-exclusive CEL plugins
 
-  LinkStaticPlugins ares_static :
-    curvemesh
-    nature
-    rooms
-    assetmanager
-    gamecontrol
-    ;
+  #LinkStaticPlugins ares_static :
+    #;
 
   ExternalLibs ares_static : CRYSTAL CEL CEGUI ;
   SubVariant ;
