@@ -31,9 +31,16 @@ CS_DECLARE_DEFAULT_STATIC_VARIABLE_REGISTRATION
 CS_DEFINE_STATIC_VARIABLE_REGISTRATION (csStaticVarCleanup_csutil);
 #endif
 
-void ARES_COMMON_STATIC_EXPORT AresLinkCommonStaticPlugins ()
+struct _common_static_static_use_CRYSTAL { _common_static_static_use_CRYSTAL (); };
+struct _common_static_static_use_CEL { _common_static_static_use_CEL (); };
+struct _common_static_static_use { _common_static_static_use (); };
+
+void AresLinkCommonStaticPlugins ()
 {
-  /* Do nothing. But that's enough to make the static plugins registration
-   * work, as the other objects from the lib are considered for static
-   * initialization. */
+  /* Bind against symbols from generated static_use file to make
+   * static plugins registration work; makes that the respective objects
+   * are considered for static initialization. */
+  _common_static_static_use_CRYSTAL ();
+  _common_static_static_use_CEL ();
+  _common_static_static_use ();
 }
