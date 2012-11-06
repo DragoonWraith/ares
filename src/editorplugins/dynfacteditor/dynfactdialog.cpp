@@ -58,6 +58,14 @@ csStringID DynfactDialog::ID_Show = csInvalidStringID;
 
 //--------------------------------------------------------------------------
 
+static void CorrectFactoryName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
+//--------------------------------------------------------------------------
+
 DynfactMeshView::DynfactMeshView (DynfactDialog* dialog, iObjectRegistry* object_reg, wxWindow* parent) :
     MeshView (object_reg, parent), dialog (dialog)
 {
@@ -658,6 +666,7 @@ private:
   {
     if (!dynfact) return 0;
     csString itemname = dynfact->GetName ();
+    CorrectFactoryName (itemname);
     return dialog->GetSkeletonFactory (itemname);
   }
 
@@ -1293,6 +1302,7 @@ private:
   {
     if (!dynfact) return 0;
     csString itemname = dynfact->GetName ();
+    CorrectFactoryName (itemname);
     iEngine* engine = dialog->GetEngine ();
     iMeshFactoryWrapper* meshFact = engine->FindMeshFactory (itemname);
     CS_ASSERT (meshFact != 0);
@@ -1496,6 +1506,7 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   }
 
   csString itemname = value->GetStringValue ();
+  CorrectFactoryName (itemname);
   iMeshFactoryWrapper* meshFact = dialog->GetEngine ()->FindMeshFactory (itemname);
   CS_ASSERT (meshFact != 0);
 
@@ -1569,6 +1580,7 @@ bool EnableRagdollAction::IsActive (View* view, wxWindow* component)
     return false;
 
   csString itemname = value->GetStringValue ();
+  CorrectFactoryName (itemname);
   iMeshFactoryWrapper* meshFact = dialog->GetEngine ()->FindMeshFactory (itemname);
   CS_ASSERT (meshFact != 0);
 
@@ -1623,6 +1635,7 @@ bool EditCategoryAction::Do (View* view, wxWindow* component)
     if (newCategory != oldCategory)
     {
       csString itemname = value->GetStringValue ();
+      CorrectFactoryName (itemname);
       i3DView* view3d = dialog->GetApplication ()->Get3DView ();
       view3d->ChangeCategory (newCategory, itemname);
       iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
@@ -2015,12 +2028,6 @@ CS::Animation::iSkeletonFactory* DynfactDialog::GetSkeletonFactory (const char* 
 
   CS::Animation::iSkeletonFactory* skelFact = animFact->GetSkeletonFactory ();
   return skelFact;
-}
-
-static void CorrectFactoryName (csString& name)
-{
-  if (name[name.Length ()-1] == '*')
-    name = name.Slice (0, name.Length ()-1);
 }
 
 CS::Animation::iBodyBone* DynfactDialog::GetCurrentBone ()
