@@ -9810,13 +9810,6 @@ fi
 # Check for Crystal Entity Layer (CEL)
 #----------------------------------------------------------------------------
 
-cs_build_prop_val="yes"
-    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
-    	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CEL.DESIRED ?= $cs_build_prop_val ;
-"
-fi
-
 # Check whether --with-cel was given.
 if test "${with_cel+set}" = set; then :
   withval=$with_cel;
@@ -10190,8 +10183,8 @@ else
 fi
 
     if test $cel_sdk = yes; then :
-  cel_liblist=""
-	cel_optlibs=`echo x | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+  cel_liblist="celtool"
+	cel_optlibs=`echo xcel_staticplugins | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
 	if test -n "$cel_optlibs"; then :
   cel_optlibs=`$cfg --available-libs $cel_optlibs`
 	    cel_liblist="$cel_liblist $cel_optlibs"
