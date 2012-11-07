@@ -147,7 +147,7 @@ AS_IF([test $with_cel != no],
   [AC_MSG_ERROR([
 *** CEL could not be found or was unusable. The latest version is always
 *** available from http://cel.crystalspace3d.org/
-])])
+])], [celtool], [cel_staticplugins])
 AC_DEFINE([USE_CEL], [], [Define to enable CEL.])
 AC_DEFINE_UNQUOTED([CEL_PLUGIN_DIR], ["$CEL_PLUGIN_DIR"],
   [Define with path to CEL plugins.])
