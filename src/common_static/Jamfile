@@ -21,7 +21,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   STATIC.PLUGINLIST =
     animesh
     animeshldr
+    decal
     bindoc
+    docpreproc
     bruteblock
     simpleformer
     simpleformerldr
@@ -54,6 +56,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     glshader_fixed
     gmeshldr
     gmeshskelanim2
+    gmeshanim
+    gmeshanimpdl
     haze
     hazeldr
     lghtng
@@ -65,12 +69,14 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     particles
     particlesldr
     ptanimimg
+    ptpdlight
     rendloop_loader
     rendstep_std
     reporter
     sequence
     shadermgr
     shaderweaver
+    slcombiner
     skeleton
     skeleton2
     skeleton2ldr
@@ -89,6 +95,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     xmlread
     xmlshader
     vproc_std
+    bodymesh
+    bodymeshldr
     ;
 
   #
@@ -100,6 +108,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     cspython
     glshader_cg
     glshader_ps1
+    glshader_glsl
+    rm_deferred
     rm_rlcompat
     rm_shadow_pssm
     rm_unshadowed
@@ -137,6 +147,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     mgr_billboard
     pfactormove
     pfanalogmotion
+    pfdynmove
+    pfwasdmove
     pfbillboard
     pfdamage
     pfdefcam
@@ -145,6 +157,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     pfinput
     pfinv
     pfjump
+    pfgrab
     pflight
     pfmechanics
     pfmeshdeform
@@ -157,6 +170,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     pfpathfinder
     pfportal
     pfquest
+    pfwire
     pfsound
     pfsteer
     pftest
@@ -164,9 +178,20 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     pftrackingcam
     pftrigger
     pfwheeled
+    pfmessenger
+    pfdynworld
+    addon_dynworldload
     pfzone
     pfprojectile
     stdphyslayer
+    elcm
+    sequences
+    triggers
+    rewards
+    parameters
+    ui_inventory
+    ui_gridinv
+    ui_inventory2
   : blpython
   : CEL
   ;
