@@ -135,10 +135,7 @@ AS_IF([test $with_cs != no],
 #----------------------------------------------------------------------------
 # Check for Crystal Entity Layer (CEL)
 #----------------------------------------------------------------------------
-m4_define([cel_desired], [yes])
-CS_EMIT_BUILD_PROPERTY([CEL.DESIRED], [cel_desired])
-m4_if(cel_desired, [yes],
-[AC_ARG_WITH([cel], [AC_HELP_STRING([--without-cel],
+AC_ARG_WITH([cel], [AC_HELP_STRING([--without-cel],
   [do not look for an installed Crystal Entity Layer SDK; this option is useful
   only if you need to perform routine maintenance tasks, such as generating
   project files or converting documentation, without having the CEL SDK
@@ -154,7 +151,7 @@ AS_IF([test $with_cel != no],
 AC_DEFINE([USE_CEL], [], [Define to enable CEL.])
 AC_DEFINE_UNQUOTED([CEL_PLUGIN_DIR], ["$CEL_PLUGIN_DIR"],
   [Define with path to CEL plugins.])
-])])
+])
 
 
 #----------------------------------------------------------------------------
