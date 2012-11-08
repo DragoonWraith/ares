@@ -4,6 +4,7 @@ ARES_SOURCES =
     [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
 
 Description ares : "The Ares Project Player" ;
+ApplicationIcon win32 : ares : ares.ico ;
 Application ares : $(ARES_SOURCES) ;
 ExternalLibs ares : CRYSTAL ;
 ExternalLibs ares : CEL ;
@@ -14,6 +15,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   SubVariant static ;
 
   Description ares_static : "The Ares Project Player" ;
+  ApplicationIcon win32 : ares_static : ares.ico ;
   Application ares_static : $(ARES_SOURCES) : independent ;
   CFlags ares_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine ares_static : CS_STATIC_LINKED ;

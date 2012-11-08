@@ -9,6 +9,7 @@ ARESED_SOURCES =
   ;
 
 Description aresed : "The Ares Project Editor" ;
+ApplicationIcon win32 : aresed : aresed.ico ;
 Application aresed : $(ARESED_SOURCES) ;
 ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEL ;
@@ -22,6 +23,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   SubVariant static ;
 
   Description aresed_static : "The Ares Project Editor" ;
+  ApplicationIcon win32 : aresed_static : aresed.ico ;
   Application aresed_static : $(ARESED_SOURCES) : independent ;
   CFlags aresed_static : [ FDefines CS_STATIC_LINKED ] ;
   MsvcDefine aresed_static : CS_STATIC_LINKED ;

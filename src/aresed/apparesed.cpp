@@ -149,6 +149,7 @@ THREADED_CALLABLE_IMPL4(AresReporterListener, Report, iReporter*, int severity,
 BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_SHOW (AppAresEditWX::OnShow)
   EVT_ICONIZE (AppAresEditWX::OnIconize)
+  EVT_CLOSE (AppAresEditWX::OnClose)
   EVT_UPDATE_UI (wxID_ANY, AppAresEditWX :: OnMenuUpdate)
   EVT_MENU (wxID_ANY, AppAresEditWX :: OnMenuItem)
   EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
@@ -188,8 +189,8 @@ static csStringID ID_ViewControls = csInvalidStringID;
 // The global pointer to AresEd
 AppAresEditWX* aresed = 0;
 
-AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h)
-  : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (w, h)),
+AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h, long style)
+  : wxFrame (0, -1, wxT ("AresEd"), wxDefaultPosition, wxSize (w, h), style),
     scfImplementationType (this), ready (false)
 {
   AppAresEditWX::object_reg = object_reg;
@@ -387,7 +388,9 @@ void AppAresEditWX::SaveCurrentFile ()
 void AppAresEditWX::Quit ()
 {
   if (!IsCleanupAllowed ()) return;
-  Close ();
+  // @@@ Work around: this is not really a clean way to exit but it avoids the crash at exit.
+  exit (0);
+  //Close ();
 }
 
 void AppAresEditWX::OnNotebookChange (wxNotebookEvent& event)
@@ -1226,6 +1229,8 @@ void AppAresEditWX::OnIdle (wxIdleEvent& event)
 void AppAresEditWX::OnClose (wxCloseEvent& event)
 {
   csPrintf("got close event\n");
+  // @@@ Work around: this is not really a clean way to exit but it avoids the crash at exit.
+  exit (0);
   
   // Tell CS we're going down
   csRef<iEventQueue> q (csQueryRegistry<iEventQueue> (object_reg));

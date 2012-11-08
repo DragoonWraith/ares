@@ -177,7 +177,7 @@ private:
   void ViewControls ();
 
 public:
-  AppAresEditWX (iObjectRegistry* object_reg, int w, int h);
+  AppAresEditWX (iObjectRegistry* object_reg, int w, int h, long style);
   virtual ~AppAresEditWX ();
 
   /**

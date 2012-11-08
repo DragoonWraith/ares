@@ -120,6 +120,11 @@ bool MyApp::OnInit (void)
   csConfigAccess config (object_reg);
   int fbWidth = config->GetInt ("Video.ScreenWidth", 1000);
   int fbHeight = config->GetInt ("Video.ScreenHeight", 600);
+  long style = wxDEFAULT_FRAME_STYLE;
+  if (config->GetBool ("Video.Maximized", true))
+  {
+    style |= wxMAXIMIZE;
+  }
 
   csRef<iCommandLineParser> cmdline = csQueryRegistry<iCommandLineParser> (object_reg);
   if (cmdline->GetOption ("mode"))
@@ -127,7 +132,7 @@ bool MyApp::OnInit (void)
     sscanf (cmdline->GetOption ("mode"), "%dx%d", &fbWidth, &fbHeight);
   }
 
-  aresed = new AppAresEditWX (object_reg, fbWidth, fbHeight);
+  aresed = new AppAresEditWX (object_reg, fbWidth, fbHeight, style);
   aresed->Initialize ();
 
   AppPump* p = new AppPump ();

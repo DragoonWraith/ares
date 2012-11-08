@@ -54,6 +54,24 @@
         </trigger>
       </state>
     </quest>
+    <quest name="ProximityMessage">
+      <!---->
+      <state name="on">
+        <oninit>
+          <reward type="cel.rewards.message" entity="World" id="cel.messenger.action.Message">
+            <par name="type" string="std" />
+            <par name="id" string="" />
+            <par name="msg1" string="$message" />
+          </reward>
+        </oninit>
+      </state>
+      <state name="init">
+        <trigger type="cel.triggers.trigger">
+          <fireon entity="$this" />
+          <reward type="cel.rewards.newstate" state="on" />
+        </trigger>
+      </state>
+    </quest>
     <quest name="DblSequencerRotateX">
       <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator).
 @param duration,long,1000 is the duration of the sequence
@@ -298,11 +316,11 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
   </addon>
@@ -316,21 +334,42 @@
 -->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
-        <par name="trigger" string="@trigger" />
         <par name="name" string="DblActivatorTrigger" />
+        <par name="trigger" string="@trigger" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="ProximityMessage">
+    <propclass name="pclogic.quest">
+      <action name="NewQuest">
+        <par name="name" string="ProximityMessage" />
+        <par name="message" string="@message" />
+      </action>
+      <property name="state" string="init" />
+    </propclass>
+    <propclass name="pclogic.trigger">
+      <property name="follow" bool="1" />
+      <property name="strict" bool="0" />
+      <property name="monitor" string="Player" />
+      <property name="delay" long="200" />
+      <property name="jitter" long="10" />
+      <action name="SetupTriggerSphere">
+        <par name="position" vector3="0,3.75911e-039,3.75809e-039" />
+        <par name="radius" float="5" />
+      </action>
+    </propclass>
+    <propclass name="pcobject.mesh" />
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="StandardOtherMover">
     <!--A template hosting a quest that can move another object between two positions based on an activation message. This is useful for a switch (for example) to turn on a light or to open a door.
@@ -338,8 +377,8 @@
 -->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
-        <par name="target" string="@target" />
         <par name="name" string="DblActivatorOtherStandard" />
+        <par name="target" string="@target" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -352,17 +391,17 @@
 @param timeout,long,1000 timeout to wait before firing the sequence-->
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
-        <par name="timeout" long="@timeout" />
         <par name="name" string="DblActivatorTimer" />
+        <par name="timeout" long="@timeout" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
-        <par name="duration" long="@duration" />
-        <par name="angle" float="@angle" />
         <par name="name" string="DblSequencerRotateY" />
+        <par name="angle" float="@angle" />
+        <par name="duration" long="@duration" />
       </action>
     </propclass>
   </addon>
@@ -382,11 +421,11 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
   </addon>
@@ -404,9 +443,9 @@ A template hosting a quest that can rotate an object back and forth in a loop.
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
-        <par name="duration" long="@duration" />
-        <par name="angle" float="@angle" />
         <par name="name" string="DblSequencerRotateY" />
+        <par name="angle" float="@angle" />
+        <par name="duration" long="@duration" />
       </action>
     </propclass>
   </addon>
@@ -423,9 +462,9 @@ A template hosting a quest that can rotate an object back and forth in a loop.
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
-        <par name="duration" long="@duration" />
-        <par name="angle" float="@angle" />
         <par name="name" string="DblSequencerRotateY" />
+        <par name="angle" float="@angle" />
+        <par name="duration" long="@duration" />
       </action>
     </propclass>
   </addon>
@@ -435,9 +474,9 @@ A template hosting a quest that can rotate an object back and forth in a loop.
         <par name="mask" string="ares.Activate" />
       </action>
       <action name="AddOutput">
+        <par name="destination" string="@destination" />
         <par name="msgid" string="ares.controller.Teleport" />
         <par name="entity" string="World" />
-        <par name="destination" string="@destination" />
       </action>
     </propclass>
   </addon>

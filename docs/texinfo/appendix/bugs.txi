@@ -8,8 +8,6 @@ and bugs but there are a number of known issues. These are listed here:
 
 @itemize @bullet
 @item
-AresEd doesn't exit cleanly. You'll get a crash as soon as you try to exit AresEd.
-@item
 When auto-suggesting parameters for a quest or template the type of these parameters
 is sometimes not set right.
 @item
