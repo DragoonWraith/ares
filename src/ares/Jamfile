@@ -6,7 +6,6 @@ ARES_SOURCES =
 Description ares : "The Ares Project Player" ;
 Application ares : $(ARES_SOURCES) ;
 ExternalLibs ares : CRYSTAL ;
-ExternalLibs ares : CEGUI ;
 ExternalLibs ares : CEL ;
 
 if $(HAVE_CS_STATIC_PLUGINS) = "yes"
@@ -24,7 +23,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   # The plugins that we need
   #
   STATIC.PLUGINLIST =
-    cscegui
     ;
 
   #
@@ -52,7 +50,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   #LinkStaticPlugins ares_static :
     #;
 
-  ExternalLibs ares_static : CRYSTAL CEL CEGUI ;
+  ExternalLibs ares_static : CRYSTAL CEL ;
   SubVariant ;
 }
 

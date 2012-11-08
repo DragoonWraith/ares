@@ -105,7 +105,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   STATIC.OPTIONALPLUGINLIST =
     bullet
     csjngimg
-    cspython
     glshader_cg
     glshader_ps1
     glshader_glsl
@@ -189,10 +188,8 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     triggers
     rewards
     parameters
-    ui_inventory
     ui_gridinv
-    ui_inventory2
-  : blpython
+  :
   : CEL
   ;
 
