@@ -140,6 +140,11 @@ private:
    */
   IntAsset* FindAssetForCollection (iCollection* collection);
 
+  /**
+   * Construct the total asset path.
+   */
+  csRef<scfStringArray> ConstructPath ();
+
 public:
   AssetManager (iBase* parent);
   virtual ~AssetManager () { }
@@ -187,24 +192,10 @@ public:
     AssetManager::dynworld = dynworld;
   }
 
-  /**
-   * Find an asset in the asset path. The filename should be a noramlized
-   * path. If use_first_if_not_found is given then this function will use
-   * the first location in the asset path if no file was found on the path.
-   * This is useful when saving new assets.
-   * This function returns a mountable path where the appropriate prefix
-   * path from the asset path has been prepended. Or empty string if
-   * the file could not be found on the path (only if use_first_if_not_found == false).
-   */
-  virtual csPtr<iString> FindAsset (iStringArray* assets, const char* filename,
-    bool use_first_if_not_found = false);
+  virtual csPtr<iString> FindAsset (iStringArray* assets,
+      const char* filepath, const char* filename,
+      bool use_first_if_not_found = false);
 
-  /**
-   * Load a file from a path and set the parsed document or null on error.
-   * In case of error an error string is also returned.
-   * Note that a non-existing file is not an error. In that case doc will be null
-   * but the error string will be empty.
-   */
   virtual csPtr<iString> LoadDocument (iObjectRegistry* object_reg,
       csRef<iDocument>& doc,
       const char* vfspath, const char* file);

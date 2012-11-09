@@ -117,7 +117,7 @@ struct iAssetManager : public virtual iBase
   virtual void SetZone (iPcDynamicWorld* dynworld) = 0;
 
   /**
-   * Find an asset in the asset path. The filename should be a noramlized
+   * Find an asset in the asset path. The filepath should be a normalized
    * path. If use_first_if_not_found is given then this function will use
    * the first location in the asset path if no file was found on the path.
    * This is useful when saving new assets.
@@ -125,8 +125,9 @@ struct iAssetManager : public virtual iBase
    * path from the asset path has been prepended. Or empty string if
    * the file could not be found on the path (only if use_first_if_not_found == false).
    */
-  virtual csPtr<iString> FindAsset (iStringArray* assets, const char* filename,
-    bool use_first_if_not_found = false) = 0;
+  virtual csPtr<iString> FindAsset (iStringArray* assets,
+      const char* filepath, const char* filename,
+      bool use_first_if_not_found = false) = 0;
 
   /**
    * Load a file from a path and set the parsed document or null on error.

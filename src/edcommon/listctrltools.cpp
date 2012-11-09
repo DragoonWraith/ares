@@ -222,6 +222,7 @@ void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent, bool a
   rowInfo.m_col = 0;
   list->GetItem (rowInfo);
   list->SetItemState (rowInfo, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
+  list->EnsureVisible (row);
   if (sendEvent)
   {
     wxCommandEvent event (wxEVT_COMMAND_LIST_ITEM_SELECTED);

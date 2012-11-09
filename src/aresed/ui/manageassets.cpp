@@ -365,10 +365,10 @@ void ManageAssetsDialog::SetPathFile (const char* file,
       csRef<iStringArray> assetLocalPath = vfs->GetRealMountPaths ("/assetslocal/");
       csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
       csRef<iString> p;
-      p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetLocalPath, normPath);
+      p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetLocalPath, normPath, file);
       if (!p)
       {
-        p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetPath, normPath);
+        p = uiManager->GetApp ()->GetAssetManager ()->FindAsset (assetPath, normPath, file);
         if (!p)
         {
           // @@@ Proper reporting

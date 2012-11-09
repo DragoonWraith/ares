@@ -112,8 +112,8 @@
 
       <propclass name="pcmove.linear">
         <action name="InitCD" >
-          <par name="body" vector3=".5,.4,.5" />
-          <par name="legs" vector3=".5,.2,.5" />
+          <par name="body" vector3=".5,.8,.5" />
+          <par name="legs" vector3=".5,.4,.5" />
           <par name="offset" vector3="0,0,0" />
 	</action>
       </propclass>

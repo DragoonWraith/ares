@@ -56,21 +56,18 @@
     </quest>
     <quest name="ProximityMessage">
       <!---->
-      <state name="on">
-        <oninit>
+      <state name="init">
+        <trigger type="cel.triggers.trigger">
+          <fireon entity="$this" />
           <reward type="cel.rewards.message" entity="World" id="cel.messenger.action.Message">
             <par name="type" string="std" />
             <par name="id" string="" />
             <par name="msg1" string="$message" />
           </reward>
-        </oninit>
-      </state>
-      <state name="init">
-        <trigger type="cel.triggers.trigger">
-          <fireon entity="$this" />
-          <reward type="cel.rewards.newstate" state="on" />
+          <reward type="cel.rewards.newstate" state="done" />
         </trigger>
       </state>
+      <state name="done" />
     </quest>
     <quest name="DblSequencerRotateX">
       <!--This quest rotates the mesh a relative angle (and back). It is supposed to be used in combination with an Activator quest (like StandardActivator).
@@ -351,6 +348,9 @@
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="ProximityMessage">
+    <!--A template hosting a quest that shows a message the first time a player comes near.
+@param message,string,... the message to show
+-->
     <propclass name="pclogic.quest">
       <action name="NewQuest">
         <par name="name" string="ProximityMessage" />

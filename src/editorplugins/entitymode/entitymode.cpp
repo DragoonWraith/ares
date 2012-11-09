@@ -578,9 +578,14 @@ void EntityMode::BuildRewardGraph (iRewardFactoryArray* rewards,
     csRef<iNewStateQuestRewardFactory> newState = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     if (newState)
     {
-      // @@@ No support for expressions here!
-      csString stateKey; stateKey.Format ("S:%s,%s", newState->GetStateParameter (), pcKey);
-      graphView->LinkNode (rewKey, stateKey, styleArrowLink);
+      csString entity = newState->GetEntityParameter ();
+      csString cls = newState->GetClassParameter ();
+      if (entity.IsEmpty () && cls.IsEmpty ())
+      {
+        // @@@ No support for expressions here!
+        csString stateKey; stateKey.Format ("S:%s,%s", newState->GetStateParameter (), pcKey);
+        graphView->LinkNode (rewKey, stateKey, styleArrowLink);
+      }
     }
   }
 }

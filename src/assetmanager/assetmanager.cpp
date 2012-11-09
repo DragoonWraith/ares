@@ -100,13 +100,14 @@ csPtr<iString> AssetManager::LoadDocument (iObjectRegistry* object_reg,
   return 0;
 }
 
-csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filename,
+csPtr<iString> AssetManager::FindAsset (iStringArray* assets,
+    const char* filepath, const char* filename,
     bool use_first_if_not_found)
 {
   csString path;
-  if (csString (filename).StartsWith ("$#"))
+  if (csString (filepath).StartsWith ("$#"))
   {
-    filename += 2;
+    filepath += 2;
 
     // Trick: we go to == assets size in order to make sure we pick
     // the first location when we cannot find the file.
@@ -116,7 +117,8 @@ csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filena
       path = assets->Get (i % assets->GetSize ());	// Make sure to wrap around
       if (path[path.Length ()-1] != '\\' && path[path.Length ()-1] != '/')
 	path += CS_PATH_SEPARATOR;
-      path += filename;
+      path += filepath;
+      //path += filename;
       if (CS_PATH_SEPARATOR != '/')
       {
 	csString sep;
@@ -127,7 +129,8 @@ csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filena
       struct stat buf;
       csString sp;
       if (path[path.Length ()-1] == '\\' || path[path.Length ()-1] == '/')
-	sp = path.Slice (0, path.Length ()-1);
+	//sp = path.Slice (0, path.Length ()-1);
+	sp = path + filename;
       else
 	sp = path;
       if (CS::Platform::Stat (sp, &buf) == 0)
@@ -138,7 +141,7 @@ csPtr<iString> AssetManager::FindAsset (iStringArray* assets, const char* filena
     }
   }
   else
-    path = filename;
+    path = filepath;
   path.ReplaceAll ("/", "$/");
   return new scfString (path);
 }
@@ -296,24 +299,34 @@ bool AssetManager::LoadFile (const char* filename)
   return false;
 }
 
+
+csRef<scfStringArray> AssetManager::ConstructPath ()
+{
+  csRef<scfStringArray> fullPath;
+  fullPath.AttachNew (new scfStringArray ());
+
+  csRef<iStringArray> assetLocalPath = vfs->GetRealMountPaths ("/assetslocal/");
+  if (!assetLocalPath->IsEmpty ())
+    for (size_t i = 0 ; i < assetLocalPath->GetSize () ; i++)
+      fullPath->Push (assetLocalPath->Get (i));
+  csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
+  if (!assetPath->IsEmpty ())
+    for (size_t i = 0 ; i < assetPath->GetSize () ; i++)
+      fullPath->Push (assetPath->Get (i));
+
+  return fullPath;
+}
+
 bool AssetManager::LoadAsset (const csString& normpath, const csString& file, const csString& mount,
     iCollection* collection)
 {
   csRef<iString> path;
   if (!normpath.IsEmpty ())
   {
-    csRef<iStringArray> assetLocalPath = vfs->GetRealMountPaths ("/assetslocal/");
-    if (!assetLocalPath->IsEmpty ())
-    {
-      path = FindAsset (assetLocalPath, normpath);
-    }
+    csRef<scfStringArray> fullPath = ConstructPath ();
+    path = FindAsset (fullPath, normpath, file);
     if (!path)
-    {
-      csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-      path = FindAsset (assetPath, normpath);
-      if (!path)
-        return Error ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
-    }
+      return Error ("Cannot find asset '%s' in the asset path!\n", normpath.GetData ());
   }
 
   csString rmount;
@@ -525,23 +538,8 @@ bool AssetManager::SaveAsset (iDocumentSystem* docsys, iAsset* asset)
   else
   {
     Report ("Writing '%s' at '%s\n", asset->GetFile ().GetData (), asset->GetNormalizedPath ().GetData ());
-    csRef<iStringArray> assetlocalPath = vfs->GetRealMountPaths ("/assetslocal/");
-    csRef<iStringArray> assetPath = vfs->GetRealMountPaths ("/assets/");
-    csRef<iString> path;
-    if (assetlocalPath->GetSize () > 0)
-    {
-      path = FindAsset (assetlocalPath, normpath, false);
-      if (!path)
-      {
-        path = FindAsset (assetPath, normpath, false);
-	if (!path)
-          path = FindAsset (assetlocalPath, normpath, true);
-      }
-    }
-    else
-    {
-      path = FindAsset (assetPath, normpath, true);
-    }
+    csRef<scfStringArray> fullPath = ConstructPath ();
+    csRef<iString> path = FindAsset (fullPath, normpath, asset->GetFile (), true);
 
     vfs->Mount ("/assets/__mnt_wl__", path->GetData ());
     vfs->PushDir ("/assets/__mnt_wl__");

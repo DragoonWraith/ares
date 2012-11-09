@@ -47,6 +47,9 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT (XRCID("childTag_In_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("state_Ns_Combo"), RewardPanel :: OnUpdateEvent)
   EVT_COMBOBOX (XRCID("state_Ns_Combo"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("entity_Ns_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("tag_Ns_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("class_Ns_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_Ac_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_De_Text"), RewardPanel :: OnUpdateEvent)
@@ -165,6 +168,9 @@ void RewardPanel::UpdatePanel ()
       UITools::AddChoices (this, "state_Ns_Combo", state->GetName (), (const char*)0);
     }
     UITools::SetValue (this, "state_Ns_Combo", tf->GetStateParameter ());
+    UITools::SetValue (this, "entity_Ns_Text", tf->GetEntityParameter ());
+    UITools::SetValue (this, "tag_Ns_Text", tf->GetTagParameter ());
+    UITools::SetValue (this, "class_Ns_Text", tf->GetClassParameter ());
   }
   else if (type == "action")
   {
@@ -289,9 +295,14 @@ void RewardPanel::UpdateReward ()
   {
     if (type == "newstate")
     {
-      // @@@ Support state for other entities.
       csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
       tf->SetStateParameter (UITools::GetValue (this, "state_Ns_Combo"));
+      csString entity = UITools::GetValue (this, "entity_Ns_Text");
+      csString tag = UITools::GetValue (this, "tag_Ns_Text");
+      tf->SetEntityParameter (entity.IsEmpty () ? (const char*)0 : entity.GetData (),
+	  tag.IsEmpty () ? (const char*)0 : tag.GetData ());
+      csString cls = UITools::GetValue (this, "class_Ns_Text");
+      tf->SetClassParameter (cls.IsEmpty () ? (const char*)0 : cls.GetData ());
     }
     else if (type == "action")
     {

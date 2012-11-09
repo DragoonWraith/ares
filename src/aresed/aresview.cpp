@@ -1433,8 +1433,8 @@ void AresEdit3DView::ConvertOpcode ()
     iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
     pctpl->SetName ("pcmove.linear");
     InspectTools::AddAction (pl, pm, pctpl, "InitCD",
-	CEL_DATA_VECTOR3, "body", ".5,.4,.5",
-	CEL_DATA_VECTOR3, "legs", ".5,.2,.5",
+	CEL_DATA_VECTOR3, "body", ".5,.8,.5",
+	CEL_DATA_VECTOR3, "legs", ".5,.4,.5",
 	CEL_DATA_VECTOR3, "offset", "0,0,0",
 	CEL_DATA_NONE);
   }
