@@ -44,7 +44,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
 
   LinkStaticPlugins aresed_static : $(STATIC.PLUGINLIST) : $(STATIC.OPTIONALPLUGINLIST)
   : CRYSTAL
-  ;
+  :
+  : # Trigger update of generated code when the plugins list changes
+  $(SUBDIR)/Jamfile ;
 
   # No aresed-exclusive CEL plugins
 
@@ -57,7 +59,11 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     mainmode
     playmode
     marker
-    ;
+  :
+  :
+  :
+  : # Trigger update of generated code when the plugins list changes
+  $(SUBDIR)/Jamfile ;
 
   ExternalLibs aresed_static : CRYSTAL CEL WX ;
   SubVariant ;

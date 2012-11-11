@@ -45,7 +45,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
 
   LinkStaticPlugins ares_static : $(STATIC.PLUGINLIST) : $(STATIC.OPTIONALPLUGINLIST)
   : CRYSTAL
-  ;
+  :
+  : # Trigger update of generated code when the plugins list changes
+  $(SUBDIR)/Jamfile ;
 
   # No ares-exclusive CEL plugins
 

@@ -131,7 +131,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
 
   LinkStaticPlugins common_static : $(STATIC.PLUGINLIST) : $(STATIC.OPTIONALPLUGINLIST)
   : CRYSTAL
-  ;
+  :
+  : # Trigger update of generated code when the plugins list changes
+  $(SUBDIR)/Jamfile ;
 
   LinkStaticPlugins common_static :
     addon_celentity
@@ -191,7 +193,9 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     ui_gridinv
   :
   : CEL
-  ;
+  :
+  : # Trigger update of generated code when the plugins list changes
+  $(SUBDIR)/Jamfile ;
 
   LinkStaticPlugins common_static :
     curvemesh
@@ -200,7 +204,11 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     nature
     rooms
     assetmanager
-    ;
+  :
+  :
+  :
+  : # Trigger update of generated code when the plugins list changes
+  $(SUBDIR)/Jamfile ;
 
   ExternalLibs common_static : CRYSTAL CEL ;
   SubVariant ;
