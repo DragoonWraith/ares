@@ -149,6 +149,13 @@ This property class is used by the @samp{World} template.
 This property class is used by the @samp{Player} template.
 @end itemize
 
+Here you see an example of an entity template with three property classes (mesh,
+and two quests):
+
+@ifhtml
+@pictures{pics,entitygraph}
+@end ifhtml
+
 @node Editing Quests, Creating New States, Creating Property Classes, Entities
 @section Editing Quests
 
@@ -204,6 +211,10 @@ This sequence describes the animation for the door to close.
 @end itemize
 
 Using the graphical quest editor it is possible to edit the above in a graphical manner.
+
+@ifhtml
+@pictures{pics,questgraph}
+@end ifhtml
 
 @node Creating New States, Creating Triggers, Editing Quests, Entities
 @section Creating New States

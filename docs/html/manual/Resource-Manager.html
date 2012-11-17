@@ -63,7 +63,8 @@ ul.toc {list-style: none}
 
 <p>With the resource manager you can manage the individual resources (like dynamic factories,
 templates, light factories and quests). You can move resources between assets, delete resources,
-purge unused resources and so on.
+purge unused resources and so on. Note that the resource manager only shows managed resources.
+So resources like mesh factories, textures and so on are not shown here.
 </p>
 <p>The resource manager also attempts to show how many times each resource has been used.
 While this works in most situations it is possible that this is not 100% accurate. The
@@ -73,6 +74,19 @@ the template name itself is given as a parameter through some other mechanism.
 If you want to keep using the option to remove unused resources then one way to solve this problem
 is to <small>LOCK</small> the resource. Locked resources will never be removed accidently.
 </p>
+<p><img src="pics/resourcemanager.png" alt="pics/resourcemanager">
+</p>
+<p>The resource manager has the following parts:
+</p>
+<ul>
+<li> <samp>&lsquo;Assets&rsquo;</samp> (top)
+The list of currently loaded assets. Selecting an asset will filter the list of resources
+so that only the resources from that asset are shown.
+</li><li> <samp>&lsquo;Type filter&rsquo;</samp> (middle)
+Using the type filter you can filter the list of resources further based on the type it has.
+</li><li> <samp>&lsquo;Resources&rsquo;</samp> (bottom)
+This list shows all the resources (optionally filtered by using the filters above).
+</li></ul>
 
 <hr size="1">
 <p>

@@ -31,6 +31,10 @@ It is not possible to constrain movement to the y-axis since spawning items alwa
 on top of the object the mouse is pointing at.
 The @samp{q} key can be used to enable grid-based movement.
 
+@ifhtml
+@pictures{pics,mainmode}
+@end ifhtml
+
 @node Selecting Objects, Moving Objects, Creating New Objects, Working With Objects
 @section Selecting Objects
 

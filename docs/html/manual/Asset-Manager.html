@@ -91,7 +91,54 @@ will show this information when you select such an asset.
 as then the project will remember the location of these assets using a relative location.
 That makes it easier to move the project (and later the game) to different locations.
 </p>
+<p><img src="pics/assetmanager.png" alt="pics/assetmanager">
+</p>
+<p>This dialog has the following parts:
+</p>
+<ul>
+<li> <samp>&lsquo;Browser&rsquo;</samp> (top-left)
+The browser shows a view on your file system. By default the asset path will be opened and
+hilighted. Using the combo box you can also switch between the different parts of the asset
+path.
+</li><li> <samp>&lsquo;Assets&rsquo;</samp> (top-right)
+This is the list of currently selected assets for this project. It shows the path, the name
+of the main file describing the resources in this asset and if it is writable or not. The
+optional mount point can be used to directly get an asset from a previously mounted VFS
+path.
+</li><li> <samp>&lsquo;Plus button&rsquo;</samp> (top-middle)
+Using the small plus button one can add a new asset from the browser to the list of assets
+for this project.
+</li><li> <samp>&lsquo;Information&rsquo;</samp> (bottom-left)
+This text field shows information about the selected asset (either in the browser or else in
+the list of assets). If an asset contains a <samp>&lsquo;manifest.xml&rsquo;</samp> file then the information
+in this file will be used for this.
+</li><li> <samp>&lsquo;Detail&rsquo;</samp> (bottom-right)
+This shows the information for the selected asset in the list of assets.
+</li></ul>
+
+<p>Note: most paths in the projects will start with the <samp>&lsquo;$#&rsquo;</samp> notation. That means that
+the asset can be found on the asset path. Try to avoid assets that are not on the asset path
+unless you can get them from a specific mount point. A path on the asset path is much easier
+to move to another location without having to modify the project by making sure the asset
+path is correct.
+</p>
 <hr size="1">
+<table cellpadding="1" cellspacing="1" border="0">
+<tr><td valign="middle" align="left">[<a href="Creating-a-New-Project.html#0" title="Previous section in reading order"> &lt; </a>]</td>
+<td valign="middle" align="left">[<a href="Resource-Manager.html#0" title="Next section in reading order"> &gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="New-Project.html#0" title="Beginning of this chapter or previous chapter"> &lt;&lt; </a>]</td>
+<td valign="middle" align="left">[<a href="New-Project.html#0" title="Up section"> Up </a>]</td>
+<td valign="middle" align="left">[<a href="Working-With-Objects.html#0" title="Next chapter"> &gt;&gt; </a>]</td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left"> &nbsp; </td>
+<td valign="middle" align="left">[<a href="index.html#SEC_Top" title="Cover (top) of document">Top</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_toc.html#SEC_Contents" title="Table of contents">Contents</a>]</td>
+<td valign="middle" align="left">[<a href="cs_Index.html#0" title="Index">Index</a>]</td>
+<td valign="middle" align="left">[<a href="aresed_abt.html#SEC_About" title="About (help)"> ? </a>]</td>
+</tr></table>
 <p>
  <font size="-1">
   This document was generated using <a href="http://texi2html.cvshome.org/"><em>texi2html 1.76</em></a>.

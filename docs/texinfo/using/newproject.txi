@@ -58,12 +58,46 @@ When picking assets for your project it is preferable to pick assets from the as
 as then the project will remember the location of these assets using a relative location.
 That makes it easier to move the project (and later the game) to different locations.
 
+@ifhtml
+@pictures{pics,assetmanager}
+@end ifhtml
+
+This dialog has the following parts:
+
+@itemize @bullet
+@item @samp{Browser} (top-left)
+The browser shows a view on your file system. By default the asset path will be opened and
+hilighted. Using the combo box you can also switch between the different parts of the asset
+path.
+@item @samp{Assets} (top-right)
+This is the list of currently selected assets for this project. It shows the path, the name
+of the main file describing the resources in this asset and if it is writable or not. The
+optional mount point can be used to directly get an asset from a previously mounted VFS
+path.
+@item @samp{Plus button} (top-middle)
+Using the small plus button one can add a new asset from the browser to the list of assets
+for this project.
+@item @samp{Information} (bottom-left)
+This text field shows information about the selected asset (either in the browser or else in
+the list of assets). If an asset contains a @samp{manifest.xml} file then the information
+in this file will be used for this.
+@item @samp{Detail} (bottom-right)
+This shows the information for the selected asset in the list of assets.
+@end itemize
+
+Note: most paths in the projects will start with the @samp{$#} notation. That means that
+the asset can be found on the asset path. Try to avoid assets that are not on the asset path
+unless you can get them from a specific mount point. A path on the asset path is much easier
+to move to another location without having to modify the project by making sure the asset
+path is correct.
+
 @node Resource Manager, Cell Manager, Asset Manager, New Project
 @section Resource Manager
 
 With the resource manager you can manage the individual resources (like dynamic factories,
 templates, light factories and quests). You can move resources between assets, delete resources,
-purge unused resources and so on.
+purge unused resources and so on. Note that the resource manager only shows managed resources.
+So resources like mesh factories, textures and so on are not shown here.
 
 The resource manager also attempts to show how many times each resource has been used.
 While this works in most situations it is possible that this is not 100% accurate. The
@@ -73,6 +107,21 @@ the template name itself is given as a parameter through some other mechanism.
 If you want to keep using the option to remove unused resources then one way to solve this problem
 is to @sc{lock} the resource. Locked resources will never be removed accidently.
 
+@ifhtml
+@pictures{pics,resourcemanager}
+@end ifhtml
+
+The resource manager has the following parts:
+
+@itemize @bullet
+@item @samp{Assets} (top)
+The list of currently loaded assets. Selecting an asset will filter the list of resources
+so that only the resources from that asset are shown.
+@item @samp{Type filter} (middle)
+Using the type filter you can filter the list of resources further based on the type it has.
+@item @samp{Resources} (bottom)
+This list shows all the resources (optionally filtered by using the filters above).
+@end itemize
 
 @node Cell Manager, Dynamic Factory Manager, Resource Manager, New Project
 @section Cell Manager
@@ -87,11 +136,20 @@ to create a new sector and cell.
 
 Using the @samp{Set default} button you can switch to another cell in the editor.
 
+@ifhtml
+@pictures{pics,cellmanager}
+@end ifhtml
+
 @node Dynamic Factory Manager, , Cell Manager, New Project
 @section Dynamic Factory Manager
 
 In AresEd it is not possible to directly put objects in the world unless you define a
 dynamic factory for them. This can be done with the @samp{Manage Dynamic Factories} dialog.
+
+@ifhtml
+@pictures{pics,dynfacteditor}
+@end ifhtml
+
 This window has four major sections:
 
 @itemize @bullet

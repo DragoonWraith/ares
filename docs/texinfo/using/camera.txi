@@ -53,6 +53,9 @@ towards a specific direction without changing position.
 Using the three @samp{S} and @samp{R} keys you can @samp{Store} and @samp{Remember} a camera
 location.
 
+@ifhtml
+@pictures{pics,camerapanel}
+@end ifhtml
 
 @node Locating Objects, , Moving the Camera, Moving Around
 @section Locating Objects
@@ -70,4 +73,7 @@ factory name. It is also possible to only show all objects that are within a cer
 of the camera. You can then select one or more objects in this list and use the @samp{Select}
 button to close the object finder and select the objects in the 3D view.
 
+@ifhtml
+@pictures{pics,findobjects}
+@end ifhtml
 
