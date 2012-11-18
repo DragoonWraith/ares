@@ -73,6 +73,12 @@ void DynfactCollectionValue::UpdateChildren ()
   }
 }
 
+static void CorrectFactoryName (csString& name)
+{
+  if (name[name.Length ()-1] == '*')
+    name = name.Slice (0, name.Length ()-1);
+}
+
 bool DynfactCollectionValue::DeleteValue (Value* child)
 {
   iUIManager* ui = aresed3d->GetApp ()->GetUIManager ();
@@ -94,7 +100,9 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
   }
 
   iPcDynamicWorld* dynworld = aresed3d->GetDynamicWorld ();
-  iDynamicFactory* factory = dynworld->FindFactory (child->GetStringValue ());
+  csString factoryName = child->GetStringValue ();
+  CorrectFactoryName (factoryName);
+  iDynamicFactory* factory = dynworld->FindFactory (factoryName);
   CS_ASSERT (factory != 0);
   if (factory->GetObjectCount () > 0)
   {
@@ -123,7 +131,7 @@ bool DynfactCollectionValue::DeleteValue (Value* child)
   dynworld->RemoveFactory (factory);
   aresed3d->GetApp ()->GetAssetManager ()->RegisterRemoval (factory->QueryObject ());
 
-  aresed3d->RemoveItem (categoryValue->GetStringValue (), child->GetStringValue ());
+  aresed3d->RemoveItem (categoryValue->GetStringValue (), factoryName);
 
   dirty = true;
   FireValueChanged ();
