@@ -254,24 +254,24 @@ bool Camera::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
   }
   else if (but == csmbMiddle)
   {
+    csSegment3 seg = aresed3d->GetBeam (mouseX, mouseY);
+    if (!aresed3d->TraceBeamHit (seg, panningCenter))
+    {
+      seg = aresed3d->GetBeam (mouseX, mouseY, 10.0f);
+      panningCenter = seg.End ();
+    }
+
     iKeyboardDriver* kbd = aresed3d->GetKeyboardDriver ();
     if (kbd->GetKeyState (CSKEY_SHIFT))
     {
       do_mouse_panning = false;
-      if (!do_mouse_dragging)
-      {
-        if (!aresed3d->TraceBeamHit (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
-	  return false;
-        do_mouse_dragging = true;
-      }
+      do_mouse_dragging = true;
     }
     else
     {
       do_mouse_dragging = false;
       if (!do_mouse_panning)
       {
-        if (!aresed3d->TraceBeamHit (aresed3d->GetBeam (mouseX, mouseY), panningCenter))
-	  return false;
         CamLookAtPosition (panningCenter);
         panningDistance = sqrt (csSquaredDist::PointPoint (
 	      panningCenter, desired.pos));
