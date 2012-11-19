@@ -31,6 +31,12 @@ THE SOFTWARE.
 
 #include <wx/html/htmlwin.h>
 
+#define ASSET2_COL_PATH 0
+#define ASSET2_COL_FILE 1
+#define ASSET2_COL_MODIFIED 2
+#define ASSET2_COL_WRITE 3
+#define ASSET2_COL_MOUNT 4
+
 //--------------------------------------------------------------------------
 
 BEGIN_EVENT_TABLE(ManageAssetsDialog, wxDialog)
@@ -47,14 +53,6 @@ BEGIN_EVENT_TABLE(ManageAssetsDialog, wxDialog)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
-
-static csString CorrectName (const char* n)
-{
-  csString name = n;
-  if (name[name.Length ()-1] == '*')
-    return name.Slice (0, name.Length ()-1);
-  return name;
-}
 
 csString ManageAssetsDialog::ConstructMountString (const char* path, const char* filePath,
     csString& file)
@@ -228,11 +226,11 @@ void ManageAssetsDialog::OnOkButton (wxCommandEvent& event)
   for (int i = 0 ; i < assetList->GetItemCount () ; i++)
   {
     csStringArray row = ListCtrlTools::ReadRow (assetList, i);
-    csString flags = row[2];
+    csString flags = row[ASSET2_COL_WRITE];
     bool writable = flags == "RW";
-    BaseAsset a = BaseAsset (CorrectName (row[1]), writable);
-    a.SetNormalizedPath (row[0]);
-    a.SetMountPoint (row[3]);
+    BaseAsset a = BaseAsset (row[ASSET2_COL_FILE], writable);
+    a.SetNormalizedPath (row[ASSET2_COL_PATH]);
+    a.SetMountPoint (row[ASSET2_COL_MOUNT]);
     assets.Push (a);
   }
   callback->OkPressed (assets);
@@ -386,18 +384,18 @@ void ManageAssetsDialog::SetPathFile (const char* file,
 }
 
 void ManageAssetsDialog::UpdateAsset (int idx, const char* file,
-    bool writable, const char* normPath, const char* mount)
+    bool writable, const char* normPath, const char* mount, bool modified)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::ReplaceRow (assetList, idx, normPath, file, writable ? "RW" : "-", mount,
+  ListCtrlTools::ReplaceRow (assetList, idx, normPath, file, modified ? "*" : " ", writable ? "RW" : "-", mount,
       (const char*)0);
 }
 
 void ManageAssetsDialog::AddAsset (const char* file,
-    bool writable, const char* normPath, const char* mount)
+    bool writable, const char* normPath, const char* mount, bool modified)
 {
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::AddRow (assetList, normPath, file, writable ? "RW" : "-", mount,
+  ListCtrlTools::AddRow (assetList, normPath, file, modified ? "*" : " ", writable ? "RW" : "-", mount,
       (const char*)0);
 }
 
@@ -411,7 +409,7 @@ void ManageAssetsDialog::OnAddAssetButton (wxCommandEvent& event)
   csString normPath = (const char*)(normPathText->GetValue ().mb_str (wxConvUTF8));
   csString mount = (const char*)(mountText->GetValue ().mb_str (wxConvUTF8));
   bool writable = writableCheck->GetValue ();
-  AddAsset (file, writable, normPath, mount);
+  AddAsset (file, writable, normPath, mount, true);
   SetPathFile (file, writable, normPath, mount);
 }
 
@@ -421,7 +419,6 @@ void ManageAssetsDialog::OnMoveUpButton (wxCommandEvent& event)
   {
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
-    row[1] = CorrectName (row[1]);
     assetList->DeleteItem (selIndex);
     ListCtrlTools::InsertRow (assetList, selIndex-1, row);
     selIndex--;
@@ -437,7 +434,6 @@ void ManageAssetsDialog::OnMoveDownButton (wxCommandEvent& event)
     if (selIndex >= assetList->GetItemCount ()-1)
       return;
     csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
-    row[1] = CorrectName (row[1]);
     assetList->DeleteItem (selIndex);
     ListCtrlTools::InsertRow (assetList, selIndex+1, row);
     selIndex++;
@@ -459,7 +455,7 @@ void ManageAssetsDialog::OnUpdateAssetButton (wxCommandEvent& event)
     bool writable = writableCheck->GetValue ();
     UpdateAsset (selIndex,
         file, writable,
-        normPath, mount);
+        normPath, mount, true);
     SetPathFile (file, writable, normPath, mount);
     wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
     ListCtrlTools::SelectRow (assetList, selIndex);
@@ -506,9 +502,9 @@ void ManageAssetsDialog::OnAssetSelected (wxListEvent& event)
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
   selIndex = event.GetIndex ();
   csStringArray row = ListCtrlTools::ReadRow (assetList, selIndex);
-  csString flags = row[2];
+  csString flags = row[ASSET2_COL_WRITE];
   bool writable = flags == "RW";
-  SetPathFile (CorrectName (row[1]), writable, row[0], row[3]);
+  SetPathFile (row[ASSET2_COL_FILE], writable, row[ASSET2_COL_PATH], row[ASSET2_COL_MOUNT]);
 }
 
 void ManageAssetsDialog::OnAssetDeselected (wxListEvent& event)
@@ -541,8 +537,7 @@ void ManageAssetsDialog::Show (ManageAssetsCallback* cb, const csRefArray<iAsset
   for (size_t i = 0 ; i < assets.GetSize () ; i++)
   {
     iAsset* a = assets[i];
-    AddAsset (a->IsModified () ? (a->GetFile () + "*").GetData () : a->GetFile ().GetData (),
-	a->IsWritable (), a->GetNormalizedPath (), a->GetMountPoint ());
+    AddAsset (a->GetFile (), a->IsWritable (), a->GetNormalizedPath (), a->GetMountPoint (), a->IsModified ());
   }
   ShowModal ();
 }
@@ -553,10 +548,11 @@ ManageAssetsDialog::ManageAssetsDialog (wxWindow* parent, iObjectRegistry* objec
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("ManageAssetsDialog"));
 
   wxListCtrl* assetList = XRCCTRL (*this, "assetListCtrl", wxListCtrl);
-  ListCtrlTools::SetColumn (assetList, 0, "Path", 170);
-  ListCtrlTools::SetColumn (assetList, 1, "File", 150);
-  ListCtrlTools::SetColumn (assetList, 2, "Write", 50);
-  ListCtrlTools::SetColumn (assetList, 3, "Mount", 100);
+  ListCtrlTools::SetColumn (assetList, ASSET2_COL_PATH, "Path", 170);
+  ListCtrlTools::SetColumn (assetList, ASSET2_COL_FILE, "File", 150);
+  ListCtrlTools::SetColumn (assetList, ASSET2_COL_MODIFIED, "M", 20);
+  ListCtrlTools::SetColumn (assetList, ASSET2_COL_WRITE, "Write", 50);
+  ListCtrlTools::SetColumn (assetList, ASSET2_COL_MOUNT, "Mount", 100);
 
   wxGenericDirCtrl* dir = XRCCTRL (*this, "browser_Dir", wxGenericDirCtrl);
   dir->Connect (wxEVT_COMMAND_TREE_SEL_CHANGED,

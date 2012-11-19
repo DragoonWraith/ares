@@ -60,10 +60,8 @@ void TemplatesValue::BuildModel ()
     csRef<GenericStringArrayValue<iCelEntityTemplate> > child;
     child.AttachNew (new GenericStringArrayValue<iCelEntityTemplate> (tpl));
     csStringArray& array = child->GetArray ();
-    if (assetManager->IsModified (tpl->QueryObject ()))
-      array.Push (csString (tpl->GetName ()) + "*");
-    else
-      array.Push (tpl->GetName ());
+    array.Push (tpl->GetName ());
+    array.Push (assetManager->IsModified (tpl->QueryObject ()) ? "*" : " ");
     objectsHash.Put (tpl, child);
     values.Push (child);
   }

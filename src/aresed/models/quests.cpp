@@ -61,10 +61,8 @@ void QuestsValue::BuildModel ()
     csRef<GenericStringArrayValue<iQuestFactory> > child;
     child.AttachNew (new GenericStringArrayValue<iQuestFactory> (fact));
     csStringArray& array = child->GetArray ();
-    if (assetManager->IsModified (fact->QueryObject ()))
-      array.Push (csString (fact->GetName ()) + "*");
-    else
-      array.Push (fact->GetName ());
+    array.Push (fact->GetName ());
+    array.Push (assetManager->IsModified (fact->QueryObject ()) ? "*" : " ");
     objectsHash.Put (fact, child);
     values.Push (child);
   }

@@ -54,16 +54,19 @@ enum DynObjValueColumns
 enum TemplateValueColumns
 {
   TEMPLATE_COL_NAME = 0,
+  TEMPLATE_COL_MODIFIED,
 };
 
 enum QuestValueColumns
 {
   QUEST_COL_NAME = 0,
+  QUEST_COL_MODIFIED,
 };
 
 enum FactoryValueColumns
 {
   FACTORY_COL_NAME = 0,
+  FACTORY_COL_MODIFIED,
   FACTORY_COL_USAGE,
 };
 
@@ -78,6 +81,7 @@ enum AssetValueColumns
 enum ResourceValueColumns
 {
   RESOURCE_COL_NAME = 0,
+  RESOURCE_COL_MODIFIED,
   RESOURCE_COL_TYPE,
   RESOURCE_COL_ASSET_PATH,
   RESOURCE_COL_ASSET_FILE,

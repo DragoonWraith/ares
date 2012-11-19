@@ -1127,21 +1127,15 @@ iUIDialog* PropertyClassPanel::GetQuestDialog ()
   return questParDialog;
 }
 
-static void CorrectQuestName (csString& name)
-{
-  if (name[name.Length ()-1] == '*')
-    name = name.Slice (0, name.Length ()-1);
-}
-
 void PropertyClassPanel::OnChangeQuest (wxCommandEvent& event)
 {
   csRef<Ares::Value> quests = emode->GetApplication ()->Get3DView ()->
     GetModelRepository ()->GetQuestsValue ();
-  Value* quest = uiManager->AskDialog ("Select a quest", quests, "Name", QUEST_COL_NAME);
+  Value* quest = uiManager->AskDialog ("Select a quest", quests, "Name,M", QUEST_COL_NAME,
+      QUEST_COL_MODIFIED);
   if (quest)
   {
     csString name = quest->GetStringArrayValue ()->Get (QUEST_COL_NAME);
-    CorrectQuestName (name);
     UITools::SetValue (this, "questText", name);
     UpdateQuest ();
   }

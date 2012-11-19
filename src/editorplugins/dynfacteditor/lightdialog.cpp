@@ -184,6 +184,7 @@ iLightFactory* LightDialog::Show (iLightFactory* factory)
     {
       factory->QueryObject ()->SetName (n);
     }
+
     csString type = factoryValue->GetChildByName ("type")->GetStringValue ();
     if (type == "point") factory->SetType (CS_LIGHT_POINTLIGHT);
     else if (type == "directional") factory->SetType (CS_LIGHT_DIRECTIONAL);

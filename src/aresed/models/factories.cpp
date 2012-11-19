@@ -56,10 +56,8 @@ void FactoriesValue::BuildModel ()
     csRef<GenericStringArrayValue<iDynamicFactory> > child;
     child.AttachNew (new GenericStringArrayValue<iDynamicFactory> (fact));
     csStringArray& array = child->GetArray ();
-    if (assetManager->IsModified (fact->QueryObject ()))
-      array.Push (csString (fact->GetName ()) + "*");
-    else
-      array.Push (fact->GetName ());
+    array.Push (fact->GetName ());
+    array.Push (assetManager->IsModified (fact->QueryObject ()) ? "*" : " ");
     csString v;
     v.Format ("%d", fact->GetObjectCount ());
     array.Push (v);

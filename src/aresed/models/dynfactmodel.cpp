@@ -191,7 +191,7 @@ Value* DynfactCollectionValue::NewValue (size_t idx, Value* selectedValue,
 
   categoryValue->Refresh ();
   FireValueChanged ();
-  return View::FindChild (categoryValue, newname);
+  return View::FindChild (categoryValue, newname+"*");
 }
 
 Value* DynfactCollectionValue::GetCategoryForValue (Value* value)

@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "csutil/scfstr.h"
 #include "edcommon/editmodes.h"
+#include "inature.h"
 
 struct iPcDynamicWorld;
 struct iCelEntity;
@@ -69,12 +70,19 @@ private:
   csRef<iCelEntity> world;
   csRef<iCelEntity> player;
   csRef<iCelPlLayer> pl;
+  csRef<iNature> nature;
+  csRef<iVirtualClock> vc;
+  csRef<iDynamics> dyn;
+  iCamera* camera;
+
+  csTicks currentTime;
 
 public:
   PlayMode (iBase* parent);
   virtual ~PlayMode ();
 
   virtual bool Initialize (iObjectRegistry* object_reg);
+  virtual void FramePre ();
 
   virtual bool IsContextMenuAllowed () { return false; }
 

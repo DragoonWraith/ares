@@ -64,13 +64,6 @@ static csStringID ID_Copy = csInvalidStringID;
 static csStringID ID_Paste = csInvalidStringID;
 static csStringID ID_Delete = csInvalidStringID;
 
-static void CorrectName (csString& name)
-{
-  if (name[name.Length ()-1] == '*')
-    name = name.Slice (0, name.Length ()-1);
-}
-
-
 //---------------------------------------------------------------------------
 
 class GraphNodeCallback : public iGraphNodeCallback
@@ -103,8 +96,7 @@ public:
     Ares::Value* value = view->GetSelectedValue (component);
     if (value)
     {
-      csString questName = value->GetStringArrayValue ()->Get (0);
-      CorrectName (questName);
+      csString questName = value->GetStringArrayValue ()->Get (QUEST_COL_NAME);
       entityMode->OnRenameQuest (questName);
     }
     return true;
@@ -132,8 +124,7 @@ public:
     Ares::Value* value = view->GetSelectedValue (component);
     if (value)
     {
-      csString questName = value->GetStringArrayValue ()->Get (0);
-      CorrectName (questName);
+      csString questName = value->GetStringArrayValue ()->Get (QUEST_COL_NAME);
       entityMode->OnQuestDel (questName);
     }
     return true;
@@ -179,8 +170,7 @@ public:
     Ares::Value* value = view->GetSelectedValue (component);
     if (value)
     {
-      csString tplName = value->GetStringArrayValue ()->Get (0);
-      CorrectName (tplName);
+      csString tplName = value->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
       entityMode->OnRenameTemplate (tplName);
     }
     return true;
@@ -208,8 +198,7 @@ public:
     Ares::Value* value = view->GetSelectedValue (component);
     if (value)
     {
-      csString templateName = value->GetStringArrayValue ()->Get (0);
-      CorrectName (templateName);
+      csString templateName = value->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
       entityMode->OnTemplateDel (templateName);
     }
     return true;
@@ -297,14 +286,15 @@ void EntityMode::SetParent (wxWindow* parent)
 
   graphView->SetVisible (false);
 
-  view.DefineHeadingIndexed ("template_List", "Template", TEMPLATE_COL_NAME);
+  view.DefineHeadingIndexed ("template_List", "Template,M",
+      TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
   view.Bind (view3d->GetModelRepository ()->GetTemplatesValue (), "template_List");
   wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
   view.AddAction (list, NEWREF(Ares::Action, new AddTemplateAction (this)));
   view.AddAction (list, NEWREF(Ares::Action, new DeleteTemplateAction (this)));
   view.AddAction (list, NEWREF(Ares::Action, new RenameTemplateAction (this)));
 
-  view.DefineHeadingIndexed ("quest_List", "Quest", QUEST_COL_NAME);
+  view.DefineHeadingIndexed ("quest_List", "Quest,M", QUEST_COL_NAME, QUEST_COL_MODIFIED);
   questsValue = view3d->GetModelRepository ()->GetQuestsValue ();
   view.Bind (questsValue, "quest_List");
   list = XRCCTRL (*panel, "quest_List", wxListCtrl);
@@ -933,9 +923,7 @@ void EntityMode::OnQuestSelect ()
   list = XRCCTRL (*panel, "quest_List", wxListCtrl);
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
-  csString questName = v->GetStringArrayValue ()->Get (0);
-  CorrectName (questName);
-
+  csString questName = v->GetStringArrayValue ()->Get (QUEST_COL_NAME);
   editQuestMode = questMgr->GetQuestFactory (questName);
   currentTemplate = "";
   RefreshView ();
@@ -949,8 +937,7 @@ void EntityMode::OnTemplateSelect ()
   list = XRCCTRL (*panel, "template_List", wxListCtrl);
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
-  csString templateName = v->GetStringArrayValue ()->Get (0);
-  CorrectName (templateName);
+  csString templateName = v->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
   if (editQuestMode || currentTemplate != templateName)
   {
     editQuestMode = 0;
@@ -986,8 +973,7 @@ void EntityMode::SelectQuest (iQuestFactory* questFact)
   while (it->HasNext ())
   {
     Ares::Value* c = it->NextChild ();
-    csString questName = c->GetStringArrayValue ()->Get (0);
-    CorrectName (questName);
+    csString questName = c->GetStringArrayValue ()->Get (QUEST_COL_NAME);
     if (questName == questFact->GetName ()) break;
     i++;
   }
@@ -1569,8 +1555,7 @@ csString EntityMode::GetActiveNode ()
     wxListCtrl* list = XRCCTRL (*panel, "template_List", wxListCtrl);
     Ares::Value* v = view.GetSelectedValue (list);
     if (!v) return "";
-    csString templateName = v->GetStringArrayValue ()->Get (0);
-    CorrectName (templateName);
+    csString templateName = v->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
     return csString ("T:") + templateName;
   }
   else if (page == "Quests")

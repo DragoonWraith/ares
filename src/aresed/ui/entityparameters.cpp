@@ -192,21 +192,15 @@ void EntityParameterDialog::OnResetButton (wxCommandEvent& event)
   UITools::SetValue (this, "template_Text", "");
 }
 
-static void CorrectTemplateName (csString& name)
-{
-  if (name[name.Length ()-1] == '*')
-    name = name.Slice (0, name.Length ()-1);
-}
-
 void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
 {
   Ares::Value* templates = uiManager->GetApp ()->Get3DView ()->
       GetModelRepository ()->GetTemplatesValue ();
-  Value* tpl = uiManager->AskDialog ("Select a template", templates, "Template", TEMPLATE_COL_NAME);
+  Value* tpl = uiManager->AskDialog ("Select a template", templates, "Template,M",
+      TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
   if (tpl)
   {
     csString name = tpl->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
-    CorrectTemplateName (name);
     csString factoryName = object->GetFactory ()->GetName ();
     if (factoryName != name)
       UITools::SetValue (this, "template_Text", name);

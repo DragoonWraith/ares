@@ -72,9 +72,9 @@ private:
   void ScanLoadableFile (const char* path, const char* file);
   void ScanCSNode (csString& msg, iDocumentNode* node);
   void UpdateAsset (int idx, const char* file,
-      bool writable, const char* normPath, const char* mount);
+      bool writable, const char* normPath, const char* mount, bool modified);
   void AddAsset (const char* file,
-      bool writable, const char* normPath, const char* mount);
+      bool writable, const char* normPath, const char* mount, bool modified);
 
   /**
    * Try to find the manifest file and see what kind of information can

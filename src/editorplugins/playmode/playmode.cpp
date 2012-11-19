@@ -138,6 +138,9 @@ bool PlayMode::Initialize (iObjectRegistry* object_reg)
 {
   if (!EditingMode::Initialize (object_reg)) return false;
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
+  nature = csQueryRegistry<iNature> (object_reg);
+  vc = csQueryRegistry<iVirtualClock> (object_reg);
+  dyn = csQueryRegistry<iDynamics> (object_reg);
   return true;
 }
 
@@ -221,6 +224,7 @@ void PlayMode::Start ()
   }
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
+  camera = pccamera->GetCamera ();
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
   // @@@ Need support for setting transform on pcmesh.
   pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
@@ -244,6 +248,8 @@ void PlayMode::Start ()
 
   iELCM* elcm = view3d->GetELCM ();
   elcm->SetPlayer (player);
+
+  currentTime = 31000;
 }
 
 void PlayMode::Stop ()
@@ -277,6 +283,22 @@ void PlayMode::Stop ()
   snapshot = 0;
 
   g3d->GetDriver2D ()->SetMouseCursor (csmcArrow);
+}
+
+void PlayMode::FramePre ()
+{
+  float elapsed_time = vc->GetElapsedSeconds ();
+  nature->UpdateTime (currentTime, camera);
+  currentTime += csTicks (elapsed_time * 1000);
+
+  //if (do_simulation)
+  {
+    float dynamicSpeed = 1.0f;
+    dyn->Step (elapsed_time / dynamicSpeed);
+  }
+
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+  dynworld->PrepareView (camera, elapsed_time);
 }
 
 bool PlayMode::OnKeyboard(iEvent& ev, utf32_char code)

@@ -1,8 +1,16 @@
 <library>
+  <lightfact name="TestLight">
+    <radius>15</radius>
+    <color red="1" green="1" blue="1" />
+    <dynamic />
+    <attenuation c="1e+006" l="0" q="0">linear</attenuation>
+    <type>point</type>
+    <spotlightfalloff inner="1" outer="0" />
+  </lightfact>
   <addon plugin="cel.addons.questdef" />
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="World" />
-    <factory name="Node" maxradius="1" imposterradius="0" collider="true" logic="true" mass="1">
+    <factory name="Node" maxradius="1" imposterradius="0" logic="true" collider="true" mass="1">
       <logicbox>
         <min x="-0.1" y="-0.1" z="-0.1" />
         <max x="0.1" y="0.2" z="0.3" />
@@ -46,6 +54,10 @@
     <factory name="Bar" maxradius="1" imposterradius="0" collider="true" mass="0">
       <attr name="category" value="Clutter" />
     </factory>
+    <factory name="TestLight" maxradius="1" imposterradius="0" light="true" mass="0">
+      <attr name="category" value="Clutter" />
+      <attr name="defaultstatic" value="true" />
+    </factory>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="World">
     <propclass name="pcworld.dynamic">
@@ -55,6 +67,7 @@
     <propclass name="ares.gamecontrol" />
     <propclass name="pctools.messenger">
       <action name="DefineSlot">
+        <par name="name" string="top" />
         <par name="position" vector2="0,20" />
         <par name="screenanchor" string="n" />
         <par name="boxanchor" string="n" />
@@ -67,7 +80,6 @@
         <par name="roundness" long="10" />
         <par name="boxcolor" color4="0.2,0.2,0.2,0.7" />
         <par name="bordercolor" color4="1,0.2,0.2,0.7" />
-        <par name="name" string="top" />
       </action>
       <action name="DefineType">
         <par name="type" string="std" />
@@ -100,24 +112,24 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar2">
       <action name="NewQuest">
-        <par name="bar" string="Bar2" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar2" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar3">
       <action name="NewQuest">
-        <par name="bar" string="Bar3" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar3" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -138,24 +150,24 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar2">
       <action name="NewQuest">
-        <par name="bar" string="Bar2" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar2" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar5">
       <action name="NewQuest">
-        <par name="bar" string="Bar5" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar5" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -191,24 +203,24 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar1">
       <action name="NewQuest">
-        <par name="bar" string="Bar1" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar1" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar3">
       <action name="NewQuest">
-        <par name="bar" string="Bar3" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar3" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -229,31 +241,31 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
+        <par name="name" string="DblSequencerMove" />
         <par name="duration" long="@duration" />
         <par name="x" float="@x" />
         <par name="y" float="@y" />
         <par name="z" float="@z" />
-        <par name="name" string="DblSequencerMove" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar1">
       <action name="NewQuest">
-        <par name="bar" string="Bar1" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar1" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar4">
       <action name="NewQuest">
-        <par name="bar" string="Bar4" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar4" />
       </action>
       <property name="state" string="init" />
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar5">
       <action name="NewQuest">
-        <par name="bar" string="Bar5" />
         <par name="name" string="BridgeSequencerToToggleMessage" />
+        <par name="bar" string="Bar5" />
       </action>
       <property name="state" string="init" />
     </propclass>

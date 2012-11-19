@@ -54,10 +54,8 @@ void ResourcesValue::AddChild (const char* type, iObject* resource, int usage)
   csRef<GenericStringArrayValue<iObject> > child;
   child.AttachNew (new GenericStringArrayValue<iObject> (resource));
   csStringArray& array = child->GetArray ();
-  if (assetManager->IsModified (resource))
-    array.Push (csString (resource->GetName ()) + "*");
-  else
-    array.Push (resource->GetName ());
+  array.Push (resource->GetName ());
+  array.Push (assetManager->IsModified (resource) ? "*" : " ");
   array.Push (type);
   iAsset* asset = assetManager->GetAssetForResource (resource);
   if (asset)

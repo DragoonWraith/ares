@@ -47,12 +47,6 @@ END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
 
-static void CorrectName (csString& name)
-{
-  if (name[name.Length ()-1] == '*')
-    name = name.Slice (0, name.Length ()-1);
-}
-
 class ObjectFinderFilteredCollectionValue : public FilteredCollectionValue
 {
 private:
@@ -143,13 +137,13 @@ void ObjectFinderDialog::OnSearchTemplateButton (wxCommandEvent& event)
   dialog->AddRow ();
   dialog->AddListIndexed ("template", uiManager->GetApp ()->Get3DView ()->
       GetModelRepository ()->GetTemplatesValue (),
-      TEMPLATE_COL_NAME, false, 300, "Template", TEMPLATE_COL_NAME);
+      TEMPLATE_COL_NAME, false, 300, "Template,M",
+      TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
 
   if (dialog->Show (0) == 1)
   {
     const DialogResult& result = dialog->GetFieldContents ();
     csString name = result.Get ("template", (const char*)0);
-    CorrectName (name);
     UITools::SetValue (this, "templateFilter_Text", name);
     filteredCollection->SetFilterTemplate (name);
   }
@@ -161,13 +155,13 @@ void ObjectFinderDialog::OnSearchDynfactButton (wxCommandEvent& event)
   dialog->AddRow ();
   dialog->AddListIndexed ("factory", uiManager->GetApp ()->Get3DView ()->
       GetModelRepository ()->GetFactoriesValue (),
-      FACTORY_COL_NAME, false, 300, "Factory,Usage", FACTORY_COL_NAME, FACTORY_COL_USAGE);
+      FACTORY_COL_NAME, false, 300, "Factory,M,Usage",
+      FACTORY_COL_NAME, FACTORY_COL_MODIFIED, FACTORY_COL_USAGE);
 
   if (dialog->Show (0) == 1)
   {
     const DialogResult& result = dialog->GetFieldContents ();
     csString name = result.Get ("factory", (const char*)0);
-    CorrectName (name);
     UITools::SetValue (this, "factoryFilter_Text", name);
     filteredCollection->SetFilterFactory (name);
   }

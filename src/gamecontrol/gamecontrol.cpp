@@ -42,6 +42,7 @@ THE SOFTWARE.
 #include "physicallayer/entity.h"
 #include "physicallayer/entitytpl.h"
 #include "propclass/camera.h"
+#include "propclass/cameras/tracking.h"
 #include "propclass/dynworld.h"
 #include "propclass/dynmove.h"
 #include "propclass/prop.h"
@@ -308,6 +309,14 @@ void celPcGameController::Teleport (const char* entityname)
     trans.RotateThis (csVector3 (0, 1, 0), M_PI);
     body->SetTransform (trans);
   }
+  csRef<iPcTrackingCamera> trackcam = celQueryPropertyClassEntity<iPcTrackingCamera> (player);
+  if (trackcam)
+  {
+    trackcam->ResetCamera ();
+  }
+
+  iCamera* cam = pccamera->GetCamera ();
+  dynworld->ForceView (cam);
 }
 
 void celPcGameController::Spawn (const char* factname)

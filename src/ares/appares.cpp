@@ -344,7 +344,6 @@ void AppAres::Frame ()
   }
   else
   {
-    // We let the entity system do this so there is nothing here.
     float elapsed_time = vc->GetElapsedSeconds ();
     nature->UpdateTime (currentTime, camera);
     currentTime += csTicks (elapsed_time * 1000);
