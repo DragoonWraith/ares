@@ -448,12 +448,24 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   {
     csSet<csStringID> questParams = CollectQuestParameters (quest);
     csSet<csStringID> missing = Subtract (questParams, givenParameters);
-    csSet<csStringID>::GlobalIterator it = missing.GetIterator ();
-    while (it.HasNext ())
     {
-      csStringID id = it.Next ();
-      csString parName = pl->FetchString (id);
-      PushResult (tpl, pctpl, "Quest parameter '%s' is missing!", parName.GetData ());
+      csSet<csStringID>::GlobalIterator it = missing.GetIterator ();
+      while (it.HasNext ())
+      {
+        csStringID id = it.Next ();
+        csString parName = pl->FetchString (id);
+        PushResult (tpl, pctpl, "Quest parameter '%s' is missing!", parName.GetData ());
+      }
+    }
+    csSet<csStringID> toomuch = Subtract (givenParameters, questParams);
+    {
+      csSet<csStringID>::GlobalIterator it = toomuch.GetIterator ();
+      while (it.HasNext ())
+      {
+        csStringID id = it.Next ();
+        csString parName = pl->FetchString (id);
+        PushResult (tpl, pctpl, "Quest parameter '%s' is not needed!", parName.GetData ());
+      }
     }
   }
 }
