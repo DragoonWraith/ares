@@ -274,6 +274,21 @@ size_t InspectTools::FindActionWithParameter (iCelPlLayer* pl,
   return csArrayItemNotFound;
 }
 
+csRef<iCelParameterIterator> InspectTools::FindAction (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName)
+{
+  csStringID actionID = pl->FetchStringID (actionName);
+  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> it = pctpl->GetProperty (i, id, data);
+    if (id == actionID)
+      return it;
+  }
+  return 0;
+}
+
 csArray<celParSpec> InspectTools::GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment)
 {
   csArray<celParSpec> suggestions;

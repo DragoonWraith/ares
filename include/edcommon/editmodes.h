@@ -106,6 +106,8 @@ public:
   virtual void Stop () { started = false; }
   virtual void Refresh () { }
 
+  virtual void SelectResource (iObject* resource) { }
+
   virtual csRef<iString> GetStatusLine ()
   {
     csRef<iString> str;

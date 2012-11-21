@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include "ui/celldialog.h"
 #include "ui/objectfinder.h"
 #include "ui/resourcemover.h"
+#include "ui/sanitychecker.h"
 #include "camera.h"
 #include "editor/imode.h"
 #include "editor/iplugin.h"
@@ -45,6 +46,7 @@ THE SOFTWARE.
 #include "physicallayer/pl.h"
 #include "physicallayer/entitytpl.h"
 #include "tools/parameters.h"
+#include "tools/questmanager.h"
 
 #include <csgeom/math3d.h>
 #include "camerawin.h"
@@ -185,6 +187,7 @@ static csStringID ID_ViewMessages = csInvalidStringID;
 static csStringID ID_ViewComments = csInvalidStringID;
 static csStringID ID_View3D = csInvalidStringID;
 static csStringID ID_ViewControls = csInvalidStringID;
+static csStringID ID_SanityChecker = csInvalidStringID;
 
 // The global pointer to AresEd
 AppAresEditWX* aresed = 0;
@@ -603,6 +606,7 @@ bool AppAresEditWX::Initialize ()
     ID_ViewComments = pl->FetchStringID ("ViewComments");
     ID_View3D = pl->FetchStringID ("View3D");
     ID_ViewControls = pl->FetchStringID ("ViewControls");
+    ID_SanityChecker = pl->FetchStringID ("SanityChecker");
   }
 
   if (!config->ReadConfig ())
@@ -1063,6 +1067,7 @@ bool AppAresEditWX::Command (csStringID id, const csString& args)
   else if (id == ID_ViewComments) ViewBottomPage ("Comments", true);
   else if (id == ID_View3D) View3D ();
   else if (id == ID_ViewControls) ViewControls ();
+  else if (id == ID_SanityChecker) uiManager->GetSanityCheckerDialog ()->Show ();
   else return false;
   return true;
 }
@@ -1305,6 +1310,25 @@ void AppAresEditWX::SwitchToMode (const char* name)
     CS_ASSERT (false);
     printf ("Can't find mode '%s'!\n", name);
     fflush (stdout);
+  }
+}
+
+void AppAresEditWX::OpenEditor (iObject* resource)
+{
+  if (!resource) return;
+  csRef<iCelEntityTemplate> tpl = scfQueryInterface<iCelEntityTemplate> (resource);
+  if (tpl)
+  {
+    SwitchToMode ("Entity");
+    if (editMode) editMode->SelectResource (resource);
+    return;
+  }
+  csRef<iQuestFactory> quest = scfQueryInterface<iQuestFactory> (resource);
+  if (quest)
+  {
+    SwitchToMode ("Entity");
+    if (editMode) editMode->SelectResource (resource);
+    return;
   }
 }
 

@@ -96,6 +96,11 @@ struct iAresEditor : public virtual iBase
    * Set the current object comment.
    */
   virtual void SetObjectForComment (const char* type, iObject* objForComment) = 0;
+
+  /**
+   * Open the editor for a given resource.
+   */
+  virtual void OpenEditor (iObject* resource) = 0;
 };
 
 

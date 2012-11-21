@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "entityparameters.h"
 #include "objectfinder.h"
 #include "resourcemover.h"
+#include "sanitychecker.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/model.h"
 
@@ -486,6 +487,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   entityParameterDialog = new EntityParameterDialog (parent, this);
   objectFinderDialog = new ObjectFinderDialog (parent, this);
   resourceMoverDialog = new ResourceMoverDialog (parent, this);
+  sanityCheckerDialog = new SanityCheckerUI (this);
   contextMenuID = ID_FirstContextItem;
 }
 
@@ -498,6 +500,7 @@ UIManager::~UIManager ()
   delete entityParameterDialog;
   delete objectFinderDialog;
   delete resourceMoverDialog;
+  delete sanityCheckerDialog;
 }
 
 void UIManager::About ()

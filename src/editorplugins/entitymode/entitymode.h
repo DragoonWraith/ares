@@ -241,6 +241,8 @@ public:
   csPtr<iString> GetAlternativeLabel (csStringID id,
       iSelection* selection, size_t pastesize);
 
+  virtual void SelectResource (iObject* resource);
+
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
 

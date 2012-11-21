@@ -41,6 +41,7 @@ struct iPcDynamicWorld;
 struct iQuestManager;
 struct iEngine;
 struct iQuestFactory;
+struct iCelParameterIterator;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
@@ -65,6 +66,12 @@ public:
   static size_t FindActionWithParameter (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName,
       const char* parName, const char* parValue);
+
+  /**
+   * Find an action and return the parameter iterator.
+   */
+  static csRef<iCelParameterIterator> FindAction (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName);
 
   /**
    * Delete a given parameter from an action.

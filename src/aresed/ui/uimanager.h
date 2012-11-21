@@ -40,6 +40,7 @@ class SimpleListCtrlView;
 class EntityParameterDialog;
 class ObjectFinderDialog;
 class ResourceMoverDialog;
+class SanityCheckerUI;
 
 class wxBoxSizer;
 class wxTextCtrl;
@@ -177,6 +178,7 @@ private:
   EntityParameterDialog* entityParameterDialog;
   ObjectFinderDialog* objectFinderDialog;
   ResourceMoverDialog* resourceMoverDialog;
+  SanityCheckerUI* sanityCheckerDialog;
 
   int contextMenuID;
 
@@ -202,6 +204,7 @@ public:
   EntityParameterDialog* GetEntityParameterDialog () const { return entityParameterDialog; }
   ObjectFinderDialog* GetObjectFinderDialog () const { return objectFinderDialog; }
   ResourceMoverDialog* GetResourceMoverDialog () const { return resourceMoverDialog; }
+  SanityCheckerUI* GetSanityCheckerDialog () const { return sanityCheckerDialog; }
 
   /// Create a dynamically buildable dialog.
   virtual csPtr<iUIDialog> CreateDialog (const char* title, int width = -1);

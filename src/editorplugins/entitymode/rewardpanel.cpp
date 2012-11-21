@@ -158,7 +158,6 @@ void RewardPanel::UpdatePanel ()
   csString type = GetCurrentRewardType ();
   if (type == "newstate")
   {
-    // @@@ Add support for setting states on other entities!
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     UITools::ClearChoices (this, "state_Ns_Combo");
     csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();

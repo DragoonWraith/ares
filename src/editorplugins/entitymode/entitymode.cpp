@@ -962,6 +962,41 @@ void EntityMode::RegisterModification (iQuestFactory* quest)
   questsValue->Refresh ();
 }
 
+static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
+{
+  wxString iname = wxString::FromUTF8 (name);
+  for (size_t i = 0 ; i < notebook->GetPageCount () ; i++)
+  {
+    wxString pageName = notebook->GetPageText (i);
+    if (pageName == iname) return i;
+  }
+  return csArrayItemNotFound;
+}
+
+void EntityMode::SelectResource (iObject* resource)
+{
+  csRef<iCelEntityTemplate> tpl = scfQueryInterface<iCelEntityTemplate> (resource);
+  if (tpl)
+  {
+    wxNotebook* notebook = XRCCTRL (*panel, "type_Notebook", wxNotebook);
+    size_t pageIdx = FindNotebookPage (notebook, "Templates");
+    if (pageIdx != csArrayItemNotFound)
+      notebook->ChangeSelection (pageIdx);
+    SelectTemplate (tpl);
+    return;
+  }
+  csRef<iQuestFactory> quest = scfQueryInterface<iQuestFactory> (resource);
+  if (quest)
+  {
+    wxNotebook* notebook = XRCCTRL (*panel, "type_Notebook", wxNotebook);
+    size_t pageIdx = FindNotebookPage (notebook, "Quests");
+    if (pageIdx != csArrayItemNotFound)
+      notebook->ChangeSelection (pageIdx);
+    SelectQuest (quest);
+    return;
+  }
+}
+
 void EntityMode::SelectQuest (iQuestFactory* questFact)
 {
   currentTemplate = "";

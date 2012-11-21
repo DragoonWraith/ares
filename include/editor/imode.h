@@ -77,6 +77,12 @@ struct iEditingMode : public virtual iBase
    */
   virtual csRef<iString> GetStatusLine () = 0;
 
+  /**
+   * Select a given resource for editing in this mode. If this mode does
+   * not support editing this resource then nothing should happen.
+   */
+  virtual void SelectResource (iObject* resource) = 0;
+
   //-----------------------------------------------------------------------
   // Callback functions from the editor system.
   //-----------------------------------------------------------------------

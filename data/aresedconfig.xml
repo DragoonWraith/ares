@@ -77,8 +77,9 @@
 	    <item name="&amp;Snap Objects" target="Main" command="SnapObj" help="Put all selected objects at exactly the same transformation as the first selected object" />
 	    <item name="&amp;Stack Objects" target="Main" command="StackObj" help="Stack all selected objects on the first selected object" />
 	</menu>
-	<menu name="&amp;Logic">
+	<menu name="&amp;Tools">
 	    <item name="&amp;Entity Parameters..." command="EntityParameters" help="Set parameters for the entity template specific to this object" />
+	    <item name="&amp;Sanity Checker..." command="SanityChecker" help="Sanity check the current project" />
 	</menu>
 	<menu name="&amp;View">
 	    <item name="&amp;View Messages	Ctrl+M" command="ViewMessages" help="Toggle the view of the message pane" />
