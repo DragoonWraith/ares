@@ -198,6 +198,7 @@ void PlayMode::Start ()
     }
   }
 
+  oldcell = dynworld->GetCurrentCell ();
   if (foundPlayerDynobj)
   {
     dynworld->SetCurrentCell (foundCell);
@@ -281,6 +282,8 @@ void PlayMode::Stop ()
   snapshot->Restore (dynworld);
   delete snapshot;
   snapshot = 0;
+
+  dynworld->SetCurrentCell (oldcell);
 
   g3d->GetDriver2D ()->SetMouseCursor (csmcArrow);
 }

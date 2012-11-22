@@ -173,7 +173,7 @@ void CameraWindow::OnLookAtButton ()
   }
 }
 
-void CameraWindow::OnMoveToButton ()
+void CameraWindow::MoveToSelection ()
 {
   if (aresed3d->GetSelection ()->HasSelection ())
   {
@@ -188,6 +188,11 @@ void CameraWindow::OnMoveToButton ()
     cam->CamMove (dst - (dst-src).Unit () * sphere.GetRadius () * 2);
     aresed3d->GetApp ()->SetFocus3D ();
   }
+}
+
+void CameraWindow::OnMoveToButton ()
+{
+  MoveToSelection ();
 }
 
 void CameraWindow::OnPanSelected ()

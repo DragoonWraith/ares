@@ -31,6 +31,12 @@ THE SOFTWARE.
 
 //----------------------------------------------------------------------
 
+SanityResult& SanityResult::Object (iDynamicObject* object)
+{
+  SanityResult::object = object;
+  return *this;
+}
+
 SanityResult& SanityResult::Resource (iObject* object)
 {
   resource = object;
@@ -63,7 +69,8 @@ SanityResult& SanityResult::MessageV (const char* fmt, va_list args)
 
 //----------------------------------------------------------------------
 
-SanityChecker::SanityChecker (iObjectRegistry* object_reg)
+SanityChecker::SanityChecker (iObjectRegistry* object_reg, iPcDynamicWorld* dynworld) :
+  dynworld (dynworld)
 {
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
   engine = csQueryRegistry<iEngine> (object_reg);
@@ -79,14 +86,48 @@ void SanityChecker::ClearResults ()
   results.Empty ();
 }
 
+void SanityChecker::PushResult (iDynamicFactory* fact, const char* msg, ...)
+{
+  va_list args;
+  va_start (args, msg);
+  results.Push (SanityResult ().
+	Resource (fact->QueryObject ()).
+	Name ("Fact %s", fact->GetName ()).
+	MessageV (msg, args));
+  va_end (args);
+}
+
+void SanityChecker::PushResult (iDynamicObject* obj, const char* msg, ...)
+{
+  va_list args;
+  va_start (args, msg);
+  if (obj->GetEntityName ())
+    results.Push (SanityResult ().
+	Object (obj).
+	Name ("Obj %s(%s)", obj->GetEntityName (), obj->GetFactory ()->GetName ()).
+	MessageV (msg, args));
+  else
+    results.Push (SanityResult ().
+	Object (obj).
+	Name ("Obj %d(%s)", obj->GetID (), obj->GetFactory ()->GetName ()).
+	MessageV (msg, args));
+  va_end (args);
+}
+
 void SanityChecker::PushResult (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
     const char* msg, ...)
 {
   va_list args;
   va_start (args, msg);
-  results.Push (SanityResult ().
+  if (pctpl->GetTag () && *pctpl->GetTag ())
+    results.Push (SanityResult ().
 	Resource (tpl->QueryObject ()).
-	Name ("%s/%s(%s)", tpl->GetName (), pctpl->GetName (), pctpl->GetTag ()).
+	Name ("Tpl %s/%s(%s)", tpl->GetName (), pctpl->GetName (), pctpl->GetTag ()).
+	MessageV (msg, args));
+  else
+    results.Push (SanityResult ().
+	Resource (tpl->QueryObject ()).
+	Name ("Tpl %s/%s", tpl->GetName (), pctpl->GetName ()).
 	MessageV (msg, args));
   va_end (args);
 }
@@ -97,6 +138,16 @@ static void Par (iCelPlLayer* pl, csSet<csStringID>& params, const char* par)
   if (*par != '$') return;
   if (strcmp (par+1, "this") == 0) return;
   params.Add (pl->FetchStringID (par+1));
+}
+
+static csStringID Par2 (iCelPlLayer* pl, csSet<csStringID>& params, const char* par)
+{
+  if (!par || !*par) return csInvalidStringID;
+  if (*par != '$' && *par != '@') return csInvalidStringID;
+  if (strcmp (par+1, "this") == 0) return csInvalidStringID;
+  csStringID parID = pl->FetchStringID (par+1);
+  params.Add (parID);
+  return parID;
 }
 
 void SanityChecker::CollectSeqopParameters (iSeqOpFactory* seqopFact, csSet<csStringID>& params)
@@ -323,6 +374,9 @@ void SanityChecker::CollectRewardParameters (iRewardFactory* reward, csSet<csStr
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
     Par (pl, params, tf->GetEntity ());
     Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetID ());
+    for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
+      Par (pl, params, tf->GetParameterValue (i));
   }
   else if (name == "cssequence")
   {
@@ -396,6 +450,56 @@ csSet<csStringID> SanityChecker::CollectQuestParameters (iQuestFactory* quest)
   return params;
 }
 
+void SanityChecker::CollectParParameters (iCelParameterIterator* it,
+    csSet<csStringID>& params, csHash<celDataType,csStringID>& paramTypes)
+{
+  while (it->HasNext ())
+  {
+    csStringID id;
+    iParameter* par = it->Next (id);
+    csString expr = par->GetOriginalExpression ();
+    csStringID parID = Par2 (pl, params, expr);
+    if (parID != csInvalidStringID)
+      paramTypes.PutUnique (parID, par->GetPossibleType ());
+  }
+}
+
+void SanityChecker::CollectPCParameters (iCelPropertyClassTemplate* pctpl,
+    csSet<csStringID>& params, csHash<celDataType,csStringID>& paramTypes)
+{
+  for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> it = pctpl->GetProperty (i, id, data);
+    if (it)
+      CollectParParameters (it, params, paramTypes);
+  }
+}
+
+void SanityChecker::CollectTemplateParameters (iCelEntityTemplate* tpl,
+    csSet<csStringID>& params, csHash<celDataType,csStringID>& paramTypes)
+{
+  // @@@ Support defaults.
+
+  for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+    CollectPCParameters (tpl->GetPropertyClassTemplate (i), params, paramTypes);
+
+  for (size_t i = 0 ; i < tpl->GetMessageCount () ; i++)
+  {
+    csStringID id;
+    csRef<iCelParameterIterator> it = tpl->GetMessage (i, id);
+    CollectParParameters (it, params, paramTypes);
+  }
+
+  csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
+  while (it->HasNext ())
+  {
+    iCelEntityTemplate* parent = it->Next ();
+    CollectTemplateParameters (parent, params, paramTypes);
+  }
+}
+
 void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
 {
   csRef<iCelParameterIterator> newquestParams = InspectTools::FindAction (pl, pctpl, "NewQuest");
@@ -409,7 +513,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   bool questNameGiven = false;
   iQuestFactory* quest = 0;
 
-  csSet<csStringID> givenParameters;
+  csSet<csStringID> given;
   while (newquestParams->HasNext ())
   {
     csStringID parid;
@@ -436,7 +540,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
     }
     else
     {
-      givenParameters.Add (parid);
+      given.Add (parid);
     }
   }
   if (!questNameGiven)
@@ -446,8 +550,8 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   }
   if (quest)
   {
-    csSet<csStringID> questParams = CollectQuestParameters (quest);
-    csSet<csStringID> missing = Subtract (questParams, givenParameters);
+    csSet<csStringID> wanted = CollectQuestParameters (quest);
+    csSet<csStringID> missing = Subtract (wanted, given);
     {
       csSet<csStringID>::GlobalIterator it = missing.GetIterator ();
       while (it.HasNext ())
@@ -457,7 +561,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
         PushResult (tpl, pctpl, "Quest parameter '%s' is missing!", parName.GetData ());
       }
     }
-    csSet<csStringID> toomuch = Subtract (givenParameters, questParams);
+    csSet<csStringID> toomuch = Subtract (given, wanted);
     {
       csSet<csStringID>::GlobalIterator it = toomuch.GetIterator ();
       while (it.HasNext ())
@@ -496,8 +600,266 @@ void SanityChecker::CheckTemplates ()
   }
 }
 
+void SanityChecker::Check (iDynamicFactory* dynfact)
+{
+  const char* deftpl = dynfact->GetDefaultEntityTemplate ();
+  if (deftpl)
+  {
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (deftpl);
+    if (!tpl)
+      PushResult (dynfact, "Can't find template '%s'!", deftpl);
+  }
+}
+
+csSet<csStringID> SanityChecker::CheckParameterTypes (iDynamicObject* dynobj,
+    const csSet<csStringID>& wanted,
+    const csHash<celDataType,csStringID>& paramTypes)
+{
+  iCelParameterBlock* params = dynobj->GetEntityParameters ();
+  csSet<csStringID> given;
+  if (params)
+  {
+    for (size_t i = 0 ; i < params->GetParameterCount () ; i++)
+    {
+      celDataType type;
+      csStringID parID = params->GetParameterDef (i, type);
+      given.Add (parID);
+      if (wanted.Contains (parID))
+      {
+	celDataType wantedType = paramTypes.Get (parID, CEL_DATA_NONE);
+	if (wantedType != CEL_DATA_NONE)
+	{
+	  if (type != wantedType)
+	  {
+	    csString typeS = celParameterTools::GetTypeName (type);
+	    csString wantedTypeS = celParameterTools::GetTypeName (wantedType);
+	    csString parName = pl->FetchString (parID);
+	    PushResult (dynobj, "Template parameter '%s' has wrong type! Wanted %s but got %s instead.",
+		parName.GetData (), wantedTypeS.GetData (), typeS.GetData ());
+	  }
+	}
+      }
+    }
+  }
+  return given;
+}
+
+void SanityChecker::Check (iDynamicObject* dynobj)
+{
+  iCelEntityTemplate* tpl = dynobj->GetEntityTemplate ();
+  if (tpl)
+  {
+    csSet<csStringID> wanted;
+    csHash<celDataType,csStringID> paramTypes;
+    CollectTemplateParameters (tpl, wanted, paramTypes);
+    csSet<csStringID> given = CheckParameterTypes (dynobj, wanted, paramTypes);
+    csSet<csStringID> missing = Subtract (wanted, given);
+    {
+      csSet<csStringID>::GlobalIterator it = missing.GetIterator ();
+      while (it.HasNext ())
+      {
+        csStringID id = it.Next ();
+        csString parName = pl->FetchString (id);
+        PushResult (dynobj, "Template parameter '%s' is missing!", parName.GetData ());
+      }
+    }
+    csSet<csStringID> toomuch = Subtract (given, wanted);
+    {
+      csSet<csStringID>::GlobalIterator it = toomuch.GetIterator ();
+      while (it.HasNext ())
+      {
+        csStringID id = it.Next ();
+        csString parName = pl->FetchString (id);
+        PushResult (dynobj, "Template parameter '%s' is not needed!", parName.GetData ());
+      }
+    }
+  }
+}
+
+void SanityChecker::Check (iDynamicCell* cell)
+{
+  for (size_t i = 0 ; i < cell->GetObjectCount () ; i++)
+    Check (cell->GetObject (i));
+}
+
+void SanityChecker::CheckObjects ()
+{
+  for (size_t i = 0 ; i < dynworld->GetFactoryCount () ; i++)
+    Check (dynworld->GetFactory (i));
+
+  csRef<iDynamicCellIterator> it = dynworld->GetCells ();
+  while (it->HasNext ())
+    Check (it->NextCell ());
+}
+
+bool SanityChecker::CheckExistingEntity (const char* par)
+{
+  // @@@ TODO
+  return false;
+}
+
+void SanityChecker::Check (iRewardFactory* reward)
+{
+  // @@@ TODO
+#if 0
+  csString name = reward->GetRewardType ()->GetName ();
+  if (name.StartsWith ("cel.rewards."))
+    name = name.GetData ()+12;
+  if (name == "newstate")
+  {
+    csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
+    Par (pl, params, tf->GetStateParameter ());
+    Par (pl, params, tf->GetEntityParameter ());
+    Par (pl, params, tf->GetTagParameter ());
+    Par (pl, params, tf->GetClassParameter ());
+  }
+  else if (name == "action")
+  {
+    csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetID ());
+    Par (pl, params, tf->GetPropertyClass ());
+    Par (pl, params, tf->GetTag ());
+  }
+  else if (name == "changeproperty")
+  {
+    csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetPC ());
+    Par (pl, params, tf->GetPCTag ());
+    Par (pl, params, tf->GetProperty ());
+    Par (pl, params, tf->GetString ());
+    Par (pl, params, tf->GetLong ());
+    Par (pl, params, tf->GetFloat ());
+    Par (pl, params, tf->GetBool ());
+    Par (pl, params, tf->GetDiff ());
+  }
+  else if (name == "createentity")
+  {
+    csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (reward);
+    Par (pl, params, tf->GetEntityTemplate ());
+    Par (pl, params, tf->GetName ());
+  }
+  else if (name == "destroyentity")
+  {
+    csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetClass ());
+  }
+  else if (name == "debugprint")
+  {
+    csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (reward);
+    Par (pl, params, tf->GetMessage ());
+  }
+  else if (name == "inventory")
+  {
+    csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetChildEntity ());
+    Par (pl, params, tf->GetChildTag ());
+  }
+  else if (name == "message")
+  {
+    csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetID ());
+    for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
+      Par (pl, params, tf->GetParameterValue (i));
+  }
+  else if (name == "cssequence")
+  {
+    csRef<iCsSequenceRewardFactory> tf = scfQueryInterface<iCsSequenceRewardFactory> (reward);
+    Par (pl, params, tf->GetSequence ());
+    Par (pl, params, tf->GetDelay ());
+  }
+  else if (name == "sequence")
+  {
+    csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetSequence ());
+    Par (pl, params, tf->GetDelay ());
+  }
+  else if (name == "sequencefinish")
+  {
+    csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetSequence ());
+  }
+  else
+  {
+    printf ("Sanity checker: unsupported reward type '%s'!\n", name.GetData ());
+    fflush (stdout);
+  }
+#endif
+}
+
+void SanityChecker::Check (iRewardFactoryArray* rewards)
+{
+  for (size_t i = 0 ; i < rewards->GetSize () ; i++)
+  {
+    iRewardFactory* reward = rewards->Get (i);
+    Check (reward);
+  }
+}
+
+void SanityChecker::Check (iTriggerFactory* trigger)
+{
+}
+
+void SanityChecker::Check (iSeqOpFactory* seqop)
+{
+}
+
+void SanityChecker::Check (iQuestFactory* quest)
+{
+  csRef<iQuestStateFactoryIterator> stateIt = quest->GetStates ();
+  while (stateIt->HasNext ())
+  {
+    iQuestStateFactory* state = stateIt->Next ();
+    csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
+    for (size_t i = 0 ; i < responses->GetSize () ; i++)
+    {
+      iQuestTriggerResponseFactory* response = responses->Get (i);
+      Check (response->GetRewardFactories ());
+      iTriggerFactory* trigger = response->GetTriggerFactory ();
+      Check (trigger);
+    }
+    Check (state->GetInitRewardFactories ());
+    Check (state->GetExitRewardFactories ());
+  }
+
+  csRef<iCelSequenceFactoryIterator> seqIt = quest->GetSequences ();
+  while (seqIt->HasNext ())
+  {
+    iCelSequenceFactory* seq = seqIt->Next ();
+    for (size_t i = 0 ; i < seq->GetSeqOpFactoryCount () ; i++)
+    {
+      iSeqOpFactory* seqopFact = seq->GetSeqOpFactory (i);
+      Check (seqopFact);
+    }
+  }
+}
+
+void SanityChecker::CheckQuests ()
+{
+  csRef<iQuestFactoryIterator> it = questManager->GetQuestFactories ();
+  while (it->HasNext ())
+    Check (it->Next ());
+}
+
 void SanityChecker::CheckAll ()
 {
+  ClearResults ();
   CheckTemplates ();
+  CheckObjects ();
+  CheckQuests ();
 }
 

@@ -1332,4 +1332,15 @@ void AppAresEditWX::OpenEditor (iObject* resource)
   }
 }
 
+void AppAresEditWX::OpenEditor (iDynamicObject* object)
+{
+  if (!object) return;
+  SwitchToMode ("Main");
+
+  if (object->GetCell () != aresed3d->GetDynamicWorld ()->GetCurrentCell ())
+    aresed3d->WarpCell (object->GetCell ());
+
+  aresed3d->GetSelection ()->SetCurrentObject (object);
+  camwin->MoveToSelection ();
+}
 

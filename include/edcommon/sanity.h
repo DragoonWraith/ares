@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include <crystalspace.h>
 #include "aresextern.h"
 
+#include "physicallayer/datatype.h"
+
 struct iCelPlLayer;
 struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
@@ -37,17 +39,24 @@ struct iRewardFactoryArray;
 struct iRewardFactory;
 struct iTriggerFactory;
 struct iSeqOpFactory;
+struct iPcDynamicWorld;
+struct iDynamicFactory;
+struct iDynamicObject;
+struct iDynamicCell;
+struct iCelParameterIterator;
 
 struct ARES_EDCOMMON_EXPORT SanityResult
 {
 public:
   iObject* resource;
+  iDynamicObject* object;
   csString name;
   csString message;
 
-  SanityResult () : resource (0) { }
+  SanityResult () : resource (0), object (0) { }
 
   SanityResult& Resource (iObject* object);
+  SanityResult& Object (iDynamicObject* object);
   SanityResult& Name (const char* fmt, ...);
   SanityResult& Message (const char* fmt, ...);
   SanityResult& MessageV (const char* fmt, va_list args);
@@ -62,6 +71,7 @@ private:
   csRef<iCelPlLayer> pl;
   csRef<iEngine> engine;
   csRef<iQuestManager> questManager;
+  iPcDynamicWorld* dynworld;
 
   csArray<SanityResult> results;
 
@@ -71,20 +81,46 @@ private:
   void CollectSeqopParameters (iSeqOpFactory* seqopFact, csSet<csStringID>& params);
   csSet<csStringID> CollectQuestParameters (iQuestFactory* quest);
 
+  void CollectParParameters (iCelParameterIterator* it, csSet<csStringID>& params,
+      csHash<celDataType,csStringID>& paramTypes);
+  void CollectPCParameters (iCelPropertyClassTemplate* pctpl, csSet<csStringID>& params,
+      csHash<celDataType,csStringID>& paramTypes);
+  void CollectTemplateParameters (iCelEntityTemplate* tpl, csSet<csStringID>& params,
+      csHash<celDataType,csStringID>& paramTypes);
+
   void CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
+
+  csSet<csStringID> CheckParameterTypes (iDynamicObject* dynobj,
+    const csSet<csStringID>& wanted,
+    const csHash<celDataType,csStringID>& paramTypes);
+
+  bool CheckExistingEntity (const char* par);
 
   void PushResult (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
       const char* msg, ...);
+  void PushResult (iDynamicFactory* fact, const char* msg, ...);
+  void PushResult (iDynamicObject* obj, const char* msg, ...);
 
 public:
-  SanityChecker (iObjectRegistry* object_reg);
+  SanityChecker (iObjectRegistry* object_reg, iPcDynamicWorld* dynworld);
   ~SanityChecker ();
 
   void ClearResults ();
 
   void Check (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
   void Check (iCelEntityTemplate* tpl);
+  void Check (iDynamicFactory* dynfact);
+  void Check (iDynamicObject* dynobj);
+  void Check (iDynamicCell* cell);
+  void Check (iRewardFactory* reward);
+  void Check (iRewardFactoryArray* rewards);
+  void Check (iTriggerFactory* trigger);
+  void Check (iSeqOpFactory* seqop);
+  void Check (iQuestFactory* quest);
+
   void CheckTemplates ();
+  void CheckObjects ();
+  void CheckQuests ();
   void CheckAll ();
 
   const csArray<SanityResult>& GetResults () const { return results; }

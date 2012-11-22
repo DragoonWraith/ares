@@ -272,6 +272,7 @@ public:
 
   virtual void SetObjectForComment (const char* type, iObject* objForComment);
   virtual void OpenEditor (iObject* resource);
+  virtual void OpenEditor (iDynamicObject* object);
 
   UIManager* GetUIManager () const { return uiManager; }
   virtual iUIManager* GetUI () const;

@@ -78,6 +78,8 @@ public:
   void Hide () { panel->Hide (); parentSizer->Layout (); }
   bool IsVisible () const { return panel->IsShown (); }
 
+  void MoveToSelection ();
+
   class Panel : public wxPanel
   {
   public:

@@ -82,6 +82,8 @@ private:
   bool okCancelAdded;
   void AddOkCancel ();
 
+  void Prepare ();
+
   virtual void OnButtonClicked (wxCommandEvent& event);
   virtual void OnEnterPressed (wxCommandEvent& event);
   virtual void ProcessButton (const csString& buttonLabel);
@@ -89,6 +91,8 @@ private:
 public:
   UIDialog (wxWindow* parent, const char* title, int width = -1, int height = -1);
   virtual ~UIDialog ();
+
+  virtual void DisableAutomaticOkCancel () { okCancelAdded = true; }
 
   /// Add a new row in this dialog.
   virtual void AddRow (int proportion = 0);
@@ -140,11 +144,8 @@ public:
   /// Set the vlaue of the given list.
   virtual void SetList (const char* name, const char* value);
 
-  /**
-   * Show the dialog in a modal manner.
-   * Returns 1 if Ok was pressed and 0 otherwise.
-   */
   virtual int Show (iUIDialogCallback* cb);
+  virtual void ShowNonModal (iUIDialogCallback* cb);
 
   /**
    * When any button is pressed (including Ok and Cancel) this will return

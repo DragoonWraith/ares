@@ -101,6 +101,7 @@ struct iAresEditor : public virtual iBase
    * Open the editor for a given resource.
    */
   virtual void OpenEditor (iObject* resource) = 0;
+  virtual void OpenEditor (iDynamicObject* object) = 0;
 };
 
 

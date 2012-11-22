@@ -75,33 +75,77 @@ SanityCheckerUI::SanityCheckerUI (UIManager* uiManager) : uiManager (uiManager)
 {
 }
 
-void SanityCheckerUI::Show ()
+class SanityCallback : public scfImplementation1<SanityCallback,iUIDialogCallback>
 {
-  SanityChecker* checker = new SanityChecker (uiManager->GetApp ()->GetObjectRegistry ());
-  checker->CheckAll ();
-  csRef<SanityCheckerValue> value;
-  value.AttachNew (new SanityCheckerValue (checker));
+private:
+  UIManager* uiManager;
+  SanityChecker* checker;
+  SanityCheckerValue* value;
 
-  csRef<iUIDialog> dialog = uiManager->CreateDialog ("Sanity checker", 900);
-  dialog->AddRow ();
-  dialog->AddListIndexed ("name", value, 0, false, 400, "Name,Message",
-      0, 1);
-
-  if (dialog->Show (0) == 1)
+public:
+  SanityCallback (UIManager* uiManager, SanityChecker* checker,
+      SanityCheckerValue* value) : scfImplementationType (this),
+    uiManager (uiManager), checker (checker), value (value)
   {
-    const DialogValues& result = dialog->GetFieldValues ();
-    Value* row = result.Get ("name", 0);
-    if (row)
+  }
+  virtual ~SanityCallback () { delete checker; }
+
+  virtual void ButtonPressed (iUIDialog* dialog, const char* button)
+  {
+    csString b = button;
+    if (b == "Refresh")
     {
-      csString idxS = row->GetStringArrayValue ()->Get (2);
-      int idx;
-      csScanStr (idxS, "%d", &idx);
-      const csArray<SanityResult>& results = checker->GetResults ();
-      SanityResult result = results[idx];
-      uiManager->GetApp ()->OpenEditor (result.resource);
+      checker->ClearResults ();
+      checker->CheckAll ();
+      value->BuildModel ();
+    }
+    else if (b == "Fix")
+    {
+      const DialogValues& result = dialog->GetFieldValues ();
+      Value* row = result.Get ("name", 0);
+      if (row)
+      {
+        csString idxS = row->GetStringArrayValue ()->Get (2);
+        int idx;
+        csScanStr (idxS, "%d", &idx);
+        const csArray<SanityResult>& results = checker->GetResults ();
+        SanityResult result = results[idx];
+	if (result.resource)
+          uiManager->GetApp ()->OpenEditor (result.resource);
+	if (result.object)
+          uiManager->GetApp ()->OpenEditor (result.object);
+      }
     }
   }
 
-  delete checker;
+  SanityChecker* GetChecker () { return checker; }
+};
+
+void SanityCheckerUI::Show ()
+{
+  SanityChecker* checker = new SanityChecker (uiManager->GetApp ()->GetObjectRegistry (),
+      uiManager->GetApp ()->Get3DView ()->GetDynamicWorld ());
+  checker->CheckAll ();
+
+  csRef<SanityCheckerValue> value;
+  value.AttachNew (new SanityCheckerValue (checker));
+
+  csRef<SanityCallback> cb;
+  cb.AttachNew (new SanityCallback (uiManager, checker, value));
+
+  if (!dialog)
+  {
+    dialog = uiManager->CreateDialog ("Sanity checker", 900);
+    dialog->AddRow ();
+    dialog->AddListIndexed ("name", value, 0, false, 400, "Name,Message", 0, 1);
+    dialog->AddRow ();
+    dialog->AddButton ("Refresh");
+    dialog->AddButton ("Fix");
+    dialog->AddSpace ();
+    dialog->AddButton ("Ok");
+    dialog->DisableAutomaticOkCancel ();
+  }
+
+  dialog->ShowNonModal (cb);
 }
 

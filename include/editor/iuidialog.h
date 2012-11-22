@@ -53,6 +53,9 @@ struct iUIDialog : public virtual iBase
 {
   SCF_INTERFACE(iUIDialog,0,0,1);
 
+  /// No automatic 'okcancel' row.
+  virtual void DisableAutomaticOkCancel () = 0;
+
   /// Add a new row in this dialog.
   virtual void AddRow (int proportion = 0) = 0;
 
@@ -113,6 +116,11 @@ struct iUIDialog : public virtual iBase
    * Returns 1 if Ok was pressed and 0 otherwise.
    */
   virtual int Show (iUIDialogCallback* cb) = 0;
+
+  /**
+   * Show the dialog in a non-modal manner.
+   */
+  virtual void ShowNonModal (iUIDialogCallback* cb) = 0;
 
   /**
    * When any button is pressed (including Ok and Cancel) this will return

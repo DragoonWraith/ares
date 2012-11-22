@@ -74,6 +74,7 @@ private:
   csRef<iVirtualClock> vc;
   csRef<iDynamics> dyn;
   iCamera* camera;
+  iDynamicCell* oldcell;
 
   csTicks currentTime;
 

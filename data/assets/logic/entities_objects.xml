@@ -113,10 +113,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar2">
@@ -151,10 +151,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar2">
@@ -204,10 +204,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar1">
@@ -242,10 +242,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
     <propclass name="pclogic.quest" tag="moveBar1">

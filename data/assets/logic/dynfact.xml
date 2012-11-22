@@ -170,8 +170,8 @@
       <action name="AddOutput">
         <par name="msgid" string="ares.teleport" />
         <par name="entity" string="World" />
-        <par name="cell" string="@cell" />
-        <par name="pos" vector3="@pos" />
+        <par name="cell" string="$cell" />
+        <par name="pos" vector3="$pos" />
       </action>
     </propclass>
     <propclass name="pclogic.spawn">
@@ -185,8 +185,8 @@
         <par name="repeat" bool="true" />
       </action>
       <action name="AddSpawnPosition">
-        <par name="position" vector3="@pos" />
-        <par name="sector" string="@sector" />
+        <par name="position" vector3="$pos" />
+        <par name="sector" string="$sector" />
       </action>
       <action name="Inhibit">
         <par name="count" long="5" />

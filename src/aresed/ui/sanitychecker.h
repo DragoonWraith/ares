@@ -42,6 +42,7 @@ class SanityCheckerUI
 {
 private:
   UIManager* uiManager;
+  csRef<iUIDialog> dialog;
 
 public:
   SanityCheckerUI (UIManager* uiManager);

@@ -314,10 +314,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
   </addon>
@@ -332,7 +332,7 @@
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="name" string="DblActivatorTrigger" />
-        <par name="trigger" string="@trigger" />
+        <par name="trigger" string="$trigger" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -340,10 +340,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
   </addon>
@@ -354,7 +354,7 @@
     <propclass name="pclogic.quest">
       <action name="NewQuest">
         <par name="name" string="ProximityMessage" />
-        <par name="message" string="@message" />
+        <par name="message" string="$message" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -378,7 +378,7 @@
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="name" string="DblActivatorOtherStandard" />
-        <par name="target" string="@target" />
+        <par name="target" string="$target" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -392,7 +392,7 @@
     <propclass name="pclogic.quest" tag="activator">
       <action name="NewQuest">
         <par name="name" string="DblActivatorTimer" />
-        <par name="timeout" long="@timeout" />
+        <par name="timeout" long="$timeout" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -400,8 +400,8 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerRotateY" />
-        <par name="angle" float="@angle" />
-        <par name="duration" long="@duration" />
+        <par name="angle" float="$angle" />
+        <par name="duration" long="$duration" />
       </action>
     </propclass>
   </addon>
@@ -422,10 +422,10 @@
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="@duration" />
-        <par name="x" float="@x" />
-        <par name="y" float="@y" />
-        <par name="z" float="@z" />
+        <par name="duration" long="$duration" />
+        <par name="x" float="$x" />
+        <par name="y" float="$y" />
+        <par name="z" float="$z" />
       </action>
     </propclass>
   </addon>
@@ -444,8 +444,8 @@ A template hosting a quest that can rotate an object back and forth in a loop.
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerRotateY" />
-        <par name="angle" float="@angle" />
-        <par name="duration" long="@duration" />
+        <par name="angle" float="$angle" />
+        <par name="duration" long="$duration" />
       </action>
     </propclass>
   </addon>
@@ -463,8 +463,8 @@ A template hosting a quest that can rotate an object back and forth in a loop.
     <propclass name="pclogic.quest" tag="sequencer">
       <action name="NewQuest">
         <par name="name" string="DblSequencerRotateY" />
-        <par name="angle" float="@angle" />
-        <par name="duration" long="@duration" />
+        <par name="angle" float="$angle" />
+        <par name="duration" long="$duration" />
       </action>
     </propclass>
   </addon>
@@ -474,7 +474,7 @@ A template hosting a quest that can rotate an object back and forth in a loop.
         <par name="mask" string="ares.Activate" />
       </action>
       <action name="AddOutput">
-        <par name="destination" string="@destination" />
+        <par name="destination" string="$destination" />
         <par name="msgid" string="ares.controller.Teleport" />
         <par name="entity" string="World" />
       </action>

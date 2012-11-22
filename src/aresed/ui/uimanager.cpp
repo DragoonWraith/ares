@@ -430,12 +430,19 @@ void UIDialog::ProcessButton (const csString& buttonLabel)
 
   if (buttonLabel == "Ok")
   {
-    EndModal (1);
+    if (IsModal ())
+      EndModal (1);
+    else
+      Close ();
     return;
   }
   else if (buttonLabel == "Cancel")
   {
-    EndModal (0);
+    if (IsModal ())
+      EndModal (0);
+    else
+      Close ();
+
     return;
   }
 
@@ -448,10 +455,8 @@ void UIDialog::AddSpace ()
   lastRowSizer->Add (0, 0, 1, wxEXPAND, 5);
 }
 
-int UIDialog::Show (iUIDialogCallback* cb)
+void UIDialog::Prepare ()
 {
-  callback = cb;
-  AddOkCancel ();
   mainPanel->Layout ();
   mainPanel->Fit ();
   Layout ();
@@ -468,8 +473,22 @@ int UIDialog::Show (iUIDialogCallback* cb)
     for (int col = 0 ; col < info.list->GetItemCount () ; col++)
       info.list->SetColumnWidth (col, wxLIST_AUTOSIZE);
   }
+}
 
+int UIDialog::Show (iUIDialogCallback* cb)
+{
+  callback = cb;
+  AddOkCancel ();
+  Prepare ();
   return ShowModal ();
+}
+
+void UIDialog::ShowNonModal (iUIDialogCallback* cb)
+{
+  callback = cb;
+  AddOkCancel ();
+  Prepare ();
+  wxDialog::Show ();
 }
 
 
