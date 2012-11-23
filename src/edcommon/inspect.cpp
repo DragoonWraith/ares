@@ -289,6 +289,24 @@ csRef<iCelParameterIterator> InspectTools::FindAction (iCelPlLayer* pl,
   return 0;
 }
 
+csString InspectTools::FindActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName)
+{
+  csRef<iCelParameterIterator> params = FindAction (pl, pctpl, actionName);
+  if (!params) return "";
+  csStringID nameID = pl->FetchStringID (parName);
+  while (params->HasNext ())
+  {
+    csStringID parid;
+    iParameter* par = params->Next (parid);
+    if (parid == nameID)
+      return par->GetOriginalExpression ();
+  }
+  return "";
+}
+
+
 csArray<celParSpec> InspectTools::GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment)
 {
   csArray<celParSpec> suggestions;

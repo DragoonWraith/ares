@@ -123,6 +123,11 @@ public:
 
 void SanityCheckerUI::Show ()
 {
+  if (dialog)
+  {
+    dialog->Close ();
+    dialog = 0;
+  }
   SanityChecker* checker = new SanityChecker (uiManager->GetApp ()->GetObjectRegistry (),
       uiManager->GetApp ()->Get3DView ()->GetDynamicWorld ());
   checker->CheckAll ();

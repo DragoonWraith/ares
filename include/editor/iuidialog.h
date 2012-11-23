@@ -123,6 +123,11 @@ struct iUIDialog : public virtual iBase
   virtual void ShowNonModal (iUIDialogCallback* cb) = 0;
 
   /**
+   * Close the dialog (only if it was opened non-modal).
+   */
+  virtual void Close () = 0;
+
+  /**
    * When any button is pressed (including Ok and Cancel) this will return
    * the contents of all text controls and choices.
    */

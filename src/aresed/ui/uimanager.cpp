@@ -442,7 +442,6 @@ void UIDialog::ProcessButton (const csString& buttonLabel)
       EndModal (0);
     else
       Close ();
-
     return;
   }
 
@@ -486,9 +485,16 @@ int UIDialog::Show (iUIDialogCallback* cb)
 void UIDialog::ShowNonModal (iUIDialogCallback* cb)
 {
   callback = cb;
+  if (IsShown ()) return;
   AddOkCancel ();
   Prepare ();
   wxDialog::Show ();
+}
+
+void UIDialog::Close ()
+{
+  wxDialog::Close ();
+  callback = 0;
 }
 
 

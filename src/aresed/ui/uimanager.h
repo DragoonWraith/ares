@@ -146,6 +146,7 @@ public:
 
   virtual int Show (iUIDialogCallback* cb);
   virtual void ShowNonModal (iUIDialogCallback* cb);
+  virtual void Close ();
 
   /**
    * When any button is pressed (including Ok and Cancel) this will return

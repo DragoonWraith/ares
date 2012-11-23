@@ -68,6 +68,14 @@ public:
       const char* parName, const char* parValue);
 
   /**
+   * Find an action and return the value for a given parameter.
+   * value.
+   */
+  static csString FindActionParameter (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName);
+
+  /**
    * Find an action and return the parameter iterator.
    */
   static csRef<iCelParameterIterator> FindAction (iCelPlLayer* pl,

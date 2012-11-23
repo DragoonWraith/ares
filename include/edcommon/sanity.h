@@ -94,12 +94,23 @@ private:
     const csSet<csStringID>& wanted,
     const csHash<celDataType,csStringID>& paramTypes);
 
-  bool CheckExistingEntity (const char* par);
+  iDynamicObject* FindEntity (const char* par);
+  iCelPropertyClassTemplate* FindPCTemplate (iCelEntityTemplate* tpl,
+      const char* name, const char* tag);
+  iQuestFactory* FindQuest (iCelEntityTemplate* tpl, const char* tag);
+
+  iCelEntityTemplate* FindTemplateForObject (iDynamicObject* object);
+
+  void CheckObjectForPC (iDynamicObject* object, iQuestFactory* quest,
+    const char* entityPar, const char* pcPar, const char* tagPar, const char* name);
+  iDynamicObject* CheckExistingEntityAndReport (iQuestFactory* quest, const char* parent, const char* par);
+  void CheckExistingEntityTemplateAndReport (iQuestFactory* quest, const char* parent, const char* par);
 
   void PushResult (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
       const char* msg, ...);
   void PushResult (iDynamicFactory* fact, const char* msg, ...);
   void PushResult (iDynamicObject* obj, const char* msg, ...);
+  void PushResult (iQuestFactory* quest, const char* msg, ...);
 
 public:
   SanityChecker (iObjectRegistry* object_reg, iPcDynamicWorld* dynworld);
@@ -112,10 +123,10 @@ public:
   void Check (iDynamicFactory* dynfact);
   void Check (iDynamicObject* dynobj);
   void Check (iDynamicCell* cell);
-  void Check (iRewardFactory* reward);
-  void Check (iRewardFactoryArray* rewards);
-  void Check (iTriggerFactory* trigger);
-  void Check (iSeqOpFactory* seqop);
+  void Check (iQuestFactory* quest, iRewardFactory* reward);
+  void Check (iQuestFactory* quest, iRewardFactoryArray* rewards);
+  void Check (iQuestFactory* quest, iTriggerFactory* trigger);
+  void Check (iQuestFactory* quest, iSeqOpFactory* seqop);
   void Check (iQuestFactory* quest);
 
   void CheckTemplates ();
