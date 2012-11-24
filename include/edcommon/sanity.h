@@ -75,25 +75,25 @@ private:
 
   csArray<SanityResult> results;
 
+  // Collect parameters.
   void CollectTriggerParameters (iTriggerFactory* trigger, csSet<csStringID>& params);
   void CollectRewardParameters (iRewardFactory* reward, csSet<csStringID>& params);
   void CollectRewardParameters (iRewardFactoryArray* rewards, csSet<csStringID>& params);
   void CollectSeqopParameters (iSeqOpFactory* seqopFact, csSet<csStringID>& params);
   csSet<csStringID> CollectQuestParameters (iQuestFactory* quest);
 
-  void CollectParParameters (iCelParameterIterator* it, csSet<csStringID>& params,
-      csHash<celDataType,csStringID>& paramTypes);
-  void CollectPCParameters (iCelPropertyClassTemplate* pctpl, csSet<csStringID>& params,
-      csHash<celDataType,csStringID>& paramTypes);
-  void CollectTemplateParameters (iCelEntityTemplate* tpl, csSet<csStringID>& params,
+  void CollectParParameters (iCelParameterIterator* it, csHash<celDataType,csStringID>& paramTypes);
+  void CollectPCParameters (iCelPropertyClassTemplate* pctpl, csHash<celDataType,csStringID>& paramTypes);
+  void CollectTemplateParameters (iCelEntityTemplate* tpl, csHash<celDataType,csStringID>& paramTypes);
+
+  void CollectObjectParameters (iDynamicObject* dynobj,
       csHash<celDataType,csStringID>& paramTypes);
 
-  void CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
-
-  csSet<csStringID> CheckParameterTypes (iDynamicObject* dynobj,
-    const csSet<csStringID>& wanted,
+  void CheckParameterTypes (iDynamicObject* dynobj,
+    const csHash<celDataType,csStringID>& givenTypes,
     const csHash<celDataType,csStringID>& paramTypes);
 
+  // Find stuff.
   iDynamicObject* FindEntity (const char* par);
   iCelPropertyClassTemplate* FindPCTemplate (iCelEntityTemplate* tpl,
       const char* name, const char* tag);
@@ -101,10 +101,13 @@ private:
 
   iCelEntityTemplate* FindTemplateForObject (iDynamicObject* object);
 
+  // Check stuff.
   void CheckObjectForPC (iDynamicObject* object, iQuestFactory* quest,
     const char* entityPar, const char* pcPar, const char* tagPar, const char* name);
   iDynamicObject* CheckExistingEntityAndReport (iQuestFactory* quest, const char* parent, const char* par);
   void CheckExistingEntityTemplateAndReport (iQuestFactory* quest, const char* parent, const char* par);
+
+  void CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
 
   void PushResult (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
       const char* msg, ...);

@@ -181,14 +181,12 @@ static void Par (iCelPlLayer* pl, csSet<csStringID>& params, const char* par)
   params.Add (pl->FetchStringID (par+1));
 }
 
-static csStringID Par2 (iCelPlLayer* pl, csSet<csStringID>& params, const char* par)
+static csStringID Par2 (iCelPlLayer* pl, const char* par)
 {
   if (!par || !*par) return csInvalidStringID;
   if (*par != '$' && *par != '@') return csInvalidStringID;
   if (strcmp (par+1, "this") == 0) return csInvalidStringID;
-  csStringID parID = pl->FetchStringID (par+1);
-  params.Add (parID);
-  return parID;
+  return pl->FetchStringID (par+1);
 }
 
 void SanityChecker::CollectSeqopParameters (iSeqOpFactory* seqopFact, csSet<csStringID>& params)
@@ -492,21 +490,21 @@ csSet<csStringID> SanityChecker::CollectQuestParameters (iQuestFactory* quest)
 }
 
 void SanityChecker::CollectParParameters (iCelParameterIterator* it,
-    csSet<csStringID>& params, csHash<celDataType,csStringID>& paramTypes)
+    csHash<celDataType,csStringID>& paramTypes)
 {
   while (it->HasNext ())
   {
     csStringID id;
     iParameter* par = it->Next (id);
     csString expr = par->GetOriginalExpression ();
-    csStringID parID = Par2 (pl, params, expr);
+    csStringID parID = Par2 (pl, expr);
     if (parID != csInvalidStringID)
       paramTypes.PutUnique (parID, par->GetPossibleType ());
   }
 }
 
 void SanityChecker::CollectPCParameters (iCelPropertyClassTemplate* pctpl,
-    csSet<csStringID>& params, csHash<celDataType,csStringID>& paramTypes)
+    csHash<celDataType,csStringID>& paramTypes)
 {
   for (size_t i = 0 ; i < pctpl->GetPropertyCount () ; i++)
   {
@@ -514,30 +512,30 @@ void SanityChecker::CollectPCParameters (iCelPropertyClassTemplate* pctpl,
     celData data;
     csRef<iCelParameterIterator> it = pctpl->GetProperty (i, id, data);
     if (it)
-      CollectParParameters (it, params, paramTypes);
+      CollectParParameters (it, paramTypes);
   }
 }
 
 void SanityChecker::CollectTemplateParameters (iCelEntityTemplate* tpl,
-    csSet<csStringID>& params, csHash<celDataType,csStringID>& paramTypes)
+    csHash<celDataType,csStringID>& paramTypes)
 {
   // @@@ Support defaults.
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
-    CollectPCParameters (tpl->GetPropertyClassTemplate (i), params, paramTypes);
+    CollectPCParameters (tpl->GetPropertyClassTemplate (i), paramTypes);
 
   for (size_t i = 0 ; i < tpl->GetMessageCount () ; i++)
   {
     csStringID id;
     csRef<iCelParameterIterator> it = tpl->GetMessage (i, id);
-    CollectParParameters (it, params, paramTypes);
+    CollectParParameters (it, paramTypes);
   }
 
   csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
   while (it->HasNext ())
   {
     iCelEntityTemplate* parent = it->Next ();
-    CollectTemplateParameters (parent, params, paramTypes);
+    CollectTemplateParameters (parent, paramTypes);
   }
 }
 
@@ -652,37 +650,62 @@ void SanityChecker::Check (iDynamicFactory* dynfact)
   }
 }
 
-csSet<csStringID> SanityChecker::CheckParameterTypes (iDynamicObject* dynobj,
-    const csSet<csStringID>& wanted,
-    const csHash<celDataType,csStringID>& paramTypes)
+void SanityChecker::CollectObjectParameters (iDynamicObject* dynobj,
+      csHash<celDataType,csStringID>& paramTypes)
 {
   iCelParameterBlock* params = dynobj->GetEntityParameters ();
-  csSet<csStringID> given;
   if (params)
   {
     for (size_t i = 0 ; i < params->GetParameterCount () ; i++)
     {
       celDataType type;
       csStringID parID = params->GetParameterDef (i, type);
-      given.Add (parID);
-      if (wanted.Contains (parID))
+      paramTypes.Put (parID, type);
+    }
+  }
+}
+
+void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj,
+    const csHash<celDataType,csStringID>& givenTypes,
+    const csHash<celDataType,csStringID>& wantedTypes)
+{
+  csHash<celDataType,csStringID>::ConstGlobalIterator it = givenTypes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID givenPar;
+    celDataType givenType = it.Next (givenPar);
+    if (wantedTypes.Contains (givenPar))
+    {
+      celDataType wantedType = wantedTypes.Get (givenPar, CEL_DATA_NONE);
+      if (wantedType != CEL_DATA_NONE)
       {
-	celDataType wantedType = paramTypes.Get (parID, CEL_DATA_NONE);
-	if (wantedType != CEL_DATA_NONE)
+	if (givenType != wantedType)
 	{
-	  if (type != wantedType)
-	  {
-	    csString typeS = celParameterTools::GetTypeName (type);
-	    csString wantedTypeS = celParameterTools::GetTypeName (wantedType);
-	    csString parName = pl->FetchString (parID);
-	    PushResult (dynobj, "Template parameter '%s' has wrong type! Wanted %s but got %s instead.",
-		parName.GetData (), wantedTypeS.GetData (), typeS.GetData ());
-	  }
+	  csString givenTypeS = celParameterTools::GetTypeName (givenType);
+	  csString wantedTypeS = celParameterTools::GetTypeName (wantedType);
+	  csString parName = pl->FetchString (givenPar);
+	  PushResult (dynobj, "Template parameter '%s' has wrong type! Wanted %s but got %s instead.",
+	      parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
 	}
       }
     }
+    else
+    {
+      csString parName = pl->FetchString (givenPar);
+      PushResult (dynobj, "Template parameter '%s' is not needed!", parName.GetData ());
+    }
   }
-  return given;
+  it = wantedTypes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID wantedPar;
+    it.Next (wantedPar);
+    if (!givenTypes.Contains (wantedPar))
+    {
+      csString parName = pl->FetchString (wantedPar);
+      PushResult (dynobj, "Template parameter '%s' is missing!", parName.GetData ());
+    }
+  }
 }
 
 void SanityChecker::Check (iDynamicObject* dynobj)
@@ -693,30 +716,11 @@ void SanityChecker::Check (iDynamicObject* dynobj)
 
   if (tpl)
   {
-    csSet<csStringID> wanted;
-    csHash<celDataType,csStringID> paramTypes;
-    CollectTemplateParameters (tpl, wanted, paramTypes);
-    csSet<csStringID> given = CheckParameterTypes (dynobj, wanted, paramTypes);
-    csSet<csStringID> missing = Subtract (wanted, given);
-    {
-      csSet<csStringID>::GlobalIterator it = missing.GetIterator ();
-      while (it.HasNext ())
-      {
-        csStringID id = it.Next ();
-        csString parName = pl->FetchString (id);
-        PushResult (dynobj, "Template parameter '%s' is missing!", parName.GetData ());
-      }
-    }
-    csSet<csStringID> toomuch = Subtract (given, wanted);
-    {
-      csSet<csStringID>::GlobalIterator it = toomuch.GetIterator ();
-      while (it.HasNext ())
-      {
-        csStringID id = it.Next ();
-        csString parName = pl->FetchString (id);
-        PushResult (dynobj, "Template parameter '%s' is not needed!", parName.GetData ());
-      }
-    }
+    csHash<celDataType,csStringID> wantedTypes, givenTypes;
+    CollectTemplateParameters (tpl, wantedTypes);
+    CollectObjectParameters (dynobj, givenTypes);
+
+    CheckParameterTypes (dynobj, givenTypes, wantedTypes);
   }
 }
 
