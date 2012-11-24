@@ -37,16 +37,38 @@ struct iCelPlLayer;
 struct iParameter;
 struct iParameterManager;
 struct iObjectComment;
+struct iDynamicObject;
 struct iPcDynamicWorld;
 struct iQuestManager;
 struct iEngine;
 struct iQuestFactory;
 struct iCelParameterIterator;
+struct iCelEntityTemplate;
+struct iRewardFactory;
+struct iSeqOpFactory;
+struct iTriggerFactory;
+struct iRewardFactoryArray;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
 class ARES_EDCOMMON_EXPORT InspectTools
 {
+private:
+  static void CollectParParameters (iCelPlLayer* pl, iCelParameterIterator* it,
+      csHash<celDataType,csStringID>& paramTypes);
+  static void CollectPCParameters (iCelPlLayer* pl, iCelPropertyClassTemplate* pctpl,
+      csHash<celDataType,csStringID>& paramTypes);
+  static void CollectTemplateParameters (iCelPlLayer* pl, iCelEntityTemplate* tpl,
+      csHash<celDataType,csStringID>& paramTypes);
+  static void CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* trigger,
+      csSet<csStringID>& params);
+  static void CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* reward,
+      csSet<csStringID>& params);
+  static void CollectRewardParameters (iCelPlLayer* pl, iRewardFactoryArray* rewards,
+      csSet<csStringID>& params);
+  static void CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqopFact,
+      csSet<csStringID>& params);
+
 public:
   static celData GetPropertyValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* propName, bool* valid = 0);
@@ -174,6 +196,21 @@ public:
    * Get parameter suggestions out of a comment block.
    */
   static csArray<celParSpec> GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment);
+
+  /**
+   * Return the parameters that a dynamic object provides for its template.
+   */
+  static csHash<celDataType,csStringID> GetObjectParameters (iDynamicObject* dynobj);
+
+  /**
+   * Return the parameters that a template needs.
+   */
+  static csHash<celDataType,csStringID> GetTemplateParameters (iCelPlLayer* pl, iCelEntityTemplate* tpl);
+
+  /**
+   * Return the parameters that a quest needs.
+   */
+  static csSet<csStringID> GetQuestParameters (iCelPlLayer* pl, iQuestFactory* quest);
 };
 
 class ARES_EDCOMMON_EXPORT ResourceCounter

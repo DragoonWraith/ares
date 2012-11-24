@@ -75,20 +75,6 @@ private:
 
   csArray<SanityResult> results;
 
-  // Collect parameters.
-  void CollectTriggerParameters (iTriggerFactory* trigger, csSet<csStringID>& params);
-  void CollectRewardParameters (iRewardFactory* reward, csSet<csStringID>& params);
-  void CollectRewardParameters (iRewardFactoryArray* rewards, csSet<csStringID>& params);
-  void CollectSeqopParameters (iSeqOpFactory* seqopFact, csSet<csStringID>& params);
-  csSet<csStringID> CollectQuestParameters (iQuestFactory* quest);
-
-  void CollectParParameters (iCelParameterIterator* it, csHash<celDataType,csStringID>& paramTypes);
-  void CollectPCParameters (iCelPropertyClassTemplate* pctpl, csHash<celDataType,csStringID>& paramTypes);
-  void CollectTemplateParameters (iCelEntityTemplate* tpl, csHash<celDataType,csStringID>& paramTypes);
-
-  void CollectObjectParameters (iDynamicObject* dynobj,
-      csHash<celDataType,csStringID>& paramTypes);
-
   void CheckParameterTypes (iDynamicObject* dynobj,
     const csHash<celDataType,csStringID>& givenTypes,
     const csHash<celDataType,csStringID>& paramTypes);
