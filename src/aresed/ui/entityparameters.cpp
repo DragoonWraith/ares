@@ -142,14 +142,14 @@ void EntityParameterDialog::SuggestParameters ()
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
   if (!tpl) return;
 
-  csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (tpl->QueryObject ());
-  if (!comment) return;
+  csHash<celDataType,csStringID> suggestions = InspectTools::GetTemplateParameters (pl, tpl);
   csArray<Par>& params = parameters->GetParameters ();
-  csArray<celParSpec> suggestions = InspectTools::GetParameterSuggestions (pl, comment);
-  for (size_t i = 0 ; i < suggestions.GetSize () ; i++)
+  csHash<celDataType,csStringID>::GlobalIterator it = suggestions.GetIterator ();
+  while (it.HasNext ())
   {
-    celParSpec& ps = suggestions[i];
-    csString name = pl->FetchString (ps.id);
+    csStringID parID;
+    celDataType type = it.Next (parID);
+    csString name = pl->FetchString (parID);
     bool found = false;
     for (size_t j = 0 ; j < params.GetSize () ; j++)
       if (params[j].name == name)
@@ -161,8 +161,8 @@ void EntityParameterDialog::SuggestParameters ()
     {
       Par p;
       p.name = name;
-      p.type = ps.type;
-      p.value = ps.value;
+      p.type = type;
+      p.value = "";
       params.Push (p);
     }
   }

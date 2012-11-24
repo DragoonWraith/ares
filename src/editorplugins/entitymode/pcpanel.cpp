@@ -1528,14 +1528,14 @@ void PropertyClassPanel::SuggestParameters ()
   iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
   if (!questFact) return;
 
-  csRef<iObjectComment> comment = CS::GetChildObject<iObjectComment> (questFact->QueryObject ());
-  if (!comment) return;
-  csArray<celParSpec> suggestions = InspectTools::GetParameterSuggestions (pl, comment);
-  for (size_t i = 0 ; i < suggestions.GetSize () ; i++)
+  csHash<celDataType,csStringID> suggestions = InspectTools::GetQuestParameters (pl, questFact);
+  csHash<celDataType,csStringID>::GlobalIterator it = suggestions.GetIterator ();
+  while (it.HasNext ())
   {
-    celParSpec& ps = suggestions[i];
-    csString name = pl->FetchString (ps.id);
-    csRef<iParameter> par = pm->GetParameter (ps.value, ps.type);
+    csStringID parID;
+    celDataType type = it.Next (parID);
+    csString name = pl->FetchString (parID);
+    csRef<iParameter> par = pm->GetParameter ("", type);
     if (!par) break;	// @@@ Report error?
     InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);

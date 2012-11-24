@@ -61,13 +61,13 @@ private:
   static void CollectTemplateParameters (iCelPlLayer* pl, iCelEntityTemplate* tpl,
       csHash<celDataType,csStringID>& paramTypes);
   static void CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* trigger,
-      csSet<csStringID>& params);
+      csHash<celDataType,csStringID>& params);
   static void CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* reward,
-      csSet<csStringID>& params);
+      csHash<celDataType,csStringID>& params);
   static void CollectRewardParameters (iCelPlLayer* pl, iRewardFactoryArray* rewards,
-      csSet<csStringID>& params);
+      csHash<celDataType,csStringID>& params);
   static void CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqopFact,
-      csSet<csStringID>& params);
+      csHash<celDataType,csStringID>& params);
 
 public:
   static celData GetPropertyValue (iCelPlLayer* pl,
@@ -193,11 +193,6 @@ public:
   }
 
   /**
-   * Get parameter suggestions out of a comment block.
-   */
-  static csArray<celParSpec> GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment);
-
-  /**
    * Return the parameters that a dynamic object provides for its template.
    */
   static csHash<celDataType,csStringID> GetObjectParameters (iDynamicObject* dynobj);
@@ -210,7 +205,7 @@ public:
   /**
    * Return the parameters that a quest needs.
    */
-  static csSet<csStringID> GetQuestParameters (iCelPlLayer* pl, iQuestFactory* quest);
+  static csHash<celDataType,csStringID> GetQuestParameters (iCelPlLayer* pl, iQuestFactory* quest);
 };
 
 class ARES_EDCOMMON_EXPORT ResourceCounter

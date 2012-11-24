@@ -75,7 +75,8 @@ private:
 
   csArray<SanityResult> results;
 
-  void CheckParameterTypes (iDynamicObject* dynobj,
+  void CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTemplate* tpl,
+    iCelPropertyClassTemplate* pctpl,
     const csHash<celDataType,csStringID>& givenTypes,
     const csHash<celDataType,csStringID>& paramTypes);
 

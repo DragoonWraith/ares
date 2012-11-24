@@ -186,7 +186,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   bool questNameGiven = false;
   iQuestFactory* quest = 0;
 
-  csSet<csStringID> given;
+  csHash<celDataType,csStringID> given;
   while (newquestParams->HasNext ())
   {
     csStringID parid;
@@ -213,7 +213,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
     }
     else
     {
-      given.Add (parid);
+      given.PutUnique (parid, par->GetPossibleType ());
     }
   }
   if (!questNameGiven)
@@ -223,27 +223,8 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   }
   if (quest)
   {
-    csSet<csStringID> wanted = InspectTools::GetQuestParameters (pl, quest);
-    csSet<csStringID> missing = Subtract (wanted, given);
-    {
-      csSet<csStringID>::GlobalIterator it = missing.GetIterator ();
-      while (it.HasNext ())
-      {
-        csStringID id = it.Next ();
-        csString parName = pl->FetchString (id);
-        PushResult (tpl, pctpl, "Quest parameter '%s' is missing!", parName.GetData ());
-      }
-    }
-    csSet<csStringID> toomuch = Subtract (given, wanted);
-    {
-      csSet<csStringID>::GlobalIterator it = toomuch.GetIterator ();
-      while (it.HasNext ())
-      {
-        csStringID id = it.Next ();
-        csString parName = pl->FetchString (id);
-        PushResult (tpl, pctpl, "Quest parameter '%s' is not needed!", parName.GetData ());
-      }
-    }
+    csHash<celDataType,csStringID> wanted = InspectTools::GetQuestParameters (pl, quest);
+    CheckParameterTypes (0, tpl, pctpl, given, wanted);
   }
 }
 
@@ -284,7 +265,8 @@ void SanityChecker::Check (iDynamicFactory* dynfact)
   }
 }
 
-void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj,
+void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTemplate* tpl,
+    iCelPropertyClassTemplate* pctpl,
     const csHash<celDataType,csStringID>& givenTypes,
     const csHash<celDataType,csStringID>& wantedTypes)
 {
@@ -296,22 +278,29 @@ void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj,
     if (wantedTypes.Contains (givenPar))
     {
       celDataType wantedType = wantedTypes.Get (givenPar, CEL_DATA_NONE);
-      if (wantedType != CEL_DATA_NONE)
+      if (wantedType != CEL_DATA_NONE && wantedType != CEL_DATA_UNKNOWN)
       {
 	if (givenType != wantedType)
 	{
 	  csString givenTypeS = celParameterTools::GetTypeName (givenType);
 	  csString wantedTypeS = celParameterTools::GetTypeName (wantedType);
 	  csString parName = pl->FetchString (givenPar);
-	  PushResult (dynobj, "Template parameter '%s' has wrong type! Wanted %s but got %s instead.",
-	      parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
+	  if (dynobj)
+	    PushResult (dynobj, "Template parameter '%s' has wrong type! Wanted %s but got %s instead.",
+	        parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
+	  else
+	    PushResult (tpl, pctpl, "Quest parameter '%s' has wrong type! Wanted %s but got %s instead.",
+	        parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
 	}
       }
     }
     else
     {
       csString parName = pl->FetchString (givenPar);
-      PushResult (dynobj, "Template parameter '%s' is not needed!", parName.GetData ());
+      if (dynobj)
+        PushResult (dynobj, "Template parameter '%s' is not needed!", parName.GetData ());
+      else
+        PushResult (tpl, pctpl, "Quest parameter '%s' is not needed!", parName.GetData ());
     }
   }
   it = wantedTypes.GetIterator ();
@@ -322,7 +311,10 @@ void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj,
     if (!givenTypes.Contains (wantedPar))
     {
       csString parName = pl->FetchString (wantedPar);
-      PushResult (dynobj, "Template parameter '%s' is missing!", parName.GetData ());
+      if (dynobj)
+        PushResult (dynobj, "Template parameter '%s' is missing!", parName.GetData ());
+      else
+        PushResult (tpl, pctpl, "Quest parameter '%s' is missing!", parName.GetData ());
     }
   }
 }
@@ -338,7 +330,7 @@ void SanityChecker::Check (iDynamicObject* dynobj)
     csHash<celDataType,csStringID> wantedTypes = InspectTools::GetTemplateParameters (pl, tpl);
     csHash<celDataType,csStringID> givenTypes = InspectTools::GetObjectParameters (dynobj);
 
-    CheckParameterTypes (dynobj, givenTypes, wantedTypes);
+    CheckParameterTypes (dynobj, 0, 0, givenTypes, wantedTypes);
   }
 }
 

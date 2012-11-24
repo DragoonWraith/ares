@@ -307,32 +307,6 @@ csString InspectTools::FindActionParameter (iCelPlLayer* pl,
 }
 
 
-csArray<celParSpec> InspectTools::GetParameterSuggestions (iCelPlLayer* pl, iObjectComment* comment)
-{
-  csArray<celParSpec> suggestions;
-  using namespace CS::Utility;
-  StringArray<> lines (comment->GetComment ()->GetData (), "\n",
-      StringArray<>::delimIgnore);
-  for (size_t i = 0 ; i < lines.GetSize () ; i++)
-  {
-    csString line = lines[i];
-    if (line.StartsWith ("@param "))
-    {
-      StringArray<> tokens (line, " ", StringArray<>::delimIgnore);
-      StringArray<> parspecs (tokens[1], ",");
-      csStringID id = pl->FetchStringID (parspecs[0]);
-      celDataType type = CEL_DATA_STRING;
-      csString value;
-      if (parspecs.GetSize () > 1)
-        type = celParameterTools::GetType (parspecs[1]);
-      if (parspecs.GetSize () > 2)
-        value = parspecs[2];
-      suggestions.Push (celParSpec (type, id, value));
-    }
-  }
-  return suggestions;
-}
-
 static csStringID Par2 (iCelPlLayer* pl, const char* par)
 {
   if (!par || !*par) return csInvalidStringID;
@@ -351,6 +325,7 @@ void InspectTools::CollectParParameters (iCelPlLayer* pl, iCelParameterIterator*
     csString expr = par->GetOriginalExpression ();
     csStringID parID = Par2 (pl, expr);
     if (parID != csInvalidStringID)
+  // @@@ Check for conflicting types
       paramTypes.PutUnique (parID, par->GetPossibleType ());
   }
 }
@@ -415,16 +390,18 @@ csHash<celDataType,csStringID> InspectTools::GetObjectParameters (iDynamicObject
   return paramTypes;
 }
 
-static void Par (iCelPlLayer* pl, csSet<csStringID>& params, const char* par)
+static void Par (iCelPlLayer* pl, csHash<celDataType,csStringID>& params, const char* par,
+    celDataType type)
 {
   if (!par || !*par) return;
   if (*par != '$') return;
   if (strcmp (par+1, "this") == 0) return;
-  params.Add (pl->FetchStringID (par+1));
+  // @@@ Check for conflicting types
+  params.PutUnique (pl->FetchStringID (par+1), type);
 }
 
 void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqopFact,
-    csSet<csStringID>& params)
+    csHash<celDataType,csStringID>& params)
 {
   csString name;
   if (seqopFact) name = seqopFact->GetSeqOpType ()->GetName ();
@@ -437,66 +414,66 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
   else if (name == "debugprint")
   {
     csRef<iDebugPrintSeqOpFactory> tf = scfQueryInterface<iDebugPrintSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetMessage ());
+    Par (pl, params, tf->GetMessage (), CEL_DATA_STRING);
   }
   else if (name == "ambientmesh")
   {
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetRelColorRed ());
-    Par (pl, params, tf->GetRelColorGreen ());
-    Par (pl, params, tf->GetRelColorBlue ());
-    Par (pl, params, tf->GetAbsColorRed ());
-    Par (pl, params, tf->GetAbsColorGreen ());
-    Par (pl, params, tf->GetAbsColorBlue ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetRelColorRed (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetRelColorGreen (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetRelColorBlue (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetAbsColorRed (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetAbsColorGreen (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetAbsColorBlue (), CEL_DATA_FLOAT);
   }
   else if (name == "light")
   {
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetRelColorRed ());
-    Par (pl, params, tf->GetRelColorGreen ());
-    Par (pl, params, tf->GetRelColorBlue ());
-    Par (pl, params, tf->GetAbsColorRed ());
-    Par (pl, params, tf->GetAbsColorGreen ());
-    Par (pl, params, tf->GetAbsColorBlue ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetRelColorRed (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetRelColorGreen (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetRelColorBlue (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetAbsColorRed (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetAbsColorGreen (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetAbsColorBlue (), CEL_DATA_FLOAT);
   }
   else if (name == "movepath")
   {
     csRef<iMovePathSeqOpFactory> tf = scfQueryInterface<iMovePathSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
     for (size_t i = 0 ; i < tf->GetPathCount () ; i++)
     {
-      Par (pl, params, tf->GetPathSector (i));
-      Par (pl, params, tf->GetPathNode (i));
-      Par (pl, params, tf->GetPathTime (i));
+      Par (pl, params, tf->GetPathSector (i), CEL_DATA_STRING);
+      Par (pl, params, tf->GetPathNode (i), CEL_DATA_STRING);
+      Par (pl, params, tf->GetPathTime (i), CEL_DATA_STRING);
     }
   }
   else if (name == "property")
   {
     csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetPC ());
-    Par (pl, params, tf->GetPCTag ());
-    Par (pl, params, tf->GetProperty ());
-    Par (pl, params, tf->GetFloat ());
-    Par (pl, params, tf->GetLong ());
-    Par (pl, params, tf->GetVectorX ());
-    Par (pl, params, tf->GetVectorY ());
-    Par (pl, params, tf->GetVectorZ ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetPC (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetPCTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetProperty (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetFloat (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetLong (), CEL_DATA_LONG);
+    Par (pl, params, tf->GetVectorX (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetVectorY (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetVectorZ (), CEL_DATA_FLOAT);
   }
   else if (name == "transform")
   {
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetVectorX ());
-    Par (pl, params, tf->GetVectorY ());
-    Par (pl, params, tf->GetVectorZ ());
-    Par (pl, params, tf->GetRotationAngle ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetVectorX (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetVectorY (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetVectorZ (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetRotationAngle (), CEL_DATA_FLOAT);
   }
   else
   {
@@ -506,7 +483,7 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
 }
 
 void InspectTools::CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* trigger,
-    csSet<csStringID>& params)
+    csHash<celDataType,csStringID>& params)
 {
   csString name = trigger->GetTriggerType ()->GetName ();
   if (name.StartsWith ("cel.triggers."))
@@ -514,67 +491,67 @@ void InspectTools::CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* t
   if (name == "entersector" || name == "meshentersector")
   {
     csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetSector ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetSector (), CEL_DATA_STRING);
   }
   else if (name == "inventory")
   {
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetChildEntity ());
-    Par (pl, params, tf->GetChildTemplate ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetChildEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetChildTemplate (), CEL_DATA_STRING);
   }
   else if (name == "meshselect")
   {
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
   }
   else if (name == "message")
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
   }
   else if (name == "propertychange")
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetProperty ());
-    Par (pl, params, tf->GetValue ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetProperty (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetValue (), CEL_DATA_UNKNOWN);
   }
   else if (name == "sequencefinish")
   {
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetSequence ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetSequence (), CEL_DATA_STRING);
   }
   else if (name == "timeout")
   {
     csRef<iTimeoutTriggerFactory> tf = scfQueryInterface<iTimeoutTriggerFactory> (trigger);
-    Par (pl, params, tf->GetTimeout ());
+    Par (pl, params, tf->GetTimeout (), CEL_DATA_LONG);
   }
   else if (name == "trigger")
   {
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
   }
   else if (name == "watch")
   {
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetTargetEntity ());
-    Par (pl, params, tf->GetTargetTag ());
-    Par (pl, params, tf->GetChecktime ());
-    Par (pl, params, tf->GetRadius ());
-    Par (pl, params, tf->GetOffsetX ());
-    Par (pl, params, tf->GetOffsetY ());
-    Par (pl, params, tf->GetOffsetZ ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTargetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTargetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetChecktime (), CEL_DATA_LONG);
+    Par (pl, params, tf->GetRadius (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetOffsetX (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetOffsetY (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetOffsetZ (), CEL_DATA_FLOAT);
   }
   else
   {
@@ -584,7 +561,7 @@ void InspectTools::CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* t
 }
 
 void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* reward,
-    csSet<csStringID>& params)
+    csHash<celDataType,csStringID>& params)
 {
   csString name = reward->GetRewardType ()->GetName ();
   if (name.StartsWith ("cel.rewards."))
@@ -592,90 +569,90 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
   if (name == "newstate")
   {
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
-    Par (pl, params, tf->GetStateParameter ());
-    Par (pl, params, tf->GetEntityParameter ());
-    Par (pl, params, tf->GetTagParameter ());
-    Par (pl, params, tf->GetClassParameter ());
+    Par (pl, params, tf->GetStateParameter (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetEntityParameter (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTagParameter (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClassParameter (), CEL_DATA_STRING);
   }
   else if (name == "action")
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetClass ());
-    Par (pl, params, tf->GetID ());
-    Par (pl, params, tf->GetPropertyClass ());
-    Par (pl, params, tf->GetTag ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetID (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetPropertyClass (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
   }
   else if (name == "changeproperty")
   {
     csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetClass ());
-    Par (pl, params, tf->GetPC ());
-    Par (pl, params, tf->GetPCTag ());
-    Par (pl, params, tf->GetProperty ());
-    Par (pl, params, tf->GetString ());
-    Par (pl, params, tf->GetLong ());
-    Par (pl, params, tf->GetFloat ());
-    Par (pl, params, tf->GetBool ());
-    Par (pl, params, tf->GetDiff ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetPC (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetPCTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetProperty (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetString (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetLong (), CEL_DATA_LONG);
+    Par (pl, params, tf->GetFloat (), CEL_DATA_FLOAT);
+    Par (pl, params, tf->GetBool (), CEL_DATA_BOOL);
+    Par (pl, params, tf->GetDiff (), CEL_DATA_UNKNOWN);
   }
   else if (name == "createentity")
   {
     csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (reward);
-    Par (pl, params, tf->GetEntityTemplate ());
-    Par (pl, params, tf->GetName ());
+    Par (pl, params, tf->GetEntityTemplate (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetName (), CEL_DATA_STRING);
   }
   else if (name == "destroyentity")
   {
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetClass ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING);
   }
   else if (name == "debugprint")
   {
     csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (reward);
-    Par (pl, params, tf->GetMessage ());
+    Par (pl, params, tf->GetMessage (), CEL_DATA_STRING);
   }
   else if (name == "inventory")
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetChildEntity ());
-    Par (pl, params, tf->GetChildTag ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetChildEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetChildTag (), CEL_DATA_STRING);
   }
   else if (name == "message")
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetClass ());
-    Par (pl, params, tf->GetID ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetID (), CEL_DATA_STRING);
     for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
-      Par (pl, params, tf->GetParameterValue (i));
+      Par (pl, params, tf->GetParameterValue (i), tf->GetParameterType (i));
   }
   else if (name == "cssequence")
   {
     csRef<iCsSequenceRewardFactory> tf = scfQueryInterface<iCsSequenceRewardFactory> (reward);
-    Par (pl, params, tf->GetSequence ());
-    Par (pl, params, tf->GetDelay ());
+    Par (pl, params, tf->GetSequence (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetDelay (), CEL_DATA_LONG);
   }
   else if (name == "sequence")
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetClass ());
-    Par (pl, params, tf->GetSequence ());
-    Par (pl, params, tf->GetDelay ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetSequence (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetDelay (), CEL_DATA_LONG);
   }
   else if (name == "sequencefinish")
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity ());
-    Par (pl, params, tf->GetTag ());
-    Par (pl, params, tf->GetClass ());
-    Par (pl, params, tf->GetSequence ());
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetTag (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING);
+    Par (pl, params, tf->GetSequence (), CEL_DATA_STRING);
   }
   else
   {
@@ -685,7 +662,7 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
 }
 
 void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactoryArray* rewards,
-    csSet<csStringID>& params)
+    csHash<celDataType,csStringID>& params)
 {
   for (size_t i = 0 ; i < rewards->GetSize () ; i++)
   {
@@ -694,9 +671,9 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactoryArray
   }
 }
 
-csSet<csStringID> InspectTools::GetQuestParameters (iCelPlLayer* pl, iQuestFactory* quest)
+csHash<celDataType,csStringID> InspectTools::GetQuestParameters (iCelPlLayer* pl, iQuestFactory* quest)
 {
-  csSet<csStringID> params;
+  csHash<celDataType,csStringID> params;
   csRef<iQuestStateFactoryIterator> stateIt = quest->GetStates ();
   while (stateIt->HasNext ())
   {
@@ -721,7 +698,7 @@ csSet<csStringID> InspectTools::GetQuestParameters (iCelPlLayer* pl, iQuestFacto
     {
       iSeqOpFactory* seqopFact = seq->GetSeqOpFactory (i);
       CollectSeqopParameters (pl, seqopFact, params);
-      Par (pl, params, seq->GetSeqOpFactoryDuration (i));
+      Par (pl, params, seq->GetSeqOpFactoryDuration (i), CEL_DATA_LONG);
     }
   }
   return params;
