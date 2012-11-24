@@ -105,10 +105,21 @@ SanityChecker::SanityChecker (iObjectRegistry* object_reg, iPcDynamicWorld* dynw
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
   engine = csQueryRegistry<iEngine> (object_reg);
   questManager = csQueryRegistry<iQuestManager> (object_reg);
+
+  ClearContext ();
 }
 
 SanityChecker::~SanityChecker ()
 {
+}
+
+void SanityChecker::ClearContext ()
+{
+  contextObject = 0;
+  contextFactory = 0;
+  contextQuest = 0;
+  contextTemplate = 0;
+  contextPC = 0;
 }
 
 void SanityChecker::ClearResults ()
@@ -116,60 +127,51 @@ void SanityChecker::ClearResults ()
   results.Empty ();
 }
 
-void SanityChecker::PushResult (iQuestFactory* quest, const char* msg, ...)
+void SanityChecker::PushResult (const char* msg, ...)
 {
   va_list args;
   va_start (args, msg);
-  results.Push (SanityResult ().
-	Resource (quest->QueryObject ()).
-	Name ("Quest %s", quest->GetName ()).
-	MessageV (msg, args));
-  va_end (args);
-}
-
-void SanityChecker::PushResult (iDynamicFactory* fact, const char* msg, ...)
-{
-  va_list args;
-  va_start (args, msg);
-  results.Push (SanityResult ().
-	Resource (fact->QueryObject ()).
-	Name ("Fact %s", fact->GetName ()).
-	MessageV (msg, args));
-  va_end (args);
-}
-
-void SanityChecker::PushResult (iDynamicObject* obj, const char* msg, ...)
-{
-  va_list args;
-  va_start (args, msg);
-  if (obj->GetEntityName ())
+  if (contextPC)
+  {
+    if (contextPC->GetTag () && *contextPC->GetTag ())
+      results.Push (SanityResult ().
+	  Resource (contextTemplate->QueryObject ()).
+	  Name ("Tpl %s/%s(%s)", contextTemplate->GetName (), contextPC->GetName (),
+	    contextPC->GetTag ()).
+	  MessageV (msg, args));
+    else
+      results.Push (SanityResult ().
+	  Resource (contextTemplate->QueryObject ()).
+	  Name ("Tpl %s/%s", contextTemplate->GetName (), contextPC->GetName ()).
+	  MessageV (msg, args));
+  }
+  else if (contextObject)
+  {
+    if (contextObject->GetEntityName ())
+      results.Push (SanityResult ().
+	  Object (contextObject).
+	  Name ("Obj %s(%s)", contextObject->GetEntityName (), contextObject->GetFactory ()->GetName ()).
+	  MessageV (msg, args));
+    else
+      results.Push (SanityResult ().
+	  Object (contextObject).
+	  Name ("Obj %d(%s)", contextObject->GetID (), contextObject->GetFactory ()->GetName ()).
+	  MessageV (msg, args));
+  }
+  else if (contextFactory)
+  {
     results.Push (SanityResult ().
-	Object (obj).
-	Name ("Obj %s(%s)", obj->GetEntityName (), obj->GetFactory ()->GetName ()).
-	MessageV (msg, args));
-  else
+	  Resource (contextFactory->QueryObject ()).
+	  Name ("Fact %s", contextFactory->GetName ()).
+	  MessageV (msg, args));
+  }
+  else if (contextQuest)
+  {
     results.Push (SanityResult ().
-	Object (obj).
-	Name ("Obj %d(%s)", obj->GetID (), obj->GetFactory ()->GetName ()).
-	MessageV (msg, args));
-  va_end (args);
-}
-
-void SanityChecker::PushResult (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
-    const char* msg, ...)
-{
-  va_list args;
-  va_start (args, msg);
-  if (pctpl->GetTag () && *pctpl->GetTag ())
-    results.Push (SanityResult ().
-	Resource (tpl->QueryObject ()).
-	Name ("Tpl %s/%s(%s)", tpl->GetName (), pctpl->GetName (), pctpl->GetTag ()).
-	MessageV (msg, args));
-  else
-    results.Push (SanityResult ().
-	Resource (tpl->QueryObject ()).
-	Name ("Tpl %s/%s", tpl->GetName (), pctpl->GetName ()).
-	MessageV (msg, args));
+	  Resource (contextQuest->QueryObject ()).
+	  Name ("Quest %s", contextQuest->GetName ()).
+	  MessageV (msg, args));
+  }
   va_end (args);
 }
 
@@ -178,7 +180,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   csRef<iCelParameterIterator> newquestParams = InspectTools::FindAction (pl, pctpl, "NewQuest");
   if (!newquestParams)
   {
-    PushResult (tpl, pctpl, "NewQuest action is missing!");
+    PushResult ("NewQuest action is missing!");
     return;
   }
   csStringID nameID = pl->FetchStringID ("name");
@@ -197,7 +199,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
       csString value = par->GetOriginalExpression ();
       if (value.IsEmpty ())
       {
-        PushResult (tpl, pctpl, "Questname is empty!");
+        PushResult ("Questname is empty!");
         return;
       }
       const char first = value.GetData ()[0];
@@ -206,7 +208,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
 	quest = questManager->GetQuestFactory (value);
 	if (!quest)
 	{
-          PushResult (tpl, pctpl, "Cannot find quest '%s'!", value.GetData ());
+          PushResult ("Cannot find quest '%s'!", value.GetData ());
           return;
 	}
       }
@@ -218,18 +220,19 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   }
   if (!questNameGiven)
   {
-    PushResult (tpl, pctpl, "Quest name parameter is not given!");
+    PushResult ("Quest name parameter is not given!");
     return;
   }
   if (quest)
   {
     csHash<celDataType,csStringID> wanted = InspectTools::GetQuestParameters (pl, quest);
-    CheckParameterTypes (0, tpl, pctpl, given, wanted);
+    CheckParameterTypes (given, wanted);
   }
 }
 
 void SanityChecker::Check (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
 {
+  SetContext (tpl, pctpl);
   csString name = pctpl->GetName ();
   if (name == "pclogic.quest")
     CheckQuestPC (tpl, pctpl);
@@ -237,6 +240,7 @@ void SanityChecker::Check (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* p
 
 void SanityChecker::Check (iCelEntityTemplate* tpl)
 {
+  SetContext (tpl);
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
@@ -256,20 +260,21 @@ void SanityChecker::CheckTemplates ()
 
 void SanityChecker::Check (iDynamicFactory* dynfact)
 {
+  SetContext (dynfact);
   const char* deftpl = dynfact->GetDefaultEntityTemplate ();
   if (deftpl)
   {
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (deftpl);
     if (!tpl)
-      PushResult (dynfact, "Can't find template '%s'!", deftpl);
+      PushResult ("Can't find template '%s'!", deftpl);
   }
 }
 
-void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTemplate* tpl,
-    iCelPropertyClassTemplate* pctpl,
+void SanityChecker::CheckParameterTypes (
     const csHash<celDataType,csStringID>& given,
     const csHash<celDataType,csStringID>& wanted)
 {
+  const char* prefix = contextObject ? "Template" : "Quest";
   csHash<celDataType,csStringID>::ConstGlobalIterator it = given.GetIterator ();
   while (it.HasNext ())
   {
@@ -285,22 +290,15 @@ void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTempl
 	  csString givenTypeS = celParameterTools::GetTypeName (givenType);
 	  csString wantedTypeS = celParameterTools::GetTypeName (wantedType);
 	  csString parName = pl->FetchString (givenPar);
-	  if (dynobj)
-	    PushResult (dynobj, "Template parameter '%s' has wrong type! Wanted %s but got %s instead.",
-	        parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
-	  else
-	    PushResult (tpl, pctpl, "Quest parameter '%s' has wrong type! Wanted %s but got %s instead.",
-	        parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
+	  PushResult ("%s parameter '%s' has wrong type! Wanted %s but got %s instead.",
+	        prefix, parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
 	}
       }
     }
     else
     {
       csString parName = pl->FetchString (givenPar);
-      if (dynobj)
-        PushResult (dynobj, "Template parameter '%s' is not needed!", parName.GetData ());
-      else
-        PushResult (tpl, pctpl, "Quest parameter '%s' is not needed!", parName.GetData ());
+      PushResult ("%s parameter '%s' is not needed!", prefix, parName.GetData ());
     }
   }
   it = wanted.GetIterator ();
@@ -311,26 +309,24 @@ void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTempl
     if (!given.Contains (wantedPar))
     {
       csString parName = pl->FetchString (wantedPar);
-      if (dynobj)
-        PushResult (dynobj, "Template parameter '%s' is missing!", parName.GetData ());
-      else
-        PushResult (tpl, pctpl, "Quest parameter '%s' is missing!", parName.GetData ());
+      PushResult ("%s parameter '%s' is missing!", prefix, parName.GetData ());
     }
   }
 }
 
 void SanityChecker::Check (iDynamicObject* dynobj)
 {
+  SetContext (dynobj);
   iCelEntityTemplate* tpl = FindTemplateForObject (dynobj);
   if (dynobj->GetEntityName () && !tpl)
-    PushResult (dynobj, "Object '%s' has no matching template!", dynobj->GetEntityName ());
+    PushResult ("Object '%s' has no matching template!", dynobj->GetEntityName ());
 
   if (tpl)
   {
     csHash<celDataType,csStringID> wanted = InspectTools::GetTemplateParameters (pl, tpl);
     csHash<celDataType,csStringID> given = InspectTools::GetObjectParameters (dynobj);
 
-    CheckParameterTypes (dynobj, 0, 0, given, wanted);
+    CheckParameterTypes (given, wanted);
   }
 }
 
@@ -406,7 +402,7 @@ iDynamicObject* SanityChecker::CheckExistingEntityAndReport (iQuestFactory* ques
   iDynamicObject* object = FindEntity (par);
   if (!object)
     if (strcmp (par, "World") != 0)
-      PushResult (quest, "Cannot find entity '%s' in '%s'!", par, parent);
+      PushResult ("Cannot find entity '%s' in '%s'!", par, parent);
   return object;
 }
 
@@ -416,7 +412,7 @@ void SanityChecker::CheckExistingEntityTemplateAndReport (iQuestFactory* quest, 
   if (!IsConstant (par)) return;
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (par);
   if (!tpl)
-    PushResult (quest, "Cannot find template '%s' in '%s'!", par, parent);
+    PushResult ("Cannot find template '%s' in '%s'!", par, parent);
 }
 
 iCelEntityTemplate* SanityChecker::FindTemplateForObject (iDynamicObject* object)
@@ -444,7 +440,7 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
     {
       if (IsConstant (statePar))
 	if (!quest->GetState (statePar))
-	  PushResult (quest, "Cannot find state '%s' in 'newstate' for this quest!", statePar);
+	  PushResult ("Cannot find state '%s' in 'newstate' for this quest!", statePar);
     }
     else if (IsConstant (entityPar) && IsConstantOrEmpty (tagPar))
     {
@@ -456,10 +452,10 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
 	{
 	  iQuestFactory* destQuest = FindQuest (tpl, tagPar);
 	  if (!destQuest)
-	    PushResult (quest, "Cannot find a quest in entity '%s' for 'newstate'!", entityPar);
+	    PushResult ("Cannot find a quest in entity '%s' for 'newstate'!", entityPar);
 	  else if (IsConstant (statePar))
 	    if (!destQuest->GetState (statePar))
-	      PushResult (quest, "Cannot find state '%s' in quest at entity '%s' for 'newstate'!",
+	      PushResult ("Cannot find state '%s' in quest at entity '%s' for 'newstate'!",
 		statePar, entityPar);
 	}
       }
@@ -573,7 +569,7 @@ void SanityChecker::CheckObjectForPC (iDynamicObject* object, iQuestFactory* que
   iCelEntityTemplate* tpl = FindTemplateForObject (object);
   if (tpl)
     if (!FindPCTemplate (tpl, pcPar, tagPar))
-      PushResult (quest, "Cannot find %s in entity '%s' for '%s'!", pcPar, entityPar, name);
+      PushResult ("Cannot find %s in entity '%s' for '%s'!", pcPar, entityPar, name);
 }
 
 void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
@@ -753,6 +749,7 @@ void SanityChecker::Check (iQuestFactory* quest, iSeqOpFactory* seqopFact)
 
 void SanityChecker::Check (iQuestFactory* quest)
 {
+  SetContext (quest);
   csRef<iQuestStateFactoryIterator> stateIt = quest->GetStates ();
   while (stateIt->HasNext ())
   {

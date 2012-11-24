@@ -73,10 +73,16 @@ private:
   csRef<iQuestManager> questManager;
   iPcDynamicWorld* dynworld;
 
+  iDynamicObject* contextObject;
+  iDynamicFactory* contextFactory;
+  iQuestFactory* contextQuest;
+  iCelEntityTemplate* contextTemplate;
+  iCelPropertyClassTemplate* contextPC;
+
   csArray<SanityResult> results;
 
-  void CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTemplate* tpl,
-    iCelPropertyClassTemplate* pctpl,
+
+  void CheckParameterTypes (
     const csHash<celDataType,csStringID>& givenTypes,
     const csHash<celDataType,csStringID>& paramTypes);
 
@@ -96,11 +102,19 @@ private:
 
   void CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
 
-  void PushResult (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
-      const char* msg, ...);
-  void PushResult (iDynamicFactory* fact, const char* msg, ...);
-  void PushResult (iDynamicObject* obj, const char* msg, ...);
-  void PushResult (iQuestFactory* quest, const char* msg, ...);
+  void PushResult (const char* msg, ...);
+
+  void ClearContext ();
+  void SetContext (iDynamicObject* object) { ClearContext (); contextObject = object; }
+  void SetContext (iDynamicFactory* fact) { ClearContext (); contextFactory = fact; }
+  void SetContext (iQuestFactory* quest) { ClearContext (); contextQuest = quest; }
+  void SetContext (iCelEntityTemplate* tpl) { ClearContext (); contextTemplate = tpl; }
+  void SetContext (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
+  {
+    ClearContext ();
+    contextTemplate = tpl;
+    contextPC = pctpl;
+  }
 
 public:
   SanityChecker (iObjectRegistry* object_reg, iPcDynamicWorld* dynworld);
