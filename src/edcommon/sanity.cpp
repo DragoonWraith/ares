@@ -267,17 +267,17 @@ void SanityChecker::Check (iDynamicFactory* dynfact)
 
 void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTemplate* tpl,
     iCelPropertyClassTemplate* pctpl,
-    const csHash<celDataType,csStringID>& givenTypes,
-    const csHash<celDataType,csStringID>& wantedTypes)
+    const csHash<celDataType,csStringID>& given,
+    const csHash<celDataType,csStringID>& wanted)
 {
-  csHash<celDataType,csStringID>::ConstGlobalIterator it = givenTypes.GetIterator ();
+  csHash<celDataType,csStringID>::ConstGlobalIterator it = given.GetIterator ();
   while (it.HasNext ())
   {
     csStringID givenPar;
     celDataType givenType = it.Next (givenPar);
-    if (wantedTypes.Contains (givenPar))
+    if (wanted.Contains (givenPar))
     {
-      celDataType wantedType = wantedTypes.Get (givenPar, CEL_DATA_NONE);
+      celDataType wantedType = wanted.Get (givenPar, CEL_DATA_NONE);
       if (wantedType != CEL_DATA_NONE && wantedType != CEL_DATA_UNKNOWN)
       {
 	if (givenType != wantedType)
@@ -303,12 +303,12 @@ void SanityChecker::CheckParameterTypes (iDynamicObject* dynobj, iCelEntityTempl
         PushResult (tpl, pctpl, "Quest parameter '%s' is not needed!", parName.GetData ());
     }
   }
-  it = wantedTypes.GetIterator ();
+  it = wanted.GetIterator ();
   while (it.HasNext ())
   {
     csStringID wantedPar;
     it.Next (wantedPar);
-    if (!givenTypes.Contains (wantedPar))
+    if (!given.Contains (wantedPar))
     {
       csString parName = pl->FetchString (wantedPar);
       if (dynobj)
@@ -327,10 +327,10 @@ void SanityChecker::Check (iDynamicObject* dynobj)
 
   if (tpl)
   {
-    csHash<celDataType,csStringID> wantedTypes = InspectTools::GetTemplateParameters (pl, tpl);
-    csHash<celDataType,csStringID> givenTypes = InspectTools::GetObjectParameters (dynobj);
+    csHash<celDataType,csStringID> wanted = InspectTools::GetTemplateParameters (pl, tpl);
+    csHash<celDataType,csStringID> given = InspectTools::GetObjectParameters (dynobj);
 
-    CheckParameterTypes (dynobj, 0, 0, givenTypes, wantedTypes);
+    CheckParameterTypes (dynobj, 0, 0, given, wanted);
   }
 }
 

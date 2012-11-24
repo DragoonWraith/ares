@@ -532,7 +532,7 @@ void UIManager::About ()
 {
   wxAboutDialogInfo info;
   info.SetName (wxT("Ares Editor"));
-  info.SetVersion (wxT("0.0.1 Alpha"));
+  info.SetVersion (wxT("0.0.3 Alpha"));
   info.SetDescription (wxT("\
 AresEd is a 3D Game Creation Toolkit based on Crystal Space and Crystal Entity Layer.\n\
 See the online help for more information."));
