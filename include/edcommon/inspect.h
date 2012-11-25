@@ -86,6 +86,19 @@ struct ARES_EDCOMMON_EXPORT ParameterDomain
   ParameterDomain () : type (CEL_DATA_NONE), parType (PAR_NONE) { }
   ParameterDomain (celDataType type, celParameterType parType) :
     type (type), parType (parType) { }
+
+  /**
+   * Match this domain with another one. This domain is considered to be the
+   * one that is given while the 'other' parameter represents the receiving
+   * parameter.
+   */
+  bool Match (const ParameterDomain& other)
+  {
+    if (other.type == CEL_DATA_NONE || other.type == CEL_DATA_UNKNOWN) return true;
+    if (other.type != type) return false;
+    if (parType == PAR_NONE) return true;
+    return other.parType == parType;
+  }
 };
 
 class ARES_EDCOMMON_EXPORT InspectTools
@@ -203,6 +216,29 @@ public:
   static csVector3 GetActionParameterValueVector3 (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
       bool* valid = 0);
+
+  static const char* ParTypeToString (celParameterType type)
+  {
+    switch (type)
+    {
+      case PAR_NONE: return "none";
+      case PAR_CONFLICT: return "conflict";
+      case PAR_ENTITY: return "entity";
+      case PAR_TEMPLATE: return "template";
+      case PAR_TAG: return "tag";
+      case PAR_PC: return "pc";
+      case PAR_MESSAGE: return "message";
+      case PAR_SECTOR: return "sector";
+      case PAR_NODE: return "node";
+      case PAR_PROPERTY: return "property";
+      case PAR_SEQUENCE: return "sequence";
+      case PAR_CSSEQUENCE: return "cssequence";
+      case PAR_STATE: return "state";
+      case PAR_CLASS: return "class";
+      case PAR_VALUE: return "value";
+      default: return "?";
+    }
+  }
 
   static const char* TypeToString (celDataType type)
   {

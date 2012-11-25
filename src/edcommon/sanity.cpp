@@ -215,7 +215,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
     }
     else
     {
-      given.PutUnique (parid, ParameterDomain (par->GetPossibleType (), PAR_VALUE));
+      given.PutUnique (parid, ParameterDomain (par->GetPossibleType (), PAR_NONE));
     }
   }
   if (!questNameGiven)
@@ -283,14 +283,21 @@ void SanityChecker::CheckParameterTypes (
     if (wanted.Contains (givenPar))
     {
       ParameterDomain wantedType = wanted.Get (givenPar, ParameterDomain ());
-      if (wantedType.type != CEL_DATA_NONE && wantedType.type != CEL_DATA_UNKNOWN)
+      if (!givenType.Match (wantedType))
       {
+	csString parName = pl->FetchString (givenPar);
 	if (givenType.type != wantedType.type)
 	{
 	  csString givenTypeS = celParameterTools::GetTypeName (givenType.type);
 	  csString wantedTypeS = celParameterTools::GetTypeName (wantedType.type);
-	  csString parName = pl->FetchString (givenPar);
 	  PushResult ("%s parameter '%s' has wrong type! Wanted %s but got %s instead.",
+	        prefix, parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
+	}
+	else
+	{
+	  csString givenTypeS = InspectTools::ParTypeToString (givenType.parType);
+	  csString wantedTypeS = InspectTools::ParTypeToString (wantedType.parType);
+	  PushResult ("%s parameter '%s' has wrong semantics! Wanted %s but got %s instead.",
 	        prefix, parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
 	}
       }

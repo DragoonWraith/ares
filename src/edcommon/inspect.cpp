@@ -344,7 +344,7 @@ void InspectTools::CollectParParameters (iCelPlLayer* pl, iCelParameterIterator*
     if (parID != csInvalidStringID)
     {
       celDataType type = par->GetPossibleType ();
-      celParameterType parType = PAR_VALUE;
+      celParameterType parType = PAR_NONE;
       if (questParamTypes && questParamTypes->Contains (parID))
 	parType = questParamTypes->Get (parID, ParameterDomain ()).parType;
       ResolveParameter (paramTypes, parID, type, parType);
@@ -422,7 +422,7 @@ csHash<ParameterDomain,csStringID> InspectTools::GetObjectParameters (iDynamicOb
     {
       celDataType type;
       csStringID parID = params->GetParameterDef (i, type);
-      paramTypes.Put (parID, ParameterDomain (type, PAR_VALUE));
+      paramTypes.Put (parID, ParameterDomain (type, PAR_NONE));
     }
   }
   return paramTypes;
