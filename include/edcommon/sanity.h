@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "aresextern.h"
 
 #include "physicallayer/datatype.h"
+#include "inspect.h"
 
 struct iCelPlLayer;
 struct iCelEntityTemplate;
@@ -83,8 +84,8 @@ private:
 
 
   void CheckParameterTypes (
-    const csHash<celDataType,csStringID>& givenTypes,
-    const csHash<celDataType,csStringID>& paramTypes);
+    const csHash<ParameterDomain,csStringID>& givenTypes,
+    const csHash<ParameterDomain,csStringID>& paramTypes);
 
   // Find stuff.
   iDynamicObject* FindEntity (const char* par);

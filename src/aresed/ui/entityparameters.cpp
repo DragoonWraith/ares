@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include "celtool/stdparams.h"
 #include "physicallayer/entitytpl.h"
+#include "tools/questmanager.h"
 
 //--------------------------------------------------------------------------
 
@@ -139,16 +140,18 @@ void EntityParameterDialog::SuggestParameters ()
   if (tplName.IsEmpty ()) return;
 
   csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (uiManager->GetApp ()->GetObjectRegistry ());
+  csRef<iQuestManager> questManager = csQueryRegistry<iQuestManager> (uiManager->GetApp ()->GetObjectRegistry ());
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
   if (!tpl) return;
 
-  csHash<celDataType,csStringID> suggestions = InspectTools::GetTemplateParameters (pl, tpl);
+  csHash<ParameterDomain,csStringID> suggestions = InspectTools::GetTemplateParameters (pl,
+      questManager, tpl);
   csArray<Par>& params = parameters->GetParameters ();
-  csHash<celDataType,csStringID>::GlobalIterator it = suggestions.GetIterator ();
+  csHash<ParameterDomain,csStringID>::GlobalIterator it = suggestions.GetIterator ();
   while (it.HasNext ())
   {
     csStringID parID;
-    celDataType type = it.Next (parID);
+    ParameterDomain type = it.Next (parID);
     csString name = pl->FetchString (parID);
     bool found = false;
     for (size_t j = 0 ; j < params.GetSize () ; j++)
@@ -161,7 +164,7 @@ void EntityParameterDialog::SuggestParameters ()
     {
       Par p;
       p.name = name;
-      p.type = type;
+      p.type = type.type;
       p.value = "";
       params.Push (p);
     }

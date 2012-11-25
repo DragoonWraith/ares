@@ -51,23 +51,63 @@ struct iRewardFactoryArray;
 
 typedef csHash<csRef<iParameter>,csStringID> ParHash;
 
+/**
+ * What kind of parameter it is (celDataType is the actual type but this
+ * is the actual interpretation).
+ */
+enum celParameterType
+{
+  PAR_NONE,
+  PAR_CONFLICT,		// Used in case there is a conflicting parameter usage.
+  PAR_ENTITY,
+  PAR_TEMPLATE,
+  PAR_TAG,
+  PAR_PC,
+  PAR_MESSAGE,
+  PAR_SECTOR,
+  PAR_NODE,
+  PAR_PROPERTY,
+  PAR_SEQUENCE,
+  PAR_CSSEQUENCE,
+  PAR_STATE,
+  PAR_CLASS,
+  PAR_VALUE,		// Just a value, no specific type.
+};
+
+/**
+ * This class is used to specify the domain for a parameter
+ * for GetQuestParameters() and GetTemplateParameters().
+ */
+struct ARES_EDCOMMON_EXPORT ParameterDomain
+{
+  celDataType type;
+  celParameterType parType;
+
+  ParameterDomain () : type (CEL_DATA_NONE), parType (PAR_NONE) { }
+  ParameterDomain (celDataType type, celParameterType parType) :
+    type (type), parType (parType) { }
+};
+
 class ARES_EDCOMMON_EXPORT InspectTools
 {
 private:
   static void CollectParParameters (iCelPlLayer* pl, iCelParameterIterator* it,
-      csHash<celDataType,csStringID>& paramTypes);
-  static void CollectPCParameters (iCelPlLayer* pl, iCelPropertyClassTemplate* pctpl,
-      csHash<celDataType,csStringID>& paramTypes);
-  static void CollectTemplateParameters (iCelPlLayer* pl, iCelEntityTemplate* tpl,
-      csHash<celDataType,csStringID>& paramTypes);
+      csHash<ParameterDomain,csStringID>& paramTypes,
+      csHash<ParameterDomain,csStringID>* questParamTypes = 0);
+  static void CollectPCParameters (iCelPlLayer* pl, iQuestManager* questManager,
+      iCelPropertyClassTemplate* pctpl,
+      csHash<ParameterDomain,csStringID>& paramTypes);
+  static void CollectTemplateParameters (iCelPlLayer* pl, iQuestManager* questManager,
+      iCelEntityTemplate* tpl,
+      csHash<ParameterDomain,csStringID>& paramTypes);
   static void CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* trigger,
-      csHash<celDataType,csStringID>& params);
+      csHash<ParameterDomain,csStringID>& params);
   static void CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* reward,
-      csHash<celDataType,csStringID>& params);
+      csHash<ParameterDomain,csStringID>& params);
   static void CollectRewardParameters (iCelPlLayer* pl, iRewardFactoryArray* rewards,
-      csHash<celDataType,csStringID>& params);
+      csHash<ParameterDomain,csStringID>& params);
   static void CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqopFact,
-      csHash<celDataType,csStringID>& params);
+      csHash<ParameterDomain,csStringID>& params);
 
 public:
   static celData GetPropertyValue (iCelPlLayer* pl,
@@ -195,17 +235,19 @@ public:
   /**
    * Return the parameters that a dynamic object provides for its template.
    */
-  static csHash<celDataType,csStringID> GetObjectParameters (iDynamicObject* dynobj);
+  static csHash<ParameterDomain,csStringID> GetObjectParameters (iDynamicObject* dynobj);
 
   /**
    * Return the parameters that a template needs.
    */
-  static csHash<celDataType,csStringID> GetTemplateParameters (iCelPlLayer* pl, iCelEntityTemplate* tpl);
+  static csHash<ParameterDomain,csStringID> GetTemplateParameters (
+      iCelPlLayer* pl, iQuestManager* questManager, iCelEntityTemplate* tpl);
 
   /**
    * Return the parameters that a quest needs.
    */
-  static csHash<celDataType,csStringID> GetQuestParameters (iCelPlLayer* pl, iQuestFactory* quest);
+  static csHash<ParameterDomain,csStringID> GetQuestParameters (
+      iCelPlLayer* pl, iQuestFactory* quest);
 };
 
 class ARES_EDCOMMON_EXPORT ResourceCounter

@@ -188,7 +188,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   bool questNameGiven = false;
   iQuestFactory* quest = 0;
 
-  csHash<celDataType,csStringID> given;
+  csHash<ParameterDomain,csStringID> given;
   while (newquestParams->HasNext ())
   {
     csStringID parid;
@@ -215,7 +215,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
     }
     else
     {
-      given.PutUnique (parid, par->GetPossibleType ());
+      given.PutUnique (parid, ParameterDomain (par->GetPossibleType (), PAR_VALUE));
     }
   }
   if (!questNameGiven)
@@ -225,7 +225,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   }
   if (quest)
   {
-    csHash<celDataType,csStringID> wanted = InspectTools::GetQuestParameters (pl, quest);
+    csHash<ParameterDomain,csStringID> wanted = InspectTools::GetQuestParameters (pl, quest);
     CheckParameterTypes (given, wanted);
   }
 }
@@ -271,24 +271,24 @@ void SanityChecker::Check (iDynamicFactory* dynfact)
 }
 
 void SanityChecker::CheckParameterTypes (
-    const csHash<celDataType,csStringID>& given,
-    const csHash<celDataType,csStringID>& wanted)
+    const csHash<ParameterDomain,csStringID>& given,
+    const csHash<ParameterDomain,csStringID>& wanted)
 {
   const char* prefix = contextObject ? "Template" : "Quest";
-  csHash<celDataType,csStringID>::ConstGlobalIterator it = given.GetIterator ();
+  csHash<ParameterDomain,csStringID>::ConstGlobalIterator it = given.GetIterator ();
   while (it.HasNext ())
   {
     csStringID givenPar;
-    celDataType givenType = it.Next (givenPar);
+    ParameterDomain givenType = it.Next (givenPar);
     if (wanted.Contains (givenPar))
     {
-      celDataType wantedType = wanted.Get (givenPar, CEL_DATA_NONE);
-      if (wantedType != CEL_DATA_NONE && wantedType != CEL_DATA_UNKNOWN)
+      ParameterDomain wantedType = wanted.Get (givenPar, ParameterDomain ());
+      if (wantedType.type != CEL_DATA_NONE && wantedType.type != CEL_DATA_UNKNOWN)
       {
-	if (givenType != wantedType)
+	if (givenType.type != wantedType.type)
 	{
-	  csString givenTypeS = celParameterTools::GetTypeName (givenType);
-	  csString wantedTypeS = celParameterTools::GetTypeName (wantedType);
+	  csString givenTypeS = celParameterTools::GetTypeName (givenType.type);
+	  csString wantedTypeS = celParameterTools::GetTypeName (wantedType.type);
 	  csString parName = pl->FetchString (givenPar);
 	  PushResult ("%s parameter '%s' has wrong type! Wanted %s but got %s instead.",
 	        prefix, parName.GetData (), wantedTypeS.GetData (), givenTypeS.GetData ());
@@ -323,8 +323,9 @@ void SanityChecker::Check (iDynamicObject* dynobj)
 
   if (tpl)
   {
-    csHash<celDataType,csStringID> wanted = InspectTools::GetTemplateParameters (pl, tpl);
-    csHash<celDataType,csStringID> given = InspectTools::GetObjectParameters (dynobj);
+    csHash<ParameterDomain,csStringID> wanted = InspectTools::GetTemplateParameters (pl, questManager,
+	tpl);
+    csHash<ParameterDomain,csStringID> given = InspectTools::GetObjectParameters (dynobj);
 
     CheckParameterTypes (given, wanted);
   }
