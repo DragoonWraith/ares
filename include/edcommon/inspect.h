@@ -274,6 +274,11 @@ public:
   static csHash<ParameterDomain,csStringID> GetObjectParameters (iDynamicObject* dynobj);
 
   /**
+   * Return values for the parameters that a dynamic object provides for its template.
+   */
+  static csHash<const celData*,csStringID> GetObjectParameterValues (iDynamicObject* dynobj);
+
+  /**
    * Return the parameters that a template needs.
    */
   static csHash<ParameterDomain,csStringID> GetTemplateParameters (

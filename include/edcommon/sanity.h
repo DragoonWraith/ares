@@ -82,9 +82,16 @@ private:
 
   csArray<SanityResult> results;
 
+  void CheckConflictingTypes (
+    const csHash<ParameterDomain,csStringID>& paramTypes);
 
   void CheckParameterTypes (
     const csHash<ParameterDomain,csStringID>& givenTypes,
+    const csHash<ParameterDomain,csStringID>& paramTypes);
+
+  void CheckSemanticParameters (
+    const char* name,
+    const csHash<const celData*,csStringID>& givenValues,
     const csHash<ParameterDomain,csStringID>& paramTypes);
 
   // Find stuff.
@@ -98,8 +105,8 @@ private:
   // Check stuff.
   void CheckObjectForPC (iDynamicObject* object, iQuestFactory* quest,
     const char* entityPar, const char* pcPar, const char* tagPar, const char* name);
-  iDynamicObject* CheckExistingEntityAndReport (iQuestFactory* quest, const char* parent, const char* par);
-  void CheckExistingEntityTemplateAndReport (iQuestFactory* quest, const char* parent, const char* par);
+  iDynamicObject* CheckExistingEntityAndReport (const char* parent, const char* par);
+  void CheckExistingEntityTemplateAndReport (const char* parent, const char* par);
 
   void CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
 

@@ -428,6 +428,22 @@ csHash<ParameterDomain,csStringID> InspectTools::GetObjectParameters (iDynamicOb
   return paramTypes;
 }
 
+csHash<const celData*,csStringID> InspectTools::GetObjectParameterValues (iDynamicObject* dynobj)
+{
+  csHash<const celData*,csStringID> paramValues;
+  iCelParameterBlock* params = dynobj->GetEntityParameters ();
+  if (params)
+  {
+    for (size_t i = 0 ; i < params->GetParameterCount () ; i++)
+    {
+      celDataType type;
+      csStringID parID = params->GetParameterDef (i, type);
+      paramValues.Put (parID, params->GetParameterByIndex (i));
+    }
+  }
+  return paramValues;
+}
+
 static void Par (iCelPlLayer* pl, csHash<ParameterDomain,csStringID>& params, const char* par,
     celDataType type, celParameterType parType)
 {

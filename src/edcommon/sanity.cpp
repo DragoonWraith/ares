@@ -226,6 +226,7 @@ void SanityChecker::CheckQuestPC (iCelEntityTemplate* tpl, iCelPropertyClassTemp
   if (quest)
   {
     csHash<ParameterDomain,csStringID> wanted = InspectTools::GetQuestParameters (pl, quest);
+    CheckConflictingTypes (wanted);
     CheckParameterTypes (given, wanted);
   }
 }
@@ -267,6 +268,23 @@ void SanityChecker::Check (iDynamicFactory* dynfact)
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (deftpl);
     if (!tpl)
       PushResult ("Can't find template '%s'!", deftpl);
+  }
+}
+
+void SanityChecker::CheckConflictingTypes (
+    const csHash<ParameterDomain,csStringID>& paramTypes)
+{
+  const char* prefix = contextObject ? "Template" : "Quest";
+  csHash<ParameterDomain,csStringID>::ConstGlobalIterator it = paramTypes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID parID;
+    ParameterDomain type = it.Next (parID);
+    if (type.parType == PAR_CONFLICT)
+    {
+      csString parName = pl->FetchString (parID);
+      PushResult ("%s parameter '%s' has conflicting type or semantic usage!", prefix, parName.GetData ());
+    }
   }
 }
 
@@ -321,6 +339,37 @@ void SanityChecker::CheckParameterTypes (
   }
 }
 
+void SanityChecker::CheckSemanticParameters (
+    const char* name,
+    const csHash<const celData*,csStringID>& givenValues,
+    const csHash<ParameterDomain,csStringID>& paramTypes)
+{
+  csHash<ParameterDomain,csStringID>::ConstGlobalIterator it = paramTypes.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID wantedPar;
+    ParameterDomain wantedType = it.Next (wantedPar);
+    // We don't report missing parameters here since we've done that before.
+    if (givenValues.Contains (wantedPar))
+    {
+      const celData* data = givenValues.Get (wantedPar, (const celData*)0);
+      if (data)
+      {
+	switch (wantedType.parType)
+	{
+	  case PAR_ENTITY:
+	    if (data->type == CEL_DATA_STRING)
+	      CheckExistingEntityAndReport (name, data->value.s->GetData ());
+	    break;
+	  // @@@ TODO...
+	  default:
+	    break;
+	}
+      }
+    }
+  }
+}
+
 void SanityChecker::Check (iDynamicObject* dynobj)
 {
   SetContext (dynobj);
@@ -330,11 +379,16 @@ void SanityChecker::Check (iDynamicObject* dynobj)
 
   if (tpl)
   {
-    csHash<ParameterDomain,csStringID> wanted = InspectTools::GetTemplateParameters (pl, questManager,
-	tpl);
+    csHash<ParameterDomain,csStringID> wanted = InspectTools::GetTemplateParameters (pl, questManager, tpl);
     csHash<ParameterDomain,csStringID> given = InspectTools::GetObjectParameters (dynobj);
+    csHash<const celData*,csStringID> givenValues = InspectTools::GetObjectParameterValues (dynobj);
 
+    CheckConflictingTypes (wanted);
     CheckParameterTypes (given, wanted);
+    csString name = dynobj->GetEntityName ();
+    if (name.IsEmpty ())
+      name.Format ("%d", dynobj->GetID ());
+    CheckSemanticParameters (name, givenValues, wanted);
   }
 }
 
@@ -403,7 +457,7 @@ iDynamicObject* SanityChecker::FindEntity (const char* par)
   return 0;
 }
 
-iDynamicObject* SanityChecker::CheckExistingEntityAndReport (iQuestFactory* quest,
+iDynamicObject* SanityChecker::CheckExistingEntityAndReport (
     const char* parent, const char* par)
 {
   if (!IsConstant (par)) return 0;
@@ -414,7 +468,7 @@ iDynamicObject* SanityChecker::CheckExistingEntityAndReport (iQuestFactory* ques
   return object;
 }
 
-void SanityChecker::CheckExistingEntityTemplateAndReport (iQuestFactory* quest, const char* parent,
+void SanityChecker::CheckExistingEntityTemplateAndReport (const char* parent,
     const char* par)
 {
   if (!IsConstant (par)) return;
@@ -443,7 +497,7 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
     const char* entityPar = tf->GetEntityParameter ();
     const char* statePar = tf->GetStateParameter ();
     const char* tagPar = tf->GetTagParameter ();
-    CheckExistingEntityAndReport (quest, name, entityPar);
+    CheckExistingEntityAndReport (name, entityPar);
     if (IsEmpty (entityPar) || Equals ("$this", entityPar))
     {
       if (IsConstant (statePar))
@@ -473,7 +527,7 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
   else if (name == "action")
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (reward);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetClass ());
     //Par (pl, params, tf->GetID ());
     //Par (pl, params, tf->GetPropertyClass ());
@@ -485,7 +539,7 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
     const char* entityPar = tf->GetEntity ();
     const char* pcPar = tf->GetPC ();
     const char* tagPar = tf->GetPCTag ();
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
     if (object) CheckObjectForPC (object, quest, entityPar, pcPar, tagPar, name);
 
     //Par (pl, params, tf->GetClass ());
@@ -499,13 +553,13 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
   else if (name == "createentity")
   {
     csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (reward);
-    CheckExistingEntityTemplateAndReport (quest, name, tf->GetEntityTemplate ());
+    CheckExistingEntityTemplateAndReport (name, tf->GetEntityTemplate ());
     //Par (pl, params, tf->GetName ());
   }
   else if (name == "destroyentity")
   {
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (reward);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetClass ());
   }
   else if (name == "debugprint")
@@ -516,15 +570,15 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
   else if (name == "inventory")
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (reward);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
-    CheckExistingEntityAndReport (quest, name, tf->GetChildEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetChildEntity ());
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetChildTag ());
   }
   else if (name == "message")
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetClass ());
     //Par (pl, params, tf->GetID ());
     //for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
@@ -539,7 +593,7 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
   else if (name == "sequence")
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (reward);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetClass ());
     //Par (pl, params, tf->GetSequence ());
@@ -548,7 +602,7 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
   else if (name == "sequencefinish")
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (reward);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetClass ());
     //Par (pl, params, tf->GetSequence ());
@@ -591,7 +645,7 @@ void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
     const char* entityPar = tf->GetEntity ();
     const char* tagPar = tf->GetTag ();
     //Par (pl, params, tf->GetSector ());
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
     if (object) CheckObjectForPC (object, quest, entityPar, "pcobject.mesh", tagPar, name);
   }
   else if (name == "inventory")
@@ -599,9 +653,9 @@ void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (trigger);
     const char* entityPar = tf->GetEntity ();
     const char* tagPar = tf->GetTag ();
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
-    CheckExistingEntityAndReport (quest, name, tf->GetChildEntity ());
-    CheckExistingEntityTemplateAndReport (quest, name, tf->GetChildTemplate ());
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
+    CheckExistingEntityAndReport (name, tf->GetChildEntity ());
+    CheckExistingEntityTemplateAndReport (name, tf->GetChildTemplate ());
     if (object) CheckObjectForPC (object, quest, entityPar, "pctools.inventory", tagPar, name);
   }
   else if (name == "meshselect")
@@ -609,18 +663,18 @@ void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (trigger);
     const char* entityPar = tf->GetEntity ();
     const char* tagPar = tf->GetTag ();
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
     if (object) CheckObjectForPC (object, quest, entityPar, "pcobject.mesh", tagPar, name);
   }
   else if (name == "message")
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (trigger);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
   }
   else if (name == "propertychange")
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (trigger);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     // @@@ Check if the property class exists
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetProperty ());
@@ -631,7 +685,7 @@ void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (trigger);
     const char* entityPar = tf->GetEntity ();
     const char* tagPar = tf->GetTag ();
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
     if (object) CheckObjectForPC (object, quest, entityPar, "pclogic.quest", tagPar, name);
     //Par (pl, params, tf->GetSequence ());
   }
@@ -645,7 +699,7 @@ void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (trigger);
     const char* entityPar = tf->GetEntity ();
     const char* tagPar = tf->GetTag ();
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
     if (object) CheckObjectForPC (object, quest, entityPar, "pclogic.trigger", tagPar, name);
   }
   else if (name == "watch")
@@ -653,12 +707,12 @@ void SanityChecker::Check (iQuestFactory* quest, iTriggerFactory* trigger)
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (trigger);
     const char* entityPar = tf->GetEntity ();
     const char* tagPar = tf->GetTag ();
-    iDynamicObject* object = CheckExistingEntityAndReport (quest, name, entityPar);
+    iDynamicObject* object = CheckExistingEntityAndReport (name, entityPar);
     if (object) CheckObjectForPC (object, quest, entityPar, "pcobject.mesh", tagPar, name);
 
     const char* targetEntityPar = tf->GetTargetEntity ();
     const char* targetTagPar = tf->GetTargetTag ();
-    iDynamicObject* targetObject = CheckExistingEntityAndReport (quest, name, targetEntityPar);
+    iDynamicObject* targetObject = CheckExistingEntityAndReport (name, targetEntityPar);
     if (targetObject) CheckObjectForPC (targetObject, quest, targetEntityPar, "pcobject.mesh",
 	targetTagPar, name);
     //Par (pl, params, tf->GetChecktime ());
@@ -692,7 +746,7 @@ void SanityChecker::Check (iQuestFactory* quest, iSeqOpFactory* seqopFact)
   else if (name == "ambientmesh")
   {
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetRelColorRed ());
     //Par (pl, params, tf->GetRelColorGreen ());
@@ -704,7 +758,7 @@ void SanityChecker::Check (iQuestFactory* quest, iSeqOpFactory* seqopFact)
   else if (name == "light")
   {
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetRelColorRed ());
     //Par (pl, params, tf->GetRelColorGreen ());
@@ -716,7 +770,7 @@ void SanityChecker::Check (iQuestFactory* quest, iSeqOpFactory* seqopFact)
   else if (name == "movepath")
   {
     csRef<iMovePathSeqOpFactory> tf = scfQueryInterface<iMovePathSeqOpFactory> (seqopFact);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetTag ());
     //for (size_t i = 0 ; i < tf->GetPathCount () ; i++)
     //{
@@ -728,7 +782,7 @@ void SanityChecker::Check (iQuestFactory* quest, iSeqOpFactory* seqopFact)
   else if (name == "property")
   {
     csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetPC ());
     //Par (pl, params, tf->GetPCTag ());
     //Par (pl, params, tf->GetProperty ());
@@ -741,7 +795,7 @@ void SanityChecker::Check (iQuestFactory* quest, iSeqOpFactory* seqopFact)
   else if (name == "transform")
   {
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
-    CheckExistingEntityAndReport (quest, name, tf->GetEntity ());
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetTag ());
     //Par (pl, params, tf->GetVectorX ());
     //Par (pl, params, tf->GetVectorY ());
