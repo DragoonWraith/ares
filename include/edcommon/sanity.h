@@ -89,6 +89,9 @@ private:
     const csHash<ParameterDomain,csStringID>& givenTypes,
     const csHash<ParameterDomain,csStringID>& paramTypes);
 
+  void CheckForRequiredPCs (const ParameterDomain& wantedType,
+    const csHash<const celData*,csStringID>& givenValues,
+    const celData* entityData);
   void CheckSemanticParameters (
     const char* name,
     const csHash<const celData*,csStringID>& givenValues,

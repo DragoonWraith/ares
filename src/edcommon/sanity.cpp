@@ -339,6 +339,63 @@ void SanityChecker::CheckParameterTypes (
   }
 }
 
+void SanityChecker::CheckForRequiredPCs (const ParameterDomain& wantedType,
+    const csHash<const celData*,csStringID>& givenValues,
+    const celData* entityData)
+{
+  if (!IsConstant (entityData->value.s->GetData ()))
+    return;
+  iDynamicObject* object = FindEntity (entityData->value.s->GetData ());
+  if (!object)
+    return;
+  iCelEntityTemplate* tpl = FindTemplateForObject (object);
+  if (!tpl)
+    return;
+
+  for (size_t i = 0 ; i < wantedType.pcs.GetSize () ; i++)
+  {
+    const PropertyClassOnTag& pctag = wantedType.pcs.Get (i);
+
+    csString tagname = pctag.tagname;
+    if (tagname.IsEmpty ())
+    {
+      if (pctag.tagID == csInvalidStringID)
+	continue;
+      const celData* tagData = givenValues.Get (pctag.tagID, (const celData*)0);
+      if (!tagData || tagData->type != CEL_DATA_STRING
+	  || !IsConstantOrEmpty (tagData->value.s->GetData ()))
+        continue;
+      tagname = tagData->value.s->GetData ();
+    }
+
+    csString pcname = pctag.pcname;
+    if (pcname.IsEmpty ())
+    {
+      if (pctag.pcID != csInvalidStringID)
+      {
+	const celData* pcData = givenValues.Get (pctag.pcID, (const celData*)0);
+	if (pcData && pcData->type == CEL_DATA_STRING
+	    && IsConstant (pcData->value.s->GetData ()))
+	  pcname = pcData->value.s->GetData ();
+      }
+    }
+
+    if (!pcname.IsEmpty ())
+    {
+      iCelPropertyClassTemplate* pctpl = tpl->FindPropertyClassTemplate (pcname, tagname);
+      if (!pctpl)
+      {
+	if (tagname.IsEmpty ())
+	  PushResult ("Cannot find property class '%s' in '%s'!",
+	      pcname.GetData (), tpl->GetName ());
+	else
+	  PushResult ("Cannot find property class '%s' with tag '%s' in '%s'!",
+	      pcname.GetData (), tagname.GetData (), tpl->GetName ());
+      }
+    }
+  }
+}
+
 void SanityChecker::CheckSemanticParameters (
     const char* name,
     const csHash<const celData*,csStringID>& givenValues,
@@ -359,8 +416,12 @@ void SanityChecker::CheckSemanticParameters (
 	{
 	  case PAR_ENTITY:
 	    if (data->type == CEL_DATA_STRING)
+	    {
 	      CheckExistingEntityAndReport (name, data->value.s->GetData ());
+	      CheckForRequiredPCs (wantedType, givenValues, data);
+	    }
 	    break;
+
 	  // @@@ TODO...
 	  default:
 	    break;

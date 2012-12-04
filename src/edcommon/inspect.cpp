@@ -28,6 +28,34 @@ THE SOFTWARE.
 #include "tools/questmanager.h"
 #include "propclass/dynworld.h"
 
+void ParameterDomain::Dump (iCelPlLayer* pl, csStringID id)
+{
+  csPrintf ("Par(%s) type=%s sem=%s\n", pl->FetchString (id), InspectTools::TypeToString (type),
+      InspectTools::ParTypeToString (parType));
+  if (parType == PAR_ENTITY)
+  {
+    for (size_t i = 0 ; i < pcs.GetSize () ; i++)
+    {
+      const PropertyClassOnTag& pctag = pcs.Get (i);
+      csPrintf ("    Tag=%s\n", pl->FetchString (pctag.tagID));
+      csPrintf ("    TagName=%s\n", pctag.tagname.GetData ());
+      csPrintf ("    PC=%s\n", pl->FetchString (pctag.pcID));
+      csPrintf ("    PcName=%s\n", pctag.pcname.GetData ());
+    }
+  }
+}
+
+void ParameterDomain::Dump (iCelPlLayer* pl, const csHash<ParameterDomain,csStringID>& pars)
+{
+  csHash<ParameterDomain,csStringID>::ConstGlobalIterator it = pars.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID parID;
+    ParameterDomain type = it.Next (parID);
+    type.Dump (pl, parID);
+  }
+}
+
 celData InspectTools::GetPropertyValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* propName, bool* valid)
 {
@@ -315,19 +343,20 @@ static csStringID Par2 (iCelPlLayer* pl, const char* par)
   return pl->FetchStringID (par+1);
 }
 
-static void ResolveParameter (csHash<ParameterDomain,csStringID>& paramTypes, csStringID parID,
-    celDataType type, celParameterType parType)
+static ParameterDomain& ResolveParameter (csHash<ParameterDomain,csStringID>& paramTypes,
+    csStringID parID, celDataType type, celParameterType parType)
 {
   if (paramTypes.Contains (parID))
   {
     ParameterDomain def;
     ParameterDomain& old = paramTypes.Get (parID, def);
-    if (old.type == type && old.parType == parType) return;	// All ok. No conflict.
+    if (old.type == type && old.parType == parType) return old;	// All ok. No conflict.
     old.parType = PAR_CONFLICT;
+    return old;
   }
   else
   {
-    paramTypes.Put (parID, ParameterDomain (type, parType));
+    return paramTypes.Put (parID, ParameterDomain (type, parType));
   }
 }
 
@@ -344,10 +373,16 @@ void InspectTools::CollectParParameters (iCelPlLayer* pl, iCelParameterIterator*
     if (parID != csInvalidStringID)
     {
       celDataType type = par->GetPossibleType ();
-      celParameterType parType = PAR_NONE;
       if (questParamTypes && questParamTypes->Contains (parID))
-	parType = questParamTypes->Get (parID, ParameterDomain ()).parType;
-      ResolveParameter (paramTypes, parID, type, parType);
+      {
+	const ParameterDomain& questPar = questParamTypes->Get (parID, ParameterDomain ());
+        ParameterDomain& pd = ResolveParameter (paramTypes, parID, type, questPar.parType);
+	pd.pcs.MergeSmart (questPar.pcs);
+      }
+      else
+      {
+        ResolveParameter (paramTypes, parID, type, PAR_NONE);
+      }
     }
   }
 }
@@ -444,14 +479,39 @@ csHash<const celData*,csStringID> InspectTools::GetObjectParameterValues (iDynam
   return paramValues;
 }
 
-static void Par (iCelPlLayer* pl, csHash<ParameterDomain,csStringID>& params, const char* par,
-    celDataType type, celParameterType parType)
+static csStringID Par (iCelPlLayer* pl, csHash<ParameterDomain,csStringID>& params,
+    const char* par, celDataType type, celParameterType parType)
 {
-  if (!par || !*par) return;
-  if (*par != '$') return;
-  if (strcmp (par+1, "this") == 0) return;
+  if (!par || !*par) return csInvalidStringID;
+  if (*par != '$') return csInvalidStringID;
+  if (strcmp (par+1, "this") == 0) return csInvalidStringID;
   csStringID id = pl->FetchStringID (par+1);
   ResolveParameter (params, id, type, parType);
+  return id;
+}
+
+static void ParEntityTag (iCelPlLayer* pl, csHash<ParameterDomain,csStringID>& params,
+    const char* parEntity, const char* parTag, const char* parPC)
+{
+  csStringID entityID = Par (pl, params, parEntity, CEL_DATA_STRING, PAR_ENTITY);
+  csStringID tagID = Par (pl, params, parTag, CEL_DATA_STRING, PAR_TAG);
+  csStringID pcID = Par (pl, params, parPC, CEL_DATA_STRING, PAR_PC);
+  if (entityID != csInvalidStringID)
+  {
+    ParameterDomain pddef;
+    ParameterDomain& pd = params.Get (entityID, pddef);
+    PropertyClassOnTag pctag;
+
+    pctag.tagID = tagID;
+    if (tagID == csInvalidStringID && parTag && *parTag != '$')
+      pctag.tagname = parTag;
+
+    pctag.pcID = pcID;
+    if (pcID == csInvalidStringID && parPC && *parPC != '$')
+      pctag.pcname = parPC;
+
+    pd.pcs.Push (pctag);
+  }
 }
 
 void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqopFact,
@@ -473,8 +533,7 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
   else if (name == "ambientmesh")
   {
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pcobject.mesh");
     Par (pl, params, tf->GetRelColorRed (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetRelColorGreen (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetRelColorBlue (), CEL_DATA_FLOAT, PAR_VALUE);
@@ -485,8 +544,7 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
   else if (name == "light")
   {
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pcobject.light");
     Par (pl, params, tf->GetRelColorRed (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetRelColorGreen (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetRelColorBlue (), CEL_DATA_FLOAT, PAR_VALUE);
@@ -497,8 +555,7 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
   else if (name == "movepath")
   {
     csRef<iMovePathSeqOpFactory> tf = scfQueryInterface<iMovePathSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pcobject.mesh");
     for (size_t i = 0 ; i < tf->GetPathCount () ; i++)
     {
       Par (pl, params, tf->GetPathSector (i), CEL_DATA_STRING, PAR_SECTOR);
@@ -509,9 +566,7 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
   else if (name == "property")
   {
     csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetPC (), CEL_DATA_STRING, PAR_PC);
-    Par (pl, params, tf->GetPCTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetPCTag (), tf->GetPC ());
     Par (pl, params, tf->GetProperty (), CEL_DATA_STRING, PAR_PROPERTY);
     Par (pl, params, tf->GetFloat (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetLong (), CEL_DATA_LONG, PAR_VALUE);
@@ -522,8 +577,7 @@ void InspectTools::CollectSeqopParameters (iCelPlLayer* pl, iSeqOpFactory* seqop
   else if (name == "transform")
   {
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pcobject.mesh");
     Par (pl, params, tf->GetVectorX (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetVectorY (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetVectorZ (), CEL_DATA_FLOAT, PAR_VALUE);
@@ -545,23 +599,21 @@ void InspectTools::CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* t
   if (name == "entersector" || name == "meshentersector")
   {
     csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (),
+	name == "meshentersector" ? "pcobject.mesh" : "");
     Par (pl, params, tf->GetSector (), CEL_DATA_STRING, PAR_SECTOR);
   }
   else if (name == "inventory")
   {
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pctools.inventory");
     Par (pl, params, tf->GetChildEntity (), CEL_DATA_STRING, PAR_ENTITY);
     Par (pl, params, tf->GetChildTemplate (), CEL_DATA_STRING, PAR_TEMPLATE);
   }
   else if (name == "meshselect")
   {
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pcobject.mesh");
   }
   else if (name == "message")
   {
@@ -571,16 +623,14 @@ void InspectTools::CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* t
   else if (name == "propertychange")
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pctools.properties");
     Par (pl, params, tf->GetProperty (), CEL_DATA_STRING, PAR_PROPERTY);
     Par (pl, params, tf->GetValue (), CEL_DATA_UNKNOWN, PAR_VALUE);
   }
   else if (name == "sequencefinish")
   {
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pclogic.quest");
     Par (pl, params, tf->GetSequence (), CEL_DATA_STRING, PAR_SEQUENCE);
   }
   else if (name == "timeout")
@@ -591,16 +641,13 @@ void InspectTools::CollectTriggerParameters (iCelPlLayer* pl, iTriggerFactory* t
   else if (name == "trigger")
   {
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pclogic.trigger");
   }
   else if (name == "watch")
   {
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (trigger);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
-    Par (pl, params, tf->GetTargetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTargetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pcobject.mesh");
+    ParEntityTag (pl, params, tf->GetTargetEntity (), tf->GetTargetTag (), "pcobject.mesh");
     Par (pl, params, tf->GetChecktime (), CEL_DATA_LONG, PAR_VALUE);
     Par (pl, params, tf->GetRadius (), CEL_DATA_FLOAT, PAR_VALUE);
     Par (pl, params, tf->GetOffsetX (), CEL_DATA_FLOAT, PAR_VALUE);
@@ -624,26 +671,21 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
   {
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (reward);
     Par (pl, params, tf->GetStateParameter (), CEL_DATA_STRING, PAR_STATE);
-    Par (pl, params, tf->GetEntityParameter (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTagParameter (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntityParameter (), tf->GetTagParameter (), "pclogic.quest");
     Par (pl, params, tf->GetClassParameter (), CEL_DATA_STRING, PAR_CLASS);
   }
   else if (name == "action")
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), tf->GetPropertyClass ());
     Par (pl, params, tf->GetClass (), CEL_DATA_STRING, PAR_CLASS);
     Par (pl, params, tf->GetID (), CEL_DATA_STRING, PAR_VALUE);
-    Par (pl, params, tf->GetPropertyClass (), CEL_DATA_STRING, PAR_PC);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
   }
   else if (name == "changeproperty")
   {
     csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetPCTag (), tf->GetPC ());
     Par (pl, params, tf->GetClass (), CEL_DATA_STRING, PAR_CLASS);
-    Par (pl, params, tf->GetPC (), CEL_DATA_STRING, PAR_PC);
-    Par (pl, params, tf->GetPCTag (), CEL_DATA_STRING, PAR_TAG);
     Par (pl, params, tf->GetProperty (), CEL_DATA_STRING, PAR_PROPERTY);
     Par (pl, params, tf->GetString (), CEL_DATA_STRING, PAR_VALUE);
     Par (pl, params, tf->GetLong (), CEL_DATA_LONG, PAR_VALUE);
@@ -671,10 +713,8 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
   else if (name == "inventory")
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
-    Par (pl, params, tf->GetChildEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetChildTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pctools.inventory");
+    ParEntityTag (pl, params, tf->GetChildEntity (), tf->GetChildTag (), "pcobject.mesh");
   }
   else if (name == "message")
   {
@@ -694,8 +734,7 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
   else if (name == "sequence")
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pclogic.quest");
     Par (pl, params, tf->GetClass (), CEL_DATA_STRING, PAR_CLASS);
     Par (pl, params, tf->GetSequence (), CEL_DATA_STRING, PAR_SEQUENCE);
     Par (pl, params, tf->GetDelay (), CEL_DATA_LONG, PAR_VALUE);
@@ -703,8 +742,7 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
   else if (name == "sequencefinish")
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (reward);
-    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
-    Par (pl, params, tf->GetTag (), CEL_DATA_STRING, PAR_TAG);
+    ParEntityTag (pl, params, tf->GetEntity (), tf->GetTag (), "pclogic.quest");
     Par (pl, params, tf->GetClass (), CEL_DATA_STRING, PAR_CLASS);
     Par (pl, params, tf->GetSequence (), CEL_DATA_STRING, PAR_SEQUENCE);
   }

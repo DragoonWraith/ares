@@ -74,6 +74,24 @@ enum celParameterType
   PAR_VALUE,		// Just a value, no specific type.
 };
 
+struct ARES_EDCOMMON_EXPORT PropertyClassOnTag
+{
+  csStringID tagID;	// Either the tagID or tagname is given.
+  csString tagname;
+  csStringID pcID;	// Either the pcID or pcname is given.
+  csString pcname;
+  PropertyClassOnTag () : tagID (csInvalidStringID), pcID (csInvalidStringID) { }
+
+  bool operator== (const PropertyClassOnTag& other) const
+  {
+    if (tagID != other.tagID) return false;
+    if (pcID != other.pcID) return false;
+    if (tagname != other.tagname) return false;
+    if (pcname != other.pcname) return false;
+    return true;
+  }
+};
+
 /**
  * This class is used to specify the domain for a parameter
  * for GetQuestParameters() and GetTemplateParameters().
@@ -82,6 +100,9 @@ struct ARES_EDCOMMON_EXPORT ParameterDomain
 {
   celDataType type;
   celParameterType parType;
+
+  // For PAR_ENTITY there is an array of property classes with tags that are desired.
+  csArray<PropertyClassOnTag> pcs;
 
   ParameterDomain () : type (CEL_DATA_NONE), parType (PAR_NONE) { }
   ParameterDomain (celDataType type, celParameterType parType) :
@@ -99,6 +120,9 @@ struct ARES_EDCOMMON_EXPORT ParameterDomain
     if (parType == PAR_NONE) return true;
     return other.parType == parType;
   }
+
+  void Dump (iCelPlLayer* pl, csStringID id);
+  static void Dump (iCelPlLayer* pl, const csHash<ParameterDomain,csStringID>& pars);
 };
 
 class ARES_EDCOMMON_EXPORT InspectTools
