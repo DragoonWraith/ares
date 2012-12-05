@@ -60,7 +60,19 @@ public:
   /**
    * Get the value of a specific control as a string.
    */
+  static csString GetValue (wxWindow* component);
+
+  /**
+   * Get the value of a specific control as a string.
+   */
   static csString GetValue (wxWindow* parent, const char* name);
+
+  /**
+   * Set the value of a specific control (only for controls supporting
+   * text values like text fields, buttons, and labels).
+   * Return false if the component type is not recognized.
+   */
+  static bool SetValue (wxWindow* component, const char* value);
 
   /**
    * Set the value of a specific control (only for controls supporting

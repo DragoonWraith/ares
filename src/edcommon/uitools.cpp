@@ -139,6 +139,46 @@ void UITools::AddChoices (wxWindow* parent, const char* name, ...)
   }
 }
 
+csString UITools::GetValue (wxWindow* child)
+{
+  if (child->IsKindOf (CLASSINFO (wxTextCtrl)))
+  {
+    wxTextCtrl* text = wxStaticCast (child, wxTextCtrl);
+    return (const char*)text->GetValue ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxStaticText)))
+  {
+    wxStaticText* text = wxStaticCast (child, wxStaticText);
+    return (const char*)text->GetLabel ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxComboBox)))
+  {
+    wxComboBox* text = wxStaticCast (child, wxComboBox);
+    return (const char*)text->GetValue ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxButton)))
+  {
+    wxButton* cb = wxStaticCast (child, wxButton);
+    return (const char*)cb->GetLabel ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxChoice)))
+  {
+    wxChoice* cb = wxStaticCast (child, wxChoice);
+    return (const char*)cb->GetStringSelection ().mb_str (wxConvUTF8);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxNotebook)))
+  {
+    wxNotebook* cb = wxStaticCast (child, wxNotebook);
+    if (cb->GetSelection () == -1) return "";
+    wxString str = cb->GetPageText (cb->GetSelection ());
+    return (const char*)str.mb_str (wxConvUTF8);
+  }
+  else
+  {
+    return "";
+  }
+}
+
 csString UITools::GetValue (wxWindow* parent, const char* name)
 {
   wxString wxname = wxString::FromUTF8 (name);
@@ -203,10 +243,44 @@ void UITools::SetValue (wxWindow* parent, const char* name, int value)
   SetValue (parent, name, v);
 }
 
+bool UITools::SetValue (wxWindow* child, const char* value)
+{
+  wxString wxvalue = wxString::FromUTF8 (value);
+  if (child->IsKindOf (CLASSINFO (wxTextCtrl)))
+  {
+    wxTextCtrl* text = wxStaticCast (child, wxTextCtrl);
+    text->ChangeValue (wxvalue);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxStaticText)))
+  {
+    wxStaticText* text = wxStaticCast (child, wxStaticText);
+    text->SetLabel (wxvalue);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxComboBox)))
+  {
+    wxComboBox* text = wxStaticCast (child, wxComboBox);
+    text->SetValue (wxvalue);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxButton)))
+  {
+    wxButton* cb = wxStaticCast (child, wxButton);
+    cb->SetLabel (wxvalue);
+  }
+  else if (child->IsKindOf (CLASSINFO (wxChoice)))
+  {
+    wxChoice* cb = wxStaticCast (child, wxChoice);
+    cb->SetStringSelection (wxvalue);
+  }
+  else
+  {
+    return false;
+  }
+  return true;
+}
+
 void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
 {
   wxString wxname = wxString::FromUTF8 (name);
-  wxString wxvalue = wxString::FromUTF8 (value);
   wxWindow* child = parent->FindWindow (wxname);
   if (!child)
   {
@@ -215,36 +289,12 @@ void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
   }
   else
   {
-    if (child->IsKindOf (CLASSINFO (wxTextCtrl)))
+    if (child->IsKindOf (CLASSINFO (wxNotebook)))
     {
-      wxTextCtrl* text = wxStaticCast (child, wxTextCtrl);
-      text->ChangeValue (wxvalue);
-    }
-    else if (child->IsKindOf (CLASSINFO (wxStaticText)))
-    {
-      wxStaticText* text = wxStaticCast (child, wxStaticText);
-      text->SetLabel (wxvalue);
-    }
-    else if (child->IsKindOf (CLASSINFO (wxComboBox)))
-    {
-      wxComboBox* text = wxStaticCast (child, wxComboBox);
-      text->SetValue (wxvalue);
-    }
-    else if (child->IsKindOf (CLASSINFO (wxButton)))
-    {
-      wxButton* cb = wxStaticCast (child, wxButton);
-      cb->SetLabel (wxvalue);
-    }
-    else if (child->IsKindOf (CLASSINFO (wxChoice)))
-    {
-      wxChoice* cb = wxStaticCast (child, wxChoice);
-      cb->SetStringSelection (wxvalue);
-    }
-    else if (child->IsKindOf (CLASSINFO (wxNotebook)))
-    {
+      wxString wxvalue = wxString::FromUTF8 (value);
       SwitchPage (parent, name, value);
     }
-    else
+    else if (!SetValue (child, value))
     {
       printf ("Can't set value for '%s', unknown type!\n", name);
       fflush (stdout);

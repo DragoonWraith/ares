@@ -72,22 +72,28 @@ enum celParameterType
   PAR_STATE,
   PAR_CLASS,
   PAR_VALUE,		// Just a value, no specific type.
+  PAR_VECTOR3,		// Like a value but represents a component from a vector3
+  PAR_COLOR,		// Like a value but represents a component from a color
 };
 
-struct ARES_EDCOMMON_EXPORT PropertyClassOnTag
+struct ARES_EDCOMMON_EXPORT LinkedParameter
 {
-  csStringID tagID;	// Either the tagID or tagname is given.
-  csString tagname;
-  csStringID pcID;	// Either the pcID or pcname is given.
-  csString pcname;
-  PropertyClassOnTag () : tagID (csInvalidStringID), pcID (csInvalidStringID) { }
+  csStringID id1;	// Either name or ID is given.
+  csString name1;
+  csStringID id2;	// Either name or ID is given.
+  csString name2;
+  LinkedParameter () : id1 (csInvalidStringID), id2 (csInvalidStringID) { }
 
-  bool operator== (const PropertyClassOnTag& other) const
+  bool IsEmpty1 () const { return id1 == csInvalidStringID && name1.IsEmpty (); }
+  bool IsEmpty2 () const { return id2 == csInvalidStringID && name2.IsEmpty (); }
+  bool IsEmpty () const { return IsEmpty1 () && IsEmpty2 (); }
+
+  bool operator== (const LinkedParameter& other) const
   {
-    if (tagID != other.tagID) return false;
-    if (pcID != other.pcID) return false;
-    if (tagname != other.tagname) return false;
-    if (pcname != other.pcname) return false;
+    if (id1 != other.id1) return false;
+    if (id2 != other.id2) return false;
+    if (name1 != other.name1) return false;
+    if (name2 != other.name2) return false;
     return true;
   }
 };
@@ -102,11 +108,39 @@ struct ARES_EDCOMMON_EXPORT ParameterDomain
   celParameterType parType;
 
   // For PAR_ENTITY there is an array of property classes with tags that are desired.
-  csArray<PropertyClassOnTag> pcs;
+  csArray<LinkedParameter> linked;
 
   ParameterDomain () : type (CEL_DATA_NONE), parType (PAR_NONE) { }
   ParameterDomain (celDataType type, celParameterType parType) :
     type (type), parType (parType) { }
+
+  /// Return a simpler version of the type.
+  static celParameterType Simplify (celParameterType t)
+  {
+    if (t == PAR_VECTOR3) return PAR_VALUE;
+    if (t == PAR_COLOR) return PAR_VALUE;
+    return t;
+  }
+
+  /// See if two semantic types are compatible.
+  static bool IsCompatible (celParameterType t1, celParameterType t2)
+  {
+    return Simplify (t1) == Simplify (t2);
+  }
+
+  /// Try to resolve the type of this domain given another type.
+  void ResolveType (celDataType otherType, celParameterType otherParType)
+  {
+    if (type != otherType)
+      parType = PAR_CONFLICT;
+    else if (!IsCompatible (parType, otherParType))
+      parType = PAR_CONFLICT;
+    else
+    {
+      if (otherParType == PAR_VECTOR3) parType = PAR_VECTOR3;
+      else if (otherParType == PAR_COLOR) parType = PAR_COLOR;
+    }
+  }
 
   /**
    * Match this domain with another one. This domain is considered to be the
@@ -118,7 +152,7 @@ struct ARES_EDCOMMON_EXPORT ParameterDomain
     if (other.type == CEL_DATA_NONE || other.type == CEL_DATA_UNKNOWN) return true;
     if (other.type != type) return false;
     if (parType == PAR_NONE) return true;
-    return other.parType == parType;
+    return IsCompatible (other.parType, parType);
   }
 
   void Dump (iCelPlLayer* pl, csStringID id);
@@ -260,6 +294,8 @@ public:
       case PAR_STATE: return "state";
       case PAR_CLASS: return "class";
       case PAR_VALUE: return "value";
+      case PAR_VECTOR3: return "vector3";
+      case PAR_COLOR: return "color";
       default: return "?";
     }
   }

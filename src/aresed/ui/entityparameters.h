@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <crystalspace.h>
 
 #include "edcommon/model.h"
+#include "edcommon/inspect.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -45,14 +46,36 @@ class EntityParameterDialog : public wxDialog, public View
 {
 private:
   UIManager* uiManager;
+  iCelPlLayer* pl;
+  wxPanel* parameterPanel;
+  csHash<wxWindow*,csStringID> parameterToComponent;
+  csHash<wxTextCtrl*,csPtrKey<wxButton> > buttonToText;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
   void OnSearchTemplateButton (wxCommandEvent& event);
   void OnResetButton (wxCommandEvent& event);
+  void OnSearchEntityButton (wxCommandEvent& event);
 
   csRef<ParameterListValue> parameters;
   iDynamicObject* object;
+
+  wxBoxSizer* AddRow (wxBoxSizer* sizer);
+  void AddLabel (wxBoxSizer* rowSizer, const char* txt);
+  wxTextCtrl* AddText (wxBoxSizer* rowSizer);
+  wxButton* AddButton (wxBoxSizer* rowSizer, const char* str);
+
+  void AddEntityParameter (csStringID parID, ParameterDomain& par, wxBoxSizer* sizer);
+  void AddTemplateParameter (csStringID parID, ParameterDomain& par, wxBoxSizer* sizer);
+  void AddGenericParameter (csStringID parID, ParameterDomain& par, wxBoxSizer* sizer,
+      const char* label1, const char* label2);
+  void AddLinkedParameters (csStringID parID, ParameterDomain& par,
+    wxBoxSizer* sizer, wxBoxSizer* rowSizer, const char* label1, const char* label2);
+
+  void FillSemanticParameters (iDynamicObject* object);
+  void UpdateParameters (iDynamicObject* object);
+
+  iCelEntityTemplate* GetTemplate ();
 
 public:
   EntityParameterDialog (wxWindow* parent, UIManager* uiManager);

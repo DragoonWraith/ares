@@ -352,28 +352,28 @@ void SanityChecker::CheckForRequiredPCs (const ParameterDomain& wantedType,
   if (!tpl)
     return;
 
-  for (size_t i = 0 ; i < wantedType.pcs.GetSize () ; i++)
+  for (size_t i = 0 ; i < wantedType.linked.GetSize () ; i++)
   {
-    const PropertyClassOnTag& pctag = wantedType.pcs.Get (i);
+    const LinkedParameter& linked = wantedType.linked.Get (i);
 
-    csString tagname = pctag.tagname;
+    csString tagname = linked.name1;
     if (tagname.IsEmpty ())
     {
-      if (pctag.tagID == csInvalidStringID)
+      if (linked.id1 == csInvalidStringID)
 	continue;
-      const celData* tagData = givenValues.Get (pctag.tagID, (const celData*)0);
+      const celData* tagData = givenValues.Get (linked.id1, (const celData*)0);
       if (!tagData || tagData->type != CEL_DATA_STRING
 	  || !IsConstantOrEmpty (tagData->value.s->GetData ()))
         continue;
       tagname = tagData->value.s->GetData ();
     }
 
-    csString pcname = pctag.pcname;
+    csString pcname = linked.name2;
     if (pcname.IsEmpty ())
     {
-      if (pctag.pcID != csInvalidStringID)
+      if (linked.id2 != csInvalidStringID)
       {
-	const celData* pcData = givenValues.Get (pctag.pcID, (const celData*)0);
+	const celData* pcData = givenValues.Get (linked.id2, (const celData*)0);
 	if (pcData && pcData->type == CEL_DATA_STRING
 	    && IsConstant (pcData->value.s->GetData ()))
 	  pcname = pcData->value.s->GetData ();

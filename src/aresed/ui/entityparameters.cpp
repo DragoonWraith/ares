@@ -139,7 +139,6 @@ void EntityParameterDialog::SuggestParameters ()
   csString tplName = UITools::GetValue (this, "template_Text");
   if (tplName.IsEmpty ()) return;
 
-  csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (uiManager->GetApp ()->GetObjectRegistry ());
   csRef<iQuestManager> questManager = csQueryRegistry<iQuestManager> (uiManager->GetApp ()->GetObjectRegistry ());
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (tplName);
   if (!tpl) return;
@@ -210,11 +209,24 @@ void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
     else
       UITools::SetValue (this, "template_Text", "");
   }
+  UpdateParameters (object);
+}
+
+iCelEntityTemplate* EntityParameterDialog::GetTemplate ()
+{
+  iCelEntityTemplate* tpl = object->GetEntityTemplate ();
+  csString tplName;
+  if (tpl) tplName = tpl->GetName ();
+  csString overrideTplName = UITools::GetValue (this, "template_Text");
+  if (!overrideTplName.IsEmpty ())
+    tplName = overrideTplName;
+  return pl->FindEntityTemplate (tplName);
 }
 
 void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
 {
-  csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (uiManager->GetApp ()->GetObjectRegistry ());
+  csRef<iQuestManager> questManager = csQueryRegistry<iQuestManager> (
+      uiManager->GetApp ()->GetObjectRegistry ());
 
   csString entityName = object->GetEntityName ();
   iCelEntityTemplate* tpl = object->GetEntityTemplate ();
@@ -222,10 +234,15 @@ void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
   if (tpl) tplName = tpl->GetName ();
   csString overrideTplName = UITools::GetValue (this, "template_Text");
   if (!overrideTplName.IsEmpty ())
+  {
     tplName = overrideTplName;
+    tpl = pl->FindEntityTemplate (tplName);
+  }
 
   csRef<celVariableParameterBlock> params;
   csArray<Par>& pars = parameters->GetParameters ();
+
+  // Get all the parameters out of the common list of parameters first.
   if (pars.GetSize () > 0)
   {
     params.AttachNew (new celVariableParameterBlock ());
@@ -237,6 +254,29 @@ void EntityParameterDialog::OnOkButton (wxCommandEvent& event)
       celParameterTools::Convert (in, p.type, out);
 
       params->AddParameter (pl->FetchStringID (p.name), out);
+    }
+  }
+
+  // Now get all the parameters out of the semantic parameters.
+  if (!parameterToComponent.IsEmpty ())
+  {
+    if (!params)
+      params.AttachNew (new celVariableParameterBlock ());
+
+    csHash<ParameterDomain,csStringID> parameters = InspectTools::GetTemplateParameters (
+	pl, questManager, tpl);
+    csHash<wxWindow*,csStringID>::GlobalIterator it = parameterToComponent.GetIterator ();
+    while (it.HasNext ())
+    {
+      csStringID parID;
+      wxWindow* component = it.Next (parID);
+      const ParameterDomain& pd = parameters.Get (parID, ParameterDomain ());
+      celData in, out;
+      in.Set (UITools::GetValue (component));
+      celParameterTools::Convert (in, pd.type, out);
+
+      params->RemoveParameter (parID);
+      params->AddParameter (parID, out);
     }
   }
 
@@ -256,40 +296,226 @@ void EntityParameterDialog::OnCancelButton (wxCommandEvent& event)
   EndModal (TRUE);
 }
 
-void EntityParameterDialog::Show (iDynamicObject* object)
+wxBoxSizer* EntityParameterDialog::AddRow (wxBoxSizer* sizer)
+{
+  wxBoxSizer* rowSizer = new wxBoxSizer (wxHORIZONTAL);
+  sizer->Add (rowSizer, 0, wxEXPAND, 5);
+  return rowSizer;
+}
+
+void EntityParameterDialog::AddLabel (wxBoxSizer* rowSizer, const char* txt)
+{
+  wxStaticText* label = new wxStaticText (parameterPanel, wxID_ANY, wxString::FromUTF8 (txt),
+      wxDefaultPosition, wxDefaultSize, 0);
+  label->Wrap (-1);
+  rowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+}
+
+wxTextCtrl* EntityParameterDialog::AddText (wxBoxSizer* rowSizer)
+{
+  wxTextCtrl* text = new wxTextCtrl (parameterPanel, wxID_ANY, wxEmptyString,
+      wxDefaultPosition, wxDefaultSize, 0);
+  rowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  return text;
+}
+
+wxButton* EntityParameterDialog::AddButton (wxBoxSizer* rowSizer, const char* str)
+{
+  wxButton* button = new wxButton (parameterPanel, wxID_ANY, wxString::FromUTF8 (str),
+      wxDefaultPosition, wxDefaultSize, 0);
+  rowSizer->Add (button, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
+	EntityParameterDialog::OnSearchEntityButton), 0, this);
+  return button;
+}
+
+void EntityParameterDialog::OnSearchEntityButton (wxCommandEvent& event)
+{
+  wxButton* button = static_cast<wxButton*> (event.GetEventObject ());
+  wxTextCtrl* text = buttonToText.Get (button, (wxTextCtrl*)0);
+  if (text)
+  {
+    csRef<Ares::Value> objects = uiManager->GetApp ()->Get3DView ()->
+      GetModelRepository ()->GetObjectsWithEntityValue ();
+    Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
+	DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
+    if (entity)
+    {
+      csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
+      UITools::SetValue (text, name);
+    }
+  }
+}
+
+
+void EntityParameterDialog::AddEntityParameter (csStringID parID, ParameterDomain& par,
+    wxBoxSizer* sizer)
+{
+  wxBoxSizer* rowSizer = AddRow (sizer);
+  AddLabel (rowSizer, pl->FetchString (parID));
+  wxTextCtrl* entityText = AddText (rowSizer);
+  parameterToComponent.Put (parID, entityText);
+  wxButton* button = AddButton (rowSizer, "...");
+  buttonToText.Put (button, entityText);
+  AddLinkedParameters (parID, par, sizer, rowSizer, "tag:", "PC:");
+}
+
+void EntityParameterDialog::AddTemplateParameter (csStringID parID, ParameterDomain& par,
+    wxBoxSizer* sizer)
+{
+  wxBoxSizer* rowSizer = AddRow (sizer);
+  AddLabel (rowSizer, pl->FetchString (parID));
+  // @@@ Should be combobox for template or template picker?
+  parameterToComponent.Put (parID, AddText (rowSizer));
+}
+
+void EntityParameterDialog::AddLinkedParameters (csStringID parID, ParameterDomain& par,
+    wxBoxSizer* sizer, wxBoxSizer* rowSizer, const char* label1, const char* label2)
+{
+  for (size_t i = 0 ; i < par.linked.GetSize () ; i++)
+  {
+    LinkedParameter& linked = par.linked.Get (i);
+    if (i > 0 && !linked.IsEmpty ())
+    {
+      rowSizer = AddRow (sizer);
+      rowSizer->AddSpacer (50);
+    }
+
+    if (linked.id1 != csInvalidStringID)
+    {
+      AddLabel (rowSizer, pl->FetchString (linked.id1));
+      parameterToComponent.Put (linked.id1, AddText (rowSizer));
+    }
+    else if (!linked.name1.IsEmpty ())
+    {
+      csString l;
+      l.Format ("(%s%s)", label1, linked.name1.GetData ());
+      AddLabel (rowSizer, l);
+    }
+
+    if (linked.id2 != csInvalidStringID)
+    {
+      AddLabel (rowSizer, pl->FetchString (linked.id2));
+      parameterToComponent.Put (linked.id2, AddText (rowSizer));
+    }
+    else if (!linked.name2.IsEmpty ())
+    {
+      csString l;
+      l.Format ("(%s%s)", label2, linked.name2.GetData ());
+      AddLabel (rowSizer, l);
+    }
+  }
+}
+
+void EntityParameterDialog::AddGenericParameter (csStringID parID, ParameterDomain& par,
+    wxBoxSizer* sizer, const char* label1, const char* label2)
+{
+  wxBoxSizer* rowSizer = AddRow (sizer);
+  AddLabel (rowSizer, pl->FetchString (parID));
+  parameterToComponent.Put (parID, AddText (rowSizer));
+  AddLinkedParameters (parID, par, sizer, rowSizer, label1, label2);
+}
+
+void EntityParameterDialog::FillSemanticParameters (iDynamicObject* object)
+{
+  csHash<wxTextCtrl*,csPtrKey<wxButton> >::GlobalIterator it = buttonToText.GetIterator ();
+  while (it.HasNext ())
+  {
+    csPtrKey<wxButton> button;
+    it.Next (button);
+    button->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
+	wxCommandEventHandler (EntityParameterDialog::OnSearchEntityButton), 0, this);
+  }
+  buttonToText.Empty ();
+  parameterPanel->DestroyChildren ();
+  parameterToComponent.Empty ();
+
+  iCelEntityTemplate* tpl = GetTemplate ();
+  if (tpl)
+  {
+    iObjectRegistry* object_reg = uiManager->GetApp ()->GetObjectRegistry ();
+    csRef<iQuestManager> questManager = csQueryRegistry<iQuestManager> (object_reg);
+    csHash<ParameterDomain,csStringID> parameters = InspectTools::GetTemplateParameters (
+	pl, questManager, tpl);
+    if (parameters.GetSize () > 0)
+    {
+      wxBoxSizer* sizer = new wxBoxSizer (wxVERTICAL);
+      parameterPanel->SetSizer (sizer);
+      csHash<ParameterDomain,csStringID>::GlobalIterator it = parameters.GetIterator ();
+      while (it.HasNext ())
+      {
+	csStringID parID;
+	ParameterDomain par = it.Next (parID);
+	if (parameterToComponent.Contains (parID))
+	  continue;
+	switch (par.parType)
+	{
+	  case PAR_ENTITY: AddEntityParameter (parID, par, sizer); break;
+	  case PAR_TEMPLATE: AddTemplateParameter (parID, par, sizer); break;
+	  case PAR_VECTOR3: AddGenericParameter (parID, par, sizer, "y:", "z:"); break;
+	  case PAR_COLOR: AddGenericParameter (parID, par, sizer, "green:", "blue:"); break;
+	  case PAR_NONE: break;
+	  case PAR_CONFLICT: break;	// @@@ Issue a warning label (red)?
+	  default: AddGenericParameter (parID, par, sizer, "", ""); break;
+	}
+      }
+    }
+  }
+  parameterPanel->Layout ();
+  parameterPanel->Refresh ();
+
+  SetSize(GetSize()+wxSize(0,1));
+  SetSize(GetSize()-wxSize(0,1));
+}
+
+void EntityParameterDialog::UpdateParameters (iDynamicObject* object)
 {
   EntityParameterDialog::object = object;
 
   csArray<Par>& pars = parameters->GetParameters ();
   pars.DeleteAll ();
 
+  FillSemanticParameters (object);
+
   iCelParameterBlock* params = object->GetEntityParameters ();
   if (params)
   {
-    csRef<iCelPlLayer> pl = csQueryRegistry<iCelPlLayer> (uiManager->GetApp ()->GetObjectRegistry ());
     for (size_t i = 0 ; i < params->GetParameterCount () ; i++)
     {
       celDataType t;
       csStringID id = params->GetParameterDef (i, t);
       const celData* data = params->GetParameterByIndex (i);
-
-      Par p;
-      p.name = pl->FetchString (id);
-      p.type = t;
-      celParameterTools::ToString (*data, p.value);
-      pars.Push (p);
+      if (parameterToComponent.Contains (id))
+      {
+	wxWindow* component = parameterToComponent.Get (id, (wxWindow*)0);
+	csString value;
+        celParameterTools::ToString (*data, value);
+	UITools::SetValue (component, value);
+      }
+      else
+      {
+        Par p;
+        p.name = pl->FetchString (id);
+        p.type = t;
+        celParameterTools::ToString (*data, p.value);
+        pars.Push (p);
+      }
     }
   }
 
   parameters->Refresh ();
+}
 
-  iCelEntityTemplate* tpl = object->GetEntityTemplate ();
+void EntityParameterDialog::Show (iDynamicObject* object)
+{
   csString tplName;
+  iCelEntityTemplate* tpl = object->GetEntityTemplate ();
   if (tpl) tplName = tpl->GetName ();
   csString factoryName = object->GetFactory ()->GetName ();
   if (factoryName != tplName)
     UITools::SetValue (this, "template_Text", tplName);
 
+  UpdateParameters (object);
   ShowModal ();
 }
 
@@ -297,7 +523,11 @@ EntityParameterDialog::EntityParameterDialog (wxWindow* parent, UIManager* uiMan
   View (this),
   uiManager (uiManager)
 {
+  pl = uiManager->GetApp ()->Get3DView ()->GetPL ();
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("EntityParameterDialog"));
+  SetMinSize (wxSize (500, 500));
+
+  parameterPanel = XRCCTRL (*this, "parameterPanel", wxPanel);
 
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Create Parameter");
   dialog->AddRow ();
