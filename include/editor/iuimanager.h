@@ -30,6 +30,8 @@ THE SOFTWARE.
 
 #include "edcommon/model.h"
 
+struct iAresEditor;
+
 /**
  * The UI Manager.
  */
@@ -41,6 +43,8 @@ struct iUIManager : public virtual iBase
   virtual void Message (const char* description, ...) = 0;
   virtual bool Error (const char* description, ...) = 0;
   virtual bool Ask (const char* description, ...) = 0;
+
+  virtual iAresEditor* GetApplication () const = 0;
 
   /**
    * Ask a question to the user and return the answer as a string.

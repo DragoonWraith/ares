@@ -29,6 +29,7 @@ THE SOFTWARE.
 
 #include "edcommon/model.h"
 #include "edcommon/inspect.h"
+#include "edcommon/smartpicker.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>
@@ -49,21 +50,18 @@ private:
   iCelPlLayer* pl;
   wxPanel* parameterPanel;
   csHash<wxWindow*,csStringID> parameterToComponent;
-  csHash<wxTextCtrl*,csPtrKey<wxButton> > buttonToText;
+
+  SmartPickerLogic spl;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
   void OnSearchTemplateButton (wxCommandEvent& event);
   void OnResetButton (wxCommandEvent& event);
-  void OnSearchEntityButton (wxCommandEvent& event);
 
   csRef<ParameterListValue> parameters;
   iDynamicObject* object;
 
   wxBoxSizer* AddRow (wxBoxSizer* sizer);
-  void AddLabel (wxBoxSizer* rowSizer, const char* txt);
-  wxTextCtrl* AddText (wxBoxSizer* rowSizer);
-  wxButton* AddButton (wxBoxSizer* rowSizer, const char* str);
 
   void AddEntityParameter (csStringID parID, ParameterDomain& par, wxBoxSizer* sizer);
   void AddTemplateParameter (csStringID parID, ParameterDomain& par, wxBoxSizer* sizer);

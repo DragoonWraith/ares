@@ -33,6 +33,7 @@ struct iEditorConfig;
 struct i3DView;
 struct iAssetManager;
 struct iObject;
+struct iDynamicObject;
 
 /**
  * The editor application.

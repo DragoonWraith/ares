@@ -189,6 +189,7 @@ public:
   virtual ~UIManager ();
 
   AppAresEditWX* GetApp () const { return app; }
+  virtual iAresEditor* GetApplication () const;
 
   virtual void About ();
   virtual void Message (const char* description, ...);

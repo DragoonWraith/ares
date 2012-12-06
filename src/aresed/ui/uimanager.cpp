@@ -528,6 +528,11 @@ UIManager::~UIManager ()
   delete sanityCheckerDialog;
 }
 
+iAresEditor* UIManager::GetApplication () const
+{
+  return app;
+}
+
 void UIManager::About ()
 {
   wxAboutDialogInfo info;

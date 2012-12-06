@@ -303,60 +303,12 @@ wxBoxSizer* EntityParameterDialog::AddRow (wxBoxSizer* sizer)
   return rowSizer;
 }
 
-void EntityParameterDialog::AddLabel (wxBoxSizer* rowSizer, const char* txt)
-{
-  wxStaticText* label = new wxStaticText (parameterPanel, wxID_ANY, wxString::FromUTF8 (txt),
-      wxDefaultPosition, wxDefaultSize, 0);
-  label->Wrap (-1);
-  rowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
-}
-
-wxTextCtrl* EntityParameterDialog::AddText (wxBoxSizer* rowSizer)
-{
-  wxTextCtrl* text = new wxTextCtrl (parameterPanel, wxID_ANY, wxEmptyString,
-      wxDefaultPosition, wxDefaultSize, 0);
-  rowSizer->Add (text, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
-  return text;
-}
-
-wxButton* EntityParameterDialog::AddButton (wxBoxSizer* rowSizer, const char* str)
-{
-  wxButton* button = new wxButton (parameterPanel, wxID_ANY, wxString::FromUTF8 (str),
-      wxDefaultPosition, wxDefaultSize, 0);
-  rowSizer->Add (button, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
-  button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
-	EntityParameterDialog::OnSearchEntityButton), 0, this);
-  return button;
-}
-
-void EntityParameterDialog::OnSearchEntityButton (wxCommandEvent& event)
-{
-  wxButton* button = static_cast<wxButton*> (event.GetEventObject ());
-  wxTextCtrl* text = buttonToText.Get (button, (wxTextCtrl*)0);
-  if (text)
-  {
-    csRef<Ares::Value> objects = uiManager->GetApp ()->Get3DView ()->
-      GetModelRepository ()->GetObjectsWithEntityValue ();
-    Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
-	DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
-    if (entity)
-    {
-      csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
-      UITools::SetValue (text, name);
-    }
-  }
-}
-
-
 void EntityParameterDialog::AddEntityParameter (csStringID parID, ParameterDomain& par,
     wxBoxSizer* sizer)
 {
   wxBoxSizer* rowSizer = AddRow (sizer);
-  AddLabel (rowSizer, pl->FetchString (parID));
-  wxTextCtrl* entityText = AddText (rowSizer);
+  wxTextCtrl* entityText = spl.AddEntityPicker (parameterPanel, rowSizer, pl->FetchString (parID));
   parameterToComponent.Put (parID, entityText);
-  wxButton* button = AddButton (rowSizer, "...");
-  buttonToText.Put (button, entityText);
   AddLinkedParameters (parID, par, sizer, rowSizer, "tag:", "PC:");
 }
 
@@ -364,9 +316,9 @@ void EntityParameterDialog::AddTemplateParameter (csStringID parID, ParameterDom
     wxBoxSizer* sizer)
 {
   wxBoxSizer* rowSizer = AddRow (sizer);
-  AddLabel (rowSizer, pl->FetchString (parID));
+  spl.AddLabel (parameterPanel, rowSizer, pl->FetchString (parID));
   // @@@ Should be combobox for template or template picker?
-  parameterToComponent.Put (parID, AddText (rowSizer));
+  parameterToComponent.Put (parID, spl.AddText (parameterPanel, rowSizer));
 }
 
 void EntityParameterDialog::AddLinkedParameters (csStringID parID, ParameterDomain& par,
@@ -383,26 +335,26 @@ void EntityParameterDialog::AddLinkedParameters (csStringID parID, ParameterDoma
 
     if (linked.id1 != csInvalidStringID)
     {
-      AddLabel (rowSizer, pl->FetchString (linked.id1));
-      parameterToComponent.Put (linked.id1, AddText (rowSizer));
+      spl.AddLabel (parameterPanel, rowSizer, pl->FetchString (linked.id1));
+      parameterToComponent.Put (linked.id1, spl.AddText (parameterPanel, rowSizer));
     }
     else if (!linked.name1.IsEmpty ())
     {
       csString l;
       l.Format ("(%s%s)", label1, linked.name1.GetData ());
-      AddLabel (rowSizer, l);
+      spl.AddLabel (parameterPanel, rowSizer, l);
     }
 
     if (linked.id2 != csInvalidStringID)
     {
-      AddLabel (rowSizer, pl->FetchString (linked.id2));
-      parameterToComponent.Put (linked.id2, AddText (rowSizer));
+      spl.AddLabel (parameterPanel, rowSizer, pl->FetchString (linked.id2));
+      parameterToComponent.Put (linked.id2, spl.AddText (parameterPanel, rowSizer));
     }
     else if (!linked.name2.IsEmpty ())
     {
       csString l;
       l.Format ("(%s%s)", label2, linked.name2.GetData ());
-      AddLabel (rowSizer, l);
+      spl.AddLabel (parameterPanel, rowSizer, l);
     }
   }
 }
@@ -411,22 +363,14 @@ void EntityParameterDialog::AddGenericParameter (csStringID parID, ParameterDoma
     wxBoxSizer* sizer, const char* label1, const char* label2)
 {
   wxBoxSizer* rowSizer = AddRow (sizer);
-  AddLabel (rowSizer, pl->FetchString (parID));
-  parameterToComponent.Put (parID, AddText (rowSizer));
+  spl.AddLabel (parameterPanel, rowSizer, pl->FetchString (parID));
+  parameterToComponent.Put (parID, spl.AddText (parameterPanel, rowSizer));
   AddLinkedParameters (parID, par, sizer, rowSizer, label1, label2);
 }
 
 void EntityParameterDialog::FillSemanticParameters (iDynamicObject* object)
 {
-  csHash<wxTextCtrl*,csPtrKey<wxButton> >::GlobalIterator it = buttonToText.GetIterator ();
-  while (it.HasNext ())
-  {
-    csPtrKey<wxButton> button;
-    it.Next (button);
-    button->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
-	wxCommandEventHandler (EntityParameterDialog::OnSearchEntityButton), 0, this);
-  }
-  buttonToText.Empty ();
+  spl.Cleanup ();
   parameterPanel->DestroyChildren ();
   parameterToComponent.Empty ();
 
@@ -521,7 +465,8 @@ void EntityParameterDialog::Show (iDynamicObject* object)
 
 EntityParameterDialog::EntityParameterDialog (wxWindow* parent, UIManager* uiManager) :
   View (this),
-  uiManager (uiManager)
+  uiManager (uiManager),
+  spl (uiManager)
 {
   pl = uiManager->GetApp ()->Get3DView ()->GetPL ();
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("EntityParameterDialog"));
