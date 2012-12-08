@@ -55,8 +55,8 @@ private:
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
-  void OnSearchTemplateButton (wxCommandEvent& event);
   void OnResetButton (wxCommandEvent& event);
+  void OnUpdateTemplate (wxCommandEvent& event);
 
   csRef<ParameterListValue> parameters;
   iDynamicObject* object;

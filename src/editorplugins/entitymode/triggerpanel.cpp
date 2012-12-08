@@ -390,17 +390,17 @@ TriggerPanel::TriggerPanel (wxWindow* parent, iUIManager* uiManager,
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("TriggerPanel"));
 
-  spl.SetupEntityPicker (this, "entity_Es_Text", "entitySearch_Es_Button");
-  spl.SetupEntityPicker (this, "entity_In_Text", "entitySearch_In_Button");
-  spl.SetupEntityPicker (this, "child_In_Text", "childEntitySearch_In_Button");
-  spl.SetupEntityPicker (this, "entity_Ms_Text", "entitySearch_Ms_Button");
-  spl.SetupEntityPicker (this, "entity_Me_Text", "entitySearch_Me_Button");
-  spl.SetupEntityPicker (this, "entity_Pc_Text", "entitySearch_Pc_Button");
-  spl.SetupEntityPicker (this, "entity_Sf_Text", "entitySearch_Sf_Button");
-  spl.SetupEntityPicker (this, "entity_Tr_Text", "entitySearch_Tr_Button");
-  spl.SetupEntityPicker (this, "entity_Wa_Text", "entitySearch_Wa_Button");
-  spl.SetupEntityPicker (this, "target_Wa_Text", "targetEntitySearch_Wa_Button");
-  spl.SetupEntityPicker (this, "entity_Mes_Text", "entitySearch_Mes_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Es_Text", "entitySearch_Es_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_In_Text", "entitySearch_In_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "child_In_Text", "childEntitySearch_In_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Ms_Text", "entitySearch_Ms_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Me_Text", "entitySearch_Me_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Pc_Text", "entitySearch_Pc_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Sf_Text", "entitySearch_Sf_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Tr_Text", "entitySearch_Tr_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Wa_Text", "entitySearch_Wa_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "target_Wa_Text", "targetEntitySearch_Wa_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Mes_Text", "entitySearch_Mes_Button");
 }
 
 TriggerPanel::~TriggerPanel ()

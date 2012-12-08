@@ -99,7 +99,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_TEXT (XRCID("spawnMaxDelayText"), PropertyClassPanel :: OnUpdateEvent)
 
   EVT_TEXT (XRCID("questText"), PropertyClassPanel :: OnUpdateEvent)
-  EVT_BUTTON (XRCID("questButton"), PropertyClassPanel :: OnChangeQuest)
   EVT_TEXT (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
   EVT_COMBOBOX (XRCID("wireInputMaskCombo"), PropertyClassPanel :: OnUpdateEvent)
 
@@ -1112,20 +1111,6 @@ iUIDialog* PropertyClassPanel::GetQuestDialog ()
   return questParDialog;
 }
 
-void PropertyClassPanel::OnChangeQuest (wxCommandEvent& event)
-{
-  csRef<Ares::Value> quests = emode->GetApplication ()->Get3DView ()->
-    GetModelRepository ()->GetQuestsValue ();
-  Value* quest = uiManager->AskDialog ("Select a quest", quests, "Name,M", QUEST_COL_NAME,
-      QUEST_COL_MODIFIED);
-  if (quest)
-  {
-    csString name = quest->GetStringArrayValue ()->Get (QUEST_COL_NAME);
-    UITools::SetValue (this, "questText", name);
-    UpdateQuest ();
-  }
-}
-
 bool PropertyClassPanel::UpdateQuest ()
 {
   SwitchPCType ("pclogic.quest");
@@ -1642,7 +1627,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
 
-  spl.SetupEntityPicker (this, "entity_Trig_Text", "searchEntity_Trig_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Trig_Text", "searchEntity_Trig_Button");
+  spl.SetupPicker (SPT_QUEST, this, "questText", "questButton");
 
   wxListCtrl* list;
 

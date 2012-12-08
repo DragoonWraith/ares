@@ -542,11 +542,11 @@ SequencePanel::SequencePanel (wxWindow* parent, iUIManager* uiManager,
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("SequencePanel"));
 
-  spl.SetupEntityPicker (this, "entity_Am_Text", "entitySearch_Am_Button");
-  spl.SetupEntityPicker (this, "entity_Li_Text", "entitySearch_Li_Button");
-  spl.SetupEntityPicker (this, "entity_Mp_Text", "entitySearch_Mp_Button");
-  spl.SetupEntityPicker (this, "entity_Pr_Text", "entitySearch_Pr_Button");
-  spl.SetupEntityPicker (this, "entity_Tr_Text", "entitySearch_Tr_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Am_Text", "entitySearch_Am_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Li_Text", "entitySearch_Li_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Mp_Text", "entitySearch_Mp_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Pr_Text", "entitySearch_Pr_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Tr_Text", "entitySearch_Tr_Button");
 
   newopDialog = uiManager->CreateDialog (this, "New Operation");
   newopDialog->AddRow ();

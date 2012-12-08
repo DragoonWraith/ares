@@ -32,6 +32,14 @@ THE SOFTWARE.
 class wxWindow;
 struct iUIManager;
 
+enum SmartPickerType
+{
+  SPT_NONE = 0,
+  SPT_ENTITY,
+  SPT_QUEST,
+  SPT_TEMPLATE
+};
+
 /**
  * Tools to generate smart value 'pickers' for various types of objects.
  */
@@ -40,8 +48,9 @@ class ARES_EDCOMMON_EXPORT SmartPickerLogic : public wxEvtHandler
 private:
   iUIManager* uiManager;
   csHash<wxTextCtrl*,csPtrKey<wxButton> > buttonToText;
+  csHash<SmartPickerType,csPtrKey<wxButton> > buttonToType;
 
-  void OnSearchEntityButton (wxCommandEvent& event);
+  void OnSearchButton (wxCommandEvent& event);
 
 public:
   SmartPickerLogic (iUIManager* uiManager) : uiManager (uiManager) { }
@@ -58,21 +67,22 @@ public:
       bool exact = true);
 
   /**
-   * Add an entity picker.
+   * Add a smart picker.
    */
-  wxTextCtrl* AddEntityPicker (wxWindow* parent, wxBoxSizer* rowSizer,
+  wxTextCtrl* AddPicker (SmartPickerType type, wxWindow* parent, wxBoxSizer* rowSizer,
       const char* label = 0);
 
   /**
-   * Setup an entity picker on already existing components.
+   * Setup a smar5 picker on already existing components.
    */
-  void SetupEntityPicker (wxTextCtrl* entityText, wxButton* searchButton);
+  void SetupPicker (SmartPickerType type, wxTextCtrl* entityText, wxButton* searchButton);
 
   /**
-   * Setup an entity picker on already existing components.
+   * Setup a smart picker on already existing components.
    * Return false on failure (components don't exist or don't have right type).
    */
-  bool SetupEntityPicker (wxWindow* parent, const char* entityText, const char* searchButton);
+  bool SetupPicker (SmartPickerType type, wxWindow* parent,
+      const char* entityText, const char* searchButton);
 };
 
 #endif // __appares_smart_picker_h

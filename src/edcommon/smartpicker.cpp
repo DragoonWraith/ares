@@ -50,7 +50,7 @@ void SmartPickerLogic::Cleanup ()
     csPtrKey<wxButton> button;
     it.Next (button);
     button->Disconnect (wxEVT_COMMAND_BUTTON_CLICKED,
-	wxCommandEventHandler (SmartPickerLogic::OnSearchEntityButton), 0, this);
+	wxCommandEventHandler (SmartPickerLogic::OnSearchButton), 0, this);
   }
   buttonToText.Empty ();
 }
@@ -80,7 +80,7 @@ wxButton* SmartPickerLogic::AddButton (wxWindow* parent, wxBoxSizer* rowSizer, c
   return button;
 }
 
-bool SmartPickerLogic::SetupEntityPicker (wxWindow* parent, const char* entityText,
+bool SmartPickerLogic::SetupPicker (SmartPickerType type, wxWindow* parent, const char* entityText,
     const char* searchButton)
 {
   wxString wxentity = wxString::FromUTF8 (entityText);
@@ -95,41 +95,71 @@ bool SmartPickerLogic::SetupEntityPicker (wxWindow* parent, const char* entityTe
   wxButton* button = wxStaticCast (wbutton, wxButton);
   if (!button) return false;
 
-  SetupEntityPicker (text, button);
+  SetupPicker (type, text, button);
   return true;
 }
 
-void SmartPickerLogic::SetupEntityPicker (wxTextCtrl* entityText, wxButton* searchButton)
+void SmartPickerLogic::SetupPicker (SmartPickerType type, wxTextCtrl* entityText,
+    wxButton* searchButton)
 {
   searchButton->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
-	SmartPickerLogic::OnSearchEntityButton), 0, this);
+	SmartPickerLogic::OnSearchButton), 0, this);
   buttonToText.Put (searchButton, entityText);
+  buttonToType.Put (searchButton, type);
 }
 
-wxTextCtrl* SmartPickerLogic::AddEntityPicker (wxWindow* parent, wxBoxSizer* rowSizer,
+wxTextCtrl* SmartPickerLogic::AddPicker (SmartPickerType type, wxWindow* parent, wxBoxSizer* rowSizer,
       const char* label)
 {
   if (label) AddLabel (parent, rowSizer, label);
   wxTextCtrl* text = AddText (parent, rowSizer);
   wxButton* button = AddButton (parent, rowSizer, "...", true);
-  SetupEntityPicker (text, button);
+  SetupPicker (type, text, button);
   return text;
 }
 
-void SmartPickerLogic::OnSearchEntityButton (wxCommandEvent& event)
+void SmartPickerLogic::OnSearchButton (wxCommandEvent& event)
 {
   wxButton* button = static_cast<wxButton*> (event.GetEventObject ());
   wxTextCtrl* text = buttonToText.Get (button, (wxTextCtrl*)0);
   if (text)
   {
+    SmartPickerType type = buttonToType.Get (button, SPT_NONE);
     using namespace Ares;
-    csRef<Value> objects = uiManager->GetApplication ()->Get3DView ()->
-      GetModelRepository ()->GetObjectsWithEntityValue ();
-    Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
-	DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
-    if (entity)
+    csRef<Value> objects;
+    Value* chosen;
+    int col;
+
+    iModelRepository* rep = uiManager->GetApplication ()->Get3DView ()->GetModelRepository ();
+    switch (type)
     {
-      csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
+      case SPT_ENTITY:
+        objects = rep->GetObjectsWithEntityValue ();
+        chosen = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
+	    DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
+	col = DYNOBJ_COL_ENTITY;
+	break;
+
+      case SPT_QUEST:
+        objects = rep->GetQuestsValue ();
+	chosen = uiManager->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
+	    QUEST_COL_MODIFIED);
+	col = QUEST_COL_NAME;
+	break;
+
+      case SPT_TEMPLATE:
+	objects = rep->GetTemplatesValue ();
+	chosen = uiManager->AskDialog ("Select a template", objects, "Template,M",
+	    TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
+	col = TEMPLATE_COL_NAME;
+	break;
+
+      case SPT_NONE:
+	CS_ASSERT (false);
+    }
+    if (chosen)
+    {
+      csString name = chosen->GetStringArrayValue ()->Get (col);
       UITools::SetValue (text, name, true);
     }
   }

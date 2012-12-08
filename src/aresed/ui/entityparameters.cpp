@@ -39,8 +39,8 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(EntityParameterDialog, wxDialog)
   EVT_BUTTON (XRCID("ok_Button"), EntityParameterDialog :: OnOkButton)
   EVT_BUTTON (XRCID("cancel_Button"), EntityParameterDialog :: OnCancelButton)
-  EVT_BUTTON (XRCID("searchTemplate_Button"), EntityParameterDialog :: OnSearchTemplateButton)
   EVT_BUTTON (XRCID("reset_Button"), EntityParameterDialog :: OnResetButton)
+  EVT_TEXT (XRCID("template_Text"), EntityParameterDialog :: OnUpdateTemplate)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -194,24 +194,6 @@ void EntityParameterDialog::OnResetButton (wxCommandEvent& event)
   UITools::SetValue (this, "template_Text", "");
 }
 
-void EntityParameterDialog::OnSearchTemplateButton (wxCommandEvent& event)
-{
-  Ares::Value* templates = uiManager->GetApp ()->Get3DView ()->
-      GetModelRepository ()->GetTemplatesValue ();
-  Value* tpl = uiManager->AskDialog ("Select a template", templates, "Template,M",
-      TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
-  if (tpl)
-  {
-    csString name = tpl->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
-    csString factoryName = object->GetFactory ()->GetName ();
-    if (factoryName != name)
-      UITools::SetValue (this, "template_Text", name);
-    else
-      UITools::SetValue (this, "template_Text", "");
-  }
-  UpdateParameters (object);
-}
-
 iCelEntityTemplate* EntityParameterDialog::GetTemplate ()
 {
   iCelEntityTemplate* tpl = object->GetEntityTemplate ();
@@ -307,7 +289,7 @@ void EntityParameterDialog::AddEntityParameter (csStringID parID, ParameterDomai
     wxBoxSizer* sizer)
 {
   wxBoxSizer* rowSizer = AddRow (sizer);
-  wxTextCtrl* entityText = spl.AddEntityPicker (parameterPanel, rowSizer, pl->FetchString (parID));
+  wxTextCtrl* entityText = spl.AddPicker (SPT_ENTITY, parameterPanel, rowSizer, pl->FetchString (parID));
   parameterToComponent.Put (parID, entityText);
   AddLinkedParameters (parID, par, sizer, rowSizer, "tag:", "PC:");
 }
@@ -371,6 +353,7 @@ void EntityParameterDialog::AddGenericParameter (csStringID parID, ParameterDoma
 void EntityParameterDialog::FillSemanticParameters (iDynamicObject* object)
 {
   spl.Cleanup ();
+  spl.SetupPicker (SPT_TEMPLATE, this, "template_Text", "searchTemplate_Button");
   parameterPanel->DestroyChildren ();
   parameterToComponent.Empty ();
 
@@ -410,6 +393,11 @@ void EntityParameterDialog::FillSemanticParameters (iDynamicObject* object)
 
   SetSize(GetSize()+wxSize(0,1));
   SetSize(GetSize()-wxSize(0,1));
+}
+
+void EntityParameterDialog::OnUpdateTemplate (wxCommandEvent& event)
+{
+  UpdateParameters (object);
 }
 
 void EntityParameterDialog::UpdateParameters (iDynamicObject* object)
@@ -473,6 +461,8 @@ EntityParameterDialog::EntityParameterDialog (wxWindow* parent, UIManager* uiMan
   SetMinSize (wxSize (500, 500));
 
   parameterPanel = XRCCTRL (*this, "parameterPanel", wxPanel);
+
+  spl.SetupPicker (SPT_TEMPLATE, this, "template_Text", "searchTemplate_Button");
 
   csRef<iUIDialog> dialog = uiManager->CreateDialog (this, "Create Parameter");
   dialog->AddRow ();
