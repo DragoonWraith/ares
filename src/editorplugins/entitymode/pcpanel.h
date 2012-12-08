@@ -35,6 +35,7 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 #include "edcommon/model.h"
+#include "edcommon/smartpicker.h"
 
 struct iCelPlLayer;
 struct iCelEntityTemplate;
@@ -65,10 +66,11 @@ private:
   iCelEntityTemplate* tpl;
   iCelPropertyClassTemplate* pctpl;
 
+  SmartPickerLogic spl;
+
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
   void OnChangeQuest (wxCommandEvent& event);
-  void OnSearchEntityTrigger (wxCommandEvent& event);
 
   /**
    * Possibly switch the type of the PC. Do nothing if the PC is

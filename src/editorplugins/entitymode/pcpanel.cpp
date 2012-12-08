@@ -105,7 +105,6 @@ BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
 
   EVT_CHOICE (XRCID("modeChoice"), PropertyClassPanel :: OnUpdateEvent)
 
-  EVT_BUTTON (XRCID("searchEntity_Trig_Button"), PropertyClassPanel :: OnSearchEntityTrigger)
   EVT_TEXT (XRCID("delay_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("jitter_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Trig_Text"), PropertyClassPanel :: OnUpdateEvent)
@@ -583,20 +582,6 @@ void PropertyClassPanel::FillDynworld ()
 }
 
 // -----------------------------------------------------------------------
-
-void PropertyClassPanel::OnSearchEntityTrigger (wxCommandEvent& event)
-{
-  csRef<Ares::Value> objects = emode->GetApplication ()->Get3DView ()->
-    GetModelRepository ()->GetObjectsWithEntityValue ();
-  Value* entity = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
-      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
-  if (entity)
-  {
-    csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
-    UITools::SetValue (this, "entity_Trig_Text", name);
-    UpdateTrigger ();
-  }
-}
 
 bool PropertyClassPanel::UpdateTrigger ()
 {
@@ -1647,7 +1632,8 @@ void PropertyClassPanel::SetupList (const char* listName, const char* heading, c
 
 PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
-  View (this), uiManager (uiManager), emode (emode), tpl (0), pctpl (0)
+  View (this), uiManager (uiManager), emode (emode), tpl (0), pctpl (0),
+  spl (uiManager)
 {
   pl = emode->GetPL ();
   pm = csQueryRegistryOrLoad<iParameterManager> (emode->GetObjectRegistry (),
@@ -1655,6 +1641,8 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("PropertyClassPanel"));
+
+  spl.SetupEntityPicker (this, "entity_Trig_Text", "searchEntity_Trig_Button");
 
   wxListCtrl* list;
 

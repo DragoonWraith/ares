@@ -243,13 +243,16 @@ void UITools::SetValue (wxWindow* parent, const char* name, int value)
   SetValue (parent, name, v);
 }
 
-bool UITools::SetValue (wxWindow* child, const char* value)
+bool UITools::SetValue (wxWindow* child, const char* value, bool event)
 {
   wxString wxvalue = wxString::FromUTF8 (value);
   if (child->IsKindOf (CLASSINFO (wxTextCtrl)))
   {
     wxTextCtrl* text = wxStaticCast (child, wxTextCtrl);
-    text->ChangeValue (wxvalue);
+    if (event)
+      text->SetValue (wxvalue);
+    else
+      text->ChangeValue (wxvalue);
   }
   else if (child->IsKindOf (CLASSINFO (wxStaticText)))
   {
@@ -278,7 +281,7 @@ bool UITools::SetValue (wxWindow* child, const char* value)
   return true;
 }
 
-void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
+void UITools::SetValue (wxWindow* parent, const char* name, const char* value, bool event)
 {
   wxString wxname = wxString::FromUTF8 (name);
   wxWindow* child = parent->FindWindow (wxname);
@@ -294,7 +297,7 @@ void UITools::SetValue (wxWindow* parent, const char* name, const char* value)
       wxString wxvalue = wxString::FromUTF8 (value);
       SwitchPage (parent, name, value);
     }
-    else if (!SetValue (child, value))
+    else if (!SetValue (child, value, event))
     {
       printf ("Can't set value for '%s', unknown type!\n", name);
       fflush (stdout);

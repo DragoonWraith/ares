@@ -59,6 +59,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Es_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the mesh or camera of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -74,7 +85,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_Es_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to the mesh or camera of this entity</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -153,6 +164,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_In_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the inventory of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -168,7 +190,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_In_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to the inventory of this entity</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -199,6 +221,17 @@
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="childEntitySearch_In_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the inventory of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 									</object>
@@ -274,6 +307,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Ms_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the mesh of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -289,7 +333,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_Ms_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to the mesh of this entity</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -338,6 +382,17 @@
 												<tooltip>The entity to which we want to send a message</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Me_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the mesh of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 									</object>
@@ -439,6 +494,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Pc_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the property of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -454,7 +520,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_Pc_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to the property of this entity</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -589,6 +655,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Sf_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to this quest</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -604,7 +681,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_Sf_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to this quest</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -728,6 +805,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Tr_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the trigger of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -743,7 +831,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_Tr_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to the trigger of this entity</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -813,6 +901,17 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Wa_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the mesh of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -828,7 +927,7 @@
 											<flag>wxALL</flag>
 											<border>5</border>
 											<object class="wxButton" name="this_Wa_Button">
-												<size>30,-1</size>
+												<style>wxBU_EXACTFIT</style>
 												<tooltip>Set to the mesh of this entity</tooltip>
 												<label>T</label>
 												<default>0</default>
@@ -860,6 +959,17 @@
 												<tooltip>Entity containing the target mesh property class we want to watch (use tag to distinguish)</tooltip>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="targetEntitySearch_Wa_Button">
+												<style>wxBU_EXACTFIT</style>
+												<tooltip>Set to the mesh of this entity</tooltip>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 										<object class="sizeritem">
@@ -1012,7 +1122,7 @@
 											<option>0</option>
 											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxTextCtrl" name="entity_Me_Text">
+											<object class="wxTextCtrl" name="entity_Mes_Text">
 												<style>wxTE_PROCESS_ENTER</style>
 												<tooltip>Entity containing the mesh or camera property class we want to watch (use tag to distinguish)</tooltip>
 												<value></value>
@@ -1020,10 +1130,20 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Mes_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxTextCtrl" name="tag_Me_Text">
+											<object class="wxTextCtrl" name="tag_Mes_Text">
 												<style>wxTE_PROCESS_ENTER</style>
 												<tooltip>The optional tag to find the mesh or camera property class</tooltip>
 												<value></value>
@@ -1034,8 +1154,8 @@
 											<option>0</option>
 											<flag>wxALL</flag>
 											<border>5</border>
-											<object class="wxButton" name="this_Me_Button">
-												<size>30,-1</size>
+											<object class="wxButton" name="this_Mes_Button">
+												<style>wxBU_EXACTFIT</style>
 												<label>T</label>
 												<default>0</default>
 											</object>

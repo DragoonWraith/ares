@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 
 #include "edcommon/model.h"
+#include "edcommon/smartpicker.h"
 
 struct iCelPlLayer;
 struct iCelEntityTemplate;
@@ -54,6 +55,8 @@ private:
   iUIManager* uiManager;
   EntityMode* emode;
   wxSizer* parentSizer;
+
+  SmartPickerLogic spl;
 
   iQuestFactory* questFact;
   iCelSequenceFactory* sequence;

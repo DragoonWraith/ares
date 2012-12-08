@@ -71,14 +71,39 @@ wxTextCtrl* SmartPickerLogic::AddText (wxWindow* parent, wxBoxSizer* rowSizer)
   return text;
 }
 
-wxButton* SmartPickerLogic::AddButton (wxWindow* parent, wxBoxSizer* rowSizer, const char* str)
+wxButton* SmartPickerLogic::AddButton (wxWindow* parent, wxBoxSizer* rowSizer, const char* str,
+    bool exact)
 {
   wxButton* button = new wxButton (parent, wxID_ANY, wxString::FromUTF8 (str),
-      wxDefaultPosition, wxDefaultSize, 0);
+      wxDefaultPosition, wxDefaultSize, exact ? wxBU_EXACTFIT : 0);
   rowSizer->Add (button, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
-  button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
-	SmartPickerLogic::OnSearchEntityButton), 0, this);
   return button;
+}
+
+bool SmartPickerLogic::SetupEntityPicker (wxWindow* parent, const char* entityText,
+    const char* searchButton)
+{
+  wxString wxentity = wxString::FromUTF8 (entityText);
+  wxWindow* wentity = parent->FindWindow (wxentity);
+  if (!wentity) { csPrintf ("Cannot find text control '%s'!\n", entityText); return false; }
+  wxTextCtrl* text = wxStaticCast (wentity, wxTextCtrl);
+  if (!text) return false;
+
+  wxString wxbutton = wxString::FromUTF8 (searchButton);
+  wxWindow* wbutton = parent->FindWindow (wxbutton);
+  if (!wbutton) { csPrintf ("Cannot find button '%s'!\n", searchButton); return false; }
+  wxButton* button = wxStaticCast (wbutton, wxButton);
+  if (!button) return false;
+
+  SetupEntityPicker (text, button);
+  return true;
+}
+
+void SmartPickerLogic::SetupEntityPicker (wxTextCtrl* entityText, wxButton* searchButton)
+{
+  searchButton->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
+	SmartPickerLogic::OnSearchEntityButton), 0, this);
+  buttonToText.Put (searchButton, entityText);
 }
 
 wxTextCtrl* SmartPickerLogic::AddEntityPicker (wxWindow* parent, wxBoxSizer* rowSizer,
@@ -86,8 +111,8 @@ wxTextCtrl* SmartPickerLogic::AddEntityPicker (wxWindow* parent, wxBoxSizer* row
 {
   if (label) AddLabel (parent, rowSizer, label);
   wxTextCtrl* text = AddText (parent, rowSizer);
-  wxButton* button = AddButton (parent, rowSizer, "...");
-  buttonToText.Put (button, text);
+  wxButton* button = AddButton (parent, rowSizer, "...", true);
+  SetupEntityPicker (text, button);
   return text;
 }
 
@@ -105,7 +130,7 @@ void SmartPickerLogic::OnSearchEntityButton (wxCommandEvent& event)
     if (entity)
     {
       csString name = entity->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
-      UITools::SetValue (text, name);
+      UITools::SetValue (text, name, true);
     }
   }
 }

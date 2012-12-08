@@ -534,13 +534,19 @@ void SequencePanel::RegisterModification ()
 
 SequencePanel::SequencePanel (wxWindow* parent, iUIManager* uiManager,
     EntityMode* emode) :
-  View (this), uiManager (uiManager), emode (emode)
+  View (this), uiManager (uiManager), emode (emode), spl (uiManager)
 {
   sequence = 0;
   pl = emode->GetPL ();
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (this, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (this, parent, wxT ("SequencePanel"));
+
+  spl.SetupEntityPicker (this, "entity_Am_Text", "entitySearch_Am_Button");
+  spl.SetupEntityPicker (this, "entity_Li_Text", "entitySearch_Li_Button");
+  spl.SetupEntityPicker (this, "entity_Mp_Text", "entitySearch_Mp_Button");
+  spl.SetupEntityPicker (this, "entity_Pr_Text", "entitySearch_Pr_Button");
+  spl.SetupEntityPicker (this, "entity_Tr_Text", "entitySearch_Tr_Button");
 
   newopDialog = uiManager->CreateDialog (this, "New Operation");
   newopDialog->AddRow ();

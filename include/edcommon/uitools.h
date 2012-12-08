@@ -70,15 +70,22 @@ public:
   /**
    * Set the value of a specific control (only for controls supporting
    * text values like text fields, buttons, and labels).
+   * If event is true it will use a method that causes the update of the component
+   * to fire an event. Otherwise it will try to prevent that. Not all components
+   * support this.
    * Return false if the component type is not recognized.
    */
-  static bool SetValue (wxWindow* component, const char* value);
+  static bool SetValue (wxWindow* component, const char* value, bool event = false);
 
   /**
    * Set the value of a specific control (only for controls supporting
    * text values like text fields, buttons, and labels).
+   * If event is true it will use a method that causes the update of the component
+   * to fire an event. Otherwise it will try to prevent that. Not all components
+   * support this.
    */
-  static void SetValue (wxWindow* parent, const char* name, const char* value);
+  static void SetValue (wxWindow* parent, const char* name, const char* value,
+      bool event = false);
 
   /**
    * Set the value of a specific control (only for controls supporting

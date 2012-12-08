@@ -60,6 +60,16 @@
 										</object>
 										<object class="sizeritem">
 											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Ac_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxStaticText" name="m_staticText761">
@@ -184,6 +194,16 @@
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Cp_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 										<object class="sizeritem">
@@ -514,6 +534,16 @@
 										</object>
 										<object class="sizeritem">
 											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_De_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
 											<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>
 											<object class="wxStaticText" name="m_staticText7612">
@@ -623,6 +653,16 @@
 											<option>0</option>
 											<flag>wxALL</flag>
 											<border>5</border>
+											<object class="wxButton" name="entitySearch_In_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
 											<object class="wxTextCtrl" name="tag_In_Text">
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
@@ -654,6 +694,16 @@
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="childEntitySearch_In_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 										<object class="sizeritem">
@@ -708,6 +758,16 @@
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Me_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 										<object class="sizeritem">
@@ -883,6 +943,16 @@
 											<option>0</option>
 											<flag>wxALL</flag>
 											<border>5</border>
+											<object class="wxButton" name="entitySearch_Se_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
 											<object class="wxTextCtrl" name="tag_Se_Text">
 												<style>wxTE_PROCESS_ENTER</style>
 												<size>50,-1</size>
@@ -1016,6 +1086,16 @@
 											</object>
 										</object>
 										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Sf_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
+											</object>
+										</object>
+										<object class="sizeritem">
 											<option>1</option>
 											<flag>wxALL</flag>
 											<border>5</border>
@@ -1121,6 +1201,16 @@
 												<style>wxTE_PROCESS_ENTER</style>
 												<value></value>
 												<maxlength>0</maxlength>
+											</object>
+										</object>
+										<object class="sizeritem">
+											<option>0</option>
+											<flag>wxALL</flag>
+											<border>5</border>
+											<object class="wxButton" name="entitySearch_Ns_Button">
+												<style>wxBU_EXACTFIT</style>
+												<label>...</label>
+												<default>0</default>
 											</object>
 										</object>
 										<object class="sizeritem">

@@ -54,13 +54,25 @@ public:
 
   void AddLabel (wxWindow* parent, wxBoxSizer* rowSizer, const char* txt);
   wxTextCtrl* AddText (wxWindow* parent, wxBoxSizer* rowSizer);
-  wxButton* AddButton (wxWindow* parent, wxBoxSizer* rowSizer, const char* str);
+  wxButton* AddButton (wxWindow* parent, wxBoxSizer* rowSizer, const char* str,
+      bool exact = true);
 
   /**
    * Add an entity picker.
    */
   wxTextCtrl* AddEntityPicker (wxWindow* parent, wxBoxSizer* rowSizer,
       const char* label = 0);
+
+  /**
+   * Setup an entity picker on already existing components.
+   */
+  void SetupEntityPicker (wxTextCtrl* entityText, wxButton* searchButton);
+
+  /**
+   * Setup an entity picker on already existing components.
+   * Return false on failure (components don't exist or don't have right type).
+   */
+  bool SetupEntityPicker (wxWindow* parent, const char* entityText, const char* searchButton);
 };
 
 #endif // __appares_smart_picker_h
