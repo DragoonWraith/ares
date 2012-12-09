@@ -663,6 +663,7 @@ RewardPanel::RewardPanel (wxWindow* parent, iUIManager* uiManager,
   spl.SetupPicker (SPT_ENTITY, this, "entity_Se_Text", "entitySearch_Se_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_Sf_Text", "entitySearch_Sf_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_Ns_Text", "entitySearch_Ns_Button");
+  spl.SetupPicker (SPT_TEMPLATE, this, "template_Ce_Text", "templateSearch_Ce_Button");
 
   // Message parameters.
   DefineHeading ("parameters_Me_List", "Name,Value,Type", "name,value,type");
