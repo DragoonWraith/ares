@@ -48,9 +48,11 @@ THE SOFTWARE.
 
 //------------------------------------------------------------------------------
 
-UIDialog::UIDialog (wxWindow* parent, const char* title, int width, int height) :
+UIDialog::UIDialog (wxWindow* parent, const char* title, iUIManager* uiManager,
+    int width, int height) :
   scfImplementationType (this),
-  wxDialog (parent, -1, wxString::FromUTF8 (title)), view (this)
+  wxDialog (parent, -1, wxString::FromUTF8 (title)), view (this),
+  spl (uiManager)
 {
   mainPanel = new wxPanel (this, -1, wxDefaultPosition, wxSize (width, height));
   wxBoxSizer* mainSizer = new wxBoxSizer (wxVERTICAL);
@@ -101,6 +103,13 @@ void UIDialog::AddLabel (const char* str)
       wxDefaultPosition, wxDefaultSize, 0);
   label->Wrap (-1);
   lastRowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
+}
+
+void UIDialog::AddTypedText (SmartPickerType type, const char* name)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxTextCtrl* text = spl.AddPicker (type, mainPanel, lastRowSizer, 0);
+  textFields.Put (name, text);
 }
 
 void UIDialog::AddText (const char* name, bool enterIsOk)
@@ -647,13 +656,13 @@ bool UIManager::Ask (const char* description, ...)
 
 csPtr<iUIDialog> UIManager::CreateDialog (const char* title, int width)
 {
-  UIDialog* dialog = new UIDialog (parent, title, width);
+  UIDialog* dialog = new UIDialog (parent, title, this, width);
   return static_cast<iUIDialog*> (dialog);
 }
 
 csPtr<iUIDialog> UIManager::CreateDialog (wxWindow* par, const char* title, int width)
 {
-  UIDialog* dialog = new UIDialog (par, title, width);
+  UIDialog* dialog = new UIDialog (par, title, this, width);
   return static_cast<iUIDialog*> (dialog);
 }
 

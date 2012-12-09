@@ -878,7 +878,7 @@ iUIDialog* PropertyClassPanel::GetSpawnTemplateDialog ()
     spawnTempDialog = uiManager->CreateDialog ("Edit template");
     spawnTempDialog->AddRow ();
     spawnTempDialog->AddLabel ("Template:");
-    spawnTempDialog->AddText ("Name");
+    spawnTempDialog->AddTypedText (SPT_TEMPLATE, "Name");
   }
   return spawnTempDialog;
 }

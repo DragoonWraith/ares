@@ -73,6 +73,8 @@ private:
 
   csHash<ValueListInfo,csString> valueListFields;
 
+  SmartPickerLogic spl;
+
   csArray<wxButton*> buttons;
   csRef<iUIDialogCallback> callback;
 
@@ -89,7 +91,8 @@ private:
   virtual void ProcessButton (const csString& buttonLabel);
 
 public:
-  UIDialog (wxWindow* parent, const char* title, int width = -1, int height = -1);
+  UIDialog (wxWindow* parent, const char* title, iUIManager* uiManager,
+      int width = -1, int height = -1);
   virtual ~UIDialog ();
 
   virtual void DisableAutomaticOkCancel () { okCancelAdded = true; }
@@ -101,6 +104,9 @@ public:
   virtual void AddLabel (const char* str);
   /// Add a single line text control in the current row.
   virtual void AddText (const char* name, bool enterIsOk = false);
+  /// Add a typed text control.
+  virtual void AddTypedText (SmartPickerType type, const char* name);
+
   /// Add a multi line text control in the current row.
   virtual void AddMultiText (const char* name);
   /// Add a button in the current row.
