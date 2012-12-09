@@ -401,6 +401,7 @@ TriggerPanel::TriggerPanel (wxWindow* parent, iUIManager* uiManager,
   spl.SetupPicker (SPT_ENTITY, this, "entity_Wa_Text", "entitySearch_Wa_Button");
   spl.SetupPicker (SPT_ENTITY, this, "target_Wa_Text", "targetEntitySearch_Wa_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_Mes_Text", "entitySearch_Mes_Button");
+  spl.SetupPicker (SPT_TEMPLATE, this, "childTemplate_In_Text", "childTemplateSearch_In_Button");
 }
 
 TriggerPanel::~TriggerPanel ()
