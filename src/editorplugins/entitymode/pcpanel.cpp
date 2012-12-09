@@ -472,8 +472,7 @@ iUIDialog* PropertyClassPanel::GetWireMsgDialog ()
     wireMsgDialog->AddCombo ("Message", messageArray);
     wireMsgDialog->AddRow ();
     wireMsgDialog->AddLabel ("Entity:");
-    wireMsgDialog->AddText ("Entity");
-    wireMsgDialog->AddButton ("...");	// @@@ Not implemented yet.
+    wireMsgDialog->AddTypedText (SPT_ENTITY, "Entity");
   }
   return wireMsgDialog;
 }
