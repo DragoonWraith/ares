@@ -761,7 +761,16 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
     app->SetObjectForComment ("quest", editQuestMode->QueryObject ());
   }
   else
+  {
     BuildTemplateGraph (currentTemplate);
+    if (pctpl)
+    {
+      csString pcKey, pcLabel;
+      GetPCKeyLabel (pctpl, pcKey, pcLabel);
+      if (pcKey != activeNode)
+        graphView->ActivateNode (pcKey);
+    }
+  }
 }
 
 iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
@@ -1621,6 +1630,7 @@ void EntityMode::ActivateNode (const char* nodeName)
     {
       iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
       iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
+printf ("activeNode=%s pctpl=%p\n", activeNode.GetData (), pctpl);
       pcPanel->SwitchToPC (tpl, pctpl);
       pcPanel->Show ();
     }
