@@ -763,14 +763,16 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
   else
   {
     BuildTemplateGraph (currentTemplate);
-    if (pctpl)
-    {
-      csString pcKey, pcLabel;
-      GetPCKeyLabel (pctpl, pcKey, pcLabel);
-      if (pcKey != activeNode)
-        graphView->ActivateNode (pcKey);
-    }
+    if (pctpl) SelectPC (pctpl);
   }
+}
+
+void EntityMode::SelectPC (iCelPropertyClassTemplate* pctpl)
+{
+  csString pcKey, pcLabel;
+  GetPCKeyLabel (pctpl, pcKey, pcLabel);
+  if (pcKey != activeNode)
+    graphView->ActivateNode (pcKey);
 }
 
 iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
@@ -1370,6 +1372,7 @@ void EntityMode::OnCreatePC ()
 
       RefreshView ();
       RegisterModification (tpl);
+      SelectPC (pc);
     }
 
   }

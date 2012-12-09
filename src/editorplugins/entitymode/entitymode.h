@@ -149,6 +149,7 @@ private:
 
   void SelectTemplate (iCelEntityTemplate* tpl);
   void SelectQuest (iQuestFactory* tpl);
+  void SelectPC (iCelPropertyClassTemplate* pctpl);
 
   PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
