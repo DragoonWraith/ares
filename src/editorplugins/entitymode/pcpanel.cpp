@@ -1628,6 +1628,7 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
 
   spl.SetupPicker (SPT_ENTITY, this, "entity_Trig_Text", "searchEntity_Trig_Button");
   spl.SetupPicker (SPT_QUEST, this, "questText", "questButton");
+  spl.SetupPicker (SPT_ENTITY, this, "aboveEntity_Trig_Text", "entitySearch_Trig_Button");
 
   wxListCtrl* list;
 

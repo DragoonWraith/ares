@@ -924,13 +924,31 @@
 															</object>
 															<object class="sizeritem">
 																<option>1</option>
-																<flag>wxALL</flag>
+																<flag>wxEXPAND</flag>
 																<border>5</border>
-																<object class="wxTextCtrl" name="aboveEntity_Trig_Text">
-																	<style>wxTE_PROCESS_ENTER</style>
-																	<tooltip>Name of the entity that we want to use as the source of the trigger. The trigger will fire if we are above the mesh of that entity.</tooltip>
-																	<value></value>
-																	<maxlength>0</maxlength>
+																<object class="wxBoxSizer">
+																	<orient>wxHORIZONTAL</orient>
+																	<object class="sizeritem">
+																		<option>1</option>
+																		<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																		<border>0</border>
+																		<object class="wxTextCtrl" name="aboveEntity_Trig_Text">
+																			<style>wxTE_PROCESS_ENTER</style>
+																			<tooltip>Name of the entity that we want to use as the source of the trigger. The trigger will fire if we are above the mesh of that entity.</tooltip>
+																			<value></value>
+																			<maxlength>0</maxlength>
+																		</object>
+																	</object>
+																	<object class="sizeritem">
+																		<option>0</option>
+																		<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+																		<border>0</border>
+																		<object class="wxButton" name="entitySearch_Trig_Button">
+																			<style>wxBU_EXACTFIT</style>
+																			<label>...</label>
+																			<default>0</default>
+																		</object>
+																	</object>
 																</object>
 															</object>
 														</object>
