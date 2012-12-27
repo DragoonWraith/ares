@@ -710,13 +710,21 @@ void MainMode::SpawnSelectedItem ()
     view3d->GetPaster ()->StartPasteSelection (itemName);
 }
 
+void MainMode::SetDragRestrict (bool x, bool y, bool z)
+{
+  doDragRestrictX = x;
+  doDragRestrictY = y;
+  doDragRestrictZ = z;
+  view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+}
+
 bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
 {
   if (ViewMode::OnKeyboard (ev, code))
     return true;
 
-  bool slow = kbd->GetKeyState (CSKEY_CTRL);
-  bool fast = kbd->GetKeyState (CSKEY_SHIFT);
+  bool ctrl = kbd->GetKeyState (CSKEY_CTRL);
+  bool shift = kbd->GetKeyState (CSKEY_SHIFT);
   if (code == '2')
   {
     csRef<iSelectionIterator> it = view3d->GetSelection ()->GetIterator ();
@@ -773,7 +781,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
       StartKinematicDragging (false, seg, isect, false);
     }
   }
-  else if (code == 'x')
+  else if (code == 'x' || code == 'X')
   {
     if (view3d->GetPaster ()->IsPasteSelectionActive ())
     {
@@ -783,11 +791,15 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     }
     else if (do_kinematic_dragging)
     {
-      doDragRestrictX = !doDragRestrictX;
-      view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+      if (doDragRestrictX || doDragRestrictY || doDragRestrictZ)
+	SetDragRestrict (false, false, false);
+      else if (shift)
+	SetDragRestrict (true, false, false);
+      else
+	SetDragRestrict (false, true, true);
     }
   }
-  else if (code == 'y')
+  else if (code == 'y' || code == 'Y')
   {
     if (view3d->GetPaster ()->IsPasteSelectionActive ())
     {
@@ -797,11 +809,15 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     }
     else if (do_kinematic_dragging)
     {
-      doDragRestrictY = !doDragRestrictY;
-      view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+      if (doDragRestrictX || doDragRestrictY || doDragRestrictZ)
+	SetDragRestrict (false, false, false);
+      else if (shift)
+	SetDragRestrict (false, true, false);
+      else
+	SetDragRestrict (true, false, true);
     }
   }
-  else if (code == 'z')
+  else if (code == 'z' || code == 'Z')
   {
     if (view3d->GetPaster ()->IsPasteSelectionActive ())
     {
@@ -811,33 +827,37 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     }
     else if (do_kinematic_dragging)
     {
-      doDragRestrictZ = !doDragRestrictZ;
-      view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+      if (doDragRestrictX || doDragRestrictY || doDragRestrictZ)
+	SetDragRestrict (false, false, false);
+      else if (shift)
+	SetDragRestrict (false, false, true);
+      else
+	SetDragRestrict (true, true, false);
     }
   }
   else if (code == CSKEY_UP)
   {
-    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 0, 1), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 0, 1), ctrl, shift);
   }
   else if (code == CSKEY_DOWN)
   {
-    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 0, -1), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 0, -1), ctrl, shift);
   }
   else if (code == CSKEY_LEFT)
   {
-    TransformTools::Move (view3d->GetSelection (), csVector3 (-1, 0, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (-1, 0, 0), ctrl, shift);
   }
   else if (code == CSKEY_RIGHT)
   {
-    TransformTools::Move (view3d->GetSelection (), csVector3 (1, 0, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (1, 0, 0), ctrl, shift);
   }
   else if (code == '<' || code == ',')
   {
-    TransformTools::Move (view3d->GetSelection (), csVector3 (0, -1, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, -1, 0), ctrl, shift);
   }
   else if (code == '>' || code == '.')
   {
-    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 1, 0), slow, fast);
+    TransformTools::Move (view3d->GetSelection (), csVector3 (0, 1, 0), ctrl, shift);
   }
 
   return false;

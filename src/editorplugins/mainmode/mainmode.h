@@ -93,6 +93,8 @@ private:
 
   csString GetSelectedItem ();
 
+  void SetDragRestrict (bool x, bool y, bool z);
+
 public:
   MainMode (iBase* parent);
   virtual ~MainMode ();
