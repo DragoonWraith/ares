@@ -242,19 +242,19 @@ csSegment3 AresEdit3DView::GetMouseBeam (float maxdist)
   return GetBeam (mouseX, mouseY, maxdist);
 }
 
-bool AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
+iMeshWrapper* AresEdit3DView::TraceBeamHit (const csSegment3& beam, csVector3& isect)
 {
   iSector* sector = GetCsCamera ()->GetSector ();
-  if (!sector) return false;
+  if (!sector) return 0;
 
   csSectorHitBeamResult result = sector->HitBeamPortals (
       beam.Start (), beam.End (), true);
   if (result.mesh)
   {
     isect = result.isect;
-    return true;
+    return result.mesh;
   }
-  return false;
+  return 0;
 }
 
 iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& isect)

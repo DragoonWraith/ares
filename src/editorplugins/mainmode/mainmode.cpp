@@ -548,49 +548,62 @@ void MainMode::StopDrag (bool cancel)
 void MainMode::HandleKinematicDragging ()
 {
   iCamera* camera = view3d->GetCsCamera ();
+  const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetTransform ();
 
   csSegment3 beam = view3d->GetMouseBeam (1000.0f);
+  csVector3 dr;
+  if (doDragLocal)
+  {
+    beam.SetStart (meshtrans.Other2This (beam.Start ()));
+    beam.SetEnd (meshtrans.Other2This (beam.End ()));
+    dr = dragRestrictLocal;
+  }
+  else
+  {
+    dr = dragRestrict;
+  }
+
   csVector3 newPosition;
-  if (doDragRestrictY)
+  if (doDragRestrict[CS_AXIS_Y])
   {
     if (fabs (beam.Start ().y-beam.End ().y) < 0.1f) return;
-    if (beam.End ().y < beam.Start ().y && dragRestrict.y > beam.Start ().y) return;
-    if (beam.End ().y > beam.Start ().y && dragRestrict.y < beam.Start ().y) return;
-    float dist = csIntersect3::SegmentYPlane (beam, dragRestrict.y, newPosition);
+    if (beam.End ().y < beam.Start ().y && dr.y > beam.Start ().y) return;
+    if (beam.End ().y > beam.Start ().y && dr.y < beam.Start ().y) return;
+    float dist = csIntersect3::SegmentYPlane (beam, dr.y, newPosition);
     if (dist > 0.08f)
     {
       newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
-      newPosition.y = dragRestrict.y;
+      newPosition.y = dr.y;
     }
-    if (doDragRestrictX)
-      newPosition.x = dragRestrict.x;
-    if (doDragRestrictZ)
-      newPosition.z = dragRestrict.z;
+    if (doDragRestrict[CS_AXIS_X])
+      newPosition.x = dr.x;
+    if (doDragRestrict[CS_AXIS_Z])
+      newPosition.z = dr.z;
   }
-  else if (doDragRestrictZ)
+  else if (doDragRestrict[CS_AXIS_Z])
   {
     if (fabs (beam.Start ().z-beam.End ().z) < 0.1f) return;
-    if (beam.End ().z < beam.Start ().z && dragRestrict.z > beam.Start ().z) return;
-    if (beam.End ().z > beam.Start ().z && dragRestrict.z < beam.Start ().z) return;
-    float dist = csIntersect3::SegmentZPlane (beam, dragRestrict.z, newPosition);
+    if (beam.End ().z < beam.Start ().z && dr.z > beam.Start ().z) return;
+    if (beam.End ().z > beam.Start ().z && dr.z < beam.Start ().z) return;
+    float dist = csIntersect3::SegmentZPlane (beam, dr.z, newPosition);
     if (dist > 0.08f)
     {
       newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
-      newPosition.z = dragRestrict.z;
+      newPosition.z = dr.z;
     }
-    if (doDragRestrictX)
-      newPosition.x = dragRestrict.x;
+    if (doDragRestrict[CS_AXIS_X])
+      newPosition.x = dr.x;
   }
-  else if (doDragRestrictX)
+  else if (doDragRestrict[CS_AXIS_X])
   {
     if (fabs (beam.Start ().x-beam.End ().x) < 0.1f) return;
-    //if (beam.End ().x < beam.Start ().x && dragRestrict.x > beam.Start ().x) return;
-    //if (beam.End ().x > beam.Start ().x && dragRestrict.x < beam.Start ().x) return;
-    float dist = csIntersect3::SegmentXPlane (beam, dragRestrict.x, newPosition);
+    //if (beam.End ().x < beam.Start ().x && dr.x > beam.Start ().x) return;
+    //if (beam.End ().x > beam.Start ().x && dr.x < beam.Start ().x) return;
+    float dist = csIntersect3::SegmentXPlane (beam, dr.x, newPosition);
     if (dist > 0.08f)
     {
       newPosition = beam.Start () + (beam.End ()-beam.Start ()).Unit () * 80.0f;
-      newPosition.x = dragRestrict.x;
+      newPosition.x = dr.x;
     }
   }
   else
@@ -613,6 +626,11 @@ void MainMode::HandleKinematicDragging ()
     newPosition.z -= m;
   }
 
+  if (doDragLocal)
+  {
+    newPosition = meshtrans.This2Other (newPosition);
+  }
+
   for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
   {
     csVector3 np = newPosition - dragObjects[i].kineOffset;
@@ -620,10 +638,16 @@ void MainMode::HandleKinematicDragging ()
     if (kinematicFirstOnly) break;
   }
 
-  const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetTransform ();
-  csReversibleTransform tr;
-  tr.SetOrigin (meshtrans.GetOrigin ());
-  view3d->GetPaster ()->MoveConstrainMarker (tr);
+  if (doDragLocal)
+  {
+    view3d->GetPaster ()->MoveConstrainMarker (meshtrans);
+  }
+  else
+  {
+    csReversibleTransform tr;
+    tr.SetOrigin (meshtrans.GetOrigin ());
+    view3d->GetPaster ()->MoveConstrainMarker (tr);
+  }
 }
 
 void MainMode::HandlePhysicalDragging ()
@@ -710,12 +734,53 @@ void MainMode::SpawnSelectedItem ()
     view3d->GetPaster ()->StartPasteSelection (itemName);
 }
 
-void MainMode::SetDragRestrict (bool x, bool y, bool z)
+void MainMode::SetDragRestrict (bool local, bool x, bool y, bool z)
 {
-  doDragRestrictX = x;
-  doDragRestrictY = y;
-  doDragRestrictZ = z;
-  view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+  doDragLocal = local;
+  doDragRestrict[CS_AXIS_X] = x;
+  doDragRestrict[CS_AXIS_Y] = y;
+  doDragRestrict[CS_AXIS_Z] = z;
+  view3d->GetPaster ()->ShowConstrainMarker (
+      doDragRestrict[CS_AXIS_X],
+      doDragRestrict[CS_AXIS_Y],
+      doDragRestrict[CS_AXIS_Z]);
+}
+
+void MainMode::ToggleKinematicMode (int axis, bool shift)
+{
+  bool& drMain = doDragRestrict[axis];
+  bool& drOther1 = doDragRestrict[(axis+1)%3];
+  bool& drOther2 = doDragRestrict[(axis+2)%3];
+  if (doDragRestrict[CS_AXIS_X] || doDragRestrict[CS_AXIS_Y] || doDragRestrict[CS_AXIS_Z])
+  {
+    if (shift && drMain && !drOther1 && !drOther2 && !doDragLocal)
+      doDragLocal = true;
+    else if (!drMain && drOther1 && drOther2 && !doDragLocal)
+      doDragLocal = true;
+    else
+    {
+      doDragLocal = false;
+      drMain = drOther1 = drOther2 = false;
+    }
+  }
+  else if (shift)
+  {
+    drMain = true;
+    drOther1 = false;
+    drOther2 = false;
+    doDragLocal = false;
+  }
+  else
+  {
+    drMain = false;
+    drOther1 = true;
+    drOther2 = true;
+    doDragLocal = false;
+  }
+  view3d->GetPaster ()->ShowConstrainMarker (
+      doDragRestrict[CS_AXIS_X],
+      doDragRestrict[CS_AXIS_Y],
+      doDragRestrict[CS_AXIS_Z]);
 }
 
 bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
@@ -776,7 +841,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     if (view3d->GetSelection ()->HasSelection ())
     {
       csSegment3 seg = view3d->GetMouseBeam (500);
-      csVector3 isect;
+      csVector3 isect (0);
       view3d->TraceBeamHit (seg, isect);
       StartKinematicDragging (false, seg, isect, false);
     }
@@ -791,12 +856,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     }
     else if (do_kinematic_dragging)
     {
-      if (doDragRestrictX || doDragRestrictY || doDragRestrictZ)
-	SetDragRestrict (false, false, false);
-      else if (shift)
-	SetDragRestrict (true, false, false);
-      else
-	SetDragRestrict (false, true, true);
+      ToggleKinematicMode (CS_AXIS_X, shift);
     }
   }
   else if (code == 'y' || code == 'Y')
@@ -809,12 +869,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     }
     else if (do_kinematic_dragging)
     {
-      if (doDragRestrictX || doDragRestrictY || doDragRestrictZ)
-	SetDragRestrict (false, false, false);
-      else if (shift)
-	SetDragRestrict (false, true, false);
-      else
-	SetDragRestrict (true, false, true);
+      ToggleKinematicMode (CS_AXIS_Y, shift);
     }
   }
   else if (code == 'z' || code == 'Z')
@@ -827,12 +882,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
     }
     else if (do_kinematic_dragging)
     {
-      if (doDragRestrictX || doDragRestrictY || doDragRestrictZ)
-	SetDragRestrict (false, false, false);
-      else if (shift)
-	SetDragRestrict (false, false, true);
-      else
-	SetDragRestrict (true, true, false);
+      ToggleKinematicMode (CS_AXIS_Z, shift);
     }
   }
   else if (code == CSKEY_UP)
@@ -914,11 +964,12 @@ void MainMode::StartKinematicDragging (bool restrictY,
   }
 
   dragDistance = (isect - beam.Start ()).Norm ();
-  doDragRestrictX = false;
-  doDragRestrictY = restrictY;
-  doDragRestrictZ = false;
   dragRestrict = isect;
-  view3d->GetPaster ()->ShowConstrainMarker (doDragRestrictX, doDragRestrictY, doDragRestrictZ);
+  const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetTransform ();
+  dragRestrictLocal = meshtrans.Other2This (dragRestrict);
+
+  SetDragRestrict (false, false, restrictY, false);
+
   SetTransformationMarkerStatus ();
 }
 

@@ -64,10 +64,13 @@ private:
   bool do_kinematic_dragging;
   bool kinematicFirstOnly;
   csArray<AresDragObject> dragObjects;
-  bool doDragRestrictX;	// Only drag on the x-plane.
-  bool doDragRestrictY;	// Only drag on the y-plane.
-  bool doDragRestrictZ;	// Only drag on the z-plane.
+
+  bool doDragLocal;	// Drag restrict in local space.
+  bool doDragRestrict[3];  // Restrict dragging on a plane.
   csVector3 dragRestrict;
+  csVector3 dragRestrictLocal;
+  void SetDragRestrict (bool local, bool x, bool y, bool z);
+  void ToggleKinematicMode (int axis, bool shift);
 
   int idSetStatic, idClearStatic;
 
@@ -92,8 +95,6 @@ private:
       const csSegment3& beam, const csVector3& isect);
 
   csString GetSelectedItem ();
-
-  void SetDragRestrict (bool x, bool y, bool z);
 
 public:
   MainMode (iBase* parent);

@@ -445,8 +445,9 @@ public:
   /**
    * Given a beam, see if something is selected at the position.
    * This can be a dynamic object but also static geometry.
+   * Return the mesh that was hit or 0 otherwise.
    */
-  virtual bool TraceBeamHit (const csSegment3& beam, csVector3& isect);
+  virtual iMeshWrapper* TraceBeamHit (const csSegment3& beam, csVector3& isect);
 
   /**
    * Hit a beam with the terrain and return the intersection point.

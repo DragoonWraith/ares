@@ -68,7 +68,7 @@ enum MarkerSpace
 
   /**
    * The drawing primitive is rendered in camera space but the
-   * position if relative to the attached mesh.
+   * position is relative to the attached mesh.
    */
   MARKER_CAMERA_AT_MESH,
 

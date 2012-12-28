@@ -42,6 +42,7 @@ struct iAsset;
 struct iPaster;
 struct iModelRepository;
 struct iParameterManager;
+struct iMeshWrapper;
 
 /**
  * The 3D view in the editor.
@@ -97,8 +98,9 @@ struct i3DView : public virtual iBase
   /**
    * Given a beam, see if something is selected at the position.
    * This can be a dynamic object but also static geometry.
+   * Return the mesh that was hit or 0 otherwise.
    */
-  virtual bool TraceBeamHit (const csSegment3& beam, csVector3& isect) = 0;
+  virtual iMeshWrapper* TraceBeamHit (const csSegment3& beam, csVector3& isect) = 0;
 
   /**
    * Hit a beam with the terrain and return the intersection point.
