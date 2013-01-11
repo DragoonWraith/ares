@@ -49,8 +49,6 @@ THE SOFTWARE.
 #include <wx/notebook.h>
 #include "csutil/custom_new_enable.h"
 
-#define USE_DECAL 0
-
 class CameraWindow;
 class AppAresEditWX;
 class AresEdit3DView;

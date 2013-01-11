@@ -140,27 +140,21 @@ bool AresEdit3DView::OnMouseMove (iEvent& ev)
 #if USE_DECAL
   csSegment3 beam = GetMouseBeam ();
 
-#if 1
-  csSectorHitBeamResult result = GetCsCamera ()->GetSector()->HitBeamPortals (
+  iCamera* cam = GetCsCamera ();
+  if (cam && cam->GetSector ())
+  {
+    csSectorHitBeamResult result = cam->GetSector()->HitBeamPortals (
       beam.Start (), beam.End (), true);
-  if (result.mesh)
-  {
-    printf ("hit!\n"); fflush (stdout);
-    cursorDecal = decalMgr->CreateDecal (cursorDecalTemplate,
-        cam->GetSector (), result.isect, csVector3 (0, 1, 0),
-	csVector3 (0, -1, 0), 1.0f, 1.0f, cursorDecal);
+    if (result.mesh)
+    {
+      csVector3 normal = cam->GetTransform().This2OtherRelative (csVector3 (0,0,-1));
+      csVector3 up = cam->GetTransform ().This2OtherRelative (csVector3 (0,1,0));
+      cursorDecal = decalMgr->CreateDecal (cursorDecalTemplate,
+	  /*result.mesh,*/
+          cam->GetSector (),
+	  result.isect, up, normal, 1.0f, 1.0f, cursorDecal);
+    }
   }
-#else
-  csHitBeamResult result = terrainMesh->HitBeam (beam.Start (), beam.End ());
-  if (result.hit)
-  {
-    printf ("hit!\n"); fflush (stdout);
-    cursorDecal = decalMgr->CreateDecal (cursorDecalTemplate,
-        cam->GetSector (), result.isect, csVector3 (0, 1, 0),
-	csVector3 (0, 1, 0), 1.0f, 1.0f, cursorDecal);
-  }
-#endif
-
 #endif
 
   if (markerMgr->OnMouseMove (ev, mouseX, mouseY))
@@ -518,10 +512,19 @@ void AresEdit3DView::ChangeCategory (const char* newCategory, const char* itemna
 #if USE_DECAL
 bool AresEdit3DView::SetupDecal ()
 {
-  iMaterialWrapper* material = engine->GetMaterialList ()->FindByName ("stone2");
+  iMaterialWrapper* material = engine->GetMaterialList ()->FindByName ("ares_cursor");
   if (!material)
-    return app->ReportError("Can't find cursor decal material!");
+  {
+    loader->LoadTexture ("ares_cursor", "/icons/cursor.png");
+    material = engine->GetMaterialList ()->FindByName ("ares_cursor");
+    if (!material)
+      return app->ReportError("Can't find cursor decal material!");
+  }
   cursorDecalTemplate = decalMgr->CreateDecalTemplate (material);
+  cursorDecalTemplate->SetTopClipping (false);
+  cursorDecalTemplate->SetBottomClipping (false, 0.0f);
+  //cursorDecalTemplate->SetMainColor (csColor4 (2.0f, 0.0f, 0.0f, 1.0f));
+  //cursorDecalTemplate->SetMixMode (CS_FX_ADD);
   cursorDecal = 0;
   return true;
 }
@@ -529,21 +532,6 @@ bool AresEdit3DView::SetupDecal ()
 
 void AresEdit3DView::ResizeView (int width, int height)
 {
-printf ("view_wh=%d,%d new_wh=%d,%d\n", view_width, view_height, width, height);
-
-#if 0
-  // We use the full window to draw the world.
-  float scale_x = ((float)width)  / ((float)view_width);
-  float scale_y = ((float)height) / ((float)view_height);
-
-  view->GetPerspectiveCamera()->SetPerspectiveCenter (
-      view->GetPerspectiveCamera()->GetShiftX() * scale_x,
-      view->GetPerspectiveCamera()->GetShiftY() * scale_y);
-
-  view->GetPerspectiveCamera()->SetFOVAngle (
-      view->GetPerspectiveCamera()->GetFOVAngle(), width);
-#endif
-
   view_width = width;
   view_height = height;
 

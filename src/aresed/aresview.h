@@ -50,7 +50,7 @@ THE SOFTWARE.
 #include <wx/notebook.h>
 #include "csutil/custom_new_enable.h"
 
-#define USE_DECAL 0
+#define USE_DECAL 1
 
 class CameraWindow;
 class AppAresEditWX;
