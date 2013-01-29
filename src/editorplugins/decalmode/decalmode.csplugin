@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- decalmode.csplugin -->
+<plugin>
+  <scf>
+    <classes>
+      <class>
+        <name>ares.editor.modes.decal</name>
+        <implementation>DecalMode</implementation>
+        <description>AresEd Decal Editing Mode</description>
+      </class>
+    </classes>
+  </scf>
+</plugin>

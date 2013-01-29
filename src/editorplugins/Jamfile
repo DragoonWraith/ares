@@ -2,6 +2,7 @@ SubDir TOP src editorplugins ;
 
 SubInclude TOP src editorplugins roommode ;
 SubInclude TOP src editorplugins curvemode ;
+SubInclude TOP src editorplugins decalmode ;
 SubInclude TOP src editorplugins foliagemode ;
 SubInclude TOP src editorplugins entitymode ;
 SubInclude TOP src editorplugins mainmode ;

@@ -21,6 +21,10 @@
 	  <resource file="RewardPanel.xrc" />
 	  <resource file="EntityTemplatePanel.xrc" />
       </plugin>
+      <plugin plugin="ares.editor.modes.decal" notebook="True"
+      		tooltip="Decal painter">
+	  <resource file="DecalModePanel.xrc" />
+      </plugin>
       <!--
       <plugin plugin="ares.editor.modes.curve" notebook="True"
       		tooltip="Editing of curved streets">

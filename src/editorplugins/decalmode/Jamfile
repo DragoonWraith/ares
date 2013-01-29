@@ -1,0 +1,10 @@
+SubDir TOP src editorplugins decalmode ;
+
+Description decalmode : "AresEd Decal Mode Plugin" ;
+Plugin decalmode :
+  [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
+ExternalLibs decalmode : CRYSTAL ;
+ExternalLibs decalmode : CEL ;
+ExternalLibs decalmode : WX ;
+LinkWith decalmode : edcommon ;
+
