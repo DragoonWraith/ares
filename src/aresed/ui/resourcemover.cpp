@@ -453,7 +453,7 @@ void ResourceMoverDialog::Show ()
 {
   wxListCtrl* assetList = XRCCTRL (*this, "asset_List", wxListCtrl);
   csRef<Value> assetsValue = uiManager->GetApp ()->Get3DView ()->GetModelRepository ()->GetAssetsValue ();
-  Bind (assetsValue, "asset_List");
+  View::Bind (assetsValue, "asset_List");
 
   csRef<ListSelectedValue> selValue;
   selValue.AttachNew (new ListSelectedValue (assetList, assetsValue, VALUE_STRINGARRAY));
@@ -470,7 +470,7 @@ void ResourceMoverDialog::Show ()
 
   Signal (selValue, resourceFilterValue);
 
-  Bind (resourceFilterValue, "resource_List");
+  View::Bind (resourceFilterValue, "resource_List");
 
   ShowModal ();
 }

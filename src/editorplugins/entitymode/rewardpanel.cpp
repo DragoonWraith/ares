@@ -668,7 +668,7 @@ RewardPanel::RewardPanel (wxWindow* parent, iUIManager* uiManager,
   // Message parameters.
   DefineHeading ("parameters_Me_List", "Name,Value,Type", "name,value,type");
   messageParameters.AttachNew (new MessageParametersCollectionValue (this));
-  Bind (messageParameters, "parameters_Me_List");
+  View::Bind (messageParameters, "parameters_Me_List");
   messageDialog = uiManager->CreateDialog (this, "Create Parameter");
   messageDialog->AddRow ();
   messageDialog->AddLabel ("Name:");
@@ -688,7 +688,7 @@ RewardPanel::RewardPanel (wxWindow* parent, iUIManager* uiManager,
   // Action parameters.
   DefineHeading ("parameters_Ac_List", "Name,Value,Type", "name,value,type");
   actionParameters.AttachNew (new ActionParametersCollectionValue (this));
-  Bind (actionParameters, "parameters_Ac_List");
+  View::Bind (actionParameters, "parameters_Ac_List");
   wxListCtrl* actionList = XRCCTRL (*this, "parameters_Ac_List", wxListCtrl);
   AddAction (actionList, NEWREF(Action, new NewChildDialogAction (actionParameters, messageDialog)));
   AddAction (actionList, NEWREF(Action, new DeleteChildAction (actionParameters)));
@@ -696,7 +696,7 @@ RewardPanel::RewardPanel (wxWindow* parent, iUIManager* uiManager,
   // Create entity parameters.
   DefineHeading ("parameters_Ce_List", "Name,Value", "name,value");
   createentityParameters.AttachNew (new CreateEntityParametersCollectionValue (this));
-  Bind (createentityParameters, "parameters_Ce_List");
+  View::Bind (createentityParameters, "parameters_Ce_List");
   createentityDialog = uiManager->CreateDialog (this, "Create Entity Parameter");
   createentityDialog->AddRow ();
   createentityDialog->AddLabel ("Name:");

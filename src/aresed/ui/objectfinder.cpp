@@ -200,7 +200,7 @@ void ObjectFinderDialog::Show ()
   filteredCollection.AttachNew (new ObjectFinderFilteredCollectionValue (
 	uiManager->GetApp ()->Get3DView ()));
   filteredCollection->SetCollection (objectsValue);
-  Bind (filteredCollection, "object_List");
+  View::Bind (filteredCollection, "object_List");
 
   filteredCollection->SetFilterFactory (UITools::GetValue (this, "factoryFilter_Text"));
   filteredCollection->SetFilterTemplate (UITools::GetValue (this, "templateFilter_Text"));

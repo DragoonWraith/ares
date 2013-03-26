@@ -1605,7 +1605,7 @@ void PropertyClassPanel::SetupList (const char* listName, const char* heading, c
       Value* collectionValue, iUIDialog* dialog, bool do_edit)
 {
   DefineHeading (listName, heading, names);
-  Bind (collectionValue, listName);
+  View::Bind (collectionValue, listName);
   wxWindow* comp = FindComponentByName (this, listName);
   wxListCtrl* list = wxStaticCast (comp, wxListCtrl);
   AddAction (list, NEWREF(Action, new NewChildDialogAction (collectionValue, dialog)));

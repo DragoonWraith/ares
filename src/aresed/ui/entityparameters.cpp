@@ -478,7 +478,7 @@ EntityParameterDialog::EntityParameterDialog (wxWindow* parent, UIManager* uiMan
 
   DefineHeading ("parameter_List", "Name,Type,Value", "name,type,value");
   parameters.AttachNew (new ParameterListValue ());
-  Bind (parameters, "parameter_List");
+  View::Bind (parameters, "parameter_List");
   wxListCtrl* parameter_List = XRCCTRL (*this, "parameter_List", wxListCtrl);
   AddAction (parameter_List, NEWREF (Action, new NewChildDialogAction (parameters, dialog)));
   AddAction (parameter_List, NEWREF (Action, new EditChildDialogAction (parameters, dialog)));

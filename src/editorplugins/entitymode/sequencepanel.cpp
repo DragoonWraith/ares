@@ -559,7 +559,7 @@ SequencePanel::SequencePanel (wxWindow* parent, iUIManager* uiManager,
 
   DefineHeading ("operations_List", "Type,Duration", "type,duration");
   operations.AttachNew (new SeqOpCollectionValue (this));
-  Bind (operations, "operations_List");
+  View::Bind (operations, "operations_List");
   operationsList = XRCCTRL (*this, "operations_List", wxListCtrl);
   AddAction (operationsList, NEWREF(Action, new NewChildDialogAction (operations, newopDialog)));
   AddAction (operationsList, NEWREF(Action, new DeleteChildAction (operations)));
@@ -569,32 +569,32 @@ SequencePanel::SequencePanel (wxWindow* parent, iUIManager* uiManager,
   operationsSelectedValue->AddChild ("duration", NEWREF(MirrorValue,new MirrorValue(VALUE_STRING)));
   operationsSelectedValue->AddChild ("index", NEWREF(MirrorValue,new MirrorValue(VALUE_LONG)));
 
-  Bind (operationsSelectedValue->GetChildByName ("type"), "seqopChoicebook");
-  Bind (operationsSelectedValue->GetChildByName ("duration"), "duration_Text");
+  View::Bind (operationsSelectedValue->GetChildByName ("type"), "seqopChoicebook");
+  View::Bind (operationsSelectedValue->GetChildByName ("duration"), "duration_Text");
 
   csRef<Value> v;
   v.AttachNew (new DebugPrintValue (this));
-  Bind (v, "debugprintPanel");
+  View::Bind (v, "debugprintPanel");
   Signal (operationsSelectedValue, v);
 
   v.AttachNew (new AmbientMeshValue (this));
-  Bind (v, "ambientmeshPanel");
+  View::Bind (v, "ambientmeshPanel");
   Signal (operationsSelectedValue, v);
 
   v.AttachNew (new LightValue (this));
-  Bind (v, "lightPanel");
+  View::Bind (v, "lightPanel");
   Signal (operationsSelectedValue, v);
 
   v.AttachNew (new MovePathValue (this));
-  Bind (v, "movepathPanel");
+  View::Bind (v, "movepathPanel");
   Signal (operationsSelectedValue, v);
 
   v.AttachNew (new PropertyValue (this));
-  Bind (v, "propertyPanel");
+  View::Bind (v, "propertyPanel");
   Signal (operationsSelectedValue, v);
 
   v.AttachNew (new TransformValue (this));
-  Bind (v, "transformPanel");
+  View::Bind (v, "transformPanel");
   Signal (operationsSelectedValue, v);
 }
 

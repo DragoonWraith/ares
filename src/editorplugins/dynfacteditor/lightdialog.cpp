@@ -227,7 +227,7 @@ LightDialog::LightDialog (wxWindow* parent, DynfactDialog* dialog) : View (this)
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("LightEditorDialog"));
 
   factoryValue.AttachNew (new LightFactoryValue ());
-  Bind (factoryValue, this);
+  View::Bind (factoryValue, this);
   BindEnabled (factoryValue->GetChildByName ("specular"), "specularColor_Picker");
 
   Layout ();

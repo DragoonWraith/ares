@@ -259,7 +259,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
 
   DefineHeading ("templateParentsList", "Template", "Template");
   parentsCollectionValue.AttachNew (new ParentsCollectionValue (this));
-  Bind (parentsCollectionValue, "templateParentsList");
+  View::Bind (parentsCollectionValue, "templateParentsList");
   list = XRCCTRL (*this, "templateParentsList", wxListCtrl);
   dialog = uiManager->CreateDialog ("Add template");
   dialog->AddRow ();
@@ -270,7 +270,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
 
   DefineHeading ("templateCharacteristicsList", "Name,Value", "Name,Value");
   characteristicsCollectionValue.AttachNew (new CharacteristicsCollectionValue (this));
-  Bind (characteristicsCollectionValue, "templateCharacteristicsList");
+  View::Bind (characteristicsCollectionValue, "templateCharacteristicsList");
   list = XRCCTRL (*this, "templateCharacteristicsList", wxListCtrl);
   dialog = uiManager->CreateDialog ("Add characteristic property");
   dialog->AddRow ();
@@ -285,7 +285,7 @@ EntityTemplatePanel::EntityTemplatePanel (wxWindow* parent, iUIManager* uiManage
 
   DefineHeading ("templateClassList", "Class", "Class");
   classesCollectionValue.AttachNew (new ClassesCollectionValue (this));
-  Bind (classesCollectionValue, "templateClassList");
+  View::Bind (classesCollectionValue, "templateClassList");
   list = XRCCTRL (*this, "templateClassList", wxListCtrl);
   dialog = uiManager->CreateDialog ("Add class");
   dialog->AddRow ();

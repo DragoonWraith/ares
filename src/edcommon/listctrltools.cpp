@@ -226,7 +226,7 @@ void ListCtrlTools::SelectRow (wxListCtrl* list, int row, bool sendEvent, bool a
   if (sendEvent)
   {
     wxCommandEvent event (wxEVT_COMMAND_LIST_ITEM_SELECTED);
-    list->AddPendingEvent (event);
+    list->GetEventHandler ()->AddPendingEvent (event);
   }
 }
 
@@ -243,7 +243,7 @@ void ListCtrlTools::ClearSelection (wxListCtrl* list, bool sendEvent)
   if (sendEvent)
   {
     wxCommandEvent event (wxEVT_COMMAND_LIST_ITEM_DESELECTED);
-    list->AddPendingEvent (event);
+    list->GetEventHandler ()->AddPendingEvent (event);
   }
 }
 
