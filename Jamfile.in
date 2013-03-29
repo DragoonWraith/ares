@@ -6,14 +6,14 @@ SubDir TOP ;
 IncludeDir ;
 IncludeDir "include" ;
 IncludeDir "src" ;
-IncludeDir $(BUILDTOP) : : literal transient ;
+IncludeDir $(BUILDTOP) include : : literal transient ;
 
 CleanDir clean :
     out ;
 Clean distclean :
     aclocal.m4
-    config.h
-    config.h.in~
+    include/aresconfig-configure.h
+    include/aresconfig-configure.h.in~
     config.log
     config.status
     config.status.lineno
@@ -26,7 +26,7 @@ CleanDir distclean :
 Depends distclean : clean ;
 
 Clean maintainerclean :
-  config.h.in
+  include/aresconfig-configure.h.in
   configure ;
 Depends maintainerclean : distclean ;
 
