@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __appares_dirtyhelper_h
 #define __appares_dirtyhelper_h
 
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 #include <wx/wx.h>
 
 class wxWindow;

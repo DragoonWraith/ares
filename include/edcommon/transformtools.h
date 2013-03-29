@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __transformtools_h
 #define __transformtools_h
 
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 
 struct iSelection;
 class csVector3;

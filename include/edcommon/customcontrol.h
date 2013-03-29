@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #include <wx/wx.h>
 #include <wx/xrc/xmlres.h>
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 
 namespace Ares { class Value; }
 using namespace Ares;

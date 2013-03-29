@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __appares_listctrltools_h
 
 #include <csutil/stringarray.h>
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 
 #include <wx/wx.h>
 #include <wx/imaglist.h>

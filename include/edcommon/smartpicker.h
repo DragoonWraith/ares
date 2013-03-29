@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __appares_smart_picker_h
 
 #include <csutil/stringarray.h>
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 #include <wx/wx.h>
 
 class wxWindow;

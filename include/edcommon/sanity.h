@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __appares_sanity_h
 
 #include <crystalspace.h>
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 
 #include "physicallayer/datatype.h"
 #include "inspect.h"

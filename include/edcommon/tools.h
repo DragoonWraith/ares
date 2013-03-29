@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __tools_h
 #define __tools_h
 
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 #include "csutil/stringarray.h"
 
 class ARES_EDCOMMON_EXPORT Tools

@@ -26,7 +26,7 @@ THE SOFTWARE.
 #define __appares_uitools_h
 
 #include <csutil/stringarray.h>
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 
 class wxWindow;
 

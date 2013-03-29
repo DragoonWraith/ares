@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include <wx/event.h>
 #include <wx/treectrl.h>
 
-#include "aresextern.h"
+#include "edcommon/aresextern.h"
 
 class wxWindow;
 class wxTextCtrl;
