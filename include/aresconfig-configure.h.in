@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.ac by autoheader.  */
+/* include/aresconfig-configure.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define with path to CEL plugins. */
 #undef CEL_PLUGIN_DIR

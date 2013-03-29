@@ -23,7 +23,7 @@ CS_PATH_INIT
 #----------------------------------------------------------------------------
 # Setup for the configuration header.
 #----------------------------------------------------------------------------
-AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_HEADERS([include/aresconfig-configure.h])
 
 #----------------------------------------------------------------------------
 # Check for tools.
