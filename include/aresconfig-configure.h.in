@@ -1,5 +1,8 @@
 /* include/aresconfig-configure.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define when feature is available */
+#undef ARES_BUILD_SHARED_LIBS
+
 /* Define with path to CEL plugins. */
 #undef CEL_PLUGIN_DIR
 

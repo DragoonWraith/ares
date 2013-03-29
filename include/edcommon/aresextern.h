@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef __ARESEXTERN_H__
 #define __ARESEXTERN_H__
 
-#include "cssysdef.h"
+#include "aresconfig.h"
 #include "celplatform.h"
 
 #if defined(CS_PLATFORM_WIN32)

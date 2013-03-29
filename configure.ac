@@ -355,7 +355,7 @@ CS_EMIT_BUILD_PROPERTY([MODE], [$build_mode])
 #------------------------------------------------------------------------------
 # Determine whether link libraries should be static or shared.
 #------------------------------------------------------------------------------
-CS_CHECK_BUILD_LIBS_SHARED([ARES_BUILD_SHARED_LIBS])
+CS_CHECK_BUILD_LIBS_SHARED([ARES_BUILD_SHARED_LIBS], [], [CS_DEFINE_EMITTER])
 
 
 #-----------------------------------------------------------------------------
