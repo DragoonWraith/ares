@@ -579,8 +579,6 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 CONFIG_BFD
-ac_ct_OBJCOPY
-OBJCOPY
 EGREP
 GREP
 X_EXTRA_LIBS
@@ -603,8 +601,14 @@ ac_ct_PKG_CONFIG
 PKG_CONFIG
 TTREE
 PERL
-MKDIRS
-MKDIR
+ac_ct_DOT
+DOT
+DOXYGEN
+MAKEINFO
+DVIPDF
+DVIPS
+TEXI2PDF
+TEXI2DVI
 APPLE_LIBTOOL
 CS_LT_APPLE
 ac_ct_LIBTOOL
@@ -612,18 +616,21 @@ LIBTOOL
 LIBTOOL_PATH
 ac_ct_LIBTOOL_TEST
 LIBTOOL_TEST
-INSTALL
-MAKEINFO
-DVIPDF
-DVIPS
-TEXI2PDF
-TEXI2DVI
-ac_ct_DOT
-DOT
-DOXYGEN
+ac_ct_OBJCOPY
+OBJCOPY
+ac_ct_STRINGS
+STRINGS
 ac_ct_WINDRES
 WINDRES
+ac_ct_DLLWRAP
+DLLWRAP
+ac_ct_DLLTOOL
+DLLTOOL
 RANLIB
+LN_S
+INSTALL
+MKDIRS
+MKDIR
 ac_ct_LD
 LD
 ac_ct_CXX
@@ -6466,10 +6473,210 @@ fi
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking how to create a directory" >&5
+$as_echo_n "checking how to create a directory... " >&6; }
+if ${cs_cv_shell_mkdir+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cs_cv_shell_mkdir='mkdir'
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cs_cv_shell_mkdir" >&5
+$as_echo "$cs_cv_shell_mkdir" >&6; }
+    MKDIR=$cs_cv_shell_mkdir
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to create a directory tree" >&5
+$as_echo_n "checking how to create a directory tree... " >&6; }
+if ${cs_cv_shell_mkdir_p+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if $cs_cv_shell_mkdir -p . 2>/dev/null; then
+	    cs_cv_shell_mkdir_p='mkdir -p'
+	elif mkdirs . 2>/dev/null; then
+	    cs_cv_shell_mkdir_p='mkdirs'
+	fi
+	test -d ./-p && rmdir ./-p
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cs_cv_shell_mkdir_p" >&5
+$as_echo "$cs_cv_shell_mkdir_p" >&6; }
+    if ${cs_cv_shell_mkdir_p+:} false; then :
+  MKDIRS=$cs_cv_shell_mkdir_p
+
+else
+  cat >confcache <<\_ACEOF
+# This file is a shell script that caches the results of configure
+# tests run on this system so they can be shared between configure
+# scripts and configure runs, see configure's option --config-cache.
+# It is not useful on other systems.  If it contains results you don't
+# want to keep, you may remove or edit it.
+#
+# config.status only pays attention to the cache file if you give it
+# the --recheck option to rerun configure.
+#
+# `ac_cv_env_foo' variables (set or unset) will be overridden when
+# loading this file, other *unset* `ac_cv_foo' will be assigned the
+# following values.
+
+_ACEOF
+
+# The following way of writing the cache mishandles newlines in values,
+# but we know of no workaround that is simple, portable, and efficient.
+# So, we kill variables containing newlines.
+# Ultrix sh set writes to stderr and can't be redirected directly,
+# and sets the high bit in the cache file unless we assign to the vars.
+(
+  for ac_var in `(set) 2>&1 | sed -n 's/^\([a-zA-Z_][a-zA-Z0-9_]*\)=.*/\1/p'`; do
+    eval ac_val=\$$ac_var
+    case $ac_val in #(
+    *${as_nl}*)
+      case $ac_var in #(
+      *_cv_*) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cache variable $ac_var contains a newline" >&5
+$as_echo "$as_me: WARNING: cache variable $ac_var contains a newline" >&2;} ;;
+      esac
+      case $ac_var in #(
+      _ | IFS | as_nl) ;; #(
+      BASH_ARGV | BASH_SOURCE) eval $ac_var= ;; #(
+      *) { eval $ac_var=; unset $ac_var;} ;;
+      esac ;;
+    esac
+  done
+
+  (set) 2>&1 |
+    case $as_nl`(ac_space=' '; set) 2>&1` in #(
+    *${as_nl}ac_space=\ *)
+      # `set' does not quote correctly, so add quotes: double-quote
+      # substitution turns \\\\ into \\, and sed turns \\ into \.
+      sed -n \
+	"s/'/'\\\\''/g;
+	  s/^\\([_$as_cr_alnum]*_cv_[_$as_cr_alnum]*\\)=\\(.*\\)/\\1='\\2'/p"
+      ;; #(
+    *)
+      # `set' quotes correctly as required by POSIX, so do not add quotes.
+      sed -n "/^[_$as_cr_alnum]*_cv_[_$as_cr_alnum]*=/p"
+      ;;
+    esac |
+    sort
+) |
+  sed '
+     /^ac_cv_env_/b end
+     t clear
+     :clear
+     s/^\([^=]*\)=\(.*[{}].*\)$/test "${\1+set}" = set || &/
+     t end
+     s/^\([^=]*\)=\(.*\)$/\1=${\1=\2}/
+     :end' >>confcache
+if diff "$cache_file" confcache >/dev/null 2>&1; then :; else
+  if test -w "$cache_file"; then
+    if test "x$cache_file" != "x/dev/null"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: updating cache $cache_file" >&5
+$as_echo "$as_me: updating cache $cache_file" >&6;}
+      if test ! -f "$cache_file" || test -h "$cache_file"; then
+	cat confcache >"$cache_file"
+      else
+        case $cache_file in #(
+        */* | ?:*)
+	  mv -f confcache "$cache_file"$$ &&
+	  mv -f "$cache_file"$$ "$cache_file" ;; #(
+        *)
+	  mv -f confcache "$cache_file" ;;
+	esac
+      fi
+    fi
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: not updating unwritable cache $cache_file" >&5
+$as_echo "$as_me: not updating unwritable cache $cache_file" >&6;}
+  fi
+fi
+rm -f confcache
+    as_fn_error $? "do not know how to create a directory tree" "$LINENO" 5
+fi
+    cs_build_prop_val="$MKDIR"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.MKDIR ?= $cs_build_prop_val ;
+"
+fi
+    cs_build_prop_val="$MKDIRS"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.MKDIRS ?= $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in install
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_INSTALL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$INSTALL"; then
+  ac_cv_prog_INSTALL="$INSTALL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_INSTALL="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+INSTALL=$ac_cv_prog_INSTALL
+if test -n "$INSTALL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $INSTALL" >&5
+$as_echo "$INSTALL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$INSTALL" && break
+done
+
+    cs_build_prop_val="$INSTALL"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}INSTALL ?= $cs_build_prop_val ;
+"
+fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
+$as_echo_n "checking whether ln -s works... " >&6; }
+LN_S=$as_ln_s
+if test "$LN_S" = "ln -s"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no, using $LN_S" >&5
+$as_echo "no, using $LN_S" >&6; }
+fi
+
+    cs_build_prop_val="$LN_S"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}LN_S ?= $cs_build_prop_val ;
+"
+fi
 # The default RANLIB in Jambase is wrong on some platforms, and is also
-# unsuitable during cross-compilation, so we set the value unconditionally
-# (sixth argument of CS_EMIT_BUILD_PROPERTY).
-if test -n "$ac_tool_prefix"; then
+    # unsuitable during cross-compilation, so value is set unconditionally.
+    if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}ranlib", so it can be a program name with args.
 set dummy ${ac_tool_prefix}ranlib; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -6561,10 +6768,239 @@ else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
 
-cs_build_prop_val="$RANLIB"
+    cs_build_prop_val="$RANLIB"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
   cs_jamconfig_text="${cs_jamconfig_text}RANLIB = $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    if test -n "$ac_tool_prefix"; then
+  for ac_prog in dlltool
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DLLTOOL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DLLTOOL"; then
+  ac_cv_prog_DLLTOOL="$DLLTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DLLTOOL="$ac_tool_prefix$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DLLTOOL=$ac_cv_prog_DLLTOOL
+if test -n "$DLLTOOL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DLLTOOL" >&5
+$as_echo "$DLLTOOL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    test -n "$DLLTOOL" && break
+  done
+fi
+if test -z "$DLLTOOL"; then
+  ac_ct_DLLTOOL=$DLLTOOL
+  for ac_prog in dlltool
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_DLLTOOL+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_DLLTOOL"; then
+  ac_cv_prog_ac_ct_DLLTOOL="$ac_ct_DLLTOOL" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_DLLTOOL="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_DLLTOOL=$ac_cv_prog_ac_ct_DLLTOOL
+if test -n "$ac_ct_DLLTOOL"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_DLLTOOL" >&5
+$as_echo "$ac_ct_DLLTOOL" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_DLLTOOL" && break
+done
+
+  if test "x$ac_ct_DLLTOOL" = x; then
+    DLLTOOL=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    DLLTOOL=$ac_ct_DLLTOOL
+  fi
+fi
+
+    cs_build_prop_val="$DLLTOOL"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.DLLTOOL ?= $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    if test -n "$ac_tool_prefix"; then
+  for ac_prog in dllwrap
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DLLWRAP+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DLLWRAP"; then
+  ac_cv_prog_DLLWRAP="$DLLWRAP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DLLWRAP="$ac_tool_prefix$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DLLWRAP=$ac_cv_prog_DLLWRAP
+if test -n "$DLLWRAP"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DLLWRAP" >&5
+$as_echo "$DLLWRAP" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    test -n "$DLLWRAP" && break
+  done
+fi
+if test -z "$DLLWRAP"; then
+  ac_ct_DLLWRAP=$DLLWRAP
+  for ac_prog in dllwrap
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_DLLWRAP+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_DLLWRAP"; then
+  ac_cv_prog_ac_ct_DLLWRAP="$ac_ct_DLLWRAP" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_DLLWRAP="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_DLLWRAP=$ac_cv_prog_ac_ct_DLLWRAP
+if test -n "$ac_ct_DLLWRAP"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_DLLWRAP" >&5
+$as_echo "$ac_ct_DLLWRAP" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_DLLWRAP" && break
+done
+
+  if test "x$ac_ct_DLLWRAP" = x; then
+    DLLWRAP=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    DLLWRAP=$ac_ct_DLLWRAP
+  fi
+fi
+
+    if test "$cs_mno_cygwin" = "yes"; then :
+  DLLWRAP="$DLLWRAP --target i386-mingw32"
+fi
+    cs_build_prop_val="$DLLWRAP"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.DLLWRAP ?= $cs_build_prop_val ;
 "
 fi
 
@@ -6674,7 +7110,7 @@ esac
   fi
 fi
 
-cs_build_prop_val="$WINDRES"
+    cs_build_prop_val="$WINDRES"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
   cs_jamconfig_text="${cs_jamconfig_text}CMD.WINDRES ?= $cs_build_prop_val ;
@@ -6687,17 +7123,18 @@ fi
 	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
 	export PATH
 fi
-    for ac_prog in doxygen
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
+    if test -n "$ac_tool_prefix"; then
+  for ac_prog in strings
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_DOXYGEN+:} false; then :
+if ${ac_cv_prog_STRINGS+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$DOXYGEN"; then
-  ac_cv_prog_DOXYGEN="$DOXYGEN" # Let the user override the test.
+  if test -n "$STRINGS"; then
+  ac_cv_prog_STRINGS="$STRINGS" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6706,7 +7143,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_DOXYGEN="$ac_prog"
+    ac_cv_prog_STRINGS="$ac_tool_prefix$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6716,23 +7153,80 @@ IFS=$as_save_IFS
 
 fi
 fi
-DOXYGEN=$ac_cv_prog_DOXYGEN
-if test -n "$DOXYGEN"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOXYGEN" >&5
-$as_echo "$DOXYGEN" >&6; }
+STRINGS=$ac_cv_prog_STRINGS
+if test -n "$STRINGS"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $STRINGS" >&5
+$as_echo "$STRINGS" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-  test -n "$DOXYGEN" && break
+    test -n "$STRINGS" && break
+  done
+fi
+if test -z "$STRINGS"; then
+  ac_ct_STRINGS=$STRINGS
+  for ac_prog in strings
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_STRINGS+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_STRINGS"; then
+  ac_cv_prog_ac_ct_STRINGS="$ac_ct_STRINGS" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_STRINGS="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_STRINGS=$ac_cv_prog_ac_ct_STRINGS
+if test -n "$ac_ct_STRINGS"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_STRINGS" >&5
+$as_echo "$ac_ct_STRINGS" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_STRINGS" && break
 done
 
-cs_build_prop_val="$DOXYGEN"
+  if test "x$ac_ct_STRINGS" = x; then
+    STRINGS=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    STRINGS=$ac_ct_STRINGS
+  fi
+fi
+
+    cs_build_prop_val="$STRINGS"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.DOXYGEN ?= $cs_build_prop_val ;
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.STRINGS ?= $cs_build_prop_val ;
 "
 fi
 
@@ -6743,17 +7237,17 @@ fi
 	export PATH
 fi
     if test -n "$ac_tool_prefix"; then
-  for ac_prog in dot
+  for ac_prog in objcopy
   do
     # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
 set dummy $ac_tool_prefix$ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_DOT+:} false; then :
+if ${ac_cv_prog_OBJCOPY+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$DOT"; then
-  ac_cv_prog_DOT="$DOT" # Let the user override the test.
+  if test -n "$OBJCOPY"; then
+  ac_cv_prog_OBJCOPY="$OBJCOPY" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6762,7 +7256,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_DOT="$ac_tool_prefix$ac_prog"
+    ac_cv_prog_OBJCOPY="$ac_tool_prefix$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6772,32 +7266,32 @@ IFS=$as_save_IFS
 
 fi
 fi
-DOT=$ac_cv_prog_DOT
-if test -n "$DOT"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOT" >&5
-$as_echo "$DOT" >&6; }
+OBJCOPY=$ac_cv_prog_OBJCOPY
+if test -n "$OBJCOPY"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OBJCOPY" >&5
+$as_echo "$OBJCOPY" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-    test -n "$DOT" && break
+    test -n "$OBJCOPY" && break
   done
 fi
-if test -z "$DOT"; then
-  ac_ct_DOT=$DOT
-  for ac_prog in dot
+if test -z "$OBJCOPY"; then
+  ac_ct_OBJCOPY=$OBJCOPY
+  for ac_prog in objcopy
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_ac_ct_DOT+:} false; then :
+if ${ac_cv_prog_ac_ct_OBJCOPY+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$ac_ct_DOT"; then
-  ac_cv_prog_ac_ct_DOT="$ac_ct_DOT" # Let the user override the test.
+  if test -n "$ac_ct_OBJCOPY"; then
+  ac_cv_prog_ac_ct_OBJCOPY="$ac_ct_OBJCOPY" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -6806,7 +7300,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_DOT="$ac_prog"
+    ac_cv_prog_ac_ct_OBJCOPY="$ac_prog"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -6816,21 +7310,21 @@ IFS=$as_save_IFS
 
 fi
 fi
-ac_ct_DOT=$ac_cv_prog_ac_ct_DOT
-if test -n "$ac_ct_DOT"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_DOT" >&5
-$as_echo "$ac_ct_DOT" >&6; }
+ac_ct_OBJCOPY=$ac_cv_prog_ac_ct_OBJCOPY
+if test -n "$ac_ct_OBJCOPY"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_OBJCOPY" >&5
+$as_echo "$ac_ct_OBJCOPY" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
 
-  test -n "$ac_ct_DOT" && break
+  test -n "$ac_ct_OBJCOPY" && break
 done
 
-  if test "x$ac_ct_DOT" = x; then
-    DOT=""
+  if test "x$ac_ct_OBJCOPY" = x; then
+    OBJCOPY=""
   else
     case $cross_compiling:$ac_tool_warned in
 yes:)
@@ -6838,348 +7332,47 @@ yes:)
 $as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
 ac_tool_warned=yes ;;
 esac
-    DOT=$ac_ct_DOT
+    OBJCOPY=$ac_ct_OBJCOPY
   fi
 fi
 
-cs_build_prop_val="$DOT"
+    cs_build_prop_val="$OBJCOPY"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.DOT ?= $cs_build_prop_val ;
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.OBJCOPY ?= $cs_build_prop_val ;
 "
 fi
-
-
-    if test "$cs_prog_path_prepared" != yes; then :
-  cs_prog_path_prepared=yes
-	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
-	export PATH
-fi
-    for ac_prog in texi2dvi
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_TEXI2DVI+:} false; then :
+    if test -n "$OBJCOPY"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $OBJCOPY supports --long-section-names" >&5
+$as_echo_n "checking whether $OBJCOPY supports --long-section-names... " >&6; }
+if ${cs_cv_objcopy_supports_long_section_names+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$TEXI2DVI"; then
-  ac_cv_prog_TEXI2DVI="$TEXI2DVI" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_TEXI2DVI="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-TEXI2DVI=$ac_cv_prog_TEXI2DVI
-if test -n "$TEXI2DVI"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TEXI2DVI" >&5
-$as_echo "$TEXI2DVI" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
+  cs_cv_objcopy_supports_long_section_names=no
+	    if { ac_try='$OBJCOPY --help 2>/dev/null | grep -e "--long-section-names" >/dev/null 2>&1'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }; then :
+  cs_cv_objcopy_supports_long_section_names=yes
 fi
 
-
-  test -n "$TEXI2DVI" && break
-done
-
-cs_build_prop_val="$TEXI2DVI"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cs_cv_objcopy_supports_long_section_names" >&5
+$as_echo "$cs_cv_objcopy_supports_long_section_names" >&6; }
+        if test "$cs_cv_objcopy_supports_long_section_names" != "no"; then :
+  cs_build_prop_val="--long-section-names=enable"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.TEXI2DVI ?= $cs_build_prop_val ;
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.OBJCOPY.LONG_SECTION_NAMES_ENABLE ?= $cs_build_prop_val ;
 "
 fi
-
-
-    if test "$cs_prog_path_prepared" != yes; then :
-  cs_prog_path_prepared=yes
-	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
-	export PATH
-fi
-    for ac_prog in texi2pdf
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_TEXI2PDF+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$TEXI2PDF"; then
-  ac_cv_prog_TEXI2PDF="$TEXI2PDF" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_TEXI2PDF="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-TEXI2PDF=$ac_cv_prog_TEXI2PDF
-if test -n "$TEXI2PDF"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TEXI2PDF" >&5
-$as_echo "$TEXI2PDF" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
 fi
 
-
-  test -n "$TEXI2PDF" && break
-done
-
-cs_build_prop_val="$TEXI2PDF"
-    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
-    	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.TEXI2PDF ?= $cs_build_prop_val ;
-"
 fi
 
-
-    if test "$cs_prog_path_prepared" != yes; then :
-  cs_prog_path_prepared=yes
-	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
-	export PATH
-fi
-    for ac_prog in dvips
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_DVIPS+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$DVIPS"; then
-  ac_cv_prog_DVIPS="$DVIPS" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_DVIPS="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-DVIPS=$ac_cv_prog_DVIPS
-if test -n "$DVIPS"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DVIPS" >&5
-$as_echo "$DVIPS" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$DVIPS" && break
-done
-
-cs_build_prop_val="$DVIPS"
-    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
-    	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.DVIPS ?= $cs_build_prop_val ;
-"
-fi
-
-
-    if test "$cs_prog_path_prepared" != yes; then :
-  cs_prog_path_prepared=yes
-	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
-	export PATH
-fi
-    for ac_prog in dvipdf
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_DVIPDF+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$DVIPDF"; then
-  ac_cv_prog_DVIPDF="$DVIPDF" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_DVIPDF="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-DVIPDF=$ac_cv_prog_DVIPDF
-if test -n "$DVIPDF"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DVIPDF" >&5
-$as_echo "$DVIPDF" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$DVIPDF" && break
-done
-
-cs_build_prop_val="$DVIPDF"
-    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
-    	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.DVIPDF ?= $cs_build_prop_val ;
-"
-fi
-
-
-    if test "$cs_prog_path_prepared" != yes; then :
-  cs_prog_path_prepared=yes
-	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
-	export PATH
-fi
-    for ac_prog in makeinfo
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_MAKEINFO+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$MAKEINFO"; then
-  ac_cv_prog_MAKEINFO="$MAKEINFO" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_MAKEINFO="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-MAKEINFO=$ac_cv_prog_MAKEINFO
-if test -n "$MAKEINFO"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MAKEINFO" >&5
-$as_echo "$MAKEINFO" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$MAKEINFO" && break
-done
-
-cs_build_prop_val="$MAKEINFO"
-    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
-    	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.MAKEINFO ?= $cs_build_prop_val ;
-"
-fi
-
-
-    if test "$cs_prog_path_prepared" != yes; then :
-  cs_prog_path_prepared=yes
-	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
-	export PATH
-fi
-    for ac_prog in install
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_INSTALL+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -n "$INSTALL"; then
-  ac_cv_prog_INSTALL="$INSTALL" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_INSTALL="$ac_prog"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi
-fi
-INSTALL=$ac_cv_prog_INSTALL
-if test -n "$INSTALL"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $INSTALL" >&5
-$as_echo "$INSTALL" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-  test -n "$INSTALL" && break
-done
-
-cs_build_prop_val="$INSTALL"
-    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
-    	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}INSTALL ?= $cs_build_prop_val ;
-"
-fi
-
-# GNU: Search for libtool before glibtool since Fink version is likely newer.
+    # GNU: Search for libtool before glibtool since Fink version is likely newer.
 
 if test -z "$LIBTOOL"; then :
 
@@ -7532,146 +7725,457 @@ fi
 fi
 fi
 
-cs_build_prop_val="$LIBTOOL"
+    cs_build_prop_val="$LIBTOOL"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
   cs_jamconfig_text="${cs_jamconfig_text}LIBTOOL ?= $cs_build_prop_val ;
 "
 fi
-cs_build_prop_val="$APPLE_LIBTOOL"
+    cs_build_prop_val="$APPLE_LIBTOOL"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
   cs_jamconfig_text="${cs_jamconfig_text}APPLE_LIBTOOL ?= $cs_build_prop_val ;
 "
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking how to create a directory" >&5
-$as_echo_n "checking how to create a directory... " >&6; }
-if ${cs_cv_shell_mkdir+:} false; then :
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in texi2dvi
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_TEXI2DVI+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  cs_cv_shell_mkdir='mkdir'
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cs_cv_shell_mkdir" >&5
-$as_echo "$cs_cv_shell_mkdir" >&6; }
-    MKDIR=$cs_cv_shell_mkdir
-
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to create a directory tree" >&5
-$as_echo_n "checking how to create a directory tree... " >&6; }
-if ${cs_cv_shell_mkdir_p+:} false; then :
-  $as_echo_n "(cached) " >&6
+  if test -n "$TEXI2DVI"; then
+  ac_cv_prog_TEXI2DVI="$TEXI2DVI" # Let the user override the test.
 else
-  if $cs_cv_shell_mkdir -p . 2>/dev/null; then
-	    cs_cv_shell_mkdir_p='mkdir -p'
-	elif mkdirs . 2>/dev/null; then
-	    cs_cv_shell_mkdir_p='mkdirs'
-	fi
-	test -d ./-p && rmdir ./-p
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $cs_cv_shell_mkdir_p" >&5
-$as_echo "$cs_cv_shell_mkdir_p" >&6; }
-    if ${cs_cv_shell_mkdir_p+:} false; then :
-  MKDIRS=$cs_cv_shell_mkdir_p
-
-else
-  cat >confcache <<\_ACEOF
-# This file is a shell script that caches the results of configure
-# tests run on this system so they can be shared between configure
-# scripts and configure runs, see configure's option --config-cache.
-# It is not useful on other systems.  If it contains results you don't
-# want to keep, you may remove or edit it.
-#
-# config.status only pays attention to the cache file if you give it
-# the --recheck option to rerun configure.
-#
-# `ac_cv_env_foo' variables (set or unset) will be overridden when
-# loading this file, other *unset* `ac_cv_foo' will be assigned the
-# following values.
-
-_ACEOF
-
-# The following way of writing the cache mishandles newlines in values,
-# but we know of no workaround that is simple, portable, and efficient.
-# So, we kill variables containing newlines.
-# Ultrix sh set writes to stderr and can't be redirected directly,
-# and sets the high bit in the cache file unless we assign to the vars.
-(
-  for ac_var in `(set) 2>&1 | sed -n 's/^\([a-zA-Z_][a-zA-Z0-9_]*\)=.*/\1/p'`; do
-    eval ac_val=\$$ac_var
-    case $ac_val in #(
-    *${as_nl}*)
-      case $ac_var in #(
-      *_cv_*) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: cache variable $ac_var contains a newline" >&5
-$as_echo "$as_me: WARNING: cache variable $ac_var contains a newline" >&2;} ;;
-      esac
-      case $ac_var in #(
-      _ | IFS | as_nl) ;; #(
-      BASH_ARGV | BASH_SOURCE) eval $ac_var= ;; #(
-      *) { eval $ac_var=; unset $ac_var;} ;;
-      esac ;;
-    esac
-  done
-
-  (set) 2>&1 |
-    case $as_nl`(ac_space=' '; set) 2>&1` in #(
-    *${as_nl}ac_space=\ *)
-      # `set' does not quote correctly, so add quotes: double-quote
-      # substitution turns \\\\ into \\, and sed turns \\ into \.
-      sed -n \
-	"s/'/'\\\\''/g;
-	  s/^\\([_$as_cr_alnum]*_cv_[_$as_cr_alnum]*\\)=\\(.*\\)/\\1='\\2'/p"
-      ;; #(
-    *)
-      # `set' quotes correctly as required by POSIX, so do not add quotes.
-      sed -n "/^[_$as_cr_alnum]*_cv_[_$as_cr_alnum]*=/p"
-      ;;
-    esac |
-    sort
-) |
-  sed '
-     /^ac_cv_env_/b end
-     t clear
-     :clear
-     s/^\([^=]*\)=\(.*[{}].*\)$/test "${\1+set}" = set || &/
-     t end
-     s/^\([^=]*\)=\(.*\)$/\1=${\1=\2}/
-     :end' >>confcache
-if diff "$cache_file" confcache >/dev/null 2>&1; then :; else
-  if test -w "$cache_file"; then
-    if test "x$cache_file" != "x/dev/null"; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: updating cache $cache_file" >&5
-$as_echo "$as_me: updating cache $cache_file" >&6;}
-      if test ! -f "$cache_file" || test -h "$cache_file"; then
-	cat confcache >"$cache_file"
-      else
-        case $cache_file in #(
-        */* | ?:*)
-	  mv -f confcache "$cache_file"$$ &&
-	  mv -f "$cache_file"$$ "$cache_file" ;; #(
-        *)
-	  mv -f confcache "$cache_file" ;;
-	esac
-      fi
-    fi
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: not updating unwritable cache $cache_file" >&5
-$as_echo "$as_me: not updating unwritable cache $cache_file" >&6;}
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_TEXI2DVI="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
   fi
+done
+  done
+IFS=$as_save_IFS
+
 fi
-rm -f confcache
-    as_fn_error $? "do not know how to create a directory tree" "$LINENO" 5
 fi
-cs_build_prop_val="$MKDIR"
+TEXI2DVI=$ac_cv_prog_TEXI2DVI
+if test -n "$TEXI2DVI"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TEXI2DVI" >&5
+$as_echo "$TEXI2DVI" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$TEXI2DVI" && break
+done
+
+    cs_build_prop_val="$TEXI2DVI"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.MKDIR ?= $cs_build_prop_val ;
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.TEXI2DVI ?= $cs_build_prop_val ;
 "
 fi
-cs_build_prop_val="$MKDIRS"
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in texi2pdf
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_TEXI2PDF+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$TEXI2PDF"; then
+  ac_cv_prog_TEXI2PDF="$TEXI2PDF" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_TEXI2PDF="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+TEXI2PDF=$ac_cv_prog_TEXI2PDF
+if test -n "$TEXI2PDF"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $TEXI2PDF" >&5
+$as_echo "$TEXI2PDF" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$TEXI2PDF" && break
+done
+
+    cs_build_prop_val="$TEXI2PDF"
     cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
     	        if test -n "$cs_build_prop_val"; then :
-  cs_jamconfig_text="${cs_jamconfig_text}CMD.MKDIRS ?= $cs_build_prop_val ;
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.TEXI2PDF ?= $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in dvips
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DVIPS+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DVIPS"; then
+  ac_cv_prog_DVIPS="$DVIPS" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DVIPS="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DVIPS=$ac_cv_prog_DVIPS
+if test -n "$DVIPS"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DVIPS" >&5
+$as_echo "$DVIPS" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$DVIPS" && break
+done
+
+    cs_build_prop_val="$DVIPS"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.DVIPS ?= $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in dvipdf
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DVIPDF+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DVIPDF"; then
+  ac_cv_prog_DVIPDF="$DVIPDF" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DVIPDF="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DVIPDF=$ac_cv_prog_DVIPDF
+if test -n "$DVIPDF"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DVIPDF" >&5
+$as_echo "$DVIPDF" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$DVIPDF" && break
+done
+
+    cs_build_prop_val="$DVIPDF"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.DVIPDF ?= $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in makeinfo
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_MAKEINFO+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$MAKEINFO"; then
+  ac_cv_prog_MAKEINFO="$MAKEINFO" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_MAKEINFO="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+MAKEINFO=$ac_cv_prog_MAKEINFO
+if test -n "$MAKEINFO"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $MAKEINFO" >&5
+$as_echo "$MAKEINFO" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$MAKEINFO" && break
+done
+
+    cs_build_prop_val="$MAKEINFO"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.MAKEINFO ?= $cs_build_prop_val ;
+"
+fi
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    for ac_prog in doxygen
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DOXYGEN+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DOXYGEN"; then
+  ac_cv_prog_DOXYGEN="$DOXYGEN" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DOXYGEN="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DOXYGEN=$ac_cv_prog_DOXYGEN
+if test -n "$DOXYGEN"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOXYGEN" >&5
+$as_echo "$DOXYGEN" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$DOXYGEN" && break
+done
+
+    cs_build_prop_val="$DOXYGEN"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.DOXYGEN ?= $cs_build_prop_val ;
+"
+fi
+
+
+    if test "$cs_prog_path_prepared" != yes; then :
+  cs_prog_path_prepared=yes
+	PATH="$PATH$PATH_SEPARATOR/usr/local/bin$PATH_SEPARATOR/sw/bin$PATH_SEPARATOR${srcdir}/bin"
+	export PATH
+fi
+    if test -n "$ac_tool_prefix"; then
+  for ac_prog in dot
+  do
+    # Extract the first word of "$ac_tool_prefix$ac_prog", so it can be a program name with args.
+set dummy $ac_tool_prefix$ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_DOT+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$DOT"; then
+  ac_cv_prog_DOT="$DOT" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_DOT="$ac_tool_prefix$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+DOT=$ac_cv_prog_DOT
+if test -n "$DOT"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $DOT" >&5
+$as_echo "$DOT" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    test -n "$DOT" && break
+  done
+fi
+if test -z "$DOT"; then
+  ac_ct_DOT=$DOT
+  for ac_prog in dot
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_DOT+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_DOT"; then
+  ac_cv_prog_ac_ct_DOT="$ac_ct_DOT" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_DOT="$ac_prog"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_DOT=$ac_cv_prog_ac_ct_DOT
+if test -n "$ac_ct_DOT"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_DOT" >&5
+$as_echo "$ac_ct_DOT" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  test -n "$ac_ct_DOT" && break
+done
+
+  if test "x$ac_ct_DOT" = x; then
+    DOT=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    DOT=$ac_ct_DOT
+  fi
+fi
+
+    cs_build_prop_val="$DOT"
+    cs_build_prop_val=`echo x$cs_build_prop_val | sed 's/^x//;s/   */ /g;s/^ //;s/ $//'`
+    	        if test -n "$cs_build_prop_val"; then :
+  cs_jamconfig_text="${cs_jamconfig_text}CMD.DOT ?= $cs_build_prop_val ;
 "
 fi
 
