@@ -25,15 +25,8 @@ THE SOFTWARE.
 #ifndef __ares_h
 #define __ares_h
 
-/* We expect to use Crystal Space everywhere. */
-#include <cssysdef.h>
-
-/* MSVC users do not run configure, so use special MSVC configuration file. */
-#if defined(CS_WIN32_CSCONFIG)
-#include "config-msvc.h"
-#else
-#include "config.h"
-#endif
+/* This includes the detected build configuration as well as Crystal Space. */
+#include "aresconfig.h"
 
 /* Insert additional project-specific declarations here. */
 
