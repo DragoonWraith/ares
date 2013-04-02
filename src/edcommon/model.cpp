@@ -690,8 +690,9 @@ bool View::Bind (Value* value, wxWindow* component)
     return Bind (value, wxStaticCast (component, wxTreeCtrl));
   if (component->IsKindOf (CLASSINFO (wxChoicebook)))
     return Bind (value, wxStaticCast (component, wxChoicebook));
-  if (component->IsKindOf (CLASSINFO (CustomControl)))
-    return Bind (value, wxStaticCast (component, CustomControl));
+  CustomControl* customComp (dynamic_cast<CustomControl*> (component));
+  if (customComp)
+    return Bind (value, customComp);
   csString compName = (const char*)component->GetName ().mb_str (wxConvUTF8);
   printf ("Bind: Unsupported type for component '%s'!\n", compName.GetData ());
   return false;
@@ -1447,6 +1448,7 @@ void View::ValueChanged (Value* value)
 
     if (!b->processing)
     {
+      CustomControl* customCtrl;
       if (comp->IsKindOf (CLASSINFO (wxTextCtrl)))
       {
 	b->processing = true;
@@ -1479,9 +1481,8 @@ void View::ValueChanged (Value* value)
 	checkBox->SetValue (in);
 	b->processing = false;
       }
-      else if (comp->IsKindOf (CLASSINFO (CustomControl)))
+      else if ((customCtrl = dynamic_cast<CustomControl*> (comp)))
       {
-	CustomControl* customCtrl = wxStaticCast (comp, CustomControl);
 	customCtrl->SyncValue (value);
       }
       else if (comp->IsKindOf (CLASSINFO (wxPanel)) ||

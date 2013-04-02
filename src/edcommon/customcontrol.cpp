@@ -27,8 +27,6 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "edcommon/customcontrol.h"
 
-IMPLEMENT_DYNAMIC_CLASS(CustomControl, wxWindow)
-
 //-----------------------------------------------------------------------------
 
 

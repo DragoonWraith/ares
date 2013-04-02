@@ -37,8 +37,6 @@ using namespace Ares;
  */
 class ARES_EDCOMMON_EXPORT CustomControl : public wxWindow
 {
-DECLARE_DYNAMIC_CLASS(CustomControl)
-
 public:
   virtual ~CustomControl () { }
 
