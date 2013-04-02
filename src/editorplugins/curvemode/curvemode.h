@@ -116,8 +116,8 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel(wxWindow* parent, CurveMode* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    Panel(CurveMode* s)
+      : wxPanel (), s (s)
     {}
 
     void OnRotLeft (wxCommandEvent& event) { s->OnRotLeft (); }

@@ -224,7 +224,7 @@ void CameraWindow::OnGravitySelected ()
 CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
   : scfImplementationType (this), aresed3d (aresed3d)
 {
-  panel = new Panel (parent, this);
+  panel = new Panel (this);
   parentSizer = parent->GetSizer (); 
   parentSizer->Add (panel, 0, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CameraPanel"));

@@ -66,8 +66,8 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel (wxWindow* parent, FoliageMode* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    Panel (FoliageMode* s)
+      : wxPanel (), s (s)
     {}
 
   private:

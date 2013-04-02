@@ -66,8 +66,8 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel (wxWindow* parent, DecalMode* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    Panel (DecalMode* s)
+      : wxPanel (), s (s)
     {}
 
   private:

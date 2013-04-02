@@ -280,8 +280,8 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel(wxWindow* parent, EntityMode* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    Panel(EntityMode* s)
+      : wxPanel (), s (s)
     {}
 
     void OnDelete (wxCommandEvent& event) { s->OnDelete (); }

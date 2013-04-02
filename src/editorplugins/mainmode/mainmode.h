@@ -160,8 +160,8 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel(wxWindow* parent, MainMode* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    Panel(MainMode* s)
+      : wxPanel (), s (s)
     {}
 
     void OnStaticSelected (wxCommandEvent& event) { s->OnStaticSelected (); }

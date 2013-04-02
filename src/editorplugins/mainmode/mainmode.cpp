@@ -144,7 +144,7 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
 
 void MainMode::SetParent (wxWindow* parent)
 {
-  panel = new Panel (parent, this);
+  panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));
   view.SetParent (panel);

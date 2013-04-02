@@ -83,8 +83,8 @@ public:
   class Panel : public wxPanel
   {
   public:
-    Panel(wxWindow* parent, CameraWindow* s)
-      : wxPanel (parent, wxID_ANY, wxDefaultPosition, wxDefaultSize), s (s)
+    Panel(CameraWindow* s)
+      : wxPanel (), s (s)
     {}
 
     void OnNorthButton (wxCommandEvent& event) { s->OnNorthButton (); }

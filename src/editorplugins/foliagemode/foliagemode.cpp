@@ -47,7 +47,7 @@ FoliageMode::FoliageMode (iBase* parent) : scfImplementationType (this, parent)
 
 void FoliageMode::SetParent (wxWindow* parent)
 {
-  panel = new Panel (parent, this);
+  panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("FoliageModePanel"));
 }
