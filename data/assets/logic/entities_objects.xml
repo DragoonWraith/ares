@@ -5,7 +5,7 @@
     <dynamic />
     <attenuation c="1e+006" l="0" q="0">linear</attenuation>
     <type>point</type>
-    <spotlightfalloff inner="1" outer="0" />
+    <spotlightfalloff inner="0.999848" outer="0.999848" />
   </lightfact>
   <addon plugin="cel.addons.questdef" />
   <addon plugin="cel.addons.dynamicworld.loader">
@@ -87,16 +87,16 @@
         <par name="timeout" float="5" />
       </action>
       <action name="DefineType">
+        <par name="textcolor" color4="1,0,0,1" />
         <par name="type" string="error" />
         <par name="slot" string="top" />
         <par name="timeout" float="5" />
         <par name="font" string="DejaVuSansBold" />
         <par name="fontsize" long="12" />
-        <par name="textcolor" color4="1,0,0,1" />
       </action>
     </propclass>
   </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar23">
+  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBars">
     <!--A template hosting a quest that can move an object between two positions based on an activation message.
 @param duration,long,1000 duration for the sequencer
 @param x,float,0.0
@@ -119,55 +119,10 @@
         <par name="z" float="$z" />
       </action>
     </propclass>
-    <propclass name="pclogic.quest" tag="moveBar2">
+    <propclass name="pclogic.quest" tag="moveBars">
       <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar2" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar3">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar3" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-  </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar25">
-    <!--A template hosting a quest that can move an object between two positions based on an activation message.
-@param duration,long,1000 duration for the sequencer
-@param x,float,0.0
-@param y,float,0.0
-@param z,float,0.0
--->
-    <propclass name="pclogic.quest" tag="activator">
-      <action name="NewQuest">
-        <par name="name" string="DblActivatorStandard" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pcobject.mesh" />
-    <propclass name="pclogic.quest" tag="sequencer">
-      <action name="NewQuest">
-        <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="$duration" />
-        <par name="x" float="$x" />
-        <par name="y" float="$y" />
-        <par name="z" float="$z" />
-      </action>
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar2">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar2" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar5">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar5" />
+        <par name="name" string="BridgeSequencerToToggleMessageM" />
+        <par name="bars" string="$bars" />
       </action>
       <property name="state" string="init" />
     </propclass>
@@ -185,89 +140,6 @@
         <par name="position" vector3="0,0,0" />
         <par name="radius" float="6" />
       </action>
-    </propclass>
-  </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar13">
-    <!--A template hosting a quest that can move an object between two positions based on an activation message.
-@param duration,long,1000 duration for the sequencer
-@param x,float,0.0
-@param y,float,0.0
-@param z,float,0.0
--->
-    <propclass name="pclogic.quest" tag="activator">
-      <action name="NewQuest">
-        <par name="name" string="DblActivatorStandard" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pcobject.mesh" />
-    <propclass name="pclogic.quest" tag="sequencer">
-      <action name="NewQuest">
-        <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="$duration" />
-        <par name="x" float="$x" />
-        <par name="y" float="$y" />
-        <par name="z" float="$z" />
-      </action>
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar1">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar1" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar3">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar3" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-  </addon>
-  <addon plugin="cel.addons.celentitytpl" entityname="ButtonToBar145">
-    <!--A template hosting a quest that can move an object between two positions based on an activation message.
-@param duration,long,1000 duration for the sequencer
-@param x,float,0.0
-@param y,float,0.0
-@param z,float,0.0
--->
-    <propclass name="pclogic.quest" tag="activator">
-      <action name="NewQuest">
-        <par name="name" string="DblActivatorStandard" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pcobject.mesh" />
-    <propclass name="pclogic.quest" tag="sequencer">
-      <action name="NewQuest">
-        <par name="name" string="DblSequencerMove" />
-        <par name="duration" long="$duration" />
-        <par name="x" float="$x" />
-        <par name="y" float="$y" />
-        <par name="z" float="$z" />
-      </action>
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar1">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar1" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar4">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar4" />
-      </action>
-      <property name="state" string="init" />
-    </propclass>
-    <propclass name="pclogic.quest" tag="moveBar5">
-      <action name="NewQuest">
-        <par name="name" string="BridgeSequencerToToggleMessage" />
-        <par name="bar" string="Bar5" />
-      </action>
-      <property name="state" string="init" />
     </propclass>
   </addon>
   <addon plugin="cel.addons.celentitytpl" entityname="Player">
@@ -376,13 +248,13 @@
         <par name="msgid" string="cel.move.actor.action.MouseMove" />
       </action>
       <action name="MapParameter">
-        <par name="dest" string="x" />
         <par name="id" long="0" />
+        <par name="dest" string="x" />
         <par name="source" string="x" />
       </action>
       <action name="MapParameter">
-        <par name="dest" string="y" />
         <par name="id" long="0" />
+        <par name="dest" string="y" />
         <par name="source" string="y" />
       </action>
     </propclass>

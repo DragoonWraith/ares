@@ -64,6 +64,7 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT (XRCID("entity_De_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_In_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Me_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("entities_Me_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Se_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Sf_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("float_Cp_Text"), RewardPanel :: OnUpdateEvent)
@@ -227,6 +228,7 @@ void RewardPanel::UpdatePanel ()
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
     UITools::SetValue (this, "entity_Me_Text", tf->GetEntity ());
+    UITools::SetValue (this, "entities_Me_Text", tf->GetEntities ());
     UITools::SetValue (this, "class_Me_Text", tf->GetClass ());
     UITools::ClearChoices (this, "id_Me_Combo");
     iEditorConfig* config = emode->GetApplication ()->GetConfig ();
@@ -357,6 +359,7 @@ void RewardPanel::UpdateReward ()
     {
       csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (reward);
       tf->SetEntityParameter (UITools::GetValue (this, "entity_Me_Text"));
+      tf->SetEntitiesParameter (UITools::GetValue (this, "entities_Me_Text"));
       tf->SetClassParameter (UITools::GetValue (this, "class_Me_Text"));
       tf->SetIDParameter (UITools::GetValue (this, "id_Me_Combo"));
     }

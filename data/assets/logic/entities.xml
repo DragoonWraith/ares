@@ -243,6 +243,22 @@
         </trigger>
       </state>
     </quest>
+    <quest name="BridgeSequencerToToggleMessageM">
+      <!--This quest acts as a bridge between the sequencer (on the same entity as this quest) and a DblActivatorMessage quest on another entity.
+@param bar,string is the name of the entity containing the DblActivatorMessage-->
+      <state name="init">
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="one" />
+          <reward type="cel.rewards.message" entities="$bars" id="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="two" />
+          <reward type="cel.rewards.message" entities="$bars" id="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+      </state>
+    </quest>
     <quest name="BridgeSequencerToToggleMessage">
       <!--This quest acts as a bridge between the sequencer (on the same entity as this quest) and a DblActivatorMessage quest on another entity.
 @param bar,string is the name of the entity containing the DblActivatorMessage-->
