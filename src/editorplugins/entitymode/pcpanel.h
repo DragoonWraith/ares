@@ -70,6 +70,7 @@ private:
 
   void OnChoicebookPageChange (wxChoicebookEvent& event);
   void OnUpdateEvent (wxCommandEvent& event);
+  void OnUpdateTag (wxCommandEvent& event);
 
   /**
    * Possibly switch the type of the PC. Do nothing if the PC is

@@ -87,7 +87,7 @@ static csColor ToColor (const char* value)
 
 BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
-  EVT_TEXT (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateTag)
 
   EVT_CHECKBOX (XRCID("physics_CheckBox"), PropertyClassPanel :: OnUpdateEvent)
   EVT_CHECKBOX (XRCID("spawnRepeatCheckBox"), PropertyClassPanel :: OnUpdateEvent)
@@ -140,6 +140,22 @@ void PropertyClassPanel::OnUpdateEvent (wxCommandEvent& event)
 void PropertyClassPanel::OnChoicebookPageChange (wxChoicebookEvent& event)
 {
   UpdatePC ();
+}
+
+void PropertyClassPanel::OnUpdateTag (wxCommandEvent& event)
+{
+  printf ("Update tag!\n"); fflush (stdout);
+  if (!tpl || !pctpl) return;
+  wxTextCtrl* tagText = XRCCTRL (*this, "tagTextCtrl", wxTextCtrl);
+  csString tag = (const char*)tagText->GetValue ().mb_str (wxConvUTF8);
+
+  if (tag.IsEmpty ())
+    pctpl->SetTag (0);
+  else
+    pctpl->SetTag (tag);
+
+  emode->PCWasEdited (pctpl);
+  emode->RegisterModification (tpl);
 }
 
 void PropertyClassPanel::SwitchPCType (const char* pcType)
