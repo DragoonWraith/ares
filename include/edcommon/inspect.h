@@ -300,6 +300,14 @@ public:
     }
   }
 
+  static const char* TypeToString (const celData& data)
+  {
+    if (data.type == CEL_DATA_PARAMETER)
+      return TypeToString (data.value.par.partype);
+    else
+      return TypeToString (data.type);
+  }
+
   static const char* TypeToString (celDataType type)
   {
     switch (type)

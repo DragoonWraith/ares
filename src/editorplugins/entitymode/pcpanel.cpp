@@ -1393,17 +1393,36 @@ private:
     csStringID nameID = pl->FetchStringID (name);
     pctpl->RemoveProperty (nameID);
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
-    if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
-    else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
-    else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
-    else if (type == "string") pctpl->SetProperty (nameID, value.GetData ());
-    else if (type == "vector2") pctpl->SetProperty (nameID, ToVector2 (value));
-    else if (type == "vector3") pctpl->SetProperty (nameID, ToVector3 (value));
-    else if (type == "color") pctpl->SetProperty (nameID, ToColor (value));
+    const char* v = value;
+    if (v && (*v == '$' || *v == '@'))
+    {
+      if (type == "bool") pctpl->SetPropertyVariable (nameID, CEL_DATA_BOOL, v+1);
+      else if (type == "long") pctpl->SetPropertyVariable (nameID, CEL_DATA_LONG, v+1);
+      else if (type == "float") pctpl->SetPropertyVariable (nameID, CEL_DATA_FLOAT, v+1);
+      else if (type == "string") pctpl->SetPropertyVariable (nameID, CEL_DATA_STRING, v+1);
+      else if (type == "vector2") pctpl->SetPropertyVariable (nameID, CEL_DATA_VECTOR2, v+1);
+      else if (type == "vector3") pctpl->SetPropertyVariable (nameID, CEL_DATA_VECTOR3, v+1);
+      else if (type == "color") pctpl->SetPropertyVariable (nameID, CEL_DATA_COLOR, v+1);
+      else
+      {
+        pcPanel->GetUIManager ()->Error ("Unknown type '%s'\n", type.GetData ());
+        return false;
+      }
+    }
     else
     {
-      pcPanel->GetUIManager ()->Error ("Unknown type '%s'\n", type.GetData ());
-      return false;
+      if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
+      else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
+      else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
+      else if (type == "string") pctpl->SetProperty (nameID, value.GetData ());
+      else if (type == "vector2") pctpl->SetProperty (nameID, ToVector2 (value));
+      else if (type == "vector3") pctpl->SetProperty (nameID, ToVector3 (value));
+      else if (type == "color") pctpl->SetProperty (nameID, ToColor (value));
+      else
+      {
+	pcPanel->GetUIManager ()->Error ("Unknown type '%s'\n", type.GetData ());
+	return false;
+      }
     }
     return true;
   }
@@ -1423,7 +1442,7 @@ protected:
       csString value;
       celParameterTools::ToString (data, value);
       csString name = pcPanel->GetPL ()->FetchString (id);
-      csString type = InspectTools::TypeToString (data.type);
+      csString type = InspectTools::TypeToString (data);
       NewChild (name, value, type);
     }
   }
