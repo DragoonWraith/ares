@@ -41,6 +41,7 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("rewardChoicebook"), RewardPanel :: OnChoicebookPageChange)
 
   EVT_CHECKBOX (XRCID("toggle_Cp_Check"), RewardPanel :: OnUpdateEvent)
+  EVT_CHECKBOX (XRCID("remove_Cc_Check"), RewardPanel :: OnUpdateEvent)
 
   EVT_TEXT (XRCID("bool_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("childEntity_In_Text"), RewardPanel :: OnUpdateEvent)
@@ -53,6 +54,7 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT (XRCID("class_Ac_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_De_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("class_Cc_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_Me_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_Se_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("class_Sf_Text"), RewardPanel :: OnUpdateEvent)
@@ -62,6 +64,7 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT (XRCID("entity_Ac_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_De_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("entity_Cc_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_In_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Me_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entities_Me_Text"), RewardPanel :: OnUpdateEvent)
@@ -211,6 +214,14 @@ void RewardPanel::UpdatePanel ()
     UITools::SetValue (this, "entity_De_Text", tf->GetEntity ());
     UITools::SetValue (this, "class_De_Text", tf->GetClass ());
   }
+  else if (type == "changeclass")
+  {
+    csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (reward);
+    UITools::SetValue (this, "entity_Cc_Text", tf->GetEntity ());
+    UITools::SetValue (this, "class_Cc_Text", tf->GetClass ());
+    wxCheckBox* check = XRCCTRL (*this, "remove_Cc_Check", wxCheckBox);
+    check->SetValue (tf->IsRemove ());
+  }
   else if (type == "debugprint")
   {
     csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (reward);
@@ -341,6 +352,14 @@ void RewardPanel::UpdateReward ()
       csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (reward);
       tf->SetEntityParameter (UITools::GetValue (this, "entity_De_Text"));
       tf->SetClassParameter (UITools::GetValue (this, "class_De_Text"));
+    }
+    else if (type == "changeclass")
+    {
+      csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (reward);
+      tf->SetEntityParameter (UITools::GetValue (this, "entity_Cc_Text"));
+      tf->SetClassParameter (UITools::GetValue (this, "class_Cc_Text"));
+      wxCheckBox* check = XRCCTRL (*this, "remove_Cc_Check", wxCheckBox);
+      tf->SetRemove (check->GetValue ());
     }
     else if (type == "debugprint")
     {
@@ -660,6 +679,7 @@ RewardPanel::RewardPanel (wxWindow* parent, iUIManager* uiManager,
   spl.SetupPicker (SPT_ENTITY, this, "entity_Ac_Text", "entitySearch_Ac_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_Cp_Text", "entitySearch_Cp_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_De_Text", "entitySearch_De_Button");
+  spl.SetupPicker (SPT_ENTITY, this, "entity_Cc_Text", "entitySearch_Cc_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_In_Text", "entitySearch_In_Button");
   spl.SetupPicker (SPT_ENTITY, this, "childEntity_In_Text", "childEntitySearch_In_Button");
   spl.SetupPicker (SPT_ENTITY, this, "entity_Me_Text", "entitySearch_Me_Button");

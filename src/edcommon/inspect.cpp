@@ -715,6 +715,12 @@ void InspectTools::CollectRewardParameters (iCelPlLayer* pl, iRewardFactory* rew
     Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
     Par (pl, params, tf->GetClass (), CEL_DATA_STRING, PAR_CLASS);
   }
+  else if (name == "changeclass")
+  {
+    csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (reward);
+    Par (pl, params, tf->GetEntity (), CEL_DATA_STRING, PAR_ENTITY);
+    Par (pl, params, tf->GetClass (), CEL_DATA_STRING, PAR_CLASS);
+  }
   else if (name == "debugprint")
   {
     csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (reward);

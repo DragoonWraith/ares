@@ -69,7 +69,6 @@ private:
   bool doDragRestrict[3];  // Restrict dragging on a plane.
   csVector3 dragRestrict;
   csVector3 dragRestrictLocal;
-  void SetDragRestrict (bool local, bool x, bool y, bool z);
   void ToggleKinematicMode (int axis, bool shift);
 
   int idSetStatic, idClearStatic;

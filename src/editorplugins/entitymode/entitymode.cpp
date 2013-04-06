@@ -544,6 +544,10 @@ const char* EntityMode::GetRewardType (iRewardFactory* reward)
     if (s) return "DestroyEnt";
   }
   {
+    csRef<iChangeClassRewardFactory> s = scfQueryInterface<iChangeClassRewardFactory> (reward);
+    if (s) return "ChangeClass";
+  }
+  {
     csRef<iActionRewardFactory> s = scfQueryInterface<iActionRewardFactory> (reward);
     if (s) return "Action";
   }
@@ -1699,7 +1703,7 @@ void EntityMode::OnCreateReward (int type)
   dialog->AddRow ();
   dialog->AddLabel ("Name:");
   dialog->AddChoice ("name", "newstate", "debugprint", "action", "changeproperty",
-      "createentity", "destroyentity", "inventory", "message", "cssequence",
+      "createentity", "destroyentity", "changeclass", "inventory", "message", "cssequence",
       "sequence", "sequencefinish", (const char*)0);
   if (dialog->Show (0))
   {

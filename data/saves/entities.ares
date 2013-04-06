@@ -13,6 +13,7 @@
           <par name="y" float="0" />
           <par name="z" float="0" />
         </params>
+	<decal name="test" pos="0,0,0" width="1" height="1" />
       </obj>
       <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-0.263125 0.6 31.6466" id="1000410001" ent="StandardYRotator">
         <params>

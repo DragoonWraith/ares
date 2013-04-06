@@ -623,6 +623,12 @@ void SanityChecker::Check (iQuestFactory* quest, iRewardFactory* reward)
     CheckExistingEntityAndReport (name, tf->GetEntity ());
     //Par (pl, params, tf->GetClass ());
   }
+  else if (name == "changeclass")
+  {
+    csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (reward);
+    CheckExistingEntityAndReport (name, tf->GetEntity ());
+    //Par (pl, params, tf->GetClass ());
+  }
   else if (name == "debugprint")
   {
     csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (reward);

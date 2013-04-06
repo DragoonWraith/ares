@@ -734,18 +734,6 @@ void MainMode::SpawnSelectedItem ()
     view3d->GetPaster ()->StartPasteSelection (itemName);
 }
 
-void MainMode::SetDragRestrict (bool local, bool x, bool y, bool z)
-{
-  doDragLocal = local;
-  doDragRestrict[CS_AXIS_X] = x;
-  doDragRestrict[CS_AXIS_Y] = y;
-  doDragRestrict[CS_AXIS_Z] = z;
-  view3d->GetPaster ()->ShowConstrainMarker (
-      doDragRestrict[CS_AXIS_X],
-      doDragRestrict[CS_AXIS_Y],
-      doDragRestrict[CS_AXIS_Z]);
-}
-
 void MainMode::ToggleKinematicMode (int axis, bool shift)
 {
   bool& drMain = doDragRestrict[axis];
@@ -968,7 +956,14 @@ void MainMode::StartKinematicDragging (bool restrictY,
   const csReversibleTransform& meshtrans = dragObjects[0].dynobj->GetTransform ();
   dragRestrictLocal = meshtrans.Other2This (dragRestrict);
 
-  SetDragRestrict (false, false, restrictY, false);
+  doDragLocal = false;
+  doDragRestrict[CS_AXIS_X] = false;
+  doDragRestrict[CS_AXIS_Y] = restrictY;
+  doDragRestrict[CS_AXIS_Z] = false;
+  view3d->GetPaster ()->ShowConstrainMarker (
+      doDragRestrict[CS_AXIS_X],
+      doDragRestrict[CS_AXIS_Y],
+      doDragRestrict[CS_AXIS_Z]);
 
   SetTransformationMarkerStatus ();
 }

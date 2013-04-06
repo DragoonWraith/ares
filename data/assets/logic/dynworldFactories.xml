@@ -2,6 +2,7 @@
   <addon plugin="cel.addons.questdef" />
   <addon plugin="cel.addons.dynamicworld.loader">
     <dynworld name="World" />
+    <decal name="test" material="test.png" uvmin="0,0" uvmax="1,1" />
     <factory name="krystal" maxradius="0.6" imposterradius="0" mass="50">
       <attr name="category" value="NPC" />
       <attr name="defaultstatic" value="true" />
