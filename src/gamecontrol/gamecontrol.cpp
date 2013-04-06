@@ -183,6 +183,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   classNoteID = pl->FetchStringID ("ares.note");
   classInfoID = pl->FetchStringID ("ares.info");
   classPickUpID = pl->FetchStringID ("ares.pickup");
+  classNoActivate = pl->FetchStringID ("ares.noactivate");
   attrDragType = pl->FetchStringID ("ares.dragtype");
   msgActivate = pl->FetchStringID ("ares.Activate");
 
@@ -269,7 +270,7 @@ printf ("#######################################################\n");
   if (obj)
   {
     iCelEntity* ent = obj->GetEntity ();
-    if (ent)
+    if (ent && !ent->HasClass (classNoActivate))
     {
       printf ("ent=%s\n",ent->GetName ());
       iMessageChannel* channel = ent->QueryMessageChannel ();

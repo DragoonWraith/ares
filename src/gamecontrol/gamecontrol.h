@@ -114,6 +114,7 @@ private:
   csStringID classNoteID;
   csStringID classInfoID;
   csStringID classPickUpID;
+  csStringID classNoActivate;
   csStringID attrDragType;
   csStringID msgActivate;
 
