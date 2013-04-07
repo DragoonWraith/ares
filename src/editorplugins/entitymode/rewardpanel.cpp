@@ -65,6 +65,7 @@ BEGIN_EVENT_TABLE(RewardPanel, wxPanel)
   EVT_TEXT (XRCID("entity_Cp_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_De_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Cc_Text"), RewardPanel :: OnUpdateEvent)
+  EVT_TEXT (XRCID("entities_Cc_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_In_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entity_Me_Text"), RewardPanel :: OnUpdateEvent)
   EVT_TEXT (XRCID("entities_Me_Text"), RewardPanel :: OnUpdateEvent)
@@ -218,6 +219,7 @@ void RewardPanel::UpdatePanel ()
   {
     csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (reward);
     UITools::SetValue (this, "entity_Cc_Text", tf->GetEntity ());
+    UITools::SetValue (this, "entities_Cc_Text", tf->GetEntities ());
     UITools::SetValue (this, "class_Cc_Text", tf->GetClass ());
     wxCheckBox* check = XRCCTRL (*this, "remove_Cc_Check", wxCheckBox);
     check->SetValue (tf->IsRemove ());
@@ -357,6 +359,7 @@ void RewardPanel::UpdateReward ()
     {
       csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (reward);
       tf->SetEntityParameter (UITools::GetValue (this, "entity_Cc_Text"));
+      tf->SetEntitiesParameter (UITools::GetValue (this, "entities_Cc_Text"));
       tf->SetClassParameter (UITools::GetValue (this, "class_Cc_Text"));
       wxCheckBox* check = XRCCTRL (*this, "remove_Cc_Check", wxCheckBox);
       tf->SetRemove (check->GetValue ());
