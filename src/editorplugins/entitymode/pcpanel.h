@@ -47,6 +47,8 @@ struct iUIDialog;
 struct iUIManager;
 class EntityMode;
 
+class SlotCollectionValue;
+class TypeCollectionValue;
 class PropertyCollectionValue;
 class InventoryCollectionValue;
 class QuestCollectionValue;
@@ -97,6 +99,13 @@ private:
   csRef<iUIDialog> invTempDialog;
   bool UpdateInventory ();
   void FillInventory ();
+
+  // Messenger.
+  csRef<SlotCollectionValue> slotCollectionValue;
+  csRef<TypeCollectionValue> typeCollectionValue;
+  //csRef<iUIDialog> invTempDialog;
+  bool UpdateMessenger ();
+  void FillMessenger ();
 
   // Quest.
   csRef<QuestCollectionValue> questCollectionValue;

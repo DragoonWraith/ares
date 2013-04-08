@@ -147,6 +147,43 @@
 						<selected>0</selected>
 						<object class="wxPanel" name="messengerPanel">
 							<style>wxTAB_TRAVERSAL</style>
+							<object class="wxBoxSizer">
+								<orient>wxVERTICAL</orient>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALL</flag>
+									<border>5</border>
+									<object class="wxStaticText" name="m_staticText102">
+										<label>Slots:</label>
+										<wrap>-1</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="slot_List">
+										<style>wxLC_REPORT</style>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>0</option>
+									<flag>wxALL</flag>
+									<border>5</border>
+									<object class="wxStaticText" name="m_staticText103">
+										<label>Types:</label>
+										<wrap>-1</wrap>
+									</object>
+								</object>
+								<object class="sizeritem">
+									<option>1</option>
+									<flag>wxALL|wxEXPAND</flag>
+									<border>5</border>
+									<object class="wxListCtrl" name="type_List">
+										<style>wxLC_REPORT</style>
+									</object>
+								</object>
+							</object>
 						</object>
 					</object>
 					<object class="choicebookpage">

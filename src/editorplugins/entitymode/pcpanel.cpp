@@ -1194,6 +1194,268 @@ void PropertyClassPanel::FillQuest ()
 
 // -----------------------------------------------------------------------
 
+class SlotCollectionValue : public PcParCollectionValue
+{
+private:
+  Value* NewChild (const char* name)
+  {
+    return NewCompositeChild (
+	  VALUE_STRING, "Name", name,
+	  VALUE_NONE);
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!pctpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "DefineSlot")
+      {
+        iCelPlLayer* pl = pcPanel->GetPL ();
+        csStringID nameID = pl->FetchStringID ("name");
+        csString parName;
+        while (params->HasNext ())
+        {
+          csStringID parid;
+          iParameter* par = params->Next (parid);
+          if (parid == nameID) parName = par->GetOriginalExpression ();
+          //else if (parid == amountID) parAmount = par->GetOriginalExpression ();
+        }
+	NewChild (parName);
+      }
+    }
+  }
+
+  bool RemoveSlotWithName (const char* name)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
+	"DefineSlot", "name", name);
+    if (idx == csArrayItemNotFound) return false;
+    pctpl->RemovePropertyByIndex (idx);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
+    return true;
+  }
+
+  bool UpdateSlot (const char* name)
+  {
+    ParHash params;
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csStringID actionID = pl->FetchStringID ("DefineSlot");
+    csStringID nameID = pl->FetchStringID ("name");
+
+    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
+    if (!t)
+    {
+      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
+      return false;
+    }
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (name, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (nameID, par);
+
+    //par = pm->GetParameter (amount, CEL_DATA_LONG);
+    //if (!par) return false;
+    //params.Put (amountID, par);
+
+    RemoveSlotWithName (name);
+    pctpl->PerformAction (actionID, params);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
+    return true;
+  }
+
+
+public:
+  SlotCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  virtual ~SlotCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!pctpl) return false;
+    Value* nameValue = child->GetChildByName ("Name");
+    if (!RemoveSlotWithName (nameValue->GetStringValue ()))
+      return false;
+    RemoveChild (child);
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return 0;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    if (!UpdateSlot (name))
+      return 0;
+
+    Value* child = NewChild (name);
+    FireValueChanged ();
+    return child;
+  }
+
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return false;
+    csString name = suggestion.Get ("Name", (const char*)0);
+    if (!UpdateSlot (name))
+      return false;
+    selectedValue->GetChildByName ("Name")->SetStringValue (name);
+    FireValueChanged ();
+    return true;
+  }
+};
+
+// -----------------------------------------------------------------------
+
+class TypeCollectionValue : public PcParCollectionValue
+{
+private:
+  Value* NewChild (const char* type)
+  {
+    return NewCompositeChild (
+	  VALUE_STRING, "Type", type,
+	  VALUE_NONE);
+  }
+
+protected:
+  virtual void UpdateChildren ()
+  {
+    if (!pctpl) return;
+    if (!dirty) return;
+    dirty = false;
+    ReleaseChildren ();
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "DefineType")
+      {
+        iCelPlLayer* pl = pcPanel->GetPL ();
+        csStringID typeID = pl->FetchStringID ("type");
+        csString parType;
+        while (params->HasNext ())
+        {
+          csStringID parid;
+          iParameter* par = params->Next (parid);
+          if (parid == typeID) parType = par->GetOriginalExpression ();
+          //else if (parid == amountID) parAmount = par->GetOriginalExpression ();
+        }
+	NewChild (parType);
+      }
+    }
+  }
+
+  bool RemoveTypeWithType (const char* type)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    size_t idx = InspectTools::FindActionWithParameter (pl, pctpl,
+	"DefineType", "type", type);
+    if (idx == csArrayItemNotFound) return false;
+    pctpl->RemovePropertyByIndex (idx);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
+    return true;
+  }
+
+  bool UpdateType (const char* type)
+  {
+    ParHash params;
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csStringID actionID = pl->FetchStringID ("DefineType");
+    csStringID typeID = pl->FetchStringID ("type");
+
+    csRef<iParameter> par;
+    par = pm->GetParameter (type, CEL_DATA_STRING);
+    if (!par) return false;
+    params.Put (typeID, par);
+
+    //par = pm->GetParameter (amount, CEL_DATA_LONG);
+    //if (!par) return false;
+    //params.Put (amountID, par);
+
+    RemoveTypeWithType (type);
+    pctpl->PerformAction (actionID, params);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
+    return true;
+  }
+
+
+public:
+  TypeCollectionValue (PropertyClassPanel* pcPanel) : PcParCollectionValue (pcPanel) { }
+  virtual ~TypeCollectionValue () { }
+
+  virtual bool DeleteValue (Value* child)
+  {
+    if (!pctpl) return false;
+    Value* typeValue = child->GetChildByName ("Type");
+    if (!RemoveTypeWithType (typeValue->GetStringValue ()))
+      return false;
+    RemoveChild (child);
+    return true;
+  }
+  virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return 0;
+    csString type = suggestion.Get ("Type", (const char*)0);
+    if (!UpdateType (type))
+      return 0;
+
+    Value* child = NewChild (type);
+    FireValueChanged ();
+    return child;
+  }
+
+  virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
+  {
+    if (!pctpl) return false;
+    csString type = suggestion.Get ("Type", (const char*)0);
+    if (!UpdateType (type))
+      return false;
+    selectedValue->GetChildByName ("Type")->SetStringValue (type);
+    FireValueChanged ();
+    return true;
+  }
+};
+
+bool PropertyClassPanel::UpdateMessenger ()
+{
+  SwitchPCType ("pctools.messenger");
+
+  pctpl->RemoveAllProperties ();
+
+  emode->PCWasEdited (pctpl);
+  return true;
+}
+
+void PropertyClassPanel::FillMessenger ()
+{
+  wxListCtrl* slotList = XRCCTRL (*this, "slot_List", wxListCtrl);
+  slotList->DeleteAllItems ();
+  wxListCtrl* typeList = XRCCTRL (*this, "type_List", wxListCtrl);
+  typeList->DeleteAllItems ();
+
+  if (!pctpl || csString ("pctools.messenger") != pctpl->GetName ()) return;
+
+  slotCollectionValue->SetPC (pctpl);
+  slotCollectionValue->Refresh ();
+  typeCollectionValue->SetPC (pctpl);
+  typeCollectionValue->Refresh ();
+}
+
+// -----------------------------------------------------------------------
+
 class InventoryCollectionValue : public PcParCollectionValue
 {
 private:
@@ -1598,6 +1860,7 @@ bool PropertyClassPanel::UpdatePC ()
 
   if (page == "pctools.properties") return UpdateProperties ();
   else if (page == "pctools.inventory") return UpdateInventory ();
+  else if (page == "pctools.messenger") return UpdateMessenger ();
   else if (page == "pclogic.wire") return UpdateWire ();
   else if (page == "pclogic.quest") return UpdateQuest ();
   else if (page == "pclogic.spawn") return UpdateSpawn ();
@@ -1628,6 +1891,7 @@ void PropertyClassPanel::SwitchToPC (iCelEntityTemplate* tpl,
 
   FillProperties ();
   FillInventory ();
+  FillMessenger ();
   FillQuest ();
   FillSpawn ();
   FillTrigger ();
@@ -1680,6 +1944,14 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
   inventoryCollectionValue.AttachNew (new InventoryCollectionValue (this));
   SetupList ("inventoryTemplateListCtrl", "Name,Amount", "Name,Amount",
       inventoryCollectionValue, GetInventoryTemplateDialog ());
+
+  slotCollectionValue.AttachNew (new SlotCollectionValue (this));
+  SetupList ("slot_List", "Name", "Name",
+      slotCollectionValue, 0); //GetInventoryTemplateDialog ());
+
+  typeCollectionValue.AttachNew (new TypeCollectionValue (this));
+  SetupList ("type_List", "Type", "Type",
+      typeCollectionValue, 0); //GetInventoryTemplateDialog ());
 
   spawnCollectionValue.AttachNew (new SpawnCollectionValue (this));
   SetupList ("spawnTemplateListCtrl", "Template", "Name",
