@@ -489,9 +489,11 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\msvc\plugin_impl.cpp" />
+    <ClCompile Include="..\..\src\editorplugins\mainmode\labelmanager.cpp" />
     <ClCompile Include="..\..\src\editorplugins\mainmode\mainmode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\editorplugins\mainmode\labelmanager.h" />
     <ClInclude Include="..\..\src\editorplugins\mainmode\mainmode.h" />
   </ItemGroup>
   <ItemGroup>

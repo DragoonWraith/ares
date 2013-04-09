@@ -457,6 +457,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClCompile Include="..\..\msvc\libassetmanager_staticreg.cpp" />
     <ClCompile Include="..\..\msvc\libcurvemesh_staticreg.cpp" />
     <ClCompile Include="..\..\msvc\libcurvemode_staticreg.cpp" />
+    <ClCompile Include="..\..\msvc\libdecalmode_staticreg.cpp" />
     <ClCompile Include="..\..\msvc\libdynfacteditor_staticreg.cpp" />
     <ClCompile Include="..\..\msvc\libdynworldload_staticreg.cpp" />
     <ClCompile Include="..\..\msvc\libentitymode_staticreg.cpp" />
@@ -473,6 +474,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClCompile Include="..\..\src\curvemesh\curvemesh.cpp" />
     <ClCompile Include="..\..\src\dynworldload\dynworldload.cpp" />
     <ClCompile Include="..\..\src\editorplugins\curvemode\curvemode.cpp" />
+    <ClCompile Include="..\..\src\editorplugins\decalmode\decalmode.cpp" />
     <ClCompile Include="..\..\src\editorplugins\dynfacteditor\dynfactdialog.cpp" />
     <ClCompile Include="..\..\src\editorplugins\dynfacteditor\imagepanel.cpp" />
     <ClCompile Include="..\..\src\editorplugins\dynfacteditor\lightdialog.cpp" />
@@ -486,6 +488,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClCompile Include="..\..\src\editorplugins\entitymode\triggerpanel.cpp" />
     <ClCompile Include="..\..\src\editorplugins\foliagemode\foliagemode.cpp" />
     <ClCompile Include="..\..\src\editorplugins\helpframe\helpframe.cpp" />
+    <ClCompile Include="..\..\src\editorplugins\mainmode\labelmanager.cpp" />
     <ClCompile Include="..\..\src\editorplugins\mainmode\mainmode.cpp" />
     <ClCompile Include="..\..\src\editorplugins\playmode\playmode.cpp" />
     <ClCompile Include="..\..\src\editorplugins\roommode\roommode.cpp" />
@@ -499,6 +502,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClInclude Include="..\..\src\curvemesh\curvemesh.h" />
     <ClInclude Include="..\..\src\dynworldload\dynworldload.h" />
     <ClInclude Include="..\..\src\editorplugins\curvemode\curvemode.h" />
+    <ClInclude Include="..\..\src\editorplugins\decalmode\decalmode.h" />
     <ClInclude Include="..\..\src\editorplugins\dynfacteditor\dynfactdialog.h" />
     <ClInclude Include="..\..\src\editorplugins\dynfacteditor\imagepanel.h" />
     <ClInclude Include="..\..\src\editorplugins\dynfacteditor\lightdialog.h" />
@@ -512,6 +516,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClInclude Include="..\..\src\editorplugins\entitymode\triggerpanel.h" />
     <ClInclude Include="..\..\src\editorplugins\foliagemode\foliagemode.h" />
     <ClInclude Include="..\..\src\editorplugins\helpframe\helpframe.h" />
+    <ClInclude Include="..\..\src\editorplugins\mainmode\labelmanager.h" />
     <ClInclude Include="..\..\src\editorplugins\mainmode\mainmode.h" />
     <ClInclude Include="..\..\src\editorplugins\playmode\playmode.h" />
     <ClInclude Include="..\..\src\editorplugins\roommode\roommode.h" />

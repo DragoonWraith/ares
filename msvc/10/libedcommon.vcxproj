@@ -468,6 +468,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClCompile Include="..\..\src\edcommon\inspect.cpp" />
     <ClCompile Include="..\..\src\edcommon\listctrltools.cpp" />
     <ClCompile Include="..\..\src\edcommon\model.cpp" />
+    <ClCompile Include="..\..\src\edcommon\sanity.cpp" />
+    <ClCompile Include="..\..\src\edcommon\smartpicker.cpp" />
     <ClCompile Include="..\..\src\edcommon\staticvarcleanup.cpp" />
     <ClCompile Include="..\..\src\edcommon\tools.cpp" />
     <ClCompile Include="..\..\src\edcommon\transformtools.cpp" />

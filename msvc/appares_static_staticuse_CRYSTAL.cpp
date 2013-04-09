@@ -14,7 +14,6 @@
 #endif
 struct _static_use_CRYSTAL { _static_use_CRYSTAL (); };
 _static_use_CRYSTAL::_static_use_CRYSTAL () {}
-SCF_USE_STATIC_PLUGIN(cscegui)
 SCF_USE_STATIC_PLUGIN(glwin32)
 SCF_USE_STATIC_PLUGIN(joywin)
 

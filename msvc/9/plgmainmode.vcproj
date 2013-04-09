@@ -624,12 +624,18 @@
 				RelativePath="..\..\msvc\plugin_impl.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\editorplugins\mainmode\labelmanager.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\editorplugins\mainmode\mainmode.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="">
+			<File
+				RelativePath="..\..\src\editorplugins\mainmode\labelmanager.h">
+			</File>
 			<File
 				RelativePath="..\..\src\editorplugins\mainmode\mainmode.h">
 			</File>

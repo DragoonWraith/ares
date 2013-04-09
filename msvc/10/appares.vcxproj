@@ -136,7 +136,7 @@
       <ProgramDatabaseFile>..\..\out\release10\build\appares\Win32\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;CEGUIBase-vc10.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -184,7 +184,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <ProgramDatabaseFile>..\..\out\release10\build\appares\Win32\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;CEGUIBase-vc10.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -228,7 +228,7 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <ProgramDatabaseFile>..\..\out\debug10\build\appares\Win32\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;CEGUIBase-vc10_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -272,7 +272,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <ProgramDatabaseFile>..\..\out\debug10\build\appares\Win32\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;CEGUIBase-vc10_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -320,7 +320,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <ProgramDatabaseFile>..\..\out\release10-x64\build\appares\x64\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;CEGUIBase-vc10.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10-x64\libs;$(CEL)\out\release10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -368,7 +368,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <ProgramDatabaseFile>..\..\out\release10-x64\build\appares\x64\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;CEGUIBase-vc10.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10-x64\libs;$(CEL)\out\release10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -412,7 +412,7 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <ProgramDatabaseFile>..\..\out\debug10-x64\build\appares\x64\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;CEGUIBase-vc10_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10-x64\libs;$(CEL)\out\debug10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -456,7 +456,7 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
       <ProgramDatabaseFile>..\..\out\debug10-x64\build\appares\x64\ares.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;CEGUIBase-vc10_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10-x64\libs;$(CEL)\out\debug10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -476,12 +476,10 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\ares\actorsettings.cpp" />
     <ClCompile Include="..\..\src\ares\appares.cpp" />
     <ClCompile Include="..\..\src\ares\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\ares\actorsettings.h" />
     <ClInclude Include="..\..\src\ares\appares.h" />
     <ClInclude Include="..\..\src\ares\ares.h" />
   </ItemGroup>

@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="apparesed"
-	ProjectGUID="{7F9EE288-75E9-73D9-CF09-6C0CC81F20E5}"
+	Name="plgdecalmode"
+	ProjectGUID="{5BE97433-5F78-92D6-0C5D-EC4644BFEB9D}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -13,10 +13,9 @@
 	<Configurations>
             		<Configuration
 			Name="ReleaseWithStaticLibs|Win32"
-			OutputDirectory="..\..\out\release8\build\apparesed\"
-			IntermediateDirectory="..\..\out\release8\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\release8\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\release8\build\plgdecalmode\"
+			ConfigurationType="2"
 			WholeProgramOptimization="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -27,14 +26,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8\build\apparesed\Win32\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\release8\build\plgdecalmode\Win32\decalmode.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\release8\build\apparesed\"
-				ObjectFile="..\..\out\release8\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\release8\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\release8\build\plgdecalmode\"
+				ObjectFile="..\..\out\release8\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -51,11 +50,13 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\release8\build\apparesed\Win32\aresed.pdb"
-				SubSystem="2"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\release8\build\plgdecalmode\Win32\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\release8\build\plgdecalmode\Win32\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs"
 				TargetMachine="1"/>
@@ -68,7 +69,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\release8\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\release8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8\bin\&#x0D;&#x0A;"
@@ -80,7 +81,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -89,10 +90,9 @@
 		</Configuration>
       		<Configuration
 			Name="ReleaseWithDlls|Win32"
-			OutputDirectory="..\..\out\release8\build\apparesed\"
-			IntermediateDirectory="..\..\out\release8\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\release8\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\release8\build\plgdecalmode\"
+			ConfigurationType="2"
 			WholeProgramOptimization="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -103,14 +103,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8\build\apparesed\Win32\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\release8\build\plgdecalmode\Win32\decalmode.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\release8\build\apparesed\"
-				ObjectFile="..\..\out\release8\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\release8\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\release8\build\plgdecalmode\"
+				ObjectFile="..\..\out\release8\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -127,11 +127,13 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\release8\build\apparesed\Win32\aresed.pdb"
-				SubSystem="2"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\release8\build\plgdecalmode\Win32\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\release8\build\plgdecalmode\Win32\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8\libs;$(CEL)\out\release8\libs"
 				TargetMachine="1"/>
@@ -144,7 +146,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\release8\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\release8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8\bin\&#x0D;&#x0A;"
@@ -156,7 +158,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -165,10 +167,9 @@
 		</Configuration>
                 		<Configuration
 			Name="DebugWithStaticLibs|Win32"
-			OutputDirectory="..\..\out\debug8\build\apparesed\"
-			IntermediateDirectory="..\..\out\debug8\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug8\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\debug8\build\plgdecalmode\"
+			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -178,14 +179,14 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8\build\apparesed\Win32\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\debug8\build\plgdecalmode\Win32\decalmode.pdb"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\debug8\build\apparesed\"
-				ObjectFile="..\..\out\debug8\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\debug8\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\debug8\build\plgdecalmode\"
+				ObjectFile="..\..\out\debug8\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -200,11 +201,13 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\debug8\build\apparesed\Win32\aresed.pdb"
-				SubSystem="1"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\debug8\build\plgdecalmode\Win32\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\debug8\build\plgdecalmode\Win32\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs"
 				TargetMachine="1"/>
@@ -217,7 +220,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\debug8\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\debug8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8\bin\&#x0D;&#x0A;"
@@ -229,7 +232,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -238,10 +241,9 @@
 		</Configuration>
       		<Configuration
 			Name="DebugWithDlls|Win32"
-			OutputDirectory="..\..\out\debug8\build\apparesed\"
-			IntermediateDirectory="..\..\out\debug8\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug8\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\debug8\build\plgdecalmode\"
+			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -251,14 +253,14 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8\build\apparesed\Win32\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\debug8\build\plgdecalmode\Win32\decalmode.pdb"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\debug8\build\apparesed\"
-				ObjectFile="..\..\out\debug8\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\debug8\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\debug8\build\plgdecalmode\"
+				ObjectFile="..\..\out\debug8\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -273,11 +275,13 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\debug8\build\apparesed\Win32\aresed.pdb"
-				SubSystem="1"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\debug8\build\plgdecalmode\Win32\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\debug8\build\plgdecalmode\Win32\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8\libs;$(CEL)\out\debug8\libs"
 				TargetMachine="1"/>
@@ -290,7 +294,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\debug8\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\debug8\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8\bin\&#x0D;&#x0A;"
@@ -302,7 +306,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -311,10 +315,9 @@
 		</Configuration>
                         		<Configuration
 			Name="ReleaseWithStaticLibs|x64"
-			OutputDirectory="..\..\out\release8-x64\build\apparesed\"
-			IntermediateDirectory="..\..\out\release8-x64\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\release8-x64\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\release8-x64\build\plgdecalmode\"
+			ConfigurationType="2"
 			WholeProgramOptimization="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -325,14 +328,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8-x64\build\apparesed\x64\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\release8-x64\build\plgdecalmode\x64\decalmode.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8-x64\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\release8-x64\build\apparesed\"
-				ObjectFile="..\..\out\release8-x64\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\release8-x64\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\release8-x64\build\plgdecalmode\"
+				ObjectFile="..\..\out\release8-x64\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -349,11 +352,13 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\release8-x64\build\apparesed\x64\aresed.pdb"
-				SubSystem="2"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\release8-x64\build\plgdecalmode\x64\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\release8-x64\build\plgdecalmode\x64\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8-x64\libs;$(CEL)\out\release8-x64\libs"
 				TargetMachine="17"/>
@@ -366,7 +371,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8-x64\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\release8-x64\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\release8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8-x64\bin\&#x0D;&#x0A;"
@@ -378,7 +383,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -387,10 +392,9 @@
 		</Configuration>
       		<Configuration
 			Name="ReleaseWithDlls|x64"
-			OutputDirectory="..\..\out\release8-x64\build\apparesed\"
-			IntermediateDirectory="..\..\out\release8-x64\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\release8-x64\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\release8-x64\build\plgdecalmode\"
+			ConfigurationType="2"
 			WholeProgramOptimization="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
@@ -401,14 +405,14 @@
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="FALSE"
-				ProgramDataBaseFileName="..\..\out\release8-x64\build\apparesed\x64\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\release8-x64\build\plgdecalmode\x64\decalmode.pdb"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\release8-x64\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\release8-x64\build\apparesed\"
-				ObjectFile="..\..\out\release8-x64\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\release8-x64\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\release8-x64\build\plgdecalmode\"
+				ObjectFile="..\..\out\release8-x64\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -425,11 +429,13 @@
 				EnableCOMDATFolding="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\release8-x64\build\apparesed\x64\aresed.pdb"
-				SubSystem="2"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\release8-x64\build\plgdecalmode\x64\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\release8-x64\build\plgdecalmode\x64\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace.lib libceltool.lib wxbase28u-vc8.lib wxmsw28u_core-vc8.lib wxmsw28u_gl-vc8.lib wxmsw28u_xrc-vc8.lib wxmsw28u_html-vc8.lib wxbase28u_xml-vc8.lib wxmsw28u_adv-vc8.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release8-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release8-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release8-x64\libs;$(CEL)\out\release8-x64\libs"
 				TargetMachine="17"/>
@@ -442,7 +448,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\release8-x64\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\release8-x64\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\release8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\release8-x64\bin\&#x0D;&#x0A;"
@@ -454,7 +460,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -463,10 +469,9 @@
 		</Configuration>
                 		<Configuration
 			Name="DebugWithStaticLibs|x64"
-			OutputDirectory="..\..\out\debug8-x64\build\apparesed\"
-			IntermediateDirectory="..\..\out\debug8-x64\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug8-x64\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\debug8-x64\build\plgdecalmode\"
+			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -476,14 +481,14 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8-x64\build\apparesed\x64\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\debug8-x64\build\plgdecalmode\x64\decalmode.pdb"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8-x64\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\debug8-x64\build\apparesed\"
-				ObjectFile="..\..\out\debug8-x64\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\debug8-x64\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\debug8-x64\build\plgdecalmode\"
+				ObjectFile="..\..\out\debug8-x64\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -498,11 +503,13 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\debug8-x64\build\apparesed\x64\aresed.pdb"
-				SubSystem="1"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\debug8-x64\build\plgdecalmode\x64\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\debug8-x64\build\plgdecalmode\x64\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8-x64\libs;$(CEL)\out\debug8-x64\libs"
 				TargetMachine="17"/>
@@ -515,7 +522,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8-x64\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\debug8-x64\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\debug8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8-x64\bin\&#x0D;&#x0A;"
@@ -527,7 +534,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -536,10 +543,9 @@
 		</Configuration>
       		<Configuration
 			Name="DebugWithDlls|x64"
-			OutputDirectory="..\..\out\debug8-x64\build\apparesed\"
-			IntermediateDirectory="..\..\out\debug8-x64\build\apparesed\"
-			ConfigurationType="1"
-			CharacterSet="2"
+			OutputDirectory="..\..\out\debug8-x64\build\plgdecalmode\"
+			IntermediateDirectory="..\..\out\debug8-x64\build\plgdecalmode\"
+			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
@@ -549,14 +555,14 @@
 				RuntimeTypeInfo="TRUE"
 				RuntimeLibrary="3"
 
-				ProgramDataBaseFileName="..\..\out\debug8-x64\build\apparesed\x64\aresed.pdb"
+				ProgramDataBaseFileName="..\..\out\debug8-x64\build\plgdecalmode\x64\decalmode.pdb"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS"
 				OptimizeForProcessor="1"
 				AdditionalOptions=" "
 				AdditionalIncludeDirectories=".;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
-				PrecompiledHeaderFile="..\..\out\debug8-x64\build\apparesed\apparesed.pch"
-				AssemblerListingLocation="..\..\out\debug8-x64\build\apparesed\"
-				ObjectFile="..\..\out\debug8-x64\build\apparesed\"
+				PrecompiledHeaderFile="..\..\out\debug8-x64\build\plgdecalmode\plgdecalmode.pch"
+				AssemblerListingLocation="..\..\out\debug8-x64\build\plgdecalmode\"
+				ObjectFile="..\..\out\debug8-x64\build\plgdecalmode\"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				Detect64BitPortabilityProblems="false"
@@ -571,11 +577,13 @@
 				LinkIncremental="2"
 				GenerateDebugInformation="TRUE"
 				IgnoreDefaultLibraryNames="LIBC,LIBCD,LIBCMT,LIBCMTD,MSVCRT"
-				OutputFile="..\..\aresed.exe"
-				ProgramDatabaseFile="..\..\out\debug8-x64\build\apparesed\x64\aresed.pdb"
-				SubSystem="1"
+				OutputFile="..\..\decalmode.dll"
+				ProgramDatabaseFile="..\..\out\debug8-x64\build\plgdecalmode\x64\decalmode.pdb"
+				IgnoreImportLibrary="TRUE"
+				DelayLoadDLLs=""
+				ImportLibrary="..\..\out\debug8-x64\build\plgdecalmode\x64\plgdecalmode.lib"
 				AdditionalOptions=" "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
+				AdditionalDependencies="delayimp.lib libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc8_d.lib wxmsw28u_core-vc8_d.lib wxmsw28u_gl-vc8_d.lib wxmsw28u_xrc-vc8_d.lib wxbase28u_html-vc8_d.lib wxmsw28u_xml-vc8_d.lib wxmsw28u_adv-vc8_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug8-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug8-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug8-x64\libs;$(CEL)\out\debug8-x64\libs"
 				TargetMachine="17"/>
@@ -588,7 +596,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName="..\..\out\debug8-x64\build\apparesed\apparesed.tlb"/>
+				TypeLibraryName="..\..\out\debug8-x64\build\plgdecalmode\plgdecalmode.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				CommandLine="md ..\..\out\debug8-x64\bin 2&gt; nul&#x0D;&#x0A;copy /y &quot;$(TargetPath)&quot; ..\..\out\debug8-x64\bin\&#x0D;&#x0A;"
@@ -600,7 +608,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=8"
-				AdditionalIncludeDirectories=".;..\..\src\aresed;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
+				AdditionalIncludeDirectories=".;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel"
 				Culture="1033"/>
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
@@ -613,168 +621,31 @@
 			Name="Source Files"
 			Filter="">
 			<File
-				RelativePath="..\..\src\aresed\apparesed.cpp">
+				RelativePath="..\..\msvc\plugin_impl.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\aresview.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\camera.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\camerawin.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\config.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\main.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\assets.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\dynfactmodel.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\factories.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\modelrepository.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\objects.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\quests.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\resources.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\templates.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\paster.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\selection.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\celldialog.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\entityparameters.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\filereq.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\manageassets.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\objectfinder.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\projectdata.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\resourcemover.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\sanitychecker.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\uimanager.cpp">
+				RelativePath="..\..\src\editorplugins\decalmode\decalmode.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="">
 			<File
-				RelativePath="..\..\src\aresed\apparesed.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\aresed.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\aresview.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\camera.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\camerawin.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\config.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\assets.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\dynfactmodel.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\factories.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\helper.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\modelrepository.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\objects.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\quests.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\resources.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\models\templates.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\paster.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\selection.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\celldialog.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\entityparameters.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\filereq.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\manageassets.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\objectfinder.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\projectdata.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\resourcemover.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\sanitychecker.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\uimanager.h">
+				RelativePath="..\..\src\editorplugins\decalmode\decalmode.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="">
 			<File
-				RelativePath="..\..\msvc\apparesed.rc">
+				RelativePath="..\..\msvc\plgdecalmode.rc">
+			</File>
+		</Filter>
+		<Filter
+			Name="Other Files"
+			Filter="">
+			<File
+				RelativePath="..\..\src\editorplugins\decalmode\decalmode.csplugin">
 			</File>
 		</Filter>
 	</Files>

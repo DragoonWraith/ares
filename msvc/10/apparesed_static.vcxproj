@@ -487,15 +487,21 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClCompile Include="..\..\src\aresed\models\assets.cpp" />
     <ClCompile Include="..\..\src\aresed\models\dynfactmodel.cpp" />
     <ClCompile Include="..\..\src\aresed\models\factories.cpp" />
+    <ClCompile Include="..\..\src\aresed\models\modelrepository.cpp" />
     <ClCompile Include="..\..\src\aresed\models\objects.cpp" />
+    <ClCompile Include="..\..\src\aresed\models\quests.cpp" />
+    <ClCompile Include="..\..\src\aresed\models\resources.cpp" />
     <ClCompile Include="..\..\src\aresed\models\templates.cpp" />
+    <ClCompile Include="..\..\src\aresed\paster.cpp" />
     <ClCompile Include="..\..\src\aresed\selection.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\celldialog.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\entityparameters.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\filereq.cpp" />
-    <ClCompile Include="..\..\src\aresed\ui\messageframe.cpp" />
-    <ClCompile Include="..\..\src\aresed\ui\newproject.cpp" />
+    <ClCompile Include="..\..\src\aresed\ui\manageassets.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\objectfinder.cpp" />
+    <ClCompile Include="..\..\src\aresed\ui\projectdata.cpp" />
+    <ClCompile Include="..\..\src\aresed\ui\resourcemover.cpp" />
+    <ClCompile Include="..\..\src\aresed\ui\sanitychecker.cpp" />
     <ClCompile Include="..\..\src\aresed\ui\uimanager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -509,15 +515,21 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <ClInclude Include="..\..\src\aresed\models\dynfactmodel.h" />
     <ClInclude Include="..\..\src\aresed\models\factories.h" />
     <ClInclude Include="..\..\src\aresed\models\helper.h" />
+    <ClInclude Include="..\..\src\aresed\models\modelrepository.h" />
     <ClInclude Include="..\..\src\aresed\models\objects.h" />
+    <ClInclude Include="..\..\src\aresed\models\quests.h" />
+    <ClInclude Include="..\..\src\aresed\models\resources.h" />
     <ClInclude Include="..\..\src\aresed\models\templates.h" />
+    <ClInclude Include="..\..\src\aresed\paster.h" />
     <ClInclude Include="..\..\src\aresed\selection.h" />
     <ClInclude Include="..\..\src\aresed\ui\celldialog.h" />
     <ClInclude Include="..\..\src\aresed\ui\entityparameters.h" />
     <ClInclude Include="..\..\src\aresed\ui\filereq.h" />
-    <ClInclude Include="..\..\src\aresed\ui\messageframe.h" />
-    <ClInclude Include="..\..\src\aresed\ui\newproject.h" />
+    <ClInclude Include="..\..\src\aresed\ui\manageassets.h" />
     <ClInclude Include="..\..\src\aresed\ui\objectfinder.h" />
+    <ClInclude Include="..\..\src\aresed\ui\projectdata.h" />
+    <ClInclude Include="..\..\src\aresed\ui\resourcemover.h" />
+    <ClInclude Include="..\..\src\aresed\ui\sanitychecker.h" />
     <ClInclude Include="..\..\src\aresed\ui\uimanager.h" />
   </ItemGroup>
   <ItemGroup>

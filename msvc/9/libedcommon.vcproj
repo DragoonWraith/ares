@@ -612,6 +612,12 @@
 				RelativePath="..\..\src\edcommon\model.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\edcommon\sanity.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\edcommon\smartpicker.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\edcommon\staticvarcleanup.cpp">
 			</File>
 			<File

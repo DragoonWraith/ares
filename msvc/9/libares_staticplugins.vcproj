@@ -594,6 +594,9 @@
 				RelativePath="..\..\msvc\libcurvemode_staticreg.cpp">
 			</File>
 			<File
+				RelativePath="..\..\msvc\libdecalmode_staticreg.cpp">
+			</File>
+			<File
 				RelativePath="..\..\msvc\libdynfacteditor_staticreg.cpp">
 			</File>
 			<File
@@ -642,6 +645,9 @@
 				RelativePath="..\..\src\editorplugins\curvemode\curvemode.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\editorplugins\decalmode\decalmode.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\editorplugins\dynfacteditor\dynfactdialog.cpp">
 			</File>
 			<File
@@ -681,6 +687,9 @@
 				RelativePath="..\..\src\editorplugins\helpframe\helpframe.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\editorplugins\mainmode\labelmanager.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\editorplugins\mainmode\mainmode.cpp">
 			</File>
 			<File
@@ -716,6 +725,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\editorplugins\curvemode\curvemode.h">
+			</File>
+			<File
+				RelativePath="..\..\src\editorplugins\decalmode\decalmode.h">
 			</File>
 			<File
 				RelativePath="..\..\src\editorplugins\dynfacteditor\dynfactdialog.h">
@@ -755,6 +767,9 @@
 			</File>
 			<File
 				RelativePath="..\..\src\editorplugins\helpframe\helpframe.h">
+			</File>
+			<File
+				RelativePath="..\..\src\editorplugins\mainmode\labelmanager.h">
 			</File>
 			<File
 				RelativePath="..\..\src\editorplugins\mainmode\mainmode.h">

@@ -646,10 +646,22 @@
 				RelativePath="..\..\src\aresed\models\factories.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\models\modelrepository.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\models\objects.cpp">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\models\quests.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\models\resources.cpp">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\models\templates.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\paster.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.cpp">
@@ -664,13 +676,19 @@
 				RelativePath="..\..\src\aresed\ui\filereq.cpp">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\ui\messageframe.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\newproject.cpp">
+				RelativePath="..\..\src\aresed\ui\manageassets.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\objectfinder.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\projectdata.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\resourcemover.cpp">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\sanitychecker.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.cpp">
@@ -710,10 +728,22 @@
 				RelativePath="..\..\src\aresed\models\helper.h">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\models\modelrepository.h">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\models\objects.h">
 			</File>
 			<File
+				RelativePath="..\..\src\aresed\models\quests.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\models\resources.h">
+			</File>
+			<File
 				RelativePath="..\..\src\aresed\models\templates.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\paster.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\selection.h">
@@ -728,13 +758,19 @@
 				RelativePath="..\..\src\aresed\ui\filereq.h">
 			</File>
 			<File
-				RelativePath="..\..\src\aresed\ui\messageframe.h">
-			</File>
-			<File
-				RelativePath="..\..\src\aresed\ui\newproject.h">
+				RelativePath="..\..\src\aresed\ui\manageassets.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\objectfinder.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\projectdata.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\resourcemover.h">
+			</File>
+			<File
+				RelativePath="..\..\src\aresed\ui\sanitychecker.h">
 			</File>
 			<File
 				RelativePath="..\..\src\aresed\ui\uimanager.h">

@@ -135,8 +135,8 @@
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\release10\build\appares_static\Win32\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;CEGUIBase-vc10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -183,8 +183,8 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\release10\build\appares_static\Win32\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;CEGUIBase-vc10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -227,8 +227,8 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\debug10\build\appares_static\Win32\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;CEGUIBase-vc10_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -271,8 +271,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\debug10\build\appares_static\Win32\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;CEGUIBase-vc10_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -319,8 +319,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\release10-x64\build\appares_static\x64\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;CEGUIBase-vc10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10-x64\libs;$(CEL)\out\release10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -367,8 +367,8 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\release10-x64\build\appares_static\x64\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;CEGUIBase-vc10.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10-x64\libs;$(CEL)\out\release10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -411,8 +411,8 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\debug10-x64\build\appares_static\x64\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;CEGUIBase-vc10_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10-x64\libs;$(CEL)\out\debug10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -455,8 +455,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
       <OutputFile>..\..\ares_static.exe</OutputFile>
       <ProgramDatabaseFile>..\..\out\debug10-x64\build\appares_static\x64\ares_static.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
-      <AdditionalOptions>CEGUIBase-vc10_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;CEGUIBase-vc10_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10-x64\libs;$(CEL)\out\debug10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -476,14 +476,11 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\msvc\appares_static_static_glue_app.cpp" />
     <ClCompile Include="..\..\msvc\appares_static_static_glue_app_CRYSTAL.cpp" />
-    <ClCompile Include="..\..\src\ares\actorsettings.cpp" />
     <ClCompile Include="..\..\src\ares\appares.cpp" />
     <ClCompile Include="..\..\src\ares\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\ares\actorsettings.h" />
     <ClInclude Include="..\..\src\ares\appares.h" />
     <ClInclude Include="..\..\src\ares\ares.h" />
   </ItemGroup>
@@ -508,9 +505,6 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     </ProjectReference>
     <ProjectReference Include="libares_static_plugins_CRYSTAL.vcxproj">
       <Project>{D7E239E7-0180-8EF5-01E6-BA62F0FF2E6B}</Project>
-    </ProjectReference>
-    <ProjectReference Include="libares_static_plugins.vcxproj">
-      <Project>{3BC2428D-D476-C24F-9D36-091FAE040A84}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

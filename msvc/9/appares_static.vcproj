@@ -54,8 +54,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\release9\build\appares_static\Win32\ares_static.pdb"
 				SubSystem="2"
-				AdditionalOptions="CEGUIBase-vc9.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib CEGUIBase-vc9.lib"
+				AdditionalOptions="libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs"
 				TargetMachine="1"/>
@@ -130,8 +130,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\release9\build\appares_static\Win32\ares_static.pdb"
 				SubSystem="2"
-				AdditionalOptions="CEGUIBase-vc9.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib CEGUIBase-vc9.lib"
+				AdditionalOptions="libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9\libs;$(CEL)\out\release9\libs"
 				TargetMachine="1"/>
@@ -203,8 +203,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\debug9\build\appares_static\Win32\ares_static.pdb"
 				SubSystem="1"
-				AdditionalOptions="CEGUIBase-vc9_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib CEGUIBase-vc9_d.lib"
+				AdditionalOptions="libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs"
 				TargetMachine="1"/>
@@ -276,8 +276,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\debug9\build\appares_static\Win32\ares_static.pdb"
 				SubSystem="1"
-				AdditionalOptions="CEGUIBase-vc9_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib CEGUIBase-vc9_d.lib"
+				AdditionalOptions="libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9\libs;$(CEL)\out\debug9\libs"
 				TargetMachine="1"/>
@@ -352,8 +352,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\release9-x64\build\appares_static\x64\ares_static.pdb"
 				SubSystem="2"
-				AdditionalOptions="CEGUIBase-vc9.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib CEGUIBase-vc9.lib"
+				AdditionalOptions="libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9-x64\libs;$(CEL)\out\release9-x64\libs"
 				TargetMachine="17"/>
@@ -428,8 +428,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\release9-x64\build\appares_static\x64\ares_static.pdb"
 				SubSystem="2"
-				AdditionalOptions="CEGUIBase-vc9.lib libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib CEGUIBase-vc9.lib"
+				AdditionalOptions="libcrystalspace_windows.lib libcrystalspace_opengl.lib opengl32.lib version.lib libcrystalspace_staticplugins.lib libcrystalspace_directx.lib libcrystalspace.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace.lib libceltool.lib wxbase28u-vc9.lib wxmsw28u_core-vc9.lib wxmsw28u_gl-vc9.lib wxmsw28u_xrc-vc9.lib wxmsw28u_html-vc9.lib wxbase28u_xml-vc9.lib wxmsw28u_adv-vc9.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\release9-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release9-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release9-x64\libs;$(CEL)\out\release9-x64\libs"
 				TargetMachine="17"/>
@@ -501,8 +501,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\debug9-x64\build\appares_static\x64\ares_static.pdb"
 				SubSystem="1"
-				AdditionalOptions="CEGUIBase-vc9_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib CEGUIBase-vc9_d.lib"
+				AdditionalOptions="libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9-x64\libs;$(CEL)\out\debug9-x64\libs"
 				TargetMachine="17"/>
@@ -574,8 +574,8 @@
 				OutputFile="..\..\ares_static.exe"
 				ProgramDatabaseFile="..\..\out\debug9-x64\build\appares_static\x64\ares_static.pdb"
 				SubSystem="1"
-				AdditionalOptions="CEGUIBase-vc9_d.lib libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
-				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib CEGUIBase-vc9_d.lib"
+				AdditionalOptions="libcrystalspace_windows_d.lib libcrystalspace_opengl_d.lib opengl32.lib version.lib libcrystalspace_staticplugins_d.lib libcrystalspace_directx_d.lib libcrystalspace_d.lib zlib.lib dsound.lib dinput8.lib "
+				AdditionalDependencies="libcrystalspace_d.lib libceltool_d.lib wxbase28u-vc9_d.lib wxmsw28u_core-vc9_d.lib wxmsw28u_gl-vc9_d.lib wxmsw28u_xrc-vc9_d.lib wxmsw28u_html-vc9_d.lib wxbase28u_xml-vc9_d.lib wxmsw28u_adv-vc9_d.lib opengl32.lib"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\CS\out\debug9-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug9-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug9-x64\libs;$(CEL)\out\debug9-x64\libs"
 				TargetMachine="17"/>
@@ -613,13 +613,7 @@
 			Name="Source Files"
 			Filter="">
 			<File
-				RelativePath="..\..\msvc\appares_static_static_glue_app.cpp">
-			</File>
-			<File
 				RelativePath="..\..\msvc\appares_static_static_glue_app_CRYSTAL.cpp">
-			</File>
-			<File
-				RelativePath="..\..\src\ares\actorsettings.cpp">
 			</File>
 			<File
 				RelativePath="..\..\src\ares\appares.cpp">
@@ -631,9 +625,6 @@
 		<Filter
 			Name="Header Files"
 			Filter="">
-			<File
-				RelativePath="..\..\src\ares\actorsettings.h">
-			</File>
 			<File
 				RelativePath="..\..\src\ares\appares.h">
 			</File>

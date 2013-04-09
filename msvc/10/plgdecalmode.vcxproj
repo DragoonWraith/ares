@@ -35,13 +35,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{881C9242-68DE-7612-630E-827A40AB6F14}</ProjectGuid>
+    <ProjectGuid>{5BE97433-5F78-92D6-0C5D-EC4644BFEB9D}</ProjectGuid>
     <SccProjectName />
     <SccLocalPath />
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)'=='ReleaseWithStaticLibs'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='ReleaseWithDlls'" Label="Configuration">
@@ -50,7 +51,7 @@
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='DebugWithStaticLibs'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='DebugWithDlls'" Label="Configuration">
@@ -70,37 +71,45 @@
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">..\..\out\release10\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">..\..\out\release10\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">false</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">out\release10\libs\libcommon_static</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">..\..\out\release10\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">..\..\out\release10\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">false</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">common_static-0.1-vc10</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|Win32'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">..\..\out\debug10\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">..\..\out\debug10\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">true</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">out\debug10\libs\libcommon_static_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|Win32'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">..\..\out\debug10\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">..\..\out\debug10\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">true</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">common_static-0.1-vc10_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|Win32'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">..\..\out\release10-x64\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">..\..\out\release10-x64\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">false</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">out\release10-x64\libs\libcommon_static</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|x64'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">..\..\out\release10-x64\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">..\..\out\release10-x64\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">false</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">common_static-0.1-vc10-x64</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='ReleaseWithDlls|x64'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">..\..\out\debug10-x64\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">..\..\out\debug10-x64\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">true</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">out\debug10-x64\libs\libcommon_static_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugWithStaticLibs|x64'">true</IgnoreImportLibrary>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">..\..\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">..\..\out\debug10-x64\build\libcommon_static\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">..\..\out\debug10-x64\build\plgdecalmode\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">true</LinkIncremental>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">common_static-0.1-vc10-x64_d</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">decalmode</TargetName>
+    <IgnoreImportLibrary Condition="'$(Configuration)|$(Platform)'=='DebugWithDlls|x64'">true</IgnoreImportLibrary>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWithStaticLibs|Win32'">
     <ClCompile>
@@ -109,13 +118,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <ProgramDataBaseFileName>..\..\out\release10\build\libcommon_static\Win32\common_static.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>..\..\out\release10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\release10\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\release10\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\release10\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\release10\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\release10\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\release10\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -127,14 +136,17 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx.lib dsound.lib dinput8.lib bulletsoftbody-vc10.lib bulletcollision-vc10.lib bulletdynamics-vc10.lib bulletmath-vc10.lib libmng.lib libjpeg.lib libcrystalspace_opengl.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins.lib libcrystalspace.lib zlib.lib libcel_staticplugins.lib libceltool.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\release10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\release10\build\plgdecalmode\Win32\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Lib>
-      <OutputFile>..\..\out\release10\libs\libcommon_static.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
@@ -143,8 +155,8 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -155,13 +167,13 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <ProgramDataBaseFileName>..\..\out\release10\build\libcommon_static\Win32\common_static-0.1-vc10.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>..\..\out\release10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\release10\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\release10\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\release10\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\release10\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\release10\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\release10\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -173,11 +185,12 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <OutputFile>..\..\common_static-0.1-vc10.dll</OutputFile>
-      <ImportLibrary>..\..\out\release10\libs\libcommon_static.lib</ImportLibrary>
-      <ProgramDatabaseFile>..\..\out\release10\build\libcommon_static\Win32\common_static-0.1-vc10.pdb</ProgramDatabaseFile>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx.lib dsound.lib dinput8.lib bulletsoftbody-vc10.lib bulletcollision-vc10.lib bulletdynamics-vc10.lib bulletmath-vc10.lib libmng.lib libjpeg.lib libcrystalspace_opengl.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins.lib libcrystalspace.lib zlib.lib libcel_staticplugins.lib libceltool.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\release10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\release10\build\plgdecalmode\Win32\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10\libs;$(CEL)\out\release10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -191,8 +204,8 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -201,13 +214,13 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10\build\libcommon_static\Win32\common_static.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\debug10\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\debug10\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\debug10\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\debug10\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\debug10\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\debug10\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -217,14 +230,17 @@ copy /y "$(TargetPath)" ..\..\out\release10\bin\
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx_d.lib dsound.lib dinput8.lib bulletsoftbody-vc10_d.lib bulletcollision-vc10_d.lib bulletdynamics-vc10_d.lib bulletmath-vc10_d.lib libmng.lib libjpeg.lib libcrystalspace_opengl_d.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins_d.lib libcrystalspace_d.lib zlib.lib libcel_staticplugins_d.lib libceltool_d.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\debug10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\debug10\build\plgdecalmode\Win32\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <Lib>
-      <OutputFile>..\..\out\debug10\libs\libcommon_static_d.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
@@ -233,8 +249,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -243,13 +259,13 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10\build\libcommon_static\Win32\common_static-0.1-vc10_d.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\debug10\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\debug10\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\debug10\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\debug10\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\debug10\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\debug10\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -259,11 +275,12 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <OutputFile>..\..\common_static-0.1-vc10_d.dll</OutputFile>
-      <ImportLibrary>..\..\out\debug10\libs\libcommon_static_d.lib</ImportLibrary>
-      <ProgramDatabaseFile>..\..\out\debug10\build\libcommon_static\Win32\common_static-0.1-vc10_d.pdb</ProgramDatabaseFile>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx_d.lib dsound.lib dinput8.lib bulletsoftbody-vc10_d.lib bulletcollision-vc10_d.lib bulletdynamics-vc10_d.lib bulletmath-vc10_d.lib libmng.lib libjpeg.lib libcrystalspace_opengl_d.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins_d.lib libcrystalspace_d.lib zlib.lib libcel_staticplugins_d.lib libceltool_d.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\debug10\build\plgdecalmode\Win32\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\debug10\build\plgdecalmode\Win32\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10\libs;..\..\..\CS\winlibs\x86\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10\libs;$(CRYSTAL)\winlibs\x86\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10\libs;$(CEL)\out\debug10\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX86</TargetMachine>
@@ -277,8 +294,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x86\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x86\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -289,13 +306,13 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <ProgramDataBaseFileName>..\..\out\release10-x64\build\libcommon_static\x64\common_static.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>..\..\out\release10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\release10-x64\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\release10-x64\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\release10-x64\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\release10-x64\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\release10-x64\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\release10-x64\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -307,14 +324,17 @@ copy /y "$(TargetPath)" ..\..\out\debug10\bin\
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx.lib dsound.lib dinput8.lib bulletsoftbody-vc10.lib bulletcollision-vc10.lib bulletdynamics-vc10.lib bulletmath-vc10.lib libmng.lib libjpeg.lib libcrystalspace_opengl.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins.lib libcrystalspace.lib zlib.lib libcel_staticplugins.lib libceltool.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\release10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\release10-x64\build\plgdecalmode\x64\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10-x64\libs;$(CEL)\out\release10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <Lib>
-      <OutputFile>..\..\out\release10-x64\libs\libcommon_static.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
@@ -323,8 +343,8 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -335,13 +355,13 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <ProgramDataBaseFileName>..\..\out\release10-x64\build\libcommon_static\x64\common_static-0.1-vc10-x64.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ProgramDataBaseFileName>..\..\out\release10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\release10-x64\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\release10-x64\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\release10-x64\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\release10-x64\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\release10-x64\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\release10-x64\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -353,11 +373,12 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <OutputFile>..\..\common_static-0.1-vc10-x64.dll</OutputFile>
-      <ImportLibrary>..\..\out\release10-x64\libs\libcommon_static.lib</ImportLibrary>
-      <ProgramDatabaseFile>..\..\out\release10-x64\build\libcommon_static\x64\common_static-0.1-vc10-x64.pdb</ProgramDatabaseFile>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx.lib dsound.lib dinput8.lib bulletsoftbody-vc10.lib bulletcollision-vc10.lib bulletdynamics-vc10.lib bulletmath-vc10.lib libmng.lib libjpeg.lib libcrystalspace_opengl.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins.lib libcrystalspace.lib zlib.lib libcel_staticplugins.lib libceltool.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\release10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\release10-x64\build\plgdecalmode\x64\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace.lib;libceltool.lib;wxbase28u-vc10.lib;wxmsw28u_core-vc10.lib;wxmsw28u_gl-vc10.lib;wxmsw28u_xrc-vc10.lib;wxmsw28u_html-vc10.lib;wxbase28u_xml-vc10.lib;wxmsw28u_adv-vc10.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\release10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\release10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\release10-x64\libs;$(CEL)\out\release10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -371,8 +392,8 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -381,13 +402,13 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10-x64\build\libcommon_static\x64\common_static.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\debug10-x64\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\debug10-x64\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\debug10-x64\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\debug10-x64\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\debug10-x64\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\debug10-x64\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -397,14 +418,17 @@ copy /y "$(TargetPath)" ..\..\out\release10-x64\bin\
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx_d.lib dsound.lib dinput8.lib bulletsoftbody-vc10_d.lib bulletcollision-vc10_d.lib bulletdynamics-vc10_d.lib bulletmath-vc10_d.lib libmng.lib libjpeg.lib libcrystalspace_opengl_d.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins_d.lib libcrystalspace_d.lib zlib.lib libcel_staticplugins_d.lib libceltool_d.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\debug10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\debug10-x64\build\plgdecalmode\x64\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10-x64\libs;$(CEL)\out\debug10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <Lib>
-      <OutputFile>..\..\out\debug10-x64\libs\libcommon_static_d.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
     <PostBuildEvent>
@@ -413,8 +437,8 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -423,13 +447,13 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
       <Optimization>Disabled</Optimization>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10-x64\build\libcommon_static\x64\common_static-0.1-vc10-x64_d.pdb</ProgramDataBaseFileName>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>      <ProgramDataBaseFileName>..\..\out\debug10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDataBaseFileName>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;WIN32;ARES_BUILD_SHARED_LIBS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PrecompiledHeaderOutputFile>..\..\out\debug10-x64\build\libcommon_static\libcommon_static.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>..\..\out\debug10-x64\build\libcommon_static\</AssemblerListingLocation>
-      <ObjectFileName>..\..\out\debug10-x64\build\libcommon_static\</ObjectFileName>
+      <PrecompiledHeaderOutputFile>..\..\out\debug10-x64\build\plgdecalmode\plgdecalmode.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>..\..\out\debug10-x64\build\plgdecalmode\</AssemblerListingLocation>
+      <ObjectFileName>..\..\out\debug10-x64\build\plgdecalmode\</ObjectFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
@@ -439,11 +463,12 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;LIBCMTD;MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <OutputFile>..\..\common_static-0.1-vc10-x64_d.dll</OutputFile>
-      <ImportLibrary>..\..\out\debug10-x64\libs\libcommon_static_d.lib</ImportLibrary>
-      <ProgramDatabaseFile>..\..\out\debug10-x64\build\libcommon_static\x64\common_static-0.1-vc10-x64_d.pdb</ProgramDatabaseFile>
-      <AdditionalOptions>libpng.lib freetype2.lib libcrystalspace_directx_d.lib dsound.lib dinput8.lib bulletsoftbody-vc10_d.lib bulletcollision-vc10_d.lib bulletdynamics-vc10_d.lib bulletmath-vc10_d.lib libmng.lib libjpeg.lib libcrystalspace_opengl_d.lib cg.lib cgGL.lib opengl32.lib openal32.lib vorbisfile.lib vorbis.lib ogg.lib libcrystalspace_staticplugins_d.lib libcrystalspace_d.lib zlib.lib libcel_staticplugins_d.lib libceltool_d.lib  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>..\..\decalmode.dll</OutputFile>
+      <ProgramDatabaseFile>..\..\out\debug10-x64\build\plgdecalmode\x64\decalmode.pdb</ProgramDatabaseFile>
+      <DelayLoadDLLs>;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <ImportLibrary>..\..\out\debug10-x64\build\plgdecalmode\x64\plgdecalmode.lib</ImportLibrary>
+      <AdditionalOptions>  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>delayimp.lib;libcrystalspace_d.lib;libceltool_d.lib;wxbase28u-vc10_d.lib;wxmsw28u_core-vc10_d.lib;wxmsw28u_gl-vc10_d.lib;wxmsw28u_xrc-vc10_d.lib;wxmsw28u_html-vc10_d.lib;wxbase28u_xml-vc10_d.lib;wxmsw28u_adv-vc10_d.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\..\CS\out\debug10-x64\libs;..\..\..\CS\winlibs\x64\lib;..\..\..\CS\win32libs\lib;$(CRYSTAL)\out\debug10-x64\libs;$(CRYSTAL)\winlibs\x64\lib;$(CRYSTAL)\win32libs\lib;..\..\..\cel\out\debug10-x64\libs;$(CEL)\out\debug10-x64\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
@@ -457,33 +482,27 @@ copy /y "$(TargetPath)" ..\..\out\debug10-x64\bin\
 </Command>
     </PostBuildEvent>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;CS_STATIC_LINKED;ARES_COMMON_STATIC_LIB;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>.;..\..\src\common_static;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;CS_DEBUG;CS_WIN32_CSCONFIG;__CRYSTAL_SPACE__;CS_SUPPORTS_MMX;_WINDOWS;USE_CEL;wxUSE_GUI=1;WXUSINGDLL=1;WXDEBUG=1;UNICODE;_UNICODE;PROJECTGEN_VERSION=10;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.;..\..\src\editorplugins\decalmode;..\..;..\..\include;..\..\src;..\..\..\CS\include;..\..\..\CS\winlibs\x64\include;..\..\..\CS\win32libs\include;$(CRYSTAL)\include;$(CRYSTAL)\winlibs\x64\include;$(CRYSTAL)\win32libs\include;..\..\..\cel\include;$(CEL)\include;$(CEL)\include\cel</AdditionalIncludeDirectories>
       <Culture>0x0409</Culture>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\msvc\appcommon_static_static_glue_app.cpp" />
-    <ClCompile Include="..\..\msvc\appcommon_static_static_glue_app_CEL.cpp" />
-    <ClCompile Include="..\..\msvc\appcommon_static_static_glue_app_CRYSTAL.cpp" />
-    <ClCompile Include="..\..\msvc\OPENAL.fake_stub.c" />
-    <ClCompile Include="..\..\src\common_static\link_static_plugins.cpp" />
+    <ClCompile Include="..\..\msvc\plugin_impl.cpp" />
+    <ClCompile Include="..\..\src\editorplugins\decalmode\decalmode.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\msvc\libcommon_static.rc" />
+    <ClInclude Include="..\..\src\editorplugins\decalmode\decalmode.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="libcommon_static_plugins_CRYSTAL.vcxproj">
-      <Project>{79707E9E-649F-6C19-5E9A-2DF0797AD383}</Project>
-    </ProjectReference>
-    <ProjectReference Include="libcommon_static_plugins_CEL.vcxproj">
-      <Project>{5DF57EC1-A9D3-1520-2456-401ECB37B2E2}</Project>
-    </ProjectReference>
-    <ProjectReference Include="libcommon_static_plugins.vcxproj">
-      <Project>{E6FD877A-4FBD-D10A-923F-F58E30164B73}</Project>
-    </ProjectReference>
-    <ProjectReference Include="libares_staticplugins.vcxproj">
-      <Project>{7BBB027F-0D23-35E4-A8D1-AA584FCD988D}</Project>
+    <ResourceCompile Include="..\..\msvc\plgdecalmode.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\editorplugins\decalmode\decalmode.csplugin" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="libedcommon.vcxproj">
+      <Project>{BC0D3283-1519-F7CE-004F-B767FEE4A54C}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

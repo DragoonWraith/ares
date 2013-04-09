@@ -17,7 +17,7 @@ _static_use::_static_use () {}
 SCF_USE_STATIC_PLUGIN(curvemesh)
 SCF_USE_STATIC_PLUGIN(dynworldload)
 SCF_USE_STATIC_PLUGIN(gamecontrol)
-SCF_USE_STATIC_PLUGIN(marker)
 SCF_USE_STATIC_PLUGIN(nature)
 SCF_USE_STATIC_PLUGIN(rooms)
+SCF_USE_STATIC_PLUGIN(assetmanager)
 
