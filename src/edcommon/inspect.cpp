@@ -234,7 +234,7 @@ void InspectTools::AddActionParameter (iCelPlLayer* pl,
     iParameter* par = it->Next (parid);
     newParams.Put (parid, par);
   }
-  newParams.Put (parID, parameter);
+  newParams.PutUnique (parID, parameter);
   pctpl->ReplaceActionParameters (idx, newParams);
 }
 

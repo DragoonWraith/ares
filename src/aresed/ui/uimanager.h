@@ -68,6 +68,7 @@ private:
   wxBoxSizer* sizer;
   wxBoxSizer* lastRowSizer;
   csHash<wxTextCtrl*,csString> textFields;
+  csHash<wxCheckBox*,csString> checkFields;
   csHash<wxChoice*,csString> choiceFields;
   csHash<wxComboBox*,csString> comboFields;
 
@@ -104,6 +105,8 @@ public:
   virtual void AddLabel (const char* str);
   /// Add a single line text control in the current row.
   virtual void AddText (const char* name, bool enterIsOk = false);
+  /// Add a single checkbox control in the current row.
+  virtual void AddCheck (const char* name);
   /// Add a typed text control.
   virtual void AddTypedText (SmartPickerType type, const char* name);
 
@@ -143,6 +146,8 @@ public:
 
   /// Set the value of the given text control.
   virtual void SetText (const char* name, const char* value);
+  /// Set the value of the given checkbox.
+  virtual void SetCheck (const char* name, bool value);
   /// Set the value of the given choice.
   virtual void SetChoice (const char* name, const char* value);
   /// Set the value of the given combo.

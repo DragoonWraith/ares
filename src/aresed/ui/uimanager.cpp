@@ -105,6 +105,15 @@ void UIDialog::AddLabel (const char* str)
   lastRowSizer->Add (label, 0, wxALL | wxALIGN_CENTER_VERTICAL, 5);
 }
 
+void UIDialog::AddCheck (const char* name)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxCheckBox* check = new wxCheckBox (mainPanel, wxID_ANY, wxEmptyString, wxDefaultPosition,
+      wxDefaultSize, 0, wxDefaultValidator);
+  lastRowSizer->Add (check, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  checkFields.Put (name, check);
+}
+
 void UIDialog::AddTypedText (SmartPickerType type, const char* name)
 {
   CS_ASSERT (lastRowSizer != 0);
@@ -265,6 +274,17 @@ void UIDialog::SetValue (const char* name, const char* value)
     text->SetValue (wxString::FromUTF8 (value));
     return;
   }
+  wxCheckBox* check = checkFields.Get (name, 0);
+  if (check)
+  {
+    bool v;
+    if (value && *value)
+      csScanStr (value, "%b", &v);
+    else
+      v = false;
+    check->SetValue (v);
+    return;
+  }
   wxChoice* choice = choiceFields.Get (name, 0);
   if (choice)
   {
@@ -278,6 +298,13 @@ void UIDialog::SetValue (const char* name, const char* value)
     return;
   }
   SetList (name, value);
+}
+
+void UIDialog::SetCheck (const char* name, bool value)
+{
+  wxCheckBox* check = checkFields.Get (name, 0);
+  if (!check) return;
+  check->SetValue (value);
 }
 
 void UIDialog::SetText (const char* name, const char* value)
@@ -346,6 +373,13 @@ void UIDialog::Clear ()
     wxTextCtrl* text = itText.Next (name);
     text->SetValue (wxT (""));
   }
+  csHash<wxCheckBox*,csString>::GlobalIterator itCheck = checkFields.GetIterator ();
+  while (itCheck.HasNext ())
+  {
+    csString name;
+    wxCheckBox* check = itCheck.Next (name);
+    check->SetValue (false);
+  }
   csHash<wxComboBox*,csString>::GlobalIterator itCo = comboFields.GetIterator ();
   while (itCo.HasNext ())
   {
@@ -393,6 +427,14 @@ void UIDialog::ProcessButton (const csString& buttonLabel)
     wxTextCtrl* text = itText.Next (name);
     csString value = (const char*)text->GetValue ().mb_str (wxConvUTF8);
     fieldContents.Put (name, value);
+  }
+  csHash<wxCheckBox*,csString>::GlobalIterator itCheck = checkFields.GetIterator ();
+  while (itCheck.HasNext ())
+  {
+    csString name;
+    wxCheckBox* check = itCheck.Next (name);
+    bool value = check->GetValue ();
+    fieldContents.Put (name, value ? "true" : "false");
   }
   csHash<wxComboBox*,csString>::GlobalIterator itCo = comboFields.GetIterator ();
   while (itCo.HasNext ())

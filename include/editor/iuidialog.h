@@ -70,6 +70,11 @@ struct iUIDialog : public virtual iBase
   virtual void AddText (const char* name, bool enterIsOk = false) = 0;
 
   /**
+   * Add a single checkbox control in the current row.
+   */
+  virtual void AddCheck (const char* name) = 0;
+
+  /**
    * Add a typed text control.
    */
   virtual void AddTypedText (SmartPickerType type, const char* name) = 0;
@@ -112,6 +117,8 @@ struct iUIDialog : public virtual iBase
 
   /// Set the value of the given text control.
   virtual void SetText (const char* name, const char* value) = 0;
+  /// Set the value of the given checkbox.
+  virtual void SetCheck (const char* name, bool value) = 0;
   /// Set the value of the given choice.
   virtual void SetChoice (const char* name, const char* value) = 0;
   /// Set the value of the given combo.

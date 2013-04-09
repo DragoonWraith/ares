@@ -1197,10 +1197,27 @@ void PropertyClassPanel::FillQuest ()
 class SlotCollectionValue : public PcParCollectionValue
 {
 private:
-  Value* NewChild (const char* name)
+  Value* NewChild (const char* name, const char* position, const char* queue,
+      const char* screenAnchor, const char* boxAnchor,
+      const char* sizeX, const char* sizeY,
+      const char* maxsizeX, const char* maxsizeY,
+      const char* borderwidth, const char* roundness,
+      const char* maxmessages, const char* boxfadetime)
   {
     return NewCompositeChild (
 	  VALUE_STRING, "Name", name,
+	  VALUE_STRING, "Position", position,
+	  VALUE_STRING, "Queue", queue,
+	  VALUE_STRING, "ScreenAnchor", screenAnchor,
+	  VALUE_STRING, "BoxAnchor", boxAnchor,
+	  VALUE_STRING, "SizeX", sizeX,
+	  VALUE_STRING, "SizeY", sizeY,
+	  VALUE_STRING, "MaxSizeX", maxsizeX,
+	  VALUE_STRING, "MaxSizeY", maxsizeY,
+	  VALUE_STRING, "BorderWidth", borderwidth,
+	  VALUE_STRING, "Roundness", roundness,
+	  VALUE_STRING, "MaxMessages", maxmessages,
+	  VALUE_STRING, "BoxFadeTime", boxfadetime,
 	  VALUE_NONE);
   }
 
@@ -1222,15 +1239,42 @@ protected:
       {
         iCelPlLayer* pl = pcPanel->GetPL ();
         csStringID nameID = pl->FetchStringID ("name");
-        csString parName;
+        csStringID positionID = pl->FetchStringID ("position");
+        csStringID queueID = pl->FetchStringID ("queue");
+        csStringID screenanchorID = pl->FetchStringID ("screenanchor");
+        csStringID boxanchorID = pl->FetchStringID ("boxanchor");
+        csStringID sizexID = pl->FetchStringID ("sizex");
+        csStringID sizeyID = pl->FetchStringID ("sizey");
+        csStringID maxsizexID = pl->FetchStringID ("maxsizex");
+        csStringID maxsizeyID = pl->FetchStringID ("maxsizey");
+        csStringID borderwidthID = pl->FetchStringID ("borderwidth");
+        csStringID roundnessID = pl->FetchStringID ("roundness");
+        csStringID maxmessagesID = pl->FetchStringID ("maxmessages");
+        csStringID boxfadetimeID = pl->FetchStringID ("boxfadetime");
+        csString parName, parPosition, parQueue, parScreenAnchor, parBoxAnchor,
+		 parSizeX, parSizeY, parMaxSizeX, parMaxSizeY, parBorderWidth,
+		 parRoundness, parMaxMessages, parBoxFadeTime;
         while (params->HasNext ())
         {
           csStringID parid;
           iParameter* par = params->Next (parid);
           if (parid == nameID) parName = par->GetOriginalExpression ();
-          //else if (parid == amountID) parAmount = par->GetOriginalExpression ();
+          else if (parid == positionID) parPosition = par->GetOriginalExpression ();
+          else if (parid == queueID) parQueue = par->GetOriginalExpression ();
+          else if (parid == screenanchorID) parScreenAnchor = par->GetOriginalExpression ();
+          else if (parid == boxanchorID) parBoxAnchor = par->GetOriginalExpression ();
+          else if (parid == sizexID) parSizeX = par->GetOriginalExpression ();
+          else if (parid == sizeyID) parSizeY = par->GetOriginalExpression ();
+          else if (parid == maxsizexID) parMaxSizeX = par->GetOriginalExpression ();
+          else if (parid == maxsizeyID) parMaxSizeY = par->GetOriginalExpression ();
+          else if (parid == borderwidthID) parBorderWidth = par->GetOriginalExpression ();
+          else if (parid == roundnessID) parRoundness = par->GetOriginalExpression ();
+          else if (parid == maxmessagesID) parMaxMessages = par->GetOriginalExpression ();
+          else if (parid == boxfadetimeID) parBoxFadeTime = par->GetOriginalExpression ();
         }
-	NewChild (parName);
+	NewChild (parName, parPosition, parQueue, parScreenAnchor, parBoxAnchor,
+	    parSizeX, parSizeY, parMaxSizeX, parMaxSizeY, parBorderWidth, parRoundness,
+	    parMaxMessages, parBoxFadeTime);
       }
     }
   }
@@ -1246,32 +1290,80 @@ protected:
     return true;
   }
 
-  bool UpdateSlot (const char* name)
+  bool UpdateSlot (const char* name, const char* position, const char* queue,
+      const char* screenanchor, const char* boxanchor, const char* sizex, const char* sizey,
+      const char* maxsizex, const char* maxsizey, const char* borderwidth, const char* roundness,
+      const char* maxmessages, const char* boxfadetime)
   {
-    ParHash params;
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
-    csStringID actionID = pl->FetchStringID ("DefineSlot");
-    csStringID nameID = pl->FetchStringID ("name");
-
-    iCelEntityTemplate* t = pl->FindEntityTemplate (name);
-    if (!t)
-    {
-      pcPanel->GetUIManager ()->Error ("Can't find template '%s'!", name);
-      return false;
-    }
 
     csRef<iParameter> par;
     par = pm->GetParameter (name, CEL_DATA_STRING);
     if (!par) return false;
-    params.Put (nameID, par);
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "name");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "name", par);
 
-    //par = pm->GetParameter (amount, CEL_DATA_LONG);
-    //if (!par) return false;
-    //params.Put (amountID, par);
+    par = pm->GetParameter (position, CEL_DATA_VECTOR2);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "position");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "position", par);
 
-    RemoveSlotWithName (name);
-    pctpl->PerformAction (actionID, params);
+    par = pm->GetParameter (queue, CEL_DATA_BOOL);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "queue");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "queue", par);
+
+    par = pm->GetParameter (screenanchor, CEL_DATA_STRING);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "screenanchor");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "screenanchor", par);
+
+    par = pm->GetParameter (boxanchor, CEL_DATA_STRING);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "boxanchor");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "boxanchor", par);
+
+    par = pm->GetParameter (sizex, CEL_DATA_LONG);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "sizex");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "sizex", par);
+
+    par = pm->GetParameter (sizey, CEL_DATA_LONG);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "sizey");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "sizey", par);
+
+    par = pm->GetParameter (maxsizex, CEL_DATA_STRING);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "maxsizex");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "maxsizex", par);
+
+    par = pm->GetParameter (maxsizey, CEL_DATA_STRING);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "maxsizey");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "maxsizey", par);
+
+    par = pm->GetParameter (borderwidth, CEL_DATA_FLOAT);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "borderwidth");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "borderwidth", par);
+
+    par = pm->GetParameter (roundness, CEL_DATA_LONG);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "roundness");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "roundness", par);
+
+    par = pm->GetParameter (maxmessages, CEL_DATA_LONG);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "maxmessages");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "maxmessages", par);
+
+    par = pm->GetParameter (boxfadetime, CEL_DATA_LONG);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "boxfadetime");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "boxfadetime", par);
+
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
@@ -1294,10 +1386,24 @@ public:
   {
     if (!pctpl) return 0;
     csString name = suggestion.Get ("Name", (const char*)0);
-    if (!UpdateSlot (name))
+    csString position = suggestion.Get ("Position", (const char*)0);
+    csString queue = suggestion.Get ("Queue", (const char*)0);
+    csString screenanchor = suggestion.Get ("ScreenAnchor", (const char*)0);
+    csString boxanchor = suggestion.Get ("BoxAnchor", (const char*)0);
+    csString sizex = suggestion.Get ("SizeX", (const char*)0);
+    csString sizey = suggestion.Get ("SizeY", (const char*)0);
+    csString maxsizex = suggestion.Get ("MaxSizeX", (const char*)0);
+    csString maxsizey = suggestion.Get ("MaxSizeY", (const char*)0);
+    csString borderwidth = suggestion.Get ("BorderWidth", (const char*)0);
+    csString roundness = suggestion.Get ("Roundness", (const char*)0);
+    csString maxmessages = suggestion.Get ("MaxMessages", (const char*)0);
+    csString boxfadetime = suggestion.Get ("BoxFadeTime", (const char*)0);
+    if (!UpdateSlot (name, position, queue, screenanchor, boxanchor, sizex, sizey,
+	  maxsizex, maxsizey, borderwidth, roundness, maxmessages, boxfadetime))
       return 0;
 
-    Value* child = NewChild (name);
+    Value* child = NewChild (name, position, queue, screenanchor, boxanchor, sizex, sizey,
+	maxsizex, maxsizey, borderwidth, roundness, maxmessages, boxfadetime);
     FireValueChanged ();
     return child;
   }
@@ -1306,9 +1412,34 @@ public:
   {
     if (!pctpl) return false;
     csString name = suggestion.Get ("Name", (const char*)0);
-    if (!UpdateSlot (name))
+    csString position = suggestion.Get ("Position", (const char*)0);
+    csString queue = suggestion.Get ("Queue", (const char*)0);
+    csString screenanchor = suggestion.Get ("ScreenAnchor", (const char*)0);
+    csString boxanchor = suggestion.Get ("BoxAnchor", (const char*)0);
+    csString sizex = suggestion.Get ("SizeX", (const char*)0);
+    csString sizey = suggestion.Get ("SizeY", (const char*)0);
+    csString maxsizex = suggestion.Get ("MaxSizeX", (const char*)0);
+    csString maxsizey = suggestion.Get ("MaxSizeY", (const char*)0);
+    csString borderwidth = suggestion.Get ("BorderWidth", (const char*)0);
+    csString roundness = suggestion.Get ("Roundness", (const char*)0);
+    csString maxmessages = suggestion.Get ("MaxMessages", (const char*)0);
+    csString boxfadetime = suggestion.Get ("BoxFadeTime", (const char*)0);
+    if (!UpdateSlot (name, position, queue, screenanchor, boxanchor, sizex, sizey,
+	  maxsizex, maxsizey, borderwidth, roundness, maxmessages, boxfadetime))
       return false;
     selectedValue->GetChildByName ("Name")->SetStringValue (name);
+    selectedValue->GetChildByName ("Position")->SetStringValue (position);
+    selectedValue->GetChildByName ("Queue")->SetStringValue (queue);
+    selectedValue->GetChildByName ("ScreenAnchor")->SetStringValue (screenanchor);
+    selectedValue->GetChildByName ("BoxAnchor")->SetStringValue (boxanchor);
+    selectedValue->GetChildByName ("SizeX")->SetStringValue (sizex);
+    selectedValue->GetChildByName ("SizeY")->SetStringValue (sizey);
+    selectedValue->GetChildByName ("MaxSizeX")->SetStringValue (maxsizex);
+    selectedValue->GetChildByName ("MaxSizeY")->SetStringValue (maxsizey);
+    selectedValue->GetChildByName ("BorderWidth")->SetStringValue (borderwidth);
+    selectedValue->GetChildByName ("Roundness")->SetStringValue (roundness);
+    selectedValue->GetChildByName ("MaxMessages")->SetStringValue (maxmessages);
+    selectedValue->GetChildByName ("BoxFadeTime")->SetStringValue (boxfadetime);
     FireValueChanged ();
     return true;
   }
@@ -1319,10 +1450,16 @@ public:
 class TypeCollectionValue : public PcParCollectionValue
 {
 private:
-  Value* NewChild (const char* type)
+  Value* NewChild (const char* type, const char* slot, const char* timeout, const char* fadetime,
+      const char* click, const char* log)
   {
     return NewCompositeChild (
 	  VALUE_STRING, "Type", type,
+	  VALUE_STRING, "Slot", slot,
+	  VALUE_STRING, "Timeout", timeout,
+	  VALUE_STRING, "Fadetime", fadetime,
+	  VALUE_STRING, "Click", click,
+	  VALUE_STRING, "Log", log,
 	  VALUE_NONE);
   }
 
@@ -1344,15 +1481,24 @@ protected:
       {
         iCelPlLayer* pl = pcPanel->GetPL ();
         csStringID typeID = pl->FetchStringID ("type");
-        csString parType;
+        csStringID slotID = pl->FetchStringID ("slot");
+        csStringID timeoutID = pl->FetchStringID ("timeout");
+        csStringID fadetimeID = pl->FetchStringID ("fadetime");
+        csStringID clickID = pl->FetchStringID ("click");
+        csStringID logID = pl->FetchStringID ("log");
+        csString parType, parSlot, parTimeout, parFadetime, parClick, parLog;
         while (params->HasNext ())
         {
           csStringID parid;
           iParameter* par = params->Next (parid);
           if (parid == typeID) parType = par->GetOriginalExpression ();
-          //else if (parid == amountID) parAmount = par->GetOriginalExpression ();
+          else if (parid == slotID) parSlot = par->GetOriginalExpression ();
+          else if (parid == timeoutID) parTimeout = par->GetOriginalExpression ();
+          else if (parid == fadetimeID) parFadetime = par->GetOriginalExpression ();
+          else if (parid == clickID) parClick = par->GetOriginalExpression ();
+          else if (parid == logID) parLog = par->GetOriginalExpression ();
         }
-	NewChild (parType);
+	NewChild (parType, parSlot, parTimeout, parFadetime, parClick, parLog);
       }
     }
   }
@@ -1368,25 +1514,43 @@ protected:
     return true;
   }
 
-  bool UpdateType (const char* type)
+  bool UpdateType (const char* type, const char* slot, const char* timeout,
+      const char* fadetime, const char* click, const char* log)
   {
-    ParHash params;
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
-    csStringID actionID = pl->FetchStringID ("DefineType");
-    csStringID typeID = pl->FetchStringID ("type");
 
     csRef<iParameter> par;
     par = pm->GetParameter (type, CEL_DATA_STRING);
     if (!par) return false;
-    params.Put (typeID, par);
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "type");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "type", par);
 
-    //par = pm->GetParameter (amount, CEL_DATA_LONG);
-    //if (!par) return false;
-    //params.Put (amountID, par);
+    par = pm->GetParameter (slot, CEL_DATA_STRING);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "slot");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "slot", par);
 
-    RemoveTypeWithType (type);
-    pctpl->PerformAction (actionID, params);
+    par = pm->GetParameter (timeout, CEL_DATA_FLOAT);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "timeout");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "timeout", par);
+
+    par = pm->GetParameter (fadetime, CEL_DATA_FLOAT);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "fadetime");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "fadetime", par);
+
+    par = pm->GetParameter (click, CEL_DATA_BOOL);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "click");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "click", par);
+
+    par = pm->GetParameter (log, CEL_DATA_BOOL);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "log");
+    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "log", par);
+
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
   }
@@ -1409,10 +1573,15 @@ public:
   {
     if (!pctpl) return 0;
     csString type = suggestion.Get ("Type", (const char*)0);
-    if (!UpdateType (type))
+    csString slot = suggestion.Get ("Slot", (const char*)0);
+    csString timeout = suggestion.Get ("Timeout", (const char*)0);
+    csString fadetime = suggestion.Get ("Fadetime", (const char*)0);
+    csString click = suggestion.Get ("Click", (const char*)0);
+    csString log = suggestion.Get ("Log", (const char*)0);
+    if (!UpdateType (type, slot, timeout, fadetime, click, log))
       return 0;
 
-    Value* child = NewChild (type);
+    Value* child = NewChild (type, slot, timeout, fadetime, click, log);
     FireValueChanged ();
     return child;
   }
@@ -1421,9 +1590,19 @@ public:
   {
     if (!pctpl) return false;
     csString type = suggestion.Get ("Type", (const char*)0);
-    if (!UpdateType (type))
+    csString slot = suggestion.Get ("Slot", (const char*)0);
+    csString timeout = suggestion.Get ("Timeout", (const char*)0);
+    csString fadetime = suggestion.Get ("Fadetime", (const char*)0);
+    csString click = suggestion.Get ("Click", (const char*)0);
+    csString log = suggestion.Get ("Log", (const char*)0);
+    if (!UpdateType (type, slot, timeout, fadetime, click, log))
       return false;
     selectedValue->GetChildByName ("Type")->SetStringValue (type);
+    selectedValue->GetChildByName ("Slot")->SetStringValue (slot);
+    selectedValue->GetChildByName ("Timeout")->SetStringValue (timeout);
+    selectedValue->GetChildByName ("Fadetime")->SetStringValue (fadetime);
+    selectedValue->GetChildByName ("Click")->SetStringValue (click);
+    selectedValue->GetChildByName ("Log")->SetStringValue (log);
     FireValueChanged ();
     return true;
   }
@@ -1452,6 +1631,72 @@ void PropertyClassPanel::FillMessenger ()
   slotCollectionValue->Refresh ();
   typeCollectionValue->SetPC (pctpl);
   typeCollectionValue->Refresh ();
+}
+
+iUIDialog* PropertyClassPanel::GetSlotDialog ()
+{
+  if (!slotDialog)
+  {
+    slotDialog = uiManager->CreateDialog ("Edit slot");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Name:");
+    slotDialog->AddText ("Name");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Position:");
+    slotDialog->AddText ("Position");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Queue:");
+    slotDialog->AddCheck ("Queue");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Size:");
+    slotDialog->AddText ("SizeX");
+    slotDialog->AddText ("SizeY");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Max size:");
+    slotDialog->AddText ("MaxSizeX");
+    slotDialog->AddText ("MaxSizeY");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Screen anchor:");
+    slotDialog->AddChoice ("ScreenAnchor", "c", "nw", "n", "ne", "e", "se", "s", "sw", "w", (const char*)0);
+    slotDialog->AddLabel ("Box anchor:");
+    slotDialog->AddChoice ("BoxAnchor", "c", "nw", "n", "ne", "e", "se", "s", "sw", "w", (const char*)0);
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Border width:");
+    slotDialog->AddText ("BorderWidth");
+    slotDialog->AddLabel ("Roundness:");
+    slotDialog->AddText ("Roundness");
+    slotDialog->AddRow ();
+    slotDialog->AddLabel ("Max messages:");
+    slotDialog->AddText ("MaxMessages");
+    slotDialog->AddLabel ("Fade time:");
+    slotDialog->AddText ("BoxFadeTime");
+  }
+  return slotDialog;
+}
+
+iUIDialog* PropertyClassPanel::GetTypeDialog ()
+{
+  if (!typeDialog)
+  {
+    typeDialog = uiManager->CreateDialog ("Edit type");
+    typeDialog->AddRow ();
+    typeDialog->AddLabel ("Type:");
+    typeDialog->AddText ("Type");
+    typeDialog->AddRow ();
+    typeDialog->AddLabel ("Slot:");
+    typeDialog->AddText ("Slot");
+    typeDialog->AddRow ();
+    typeDialog->AddLabel ("Timeout:");
+    typeDialog->AddText ("Timeout");
+    typeDialog->AddLabel ("Fadetime:");
+    typeDialog->AddText ("Fadetime");
+    typeDialog->AddRow ();
+    typeDialog->AddLabel ("Click:");
+    typeDialog->AddCheck ("Click");
+    typeDialog->AddLabel ("Log:");
+    typeDialog->AddCheck ("Log");
+  }
+  return typeDialog;
 }
 
 // -----------------------------------------------------------------------
@@ -1946,12 +2191,12 @@ PropertyClassPanel::PropertyClassPanel (wxWindow* parent, iUIManager* uiManager,
       inventoryCollectionValue, GetInventoryTemplateDialog ());
 
   slotCollectionValue.AttachNew (new SlotCollectionValue (this));
-  SetupList ("slot_List", "Name", "Name",
-      slotCollectionValue, 0); //GetInventoryTemplateDialog ());
+  SetupList ("slot_List", "Name,Position", "Name,Position",
+      slotCollectionValue, GetSlotDialog ());
 
   typeCollectionValue.AttachNew (new TypeCollectionValue (this));
-  SetupList ("type_List", "Type", "Type",
-      typeCollectionValue, 0); //GetInventoryTemplateDialog ());
+  SetupList ("type_List", "Type,Slot", "Type,Slot",
+      typeCollectionValue, GetTypeDialog ());
 
   spawnCollectionValue.AttachNew (new SpawnCollectionValue (this));
   SetupList ("spawnTemplateListCtrl", "Template", "Name",

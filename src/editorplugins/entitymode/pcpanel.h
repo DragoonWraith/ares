@@ -103,7 +103,8 @@ private:
   // Messenger.
   csRef<SlotCollectionValue> slotCollectionValue;
   csRef<TypeCollectionValue> typeCollectionValue;
-  //csRef<iUIDialog> invTempDialog;
+  csRef<iUIDialog> slotDialog;
+  csRef<iUIDialog> typeDialog;
   bool UpdateMessenger ();
   void FillMessenger ();
 
@@ -164,6 +165,8 @@ public:
   iUIDialog* GetSpawnTemplateDialog ();
   iUIDialog* GetWireParDialog ();
   iUIDialog* GetWireMsgDialog ();
+  iUIDialog* GetSlotDialog ();
+  iUIDialog* GetTypeDialog ();
 
   void Show () { wxPanel::Show (); parentSizer->Layout (); }
   void Hide () { wxPanel::Hide (); parentSizer->Layout (); }
