@@ -179,6 +179,19 @@ protected:
   PropertyClassPanel* pcPanel;
   iCelPropertyClassTemplate* pctpl;
 
+  bool ChangeActionParameter (const char* value, celDataType type, const char* actionName, const char* parName)
+  {
+    iCelPlLayer* pl = pcPanel->GetPL ();
+    iParameterManager* pm = pcPanel->GetPM ();
+    csRef<iParameter> par;
+    par = pm->GetParameter (value, type);
+    if (!par) return false;
+    InspectTools::DeleteActionParameter (pl, pctpl, actionName, parName);
+    InspectTools::AddActionParameter (pl, pctpl, actionName, parName, par);
+    return true;
+  }
+
+
 public:
   PcParCollectionValue (PropertyClassPanel* pcPanel) : pcPanel (pcPanel), pctpl (0) { }
   virtual ~PcParCollectionValue () { }
@@ -1078,10 +1091,8 @@ public:
     csString value = suggestion.Get ("Value", (const char*)0);
     csString type = suggestion.Get ("Type", (const char*)0);
 
-    csRef<iParameter> par = pm->GetParameter (value, InspectTools::StringToType (type));
-    if (!par) return 0;
-    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
-    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+    if (!ChangeActionParameter (value, InspectTools::StringToType (type), "NewQuest", name))
+      return 0;
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
 
     Value* child = NewChild (name, value, type);
@@ -1097,10 +1108,9 @@ public:
     csString value = suggestion.Get ("Value", (const char*)0);
     csString type = suggestion.Get ("Type", (const char*)0);
 
-    csRef<iParameter> par = pm->GetParameter (value, InspectTools::StringToType (type));
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
-    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+    if (!ChangeActionParameter (value, InspectTools::StringToType (type), "NewQuest", name))
+      return false;
+
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     selectedValue->GetChildByName ("Name")->SetStringValue (name);
     selectedValue->GetChildByName ("Value")->SetStringValue (value);
@@ -1298,71 +1308,19 @@ protected:
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
 
-    csRef<iParameter> par;
-    par = pm->GetParameter (name, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "name");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "name", par);
-
-    par = pm->GetParameter (position, CEL_DATA_VECTOR2);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "position");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "position", par);
-
-    par = pm->GetParameter (queue, CEL_DATA_BOOL);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "queue");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "queue", par);
-
-    par = pm->GetParameter (screenanchor, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "screenanchor");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "screenanchor", par);
-
-    par = pm->GetParameter (boxanchor, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "boxanchor");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "boxanchor", par);
-
-    par = pm->GetParameter (sizex, CEL_DATA_LONG);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "sizex");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "sizex", par);
-
-    par = pm->GetParameter (sizey, CEL_DATA_LONG);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "sizey");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "sizey", par);
-
-    par = pm->GetParameter (maxsizex, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "maxsizex");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "maxsizex", par);
-
-    par = pm->GetParameter (maxsizey, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "maxsizey");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "maxsizey", par);
-
-    par = pm->GetParameter (borderwidth, CEL_DATA_FLOAT);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "borderwidth");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "borderwidth", par);
-
-    par = pm->GetParameter (roundness, CEL_DATA_LONG);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "roundness");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "roundness", par);
-
-    par = pm->GetParameter (maxmessages, CEL_DATA_LONG);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "maxmessages");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "maxmessages", par);
-
-    par = pm->GetParameter (boxfadetime, CEL_DATA_LONG);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineSlot", "boxfadetime");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineSlot", "boxfadetime", par);
+    if (!ChangeActionParameter (name, CEL_DATA_STRING, "DefineSlot", "name")) return false;
+    if (!ChangeActionParameter (position, CEL_DATA_VECTOR2, "DefineSlot", "position")) return false;
+    if (!ChangeActionParameter (queue, CEL_DATA_BOOL, "DefineSlot", "queue")) return false;
+    if (!ChangeActionParameter (screenanchor, CEL_DATA_STRING, "DefineSlot", "screenanchor")) return false;
+    if (!ChangeActionParameter (boxanchor, CEL_DATA_STRING, "DefineSlot", "boxanchor")) return false;
+    if (!ChangeActionParameter (sizex, CEL_DATA_LONG, "DefineSlot", "sizex")) return false;
+    if (!ChangeActionParameter (sizey, CEL_DATA_LONG, "DefineSlot", "sizey")) return false;
+    if (!ChangeActionParameter (maxsizex, CEL_DATA_STRING, "DefineSlot", "maxsizex")) return false;
+    if (!ChangeActionParameter (maxsizey, CEL_DATA_STRING, "DefineSlot", "maxsizey")) return false;
+    if (!ChangeActionParameter (borderwidth, CEL_DATA_FLOAT, "DefineSlot", "borderwidth")) return false;
+    if (!ChangeActionParameter (roundness, CEL_DATA_LONG, "DefineSlot", "roundness")) return false;
+    if (!ChangeActionParameter (maxmessages, CEL_DATA_LONG, "DefineSlot", "maxmessages")) return false;
+    if (!ChangeActionParameter (boxfadetime, CEL_DATA_LONG, "DefineSlot", "boxfadetime")) return false;
 
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
@@ -1520,36 +1478,12 @@ protected:
     iCelPlLayer* pl = pcPanel->GetPL ();
     iParameterManager* pm = pcPanel->GetPM ();
 
-    csRef<iParameter> par;
-    par = pm->GetParameter (type, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "type");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "type", par);
-
-    par = pm->GetParameter (slot, CEL_DATA_STRING);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "slot");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "slot", par);
-
-    par = pm->GetParameter (timeout, CEL_DATA_FLOAT);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "timeout");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "timeout", par);
-
-    par = pm->GetParameter (fadetime, CEL_DATA_FLOAT);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "fadetime");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "fadetime", par);
-
-    par = pm->GetParameter (click, CEL_DATA_BOOL);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "click");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "click", par);
-
-    par = pm->GetParameter (log, CEL_DATA_BOOL);
-    if (!par) return false;
-    InspectTools::DeleteActionParameter (pl, pctpl, "DefineType", "log");
-    InspectTools::AddActionParameter (pl, pctpl, "DefineType", "log", par);
+    if (!ChangeActionParameter (type, CEL_DATA_STRING, "DefineType", "type")) return false;
+    if (!ChangeActionParameter (slot, CEL_DATA_STRING, "DefineType", "slot")) return false;
+    if (!ChangeActionParameter (timeout, CEL_DATA_FLOAT, "DefineType", "timeout")) return false;
+    if (!ChangeActionParameter (fadetime, CEL_DATA_FLOAT, "DefineType", "fadetime")) return false;
+    if (!ChangeActionParameter (click, CEL_DATA_BOOL, "DefineType", "click")) return false;
+    if (!ChangeActionParameter (log, CEL_DATA_BOOL, "DefineType", "log")) return false;
 
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     return true;
