@@ -482,6 +482,7 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
 	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
+	CS_REQUEST_PLUGIN ("crystalspace.decal.manager", iDecalManager),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_PLUGIN("utility.rooms", iRoomMeshCreator),
@@ -636,6 +637,20 @@ bool AppAres::StartGame (const char* filename)
   return true;
 }
 
+bool AppAres::ParseCommandLine ()
+{
+  csRef<iCommandLineParser> cmdline (
+  	csQueryRegistry<iCommandLineParser> (object_reg));
+  const char* val = cmdline->GetName ();
+  if (val)
+  {
+    menu.SetMode (MENU_GAME);
+    StartGame (val);
+    return true;
+  }
+  return false;
+}
+
 bool AppAres::Application ()
 {
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
@@ -695,6 +710,8 @@ bool AppAres::Application ()
     return false;
 
   printer.AttachNew (new FramePrinter (object_reg));
+
+  ParseCommandLine ();
 
   // This calls the default runloop. This will basically just keep
   // broadcasting process events to keep the game going.

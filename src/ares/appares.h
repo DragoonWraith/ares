@@ -121,6 +121,7 @@ public:
   bool OnMouseDown (iEvent& ev);
 
   int GetMode () const { return menuMode; }
+  void SetMode (int m) { menuMode = m; }
 };
 
 /**
@@ -139,6 +140,8 @@ public:
   csRef<iVFS> vfs;
   csRef<iCollideSystem> cdsys;
   csRef<iPcDynamicWorld> dynworld;
+
+  bool ParseCommandLine ();
 
 private:
   iDynamicCell* dyncell;
