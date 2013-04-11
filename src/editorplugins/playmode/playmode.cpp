@@ -250,6 +250,13 @@ void PlayMode::Start ()
   iELCM* elcm = view3d->GetELCM ();
   elcm->SetPlayer (player);
 
+  cellIt = dynworld->GetCells ();
+  while (cellIt->HasNext ())
+  {
+    iDynamicCell* cell = cellIt->NextCell ();
+    cell->MarkBaseline ();
+  }
+
   currentTime = 31000;
 }
 
