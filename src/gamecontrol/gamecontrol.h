@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "physicallayer/propclas.h"
 #include "physicallayer/propfact.h"
 #include "physicallayer/facttmpl.h"
+#include "propclass/dynworld.h"
 #include "celtool/stdpcimp.h"
 #include "celtool/stdparams.h"
 #include "include/igamecontrol.h"
@@ -85,15 +86,28 @@ private:
   csRef<iCelEntity> player;
   csRef<iPcMessenger> messenger;
   csRef<iUIInventory> uiInventory;
+#if NEW_PHYSICS
+  csRef<CS::Physics::iPhysicalSystem> dyn;
+#endif
 
   /// Find the object that is pointed at in the center of the screen.
+#if NEW_PHYSICS
+  iDynamicObject* FindCenterObject (CS::Physics::iRigidBody*& hitBody,
+      csVector3& start, csVector3& isect);
+#else
   iDynamicObject* FindCenterObject (iRigidBody*& hitBody,
       csVector3& start, csVector3& isect);
+#endif
 
   // For dragging.
   csRef<iMouseDriver> mouse;
+#if NEW_PHYSICS
+  csRef<CS::Physics::iPhysicalSector> dynSys;
+  csRef<CS::Physics::iJoint> dragJoint;
+#else
   csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
   csRef<CS::Physics::Bullet::iPivotJoint> dragJoint;
+#endif
   float oldLinearDampening;
   float oldAngularDampening;
   float dragDistance;	// Distance depends on type of dragging.

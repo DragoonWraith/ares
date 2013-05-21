@@ -104,8 +104,6 @@ void ViewMode::Frame3D()
 {
   iView* view = view3d->GetView ();
   view->Draw ();
-  if (view3d->IsDebugMode () && view3d->GetBulletSystem ())
-    view3d->GetBulletSystem ()->DebugDraw (view);
 }
 
 void ViewMode::Frame2D()
@@ -121,11 +119,7 @@ void ViewMode::Frame2D()
 
 bool ViewMode::OnKeyboard(iEvent& ev, utf32_char code)
 {
-  if (code == '1')
-  {
-    view3d->SetDebugMode (!view3d->IsDebugMode ());
-  }
-  else if (code == CSKEY_F2)
+  if (code == CSKEY_F2)
   {
     view3d->ModifyCurrentTime (500);
   }

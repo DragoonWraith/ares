@@ -135,9 +135,14 @@ private:
   csRef<iFont> font;
 
   /// Physics.
+#if NEW_PHYSICS
+  csRef<CS::Physics::iPhysicalSystem> dyn;
+  csRef<CS::Physics::iPhysicalSector> dynSys;
+#else
   csRef<iDynamics> dyn;
   csRef<iDynamicSystem> dynSys;
   csRef<CS::Physics::Bullet::iDynamicSystem> bullet_dynSys;
+#endif
 
   /// A pointer to the collision detection system.
   csRef<iCollideSystem> cdsys;
@@ -191,9 +196,6 @@ private:
 
   /// Categories with items.
   csHash<csStringArray,csString> categories;
-
-  /// Debug drawing enabled.
-  bool do_debug;
 
   /// Do simulation.
   bool do_simulation;
@@ -306,9 +308,6 @@ public:
   bool OnMouseUp(iEvent&);
   bool OnMouseMove (iEvent&);
 
-  virtual bool IsDebugMode () const { return do_debug; }
-  virtual void SetDebugMode (bool b) { do_debug = b; }
-
   virtual bool IsAutoTime () const { return do_auto_time; }
   virtual void SetAutoTime (bool a) { do_auto_time = a; }
   virtual void ModifyCurrentTime (csTicks t) { currentTime += t; }
@@ -318,9 +317,15 @@ public:
   iGraphics3D* GetG3D () const { return g3d; }
   iGraphics2D* GetG2D () const { return g3d->GetDriver2D (); }
   virtual iEngine* GetEngine () const { return engine; }
+
+#if NEW_PHYSICS
+  virtual CS::Physics::iPhysicalSector* GetDynamicSystem () const { return dynSys; }
+#else
   virtual iDynamicSystem* GetDynamicSystem () const { return dynSys; }
   virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const
   { return bullet_dynSys; }
+#endif
+
   virtual iCamera* GetCsCamera () const { return view->GetCamera (); }
   iCollideSystem* GetCollisionSystem () const { return cdsys; }
   iCurvedMeshCreator* GetCurvedMeshCreator () const { return curvedMeshCreator; }

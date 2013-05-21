@@ -96,7 +96,6 @@ AresEdit3DView::AresEdit3DView (AppAresEditWX* app, iObjectRegistry* object_reg)
   scfImplementationType (this),
   app (app), object_reg (object_reg)
 {
-  do_debug = false;
   do_simulation = true;
   currentTime = 31000;
   do_auto_time = false;
@@ -260,6 +259,22 @@ iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& is
   iDynamicObject* obj1 = 0, * obj2 = 0;
 
   // Trace the physical beam
+#if NEW_PHYSICS
+  if (dyncell && dyncell->GetDynamicSector ())
+  {
+    CS::Collisions::HitBeamResult result = dyncell->GetDynamicSector ()->
+      HitBeam (beam.Start (), beam.End ());
+    if (result.object)
+    {
+      CS::Physics::iRigidBody* hitBody =  result.object->QueryPhysicalBody ()->QueryRigidBody ();
+      if (hitBody)
+      {
+        isect1 = result.isect;
+        obj1 = dynworld->FindObject (hitBody);
+      }
+    }
+  }
+#else
   if (bullet_dynSys)
   {
     CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (
@@ -274,6 +289,7 @@ iDynamicObject* AresEdit3DView::TraceBeam (const csSegment3& beam, csVector3& is
       }
     }
   }
+#endif
 
   csSectorHitBeamResult result2 = sector->HitBeamPortals (
       beam.Start (), beam.End (), true);
@@ -440,9 +456,14 @@ void AresEdit3DView::CleanupWorld ()
   paster->Cleanup ();
 
   dynSys = 0;
+#if NEW_PHYSICS
+  if (dyn)
+    dyn->RemoveCollisionSectors ();
+#else
   bullet_dynSys = 0;
   if (dyn)
     dyn->RemoveSystems ();
+#endif
 
   camera->Init (view->GetCamera (), 0, csVector3 (0, 10, 0), 0);
 }
@@ -871,13 +892,20 @@ bool AresEdit3DView::PostLoadMap ()
   {
     dynworld->SetCurrentCell (dyncell);
     sector = dyncell->GetSector ();
+#if NEW_PHYSICS
+    dynSys = dyncell->GetDynamicSector ();
+#else
     dynSys = dyncell->GetDynamicSystem ();
     bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+#endif
   }
   else
   {
     dynSys = 0;
+#if NEW_PHYSICS
+#else
     bullet_dynSys = 0;
+#endif
     sector = 0;
   }
 
@@ -890,6 +918,9 @@ bool AresEdit3DView::PostLoadMap ()
   else
     terrainMesh = 0;
 
+#if NEW_PHYSICS
+  // @@@@@@@@@@@@@@
+#else
   if (terrainMesh)
   {
     // @@@ How to prevent adding these colliders again! This should be done in
@@ -903,6 +934,7 @@ bool AresEdit3DView::PostLoadMap ()
     for (size_t i = 0; i < terrain->GetCellCount (); i++)
       bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
   }
+#endif
 
   engine->Prepare ();
 
@@ -935,8 +967,12 @@ void AresEdit3DView::WarpCell (iDynamicCell* cell)
 {
   if (cell == dynworld->GetCurrentCell ()) return; 
   dyncell = cell;
+#if NEW_PHYSICS
+  dynSys = dyncell->GetDynamicSector ();
+#else
   dynSys = dyncell->GetDynamicSystem ();
   bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
+#endif
 
   dynworld->SetCurrentCell (cell);
   sector = engine->FindSector (cell->GetName ());
@@ -986,7 +1022,10 @@ bool AresEdit3DView::SetupWorld ()
 
   dyncell = 0;
   dynSys = 0;
+#if NEW_PHYSICS
+#else
   bullet_dynSys = 0;
+#endif
   sector = 0;
 
   ClearItems ();
@@ -1178,11 +1217,31 @@ iDynamicCell* AresEdit3DView::CreateCell (const char* name)
   if (!s)
     s = engine->CreateSector (name);
 
+#if NEW_PHYSICS
+  dyn = csQueryRegistry<CS::Physics::iPhysicalSystem> (GetObjectRegistry ());
+#else
   dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
+#endif
   if (!dyn) { app->ReportError ("Error loading bullet plugin!"); return 0; }
 
   csString systemname = "ares.dynamics.system.";
   systemname += name;
+
+#if NEW_PHYSICS
+  csRef<CS::Collisions::iCollisionSector> cs = dyn->FindCollisionSector (systemname);
+  if (!cs)
+  {
+    cs = dyn->CreateCollisionSector ();
+    cs->QueryObject ()->SetName (systemname);
+  }
+  csRef<CS::Physics::iPhysicalSector> ds = cs->QueryPhysicalSector ();
+
+  if (!ds) { app->ReportError ("Error creating dynamic sector!"); return 0; }
+
+  //ds->SetLinearDampener(.3f);
+  ds->SetAngularDamping (.995f);
+  ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
+#else
   csRef<iDynamicSystem> ds = dyn->FindSystem (systemname);
   if (!ds)
   {
@@ -1199,6 +1258,7 @@ iDynamicCell* AresEdit3DView::CreateCell (const char* name)
     CS::Physics::Bullet::iDynamicSystem> (ds);
   //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
   bullet_ds->SetStepParameters (0.005f, 2, 10);
+#endif
 
   iDynamicCell* cell = dynworld->AddCell (name, s, ds);
   return cell;

@@ -400,20 +400,44 @@ iDynamicCell* AppAres::CreateCell (const char* name)
   if (!s)
     s = engine->CreateSector (name);
 
+#if NEW_PHYSICS
+  csRef<CS::Physics::iPhysicalSector> ds;
+#else
   csRef<iDynamicSystem> ds;
+#endif
   if (dynworld->IsPhysicsEnabled ())
   {
+#if NEW_PHYSICS
+    dyn = csQueryRegistry<CS::Physics::iPhysicalSystem> (GetObjectRegistry ());
+#else
     dyn = csQueryRegistry<iDynamics> (GetObjectRegistry ());
+#endif
     if (!dyn) { ReportError ("Error loading bullet plugin!"); return 0; }
 
     csString systemname = "ares.dynamics.system.";
     systemname += name;
+#if NEW_PHYSICS
+    csRef<CS::Collisions::iCollisionSector> cs = dyn->FindCollisionSector (systemname);
+    if (!cs)
+    {
+      cs = dyn->CreateCollisionSector ();
+      cs->QueryObject ()->SetName (systemname);
+    }
+    ds = cs->QueryPhysicalSector ();
+
+    if (!ds) { ReportError ("Error creating dynamic sector!"); return 0; }
+
+    //ds->SetLinearDampener(.3f);
+    ds->SetAngularDamping (.995f);
+    ds->SetGravity (csVector3 (0.0f, -19.81f, 0.0f));
+#else
     ds = dyn->FindSystem (systemname);
     if (!ds)
     {
       ds = dyn->CreateSystem ();
       ds->QueryObject ()->SetName (systemname);
     }
+
     if (!ds) { ReportError ("Error creating dynamic system!"); return 0; }
 
     //ds->SetLinearDampener(.3f);
@@ -424,9 +448,13 @@ iDynamicCell* AppAres::CreateCell (const char* name)
       CS::Physics::Bullet::iDynamicSystem> (ds);
     //@@@ (had to disable because bodies might alredy exist!) bullet_ds->SetInternalScale (1.0f);
     bullet_dynSys->SetStepParameters (0.005f, 2, 10);
+#endif
 
     // Find the terrain mesh. @@@ HARDCODED!
     csRef<iMeshWrapper> terrainWrapper = engine->FindMeshObject ("Terrain");
+#if NEW_PHYSICS
+    // @@@@@@@@@@@@@@@@@@
+#else
     if (terrainWrapper)
     {
       csRef<iTerrainSystem> terrain =
@@ -441,6 +469,7 @@ iDynamicCell* AppAres::CreateCell (const char* name)
       for (size_t i = 0; i < terrain->GetCellCount (); i++)
         bullet_dynSys->AttachColliderTerrain (terrain->GetCell (i));
     }
+#endif
   }
 
   iDynamicCell* cell = dynworld->AddCell (name, s, ds);
@@ -477,12 +506,16 @@ bool AppAres::OnInitialize (int argc, char* argv[])
 	CS_REQUEST_LEVELLOADER,
 	CS_REQUEST_REPORTER,
 	CS_REQUEST_REPORTERLISTENER,
-	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
-	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
-	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
-	CS_REQUEST_PLUGIN ("crystalspace.sndsys.element.loader", iSndSysLoader),
+	CS_REQUEST_PLUGIN("cel.physicallayer", iCelPlLayer),
+	CS_REQUEST_PLUGIN("cel.tools.elcm", iELCM),
+	CS_REQUEST_PLUGIN("crystalspace.collisiondetection.opcode", iCollideSystem),
+	CS_REQUEST_PLUGIN("crystalspace.sndsys.element.loader", iSndSysLoader),
+#if NEW_PHYSICS
+	CS_REQUEST_PLUGIN("crystalspace.physics.bullet", CS::Physics::iPhysicalSystem),
+#else
 	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
-	CS_REQUEST_PLUGIN ("crystalspace.decal.manager", iDecalManager),
+#endif
+	CS_REQUEST_PLUGIN("crystalspace.decal.manager", iDecalManager),
 	CS_REQUEST_PLUGIN("utility.nature", iNature),
 	CS_REQUEST_PLUGIN("utility.curvemesh", iCurvedMeshCreator),
 	CS_REQUEST_PLUGIN("utility.rooms", iRoomMeshCreator),
@@ -549,8 +582,12 @@ bool AppAres::PostLoadMap ()
   dynworld->SetCurrentCell (dyncell);
   sector = dyncell->GetSector ();
 
+#if NEW_PHYSICS
+  // @@@
+#else
   csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
   mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
+#endif
 
   player = pl->CreateEntity (playerTpl, "Player", (iCelParameterBlock*)0);
   csRef<iPcCamera> cam = celQueryPropertyClassEntity<iPcCamera> (player);

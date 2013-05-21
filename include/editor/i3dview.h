@@ -28,6 +28,8 @@ THE SOFTWARE.
 #include "csutil/scf.h"
 #include <wx/wx.h>
 
+#include "propclass/dynworld.h"
+
 struct iDynamicObject;
 struct iDynamicFactory;
 struct iSelection;
@@ -66,10 +68,6 @@ struct i3DView : public virtual iBase
 
   /// Get the light that moves with the camera.
   virtual iLight* GetCameraLight () const = 0;
-
-  /// Return true if we're in debug mode.
-  virtual bool IsDebugMode () const = 0;
-  virtual void SetDebugMode (bool b) = 0;
 
   /// Time settings.
   virtual bool IsAutoTime () const = 0;
@@ -127,12 +125,16 @@ struct i3DView : public virtual iBase
   /**
    * Get the dynamics system.
    */
+#if NEW_PHYSICS
+  virtual CS::Physics::iPhysicalSector* GetDynamicSystem () const = 0;
+#else
   virtual iDynamicSystem* GetDynamicSystem () const = 0;
 
   /**
    * Get the physics bullet system.
    */
   virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const = 0;
+#endif
 
   /**
    * Spawn an item. 'trans' is an optional relative transform to use for
