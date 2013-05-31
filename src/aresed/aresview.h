@@ -320,6 +320,7 @@ public:
 
 #if NEW_PHYSICS
   virtual CS::Physics::iPhysicalSector* GetDynamicSystem () const { return dynSys; }
+  virtual CS::Physics::iPhysicalSystem* GetPhysicalSystem () const { return dyn; }
 #else
   virtual iDynamicSystem* GetDynamicSystem () const { return dynSys; }
   virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const

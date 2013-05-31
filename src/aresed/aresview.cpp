@@ -458,7 +458,7 @@ void AresEdit3DView::CleanupWorld ()
   dynSys = 0;
 #if NEW_PHYSICS
   if (dyn)
-    dyn->RemoveCollisionSectors ();
+    dyn->DeleteCollisionSectors ();
 #else
   bullet_dynSys = 0;
   if (dyn)

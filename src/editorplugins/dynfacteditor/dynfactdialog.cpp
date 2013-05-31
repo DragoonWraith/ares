@@ -1531,6 +1531,9 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   CS::Animation::iBodySkeleton* bodySkeleton =
     dialog->GetBodyManager ()->CreateBodySkeleton (itemname, skelFact);
 
+#if NEW_PHYSICS
+  // @@@
+#else
   // Create the ragdoll animation node
   csRef<CS::Animation::iSkeletonRagdollNodeManager> ragdollManager =
     csQueryRegistryOrLoad<CS::Animation::iSkeletonRagdollNodeManager>
@@ -1561,6 +1564,7 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
     CS::Animation::iBodyChain* bodyChain = it->Next ();
     ragdollNodeFactory->AddBodyChain (bodyChain, CS::Animation::STATE_DYNAMIC);
   }
+#endif
 
   dialog->GetMeshView ()->Refresh ();
   dialog->AddDirtyFactory (dialog->GetCurrentFactory ());

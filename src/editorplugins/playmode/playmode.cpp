@@ -211,8 +211,12 @@ void PlayMode::Start ()
 
   world = pl->FindEntity ("World");
   pl->ApplyTemplate (world, pl->FindEntityTemplate ("World"), (iCelParameterBlock*)0);
+#if NEW_PHYSICS
+  // @@@
+#else
   csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
   mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
+#endif
 
   player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", (iCelParameterBlock*)0);
   csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);

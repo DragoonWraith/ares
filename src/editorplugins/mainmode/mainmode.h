@@ -50,8 +50,13 @@ class MainMode : public scfImplementationExt1<MainMode, ViewMode, iComponent>
 private:
   // Dragging related
   bool do_dragging;
+#if NEW_PHYSICS
+  csRef<CS::Physics::iJoint> dragJoint;
+  csRef<CS::Physics::iJoint> holdJoint;
+#else
   csRef<CS::Physics::Bullet::iPivotJoint> dragJoint;
   csRef<CS::Physics::Bullet::iPivotJoint> holdJoint;
+#endif
   float linearDampening, angularDampening;
   float dragDistance;
 
@@ -82,8 +87,13 @@ private:
 
   void StartKinematicDragging (bool restrictY,
       const csSegment3& beam, const csVector3& isect, bool firstOnly);
+#if NEW_PHYSICS
+  void StartPhysicalDragging (CS::Physics::iRigidBody* hitBody,
+      const csSegment3& beam, const csVector3& isect);
+#else
   void StartPhysicalDragging (iRigidBody* hitBody,
       const csSegment3& beam, const csVector3& isect);
+#endif
   // If 'cancel' == True the objects will be restored to the original position.
   // Only for kinematic dragging!
   void StopDrag (bool cancel = false);

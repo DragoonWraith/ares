@@ -704,8 +704,9 @@ bool celPcGameController::StartDrag ()
     {
       csRef<CS::Physics::iJointFactory> pivotJointFactory = dyn->CreatePivotJointFactory ();
       dragJoint = pivotJointFactory->CreateJoint ();
+      dragJoint->SetTransform (csOrthoTransform (csMatrix3 (), isect));
       //@@@dragJoint->SetParameters (1.0f, 0.001f, 1.0f);
-      //dragJoint->Attach 
+      dragJoint->Attach (hitBody, 0);
     }
 #else
     if (bullet_dynSys)
@@ -737,9 +738,10 @@ void celPcGameController::StopDrag ()
   if (!dragobj) return;
   printf ("Stop drag!\n"); fflush (stdout);
 #if NEW_PHYSICS
-  // @@@
   if (dynSys)
   {
+    // @@@
+    dynSys->RemoveJoint (dragJoint);
   }
 #else
   if (bullet_dynSys)

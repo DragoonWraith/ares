@@ -127,6 +127,7 @@ struct i3DView : public virtual iBase
    */
 #if NEW_PHYSICS
   virtual CS::Physics::iPhysicalSector* GetDynamicSystem () const = 0;
+  virtual CS::Physics::iPhysicalSystem* GetPhysicalSystem () const = 0;
 #else
   virtual iDynamicSystem* GetDynamicSystem () const = 0;
 

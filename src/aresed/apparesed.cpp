@@ -538,7 +538,11 @@ bool AppAresEditWX::Initialize ()
 	CS_REQUEST_PLUGIN ("cel.physicallayer", iCelPlLayer),
 	CS_REQUEST_PLUGIN ("cel.tools.elcm", iELCM),
 	CS_REQUEST_PLUGIN ("crystalspace.collisiondetection.opcode", iCollideSystem),
-	CS_REQUEST_PLUGIN ("crystalspace.dynamics.bullet", iDynamics),
+#if NEW_PHYSICS
+	CS_REQUEST_PLUGIN("crystalspace.physics.bullet", CS::Physics::iPhysicalSystem),
+#else
+	CS_REQUEST_PLUGIN("crystalspace.dynamics.bullet", iDynamics),
+#endif
 	CS_REQUEST_PLUGIN ("crystalspace.decal.manager", iDecalManager),
 	CS_REQUEST_PLUGIN ("utility.nature", iNature),
 	CS_REQUEST_PLUGIN ("utility.marker", iMarkerManager),
