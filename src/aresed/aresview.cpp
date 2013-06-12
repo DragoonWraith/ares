@@ -911,6 +911,11 @@ bool AresEdit3DView::PostLoadMap ()
 
   // Initialize collision objects for all loaded objects.
   csColliderHelper::InitializeCollisionWrappers (cdsys, engine);
+#if NEW_PHYSICS
+  CS::Collisions::CollisionHelper helper;
+  helper.Initialize (object_reg);
+  helper.InitializeCollisionObjects (engine);
+#endif
 
   // @@@ Bad: hardcoded terrain name! Don't do this at home!
   if (sector)
