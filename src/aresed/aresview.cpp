@@ -1233,7 +1233,7 @@ iDynamicCell* AresEdit3DView::CreateCell (const char* name)
   systemname += name;
 
 #if NEW_PHYSICS
-  csRef<CS::Collisions::iCollisionSector> cs = dyn->FindCollisionSector (systemname);
+  csRef<CS::Collisions::iCollisionSector> cs = dyn->FindCollisionSector (s);
   if (!cs)
   {
     cs = dyn->CreateCollisionSector (s);

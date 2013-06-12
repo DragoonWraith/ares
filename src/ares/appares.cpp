@@ -417,7 +417,7 @@ iDynamicCell* AppAres::CreateCell (const char* name)
     csString systemname = "ares.dynamics.system.";
     systemname += name;
 #if NEW_PHYSICS
-    csRef<CS::Collisions::iCollisionSector> cs = dyn->FindCollisionSector (systemname);
+    csRef<CS::Collisions::iCollisionSector> cs = dyn->FindCollisionSector (s);
     if (!cs)
     {
       cs = dyn->CreateCollisionSector (s);
