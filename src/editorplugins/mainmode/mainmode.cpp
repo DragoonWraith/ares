@@ -1003,12 +1003,16 @@ void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
   dragDistance = (isect - beam.Start ()).Norm ();
 
   // Set some dampening on the rigid body to have a more stable dragging
+#if NEW_PHYSICS
+  // @@@
+#else
   csRef<CS::Physics::Bullet::iRigidBody> csBody =
         scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
   linearDampening = csBody->GetLinearDampener ();
   angularDampening = csBody->GetRollingDampener ();
   csBody->SetLinearDampener (0.9f);
   csBody->SetRollingDampener (0.9f);
+#endif
 }
 
 void MainMode::AddForce (iRigidBody* hitBody, bool pull,
