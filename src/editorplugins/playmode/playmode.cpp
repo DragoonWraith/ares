@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "propclass/camera.h"
 #include "propclass/mesh.h"
 #include "propclass/mechsys.h"
+#include "propclass/dynmove.h"
 #include "tools/elcm.h"
 
 #include "playmode.h"
@@ -222,14 +223,6 @@ void PlayMode::Start ()
 #else
   csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
   mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
-  csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
-  iRigidBody* body = 0;
-  if (mechPlayer)
-  {
-    body = mechPlayer->GetBody ();
-    //csRef<CS::Physics::Bullet::iRigidBody> bulletBody = scfQueryInterface<CS::Physics::Bullet::iRigidBody> (body);
-    //bulletBody->MakeKinematic ();
-  }
 #endif
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
@@ -238,16 +231,13 @@ void PlayMode::Start ()
   // @@@ Need support for setting transform on pcmesh.
   pcmesh->MoveMesh (dynworld->GetCurrentCell ()->GetSector (), playerTrans.GetOrigin ());
 
-  ///CS::Physics::iRigidBody* body = foundPlayerDynobj->GetBody ();
-
-#if NEW_PHYSICS
-#else
-  if (body)
+  csRef<iPcDynamicMove> dynactor = celQueryPropertyClassEntity<iPcDynamicMove> (player);
+  if (dynactor)
   {
     playerTrans.RotateThis (csVector3 (0, 1, 0), M_PI);
-    body->SetTransform (playerTrans);
+    //playerTrans.Translate (csVector3 (0, 400, 0));
+    dynactor->Move (dynworld->GetCurrentCell ()->GetDynamicSector (), playerTrans);
   }
-#endif
 
   cellIt = dynworld->GetCells ();
   while (cellIt->HasNext ())

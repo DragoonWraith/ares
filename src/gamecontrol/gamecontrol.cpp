@@ -307,16 +307,30 @@ void celPcGameController::Teleport (const char* entityname)
     dynworld->SetCurrentCell (cell);
 
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
-  csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
-  iRigidBody* body = 0;
-  if (mechPlayer)
-    body = mechPlayer->GetBody ();
   pcmesh->MoveMesh (cell->GetSector (), trans.GetOrigin ());
-  if (body)
+
+#if NEW_PHYSICS
+  csRef<iPcDynamicMove> dynactor = celQueryPropertyClassEntity<iPcDynamicMove> (player);
+  if (dynactor)
   {
     trans.RotateThis (csVector3 (0, 1, 0), M_PI);
-    body->SetTransform (trans);
+    CS::Physics::iPhysicalSector* sector = dynworld->GetCurrentCell ()->GetDynamicSector ();
+    dynactor->Move (sector, trans);
   }
+#else
+  csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
+  if (mechPlayer)
+  {
+    iRigidBody* body = 0;
+    body = mechPlayer->GetBody ();
+    if (body)
+    {
+      trans.RotateThis (csVector3 (0, 1, 0), M_PI);
+      body->SetTransform (trans);
+    }
+  }
+#endif
+
   csRef<iPcTrackingCamera> trackcam = celQueryPropertyClassEntity<iPcTrackingCamera> (player);
   if (trackcam)
   {

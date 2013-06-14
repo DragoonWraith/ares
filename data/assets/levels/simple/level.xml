@@ -24,6 +24,15 @@
 	      <max x="200" y="0" z="200" />
 	    </box>
 	</params>
+	    <addon plugin="crystalspace.physics.loader">
+	      <rigidbody state='static'>
+		<collider>
+		  <box x="400" y="10" z="400">
+		    <move y="-5" />
+	          </box>
+		</collider>
+	      </rigidbody>
+	    </addon>
     </meshfact>
 
     <sector name="outside">
@@ -41,6 +50,7 @@
         <meshobj name="floor">
             <plugin>crystalspace.mesh.loader.genmesh</plugin>
             <params> <factory>floor</factory> </params>
+	    <!--
 	    <addon plugin="crystalspace.dynamics.loader">
 	      <system name="ares.dynamics.system.outside">
 		<colliderbox x="400" y="10" z="400">
@@ -48,6 +58,7 @@
 		</colliderbox>
 	      </system>
 	    </addon>
+	    -->
         </meshobj>
     </sector>
 </world>
