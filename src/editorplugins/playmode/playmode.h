@@ -72,7 +72,11 @@ private:
   csRef<iCelPlLayer> pl;
   csRef<iNature> nature;
   csRef<iVirtualClock> vc;
+#if NEW_PHYSICS
+  csRef<CS::Physics::iPhysicalSystem> dyn;
+#else
   csRef<iDynamics> dyn;
+#endif
   iCamera* camera;
   iDynamicCell* oldcell;
 
