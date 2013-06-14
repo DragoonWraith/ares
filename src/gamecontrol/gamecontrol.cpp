@@ -707,6 +707,7 @@ bool celPcGameController::StartDrag ()
       dragJoint->SetTransform (csOrthoTransform (csMatrix3 (), isect));
       //@@@dragJoint->SetParameters (1.0f, 0.001f, 1.0f);
       dragJoint->Attach (hitBody, 0);
+      dynSys->AddJoint (dragJoint);
     }
 #else
     if (bullet_dynSys)

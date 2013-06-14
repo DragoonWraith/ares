@@ -994,6 +994,7 @@ void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
   dragJoint = pivotJointFactory->CreateJoint ();
   dragJoint->SetTransform (csOrthoTransform (csMatrix3 (), isect));
   dragJoint->Attach (hitBody, 0);
+  view3d->GetDynamicSystem ()->AddJoint (dragJoint);
 #else
   dragJoint = view3d->GetBulletSystem ()->CreatePivotJoint ();
   dragJoint->Attach (hitBody, isect);
