@@ -95,13 +95,8 @@ void ViewMode::FramePre ()
 
   if (view3d->IsSimulation ())
   {
-#if NEW_PHYSICS
-    int dynamicSpeed = 1;
-    dyn->Step (vc->GetElapsedTicks () / dynamicSpeed);
-#else
     float dynamicSpeed = 1.0f;
     dyn->Step (elapsed_time / dynamicSpeed);
-#endif
   }
 
   iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
