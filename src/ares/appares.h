@@ -160,11 +160,7 @@ private:
   iCamera* camera;
 
   /// Physics.
-#if NEW_PHYSICS
   csRef<CS::Physics::iPhysicalSystem> dyn;
-#else
-  csRef<iDynamics> dyn;
-#endif
 
   AresMenu menu;
 

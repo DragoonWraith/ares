@@ -178,9 +178,7 @@ celPcGameController::celPcGameController (iObjectRegistry* object_reg)
   vc = csQueryRegistry<iVirtualClock> (object_reg);
   g2d = g3d->GetDriver2D ();
   engine = csQueryRegistry<iEngine> (object_reg);
-#if NEW_PHYSICS
   dyn = csQueryRegistry<CS::Physics::iPhysicalSystem> (object_reg);
-#endif
   pl->CallbackEveryFrame ((iCelTimerListener*)this, CEL_EVENT_POST);
 
   classNoteID = pl->FetchStringID ("ares.note");
@@ -267,11 +265,7 @@ void celPcGameController::Inventory ()
 void celPcGameController::Activate ()
 {
 printf ("#######################################################\n");
-#if NEW_PHYSICS
   CS::Physics::iRigidBody* hitBody;
-#else
-  iRigidBody* hitBody;
-#endif
   csVector3 start, isect;
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
@@ -309,7 +303,6 @@ void celPcGameController::Teleport (const char* entityname)
   csRef<iPcMesh> pcmesh = celQueryPropertyClassEntity<iPcMesh> (player);
   pcmesh->MoveMesh (cell->GetSector (), trans.GetOrigin ());
 
-#if NEW_PHYSICS
   csRef<iPcDynamicMove> dynactor = celQueryPropertyClassEntity<iPcDynamicMove> (player);
   if (dynactor)
   {
@@ -317,19 +310,6 @@ void celPcGameController::Teleport (const char* entityname)
     CS::Physics::iPhysicalSector* sector = dynworld->GetCurrentCell ()->GetDynamicSector ();
     dynactor->Move (sector, trans);
   }
-#else
-  csRef<iPcMechanicsObject> mechPlayer = celQueryPropertyClassEntity<iPcMechanicsObject> (player);
-  if (mechPlayer)
-  {
-    iRigidBody* body = 0;
-    body = mechPlayer->GetBody ();
-    if (body)
-    {
-      trans.RotateThis (csVector3 (0, 1, 0), M_PI);
-      body->SetTransform (trans);
-    }
-  }
-#endif
 
   csRef<iPcTrackingCamera> trackcam = celQueryPropertyClassEntity<iPcTrackingCamera> (player);
   if (trackcam)
@@ -371,11 +351,7 @@ void celPcGameController::CreateEntity (const char* tmpname, const char* name)
 
 void celPcGameController::PickUp ()
 {
-#if NEW_PHYSICS
   CS::Physics::iRigidBody* hitBody;
-#else
-  iRigidBody* hitBody;
-#endif
   csVector3 start, isect;
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
@@ -475,20 +451,11 @@ void celPcGameController::TryGetDynworld ()
   }
   if (dynworld->IsPhysicsEnabled ())
   {
-#if NEW_PHYSICS
     dynSys = dynworld->GetCurrentCell ()->GetDynamicSector ();
-#else
-    iDynamicSystem* dynSys = dynworld->GetCurrentCell ()->GetDynamicSystem ();
-    bullet_dynSys = scfQueryInterface<CS::Physics::Bullet::iDynamicSystem> (dynSys);
-#endif
   }
   else
   {
-#if NEW_PHYSICS
     dynSys = 0;
-#else
-    bullet_dynSys = 0;
-#endif
   }
 }
 
@@ -573,11 +540,7 @@ bool celPcGameController::PerformActionIndexed (int idx,
 void celPcGameController::Examine ()
 {
   FindSiblingPropertyClasses ();
-#if NEW_PHYSICS
   CS::Physics::iRigidBody* hitBody;
-#else
-  iRigidBody* hitBody;
-#endif
   csVector3 start, isect;
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
@@ -613,13 +576,8 @@ void celPcGameController::Examine ()
   }
 }
 
-#if NEW_PHYSICS
 iDynamicObject* celPcGameController::FindCenterObject (CS::Physics::iRigidBody*& hitBody,
     csVector3& start, csVector3& isect)
-#else
-iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
-    csVector3& start, csVector3& isect)
-#endif
 {
   TryGetCamera ();
   TryGetDynworld ();
@@ -629,7 +587,6 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
   csVector3 end = cam->GetTransform ().This2Other (csVector3 (0.0f, 0.0f, 3.0f));
   //printf ("end=%s\n", end.Description().GetData());
   // Trace the physical beam
-#if NEW_PHYSICS
   if (dynSys)
   {
     CS::Collisions::HitBeamResult result = dynSys->HitBeam (start, end);
@@ -639,17 +596,6 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
     if (!hitBody) return 0;
     return dynworld->FindObject (hitBody);
   }
-#else
-  if (bullet_dynSys)
-  {
-    CS::Physics::Bullet::HitBeamResult result = bullet_dynSys->HitBeam (start, end);
-    if (!result.body) return 0;
-    hitBody = result.body->QueryRigidBody ();
-    isect = result.isect;
-    if (!hitBody) return 0;
-    return dynworld->FindObject (hitBody);
-  }
-#endif
   else if (cam->GetSector ())
   {
     csSectorHitBeamResult result = cam->GetSector ()->HitBeamPortals (start, end);
@@ -662,11 +608,7 @@ iDynamicObject* celPcGameController::FindCenterObject (iRigidBody*& hitBody,
 
 bool celPcGameController::StartDrag ()
 {
-#if NEW_PHYSICS
   CS::Physics::iRigidBody* hitBody;
-#else
-  iRigidBody* hitBody;
-#endif
   csVector3 start, isect;
   iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
   if (obj)
@@ -713,7 +655,6 @@ bool celPcGameController::StartDrag ()
       dragDistance = (isect - start).Norm ();
     }
 
-#if NEW_PHYSICS
     if (dynSys)
     {
       csRef<CS::Physics::iJointFactory> pivotJointFactory = dyn->CreatePivotJointFactory ();
@@ -723,22 +664,6 @@ bool celPcGameController::StartDrag ()
       dragJoint->Attach (hitBody, 0);
       dynSys->AddJoint (dragJoint);
     }
-#else
-    if (bullet_dynSys)
-    {
-      dragJoint = bullet_dynSys->CreatePivotJoint ();
-      dragJoint->SetParameters (1.0f, 0.001f, 1.0f);
-      dragJoint->Attach (hitBody, isect);
-
-      // Set some dampening on the rigid body to have a more stable dragging
-      csRef<CS::Physics::Bullet::iRigidBody> csBody =
-            scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
-      oldLinearDampening = csBody->GetLinearDampener ();
-      oldAngularDampening = csBody->GetRollingDampener ();
-      csBody->SetLinearDampener (0.9f);
-      csBody->SetRollingDampener (0.9f);
-    }
-#endif
     else
     {
       // @@@ TODO: implement dragging for opcode based world?
@@ -752,23 +677,11 @@ void celPcGameController::StopDrag ()
 {
   if (!dragobj) return;
   printf ("Stop drag!\n"); fflush (stdout);
-#if NEW_PHYSICS
   if (dynSys)
   {
     // @@@
     dynSys->RemoveJoint (dragJoint);
   }
-#else
-  if (bullet_dynSys)
-  {
-    csRef<CS::Physics::Bullet::iRigidBody> csBody =
-      scfQueryInterface<CS::Physics::Bullet::iRigidBody> (dragJoint->GetAttachedBody ());
-    csBody->SetLinearDampener (oldLinearDampening);
-    csBody->SetRollingDampener (oldAngularDampening);
-    bullet_dynSys->RemovePivotJoint (dragJoint);
-    dragJoint = 0;
-  }
-#endif
   else
   {
     // @@@ TODO: implement dragging for opcode based world?
@@ -813,7 +726,7 @@ void celPcGameController::TickEveryFrame ()
         newPosition = dragAnchor - dragOrigin;
         newPosition.Normalize ();
         newPosition = dragOrigin + newPosition * dragDistance;
-#if NEW_PHYSICS
+#if 1
 	// @@@
 	if (false)
 	  ;
@@ -852,11 +765,7 @@ void celPcGameController::TickEveryFrame ()
   }
   else
   {
-#if NEW_PHYSICS
     CS::Physics::iRigidBody* hitBody;
-#else
-    iRigidBody* hitBody;
-#endif
     csVector3 start, isect;
     iDynamicObject* obj = FindCenterObject (hitBody, start, isect);
     if (obj)

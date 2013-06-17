@@ -510,11 +510,9 @@ void MainMode::StopDrag (bool cancel)
     do_dragging = false;
 
     // Put back the original dampening on the rigid body
-#if NEW_PHYSICS
     view3d->GetDynamicSystem ()->RemoveJoint (dragJoint);
-#else
-    csRef<CS::Physics::Bullet::iRigidBody> csBody =
-      scfQueryInterface<CS::Physics::Bullet::iRigidBody> (dragJoint->GetAttachedBody ());
+#if 0
+    // @@@
     csBody->SetLinearDampener (linearDampening);
     csBody->SetRollingDampener (angularDampening);
 
@@ -800,18 +798,13 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   {
     if (holdJoint)
     {
-#if NEW_PHYSICS
       view3d->GetDynamicSystem ()->RemoveJoint (holdJoint);
-#else
-      view3d->GetBulletSystem ()->RemovePivotJoint (holdJoint);
-#endif
       holdJoint = 0;
     }
     if (do_dragging)
     {
-#if NEW_PHYSICS
+#if 0
       // @@@
-#else
       csRef<CS::Physics::Bullet::iRigidBody> csBody =
 	scfQueryInterface<CS::Physics::Bullet::iRigidBody> (dragJoint->GetAttachedBody ());
       csBody->SetLinearDampener (linearDampening);
@@ -980,33 +973,22 @@ void MainMode::StartKinematicDragging (bool restrictY,
   SetTransformationMarkerStatus ();
 }
 
-#if NEW_PHYSICS
 void MainMode::StartPhysicalDragging (CS::Physics::iRigidBody* hitBody,
     const csSegment3& beam, const csVector3& isect)
-#else
-void MainMode::StartPhysicalDragging (iRigidBody* hitBody,
-    const csSegment3& beam, const csVector3& isect)
-#endif
 {
   // Create a pivot joint at the point clicked
-#if NEW_PHYSICS
   csRef<CS::Physics::iJointFactory> pivotJointFactory = view3d->GetPhysicalSystem ()->CreatePivotJointFactory ();
   dragJoint = pivotJointFactory->CreateJoint ();
   dragJoint->SetTransform (csOrthoTransform (csMatrix3 (), isect));
   dragJoint->Attach (hitBody, 0);
   view3d->GetDynamicSystem ()->AddJoint (dragJoint);
-#else
-  dragJoint = view3d->GetBulletSystem ()->CreatePivotJoint ();
-  dragJoint->Attach (hitBody, isect);
-#endif
 
   do_dragging = true;
   dragDistance = (isect - beam.Start ()).Norm ();
 
   // Set some dampening on the rigid body to have a more stable dragging
-#if NEW_PHYSICS
+#if 0
   // @@@
-#else
   csRef<CS::Physics::Bullet::iRigidBody> csBody =
         scfQueryInterface<CS::Physics::Bullet::iRigidBody> (hitBody);
   linearDampening = csBody->GetLinearDampener ();

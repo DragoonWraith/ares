@@ -41,11 +41,7 @@ private:
   csRef<iFont> font;
   csRef<iNature> nature;
   csRef<iVirtualClock> vc;
-#if NEW_PHYSICS
   csRef<CS::Physics::iPhysicalSystem> dyn;
-#else
-  csRef<iDynamics> dyn;
-#endif
 
 public:
   ViewMode (i3DView* view, iObjectRegistry* object_reg, const char* name);

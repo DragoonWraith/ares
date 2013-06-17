@@ -1531,9 +1531,8 @@ bool EnableRagdollAction::Do (View* view, wxWindow* component)
   CS::Animation::iBodySkeleton* bodySkeleton =
     dialog->GetBodyManager ()->CreateBodySkeleton (itemname, skelFact);
 
-#if NEW_PHYSICS
+#if 0
   // @@@
-#else
   // Create the ragdoll animation node
   csRef<CS::Animation::iSkeletonRagdollNodeManager> ragdollManager =
     csQueryRegistryOrLoad<CS::Animation::iSkeletonRagdollNodeManager>

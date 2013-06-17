@@ -125,17 +125,8 @@ struct i3DView : public virtual iBase
   /**
    * Get the dynamics system.
    */
-#if NEW_PHYSICS
   virtual CS::Physics::iPhysicalSector* GetDynamicSystem () const = 0;
   virtual CS::Physics::iPhysicalSystem* GetPhysicalSystem () const = 0;
-#else
-  virtual iDynamicSystem* GetDynamicSystem () const = 0;
-
-  /**
-   * Get the physics bullet system.
-   */
-  virtual CS::Physics::Bullet::iDynamicSystem* GetBulletSystem () const = 0;
-#endif
 
   /**
    * Spawn an item. 'trans' is an optional relative transform to use for

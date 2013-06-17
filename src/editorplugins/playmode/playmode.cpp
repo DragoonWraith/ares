@@ -141,11 +141,7 @@ bool PlayMode::Initialize (iObjectRegistry* object_reg)
   pl = csQueryRegistry<iCelPlLayer> (object_reg);
   nature = csQueryRegistry<iNature> (object_reg);
   vc = csQueryRegistry<iVirtualClock> (object_reg);
-#if NEW_PHYSICS
   dyn = csQueryRegistry<CS::Physics::iPhysicalSystem> (object_reg);
-#else
-  dyn = csQueryRegistry<iDynamics> (object_reg);
-#endif
   return true;
 }
 
@@ -218,12 +214,6 @@ void PlayMode::Start ()
   pl->ApplyTemplate (world, pl->FindEntityTemplate ("World"), (iCelParameterBlock*)0);
 
   player = pl->CreateEntity (pl->FindEntityTemplate ("Player"), "Player", (iCelParameterBlock*)0);
-
-#if NEW_PHYSICS
-#else
-  csRef<iPcMechanicsSystem> mechsys = celQueryPropertyClassEntity<iPcMechanicsSystem> (world);
-  mechsys->SetDynamicSystem (dynworld->GetCurrentCell ()->GetDynamicSystem ());
-#endif
 
   csRef<iPcCamera> pccamera = celQueryPropertyClassEntity<iPcCamera> (player);
   camera = pccamera->GetCamera ();
