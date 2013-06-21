@@ -1367,7 +1367,6 @@ void AresEdit3DView::ConvertPhysics ()
     pctpl->SetProperty (pl->FetchStringID ("speed"), .5f);
     pctpl->SetProperty (pl->FetchStringID ("jumpspeed"), 1.0f);
     pctpl->SetProperty (pl->FetchStringID ("rotspeed"), .5f);
-    pctpl->SetProperty (pl->FetchStringID ("correctup"), true);
   }
   {
     iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();

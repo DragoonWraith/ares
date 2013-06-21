@@ -591,7 +591,9 @@ iDynamicObject* celPcGameController::FindCenterObject (CS::Physics::iRigidBody*&
   {
     CS::Collisions::HitBeamResult result = dynSys->HitBeam (start, end);
     if (!result.object) return 0;
-    hitBody =  result.object->QueryPhysicalBody ()->QueryRigidBody ();
+    CS::Physics::iPhysicalBody* physBody = result.object->QueryPhysicalBody ();
+    if (!physBody) return 0;
+    hitBody = physBody->QueryRigidBody ();
     isect = result.isect;
     if (!hitBody) return 0;
     return dynworld->FindObject (hitBody);

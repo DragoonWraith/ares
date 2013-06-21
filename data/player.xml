@@ -101,7 +101,6 @@
 	<property name="speed" float=".5" />
 	<property name="jumpspeed" float="1" />
 	<property name="rotspeed" float=".5" />
-	<property name="correctup" bool="true" />
       </propclass>
       <propclass name="pcphysics.object">
 	<action name="SetSystem">
