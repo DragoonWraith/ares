@@ -255,7 +255,11 @@ bool EntityMode::Initialize (iObjectRegistry* object_reg)
   return true;
 }
 
-void EntityMode::SetParent (wxWindow* parent)
+bool EntityMode::SetDetailParent (wxWindow* parent)
+{
+}
+
+void EntityMode::SetMainParent (wxWindow* parent)
 {
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);

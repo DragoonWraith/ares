@@ -343,7 +343,8 @@ public:
   virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual void SetApplication (iAresEditor* app);
-  virtual void SetParent (wxWindow* parent);
+  virtual void SetMainParent (wxWindow* parent);
+  virtual bool SetDetailParent (wxWindow* parent) { return false; }
   virtual const char* GetPluginName () const { return "DynfactEditor"; }
   virtual bool Command (csStringID id, const csString& args)
   {

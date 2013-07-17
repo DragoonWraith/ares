@@ -142,7 +142,7 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
   return true;
 }
 
-void MainMode::SetParent (wxWindow* parent)
+void MainMode::SetMainParent (wxWindow* parent)
 {
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);

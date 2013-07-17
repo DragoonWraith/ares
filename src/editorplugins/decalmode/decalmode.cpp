@@ -45,7 +45,7 @@ DecalMode::DecalMode (iBase* parent) : scfImplementationType (this, parent)
   name = "Decals";
 }
 
-void DecalMode::SetParent (wxWindow* parent)
+void DecalMode::SetMainParent (wxWindow* parent)
 {
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);

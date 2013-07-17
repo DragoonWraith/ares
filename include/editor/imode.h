@@ -40,6 +40,9 @@ struct iEditingMode : public virtual iBase
 {
   SCF_INTERFACE(iEditingMode,0,0,1);
 
+  /// Return true if this mode has a detail panel.
+  virtual bool HasDetailPanel () const = 0;
+
   /**
    * Allocate context handlers for the context menu of this mode.
    */

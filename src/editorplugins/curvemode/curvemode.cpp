@@ -68,7 +68,7 @@ bool CurveMode::Initialize (iObjectRegistry* object_reg)
   return true;
 }
 
-void CurveMode::SetParent (wxWindow* parent)
+void CurveMode::SetMainParent (wxWindow* parent)
 {
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);

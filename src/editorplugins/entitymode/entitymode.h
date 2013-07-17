@@ -210,7 +210,9 @@ public:
   virtual ~EntityMode ();
 
   virtual bool Initialize (iObjectRegistry* object_reg);
-  virtual void SetParent (wxWindow* parent);
+  virtual bool HasDetailPanel () const { return true; }
+  virtual void SetMainParent (wxWindow* parent);
+  virtual bool SetDetailParent (wxWindow* parent);
 
   iAresEditor* GetApplication () const;
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }

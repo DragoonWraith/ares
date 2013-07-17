@@ -44,7 +44,7 @@ public:
   virtual ~FoliageMode () { }
 
   virtual bool Initialize (iObjectRegistry* object_reg);
-  virtual void SetParent (wxWindow* parent);
+  virtual void SetMainParent (wxWindow* parent);
 
   virtual void Start ();
   virtual void Stop ();

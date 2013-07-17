@@ -47,10 +47,17 @@ struct iEditorPlugin : public virtual iBase
   virtual void SetApplication (iAresEditor* app) = 0;
 
   /**
-   * Set the wxWindow parent for the panel of this mode.
+   * Set the wxWindow parent for the main panel of this mode.
    * (optional, not every plugin needs to have a panel).
    */
-  virtual void SetParent (wxWindow* parent) = 0;
+  virtual void SetMainParent (wxWindow* parent) = 0;
+
+  /**
+   * Set the wxWindow parent for the detail panel of this mode.
+   * (optional, not every plugin needs to have a detail panel).
+   * This function should return False if there is no detail panel.
+   */
+  virtual bool SetDetailParent (wxWindow* parent) = 0;
 
   /**
    * The name of this plugin.

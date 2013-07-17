@@ -172,6 +172,7 @@ private:
   // page will close if it was already open.
   void ViewBottomPage (const char* pagename, bool toggle);
   void View3D ();
+  void ViewDetailPanel ();
   void ViewControls ();
 
 public:
