@@ -52,6 +52,7 @@ BEGIN_EVENT_TABLE(DynfactDialog, wxDialog)
   EVT_CHECKBOX (XRCID("showOriginCheck"), DynfactDialog :: OnShowOrigin)
   EVT_CHECKBOX (XRCID("showBonesCheck"), DynfactDialog :: OnShowBones)
   EVT_CHECKBOX (XRCID("showJointsCheck"), DynfactDialog :: OnShowJoints)
+  EVT_CLOSE(DynfactDialog :: OnClose)
 END_EVENT_TABLE()
 
 csStringID DynfactDialog::ID_Show = csInvalidStringID;
@@ -2003,17 +2004,40 @@ void DynfactDialog::OnShowJoints (wxCommandEvent& event)
   meshView->ShowJoints (check->GetValue ());
 }
 
+void DynfactDialog::OnClose (wxCloseEvent& event)
+{
+  csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (object_reg);
+  timer->RemoveTimerEvent (timerOp);
+  meshView->SetMesh (0);
+
+  if (event.CanVeto ())
+  {
+    wxDialog::Show (false);
+    event.Veto ();
+  }
+  else
+  {
+    Destroy ();
+  }
+}
+
+
 void DynfactDialog::Show ()
 {
+  if (IsShown ())
+  {
+    Raise ();
+    return;
+  }
+  wxDialog::Show (true);
+  Raise ();
+
   app->Get3DView ()->GetModelRepository ()->GetDynfactCollectionValue ()->Refresh ();
 
   csRef<iEventTimer> timer = csEventTimer::GetStandardTimer (object_reg);
   timer->AddTimerEvent (timerOp, 25);
 
-  ShowModal ();
-
-  timer->RemoveTimerEvent (timerOp);
-  meshView->SetMesh (0);
+  //ShowModal ();
 }
 
 void DynfactDialog::Tick ()

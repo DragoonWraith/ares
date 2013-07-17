@@ -334,6 +334,8 @@ private:
   void SetupSelectedValues ();
   void SetupActions ();
 
+  void OnClose (wxCloseEvent& event);
+
 public:
   DynfactDialog (iBase* parent);
   virtual ~DynfactDialog ();
