@@ -35,9 +35,10 @@
 											<orient>wxVERTICAL</orient>
 											<object class="sizeritem">
 												<option>1</option>
-												<flag>wxALL|wxEXPAND</flag>
+												<flag>wxEXPAND | wxALL</flag>
 												<border>5</border>
-												<object class="wxNotebook" name="mainNotebook">
+												<object class="wxChoicebook" name="mainChoiceBook">
+													<style>wxCHB_DEFAULT</style>
 													<size>150,-1</size>
 												</object>
 											</object>

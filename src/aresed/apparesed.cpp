@@ -62,13 +62,24 @@ THE SOFTWARE.
 #include <wx/wx.h>
 #include <wx/imaglist.h>
 #include <wx/treectrl.h>
-#include <wx/notebook.h>
+#include <wx/choicebk.h>
 #include <wx/splitter.h>
 #include <wx/xrc/xmlres.h>
 #include <wx/html/htmlwin.h>
 
 // Defined in mingw includes apparently.
 #undef SetJob
+
+static size_t FindChoicebookPage (wxChoicebook* choicebook, const char* name)
+{
+  wxString iname = wxString::FromUTF8 (name);
+  for (size_t i = 0 ; i < choicebook->GetPageCount () ; i++)
+  {
+    wxString pageName = choicebook->GetPageText (i);
+    if (pageName == iname) return i;
+  }
+  return csArrayItemNotFound;
+}
 
 static size_t FindNotebookPage (wxNotebook* notebook, const char* name)
 {
@@ -154,8 +165,8 @@ BEGIN_EVENT_TABLE(AppAresEditWX, wxFrame)
   EVT_CLOSE (AppAresEditWX::OnClose)
   EVT_UPDATE_UI (wxID_ANY, AppAresEditWX :: OnMenuUpdate)
   EVT_MENU (wxID_ANY, AppAresEditWX :: OnMenuItem)
-  EVT_NOTEBOOK_PAGE_CHANGING (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChange)
-  EVT_NOTEBOOK_PAGE_CHANGED (XRCID("mainNotebook"), AppAresEditWX :: OnNotebookChanged)
+  EVT_CHOICEBOOK_PAGE_CHANGING (XRCID("mainChoiceBook"), AppAresEditWX :: OnChoicebookChange)
+  EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("mainChoiceBook"), AppAresEditWX :: OnChoicebookChanged)
   EVT_BUTTON (XRCID("messagesClear_Button"), AppAresEditWX :: OnClearMessages)
   EVT_TEXT (XRCID("comments_Text"), AppAresEditWX :: OnChangeComment)
   EVT_IDLE (AppAresEditWX::OnIdle)
@@ -396,14 +407,14 @@ void AppAresEditWX::Quit ()
   //Close ();
 }
 
-void AppAresEditWX::OnNotebookChange (wxNotebookEvent& event)
+void AppAresEditWX::OnChoicebookChange (wxChoicebookEvent& event)
 {
   //oldPageIdx = event.GetOldSelection ();
 }
 
-void AppAresEditWX::OnNotebookChanged (wxNotebookEvent& event)
+void AppAresEditWX::OnChoicebookChanged (wxChoicebookEvent& event)
 {
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  wxChoicebook* notebook = XRCCTRL (*this, "mainChoiceBook", wxChoicebook);
   int pageIdx = event.GetSelection ();
   wxString pageName = notebook->GetPageText (pageIdx);
 
@@ -666,7 +677,7 @@ bool AppAresEditWX::ParseCommandLine ()
 bool AppAresEditWX::InitPlugins ()
 {
   const csArray<PluginConfig>& configplug = config->GetPlugins ();
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
+  wxChoicebook* notebook = XRCCTRL (*this, "mainChoiceBook", wxChoicebook);
   for (size_t i = 0 ; i < configplug.GetSize () ; i++)
   {
     const PluginConfig& pc = configplug.Get (i);
@@ -1267,8 +1278,8 @@ void AppAresEditWX::SwitchToMainMode ()
 
 void AppAresEditWX::SetCurveModeEnabled (bool cm)
 {
-  wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-  size_t pageIdx = FindNotebookPage (notebook, "Curve");
+  wxChoicebook* notebook = XRCCTRL (*this, "mainChoiceBook", wxChoicebook);
+  size_t pageIdx = FindChoicebookPage (notebook, "Curve");
   if (pageIdx != csArrayItemNotFound)
   {
     wxNotebookPage* page = notebook->GetPage (pageIdx);
@@ -1296,8 +1307,8 @@ void AppAresEditWX::SwitchToMode (const char* name)
   if (plugin) mode = scfQueryInterface<iEditingMode> (plugin);
   if (mode)
   {
-    wxNotebook* notebook = XRCCTRL (*this, "mainNotebook", wxNotebook);
-    size_t pageIdx = FindNotebookPage (notebook, name);
+    wxChoicebook* notebook = XRCCTRL (*this, "mainChoiceBook", wxChoicebook);
+    size_t pageIdx = FindChoicebookPage (notebook, name);
     if (pageIdx != csArrayItemNotFound)
       notebook->ChangeSelection (pageIdx);
     if (editMode) editMode->Stop ();

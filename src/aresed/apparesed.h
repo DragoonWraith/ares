@@ -46,7 +46,7 @@ THE SOFTWARE.
 #include "ivideo/wxwin.h"
 #include "csutil/custom_new_disable.h"
 #include <wx/wx.h>
-#include <wx/notebook.h>
+#include <wx/choicebk.h>
 #include "csutil/custom_new_enable.h"
 
 class CameraWindow;
@@ -163,8 +163,8 @@ private:
   void FindObject ();
   void SetCurrentFile (const char* path, const char* file);
 
-  void OnNotebookChange (wxNotebookEvent& event);
-  void OnNotebookChanged (wxNotebookEvent& event);
+  void OnChoicebookChange (wxChoicebookEvent& event);
+  void OnChoicebookChanged (wxChoicebookEvent& event);
   void OnClearMessages (wxCommandEvent& event);
   void OnChangeComment (wxCommandEvent& event);
 
