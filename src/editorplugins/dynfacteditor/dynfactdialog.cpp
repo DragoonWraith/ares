@@ -2435,7 +2435,7 @@ void DynfactDialog::SetApplication (iAresEditor* app)
   DynfactDialog::app = app;
 }
 
-void DynfactDialog::SetMainParent (wxWindow* parent)
+void DynfactDialog::SetTopLevelParent (wxWindow* parent)
 {
   wxXmlResource::Get()->LoadDialog (this, parent, wxT ("DynfactDialog"));
 

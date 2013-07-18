@@ -1275,6 +1275,9 @@ public:
    */
   void SetParent (wxWindow* parent) { View::parent = parent; }
 
+  /// Reset this view to initial state (remove all bindings and such).
+  void Reset ();
+
   //----------------------------------------------------------------
 
   /**

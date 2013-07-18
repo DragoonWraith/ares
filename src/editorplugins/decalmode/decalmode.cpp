@@ -43,10 +43,20 @@ SCF_IMPLEMENT_FACTORY (DecalMode)
 DecalMode::DecalMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Decals";
+  panel = 0;
 }
 
-void DecalMode::SetMainParent (wxWindow* parent)
+void DecalMode::SetTopLevelParent (wxWindow* toplevel)
 {
+}
+
+void DecalMode::BuildMainPanel (wxWindow* parent)
+{
+  if (panel)
+  {
+    parent->GetSizer ()->Remove (panel);
+    delete panel;
+  }
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("DecalModePanel"));

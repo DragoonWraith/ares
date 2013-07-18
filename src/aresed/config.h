@@ -36,10 +36,9 @@ struct PluginConfig
   csString plugin;
   csString tooltip;
   bool mainMode;
-  bool addToNotebook;
   csStringArray resources;
 
-  PluginConfig () : mainMode (false), addToNotebook (false) { }
+  PluginConfig () : mainMode (false) { }
 };
 
 class AresConfig : public scfImplementation1<AresConfig, iEditorConfig>

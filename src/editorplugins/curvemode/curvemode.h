@@ -94,7 +94,9 @@ public:
   virtual ~CurveMode () { }
 
   virtual bool Initialize (iObjectRegistry* object_reg);
-  virtual void SetMainParent (wxWindow* parent);
+  virtual void SetTopLevelParent (wxWindow* toplevel);
+  virtual bool HasMainPanel () const { return true; }
+  virtual void BuildMainPanel (wxWindow* parent);
 
   virtual void Start ();
   virtual void Stop ();

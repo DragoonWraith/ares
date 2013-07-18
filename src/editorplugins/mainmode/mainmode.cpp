@@ -117,6 +117,7 @@ MainMode::MainMode (iBase* parent) : scfImplementationType (this, parent)
   changing3DSelection = 0;
   labelMgr = 0;
   showLabels = true;
+  panel = 0;
 }
 
 bool MainMode::Initialize (iObjectRegistry* object_reg)
@@ -142,8 +143,18 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
   return true;
 }
 
-void MainMode::SetMainParent (wxWindow* parent)
+void MainMode::SetTopLevelParent (wxWindow* toplevel)
 {
+}
+
+void MainMode::BuildMainPanel (wxWindow* parent)
+{
+  if (panel)
+  {
+    view.Reset ();
+    parent->GetSizer ()->Remove (panel);
+    delete panel;
+  }
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("MainModePanel"));

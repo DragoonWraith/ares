@@ -87,7 +87,7 @@ void HelpFrame::SetApplication (iAresEditor* app)
   HelpFrame::app = app;
 }
 
-void HelpFrame::SetMainParent (wxWindow* parent)
+void HelpFrame::SetTopLevelParent (wxWindow* parent)
 {
   wxXmlResource::Get()->LoadFrame (this, parent, wxT ("HelpFrame"));
 

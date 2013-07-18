@@ -40,8 +40,15 @@ struct iEditingMode : public virtual iBase
 {
   SCF_INTERFACE(iEditingMode,0,0,1);
 
-  /// Return true if this mode has a detail panel.
-  virtual bool HasDetailPanel () const = 0;
+  /// Return true if this mode has a main panel.
+  virtual bool HasMainPanel () const = 0;
+
+  /**
+   * Build the main panel for this editing mode.
+   * This function should be prepared to recreate the panel
+   * if this function is called multiple times.
+   */
+  virtual void BuildMainPanel (wxWindow* parent) = 0;
 
   /**
    * Allocate context handlers for the context menu of this mode.

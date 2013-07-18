@@ -59,8 +59,7 @@ public:
   virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual void SetApplication (iAresEditor* app);
-  virtual void SetMainParent (wxWindow* parent);
-  virtual bool SetDetailParent (wxWindow* parent) { return false; }
+  virtual void SetTopLevelParent (wxWindow* parent);
   virtual const char* GetPluginName () const { return "Help"; }
   virtual bool Command (csStringID id, const csString& args)
   {

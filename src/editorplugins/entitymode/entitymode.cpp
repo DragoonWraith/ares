@@ -233,6 +233,7 @@ public:
 EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Entity";
+  panel = 0;
 }
 
 bool EntityMode::Initialize (iObjectRegistry* object_reg)
@@ -255,17 +256,22 @@ bool EntityMode::Initialize (iObjectRegistry* object_reg)
   return true;
 }
 
-bool EntityMode::SetDetailParent (wxWindow* parent)
+void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 {
 }
 
-void EntityMode::SetMainParent (wxWindow* parent)
+void EntityMode::BuildMainPanel (wxWindow* parent)
 {
+  if (panel)
+  {
+    view.Reset ();
+    parent->GetSizer ()->Remove (panel);
+    delete parent;
+  }
   panel = new Panel (this);
+  view.SetParent (panel);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
-
-  view.SetParent (panel);
 
   pcPanel = new PropertyClassPanel (panel, view3d->GetApplication ()->GetUI (), this);
   pcPanel->Hide ();

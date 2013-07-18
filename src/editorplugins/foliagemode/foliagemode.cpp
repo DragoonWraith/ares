@@ -43,10 +43,20 @@ SCF_IMPLEMENT_FACTORY (FoliageMode)
 FoliageMode::FoliageMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Foliage";
+  panel = 0;
 }
 
-void FoliageMode::SetMainParent (wxWindow* parent)
+void FoliageMode::SetTopLevelParent (wxWindow* toplevel)
 {
+}
+
+void FoliageMode::BuildMainPanel (wxWindow* parent)
+{
+  if (panel)
+  {
+    parent->GetSizer ()->Remove (panel);
+    delete panel;
+  }
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("FoliageModePanel"));

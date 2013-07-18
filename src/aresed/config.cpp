@@ -50,7 +50,6 @@ bool AresConfig::ParsePlugins (iDocumentNode* pluginsNode)
       mc.plugin = child->GetAttributeValue ("plugin");
       mc.tooltip = child->GetAttributeValue ("tooltip");
       mc.mainMode = child->GetAttributeValueAsBool ("main");
-      mc.addToNotebook = child->GetAttributeValueAsBool ("notebook");
       csRef<iDocumentNodeIterator> childit = child->GetNodes ();
       while (childit->HasNext ())
       {

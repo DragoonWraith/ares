@@ -8,11 +8,11 @@
 	  <resource file="HelpFrame.xrc" />
       </plugin>
       <plugin plugin="ares.editor.modes.play" />
-      <plugin plugin="ares.editor.modes.main" main="True" notebook="True"
+      <plugin plugin="ares.editor.modes.main" main="True"
       		tooltip="Main 3D object manipulation mode">
 	  <resource file="MainModePanel.xrc" />
       </plugin>
-      <plugin plugin="ares.editor.modes.entity" notebook="True"
+      <plugin plugin="ares.editor.modes.entity"
       		tooltip="Editing of game logic, quests, and entities">
 	  <resource file="EntityModePanel.xrc" />
 	  <resource file="PropertyClassPanel.xrc" />
@@ -21,16 +21,16 @@
 	  <resource file="RewardPanel.xrc" />
 	  <resource file="EntityTemplatePanel.xrc" />
       </plugin>
-      <plugin plugin="ares.editor.modes.decal" notebook="True"
+      <plugin plugin="ares.editor.modes.decal"
       		tooltip="Decal painter">
 	  <resource file="DecalModePanel.xrc" />
       </plugin>
       <!--
-      <plugin plugin="ares.editor.modes.curve" notebook="True"
+      <plugin plugin="ares.editor.modes.curve"
       		tooltip="Editing of curved streets">
 	  <resource file="CurveModePanel.xrc" />
       </plugin>
-      <plugin plugin="ares.editor.modes.foliage" notebook="True"
+      <plugin plugin="ares.editor.modes.foliage"
       		tooltip="Foliage painter">
 	  <resource file="FoliageModePanel.xrc" />
       </plugin>

@@ -76,11 +76,13 @@ public:
   EditingMode (iBase* parent);
   virtual ~EditingMode () { }
 
-  virtual bool HasDetailPanel () const { return false; }
   virtual void SetApplication (iAresEditor* app);
   i3DView* Get3DView () const { return view3d; }
-  virtual void SetMainParent (wxWindow* parent) { }
-  virtual bool SetDetailParent (wxWindow* parent) { return false; }
+
+  virtual void SetTopLevelParent (wxWindow* toplevel) { }
+  virtual bool HasMainPanel () const { return false; }
+  virtual void BuildMainPanel (wxWindow* parent) { }
+
   virtual bool Initialize (iObjectRegistry* object_reg);
 
   virtual bool Command (csStringID id, const csString& args)

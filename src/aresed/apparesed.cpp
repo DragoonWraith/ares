@@ -429,7 +429,6 @@ void AppAresEditWX::OnChoicebookChanged (wxChoicebookEvent& event)
     if (editMode) editMode->Stop ();
     editMode = newMode;
     editMode->Start ();
-    ViewDetailPanel ();
   }
   SetMenuState ();
 
@@ -678,7 +677,9 @@ bool AppAresEditWX::ParseCommandLine ()
 bool AppAresEditWX::InitPlugins ()
 {
   const csArray<PluginConfig>& configplug = config->GetPlugins ();
+
   wxChoicebook* notebook = XRCCTRL (*this, "mainChoiceBook", wxChoicebook);
+
   for (size_t i = 0 ; i < configplug.GetSize () ; i++)
   {
     const PluginConfig& pc = configplug.Get (i);
@@ -702,26 +703,24 @@ bool AppAresEditWX::InitPlugins ()
     csString pluginName = plug->GetPluginName ();
 
     plug->SetApplication (static_cast<iAresEditor*> (this));
-
-    if (pc.addToNotebook)
-    {
-      wxPanel* panel = new wxPanel (notebook, wxID_ANY, wxDefaultPosition,
-	wxDefaultSize, wxTAB_TRAVERSAL);
-      notebook->AddPage (panel, wxString::FromUTF8 (pluginName), false);
-      panel->SetToolTip (wxString::FromUTF8 (pc.tooltip));
-      wxBoxSizer* sizer = new wxBoxSizer (wxVERTICAL);
-      panel->SetSizer (sizer);
-      panel->Layout ();
-      plug->SetMainParent (panel);
-    }
-    else
-    {
-      plug->SetMainParent (this);
-    }
+    plug->SetTopLevelParent (this);
 
     csRef<iEditingMode> emode = scfQueryInterface<iEditingMode> (plug);
     if (emode)
     {
+      if (emode->HasMainPanel ())
+      {
+        wxPanel* panel = new wxPanel (notebook, wxID_ANY, wxDefaultPosition,
+	  wxDefaultSize, wxTAB_TRAVERSAL);
+        notebook->AddPage (panel, wxString::FromUTF8 (pluginName), false);
+        panel->SetToolTip (wxString::FromUTF8 (pc.tooltip));
+        wxBoxSizer* sizer = new wxBoxSizer (wxVERTICAL);
+        panel->SetSizer (sizer);
+        panel->Layout ();
+
+	emode->BuildMainPanel (panel);
+      }
+
       emode->AllocContextHandlers (this);
       if (pc.mainMode)
       {
@@ -1035,33 +1034,10 @@ void AppAresEditWX::View3D ()
 {
   wxSplitterWindow* leftRightSplitter = XRCCTRL (*this, "leftRight_Splitter", wxSplitterWindow);
   wxPanel* leftPanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
-  wxPanel* rightAnd3DPanel = XRCCTRL (*this, "rightAnd3DPanel", wxPanel);
+  wxPanel* main3DPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
   wxSize size = leftPanel->GetMinSize ();
   leftRightSplitter->Unsplit ();
-  leftRightSplitter->SplitVertically (leftPanel, rightAnd3DPanel, size.x);
-
-  ViewDetailPanel ();
-}
-
-void AppAresEditWX::ViewDetailPanel ()
-{
-  wxSplitterWindow* leftRight2Splitter = XRCCTRL (*this, "leftRight2_Splitter", wxSplitterWindow);
-  wxPanel* main3DPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
-  wxPanel* rightPanel = XRCCTRL (*this, "rightPanePanel", wxPanel);
-  wxSize size3d = main3DPanel->GetMinSize ();
-  wxSize sizeRight = rightPanel->GetMinSize ();
-  int x = size3d.x;
-  if (editMode && editMode->HasDetailPanel ())
-  {
-    rightPanel->Show ();
-    x -= sizeRight.x;
-  }
-  else
-  {
-    rightPanel->Hide ();
-  }
-  leftRight2Splitter->Unsplit ();
-  leftRight2Splitter->SplitVertically (main3DPanel, rightPanel, x);
+  leftRightSplitter->SplitVertically (leftPanel, main3DPanel, size.x);
 }
 
 void AppAresEditWX::ViewControls ()
@@ -1333,7 +1309,6 @@ void AppAresEditWX::SwitchToMode (const char* name)
     if (editMode) editMode->Stop ();
     editMode = mode;
     editMode->Start ();
-    ViewDetailPanel ();
     SetMenuState ();
   }
   else

@@ -564,6 +564,22 @@ View::View (wxWindow* parent) : parent (parent), lastContextID (wxID_HIGHEST + 1
   changeListener.AttachNew (new ViewChangeListener (this));
 }
 
+void View::Reset ()
+{
+  DestroyBindings ();
+  DestroyActionBindings ();
+
+  lastContextID = wxID_HIGHEST + 10000;
+  bindings.DeleteAll ();
+  bindingsByComponent.DeleteAll ();
+  bindingsByValue.DeleteAll ();
+  disabledComponents.DeleteAll ();
+  changeListener = 0;
+  rmbContexts.DeleteAll ();
+  buttonActions.DeleteAll ();
+  listToHeading.DeleteAll ();
+}
+
 void View::DestroyBindings ()
 {
   ComponentToBinding::GlobalIterator it = bindingsByComponent.GetIterator ();

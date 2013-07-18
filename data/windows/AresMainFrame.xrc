@@ -44,34 +44,10 @@
 											</object>
 										</object>
 									</object>
-									<object class="wxPanel" name="rightAnd3DPanel">
+									<object class="wxPanel" name="main3DPanel">
 										<style>wxTAB_TRAVERSAL</style>
 										<object class="wxBoxSizer">
 											<orient>wxVERTICAL</orient>
-											<object class="sizeritem">
-												<option>1</option>
-												<flag>wxEXPAND</flag>
-												<border>5</border>
-												<object class="wxSplitterWindow" name="leftRight2_Splitter">
-													<style>wxSP_3D</style>
-													<sashpos>0</sashpos>
-													<gravity>0</gravity>
-													<minsize>0</minsize>
-													<orientation>vertical</orientation>
-													<object class="wxPanel" name="main3DPanel">
-														<style>wxTAB_TRAVERSAL</style>
-														<object class="wxBoxSizer">
-															<orient>wxVERTICAL</orient>
-														</object>
-													</object>
-													<object class="wxPanel" name="rightPanePanel">
-														<style>wxTAB_TRAVERSAL</style>
-														<object class="wxBoxSizer">
-															<orient>wxVERTICAL</orient>
-														</object>
-													</object>
-												</object>
-											</object>
 										</object>
 									</object>
 								</object>

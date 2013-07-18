@@ -49,6 +49,7 @@ CurveMode::CurveMode (iBase* parent) : scfImplementationType (this, parent)
 {
   editingCurveFactory = 0;
   name = "Curve";
+  panel = 0;
 }
 
 bool CurveMode::Initialize (iObjectRegistry* object_reg)
@@ -68,12 +69,19 @@ bool CurveMode::Initialize (iObjectRegistry* object_reg)
   return true;
 }
 
-void CurveMode::SetMainParent (wxWindow* parent)
+void CurveMode::SetTopLevelParent (wxWindow* toplevel)
 {
+}
+
+void CurveMode::BuildMainPanel (wxWindow* parent)
+{
+  if (panel)
+  {
+    parent->GetSizer ()->Remove (panel);
+    delete panel;
+  }
   panel = new Panel (this);
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
-  wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("CurveModePanel"));
-
   wxCheckBox* autoSmoothCheckBox = XRCCTRL (*panel, "autoSmoothCheckBox", wxCheckBox);
   autoSmoothCheckBox->SetValue (autoSmooth);
 }
