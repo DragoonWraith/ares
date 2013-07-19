@@ -6,6 +6,9 @@
 /* Define with path to CEL plugins. */
 #undef CEL_PLUGIN_DIR
 
+/* Define with path to CSE plugins. */
+#undef CSE_PLUGIN_DIR
+
 /* Define when compiling for MacOS/X */
 #undef CS_PLATFORM_MACOSX
 
@@ -86,6 +89,9 @@
 
 /* Define to enable CEL. */
 #undef USE_CEL
+
+/* Define to enable CSE. */
+#undef USE_CSE
 
 /* Define to 1 if the X Window System is missing or not being used. */
 #undef X_DISPLAY_MISSING

@@ -117,7 +117,6 @@ AC_DEFINE_UNQUOTED([CEL_PLUGIN_DIR], ["$CEL_PLUGIN_DIR"],
   [Define with path to CEL plugins.])
 ])
 
-
 #----------------------------------------------------------------------------
 # Check if the CEL static plugins lib was built.
 #----------------------------------------------------------------------------
@@ -131,6 +130,28 @@ AS_IF([test $with_cel != no],
     done
     AC_MSG_RESULT([$ares_have_cel_static])
     CS_EMIT_BUILD_PROPERTY([HAVE_CEL_STATIC_PLUGINS], [$ares_have_cel_static])])
+
+
+#----------------------------------------------------------------------------
+# Check for Crystal Editing (CSE)
+#----------------------------------------------------------------------------
+AC_ARG_WITH([cse], [AC_HELP_STRING([--without-cse],
+  [do not look for an installed Crystal Editing SDK; this option is useful
+  only if you need to perform routine maintenance tasks, such as generating
+  project files or converting documentation, without having the CSE SDK
+  installed])])
+AS_IF([test -z "$with_cse"], [with_cse=yes])
+
+AS_IF([test $with_cse != no],
+[CS_PATH_CSE_EMIT([2.1], [],
+  [AC_MSG_ERROR([
+*** CSE could not be found or was unusable. The latest version is always
+*** available from http://cse.crystalspace3d.org/
+])], [csediting_gui], [cse_staticplugins])
+AC_DEFINE([USE_CSE], [], [Define to enable CSE.])
+AC_DEFINE_UNQUOTED([CSE_PLUGIN_DIR], ["$CSE_PLUGIN_DIR"],
+  [Define with path to CSE plugins.])
+])
 
 
 #----------------------------------------------------------------------------

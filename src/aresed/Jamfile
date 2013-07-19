@@ -65,7 +65,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   : # Trigger update of generated code when the plugins list changes
   $(SUBDIR)/Jamfile ;
 
-  ExternalLibs aresed_static : CRYSTAL CEL WX ;
+  ExternalLibs aresed_static : CRYSTAL CEL CSEDITING WX ;
   SubVariant ;
 }
 
