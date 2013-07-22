@@ -260,6 +260,17 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 {
 }
 
+void EntityMode::BuildDetailGrid ()
+{
+  wxPanel* detailPanel = XRCCTRL (*panel, "detail_Panel", wxPanel);
+
+  //detailGrid = new wxPropertyGrid (detailPanel);
+  //detailPanel->GetSizer ()->Add (detailGrid);
+
+  //detailGrid->Append (new wxStringProperty (wxT ("Label"), wxT ("Name"), wxT ("Initial Value")));
+  //detailGrid->Append (new wxIntProperty (wxT ("Int Label"), wxPG_LABEL, 123));
+}
+
 void EntityMode::BuildMainPanel (wxWindow* parent)
 {
   if (panel)
@@ -273,20 +284,24 @@ void EntityMode::BuildMainPanel (wxWindow* parent)
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
 
-  pcPanel = new PropertyClassPanel (panel, view3d->GetApplication ()->GetUI (), this);
+  wxPanel* childPanel = XRCCTRL (*panel, "childPanel", wxPanel);
+
+  pcPanel = new PropertyClassPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   pcPanel->Hide ();
 
-  triggerPanel = new TriggerPanel (panel, view3d->GetApplication ()->GetUI (), this);
+  triggerPanel = new TriggerPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   triggerPanel->Hide ();
 
-  rewardPanel = new RewardPanel (panel, view3d->GetApplication ()->GetUI (), this);
+  rewardPanel = new RewardPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   rewardPanel->Hide ();
 
-  sequencePanel = new SequencePanel (panel, view3d->GetApplication ()->GetUI (), this);
+  sequencePanel = new SequencePanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   sequencePanel->Hide ();
 
-  tplPanel = new EntityTemplatePanel (panel, view3d->GetApplication ()->GetUI (), this);
+  tplPanel = new EntityTemplatePanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   tplPanel->Hide ();
+
+  BuildDetailGrid ();
 
   graphView = markerMgr->CreateGraphView ();
   graphView->Clear ();

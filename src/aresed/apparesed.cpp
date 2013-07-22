@@ -432,6 +432,8 @@ void AppAresEditWX::OnChoicebookChanged (wxChoicebookEvent& event)
   }
   SetMenuState ();
 
+  View3D ();
+
   //if (page && !page->IsEnabled () && oldPageIdx != csArrayItemNotFound)
   //{
     //printf ("REVERT %d\n", oldPageIdx);
@@ -1035,7 +1037,17 @@ void AppAresEditWX::View3D ()
   wxSplitterWindow* leftRightSplitter = XRCCTRL (*this, "leftRight_Splitter", wxSplitterWindow);
   wxPanel* leftPanel = XRCCTRL (*this, "leftPanePanel", wxPanel);
   wxPanel* main3DPanel = XRCCTRL (*this, "main3DPanel", wxPanel);
+
   wxSize size = leftPanel->GetMinSize ();
+
+  wxChoicebook* notebook = XRCCTRL (*this, "mainChoiceBook", wxChoicebook);
+  wxWindow* page = notebook->GetCurrentPage ();
+  if (page)
+  {
+    size = page->GetBestSize ();
+    printf ("page->GetBestSize=%d,%d\n", size.x, size.y); fflush (stdout);
+  }
+
   leftRightSplitter->Unsplit ();
   leftRightSplitter->SplitVertically (leftPanel, main3DPanel, size.x);
 }

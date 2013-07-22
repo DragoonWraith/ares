@@ -4,48 +4,79 @@
 		<style>wxTAB_TRAVERSAL</style>
 		<size>500,300</size>
 		<object class="wxBoxSizer">
-			<orient>wxVERTICAL</orient>
+			<minsize>500,-1</minsize>
+			<orient>wxHORIZONTAL</orient>
 			<object class="sizeritem">
 				<option>1</option>
-				<flag>wxEXPAND | wxALL</flag>
+				<flag>wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxNotebook" name="type_Notebook">
-					<style>wxNB_BOTTOM</style>
-					<object class="notebookpage">
-						<label>Templates</label>
-						<selected>1</selected>
-						<object class="wxPanel" name="templateList_Panel">
-							<style>wxTAB_TRAVERSAL</style>
-							<object class="wxBoxSizer">
-								<orient>wxVERTICAL</orient>
-								<object class="sizeritem">
-									<option>1</option>
-									<flag>wxALL|wxEXPAND</flag>
-									<border>5</border>
-									<object class="wxListCtrl" name="template_List">
-										<style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
+				<object class="wxBoxSizer">
+					<orient>wxVERTICAL</orient>
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxEXPAND | wxALL</flag>
+						<border>5</border>
+						<object class="wxNotebook" name="type_Notebook">
+							<style>wxNB_BOTTOM</style>
+							<object class="notebookpage">
+								<label>Templates</label>
+								<selected>1</selected>
+								<object class="wxPanel" name="templateList_Panel">
+									<style>wxTAB_TRAVERSAL</style>
+									<object class="wxBoxSizer">
+										<orient>wxVERTICAL</orient>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxListCtrl" name="template_List">
+												<style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
+											</object>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="notebookpage">
+								<label>Quests</label>
+								<selected>0</selected>
+								<object class="wxPanel" name="questList_Panel">
+									<style>wxTAB_TRAVERSAL</style>
+									<object class="wxBoxSizer">
+										<orient>wxVERTICAL</orient>
+										<object class="sizeritem">
+											<option>1</option>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<object class="wxListCtrl" name="quest_List">
+												<style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
+											</object>
+										</object>
 									</object>
 								</object>
 							</object>
 						</object>
 					</object>
-					<object class="notebookpage">
-						<label>Quests</label>
-						<selected>0</selected>
-						<object class="wxPanel" name="questList_Panel">
+					<object class="sizeritem">
+						<option>1</option>
+						<flag>wxEXPAND | wxALL</flag>
+						<border>5</border>
+						<object class="wxPanel" name="childPanel">
 							<style>wxTAB_TRAVERSAL</style>
 							<object class="wxBoxSizer">
 								<orient>wxVERTICAL</orient>
-								<object class="sizeritem">
-									<option>1</option>
-									<flag>wxALL|wxEXPAND</flag>
-									<border>5</border>
-									<object class="wxListCtrl" name="quest_List">
-										<style>wxLC_REPORT|wxLC_SINGLE_SEL</style>
-									</object>
-								</object>
 							</object>
 						</object>
+					</object>
+				</object>
+			</object>
+			<object class="sizeritem">
+				<option>1</option>
+				<flag>wxEXPAND | wxALL</flag>
+				<border>5</border>
+				<object class="wxPanel" name="detail_Panel">
+					<style>wxTAB_TRAVERSAL</style>
+					<object class="wxBoxSizer">
+						<orient>wxVERTICAL</orient>
 					</object>
 				</object>
 			</object>

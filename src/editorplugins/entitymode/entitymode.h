@@ -30,6 +30,8 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "physicallayer/datatype.h"
 
+#include "cseditor/wx/propgrid/propgrid.h"
+
 struct iGeometryGenerator;
 struct iCelEntityTemplate;
 struct iCelPropertyClassTemplate;
@@ -102,6 +104,8 @@ private:
 
   Ares::View view;
   csRef<Ares::Value> questsValue;
+
+  wxPropertyGrid* detailGrid;
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
   void BuildRewardGraph (iRewardFactoryArray* rewards,
@@ -204,6 +208,8 @@ private:
   PropertyClassCopy Copy (iCelPropertyClassTemplate* pctpl);
   void ClearCopy ();
   bool HasPaste ();
+
+  void BuildDetailGrid ();
 
 public:
   EntityMode (iBase* parent);

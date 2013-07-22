@@ -5,6 +5,7 @@ Plugin entitymode :
   [ Wildcard *.h *.hpp *.hxx *.H *.c *.cc *.cpp *.cxx *.C *.m *.mm *.M ] ;
 ExternalLibs entitymode : CRYSTAL ;
 ExternalLibs entitymode : CEL ;
+ExternalLibs entitymode : CSE ;
 ExternalLibs entitymode : WX ;
 LinkWith entitymode : edcommon ;
 
