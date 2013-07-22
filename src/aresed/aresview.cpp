@@ -1368,15 +1368,6 @@ void AresEdit3DView::ConvertPhysics ()
     pctpl->SetProperty (pl->FetchStringID ("jumpspeed"), 1.0f);
     pctpl->SetProperty (pl->FetchStringID ("rotspeed"), .5f);
   }
-  {
-    iCelPropertyClassTemplate* pctpl = playerTpl->CreatePropertyClassTemplate ();
-    pctpl->SetName ("pcphysics.object");
-    InspectTools::AddAction (pl, pm, pctpl, "SetSystem",
-	CEL_DATA_STRING, "systempcent", "World",
-	CEL_DATA_NONE);
-    InspectTools::AddAction (pl, pm, pctpl, "SetColliderBoundingBox",
-	CEL_DATA_NONE);
-  }
 
   EnablePhysics (true);
 }

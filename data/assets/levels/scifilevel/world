@@ -30,6 +30,7 @@
       <move>
         <v x="0.0" z="0.0" y="0.0" />
       </move>
+      <!--
       <addon plugin="crystalspace.dynamics.loader">
         <system name="ares.dynamics.system.outside">
            <colliderbox x="400" y="10" z="400">
@@ -70,6 +71,7 @@
            </colliderbox>
         </system>
       </addon>
+-->
     </meshref>
     <light name="Lamp">
       <center x="7.268602" z="6.040940" y="3.636661" />

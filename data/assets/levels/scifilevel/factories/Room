@@ -780,5 +780,91 @@
         </indexbuffer>
       </submesh>
     </params>
+	    <addon plugin="crystalspace.physics.loader">
+	      <rigidbody state='static'>
+		<collider>
+	           <box x="400" y="10" z="400">
+	             <move y="-5" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x="400" y="1" z="400">
+	             <move y="5.5" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x="18" y="5" z=".5">
+	             <move y="2.5" z="8.75" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x="18" y="5" z=".5">
+	             <move y="2.5" z="-8.75" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x=".5" y="5" z="18">
+	             <move y="2.5" x="8.75" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x=".5" y="5" z="18">
+	             <move y="2.5" x="-8.75" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x=".5" y="5" z="11">
+	             <move y="2.5" z="3" x="-.25" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x=".5" y="5" z="4">
+	             <move y="2.5" z="-6.5" x="-.25" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x=".5" y="1" z="2">
+	             <move y="4.5" z="-3.5" x="-.25" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x="2" y="5" z=".5">
+	             <move y="2.5" x="1" z="3.55" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x=".8" y="5" z=".5">
+	             <move y="2.5" x="-8.1" z="-1.45" />
+	           </box>
+		 </collider>
+	      </rigidbody>
+	      <rigidbody state='static'>
+		 <collider>
+	           <box x="4.9" y="5" z=".5">
+	             <move y="2.5" x="-2.95" z="-1.45" />
+	           </box>
+		</collider>
+	      </rigidbody>
+	    </addon>
   </meshfact>
 </library>
