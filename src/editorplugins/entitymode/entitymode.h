@@ -210,6 +210,7 @@ private:
   bool HasPaste ();
 
   void BuildDetailGrid ();
+  void FillDetailGrid (iCelEntityTemplate* tpl);
 
 public:
   EntityMode (iBase* parent);
