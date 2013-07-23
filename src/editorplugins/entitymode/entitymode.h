@@ -211,6 +211,8 @@ private:
 
   void BuildDetailGrid ();
   void FillDetailGrid (iCelEntityTemplate* tpl);
+  void FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
+  void FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
 
 public:
   EntityMode (iBase* parent);

@@ -292,56 +292,73 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
     wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
       new wxPropertyCategory (wxString::FromUTF8 (s)));
     if (csString ("pctools.properties") == pctpl->GetName ())
-    {
-    }
+      FillDetailPCProperties (pcProp, pctpl);
     else if (csString ("pclogic.quest") == pctpl->GetName ())
+      FillDetailPCQuest (pcProp, pctpl);
+  }
+  detailGrid->FitColumns ();
+  detailGrid->Thaw ();
+}
+
+void EntityMode::FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+{
+  csString s;
+  csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
+    "NewQuest", "name");
+  detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Quest"), wxT ("Quest"),
+	  wxString::FromUTF8 (questName)));
+  size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
+  if (nqIdx != csArrayItemNotFound)
+  {
+    size_t idx = 0;
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> it = pctpl->GetProperty (nqIdx, id, data);
+    while (it->HasNext ())
     {
-      csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
-        "NewQuest", "name");
-      detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Quest"), wxT ("Quest"),
-	      wxString::FromUTF8 (questName)));
-      size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
-      if (nqIdx != csArrayItemNotFound)
-      {
-        csStringID id;
-        celData data;
-        csRef<iCelParameterIterator> it = pctpl->GetProperty (nqIdx, id, data);
-        while (it->HasNext ())
-        {
-          csStringID nextID;
-          iParameter* nextPar = it->Next (nextID);
-          csString name = pl->FetchString (nextID);
-          if (name == "name") continue;
-          csString val = nextPar->GetOriginalExpression ();
-          csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
-	  s.Format ("Par (%s)", name.GetData ());
-	  wxPGProperty* parProp = detailGrid->AppendIn (pcProp,
-	      new wxPropertyCategory (wxString::FromUTF8 (s)));
-	  detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Type"), wxT ("Type"),
-		wxString::FromUTF8 (type)));
-	  detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
-		wxString::FromUTF8 (val)));
-	}
-      }
+      csStringID nextID;
+      iParameter* nextPar = it->Next (nextID);
+      csString name = pl->FetchString (nextID);
+      if (name == "name") continue;
+      csString val = nextPar->GetOriginalExpression ();
+      csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
+      s.Format ("Par (%d)", idx);
+      idx++;
+      wxPGProperty* parProp = detailGrid->AppendIn (pcProp,
+	  new wxStringProperty (wxT ("Par"), wxString::FromUTF8 (s), wxT ("<composed>")));
+      detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
+	    wxString::FromUTF8 (name)));
+      detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Type"), wxT ("Type"),
+	    wxString::FromUTF8 (type)));
+      detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
+	    wxString::FromUTF8 (val)));
     }
   }
-  detailGrid->Thaw ();
+}
 
-#if 0
-  detailGrid->Append (new wxStringProperty (wxT ("Label"), wxT ("Name"), wxT ("Initial Value")));
-  detailGrid->Append (new wxIntProperty (wxT ("Int Label"), wxPG_LABEL, 123));
-  detailGrid->Append (new wxArrayStringProperty (wxT ("String Array Label"), wxT ("ArrayName")));
+void EntityMode::FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+{
+  csString s;
+  for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+  {
+    csStringID id;
+    celData data;
+    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+    csString value;
+    celParameterTools::ToString (data, value);
+    csString name = pl->FetchString (id);
+    csString type = InspectTools::TypeToString (data);
 
-  wxPGProperty* questProp = detailGrid->Append (new wxPropertyCategory (wxT ("Quest")));
-  detailGrid->Append (new wxStringProperty (wxT ("Q Label 1"), wxT ("Q Name 1"), wxT ("Initial Value")));
-  detailGrid->Append (new wxStringProperty (wxT ("Q Label 2"), wxT ("Q Name 2"), wxT ("Initial Value")));
-
-  detailGrid->AppendIn (questProp, new wxPropertyCategory (wxT ("State")));
-  detailGrid->Append (new wxStringProperty (wxT ("S Label 1"), wxT ("S Name 1"), wxT ("Initial Value")));
-
-  detailGrid->Append (new wxPropertyCategory (wxT ("Quest")));
-  detailGrid->Append (new wxStringProperty (wxT ("Q Label 3"), wxT ("Q Name 3"), wxT ("Initial Value")));
-#endif
+    s.Format ("Prop (%d)", idx);
+    wxPGProperty* parProp = detailGrid->AppendIn (pcProp,
+	  new wxStringProperty (wxT ("Prop"), wxString::FromUTF8 (s), wxT ("<composed>")));
+    detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
+	    wxString::FromUTF8 (name)));
+    detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Type"), wxT ("Type"),
+	    wxString::FromUTF8 (type)));
+    detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
+	    wxString::FromUTF8 (value)));
+  }
 }
 
 void EntityMode::BuildMainPanel (wxWindow* parent)
