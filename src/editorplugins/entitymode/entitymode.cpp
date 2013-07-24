@@ -287,6 +287,24 @@ void EntityMode::BuildDetailGrid ()
   typesArray.Add (wxT ("vector2")); typesArrayIdx.Add (CEL_DATA_VECTOR2);
   typesArray.Add (wxT ("vector3")); typesArrayIdx.Add (CEL_DATA_VECTOR3);
   typesArray.Add (wxT ("color"));   typesArrayIdx.Add (CEL_DATA_COLOR);
+
+  pctypesArray.Add (wxT ("pcobject.mesh"));
+  pctypesArray.Add (wxT ("pctools.properties"));
+  pctypesArray.Add (wxT ("pctools.inventory"));
+  pctypesArray.Add (wxT ("pclogic.quest"));
+  pctypesArray.Add (wxT ("pclogic.spawn"));
+  pctypesArray.Add (wxT ("pclogic.trigger"));
+  pctypesArray.Add (wxT ("pclogic.wire"));
+  pctypesArray.Add (wxT ("pctools.messenger"));
+  pctypesArray.Add (wxT ("pcinput.standard"));
+  pctypesArray.Add (wxT ("pcphysics.object"));
+  pctypesArray.Add (wxT ("pcphysics.system"));
+  pctypesArray.Add (wxT ("pccamera.old"));
+  pctypesArray.Add (wxT ("pcmove.actor.dynamic"));
+  pctypesArray.Add (wxT ("pcmove.actor.standard"));
+  pctypesArray.Add (wxT ("pcmove.actor.wasd"));
+  pctypesArray.Add (wxT ("pcworld.dynamic"));
+  pctypesArray.Add (wxT ("ares.gamecontrol"));
 }
 
 void EntityMode::AppendPar (
@@ -304,6 +322,16 @@ void EntityMode::AppendPar (
 	typesArray, typesArrayIdx, type));
   detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
 	wxString::FromUTF8 (value)));
+}
+
+void EntityMode::AppendEntityPar (
+    wxPGProperty* parent, const char* partype, const char* entityName)
+{
+  wxStringProperty* prop = new wxStringProperty (wxString::FromUTF8 (partype),
+      wxString::FromUTF8 (partype),
+      wxString::FromUTF8 (entityName));
+  detailGrid->AppendIn (parent, prop);
+  detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
 }
 
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
@@ -328,8 +356,8 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
     wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
       new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
 
-    detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
-	wxString::FromUTF8 (pctpl->GetName ())));
+    detailGrid->AppendIn (pcProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
+	pctypesArray, wxArrayInt(), pctypesArray.Index (wxString::FromUTF8 (pctpl->GetName ()))));
     detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Tag"), wxT ("Tag"),
 	wxString::FromUTF8 (pctpl->GetTag ())));
 
@@ -337,9 +365,30 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
       FillDetailPCProperties (pcProp, pctpl);
     else if (csString ("pclogic.quest") == pctpl->GetName ())
       FillDetailPCQuest (pcProp, pctpl);
+    else if (csString ("pclogic.trigger") == pctpl->GetName ())
+      FillDetailPCTrigger (pcProp, pctpl);
   }
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
+}
+
+void EntityMode::FillDetailPCTrigger (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+{
+  bool valid;
+  long delay = InspectTools::GetPropertyValueLong (pl, pctpl, "delay", &valid);
+  detailGrid->AppendIn (pcProp, new wxIntProperty (wxT ("Delay"), wxT ("Delay"),
+	valid ? delay : 200));
+  long jitter = InspectTools::GetPropertyValueLong (pl, pctpl, "jitter", &valid);
+  detailGrid->AppendIn (pcProp, new wxIntProperty (wxT ("Jitter"), wxT ("Jitter"),
+	valid ? jitter : 10));
+
+  csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
+  AppendEntityPar (pcProp, "Monitor", monitor);
+
+  csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
+  detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Class"), wxT ("Class"),
+	wxString::FromUTF8 (clazz.GetData ())));
+  //@@@
 }
 
 void EntityMode::FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)

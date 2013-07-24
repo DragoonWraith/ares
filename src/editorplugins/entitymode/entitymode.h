@@ -107,12 +107,16 @@ private:
 
   //--- For the property grid.
   wxPropertyGrid* detailGrid;
+
   wxArrayString typesArray;
   wxArrayInt typesArrayIdx;
+  wxArrayString pctypesArray;
 
   void AppendPar (
     wxPGProperty* parent, const char* partype, size_t idx,
     const char* name, celDataType type, const char* value);
+  void AppendEntityPar (
+    wxPGProperty* parent, const char* partype, const char* entityName);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -220,6 +224,7 @@ private:
   void BuildDetailGrid ();
   void FillDetailGrid (iCelEntityTemplate* tpl);
   void FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
+  void FillDetailPCTrigger (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
   void FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
 
 public:
