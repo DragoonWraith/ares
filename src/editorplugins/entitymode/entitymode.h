@@ -105,7 +105,15 @@ private:
   Ares::View view;
   csRef<Ares::Value> questsValue;
 
+  //--- For the property grid.
   wxPropertyGrid* detailGrid;
+  wxArrayString typesArray;
+  wxArrayInt typesArrayIdx;
+
+  void AppendPar (
+    wxPGProperty* parent, const char* partype, size_t idx,
+    const char* name, celDataType type, const char* value);
+  //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
   void BuildRewardGraph (iRewardFactoryArray* rewards,
@@ -267,6 +275,7 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
+  void OnPropertyGridChanged (wxPropertyGridEvent& event);
   void OnTemplateSelect ();
   void OnQuestSelect ();
   void OnDelete ();
@@ -310,6 +319,7 @@ public:
     void OnRewardDown (wxCommandEvent& event) { s->OnRewardMove (1); }
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
+    void OnPropertyGridChanged (wxPropertyGridEvent& event) { s->OnPropertyGridChanged (event); }
 
   private:
     EntityMode* s;

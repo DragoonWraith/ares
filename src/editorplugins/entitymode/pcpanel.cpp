@@ -1910,6 +1910,7 @@ public:
     csString type = suggestion.Get ("Type", (const char*)0);
     if (!SetProperty (type, name, value)) return 0;
     Value* child = NewChild (name, value, type);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     FireValueChanged ();
     return child;
   }
@@ -1923,6 +1924,7 @@ public:
     selectedValue->GetChildByName ("Name")->SetStringValue (name);
     selectedValue->GetChildByName ("Value")->SetStringValue (value);
     selectedValue->GetChildByName ("Type")->SetStringValue (type);
+    pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
     FireValueChanged ();
     return true;
   }

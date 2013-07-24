@@ -53,9 +53,13 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
+#define PG_ID (wxID_HIGHEST+1)
+
+
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LIST_ITEM_SELECTED (XRCID("template_List"), EntityMode::Panel::OnTemplateSelect)
   EVT_LIST_ITEM_SELECTED (XRCID("quest_List"), EntityMode::Panel::OnQuestSelect)
+  EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
@@ -262,13 +266,44 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 {
 }
 
+void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
+{
+  printf ("PG change!\n"); fflush (stdout);
+}
+
 void EntityMode::BuildDetailGrid ()
 {
   wxPanel* detailPanel = XRCCTRL (*panel, "detail_Panel", wxPanel);
 
   detailGrid = new wxPropertyGrid (detailPanel);
+  detailGrid->SetId (PG_ID);
   detailPanel->GetSizer ()->Add (detailGrid, 1, wxEXPAND | wxALL);
   //detailGrid->SetColumnCount (3);
+
+  typesArray.Add (wxT ("string"));  typesArrayIdx.Add (CEL_DATA_STRING);
+  typesArray.Add (wxT ("float"));   typesArrayIdx.Add (CEL_DATA_FLOAT);
+  typesArray.Add (wxT ("long"));    typesArrayIdx.Add (CEL_DATA_LONG);
+  typesArray.Add (wxT ("bool"));    typesArrayIdx.Add (CEL_DATA_BOOL);
+  typesArray.Add (wxT ("vector2")); typesArrayIdx.Add (CEL_DATA_VECTOR2);
+  typesArray.Add (wxT ("vector3")); typesArrayIdx.Add (CEL_DATA_VECTOR3);
+  typesArray.Add (wxT ("color"));   typesArrayIdx.Add (CEL_DATA_COLOR);
+}
+
+void EntityMode::AppendPar (
+    wxPGProperty* parent, const char* partype, size_t idx,
+    const char* name, celDataType type, const char* value)
+{
+  csString s;
+  s.Format ("%s (%d)", partype, idx);
+  wxPGProperty* parProp = detailGrid->AppendIn (parent,
+      new wxStringProperty (wxString::FromUTF8 (partype),
+	wxString::FromUTF8 (s), wxT ("<composed>")));
+  detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
+	wxString::FromUTF8 (name)));
+  detailGrid->AppendIn (parProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
+	typesArray, typesArrayIdx, type));
+  detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
+	wxString::FromUTF8 (value)));
 }
 
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
@@ -276,21 +311,28 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   detailGrid->Freeze ();
   detailGrid->Clear ();
 
+  if (!tpl)
+  {
+    detailGrid->Thaw ();
+    return;
+  }
+
   csString s;
   s.Format ("Template (%s)", tpl->GetName ());
   wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
-  templateProp->SetValue (wxT ("ssssss"));
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-
-    if (pctpl->GetTag ())
-      s.Format ("PC (%s,%s)", pctpl->GetName (), pctpl->GetTag ());
-    else
-      s.Format ("PC (%s)", pctpl->GetName ());
+    s.Format ("PC%d", i);
     wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
-      new wxPropertyCategory (wxString::FromUTF8 (s)));
+      new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
+
+    detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
+	wxString::FromUTF8 (pctpl->GetName ())));
+    detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Tag"), wxT ("Tag"),
+	wxString::FromUTF8 (pctpl->GetTag ())));
+
     if (csString ("pctools.properties") == pctpl->GetName ())
       FillDetailPCProperties (pcProp, pctpl);
     else if (csString ("pclogic.quest") == pctpl->GetName ())
@@ -302,7 +344,6 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
 
 void EntityMode::FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
 {
-  csString s;
   csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
     "NewQuest", "name");
   detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Quest"), wxT ("Quest"),
@@ -321,24 +362,14 @@ void EntityMode::FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTempl
       csString name = pl->FetchString (nextID);
       if (name == "name") continue;
       csString val = nextPar->GetOriginalExpression ();
-      csString type = InspectTools::TypeToString (nextPar->GetPossibleType ());
-      s.Format ("Par (%d)", idx);
+      AppendPar (pcProp, "Par", idx, name, nextPar->GetPossibleType (), val);
       idx++;
-      wxPGProperty* parProp = detailGrid->AppendIn (pcProp,
-	  new wxStringProperty (wxT ("Par"), wxString::FromUTF8 (s), wxT ("<composed>")));
-      detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
-	    wxString::FromUTF8 (name)));
-      detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Type"), wxT ("Type"),
-	    wxString::FromUTF8 (type)));
-      detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
-	    wxString::FromUTF8 (val)));
     }
   }
 }
 
 void EntityMode::FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
 {
-  csString s;
   for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
   {
     csStringID id;
@@ -347,17 +378,7 @@ void EntityMode::FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClass
     csString value;
     celParameterTools::ToString (data, value);
     csString name = pl->FetchString (id);
-    csString type = InspectTools::TypeToString (data);
-
-    s.Format ("Prop (%d)", idx);
-    wxPGProperty* parProp = detailGrid->AppendIn (pcProp,
-	  new wxStringProperty (wxT ("Prop"), wxString::FromUTF8 (s), wxT ("<composed>")));
-    detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
-	    wxString::FromUTF8 (name)));
-    detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Type"), wxT ("Type"),
-	    wxString::FromUTF8 (type)));
-    detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
-	    wxString::FromUTF8 (value)));
+    AppendPar (pcProp, "Prop", idx, name, InspectTools::ResolveType (data), value);
   }
 }
 
@@ -878,11 +899,14 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
     graphView->FinishRefresh ();
     graphView->SetVisible (true);
     app->SetObjectForComment ("quest", editQuestMode->QueryObject ());
+    FillDetailGrid (0);
   }
   else
   {
     BuildTemplateGraph (currentTemplate);
     if (pctpl) SelectPC (pctpl);
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    FillDetailGrid (tpl);
   }
 }
 
@@ -1071,11 +1095,11 @@ void EntityMode::OnTemplateSelect ()
   if (editQuestMode || currentTemplate != templateName)
   {
     editQuestMode = 0;
-    BuildTemplateGraph (templateName);
+    currentTemplate = templateName;
+    RefreshView ();
     ActivateNode (0);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     app->SetObjectForComment ("template", tpl->QueryObject ());
-    FillDetailGrid (tpl);
   }
 }
 
@@ -1085,6 +1109,7 @@ void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
     tpl = pl->FindEntityTemplate (currentTemplate);
   view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
+  RefreshView ();
 }
 
 void EntityMode::RegisterModification (iQuestFactory* quest)

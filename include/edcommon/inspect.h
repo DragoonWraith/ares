@@ -300,12 +300,17 @@ public:
     }
   }
 
-  static const char* TypeToString (const celData& data)
+  static celDataType ResolveType (const celData& data)
   {
     if (data.type == CEL_DATA_PARAMETER)
-      return TypeToString (data.value.par.partype);
+      return data.value.par.partype;
     else
-      return TypeToString (data.type);
+      return data.type;
+  }
+
+  static const char* TypeToString (const celData& data)
+  {
+    return TypeToString (ResolveType (data));
   }
 
   static const char* TypeToString (celDataType type)
