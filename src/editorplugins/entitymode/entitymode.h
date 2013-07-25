@@ -115,8 +115,9 @@ private:
   void AppendPar (
     wxPGProperty* parent, const char* partype, size_t idx,
     const char* name, celDataType type, const char* value);
-  void AppendEntityPar (
-    wxPGProperty* parent, const char* partype, const char* entityName);
+  void AppendButtonPar (
+    wxPGProperty* parent, const char* partype, const char* type, const char* name);
+  bool UpdatePCFromGrid (const csString& propname);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -281,6 +282,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   void OnPropertyGridChanged (wxPropertyGridEvent& event);
+  void OnPropertyGridButton (wxCommandEvent& event);
   void OnTemplateSelect ();
   void OnQuestSelect ();
   void OnDelete ();
@@ -325,6 +327,7 @@ public:
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
     void OnPropertyGridChanged (wxPropertyGridEvent& event) { s->OnPropertyGridChanged (event); }
+    void OnPropertyGridButton (wxCommandEvent& event) { s->OnPropertyGridButton (event); }
 
   private:
     EntityMode* s;

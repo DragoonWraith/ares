@@ -60,6 +60,7 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LIST_ITEM_SELECTED (XRCID("template_List"), EntityMode::Panel::OnTemplateSelect)
   EVT_LIST_ITEM_SELECTED (XRCID("quest_List"), EntityMode::Panel::OnQuestSelect)
   EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
+  EVT_BUTTON (PG_ID, EntityMode::Panel::OnPropertyGridButton)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
@@ -266,9 +267,66 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 {
 }
 
+// ------------------------------------------------------------------------
+
+static wxPGProperty* FindPCProperty (wxPGProperty* prop)
+{
+  while (prop)
+  {
+    csString propName = (const char*)prop->GetName ().mb_str (wxConvUTF8);
+    if (propName.StartsWith ("PC:")) return prop;
+    prop = prop->GetParent ();
+  }
+  return prop;
+}
+
+
+void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
+{
+  using namespace Ares;
+
+  wxPGProperty* selectedProperty = detailGrid->GetSelection ();
+  if (selectedProperty)
+  {
+    csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
+    iUIManager* ui = view3d->GetApplication ()->GetUI ();
+    Value* chosen = 0;
+    int col;
+    if (propName.StartsWith ("E:"))
+    {
+      csRef<Value> objects = view3d->GetModelRepository ()->GetObjectsWithEntityValue ();
+      chosen = ui->AskDialog (
+	  "Select an entity", objects, "Entity,Template,Dynfact,Logic",
+	    DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
+      col = DYNOBJ_COL_ENTITY;
+    }
+    else if (propName.StartsWith ("Q:"))
+    {
+      csRef<Value> objects = view3d->GetModelRepository ()->GetQuestsValue ();
+      chosen = ui->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
+	    QUEST_COL_MODIFIED);
+      col = QUEST_COL_NAME;
+    }
+    if (chosen)
+    {
+      csString n = chosen->GetStringArrayValue ()->Get (col);
+      selectedProperty->SetValue (wxString::FromUTF8 (n));
+    }
+  }
+}
+
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
   printf ("PG change!\n"); fflush (stdout);
+  wxPGProperty* selectedProperty = event.GetProperty ();
+  selectedProperty = FindPCProperty (selectedProperty);
+  if (selectedProperty)
+  {
+    csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
+    printf ("Prop name: %s\n", propName.GetData ()); fflush (stdout);
+    if (!UpdatePCFromGrid (propName))
+      event.Veto ();
+  }
 }
 
 void EntityMode::BuildDetailGrid ()
@@ -324,12 +382,13 @@ void EntityMode::AppendPar (
 	wxString::FromUTF8 (value)));
 }
 
-void EntityMode::AppendEntityPar (
-    wxPGProperty* parent, const char* partype, const char* entityName)
+void EntityMode::AppendButtonPar (
+    wxPGProperty* parent, const char* partype, const char* type, const char* name)
 {
-  wxStringProperty* prop = new wxStringProperty (wxString::FromUTF8 (partype),
+  wxStringProperty* prop = new wxStringProperty (
       wxString::FromUTF8 (partype),
-      wxString::FromUTF8 (entityName));
+      wxString::FromUTF8 (csString (type) + partype),
+      wxString::FromUTF8 (name));
   detailGrid->AppendIn (parent, prop);
   detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
 }
@@ -352,7 +411,7 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-    s.Format ("PC%d", i);
+    s.Format ("PC:%d", i);
     wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
       new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
 
@@ -383,7 +442,7 @@ void EntityMode::FillDetailPCTrigger (wxPGProperty* pcProp, iCelPropertyClassTem
 	valid ? jitter : 10));
 
   csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
-  AppendEntityPar (pcProp, "Monitor", monitor);
+  AppendButtonPar (pcProp, "Monitor", "E:", monitor);
 
   csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
   detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Class"), wxT ("Class"),
@@ -395,8 +454,7 @@ void EntityMode::FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTempl
 {
   csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
     "NewQuest", "name");
-  detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Quest"), wxT ("Quest"),
-	  wxString::FromUTF8 (questName)));
+  AppendButtonPar (pcProp, "Quest", "Q:", questName);
   size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
   if (nqIdx != csArrayItemNotFound)
   {
@@ -430,6 +488,37 @@ void EntityMode::FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClass
     AppendPar (pcProp, "Prop", idx, name, InspectTools::ResolveType (data), value);
   }
 }
+
+bool EntityMode::UpdatePCFromGrid (const csString& propname)
+{
+  int idx;
+  csScanStr (propname.GetData () + 3, "%d", &idx);
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (idx);
+
+  wxString value;
+
+  value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Tag"));
+  csString tag = (const char*)value.mb_str (wxConvUTF8);
+  printf ("tag = %s\n", tag.GetData ()); fflush (stdout);
+
+  iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pctpl->GetName (), tag);
+  if (pc && pc != pctpl)
+  {
+    iUIManager* ui = view3d->GetApplication ()->GetUI ();
+    ui->Error ("Property class with this name and tag already exists!");
+    return false;
+  }
+
+
+  value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Type"));
+  int i = detailGrid->GetPropertyValueAsInt (wxString::FromUTF8 (propname + ".Type"));
+  csString type = (const char*)value.mb_str (wxConvUTF8);
+  printf ("type = %s/%d\n", type.GetData (), i); fflush (stdout);
+  return true;
+}
+
+// ------------------------------------------------------------------------
 
 void EntityMode::BuildMainPanel (wxWindow* parent)
 {
