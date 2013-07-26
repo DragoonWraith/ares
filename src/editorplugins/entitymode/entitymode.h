@@ -117,7 +117,11 @@ private:
     const char* name, celDataType type, const char* value);
   void AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name);
-  bool UpdatePCFromGrid (const csString& propname);
+  bool UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname);
+  bool ValidateGridChange (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, const csString& value);
+  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
+      csString& selectedPropName);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -281,6 +285,7 @@ public:
   virtual bool OnMouseUp(iEvent& ev, uint but, int mouseX, int mouseY);
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
+  void OnPropertyGridChanging (wxPropertyGridEvent& event);
   void OnPropertyGridChanged (wxPropertyGridEvent& event);
   void OnPropertyGridButton (wxCommandEvent& event);
   void OnTemplateSelect ();
@@ -326,6 +331,7 @@ public:
     void OnRewardDown (wxCommandEvent& event) { s->OnRewardMove (1); }
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
+    void OnPropertyGridChanging (wxPropertyGridEvent& event) { s->OnPropertyGridChanging (event); }
     void OnPropertyGridChanged (wxPropertyGridEvent& event) { s->OnPropertyGridChanged (event); }
     void OnPropertyGridButton (wxCommandEvent& event) { s->OnPropertyGridButton (event); }
 

@@ -59,6 +59,7 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LIST_ITEM_SELECTED (XRCID("template_List"), EntityMode::Panel::OnTemplateSelect)
   EVT_LIST_ITEM_SELECTED (XRCID("quest_List"), EntityMode::Panel::OnQuestSelect)
+  EVT_PG_CHANGING (PG_ID, EntityMode::Panel::OnPropertyGridChanging)
   EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
   EVT_BUTTON (PG_ID, EntityMode::Panel::OnPropertyGridButton)
 END_EVENT_TABLE()
@@ -315,17 +316,51 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
   }
 }
 
+iCelPropertyClassTemplate* EntityMode::GetPCForProperty (wxPGProperty* property,
+    csString& pcPropName, csString& selectedPropName)
+{
+  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
+  wxPGProperty* pcProperty = FindPCProperty (property);
+  if (pcProperty)
+  {
+    pcPropName = (const char*)pcProperty->GetName ().mb_str (wxConvUTF8);
+    int idx;
+    csScanStr (pcPropName.GetData () + 3, "%d", &idx);
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    return tpl->GetPropertyClassTemplate (idx);
+  }
+  return 0;
+}
+
+void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
+{
+  printf ("PG changing!\n"); fflush (stdout);
+  wxPGProperty* selectedProperty = event.GetProperty ();
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  if (pctpl)
+  {
+    csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
+    printf ("Prop name: %s\n", selectedPropName.GetData ()); fflush (stdout);
+    if (!ValidateGridChange (pctpl, pcPropName, selectedPropName, value))
+      event.Veto ();
+  }
+}
+
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
   printf ("PG change!\n"); fflush (stdout);
   wxPGProperty* selectedProperty = event.GetProperty ();
-  selectedProperty = FindPCProperty (selectedProperty);
-  if (selectedProperty)
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  if (pctpl)
   {
-    csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
-    printf ("Prop name: %s\n", propName.GetData ()); fflush (stdout);
-    if (!UpdatePCFromGrid (propName))
-      event.Veto ();
+    printf ("Prop name: %s\n", pcPropName.GetData ()); fflush (stdout);
+    if (UpdatePCFromGrid (pctpl, pcPropName))
+    {
+      PCWasEdited (pctpl);
+      RegisterModification ((iCelEntityTemplate*)0);
+    }
   }
 }
 
@@ -489,33 +524,50 @@ void EntityMode::FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClass
   }
 }
 
-bool EntityMode::UpdatePCFromGrid (const csString& propname)
+bool EntityMode::ValidateGridChange (iCelPropertyClassTemplate* pctpl,
+    const csString& pcPropName, const csString& selectedPropName, const csString& value)
 {
-  int idx;
-  csScanStr (propname.GetData () + 3, "%d", &idx);
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (idx);
+  if (selectedPropName == "Tag")
+  {
+    iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pctpl->GetName (), value);
+    if (pc && pc != pctpl)
+    {
+      iUIManager* ui = view3d->GetApplication ()->GetUI ();
+      ui->Error ("Property class with this name and tag already exists!");
+      return false;
+    }
+  }
+  return true;
+}
 
+bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname)
+{
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   wxString value;
 
   value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Tag"));
   csString tag = (const char*)value.mb_str (wxConvUTF8);
-  printf ("tag = %s\n", tag.GetData ()); fflush (stdout);
-
-  iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pctpl->GetName (), tag);
-  if (pc && pc != pctpl)
+  if (tag != pctpl->GetTag ())
   {
-    iUIManager* ui = view3d->GetApplication ()->GetUI ();
-    ui->Error ("Property class with this name and tag already exists!");
-    return false;
+    if (tag.IsEmpty ())
+      pctpl->SetTag (0);
+    else
+      pctpl->SetTag (tag);
+    return true;
+  }
+
+  value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Type"));
+  csString type = (const char*)value.mb_str (wxConvUTF8);
+  if (type != pctpl->GetName ())
+  {
+    pctpl->SetName (type);
+    pctpl->RemoveAllProperties ();
+    return true;
   }
 
 
-  value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Type"));
-  int i = detailGrid->GetPropertyValueAsInt (wxString::FromUTF8 (propname + ".Type"));
-  csString type = (const char*)value.mb_str (wxConvUTF8);
-  printf ("type = %s/%d\n", type.GetData (), i); fflush (stdout);
-  return true;
+  return false;
 }
 
 // ------------------------------------------------------------------------
