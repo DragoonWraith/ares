@@ -270,6 +270,206 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 
 // ------------------------------------------------------------------------
 
+PcEditorSupport::PcEditorSupport (const char* name, EntityMode* emode) : name (name), emode (emode)
+{
+  pl = emode->GetPL ();
+}
+
+
+class PcEditorSupportQuest : public PcEditorSupport
+{
+public:
+  PcEditorSupportQuest (EntityMode* emode) : PcEditorSupport ("pclogic.quest", emode) { }
+  virtual ~PcEditorSupportQuest () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
+      "NewQuest", "name");
+    emode->AppendButtonPar (pcProp, "Quest", "Q:", questName);
+    size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
+    if (nqIdx != csArrayItemNotFound)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> it = pctpl->GetProperty (nqIdx, id, data);
+      while (it->HasNext ())
+      {
+	csStringID nextID;
+	iParameter* nextPar = it->Next (nextID);
+	csString name = pl->FetchString (nextID);
+	if (name == "name") continue;
+	csString val = nextPar->GetOriginalExpression ();
+	emode->AppendPar (pcProp, "Par", name, nextPar->GetPossibleType (), val);
+      }
+    }
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName)
+  {
+    csString questName = emode->GetPropertyValueAsString (pcPropName, "Q:Quest");
+    csString oldQuestName = emode->GetQuestName (pctpl);
+    if (questName != oldQuestName)
+    {
+      pctpl->RemoveAllProperties ();
+      InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (questName, CEL_DATA_STRING);
+      InspectTools::AddActionParameter (pl, pctpl, "NewQuest", "name", par);
+      return true;
+    }
+
+    if (selectedPropName.StartsWith ("Par:") && !selectedPropName.EndsWith (".Value")
+	&& !selectedPropName.EndsWith (".Type") && !selectedPropName.EndsWith (".Name"))
+    {
+      csString oldParName = selectedPropName.GetData () + 4;
+      csString newParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Name");
+      csString newTypeS = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Type");
+      csString newValue = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Value");
+      printf ("oldParName=%s new=%s/%s/%s\n", oldParName.GetData (), newParName.GetData (),
+	  newTypeS.GetData (), newValue.GetData ()); fflush (stdout);
+
+      if (oldParName != newParName)
+	InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", oldParName);
+      InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", newParName);
+      celDataType newType = InspectTools::StringToType (newTypeS);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (newValue, newType);
+      InspectTools::AddActionParameter (pl, pctpl, "NewQuest", newParName, par);
+      return true;
+    }
+
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value)
+  {
+    if (selectedPropName.StartsWith ("Par:") && selectedPropName.EndsWith (".Name"))
+    {
+      csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      if (oldParName != value)
+      {
+	iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl,
+	    "NewQuest", value);
+	if (par)
+	{
+	  iUIManager* ui = emode->GetApplication ()->GetUI ();
+	  ui->Error ("There is already a parameter with this name!");
+	  return false;
+	}
+      }
+    }
+    return true;
+  }
+};
+
+class PcEditorSupportProperties : public PcEditorSupport
+{
+public:
+  PcEditorSupportProperties (EntityMode* emode) : PcEditorSupport ("pctools.properties", emode) { }
+  virtual ~PcEditorSupportProperties () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString value;
+      celParameterTools::ToString (data, value);
+      csString name = pl->FetchString (id);
+      emode->AppendPar (pcProp, "Prop", name, InspectTools::ResolveType (data), value);
+    }
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName)
+  {
+    if (selectedPropName.StartsWith ("Prop:") && !selectedPropName.EndsWith (".Value")
+	&& !selectedPropName.EndsWith (".Type") && !selectedPropName.EndsWith (".Name"))
+    {
+      csString oldParName = selectedPropName.GetData () + 5;
+      csString newParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Name");
+      csString newTypeS = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Type");
+      csString newValue = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Value");
+      printf ("oldPropName=%s new=%s/%s/%s\n", oldParName.GetData (), newParName.GetData (),
+	  newTypeS.GetData (), newValue.GetData ()); fflush (stdout);
+
+      if (oldParName != newParName)
+	pctpl->RemoveProperty (pl->FetchStringID (oldParName));
+      celDataType newType = InspectTools::StringToType (newTypeS);
+      InspectTools::SetProperty (pl, pctpl, newType, newParName, newValue);
+      return true;
+    }
+
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value)
+  {
+    if (selectedPropName.StartsWith ("Prop:") && selectedPropName.EndsWith (".Name"))
+    {
+      csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      if (oldParName != value)
+      {
+	if (pctpl->FindProperty (pl->FetchStringID (value)) != csArrayItemNotFound)
+	{
+	  iUIManager* ui = emode->GetApplication ()->GetUI ();
+	  ui->Error ("There is already a property with this name!");
+	  return false;
+	}
+      }
+    }
+    return true;
+  }
+};
+
+class PcEditorSupportTrigger : public PcEditorSupport
+{
+public:
+  PcEditorSupportTrigger (EntityMode* emode) : PcEditorSupport ("pclogic.trigger", emode) { }
+  virtual ~PcEditorSupportTrigger () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    bool valid;
+    long delay = InspectTools::GetPropertyValueLong (pl, pctpl, "delay", &valid);
+    emode->GetDetailGrid ()->AppendIn (pcProp, new wxIntProperty (wxT ("Delay"), wxT ("Delay"),
+	  valid ? delay : 200));
+    long jitter = InspectTools::GetPropertyValueLong (pl, pctpl, "jitter", &valid);
+    emode->GetDetailGrid ()->AppendIn (pcProp, new wxIntProperty (wxT ("Jitter"), wxT ("Jitter"),
+	  valid ? jitter : 10));
+
+    csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
+    emode->AppendButtonPar (pcProp, "Monitor", "E:", monitor);
+
+    csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
+    emode->GetDetailGrid ()->AppendIn (pcProp, new wxStringProperty (wxT ("Class"), wxT ("Class"),
+	  wxString::FromUTF8 (clazz.GetData ())));
+    //@@@
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName)
+  {
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value)
+  {
+    return true;
+  }
+};
+
+
+// ------------------------------------------------------------------------
+
 static wxPGProperty* FindPCProperty (wxPGProperty* prop)
 {
   while (prop)
@@ -312,6 +512,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
     {
       csString n = chosen->GetStringArrayValue ()->Get (col);
       selectedProperty->SetValue (wxString::FromUTF8 (n));
+      OnPropertyGridChanged (selectedProperty);
     }
   }
 }
@@ -349,19 +550,30 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
-  printf ("PG change!\n"); fflush (stdout);
   wxPGProperty* selectedProperty = event.GetProperty ();
+  OnPropertyGridChanged (selectedProperty);
+}
+
+void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
+{
+  printf ("PG change!\n"); fflush (stdout);
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
   if (pctpl)
   {
     printf ("Prop name: %s\n", pcPropName.GetData ()); fflush (stdout);
-    if (UpdatePCFromGrid (pctpl, pcPropName))
+    if (UpdatePCFromGrid (pctpl, pcPropName, selectedPropName))
     {
       PCWasEdited (pctpl);
       RegisterModification ((iCelEntityTemplate*)0);
     }
   }
+}
+
+void EntityMode::RegisterEditor (PcEditorSupport* editor)
+{
+  editors.Put (editor->GetName (), editor);
+  editor->DecRef ();
 }
 
 void EntityMode::BuildDetailGrid ()
@@ -372,6 +584,10 @@ void EntityMode::BuildDetailGrid ()
   detailGrid->SetId (PG_ID);
   detailPanel->GetSizer ()->Add (detailGrid, 1, wxEXPAND | wxALL);
   //detailGrid->SetColumnCount (3);
+
+  RegisterEditor (new PcEditorSupportQuest (this));
+  RegisterEditor (new PcEditorSupportProperties (this));
+  RegisterEditor (new PcEditorSupportTrigger (this));
 
   typesArray.Add (wxT ("string"));  typesArrayIdx.Add (CEL_DATA_STRING);
   typesArray.Add (wxT ("float"));   typesArrayIdx.Add (CEL_DATA_FLOAT);
@@ -401,11 +617,11 @@ void EntityMode::BuildDetailGrid ()
 }
 
 void EntityMode::AppendPar (
-    wxPGProperty* parent, const char* partype, size_t idx,
+    wxPGProperty* parent, const char* partype,
     const char* name, celDataType type, const char* value)
 {
   csString s;
-  s.Format ("%s (%d)", partype, int (idx));
+  s.Format ("%s:%s", partype, name);
   wxPGProperty* parProp = detailGrid->AppendIn (parent,
       new wxStringProperty (wxString::FromUTF8 (partype),
 	wxString::FromUTF8 (s), wxT ("<composed>")));
@@ -455,73 +671,19 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
     detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Tag"), wxT ("Tag"),
 	wxString::FromUTF8 (pctpl->GetTag ())));
 
-    if (csString ("pctools.properties") == pctpl->GetName ())
-      FillDetailPCProperties (pcProp, pctpl);
-    else if (csString ("pclogic.quest") == pctpl->GetName ())
-      FillDetailPCQuest (pcProp, pctpl);
-    else if (csString ("pclogic.trigger") == pctpl->GetName ())
-      FillDetailPCTrigger (pcProp, pctpl);
+    PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
+    if (editor) editor->Fill (pcProp, pctpl);
   }
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
 }
 
-void EntityMode::FillDetailPCTrigger (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+csString EntityMode::GetPropertyValueAsString (const csString& property, const char* sub)
 {
-  bool valid;
-  long delay = InspectTools::GetPropertyValueLong (pl, pctpl, "delay", &valid);
-  detailGrid->AppendIn (pcProp, new wxIntProperty (wxT ("Delay"), wxT ("Delay"),
-	valid ? delay : 200));
-  long jitter = InspectTools::GetPropertyValueLong (pl, pctpl, "jitter", &valid);
-  detailGrid->AppendIn (pcProp, new wxIntProperty (wxT ("Jitter"), wxT ("Jitter"),
-	valid ? jitter : 10));
-
-  csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
-  AppendButtonPar (pcProp, "Monitor", "E:", monitor);
-
-  csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
-  detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Class"), wxT ("Class"),
-	wxString::FromUTF8 (clazz.GetData ())));
-  //@@@
-}
-
-void EntityMode::FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
-{
-  csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
-    "NewQuest", "name");
-  AppendButtonPar (pcProp, "Quest", "Q:", questName);
-  size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
-  if (nqIdx != csArrayItemNotFound)
-  {
-    size_t idx = 0;
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> it = pctpl->GetProperty (nqIdx, id, data);
-    while (it->HasNext ())
-    {
-      csStringID nextID;
-      iParameter* nextPar = it->Next (nextID);
-      csString name = pl->FetchString (nextID);
-      if (name == "name") continue;
-      csString val = nextPar->GetOriginalExpression ();
-      AppendPar (pcProp, "Par", idx, name, nextPar->GetPossibleType (), val);
-      idx++;
-    }
-  }
-}
-
-void EntityMode::FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
-{
-  for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
-  {
-    csStringID id;
-    celData data;
-    csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
-    csString value;
-    celParameterTools::ToString (data, value);
-    csString name = pl->FetchString (id);
-    AppendPar (pcProp, "Prop", idx, name, InspectTools::ResolveType (data), value);
-  }
+  wxString wxValue = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
+	property + "." + sub));
+  csString value = (const char*)wxValue.mb_str (wxConvUTF8);
+  return value;
 }
 
 bool EntityMode::ValidateGridChange (iCelPropertyClassTemplate* pctpl,
@@ -538,16 +700,19 @@ bool EntityMode::ValidateGridChange (iCelPropertyClassTemplate* pctpl,
       return false;
     }
   }
+
+  csString type = GetPropertyValueAsString (pcPropName, "Type");
+  PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
+  if (editor)
+    return editor->Validate (pctpl, pcPropName, selectedPropName, value);
+
   return true;
 }
 
-bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname)
+bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname,
+    const csString& selectedPropName)
 {
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  wxString value;
-
-  value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Tag"));
-  csString tag = (const char*)value.mb_str (wxConvUTF8);
+  csString tag = GetPropertyValueAsString (propname, "Tag");
   if (tag != pctpl->GetTag ())
   {
     if (tag.IsEmpty ())
@@ -557,8 +722,7 @@ bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csStr
     return true;
   }
 
-  value = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (propname + ".Type"));
-  csString type = (const char*)value.mb_str (wxConvUTF8);
+  csString type = GetPropertyValueAsString (propname, "Type");
   if (type != pctpl->GetName ())
   {
     pctpl->SetName (type);
@@ -566,6 +730,9 @@ bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csStr
     return true;
   }
 
+  PcEditorSupport* editor = editors.Get (type, 0);
+  if (editor)
+    return editor->Update (pctpl, propname, selectedPropName);
 
   return false;
 }
@@ -635,6 +802,11 @@ void EntityMode::BuildMainPanel (wxWindow* parent)
 EntityMode::~EntityMode ()
 {
   markerMgr->DestroyGraphView (graphView);
+}
+
+iParameterManager* EntityMode::GetPM () const
+{
+  return view3d->GetPM ();
 }
 
 iAresEditor* EntityMode::GetApplication () const
@@ -1104,7 +1276,7 @@ void EntityMode::SelectPC (iCelPropertyClassTemplate* pctpl)
 {
   csString pcKey, pcLabel;
   GetPCKeyLabel (pctpl, pcKey, pcLabel);
-  if (pcKey != activeNode)
+  //if (pcKey != activeNode)
     graphView->ActivateNode (pcKey);
 }
 

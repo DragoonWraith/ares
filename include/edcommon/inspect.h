@@ -192,6 +192,9 @@ public:
   static float GetPropertyValueFloat (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* propName, bool* valid = 0);
 
+  static void SetProperty (iCelPlLayer* pl, iCelPropertyClassTemplate* pctpl,
+      celDataType type, const char* name, const char* value);
+
   /**
    * Find the index of the action for which a given parameter has a certain
    * value.

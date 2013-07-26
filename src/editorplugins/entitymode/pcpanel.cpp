@@ -42,49 +42,6 @@ THE SOFTWARE.
 
 //--------------------------------------------------------------------------
 
-static bool ToBool (csString& value)
-{
-  csString lvalue = value.Downcase ();
-  return lvalue == "1" || lvalue == "true" || lvalue == "yes" || lvalue == "on";
-}
-
-static long ToLong (const char* value)
-{
-  long l;
-  csScanStr (value, "%d", &l);
-  return l;
-}
-
-static float ToFloat (const char* value)
-{
-  float l;
-  csScanStr (value, "%f", &l);
-  return l;
-}
-
-static csVector2 ToVector2 (const char* value)
-{
-  csVector2 v;
-  csScanStr (value, "%f,%f", &v.x, &v.y);
-  return v;
-}
-
-static csVector3 ToVector3 (const char* value)
-{
-  csVector3 v;
-  csScanStr (value, "%f,%f,%f", &v.x, &v.y, &v.z);
-  return v;
-}
-
-static csColor ToColor (const char* value)
-{
-  csColor v;
-  csScanStr (value, "%f,%f,%f", &v.red, &v.green, &v.blue);
-  return v;
-}
-
-//--------------------------------------------------------------------------
-
 BEGIN_EVENT_TABLE(PropertyClassPanel, wxPanel)
   EVT_CHOICEBOOK_PAGE_CHANGED (XRCID("pcChoicebook"), PropertyClassPanel :: OnChoicebookPageChange)
   EVT_TEXT (XRCID("tagTextCtrl"), PropertyClassPanel :: OnUpdateTag)
@@ -1821,40 +1778,9 @@ private:
   bool SetProperty (const csString& type, const char* name, csString& value)
   {
     iCelPlLayer* pl = pcPanel->GetPL ();
-    csStringID nameID = pl->FetchStringID (name);
-    pctpl->RemoveProperty (nameID);
+    InspectTools::SetProperty (pl, pctpl, InspectTools::StringToType (type),
+	name, value);
     pcPanel->GetEntityMode ()->RegisterModification (pcPanel->GetTemplate ());
-    const char* v = value;
-    if (v && (*v == '$' || *v == '@'))
-    {
-      if (type == "bool") pctpl->SetPropertyVariable (nameID, CEL_DATA_BOOL, v+1);
-      else if (type == "long") pctpl->SetPropertyVariable (nameID, CEL_DATA_LONG, v+1);
-      else if (type == "float") pctpl->SetPropertyVariable (nameID, CEL_DATA_FLOAT, v+1);
-      else if (type == "string") pctpl->SetPropertyVariable (nameID, CEL_DATA_STRING, v+1);
-      else if (type == "vector2") pctpl->SetPropertyVariable (nameID, CEL_DATA_VECTOR2, v+1);
-      else if (type == "vector3") pctpl->SetPropertyVariable (nameID, CEL_DATA_VECTOR3, v+1);
-      else if (type == "color") pctpl->SetPropertyVariable (nameID, CEL_DATA_COLOR, v+1);
-      else
-      {
-        pcPanel->GetUIManager ()->Error ("Unknown type '%s'\n", type.GetData ());
-        return false;
-      }
-    }
-    else
-    {
-      if (type == "bool") pctpl->SetProperty (nameID, ToBool (value));
-      else if (type == "long") pctpl->SetProperty (nameID, ToLong (value));
-      else if (type == "float") pctpl->SetProperty (nameID, ToFloat (value));
-      else if (type == "string") pctpl->SetProperty (nameID, value.GetData ());
-      else if (type == "vector2") pctpl->SetProperty (nameID, ToVector2 (value));
-      else if (type == "vector3") pctpl->SetProperty (nameID, ToVector3 (value));
-      else if (type == "color") pctpl->SetProperty (nameID, ToColor (value));
-      else
-      {
-	pcPanel->GetUIManager ()->Error ("Unknown type '%s'\n", type.GetData ());
-	return false;
-      }
-    }
     return true;
   }
 

@@ -56,6 +56,70 @@ void ParameterDomain::Dump (iCelPlLayer* pl, const csHash<ParameterDomain,csStri
   }
 }
 
+static bool ToBool (const char* value)
+{
+  csString lvalue = csString (value).Downcase ();
+  return lvalue == "1" || lvalue == "true" || lvalue == "yes" || lvalue == "on";
+}
+
+static long ToLong (const char* value)
+{
+  long l;
+  csScanStr (value, "%d", &l);
+  return l;
+}
+
+static float ToFloat (const char* value)
+{
+  float l;
+  csScanStr (value, "%f", &l);
+  return l;
+}
+
+static csVector2 ToVector2 (const char* value)
+{
+  csVector2 v;
+  csScanStr (value, "%f,%f", &v.x, &v.y);
+  return v;
+}
+
+static csVector3 ToVector3 (const char* value)
+{
+  csVector3 v;
+  csScanStr (value, "%f,%f,%f", &v.x, &v.y, &v.z);
+  return v;
+}
+
+static csColor ToColor (const char* value)
+{
+  csColor v;
+  csScanStr (value, "%f,%f,%f", &v.red, &v.green, &v.blue);
+  return v;
+}
+
+//--------------------------------------------------------------------------
+
+void InspectTools::SetProperty (iCelPlLayer* pl, iCelPropertyClassTemplate* pctpl,
+    celDataType type, const char* name, const char* v)
+{
+  csStringID nameID = pl->FetchStringID (name);
+  pctpl->RemoveProperty (nameID);
+  if (v && (*v == '$' || *v == '@'))
+  {
+    pctpl->SetPropertyVariable (nameID, type, v+1);
+  }
+  else
+  {
+    if (type == CEL_DATA_BOOL) pctpl->SetProperty (nameID, ToBool (v));
+    else if (type == CEL_DATA_LONG) pctpl->SetProperty (nameID, ToLong (v));
+    else if (type == CEL_DATA_FLOAT) pctpl->SetProperty (nameID, ToFloat (v));
+    else if (type == CEL_DATA_STRING) pctpl->SetProperty (nameID, v);
+    else if (type == CEL_DATA_VECTOR2) pctpl->SetProperty (nameID, ToVector2 (v));
+    else if (type == CEL_DATA_VECTOR3) pctpl->SetProperty (nameID, ToVector3 (v));
+    else if (type == CEL_DATA_COLOR) pctpl->SetProperty (nameID, ToColor (v));
+  }
+}
+
 celData InspectTools::GetPropertyValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* propName, bool* valid)
 {

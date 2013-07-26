@@ -97,6 +97,30 @@ struct QuestCopy
 
 //==================================================================================
 
+class PcEditorSupport : public csRefCount
+{
+protected:
+  iCelPlLayer* pl;
+  csString name;
+  EntityMode* emode;
+
+public:
+  PcEditorSupport (const char* name, EntityMode* emode);
+  virtual ~PcEditorSupport () { }
+
+  const csString& GetName () { return name; }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl) = 0;
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value) = 0;
+};
+
+
+//==================================================================================
+
 class EntityMode : public scfImplementationExt1<EntityMode, EditingMode, iComponent>
 {
 private:
@@ -112,16 +136,15 @@ private:
   wxArrayInt typesArrayIdx;
   wxArrayString pctypesArray;
 
-  void AppendPar (
-    wxPGProperty* parent, const char* partype, size_t idx,
-    const char* name, celDataType type, const char* value);
-  void AppendButtonPar (
-    wxPGProperty* parent, const char* partype, const char* type, const char* name);
-  bool UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname);
+  csHash<csRef<PcEditorSupport>, csString> editors;
+
+  bool UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname,
+      const csString& selectedPropName);
   bool ValidateGridChange (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, const csString& value);
-  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
-      csString& selectedPropName);
+  void RegisterEditor (PcEditorSupport* editor);
+  void BuildDetailGrid ();
+  void FillDetailGrid (iCelEntityTemplate* tpl);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -133,7 +156,6 @@ private:
       const csString& defaultState);
   void BuildQuestGraph (iCelPropertyClassTemplate* pctpl, const char* pcKey);
   void BuildTemplateGraph (const char* templateName);
-  csString GetQuestName (iCelPropertyClassTemplate* pctpl);
   csString GetExtraPCInfo (iCelPropertyClassTemplate* pctpl);
   void GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& key, csString& label);
   const char* GetRewardType (iRewardFactory* reward);
@@ -226,12 +248,6 @@ private:
   void ClearCopy ();
   bool HasPaste ();
 
-  void BuildDetailGrid ();
-  void FillDetailGrid (iCelEntityTemplate* tpl);
-  void FillDetailPCQuest (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
-  void FillDetailPCTrigger (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
-  void FillDetailPCProperties (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
-
 public:
   EntityMode (iBase* parent);
   virtual ~EntityMode ();
@@ -245,12 +261,14 @@ public:
   iAresEditor* GetApplication () const;
   iObjectRegistry* GetObjectRegistry () const { return object_reg; }
   iCelPlLayer* GetPL () const { return pl; }
+  iParameterManager* GetPM () const;
 
   iQuestManager* GetQuestManager () const { return questMgr; }
   iCelPropertyClassTemplate* GetSelectedPC ()
   {
     return GetPCTemplate (GetContextMenuNode ());
   }
+  csString GetQuestName (iCelPropertyClassTemplate* pctpl);
 
   /// Register modification of the current template.
   void RegisterModification (iCelEntityTemplate* tpl = 0);
@@ -286,6 +304,7 @@ public:
   virtual bool OnMouseMove(iEvent& ev, int mouseX, int mouseY);
 
   void OnPropertyGridChanging (wxPropertyGridEvent& event);
+  void OnPropertyGridChanged (wxPGProperty* selectedProperty);
   void OnPropertyGridChanged (wxPropertyGridEvent& event);
   void OnPropertyGridButton (wxCommandEvent& event);
   void OnTemplateSelect ();
@@ -309,6 +328,18 @@ public:
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
   void ActivateNode (const char* nodeName);
+
+  // Property grid support stuff.
+  void AppendPar (
+    wxPGProperty* parent, const char* partype,
+    const char* name, celDataType type, const char* value);
+  void AppendButtonPar (
+    wxPGProperty* parent, const char* partype, const char* type, const char* name);
+  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
+      csString& selectedPropName);
+  csString GetPropertyValueAsString (const csString& property, const char* sub);
+  wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
+  //---
 
   class Panel : public wxPanel
   {
