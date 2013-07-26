@@ -370,7 +370,7 @@ void EntityMode::AppendPar (
     const char* name, celDataType type, const char* value)
 {
   csString s;
-  s.Format ("%s (%d)", partype, idx);
+  s.Format ("%s (%d)", partype, int (idx));
   wxPGProperty* parProp = detailGrid->AppendIn (parent,
       new wxStringProperty (wxString::FromUTF8 (partype),
 	wxString::FromUTF8 (s), wxT ("<composed>")));
@@ -411,7 +411,7 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-    s.Format ("PC:%d", i);
+    s.Format ("PC:%d", int (i));
     wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
       new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
 
@@ -525,7 +525,7 @@ void EntityMode::BuildMainPanel (wxWindow* parent)
   if (panel)
   {
     view.Reset ();
-    parent->GetSizer ()->Remove (panel);
+    parent->GetSizer ()->Detach (panel);
     delete parent;
   }
   panel = new Panel (this);

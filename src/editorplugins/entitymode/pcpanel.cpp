@@ -1085,8 +1085,6 @@ public:
   virtual Value* NewValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
     if (!pctpl) return 0;
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    iParameterManager* pm = pcPanel->GetPM ();
     csString name = suggestion.Get ("Name", (const char*)0);
     csString value = suggestion.Get ("Value", (const char*)0);
     csString type = suggestion.Get ("Type", (const char*)0);
@@ -1102,8 +1100,6 @@ public:
   virtual bool UpdateValue (size_t idx, Value* selectedValue, const DialogResult& suggestion)
   {
     if (!pctpl) return false;
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    iParameterManager* pm = pcPanel->GetPM ();
     csString name = suggestion.Get ("Name", (const char*)0);
     csString value = suggestion.Get ("Value", (const char*)0);
     csString type = suggestion.Get ("Type", (const char*)0);
@@ -1305,9 +1301,6 @@ protected:
       const char* maxsizex, const char* maxsizey, const char* borderwidth, const char* roundness,
       const char* maxmessages, const char* boxfadetime)
   {
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    iParameterManager* pm = pcPanel->GetPM ();
-
     if (!ChangeActionParameter (name, CEL_DATA_STRING, "DefineSlot", "name")) return false;
     if (!ChangeActionParameter (position, CEL_DATA_VECTOR2, "DefineSlot", "position")) return false;
     if (!ChangeActionParameter (queue, CEL_DATA_BOOL, "DefineSlot", "queue")) return false;
@@ -1475,9 +1468,6 @@ protected:
   bool UpdateType (const char* type, const char* slot, const char* timeout,
       const char* fadetime, const char* click, const char* log)
   {
-    iCelPlLayer* pl = pcPanel->GetPL ();
-    iParameterManager* pm = pcPanel->GetPM ();
-
     if (!ChangeActionParameter (type, CEL_DATA_STRING, "DefineType", "type")) return false;
     if (!ChangeActionParameter (slot, CEL_DATA_STRING, "DefineType", "slot")) return false;
     if (!ChangeActionParameter (timeout, CEL_DATA_FLOAT, "DefineType", "timeout")) return false;
