@@ -1584,7 +1584,8 @@ void EntityMode::OnRenameTemplate (const char* tplName)
       return;
     }
     tpl->QueryObject ()->SetName (name->GetData ());
-    RegisterModification (tpl);
+    view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+    view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
     view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
     SelectTemplate (tpl);
     RefreshView ();
@@ -1876,9 +1877,8 @@ void EntityMode::OnCreatePC ()
       if (tag && *tag)
         pc->SetTag (tag);
 
-      RefreshView ();
-      RegisterModification (tpl);
-      SelectPC (pc);
+      view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+      RefreshView (pc);
     }
 
   }
@@ -1887,7 +1887,8 @@ void EntityMode::OnCreatePC ()
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
 {
   RefreshView (pctpl);
-  RegisterModification ();
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
 }
 
 void EntityMode::ClearCopy ()
