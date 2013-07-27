@@ -565,7 +565,6 @@ void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
     if (UpdatePCFromGrid (pctpl, pcPropName, selectedPropName))
     {
       PCWasEdited (pctpl);
-      RegisterModification ((iCelEntityTemplate*)0);
     }
   }
 }

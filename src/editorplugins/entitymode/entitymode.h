@@ -270,9 +270,9 @@ public:
   }
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
 
-  /// Register modification of the current template.
+  /// Register modification of the current template and refresh the visuals.
   void RegisterModification (iCelEntityTemplate* tpl = 0);
-  /// Register modification of a quest.
+  /// Register modification of a quest and refresh the visuals.
   void RegisterModification (iQuestFactory* quest);
 
   /// Refresh the view. The tiven pctpl is optional and will be used if given.

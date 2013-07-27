@@ -112,7 +112,6 @@ void PropertyClassPanel::OnUpdateTag (wxCommandEvent& event)
     pctpl->SetTag (tag);
 
   emode->PCWasEdited (pctpl);
-  emode->RegisterModification (tpl);
 }
 
 void PropertyClassPanel::SwitchPCType (const char* pcType)
@@ -122,8 +121,6 @@ void PropertyClassPanel::SwitchPCType (const char* pcType)
   pctpl->SetName (pcType);
   pctpl->RemoveAllProperties ();
   emode->PCWasEdited (pctpl);
-
-  emode->RegisterModification (tpl);
 }
 
 // -----------------------------------------------------------------------
