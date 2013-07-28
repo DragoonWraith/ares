@@ -62,6 +62,7 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_PG_CHANGING (PG_ID, EntityMode::Panel::OnPropertyGridChanging)
   EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
   EVT_BUTTON (PG_ID, EntityMode::Panel::OnPropertyGridButton)
+  EVT_CONTEXT_MENU (EntityMode::Panel::OnContextMenu)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
@@ -240,6 +241,7 @@ EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
 {
   name = "Entity";
   panel = 0;
+  contextLastProperty = 0;
 }
 
 bool EntityMode::Initialize (iObjectRegistry* object_reg)
@@ -278,8 +280,22 @@ PcEditorSupport::PcEditorSupport (const char* name, EntityMode* emode) : name (n
 
 class PcEditorSupportQuest : public PcEditorSupport
 {
+private:
+  int idNewPar;
+  int idDelPar;
+
 public:
-  PcEditorSupportQuest (EntityMode* emode) : PcEditorSupport ("pclogic.quest", emode) { }
+  PcEditorSupportQuest (EntityMode* emode) : PcEditorSupport ("pclogic.quest", emode)
+  {
+    iUIManager* ui = emode->GetApplication ()->GetUI ();
+    idNewPar = ui->AllocContextMenuID ();
+    emode->panel->Connect (idNewPar, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::PcQuest_OnNewParameter), 0, emode->panel);
+    idDelPar = ui->AllocContextMenuID ();
+    emode->panel->Connect (idDelPar, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::PcQuest_OnDelParameter), 0, emode->panel);
+  }
+
   virtual ~PcEditorSupportQuest () { }
 
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
@@ -362,12 +378,35 @@ public:
     }
     return true;
   }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName)
+  {
+    wxMenu contextMenu;
+    contextMenu.Append (idNewPar, wxT ("New Quest Parameter..."));
+    if (selectedPropName.StartsWith ("Par:"))
+      contextMenu.Append (idDelPar, wxT ("Delete Quest Parameter"));
+    emode->panel->PopupMenu (&contextMenu);
+  }
 };
 
 class PcEditorSupportProperties : public PcEditorSupport
 {
+private:
+  int idNewProp;
+  int idDelProp;
+
 public:
-  PcEditorSupportProperties (EntityMode* emode) : PcEditorSupport ("pctools.properties", emode) { }
+  PcEditorSupportProperties (EntityMode* emode) : PcEditorSupport ("pctools.properties", emode)
+  {
+    iUIManager* ui = emode->GetApplication ()->GetUI ();
+    idNewProp = ui->AllocContextMenuID ();
+    emode->panel->Connect (idNewProp, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::PcProp_OnNewProperty), 0, emode->panel);
+    idDelProp = ui->AllocContextMenuID ();
+    emode->panel->Connect (idDelProp, wxEVT_COMMAND_MENU_SELECTED,
+	wxCommandEventHandler (EntityMode::Panel::PcProp_OnDelProperty), 0, emode->panel);
+  }
   virtual ~PcEditorSupportProperties () { }
 
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
@@ -425,6 +464,16 @@ public:
       }
     }
     return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName)
+  {
+    wxMenu contextMenu;
+    contextMenu.Append (idNewProp, wxT ("New Property..."));
+    if (selectedPropName.StartsWith ("Prop:"))
+      contextMenu.Append (idDelProp, wxT ("Delete Property"));
+    emode->panel->PopupMenu (&contextMenu);
   }
 };
 
@@ -531,6 +580,33 @@ iCelPropertyClassTemplate* EntityMode::GetPCForProperty (wxPGProperty* property,
     return tpl->GetPropertyClassTemplate (idx);
   }
   return 0;
+}
+
+void EntityMode::OnContextMenu (wxContextMenuEvent& event)
+{
+  printf ("OnContextMenu\n"); fflush (stdout);
+  wxWindow* gridWindow = wxStaticCast (detailGrid, wxWindow);
+  wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
+  while (gridWindow != component && component)
+    component = component->GetParent ();
+  if (component == gridWindow)
+  {
+    wxPropertyGridHitTestResult rc = detailGrid->HitTest (detailGrid->ScreenToClient (event.GetPosition ()));
+    contextLastProperty = rc.GetProperty ();
+    if (contextLastProperty)
+    {
+      csString selectedPropName, pcPropName;
+      iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+      if (pctpl)
+      {
+        PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
+        if (editor)
+        {
+          editor->DoContext (pctpl, pcPropName, selectedPropName);
+        }
+      }
+    }
+  }
 }
 
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
@@ -734,6 +810,95 @@ bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csStr
     return editor->Update (pctpl, propname, selectedPropName);
 
   return false;
+}
+
+void EntityMode::PcProp_OnDelProperty ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  size_t dot = selectedPropName.FindFirst ('.');
+  csString name;
+  if (dot == csArrayItemNotFound)
+    name = selectedPropName.Slice (5);
+  else
+    name = selectedPropName.Slice (5, dot-5);
+  pctpl->RemoveProperty (pl->FetchStringID (name));
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcProp_OnNewProperty ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddChoice ("Type", "string", "float", "long", "bool",
+      "vector2", "vector3", "color", (const char*)0);
+  dialog->AddRow ();
+  dialog->AddMultiText ("Value");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString name = result.Get ("Name", (const char*)0);
+  csString value = result.Get ("Value", (const char*)0);
+  csString typeS = result.Get ("Type", (const char*)0);
+
+  if (pctpl->FindProperty (pl->FetchStringID (name)) != csArrayItemNotFound)
+  {
+    ui->Error ("There is already a parameter with this name!");
+    return;
+  }
+
+  celDataType type = InspectTools::StringToType (typeS);
+  InspectTools::SetProperty (pl, pctpl, type, name, value);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcQuest_OnDelParameter ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  size_t dot = selectedPropName.FindFirst ('.');
+  csString name;
+  if (dot == csArrayItemNotFound)
+    name = selectedPropName.Slice (4);
+  else
+    name = selectedPropName.Slice (4, dot-4);
+  InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcQuest_OnNewParameter ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddChoice ("Type", "string", "float", "long", "bool",
+      "vector2", "vector3", "color", (const char*)0);
+  dialog->AddRow ();
+  dialog->AddMultiText ("Value");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString name = result.Get ("Name", (const char*)0);
+  csString value = result.Get ("Value", (const char*)0);
+  csString typeS = result.Get ("Type", (const char*)0);
+
+  if (InspectTools::GetActionParameterValue (pl, pctpl, "NewQuest", name))
+  {
+    ui->Error ("There is already a parameter with this name!");
+    return;
+  }
+
+  celDataType type = InspectTools::StringToType (typeS);
+  csRef<iParameter> par = GetPM ()->GetParameter (value, type);
+  InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+  PCWasEdited (pctpl);
 }
 
 // ------------------------------------------------------------------------

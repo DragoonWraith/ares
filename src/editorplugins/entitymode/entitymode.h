@@ -116,6 +116,8 @@ public:
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName) { }
 };
 
 
@@ -131,6 +133,9 @@ private:
 
   //--- For the property grid.
   wxPropertyGrid* detailGrid;
+
+  // Last property as detected by the context menu handler.
+  wxPGProperty* contextLastProperty;
 
   wxArrayString typesArray;
   wxArrayInt typesArrayIdx;
@@ -318,6 +323,12 @@ public:
   void OnCreateTrigger ();
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
   void OnRewardMove (int dir);
+  void OnContextMenu (wxContextMenuEvent& event);
+
+  void PcQuest_OnNewParameter ();
+  void PcQuest_OnDelParameter ();
+  void PcProp_OnNewProperty ();
+  void PcProp_OnDelProperty ();
 
   void AskNewTemplate ();
   void OnTemplateDel (const char* tplName);
@@ -365,6 +376,11 @@ public:
     void OnPropertyGridChanging (wxPropertyGridEvent& event) { s->OnPropertyGridChanging (event); }
     void OnPropertyGridChanged (wxPropertyGridEvent& event) { s->OnPropertyGridChanged (event); }
     void OnPropertyGridButton (wxCommandEvent& event) { s->OnPropertyGridButton (event); }
+    void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
+    void PcQuest_OnNewParameter (wxCommandEvent& event) { s->PcQuest_OnNewParameter (); }
+    void PcQuest_OnDelParameter (wxCommandEvent& event) { s->PcQuest_OnDelParameter (); }
+    void PcProp_OnNewProperty (wxCommandEvent& event) { s->PcProp_OnNewProperty (); }
+    void PcProp_OnDelProperty (wxCommandEvent& event) { s->PcProp_OnDelProperty (); }
 
   private:
     EntityMode* s;
