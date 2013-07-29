@@ -610,6 +610,23 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
   }
 }
 
+bool EntityMode::ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event)
+{
+  wxArrayString templates = event.GetValue ().GetArrayString ();
+  for (size_t i = 0 ; i < templates.GetCount () ; i++)
+  {
+    csString name = (const char*)templates.Item (i).mb_str (wxConvUTF8);
+    iCelEntityTemplate* parent = pl->FindEntityTemplate (name);
+    if (!parent)
+    {
+      iUIManager* ui = app->GetUI ();
+      ui->Error ("Can't find template '%s'!", name.GetData ());
+      return false;
+    }
+  }
+  return true;
+}
+
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 {
   wxPGProperty* selectedProperty = event.GetProperty ();
@@ -625,18 +642,8 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
   }
   else if (selectedPropName == "Parents")
   {
-    wxArrayString templates = event.GetValue ().GetArrayString ();
-    for (size_t i = 0 ; i < templates.GetCount () ; i++)
-    {
-      csString name = (const char*)templates.Item (i).mb_str (wxConvUTF8);
-      iCelEntityTemplate* parent = pl->FindEntityTemplate (name);
-      if (!parent)
-      {
-	iUIManager* ui = app->GetUI ();
-        ui->Error ("Can't find template '%s'!", name.GetData ());
-	event.Veto ();
-      }
-    }
+    if (!ValidateTemplateParentsFromGrid (event))
+      event.Veto ();
   }
 }
 
@@ -644,6 +651,40 @@ void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
   wxPGProperty* selectedProperty = event.GetProperty ();
   OnPropertyGridChanged (selectedProperty);
+}
+
+void EntityMode::UpdateTemplateParentsFromGrid ()
+{
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  wxArrayString templates = detailGrid->GetPropertyValueAsArrayString (wxT ("Parents"));
+  csStringArray templatesToAdd;
+  csStringArray templatesToRemove;
+  for (size_t i = 0 ; i < templates.GetCount () ; i++)
+    templatesToAdd.Push (templates.Item (i).mb_str (wxConvUTF8));
+  csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
+  while (it->HasNext ())
+  {
+    csString name = it->Next ()->GetName ();
+    if (templates.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
+      templatesToRemove.Push (name);
+    else
+      templatesToAdd.Delete (name);
+  }
+  if (templatesToRemove.GetSize () > 0 || templatesToAdd.GetSize () > 0)
+  {
+    for (size_t i = 0 ; i < templatesToAdd.GetSize () ; i++)
+    {
+      iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToAdd.Get (i));
+      tpl->AddParent (parent);
+    }
+    for (size_t i = 0 ; i < templatesToRemove.GetSize () ; i++)
+    {
+      iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToRemove.Get (i));
+      tpl->RemoveParent (parent);
+    }
+    PCWasEdited (0);
+    SelectTemplate (tpl);
+  }
 }
 
 void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
@@ -661,36 +702,7 @@ void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
   }
   else if (selectedPropName == "Parents")
   {
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    wxArrayString templates = detailGrid->GetPropertyValueAsArrayString (selectedProperty);
-    csStringArray templatesToAdd;
-    csStringArray templatesToRemove;
-    for (size_t i = 0 ; i < templates.GetCount () ; i++)
-      templatesToAdd.Push (templates.Item (i).mb_str (wxConvUTF8));
-    csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
-    while (it->HasNext ())
-    {
-      csString name = it->Next ()->GetName ();
-      if (templates.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
-	templatesToRemove.Push (name);
-      else
-	templatesToAdd.Delete (name);
-    }
-    if (templatesToRemove.GetSize () > 0 || templatesToAdd.GetSize () > 0)
-    {
-      for (size_t i = 0 ; i < templatesToAdd.GetSize () ; i++)
-      {
-	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToAdd.Get (i));
-	tpl->AddParent (parent);
-      }
-      for (size_t i = 0 ; i < templatesToRemove.GetSize () ; i++)
-      {
-	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToRemove.Get (i));
-	tpl->RemoveParent (parent);
-      }
-      PCWasEdited (0);
-      SelectTemplate (tpl);
-    }
+    UpdateTemplateParentsFromGrid ();
   }
 }
 

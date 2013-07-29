@@ -148,6 +148,9 @@ private:
       const csString& selectedPropName);
   bool ValidateGridChange (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, const csString& value);
+  void UpdateTemplateParentsFromGrid ();
+  bool ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event);
+
   void RegisterEditor (PcEditorSupport* editor);
   void BuildDetailGrid ();
   void FillDetailGrid (iCelEntityTemplate* tpl);
