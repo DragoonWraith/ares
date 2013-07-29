@@ -138,10 +138,6 @@ private:
   // Last property as detected by the context menu handler.
   wxPGProperty* contextLastProperty;
 
-  wxArrayString typesArray;
-  wxArrayInt typesArrayIdx;
-  wxArrayString pctypesArray;
-
   csHash<csRef<PcEditorSupport>, csString> editors;
 
   bool UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname,
@@ -363,7 +359,13 @@ public:
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
   csString GetPropertyValueAsString (const csString& property, const char* sub);
+  int GetPropertyValueAsInt (const csString& property, const char* sub);
   wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
+
+  wxArrayString typesArray;
+  wxArrayInt typesArrayIdx;
+  wxArrayString pctypesArray;
+  wxArrayString trigtypesArray;
   //---
 
   class Panel : public wxPanel

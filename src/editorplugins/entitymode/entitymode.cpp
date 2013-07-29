@@ -504,14 +504,175 @@ public:
     emode->AppendButtonPar (pcProp, "Monitor", "E:", monitor);
 
     csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
-    emode->GetDetailGrid ()->AppendIn (pcProp, new wxStringProperty (wxT ("Class"), wxT ("Class"),
-	  wxString::FromUTF8 (clazz.GetData ())));
-    //@@@
+    emode->AppendButtonPar (pcProp, "Class", "C:", clazz);
+
+    wxPGProperty* typeProp = emode->GetDetailGrid ()->AppendIn (pcProp,
+	new wxEnumProperty (wxT ("Type"), wxT ("TrigType"), emode->trigtypesArray, wxArrayInt()));
+    if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
+    {
+      typeProp->SetValue (wxT ("Sphere"));
+      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "radius");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("Radius"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "position");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("Position"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+    }
+    else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
+    {
+      typeProp->SetValue (wxT ("Box"));
+      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "minbox");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("MinBox"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "maxbox");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("MaxBox"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+    }
+    else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
+    {
+      typeProp->SetValue (wxT ("Beam"));
+      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "start");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("Start"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "end");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("End"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+    }
+    else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
+    {
+      typeProp->SetValue (wxT ("Above"));
+      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "entity");
+      emode->AppendButtonPar (typeProp, "Entity", "E:", par ? par->GetOriginalExpression () : "");
+      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
+      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("MaxDistance"), wxPG_LABEL,
+	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+    }
+    else
+    {
+      printf ("Huh! Unknown trigger type!\n");
+    }
   }
 
   virtual bool Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName)
   {
+    if (selectedPropName == "Delay")
+    {
+      long delay = emode->GetPropertyValueAsInt (pcPropName, selectedPropName);
+      pctpl->SetProperty (pl->FetchStringID ("delay"), delay);
+      return true;
+    }
+    else if (selectedPropName == "Jitter")
+    {
+      long jitter = emode->GetPropertyValueAsInt (pcPropName, selectedPropName);
+      pctpl->SetProperty (pl->FetchStringID ("jitter"), jitter);
+      return true;
+    }
+    else if (selectedPropName == "Monitor")
+    {
+      csString monitor = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      pctpl->SetProperty (pl->FetchStringID ("monitor"), monitor.GetData ());
+      return true;
+    }
+    else if (selectedPropName == "Class")
+    {
+      csString clazz = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      pctpl->SetProperty (pl->FetchStringID ("class"), clazz.GetData ());
+      return true;
+    }
+    else if (selectedPropName == "TrigType")
+    {
+      pctpl->RemoveProperty (pl->FetchStringID ("SetupTriggerBox"));
+      pctpl->RemoveProperty (pl->FetchStringID ("SetupTriggerSphere"));
+      pctpl->RemoveProperty (pl->FetchStringID ("SetupTriggerBeam"));
+      pctpl->RemoveProperty (pl->FetchStringID ("SetupTriggerAboveMesh"));
+      csString type = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      printf ("type=%s\n", type.GetData ()); fflush (stdout);
+      if (type == "Sphere")
+      {
+	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerSphere", CEL_DATA_NONE);
+	return true;
+      }
+      else if (type == "Box")
+      {
+	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerBox", CEL_DATA_NONE);
+	return true;
+      }
+      else if (type == "Beam")
+      {
+	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerBeam", CEL_DATA_NONE);
+	return true;
+      }
+      else if (type == "Above")
+      {
+	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerAboveMesh", CEL_DATA_NONE);
+	return true;
+      }
+    }
+    else if (selectedPropName == "TrigType.Radius")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerSphere", "radius");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_FLOAT);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerSphere", "radius", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.Position")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerSphere", "position");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerSphere", "position", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.MinBox")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBox", "minbox");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBox", "minbox", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.MaxBox")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBox", "maxbox");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBox", "maxbox", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.Start")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBeam", "start");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBeam", "start", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.End")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBeam", "end");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBeam", "end", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.Entity")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "entity");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_STRING);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "entity", par);
+      return true;
+    }
+    else if (selectedPropName == "TrigType.MaxDistance")
+    {
+      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
+      csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_FLOAT);
+      InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance", par);
+      return true;
+    }
     return false;
   }
 
@@ -547,6 +708,11 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
   {
     csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
     iUIManager* ui = view3d->GetApplication ()->GetUI ();
+
+    size_t dot = propName.FindFirst ('.');
+    if (dot != csArrayItemNotFound)
+      propName = propName.Slice (dot+1);
+
     Value* chosen = 0;
     int col;
     if (propName.StartsWith ("E:"))
@@ -563,6 +729,13 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       chosen = ui->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
 	    QUEST_COL_MODIFIED);
       col = QUEST_COL_NAME;
+    }
+    else if (propName.StartsWith ("C:"))
+    {
+      Value* objects = view3d->GetModelRepository ()->GetClassesValue ();
+      chosen = ui->AskDialog ("Select a class", objects, "Class,Description", CLASS_COL_NAME,
+	    CLASS_COL_DESCRIPTION);
+      col = CLASS_COL_NAME;
     }
     if (chosen)
     {
@@ -861,6 +1034,11 @@ void EntityMode::BuildDetailGrid ()
   pctypesArray.Add (wxT ("pcmove.actor.wasd"));
   pctypesArray.Add (wxT ("pcworld.dynamic"));
   pctypesArray.Add (wxT ("ares.gamecontrol"));
+
+  trigtypesArray.Add (wxT ("Sphere"));
+  trigtypesArray.Add (wxT ("Box"));
+  trigtypesArray.Add (wxT ("Beam"));
+  trigtypesArray.Add (wxT ("Above"));
 }
 
 void EntityMode::AppendPar (
@@ -1078,6 +1256,13 @@ csString EntityMode::GetPropertyValueAsString (const csString& property, const c
   wxString wxValue = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
 	property + "." + sub));
   csString value = (const char*)wxValue.mb_str (wxConvUTF8);
+  return value;
+}
+
+int EntityMode::GetPropertyValueAsInt (const csString& property, const char* sub)
+{
+  int value = detailGrid->GetPropertyValueAsInt (wxString::FromUTF8 (
+	property + "." + sub));
   return value;
 }
 
