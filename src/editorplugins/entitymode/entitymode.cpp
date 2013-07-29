@@ -811,6 +811,7 @@ void EntityMode::AppendPar (
 	typesArray, typesArrayIdx, type));
   detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
 	wxString::FromUTF8 (value)));
+  detailGrid->Collapse (parProp);
 }
 
 void EntityMode::AppendButtonPar (
