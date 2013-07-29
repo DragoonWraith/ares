@@ -365,13 +365,18 @@ public:
     if (selectedPropName.StartsWith ("Par:") && selectedPropName.EndsWith (".Name"))
     {
       csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
-      if (oldParName != value)
+      iUIManager* ui = emode->GetApplication ()->GetUI ();
+      if (value.IsEmpty ())
+      {
+	ui->Error ("Empty name is not allowed!");
+	return false;
+      }
+      else if (oldParName != value)
       {
 	iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl,
 	    "NewQuest", value);
 	if (par)
 	{
-	  iUIManager* ui = emode->GetApplication ()->GetUI ();
 	  ui->Error ("There is already a parameter with this name!");
 	  return false;
 	}
@@ -381,13 +386,11 @@ public:
   }
 
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName)
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
-    wxMenu contextMenu;
-    contextMenu.Append (idNewPar, wxT ("New Quest Parameter..."));
+    contextMenu->Append (idNewPar, wxT ("New Quest Parameter..."));
     if (selectedPropName.StartsWith ("Par:"))
-      contextMenu.Append (idDelPar, wxT ("Delete Quest Parameter"));
-    emode->panel->PopupMenu (&contextMenu);
+      contextMenu->Append (idDelPar, wxT ("Delete Quest Parameter"));
   }
 };
 
@@ -453,12 +456,17 @@ public:
   {
     if (selectedPropName.StartsWith ("Prop:") && selectedPropName.EndsWith (".Name"))
     {
+      iUIManager* ui = emode->GetApplication ()->GetUI ();
       csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
-      if (oldParName != value)
+      if (value.IsEmpty ())
+      {
+	ui->Error ("Empty name is not allowed!");
+	return false;
+      }
+      else if (oldParName != value)
       {
 	if (pctpl->FindProperty (pl->FetchStringID (value)) != csArrayItemNotFound)
 	{
-	  iUIManager* ui = emode->GetApplication ()->GetUI ();
 	  ui->Error ("There is already a property with this name!");
 	  return false;
 	}
@@ -468,13 +476,11 @@ public:
   }
 
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName)
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
-    wxMenu contextMenu;
-    contextMenu.Append (idNewProp, wxT ("New Property..."));
+    contextMenu->Append (idNewProp, wxT ("New Property..."));
     if (selectedPropName.StartsWith ("Prop:"))
-      contextMenu.Append (idDelProp, wxT ("Delete Property"));
-    emode->panel->PopupMenu (&contextMenu);
+      contextMenu->Append (idDelProp, wxT ("Delete Property"));
   }
 };
 
@@ -594,18 +600,26 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
   {
     wxPropertyGridHitTestResult rc = detailGrid->HitTest (detailGrid->ScreenToClient (event.GetPosition ()));
     contextLastProperty = rc.GetProperty ();
+
     if (contextLastProperty)
     {
       csString selectedPropName, pcPropName;
       iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+      wxMenu contextMenu;
+      contextMenu.Append (idNewChar, wxT ("New characteristic..."));
+      if (selectedPropName.StartsWith ("Char:"))
+        contextMenu.Append (idDelChar, wxT ("Delete characteristic"));
       if (pctpl)
       {
         PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
         if (editor)
         {
-          editor->DoContext (pctpl, pcPropName, selectedPropName);
+          editor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
         }
       }
+
+      panel->PopupMenu (&contextMenu);
     }
   }
 }
@@ -648,12 +662,60 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
   else if (selectedPropName == "Classes")
   {
   }
+  else if (selectedPropName.StartsWith ("Char:"))
+  {
+    csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
+    if (selectedPropName.EndsWith (".Value"))
+    {
+      char* endptr;
+      strtod (value, &endptr);
+      if (*endptr)
+	event.Veto ();
+    }
+    else if (selectedPropName.EndsWith (".Name"))
+    {
+      iUIManager* ui = view3d->GetApplication ()->GetUI ();
+      csString oldName = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+      if (value.IsEmpty ())
+      {
+        ui->Error ("Empty name is not allowed!");
+        return;
+      }
+      else if (oldName != value)
+      {
+	iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+	if (tpl->GetCharacteristics ()->HasCharacteristic (value))
+	{
+          ui->Error ("There is already a characteristic with this name!");
+	  event.Veto ();
+	}
+      }
+    }
+  }
 }
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
   wxPGProperty* selectedProperty = event.GetProperty ();
   OnPropertyGridChanged (selectedProperty);
+}
+
+void EntityMode::UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName)
+{
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  csString oldname = propName.Slice (5);
+  csString newname = (const char*)(detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
+	propName + ".Name")).mb_str (wxConvUTF8));
+  csString newvalue = (const char*)(detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
+	propName + ".Value")).mb_str (wxConvUTF8));
+  if (oldname != newname)
+    tpl->GetCharacteristics ()->ClearCharacteristic (oldname);
+  tpl->GetCharacteristics ()->ClearCharacteristic (newname);
+  float value;
+  csScanStr (newvalue, "%f", &value);
+  tpl->GetCharacteristics ()->SetCharacteristic (newname, value);
+  PCWasEdited (0);
+  SelectTemplate (tpl);
 }
 
 void EntityMode::UpdateTemplateClassesFromGrid ()
@@ -748,6 +810,11 @@ void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
   {
     UpdateTemplateClassesFromGrid ();
   }
+  else if (selectedPropName.StartsWith ("Char:") && !selectedPropName.EndsWith (".Value")
+	&& !selectedPropName.EndsWith (".Name"))
+  {
+    UpdateCharacteristicFromGrid (selectedProperty, selectedPropName);
+  }
 }
 
 void EntityMode::RegisterEditor (PcEditorSupport* editor)
@@ -807,7 +874,8 @@ void EntityMode::AppendPar (
 	wxString::FromUTF8 (s), wxT ("<composed>")));
   detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
 	wxString::FromUTF8 (name)));
-  detailGrid->AppendIn (parProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
+  if (type != CEL_DATA_NONE)
+    detailGrid->AppendIn (parProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
 	typesArray, typesArrayIdx, type));
   detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
 	wxString::FromUTF8 (value)));
@@ -949,6 +1017,19 @@ void EntityMode::AppendClassesPar (
   detailGrid->AppendIn (parentProp, classProp);
 }
 
+void EntityMode::AppendCharacteristics (wxPGProperty* parentProp, iCelEntityTemplate* tpl)
+{
+    csRef<iCharacteristicsIterator> it = tpl->GetCharacteristics ()->GetAllCharacteristics ();
+    while (it->HasNext ())
+    {
+      float f;
+      csString name = it->Next (f);
+      csString value;
+      value.Format ("%g", f);
+      AppendPar (parentProp, "Char", name, CEL_DATA_NONE, value);
+    }
+}
+
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
 {
   detailGrid->Freeze ();
@@ -970,6 +1051,8 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   const csSet<csStringID>& classes = tpl->GetClasses ();
   csSet<csStringID>::GlobalIterator classIt = classes.GetIterator ();
   AppendClassesPar (templateProp, &classIt, "Classes");
+
+  AppendCharacteristics (templateProp, tpl);
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
@@ -1049,6 +1132,56 @@ bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csStr
   return false;
 }
 
+void EntityMode::OnDeleteCharacteristic ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  size_t dot = selectedPropName.FindFirst ('.');
+  csString name;
+  if (dot == csArrayItemNotFound)
+    name = selectedPropName.Slice (5);
+  else
+    name = selectedPropName.Slice (5, dot-5);
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  tpl->GetCharacteristics ()->ClearCharacteristic (name);
+  PCWasEdited (0);
+  SelectTemplate (tpl);
+}
+
+void EntityMode::OnNewCharacteristic ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Characteristic Parameter");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddRow ();
+  dialog->AddText ("Value");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString name = result.Get ("Name", (const char*)0);
+  csString value = result.Get ("Value", (const char*)0);
+
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  if (name.IsEmpty ())
+  {
+    ui->Error ("Empty name is not allowed!");
+    return;
+  }
+  else if (tpl->GetCharacteristics ()->HasCharacteristic (name))
+  {
+    ui->Error ("There is already a characteristic with this name!");
+    return;
+  }
+  float v;
+  csScanStr (value, "%f", &v);
+  tpl->GetCharacteristics ()->SetCharacteristic (name, v);
+  PCWasEdited (0);
+  SelectTemplate (tpl);
+}
+
 void EntityMode::PcProp_OnDelProperty ()
 {
   csString selectedPropName, pcPropName;
@@ -1082,7 +1215,12 @@ void EntityMode::PcProp_OnNewProperty ()
   csString value = result.Get ("Value", (const char*)0);
   csString typeS = result.Get ("Type", (const char*)0);
 
-  if (pctpl->FindProperty (pl->FetchStringID (name)) != csArrayItemNotFound)
+  if (name.IsEmpty ())
+  {
+    ui->Error ("Empty name is not allowed!");
+    return;
+  }
+  else if (pctpl->FindProperty (pl->FetchStringID (name)) != csArrayItemNotFound)
   {
     ui->Error ("There is already a parameter with this name!");
     return;
@@ -1126,7 +1264,12 @@ void EntityMode::PcQuest_OnNewParameter ()
   csString value = result.Get ("Value", (const char*)0);
   csString typeS = result.Get ("Type", (const char*)0);
 
-  if (InspectTools::GetActionParameterValue (pl, pctpl, "NewQuest", name))
+  if (name.IsEmpty ())
+  {
+    ui->Error ("Empty name is not allowed!");
+    return;
+  }
+  else if (InspectTools::GetActionParameterValue (pl, pctpl, "NewQuest", name))
   {
     ui->Error ("There is already a parameter with this name!");
     return;
@@ -2839,6 +2982,13 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idRewardDown = ui->AllocContextMenuID ();
   frame->Connect (idRewardDown, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnRewardDown), 0, panel);
+
+  idNewChar = ui->AllocContextMenuID ();
+  frame->Connect (idNewChar, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic), 0, panel);
+  idDelChar = ui->AllocContextMenuID ();
+  frame->Connect (idDelChar, wxEVT_COMMAND_MENU_SELECTED,
+	  wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic), 0, panel);
 }
 
 csString EntityMode::GetContextMenuNode ()

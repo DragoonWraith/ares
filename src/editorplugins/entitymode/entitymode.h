@@ -118,7 +118,7 @@ public:
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value) = 0;
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName) { }
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 };
 
 
@@ -150,6 +150,7 @@ private:
       const csString& pcPropName, const csString& selectedPropName, const csString& value);
   void UpdateTemplateParentsFromGrid ();
   void UpdateTemplateClassesFromGrid ();
+  void UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName);
   bool ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event);
 
   void RegisterEditor (PcEditorSupport* editor);
@@ -213,6 +214,8 @@ private:
   int idDelete, idCreate, idEditQuest, idNewState, idNewSequence, idDefaultState;
   int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;
   int idRewardUp, idRewardDown;
+
+  int idNewChar, idDelChar;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -334,6 +337,8 @@ public:
   void PcQuest_OnDelParameter ();
   void PcProp_OnNewProperty ();
   void PcProp_OnDelProperty ();
+  void OnNewCharacteristic ();
+  void OnDeleteCharacteristic ();
 
   void AskNewTemplate ();
   void OnTemplateDel (const char* tplName);
@@ -354,6 +359,7 @@ public:
   void AppendTemplatesPar (wxPGProperty* parent, iCelEntityTemplateIterator* it, const char* partype);
   void AppendClassesPar (wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it,
       const char* partype);
+  void AppendCharacteristics (wxPGProperty* parentProp, iCelEntityTemplate* tpl);
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
   csString GetPropertyValueAsString (const csString& property, const char* sub);
@@ -389,6 +395,8 @@ public:
     void PcQuest_OnDelParameter (wxCommandEvent& event) { s->PcQuest_OnDelParameter (); }
     void PcProp_OnNewProperty (wxCommandEvent& event) { s->PcProp_OnNewProperty (); }
     void PcProp_OnDelProperty (wxCommandEvent& event) { s->PcProp_OnDelProperty (); }
+    void OnNewCharacteristic (wxCommandEvent& event) { s->OnNewCharacteristic (); }
+    void OnDeleteCharacteristic (wxCommandEvent& event) { s->OnDeleteCharacteristic (); }
 
   private:
     EntityMode* s;
