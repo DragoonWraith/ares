@@ -34,6 +34,7 @@ THE SOFTWARE.
 
 struct iGeometryGenerator;
 struct iCelEntityTemplate;
+struct iCelEntityTemplateIterator;
 struct iCelPropertyClassTemplate;
 struct iQuestFactory;
 struct iQuestStateFactory;
@@ -346,6 +347,7 @@ public:
     const char* name, celDataType type, const char* value);
   void AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name);
+  void AppendTemplatesPar (wxPGProperty* parent, iCelEntityTemplateIterator* it, const char* partype);
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
   csString GetPropertyValueAsString (const csString& property, const char* sub);

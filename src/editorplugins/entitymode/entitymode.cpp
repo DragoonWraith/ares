@@ -50,6 +50,7 @@ THE SOFTWARE.
 
 #include <wx/xrc/xmlres.h>
 #include <wx/listbox.h>
+#include "cseditor/wx/propgrid/propdev.h"
 
 //---------------------------------------------------------------------------
 
@@ -611,16 +612,31 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 {
-  printf ("PG changing!\n"); fflush (stdout);
   wxPGProperty* selectedProperty = event.GetProperty ();
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  printf ("PG changing %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
   if (pctpl)
   {
     csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
     printf ("Prop name: %s\n", selectedPropName.GetData ()); fflush (stdout);
     if (!ValidateGridChange (pctpl, pcPropName, selectedPropName, value))
       event.Veto ();
+  }
+  else if (selectedPropName == "Parents")
+  {
+    wxArrayString templates = event.GetValue ().GetArrayString ();
+    for (size_t i = 0 ; i < templates.GetCount () ; i++)
+    {
+      csString name = (const char*)templates.Item (i).mb_str (wxConvUTF8);
+      iCelEntityTemplate* parent = pl->FindEntityTemplate (name);
+      if (!parent)
+      {
+	iUIManager* ui = app->GetUI ();
+        ui->Error ("Can't find template '%s'!", name.GetData ());
+	event.Veto ();
+      }
+    }
   }
 }
 
@@ -632,15 +648,48 @@ void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 
 void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
 {
-  printf ("PG change!\n"); fflush (stdout);
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  printf ("PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
   if (pctpl)
   {
     printf ("Prop name: %s\n", pcPropName.GetData ()); fflush (stdout);
     if (UpdatePCFromGrid (pctpl, pcPropName, selectedPropName))
     {
       PCWasEdited (pctpl);
+    }
+  }
+  else if (selectedPropName == "Parents")
+  {
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+    wxArrayString templates = detailGrid->GetPropertyValueAsArrayString (selectedProperty);
+    csStringArray templatesToAdd;
+    csStringArray templatesToRemove;
+    for (size_t i = 0 ; i < templates.GetCount () ; i++)
+      templatesToAdd.Push (templates.Item (i).mb_str (wxConvUTF8));
+    csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
+    while (it->HasNext ())
+    {
+      csString name = it->Next ()->GetName ();
+      if (templates.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
+	templatesToRemove.Push (name);
+      else
+	templatesToAdd.Delete (name);
+    }
+    if (templatesToRemove.GetSize () > 0 || templatesToAdd.GetSize () > 0)
+    {
+      for (size_t i = 0 ; i < templatesToAdd.GetSize () ; i++)
+      {
+	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToAdd.Get (i));
+	tpl->AddParent (parent);
+      }
+      for (size_t i = 0 ; i < templatesToRemove.GetSize () ; i++)
+      {
+	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToRemove.Get (i));
+	tpl->RemoveParent (parent);
+      }
+      PCWasEdited (0);
+      SelectTemplate (tpl);
     }
   }
 }
@@ -719,6 +768,69 @@ void EntityMode::AppendButtonPar (
   detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
 }
 
+// -----------------------------------------------------------------------
+// Templates Property
+// -----------------------------------------------------------------------
+
+//WX_PG_DECLARE_ARRAYSTRING_PROPERTY_WITH_DECL(wxTemplatesProperty, class wxEMPTY_PARAMETER_VALUE)
+class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxTemplatesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
+{
+  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxTemplatesProperty))
+  EntityMode* emode;
+
+public:
+  wxPG_PROPCLASS(wxTemplatesProperty)( const wxString& label = wxPG_LABEL,
+      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
+  virtual ~wxPG_PROPCLASS(wxTemplatesProperty)();
+  virtual void GenerateValueAsString();
+  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
+  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
+  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
+  void SetEntityMode (EntityMode* emode)
+  {
+    this->emode = emode;
+  }
+  WX_PG_DECLARE_VALIDATOR_METHODS()
+};
+
+
+WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxTemplatesProperty, wxT (','), wxT ("Browse"))
+
+bool wxTemplatesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
+{
+  using namespace Ares;
+  csRef<Value> objects = emode->Get3DView ()->GetModelRepository ()->GetTemplatesValue ();
+  iUIManager* ui = emode->GetApplication ()->GetUI ();
+  Value* chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
+	    TEMPLATE_COL_MODIFIED);
+  if (chosen)
+  {
+    csString name = chosen->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
+    value = wxString::FromUTF8 (name);
+    return true;
+  }
+  return false;
+}
+
+// -----------------------------------------------------------------------
+
+void EntityMode::AppendTemplatesPar (
+    wxPGProperty* parentProp, iCelEntityTemplateIterator* it, const char* partype)
+{
+  wxArrayString parentArray;
+  while (it->HasNext ())
+  {
+    iCelEntityTemplate* parent = it->Next ();
+    parentArray.Add (wxString::FromUTF8 (parent->GetName ()));
+  }
+  wxTemplatesProperty* tempProp = new wxTemplatesProperty (
+	wxString::FromUTF8 (partype),
+	wxPG_LABEL,
+	parentArray);
+  tempProp->SetEntityMode (this);
+  detailGrid->AppendIn (parentProp, tempProp);
+}
+
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
 {
   detailGrid->Freeze ();
@@ -734,6 +846,9 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   s.Format ("Template (%s)", tpl->GetName ());
   wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
 
+  csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
+  AppendTemplatesPar (templateProp, it, "Parents");
+
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {
     iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
@@ -743,7 +858,7 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
 
     detailGrid->AppendIn (pcProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
 	pctypesArray, wxArrayInt(), pctypesArray.Index (wxString::FromUTF8 (pctpl->GetName ()))));
-    detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Tag"), wxT ("Tag"),
+    detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Tag"), wxPG_LABEL,
 	wxString::FromUTF8 (pctpl->GetTag ())));
 
     PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
