@@ -316,8 +316,8 @@ public:
 	iParameter* nextPar = it->Next (nextID);
 	csString name = pl->FetchString (nextID);
 	if (name == "name") continue;
-	csString val = nextPar->GetOriginalExpression ();
-	emode->AppendPar (pcProp, "Par", name, nextPar->GetPossibleType (), val);
+	emode->AppendPar (pcProp, "Par", name,
+	    nextPar->GetPossibleType (), nextPar->GetOriginalExpression ());
       }
     }
   }
@@ -330,7 +330,6 @@ public:
     if (questName != oldQuestName)
     {
       pctpl->RemoveAllProperties ();
-      InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
       csRef<iParameter> par = emode->GetPM ()->GetParameter (questName, CEL_DATA_STRING);
       InspectTools::AddActionParameter (pl, pctpl, "NewQuest", "name", par);
       return true;
@@ -348,7 +347,6 @@ public:
 
       if (oldParName != newParName)
 	InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", oldParName);
-      InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", newParName);
       celDataType newType = InspectTools::StringToType (newTypeS);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (newValue, newType);
       InspectTools::AddActionParameter (pl, pctpl, "NewQuest", newParName, par);
@@ -611,7 +609,6 @@ public:
     }
     else if (selectedPropName == "TrigType.Radius")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerSphere", "radius");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_FLOAT);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerSphere", "radius", par);
@@ -619,7 +616,6 @@ public:
     }
     else if (selectedPropName == "TrigType.Position")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerSphere", "position");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerSphere", "position", par);
@@ -627,7 +623,6 @@ public:
     }
     else if (selectedPropName == "TrigType.MinBox")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBox", "minbox");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBox", "minbox", par);
@@ -635,7 +630,6 @@ public:
     }
     else if (selectedPropName == "TrigType.MaxBox")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBox", "maxbox");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBox", "maxbox", par);
@@ -643,7 +637,6 @@ public:
     }
     else if (selectedPropName == "TrigType.Start")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBeam", "start");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBeam", "start", par);
@@ -651,15 +644,13 @@ public:
     }
     else if (selectedPropName == "TrigType.End")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerBeam", "end");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_VECTOR3);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerBeam", "end", par);
       return true;
     }
-    else if (selectedPropName == "TrigType.Entity")
+    else if (selectedPropName == "TrigType.E:Entity")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "entity");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_STRING);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "entity", par);
@@ -667,7 +658,6 @@ public:
     }
     else if (selectedPropName == "TrigType.MaxDistance")
     {
-      InspectTools::DeleteActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
       csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       csRef<iParameter> par = emode->GetPM ()->GetParameter (value, CEL_DATA_FLOAT);
       InspectTools::AddActionParameter (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance", par);
@@ -2355,7 +2345,6 @@ void EntityMode::OnRenameQuest (const char* questName)
 	  if (n == questName)
 	  {
 	    csRef<iParameter> par = view3d->GetPM ()->GetParameter (name->GetData (), CEL_DATA_STRING);
-	    InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", "name");
 	    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", "name", par);
 	    RegisterModification (tpl);
 	  }
