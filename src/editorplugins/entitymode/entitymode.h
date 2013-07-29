@@ -47,6 +47,7 @@ struct iQuestTriggerResponseFactory;
 struct iCelParameterIterator;
 struct iParameterManager;
 struct iParameter;
+struct iUIManager;
 
 class PropertyClassPanel;
 class TriggerPanel;
@@ -102,8 +103,12 @@ class PcEditorSupport : public csRefCount
 {
 protected:
   iCelPlLayer* pl;
+  iUIManager* ui;
+  iParameterManager* pm;
   csString name;
   EntityMode* emode;
+
+  int RegisterContextMenu (wxObjectEventFunction handler);
 
 public:
   PcEditorSupport (const char* name, EntityMode* emode);
@@ -356,6 +361,7 @@ public:
   void AppendClassesPar (wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it,
       const char* partype);
   void AppendCharacteristics (wxPGProperty* parentProp, iCelEntityTemplate* tpl);
+
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
   csString GetPropertyValueAsString (const csString& property, const char* sub);

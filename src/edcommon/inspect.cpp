@@ -317,6 +317,14 @@ void InspectTools::AddActionParameter (iCelPlLayer* pl,
   AddActionParameter (pl, pctpl, idx, parName, parameter);
 }
 
+void InspectTools::AddActionParameter (iCelPlLayer* pl, iParameterManager* pm,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName, celDataType type, const char* value)
+{
+  csRef<iParameter> par = pm->GetParameter (value, type);
+  AddActionParameter (pl, pctpl, actionName, parName, par);
+}
+
 void InspectTools::AddAction (iCelPlLayer* pl, iParameterManager* pm,
       iCelPropertyClassTemplate* pctpl, const char* actionName, ...)
 {

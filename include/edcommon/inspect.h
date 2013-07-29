@@ -248,6 +248,13 @@ public:
       const char* parName, iParameter* parameter);
 
   /**
+   * Add a parameter to an action.
+   */
+  static void AddActionParameter (iCelPlLayer* pl, iParameterManager* pm,
+      iCelPropertyClassTemplate* pctpl, const char* actionName,
+      const char* parName, celDataType type, const char* value);
+
+  /**
    * Add an action with parameters.
    * Following the actionName is a list of celDataType/name/value tuples ended
    * by the value CEL_DATA_NONE.
