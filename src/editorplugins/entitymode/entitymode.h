@@ -149,6 +149,7 @@ private:
   bool ValidateGridChange (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, const csString& value);
   void UpdateTemplateParentsFromGrid ();
+  void UpdateTemplateClassesFromGrid ();
   bool ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event);
 
   void RegisterEditor (PcEditorSupport* editor);
@@ -351,6 +352,8 @@ public:
   void AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name);
   void AppendTemplatesPar (wxPGProperty* parent, iCelEntityTemplateIterator* it, const char* partype);
+  void AppendClassesPar (wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it,
+      const char* partype);
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
   csString GetPropertyValueAsString (const csString& property, const char* sub);

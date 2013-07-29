@@ -645,12 +645,52 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
     if (!ValidateTemplateParentsFromGrid (event))
       event.Veto ();
   }
+  else if (selectedPropName == "Classes")
+  {
+  }
 }
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
   wxPGProperty* selectedProperty = event.GetProperty ();
   OnPropertyGridChanged (selectedProperty);
+}
+
+void EntityMode::UpdateTemplateClassesFromGrid ()
+{
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  wxArrayString classes = detailGrid->GetPropertyValueAsArrayString (wxT ("Classes"));
+  csStringArray classesToAdd;
+  csStringArray classesToRemove;
+  for (size_t i = 0 ; i < classes.GetCount () ; i++)
+    classesToAdd.Push (classes.Item (i).mb_str (wxConvUTF8));
+
+  const csSet<csStringID>& tplClasses = tpl->GetClasses ();
+  csSet<csStringID>::GlobalIterator it = tplClasses.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID classID = it.Next ();
+    csString name = pl->FetchString (classID);
+    if (classes.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
+      classesToRemove.Push (name);
+    else
+      classesToAdd.Delete (name);
+  }
+  if (classesToRemove.GetSize () > 0 || classesToAdd.GetSize () > 0)
+  {
+    for (size_t i = 0 ; i < classesToAdd.GetSize () ; i++)
+    {
+      csStringID id = pl->FetchStringID (classesToAdd.Get (i));
+      tpl->AddClass (id);
+    }
+    for (size_t i = 0 ; i < classesToRemove.GetSize () ; i++)
+    {
+      csStringID id = pl->FetchStringID (classesToRemove.Get (i));
+      tpl->RemoveClass (id);
+    }
+    PCWasEdited (0);
+    SelectTemplate (tpl);
+  }
 }
 
 void EntityMode::UpdateTemplateParentsFromGrid ()
@@ -703,6 +743,10 @@ void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
   else if (selectedPropName == "Parents")
   {
     UpdateTemplateParentsFromGrid ();
+  }
+  else if (selectedPropName == "Classes")
+  {
+    UpdateTemplateClassesFromGrid ();
   }
 }
 
@@ -825,6 +869,49 @@ bool wxTemplatesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value 
 }
 
 // -----------------------------------------------------------------------
+// Classes Property
+// -----------------------------------------------------------------------
+
+class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxClassesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
+{
+  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxClassesProperty))
+  EntityMode* emode;
+
+public:
+  wxPG_PROPCLASS(wxClassesProperty)( const wxString& label = wxPG_LABEL,
+      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
+  virtual ~wxPG_PROPCLASS(wxClassesProperty)();
+  virtual void GenerateValueAsString();
+  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
+  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
+  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
+  void SetEntityMode (EntityMode* emode)
+  {
+    this->emode = emode;
+  }
+  WX_PG_DECLARE_VALIDATOR_METHODS()
+};
+
+
+WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxClassesProperty, wxT (','), wxT ("Browse"))
+
+bool wxClassesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
+{
+  using namespace Ares;
+  Value* classes = emode->Get3DView ()->GetModelRepository ()->GetClassesValue ();
+  iUIManager* ui = emode->GetApplication ()->GetUI ();
+  Value* chosen = ui->AskDialog ("Select a class", classes, "Class,Description", CLASS_COL_NAME,
+	    CLASS_COL_DESCRIPTION);
+  if (chosen)
+  {
+    csString name = chosen->GetStringArrayValue ()->Get (CLASS_COL_NAME);
+    value = wxString::FromUTF8 (name);
+    return true;
+  }
+  return false;
+}
+
+// -----------------------------------------------------------------------
 
 void EntityMode::AppendTemplatesPar (
     wxPGProperty* parentProp, iCelEntityTemplateIterator* it, const char* partype)
@@ -843,6 +930,24 @@ void EntityMode::AppendTemplatesPar (
   detailGrid->AppendIn (parentProp, tempProp);
 }
 
+void EntityMode::AppendClassesPar (
+    wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it, const char* partype)
+{
+  wxArrayString classesArray;
+  while (it->HasNext ())
+  {
+    csStringID classID = it->Next ();
+    csString className = pl->FetchString (classID);
+    classesArray.Add (wxString::FromUTF8 (className));
+  }
+  wxClassesProperty* classProp = new wxClassesProperty (
+	wxString::FromUTF8 (partype),
+	wxPG_LABEL,
+	classesArray);
+  classProp->SetEntityMode (this);
+  detailGrid->AppendIn (parentProp, classProp);
+}
+
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
 {
   detailGrid->Freeze ();
@@ -858,8 +963,12 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   s.Format ("Template (%s)", tpl->GetName ());
   wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
 
-  csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
-  AppendTemplatesPar (templateProp, it, "Parents");
+  csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
+  AppendTemplatesPar (templateProp, parentIt, "Parents");
+
+  const csSet<csStringID>& classes = tpl->GetClasses ();
+  csSet<csStringID>::GlobalIterator classIt = classes.GetIterator ();
+  AppendClassesPar (templateProp, &classIt, "Classes");
 
   for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
   {

@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "assets.h"
 #include "resources.h"
 #include "quests.h"
+#include "classes.h"
 #include "modelrepository.h"
 
 
@@ -41,6 +42,7 @@ ModelRepository::ModelRepository (AresEdit3DView* view3d, AppAresEditWX* app) :
   factoriesValue.AttachNew (new FactoriesValue (app));
   objectsValue.AttachNew (new ObjectsValue (app));
   templatesValue.AttachNew (new TemplatesValue (app));
+  classesValue.AttachNew (new ClassesValue ());
 }
 
 ModelRepository::~ModelRepository ()
@@ -103,6 +105,12 @@ Ares::Value* ModelRepository::GetDynfactCollectionValue () const
 Ares::Value* ModelRepository::GetObjectsValue () const
 {
   return objectsValue;
+}
+
+Ares::Value* ModelRepository::GetClassesValue () const
+{
+  classesValue->RefreshModel ();
+  return classesValue;
 }
 
 Ares::Value* ModelRepository::GetFactoriesValue () const
