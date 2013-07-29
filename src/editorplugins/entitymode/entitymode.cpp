@@ -363,19 +363,13 @@ public:
     {
       csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       if (value.IsEmpty ())
-      {
-	ui->Error ("Empty name is not allowed!");
-	return false;
-      }
+	return ui->Error ("Empty name is not allowed!");
       else if (oldParName != value)
       {
 	iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl,
 	    "NewQuest", value);
 	if (par)
-	{
-	  ui->Error ("There is already a parameter with this name!");
-	  return false;
-	}
+	  return ui->Error ("There is already a parameter with this name!");
       }
     }
     return true;
@@ -449,17 +443,11 @@ public:
     {
       csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
       if (value.IsEmpty ())
-      {
-	ui->Error ("Empty name is not allowed!");
-	return false;
-      }
+	return ui->Error ("Empty name is not allowed!");
       else if (oldParName != value)
       {
 	if (pctpl->FindProperty (pl->FetchStringID (value)) != csArrayItemNotFound)
-	{
-	  ui->Error ("There is already a property with this name!");
-	  return false;
-	}
+	  return ui->Error ("There is already a property with this name!");
       }
     }
     return true;
@@ -770,8 +758,7 @@ bool EntityMode::ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event)
     if (!parent)
     {
       iUIManager* ui = app->GetUI ();
-      ui->Error ("Can't find template '%s'!", name.GetData ());
-      return false;
+      return ui->Error ("Can't find template '%s'!", name.GetData ());
     }
   }
   return true;
@@ -815,7 +802,7 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
       if (value.IsEmpty ())
       {
         ui->Error ("Empty name is not allowed!");
-        return;
+	event.Veto ();
       }
       else if (oldName != value)
       {
@@ -1239,8 +1226,7 @@ bool EntityMode::ValidateGridChange (iCelPropertyClassTemplate* pctpl,
     if (pc && pc != pctpl)
     {
       iUIManager* ui = view3d->GetApplication ()->GetUI ();
-      ui->Error ("Property class with this name and tag already exists!");
-      return false;
+      return ui->Error ("Property class with this name and tag already exists!");
     }
   }
 
