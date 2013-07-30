@@ -346,6 +346,7 @@ public:
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
   void OnRewardMove (int dir);
   void OnContextMenu (wxContextMenuEvent& event);
+  void OnIdle ();
 
   void PcQuest_OnNewParameter ();
   void PcQuest_OnDelParameter ();
@@ -398,6 +399,7 @@ public:
     void OnNewCharacteristic (wxCommandEvent& event) { s->OnNewCharacteristic (); }
     void OnDeleteCharacteristic (wxCommandEvent& event) { s->OnDeleteCharacteristic (); }
     void OnDeletePC (wxCommandEvent& event) { s->OnDeletePC (); }
+    void OnIdle (wxIdleEvent& event) { s->OnIdle (); }
 
   private:
     EntityMode* s;

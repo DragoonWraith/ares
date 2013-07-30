@@ -64,6 +64,7 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
   EVT_BUTTON (PG_ID, EntityMode::Panel::OnPropertyGridButton)
   EVT_CONTEXT_MENU (EntityMode::Panel::OnContextMenu)
+  EVT_IDLE (EntityMode::Panel::OnIdle)
 END_EVENT_TABLE()
 
 SCF_IMPLEMENT_FACTORY (EntityMode)
@@ -471,11 +472,98 @@ public:
   {
     csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl, "AddInput", "mask");
     AppendButtonPar (pcProp, "Input", "A:", inputMask);
+
+    csStringID msgID = pl->FetchStringID ("msgid");
+    csStringID entityID = pl->FetchStringID ("entity");
+
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddOutput")
+      {
+	csArray<csStringID> ids;
+	csArray<iParameter*> pars;
+        csString msg;
+        csString entity;
+        while (params->HasNext ())
+        {
+          csStringID parid;
+          iParameter* par = params->Next (parid);
+          if (parid == msgID) msg = par->GetOriginalExpression ();
+          else if (parid == entityID) entity = par->GetOriginalExpression ();
+          else
+          {
+	    ids.Push (parid);
+	    pars.Push (par);
+          }
+        }
+
+	csString s;
+	s.Format ("Output:%d", int (idx));
+	wxPGProperty* outputProp = AppendStringPar (pcProp, "Output", s, "<composed>");
+
+	AppendButtonPar (outputProp, "Message", "A:", msg);
+	AppendButtonPar (outputProp, "Entity", "E:", entity);
+
+	for (size_t i = 0 ; i < ids.GetSize () ; i++)
+	{
+	  csString name = pl->FetchString (ids.Get (i));
+	  iParameter* par = pars.Get (i);
+	  AppendPar (outputProp, "Par", name, par->GetPossibleType (), par->GetOriginalExpression ());
+	}
+      }
+    }
   }
 
   virtual bool Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+
+    if (selectedPropName == "A:Input")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "AddInput", "mask", CEL_DATA_STRING, value);
+      return true;
+    }
+  
+    if (selectedPropName.StartsWith ("Output:"))
+    {
+      size_t dot = selectedPropName.FindLast ('.');
+      int idx;
+      csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
+      printf ("UpdateWire:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
+      if (selectedPropName.EndsWith (".E:Entity"))
+      {
+        csRef<iParameter> par = pm->GetParameter (value, CEL_DATA_STRING);
+        InspectTools::AddActionParameter (pl, pctpl, size_t (idx), "entity", par);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".A:Message"))
+      {
+        csRef<iParameter> par = pm->GetParameter (value, CEL_DATA_STRING);
+        InspectTools::AddActionParameter (pl, pctpl, size_t (idx), "msgid", par);
+        return true;
+      }
+#if 0
+      else if (selectedPropName.EndsWith (".Name"))
+      {
+        size_t dot1 = selectedPropName.FindFirst ('.');
+	csString oldParName = selectedPropName.Slice (dot1+5, dot-dot1-5);
+printf ("oldParName=%s value=%s\n", oldParName.GetData (), value.GetData ()); fflush (stdout);
+        if (oldParName != value)
+	{
+	  iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, size_t (idx),
+	      oldParName);
+          InspectTools::AddActionParameter (pl, pctpl, size_t (idx), value, par);
+	  return true;
+	}
+      }
+#endif
+    }
+
     return false;
   }
 
@@ -601,8 +689,7 @@ public:
 	return ui->Error ("Empty name is not allowed!");
       else if (oldParName != value)
       {
-	iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl,
-	    "NewQuest", value);
+	iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "NewQuest", value);
 	if (par)
 	  return ui->Error ("There is already a parameter with this name!");
       }
@@ -1241,9 +1328,11 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
     csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
     iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
+printf ("propName:%s\n", propName.GetData ()); fflush (stdout);
     size_t dot = propName.FindFirst ('.');
     if (dot != csArrayItemNotFound)
       propName = propName.Slice (dot+1);
+printf ("propName:%s\n", propName.GetData ()); fflush (stdout);
 
     Value* chosen = 0;
     int col;
@@ -1322,6 +1411,11 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
       panel->PopupMenu (&contextMenu);
     }
   }
+}
+
+void EntityMode::OnIdle ()
+{
+  printf ("Idle!\n"); fflush (stdout);
 }
 
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
