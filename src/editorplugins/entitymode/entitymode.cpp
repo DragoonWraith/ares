@@ -72,6 +72,93 @@ static csStringID ID_Copy = csInvalidStringID;
 static csStringID ID_Paste = csInvalidStringID;
 static csStringID ID_Delete = csInvalidStringID;
 
+// -----------------------------------------------------------------------
+// Templates Property
+// -----------------------------------------------------------------------
+
+//WX_PG_DECLARE_ARRAYSTRING_PROPERTY_WITH_DECL(wxTemplatesProperty, class wxEMPTY_PARAMETER_VALUE)
+class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxTemplatesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
+{
+  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxTemplatesProperty))
+  EntityMode* emode;
+
+public:
+  wxPG_PROPCLASS(wxTemplatesProperty)( const wxString& label = wxPG_LABEL,
+      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
+  virtual ~wxPG_PROPCLASS(wxTemplatesProperty)();
+  virtual void GenerateValueAsString();
+  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
+  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
+  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
+  void SetEntityMode (EntityMode* emode)
+  {
+    this->emode = emode;
+  }
+  WX_PG_DECLARE_VALIDATOR_METHODS()
+};
+
+
+WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxTemplatesProperty, wxT (','), wxT ("Browse"))
+
+bool wxTemplatesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
+{
+  using namespace Ares;
+  csRef<Value> objects = emode->Get3DView ()->GetModelRepository ()->GetTemplatesValue ();
+  iUIManager* ui = emode->GetApplication ()->GetUI ();
+  Value* chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
+	    TEMPLATE_COL_MODIFIED);
+  if (chosen)
+  {
+    csString name = chosen->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
+    value = wxString::FromUTF8 (name);
+    return true;
+  }
+  return false;
+}
+
+// -----------------------------------------------------------------------
+// Classes Property
+// -----------------------------------------------------------------------
+
+class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxClassesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
+{
+  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxClassesProperty))
+  EntityMode* emode;
+
+public:
+  wxPG_PROPCLASS(wxClassesProperty)( const wxString& label = wxPG_LABEL,
+      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
+  virtual ~wxPG_PROPCLASS(wxClassesProperty)();
+  virtual void GenerateValueAsString();
+  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
+  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
+  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
+  void SetEntityMode (EntityMode* emode)
+  {
+    this->emode = emode;
+  }
+  WX_PG_DECLARE_VALIDATOR_METHODS()
+};
+
+
+WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxClassesProperty, wxT (','), wxT ("Browse"))
+
+bool wxClassesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
+{
+  using namespace Ares;
+  Value* classes = emode->Get3DView ()->GetModelRepository ()->GetClassesValue ();
+  iUIManager* ui = emode->GetApplication ()->GetUI ();
+  Value* chosen = ui->AskDialog ("Select a class", classes, "Class,Description", CLASS_COL_NAME,
+	    CLASS_COL_DESCRIPTION);
+  if (chosen)
+  {
+    csString name = chosen->GetStringArrayValue ()->Get (CLASS_COL_NAME);
+    value = wxString::FromUTF8 (name);
+    return true;
+  }
+  return false;
+}
+
 //---------------------------------------------------------------------------
 
 class GraphNodeCallback : public iGraphNodeCallback
@@ -278,6 +365,80 @@ PcEditorSupport::PcEditorSupport (const char* name, EntityMode* emode) : name (n
   pl = emode->GetPL ();
   pm = emode->GetPM ();
   ui = emode->GetApplication ()->GetUI ();
+  detailGrid = emode->GetDetailGrid ();
+
+  typesArray.Add (wxT ("string"));  typesArrayIdx.Add (CEL_DATA_STRING);
+  typesArray.Add (wxT ("float"));   typesArrayIdx.Add (CEL_DATA_FLOAT);
+  typesArray.Add (wxT ("long"));    typesArrayIdx.Add (CEL_DATA_LONG);
+  typesArray.Add (wxT ("bool"));    typesArrayIdx.Add (CEL_DATA_BOOL);
+  typesArray.Add (wxT ("vector2")); typesArrayIdx.Add (CEL_DATA_VECTOR2);
+  typesArray.Add (wxT ("vector3")); typesArrayIdx.Add (CEL_DATA_VECTOR3);
+  typesArray.Add (wxT ("color"));   typesArrayIdx.Add (CEL_DATA_COLOR);
+}
+
+csString PcEditorSupport::GetPropertyValueAsString (const csString& property, const char* sub)
+{
+  wxString wxValue = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
+	property + "." + sub));
+  csString value = (const char*)wxValue.mb_str (wxConvUTF8);
+  return value;
+}
+
+int PcEditorSupport::GetPropertyValueAsInt (const csString& property, const char* sub)
+{
+  int value = detailGrid->GetPropertyValueAsInt (wxString::FromUTF8 (
+	property + "." + sub));
+  return value;
+}
+
+wxPGProperty* PcEditorSupport::AppendStringPar (wxPGProperty* parent,
+    const char* label, const char* name, const char* value)
+{
+  return detailGrid->AppendIn (parent,
+      new wxStringProperty (wxString::FromUTF8 (label),
+	wxString::FromUTF8 (name), wxString::FromUTF8 (value)));
+}
+
+wxPGProperty* PcEditorSupport::AppendIntPar (wxPGProperty* parent,
+    const char* label, const char* name, int value)
+{
+  return detailGrid->AppendIn (parent,
+      new wxIntProperty (wxString::FromUTF8 (label),
+	wxString::FromUTF8 (name), value));
+}
+
+wxPGProperty* PcEditorSupport::AppendEnumPar (wxPGProperty* parent,
+    const char* label, const char* name, const wxArrayString& labels, const wxArrayInt& values,
+    int value)
+{
+  return detailGrid->AppendIn (parent,
+      new wxEnumProperty (wxString::FromUTF8 (label),
+	wxString::FromUTF8 (name), labels, values, value));
+}
+
+void PcEditorSupport::AppendPar (
+    wxPGProperty* parent, const char* partype,
+    const char* name, celDataType type, const char* value)
+{
+  csString s;
+  s.Format ("%s:%s", partype, name);
+  wxPGProperty* parProp = AppendStringPar (parent, partype, s, "<composed>");
+  AppendStringPar (parProp, "Name", "Name", name);
+  if (type != CEL_DATA_NONE)
+    AppendEnumPar (parProp, "Type", "Type", typesArray, typesArrayIdx, type);
+  AppendStringPar (parProp, "Value", "Value", value);
+  detailGrid->Collapse (parProp);
+}
+
+void PcEditorSupport::AppendButtonPar (
+    wxPGProperty* parent, const char* partype, const char* type, const char* name)
+{
+  wxStringProperty* prop = new wxStringProperty (
+      wxString::FromUTF8 (partype),
+      wxString::FromUTF8 (csString (type) + partype),
+      wxString::FromUTF8 (name));
+  detailGrid->AppendIn (parent, prop);
+  detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
 }
 
 int PcEditorSupport::RegisterContextMenu (wxObjectEventFunction handler)
@@ -286,6 +447,8 @@ int PcEditorSupport::RegisterContextMenu (wxObjectEventFunction handler)
   emode->panel->Connect (id, wxEVT_COMMAND_MENU_SELECTED, handler, 0, emode->panel);
   return id;
 }
+
+// ------------------------------------------------------------------------
 
 class PcEditorSupportQuest : public PcEditorSupport
 {
@@ -306,7 +469,7 @@ public:
   {
     csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
       "NewQuest", "name");
-    emode->AppendButtonPar (pcProp, "Quest", "Q:", questName);
+    AppendButtonPar (pcProp, "Quest", "Q:", questName);
     size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
     if (nqIdx != csArrayItemNotFound)
     {
@@ -319,16 +482,16 @@ public:
 	iParameter* nextPar = it->Next (nextID);
 	csString name = pl->FetchString (nextID);
 	if (name == "name") continue;
-	emode->AppendPar (pcProp, "Par", name,
+	AppendPar (pcProp, "Par", name,
 	    nextPar->GetPossibleType (), nextPar->GetOriginalExpression ());
       }
     }
   }
 
   virtual bool Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName)
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
-    csString questName = emode->GetPropertyValueAsString (pcPropName, "Q:Quest");
+    csString questName = GetPropertyValueAsString (pcPropName, "Q:Quest");
     csString oldQuestName = emode->GetQuestName (pctpl);
     if (questName != oldQuestName)
     {
@@ -341,9 +504,9 @@ public:
 	&& !selectedPropName.EndsWith (".Type") && !selectedPropName.EndsWith (".Name"))
     {
       csString oldParName = selectedPropName.GetData () + 4;
-      csString newParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Name");
-      csString newTypeS = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Type");
-      csString newValue = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Value");
+      csString newParName = GetPropertyValueAsString (pcPropName, selectedPropName+".Name");
+      csString newTypeS = GetPropertyValueAsString (pcPropName, selectedPropName+".Type");
+      csString newValue = GetPropertyValueAsString (pcPropName, selectedPropName+".Value");
 
       if (oldParName != newParName)
 	InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", oldParName);
@@ -357,11 +520,11 @@ public:
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
-      const csString& value)
+      const csString& value, const wxPropertyGridEvent& event)
   {
     if (selectedPropName.StartsWith ("Par:") && selectedPropName.EndsWith (".Name"))
     {
-      csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csString oldParName = GetPropertyValueAsString (pcPropName, selectedPropName);
       if (value.IsEmpty ())
 	return ui->Error ("Empty name is not allowed!");
       else if (oldParName != value)
@@ -383,6 +546,8 @@ public:
       contextMenu->Append (idDelPar, wxT ("Delete Quest Parameter"));
   }
 };
+
+// ------------------------------------------------------------------------
 
 class PcEditorSupportProperties : public PcEditorSupport
 {
@@ -408,20 +573,20 @@ public:
       csString value;
       celParameterTools::ToString (data, value);
       csString name = pl->FetchString (id);
-      emode->AppendPar (pcProp, "Prop", name, InspectTools::ResolveType (data), value);
+      AppendPar (pcProp, "Prop", name, InspectTools::ResolveType (data), value);
     }
   }
 
   virtual bool Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName)
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     if (selectedPropName.StartsWith ("Prop:") && !selectedPropName.EndsWith (".Value")
 	&& !selectedPropName.EndsWith (".Type") && !selectedPropName.EndsWith (".Name"))
     {
       csString oldParName = selectedPropName.GetData () + 5;
-      csString newParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Name");
-      csString newTypeS = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Type");
-      csString newValue = emode->GetPropertyValueAsString (pcPropName, selectedPropName+".Value");
+      csString newParName = GetPropertyValueAsString (pcPropName, selectedPropName+".Name");
+      csString newTypeS = GetPropertyValueAsString (pcPropName, selectedPropName+".Type");
+      csString newValue = GetPropertyValueAsString (pcPropName, selectedPropName+".Value");
       printf ("oldPropName=%s new=%s/%s/%s\n", oldParName.GetData (), newParName.GetData (),
 	  newTypeS.GetData (), newValue.GetData ()); fflush (stdout);
 
@@ -437,11 +602,11 @@ public:
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
-      const csString& value)
+      const csString& value, const wxPropertyGridEvent& event)
   {
     if (selectedPropName.StartsWith ("Prop:") && selectedPropName.EndsWith (".Name"))
     {
-      csString oldParName = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+      csString oldParName = GetPropertyValueAsString (pcPropName, selectedPropName);
       if (value.IsEmpty ())
 	return ui->Error ("Empty name is not allowed!");
       else if (oldParName != value)
@@ -462,68 +627,69 @@ public:
   }
 };
 
+// ------------------------------------------------------------------------
+
 class PcEditorSupportTrigger : public PcEditorSupport
 {
+private:
+  wxArrayString trigtypesArray;
+
 public:
-  PcEditorSupportTrigger (EntityMode* emode) : PcEditorSupport ("pclogic.trigger", emode) { }
+  PcEditorSupportTrigger (EntityMode* emode) : PcEditorSupport ("pclogic.trigger", emode)
+  {
+    trigtypesArray.Add (wxT ("Sphere"));
+    trigtypesArray.Add (wxT ("Box"));
+    trigtypesArray.Add (wxT ("Beam"));
+    trigtypesArray.Add (wxT ("Above"));
+  }
   virtual ~PcEditorSupportTrigger () { }
 
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
   {
     bool valid;
     long delay = InspectTools::GetPropertyValueLong (pl, pctpl, "delay", &valid);
-    emode->GetDetailGrid ()->AppendIn (pcProp, new wxIntProperty (wxT ("Delay"), wxT ("Delay"),
-	  valid ? delay : 200));
+    AppendIntPar (pcProp, "Delay", "Delay", valid ? delay : 200);
     long jitter = InspectTools::GetPropertyValueLong (pl, pctpl, "jitter", &valid);
-    emode->GetDetailGrid ()->AppendIn (pcProp, new wxIntProperty (wxT ("Jitter"), wxT ("Jitter"),
-	  valid ? jitter : 10));
+    AppendIntPar (pcProp, "Jitter", "Jitter", valid ? jitter : 10);
 
     csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
-    emode->AppendButtonPar (pcProp, "Monitor", "E:", monitor);
+    AppendButtonPar (pcProp, "Monitor", "E:", monitor);
 
     csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
-    emode->AppendButtonPar (pcProp, "Class", "C:", clazz);
+    AppendButtonPar (pcProp, "Class", "C:", clazz);
 
-    wxPGProperty* typeProp = emode->GetDetailGrid ()->AppendIn (pcProp,
-	new wxEnumProperty (wxT ("Type"), wxT ("TrigType"), emode->trigtypesArray, wxArrayInt()));
+    wxPGProperty* typeProp = AppendEnumPar (pcProp, "Type", "TrigType", trigtypesArray, wxArrayInt ());
     if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Sphere"));
       iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "radius");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("Radius"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "Radius", "Radius", par ? par->GetOriginalExpression () : "");
       par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "position");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("Position"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "Position", "Position", par ? par->GetOriginalExpression () : "");
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Box"));
       iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "minbox");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("MinBox"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "MinBox", "MinBox", par ? par->GetOriginalExpression () : "");
       par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "maxbox");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("MaxBox"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "MaxBox", "MaxBox", par ? par->GetOriginalExpression () : "");
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Beam"));
       iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "start");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("Start"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "Start", "Start", par ? par->GetOriginalExpression () : "");
       par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "end");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("End"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "End", "End", par ? par->GetOriginalExpression () : "");
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Above"));
       iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "entity");
-      emode->AppendButtonPar (typeProp, "Entity", "E:", par ? par->GetOriginalExpression () : "");
+      AppendButtonPar (typeProp, "Entity", "E:", par ? par->GetOriginalExpression () : "");
       par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
-      emode->GetDetailGrid ()->AppendIn (typeProp, new wxStringProperty (wxT ("MaxDistance"), wxPG_LABEL,
-	  par ? wxString::FromUTF8 (par->GetOriginalExpression ()) : wxT ("")));
+      AppendStringPar (typeProp, "MaxDistance", "MaxDistance", par ? par->GetOriginalExpression () : "");
     }
     else
     {
@@ -532,18 +698,18 @@ public:
   }
 
   virtual bool Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName)
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
-    csString value = emode->GetPropertyValueAsString (pcPropName, selectedPropName);
+    csString value = GetPropertyValueAsString (pcPropName, selectedPropName);
     if (selectedPropName == "Delay")
     {
-      long delay = emode->GetPropertyValueAsInt (pcPropName, selectedPropName);
+      long delay = GetPropertyValueAsInt (pcPropName, selectedPropName);
       pctpl->SetProperty (pl->FetchStringID ("delay"), delay);
       return true;
     }
     else if (selectedPropName == "Jitter")
     {
-      long jitter = emode->GetPropertyValueAsInt (pcPropName, selectedPropName);
+      long jitter = GetPropertyValueAsInt (pcPropName, selectedPropName);
       pctpl->SetProperty (pl->FetchStringID ("jitter"), jitter);
       return true;
     }
@@ -629,12 +795,349 @@ public:
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
-      const csString& value)
+      const csString& value, const wxPropertyGridEvent& event)
   {
     return true;
   }
 };
 
+// ------------------------------------------------------------------------
+
+class PcEditorSupportTemplate : public PcEditorSupport
+{
+private:
+  int idNewChar, idDelChar;
+  wxArrayString pctypesArray;
+  csHash<csRef<PcEditorSupport>, csString> editors;
+
+  void RegisterEditor (PcEditorSupport* editor)
+  {
+    editors.Put (editor->GetName (), editor);
+    editor->DecRef ();
+  }
+  PcEditorSupport* GetEditor (const char* name)
+  {
+    return editors.Get (name, 0);
+  }
+
+  bool ValidateTemplateParentsFromGrid (const wxPropertyGridEvent& event)
+  {
+    wxArrayString templates = event.GetValue ().GetArrayString ();
+    for (size_t i = 0 ; i < templates.GetCount () ; i++)
+    {
+      csString name = (const char*)templates.Item (i).mb_str (wxConvUTF8);
+      iCelEntityTemplate* parent = pl->FindEntityTemplate (name);
+      if (!parent)
+	return ui->Error ("Can't find template '%s'!", name.GetData ());
+    }
+    return true;
+  }
+
+  void AppendCharacteristics (wxPGProperty* parentProp,
+      iCelEntityTemplate* tpl)
+  {
+    csRef<iCharacteristicsIterator> it = tpl->GetCharacteristics ()->GetAllCharacteristics ();
+    while (it->HasNext ())
+    {
+      float f;
+      csString name = it->Next (f);
+      csString value;
+      value.Format ("%g", f);
+      AppendPar (parentProp, "Char", name, CEL_DATA_NONE, value);
+    }
+  }
+
+  void AppendTemplatesPar (
+    wxPGProperty* parentProp, iCelEntityTemplateIterator* it, const char* partype)
+  {
+    wxArrayString parentArray;
+    while (it->HasNext ())
+    {
+      iCelEntityTemplate* parent = it->Next ();
+      parentArray.Add (wxString::FromUTF8 (parent->GetName ()));
+    }
+    wxTemplatesProperty* tempProp = new wxTemplatesProperty (
+	  wxString::FromUTF8 (partype),
+	  wxPG_LABEL,
+	  parentArray);
+    tempProp->SetEntityMode (emode);
+    detailGrid->AppendIn (parentProp, tempProp);
+  }
+
+  void AppendClassesPar (
+    wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it, const char* partype)
+  {
+    wxArrayString classesArray;
+    while (it->HasNext ())
+    {
+      csStringID classID = it->Next ();
+      csString className = pl->FetchString (classID);
+      classesArray.Add (wxString::FromUTF8 (className));
+    }
+    wxClassesProperty* classProp = new wxClassesProperty (
+	  wxString::FromUTF8 (partype),
+	  wxPG_LABEL,
+	  classesArray);
+    classProp->SetEntityMode (emode);
+    detailGrid->AppendIn (parentProp, classProp);
+  }
+
+  bool UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName)
+  {
+    iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
+    csString oldname = propName.Slice (5);
+    csString newname = (const char*)(detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
+	  propName + ".Name")).mb_str (wxConvUTF8));
+    csString newvalue = (const char*)(detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
+	  propName + ".Value")).mb_str (wxConvUTF8));
+    if (oldname != newname)
+      tpl->GetCharacteristics ()->ClearCharacteristic (oldname);
+    tpl->GetCharacteristics ()->ClearCharacteristic (newname);
+    float value;
+    csScanStr (newvalue, "%f", &value);
+    tpl->GetCharacteristics ()->SetCharacteristic (newname, value);
+    return true;
+  }
+
+  bool UpdateTemplateClassesFromGrid ()
+  {
+    iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
+    wxArrayString classes = detailGrid->GetPropertyValueAsArrayString (wxT ("Classes"));
+    csStringArray classesToAdd;
+    csStringArray classesToRemove;
+    for (size_t i = 0 ; i < classes.GetCount () ; i++)
+      classesToAdd.Push (classes.Item (i).mb_str (wxConvUTF8));
+
+    const csSet<csStringID>& tplClasses = tpl->GetClasses ();
+    csSet<csStringID>::GlobalIterator it = tplClasses.GetIterator ();
+    while (it.HasNext ())
+    {
+      csStringID classID = it.Next ();
+      csString name = pl->FetchString (classID);
+      if (classes.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
+	classesToRemove.Push (name);
+      else
+	classesToAdd.Delete (name);
+    }
+    if (classesToRemove.GetSize () > 0 || classesToAdd.GetSize () > 0)
+    {
+      for (size_t i = 0 ; i < classesToAdd.GetSize () ; i++)
+      {
+	csStringID id = pl->FetchStringID (classesToAdd.Get (i));
+	tpl->AddClass (id);
+      }
+      for (size_t i = 0 ; i < classesToRemove.GetSize () ; i++)
+      {
+	csStringID id = pl->FetchStringID (classesToRemove.Get (i));
+	tpl->RemoveClass (id);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  bool UpdateTemplateParentsFromGrid ()
+  {
+    iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
+    wxArrayString templates = detailGrid->GetPropertyValueAsArrayString (wxT ("Parents"));
+    csStringArray templatesToAdd;
+    csStringArray templatesToRemove;
+    for (size_t i = 0 ; i < templates.GetCount () ; i++)
+      templatesToAdd.Push (templates.Item (i).mb_str (wxConvUTF8));
+    csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
+    while (it->HasNext ())
+    {
+      csString name = it->Next ()->GetName ();
+      if (templates.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
+	templatesToRemove.Push (name);
+      else
+	templatesToAdd.Delete (name);
+    }
+    if (templatesToRemove.GetSize () > 0 || templatesToAdd.GetSize () > 0)
+    {
+      for (size_t i = 0 ; i < templatesToAdd.GetSize () ; i++)
+      {
+	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToAdd.Get (i));
+	tpl->AddParent (parent);
+      }
+      for (size_t i = 0 ; i < templatesToRemove.GetSize () ; i++)
+      {
+	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToRemove.Get (i));
+	tpl->RemoveParent (parent);
+      }
+      return true;
+    }
+    return false;
+  }
+
+public:
+  PcEditorSupportTemplate (EntityMode* emode) : PcEditorSupport ("template", emode)
+  {
+    pctypesArray.Add (wxT ("pcobject.mesh"));
+    pctypesArray.Add (wxT ("pctools.properties"));
+    pctypesArray.Add (wxT ("pctools.inventory"));
+    pctypesArray.Add (wxT ("pclogic.quest"));
+    pctypesArray.Add (wxT ("pclogic.spawn"));
+    pctypesArray.Add (wxT ("pclogic.trigger"));
+    pctypesArray.Add (wxT ("pclogic.wire"));
+    pctypesArray.Add (wxT ("pctools.messenger"));
+    pctypesArray.Add (wxT ("pcinput.standard"));
+    pctypesArray.Add (wxT ("pcphysics.object"));
+    pctypesArray.Add (wxT ("pcphysics.system"));
+    pctypesArray.Add (wxT ("pccamera.old"));
+    pctypesArray.Add (wxT ("pcmove.actor.dynamic"));
+    pctypesArray.Add (wxT ("pcmove.actor.standard"));
+    pctypesArray.Add (wxT ("pcmove.actor.wasd"));
+    pctypesArray.Add (wxT ("pcworld.dynamic"));
+    pctypesArray.Add (wxT ("ares.gamecontrol"));
+
+    idNewChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic));
+    idDelChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic));
+
+    RegisterEditor (new PcEditorSupportQuest (emode));
+    RegisterEditor (new PcEditorSupportProperties (emode));
+    RegisterEditor (new PcEditorSupportTrigger (emode));
+  }
+  virtual ~PcEditorSupportTemplate () { }
+
+  virtual void Fill (wxPGProperty* templateProp, iCelPropertyClassTemplate* pctpl)
+  {
+    csString s;
+    iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
+
+    csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
+    AppendTemplatesPar (templateProp, parentIt, "Parents");
+
+    const csSet<csStringID>& classes = tpl->GetClasses ();
+    csSet<csStringID>::GlobalIterator classIt = classes.GetIterator ();
+    AppendClassesPar (templateProp, &classIt, "Classes");
+
+    AppendCharacteristics (templateProp, tpl);
+
+    for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+    {
+      iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
+      s.Format ("PC:%d", int (i));
+      wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
+	new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
+
+      AppendEnumPar (pcProp, "Type", "Type", pctypesArray, wxArrayInt(),
+	  pctypesArray.Index (wxString::FromUTF8 (pctpl->GetName ())));
+      AppendStringPar (pcProp, "Tag", "Tag", pctpl->GetTag ());
+
+      PcEditorSupport* editor = GetEditor (pctpl->GetName ());
+      if (editor) editor->Fill (pcProp, pctpl);
+    }
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    if (pctpl)
+    {
+      csString tag = GetPropertyValueAsString (pcPropName, "Tag");
+      if (tag != pctpl->GetTag ())
+      {
+	if (tag.IsEmpty ())
+	  pctpl->SetTag (0);
+	else
+	  pctpl->SetTag (tag);
+	return true;
+      }
+
+      csString type = GetPropertyValueAsString (pcPropName, "Type");
+      if (type != pctpl->GetName ())
+      {
+	pctpl->SetName (type);
+	pctpl->RemoveAllProperties ();
+	return true;
+      }
+
+      PcEditorSupport* editor = GetEditor (type);
+      if (editor)
+	return editor->Update (pctpl, pcPropName, selectedPropName, selectedProperty);
+    }
+    else if (selectedPropName == "Parents")
+    {
+      return UpdateTemplateParentsFromGrid ();
+    }
+    else if (selectedPropName == "Classes")
+    {
+      return UpdateTemplateClassesFromGrid ();
+    }
+    else if (selectedPropName.StartsWith ("Char:") && !selectedPropName.EndsWith (".Value")
+	  && !selectedPropName.EndsWith (".Name"))
+    {
+      return UpdateCharacteristicFromGrid (selectedProperty, selectedPropName);
+    }
+
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
+    if (pctpl)
+    {
+      if (selectedPropName == "Tag")
+      {
+        iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pctpl->GetName (), value);
+        if (pc && pc != pctpl)
+	  return ui->Error ("Property class with this name and tag already exists!");
+      }
+
+      csString type = GetPropertyValueAsString (pcPropName, "Type");
+      PcEditorSupport* editor = GetEditor (pctpl->GetName ());
+      if (editor)
+        return editor->Validate (pctpl, pcPropName, selectedPropName, value, event);
+    }
+    else if (selectedPropName == "Parents")
+    {
+      if (!ValidateTemplateParentsFromGrid (event))
+	return false;
+    }
+    else if (selectedPropName == "Classes")
+    {
+    }
+    else if (selectedPropName.StartsWith ("Char:"))
+    {
+      csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
+      if (selectedPropName.EndsWith (".Value"))
+      {
+        char* endptr;
+        strtod (value, &endptr);
+        if (*endptr)
+	  return false;
+      }
+      else if (selectedPropName.EndsWith (".Name"))
+      {
+        csString oldName = (const char*)event.GetProperty ()->GetValueAsString ().mb_str (wxConvUTF8);
+        if (value.IsEmpty ())
+          return ui->Error ("Empty name is not allowed!");
+        else if (oldName != value && tpl->GetCharacteristics ()->HasCharacteristic (value))
+          return ui->Error ("There is already a characteristic with this name!");
+      }
+    }
+
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+    contextMenu->Append (idNewChar, wxT ("New characteristic..."));
+    if (selectedPropName.StartsWith ("Char:"))
+      contextMenu->Append (idDelChar, wxT ("Delete characteristic"));
+    if (pctpl)
+    {
+      PcEditorSupport* editor = GetEditor (pctpl->GetName ());
+      if (editor)
+	editor->DoContext (pctpl, pcPropName, selectedPropName, contextMenu);
+    }
+  }
+};
 
 // ------------------------------------------------------------------------
 
@@ -715,7 +1218,6 @@ iCelPropertyClassTemplate* EntityMode::GetPCForProperty (wxPGProperty* property,
 
 void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 {
-  printf ("OnContextMenu\n"); fflush (stdout);
   wxWindow* gridWindow = wxStaticCast (detailGrid, wxWindow);
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
   while (gridWindow != component && component)
@@ -728,40 +1230,13 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
     if (contextLastProperty)
     {
       csString selectedPropName, pcPropName;
-      iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-
+      iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty,
+	  pcPropName, selectedPropName);
       wxMenu contextMenu;
-      contextMenu.Append (idNewChar, wxT ("New characteristic..."));
-      if (selectedPropName.StartsWith ("Char:"))
-        contextMenu.Append (idDelChar, wxT ("Delete characteristic"));
-      if (pctpl)
-      {
-        PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
-        if (editor)
-        {
-          editor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
-        }
-      }
-
+      templateEditor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
       panel->PopupMenu (&contextMenu);
     }
   }
-}
-
-bool EntityMode::ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event)
-{
-  wxArrayString templates = event.GetValue ().GetArrayString ();
-  for (size_t i = 0 ; i < templates.GetCount () ; i++)
-  {
-    csString name = (const char*)templates.Item (i).mb_str (wxConvUTF8);
-    iCelEntityTemplate* parent = pl->FindEntityTemplate (name);
-    if (!parent)
-    {
-      iUIManager* ui = app->GetUI ();
-      return ui->Error ("Can't find template '%s'!", name.GetData ());
-    }
-  }
-  return true;
 }
 
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
@@ -770,51 +1245,9 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
   printf ("PG changing %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
-  if (pctpl)
-  {
-    csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
-    printf ("Prop name: %s\n", selectedPropName.GetData ()); fflush (stdout);
-    if (!ValidateGridChange (pctpl, pcPropName, selectedPropName, value))
-      event.Veto ();
-  }
-  else if (selectedPropName == "Parents")
-  {
-    if (!ValidateTemplateParentsFromGrid (event))
-      event.Veto ();
-  }
-  else if (selectedPropName == "Classes")
-  {
-  }
-  else if (selectedPropName.StartsWith ("Char:"))
-  {
-    csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
-    if (selectedPropName.EndsWith (".Value"))
-    {
-      char* endptr;
-      strtod (value, &endptr);
-      if (*endptr)
-	event.Veto ();
-    }
-    else if (selectedPropName.EndsWith (".Name"))
-    {
-      iUIManager* ui = view3d->GetApplication ()->GetUI ();
-      csString oldName = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
-      if (value.IsEmpty ())
-      {
-        ui->Error ("Empty name is not allowed!");
-	event.Veto ();
-      }
-      else if (oldName != value)
-      {
-	iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-	if (tpl->GetCharacteristics ()->HasCharacteristic (value))
-	{
-          ui->Error ("There is already a characteristic with this name!");
-	  event.Veto ();
-	}
-      }
-    }
-  }
+  csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
+  if (!templateEditor->Validate (pctpl, pcPropName, selectedPropName, value, event))
+    event.Veto ();
 }
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
@@ -823,127 +1256,17 @@ void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
   OnPropertyGridChanged (selectedProperty);
 }
 
-void EntityMode::UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName)
-{
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  csString oldname = propName.Slice (5);
-  csString newname = (const char*)(detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
-	propName + ".Name")).mb_str (wxConvUTF8));
-  csString newvalue = (const char*)(detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
-	propName + ".Value")).mb_str (wxConvUTF8));
-  if (oldname != newname)
-    tpl->GetCharacteristics ()->ClearCharacteristic (oldname);
-  tpl->GetCharacteristics ()->ClearCharacteristic (newname);
-  float value;
-  csScanStr (newvalue, "%f", &value);
-  tpl->GetCharacteristics ()->SetCharacteristic (newname, value);
-  PCWasEdited (0);
-  SelectTemplate (tpl);
-}
-
-void EntityMode::UpdateTemplateClassesFromGrid ()
-{
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  wxArrayString classes = detailGrid->GetPropertyValueAsArrayString (wxT ("Classes"));
-  csStringArray classesToAdd;
-  csStringArray classesToRemove;
-  for (size_t i = 0 ; i < classes.GetCount () ; i++)
-    classesToAdd.Push (classes.Item (i).mb_str (wxConvUTF8));
-
-  const csSet<csStringID>& tplClasses = tpl->GetClasses ();
-  csSet<csStringID>::GlobalIterator it = tplClasses.GetIterator ();
-  while (it.HasNext ())
-  {
-    csStringID classID = it.Next ();
-    csString name = pl->FetchString (classID);
-    if (classes.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
-      classesToRemove.Push (name);
-    else
-      classesToAdd.Delete (name);
-  }
-  if (classesToRemove.GetSize () > 0 || classesToAdd.GetSize () > 0)
-  {
-    for (size_t i = 0 ; i < classesToAdd.GetSize () ; i++)
-    {
-      csStringID id = pl->FetchStringID (classesToAdd.Get (i));
-      tpl->AddClass (id);
-    }
-    for (size_t i = 0 ; i < classesToRemove.GetSize () ; i++)
-    {
-      csStringID id = pl->FetchStringID (classesToRemove.Get (i));
-      tpl->RemoveClass (id);
-    }
-    PCWasEdited (0);
-    SelectTemplate (tpl);
-  }
-}
-
-void EntityMode::UpdateTemplateParentsFromGrid ()
-{
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  wxArrayString templates = detailGrid->GetPropertyValueAsArrayString (wxT ("Parents"));
-  csStringArray templatesToAdd;
-  csStringArray templatesToRemove;
-  for (size_t i = 0 ; i < templates.GetCount () ; i++)
-    templatesToAdd.Push (templates.Item (i).mb_str (wxConvUTF8));
-  csRef<iCelEntityTemplateIterator> it = tpl->GetParents ();
-  while (it->HasNext ())
-  {
-    csString name = it->Next ()->GetName ();
-    if (templates.Index (wxString::FromUTF8 (name)) == wxNOT_FOUND)
-      templatesToRemove.Push (name);
-    else
-      templatesToAdd.Delete (name);
-  }
-  if (templatesToRemove.GetSize () > 0 || templatesToAdd.GetSize () > 0)
-  {
-    for (size_t i = 0 ; i < templatesToAdd.GetSize () ; i++)
-    {
-      iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToAdd.Get (i));
-      tpl->AddParent (parent);
-    }
-    for (size_t i = 0 ; i < templatesToRemove.GetSize () ; i++)
-    {
-      iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToRemove.Get (i));
-      tpl->RemoveParent (parent);
-    }
-    PCWasEdited (0);
-    SelectTemplate (tpl);
-  }
-}
-
 void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
 {
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
   printf ("PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
-  if (pctpl)
+  if (templateEditor->Update (pctpl, pcPropName, selectedPropName, selectedProperty))
   {
-    printf ("Prop name: %s\n", pcPropName.GetData ()); fflush (stdout);
-    if (UpdatePCFromGrid (pctpl, pcPropName, selectedPropName))
-    {
-      PCWasEdited (pctpl);
-    }
+    PCWasEdited (pctpl);
+    if (!pctpl)
+      SelectTemplate (GetCurrentTemplate ());
   }
-  else if (selectedPropName == "Parents")
-  {
-    UpdateTemplateParentsFromGrid ();
-  }
-  else if (selectedPropName == "Classes")
-  {
-    UpdateTemplateClassesFromGrid ();
-  }
-  else if (selectedPropName.StartsWith ("Char:") && !selectedPropName.EndsWith (".Value")
-	&& !selectedPropName.EndsWith (".Name"))
-  {
-    UpdateCharacteristicFromGrid (selectedProperty, selectedPropName);
-  }
-}
-
-void EntityMode::RegisterEditor (PcEditorSupport* editor)
-{
-  editors.Put (editor->GetName (), editor);
-  editor->DecRef ();
 }
 
 void EntityMode::BuildDetailGrid ()
@@ -955,208 +1278,10 @@ void EntityMode::BuildDetailGrid ()
   detailPanel->GetSizer ()->Add (detailGrid, 1, wxEXPAND | wxALL);
   //detailGrid->SetColumnCount (3);
 
-  RegisterEditor (new PcEditorSupportQuest (this));
-  RegisterEditor (new PcEditorSupportProperties (this));
-  RegisterEditor (new PcEditorSupportTrigger (this));
-
-  typesArray.Add (wxT ("string"));  typesArrayIdx.Add (CEL_DATA_STRING);
-  typesArray.Add (wxT ("float"));   typesArrayIdx.Add (CEL_DATA_FLOAT);
-  typesArray.Add (wxT ("long"));    typesArrayIdx.Add (CEL_DATA_LONG);
-  typesArray.Add (wxT ("bool"));    typesArrayIdx.Add (CEL_DATA_BOOL);
-  typesArray.Add (wxT ("vector2")); typesArrayIdx.Add (CEL_DATA_VECTOR2);
-  typesArray.Add (wxT ("vector3")); typesArrayIdx.Add (CEL_DATA_VECTOR3);
-  typesArray.Add (wxT ("color"));   typesArrayIdx.Add (CEL_DATA_COLOR);
-
-  pctypesArray.Add (wxT ("pcobject.mesh"));
-  pctypesArray.Add (wxT ("pctools.properties"));
-  pctypesArray.Add (wxT ("pctools.inventory"));
-  pctypesArray.Add (wxT ("pclogic.quest"));
-  pctypesArray.Add (wxT ("pclogic.spawn"));
-  pctypesArray.Add (wxT ("pclogic.trigger"));
-  pctypesArray.Add (wxT ("pclogic.wire"));
-  pctypesArray.Add (wxT ("pctools.messenger"));
-  pctypesArray.Add (wxT ("pcinput.standard"));
-  pctypesArray.Add (wxT ("pcphysics.object"));
-  pctypesArray.Add (wxT ("pcphysics.system"));
-  pctypesArray.Add (wxT ("pccamera.old"));
-  pctypesArray.Add (wxT ("pcmove.actor.dynamic"));
-  pctypesArray.Add (wxT ("pcmove.actor.standard"));
-  pctypesArray.Add (wxT ("pcmove.actor.wasd"));
-  pctypesArray.Add (wxT ("pcworld.dynamic"));
-  pctypesArray.Add (wxT ("ares.gamecontrol"));
-
-  trigtypesArray.Add (wxT ("Sphere"));
-  trigtypesArray.Add (wxT ("Box"));
-  trigtypesArray.Add (wxT ("Beam"));
-  trigtypesArray.Add (wxT ("Above"));
-}
-
-void EntityMode::AppendPar (
-    wxPGProperty* parent, const char* partype,
-    const char* name, celDataType type, const char* value)
-{
-  csString s;
-  s.Format ("%s:%s", partype, name);
-  wxPGProperty* parProp = detailGrid->AppendIn (parent,
-      new wxStringProperty (wxString::FromUTF8 (partype),
-	wxString::FromUTF8 (s), wxT ("<composed>")));
-  detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Name"), wxT ("Name"),
-	wxString::FromUTF8 (name)));
-  if (type != CEL_DATA_NONE)
-    detailGrid->AppendIn (parProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
-	typesArray, typesArrayIdx, type));
-  detailGrid->AppendIn (parProp, new wxStringProperty (wxT ("Value"), wxT ("Value"),
-	wxString::FromUTF8 (value)));
-  detailGrid->Collapse (parProp);
-}
-
-void EntityMode::AppendButtonPar (
-    wxPGProperty* parent, const char* partype, const char* type, const char* name)
-{
-  wxStringProperty* prop = new wxStringProperty (
-      wxString::FromUTF8 (partype),
-      wxString::FromUTF8 (csString (type) + partype),
-      wxString::FromUTF8 (name));
-  detailGrid->AppendIn (parent, prop);
-  detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
+  templateEditor.AttachNew (new PcEditorSupportTemplate (this));
 }
 
 // -----------------------------------------------------------------------
-// Templates Property
-// -----------------------------------------------------------------------
-
-//WX_PG_DECLARE_ARRAYSTRING_PROPERTY_WITH_DECL(wxTemplatesProperty, class wxEMPTY_PARAMETER_VALUE)
-class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxTemplatesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
-{
-  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxTemplatesProperty))
-  EntityMode* emode;
-
-public:
-  wxPG_PROPCLASS(wxTemplatesProperty)( const wxString& label = wxPG_LABEL,
-      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
-  virtual ~wxPG_PROPCLASS(wxTemplatesProperty)();
-  virtual void GenerateValueAsString();
-  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
-  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
-  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
-  void SetEntityMode (EntityMode* emode)
-  {
-    this->emode = emode;
-  }
-  WX_PG_DECLARE_VALIDATOR_METHODS()
-};
-
-
-WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxTemplatesProperty, wxT (','), wxT ("Browse"))
-
-bool wxTemplatesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
-{
-  using namespace Ares;
-  csRef<Value> objects = emode->Get3DView ()->GetModelRepository ()->GetTemplatesValue ();
-  iUIManager* ui = emode->GetApplication ()->GetUI ();
-  Value* chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
-	    TEMPLATE_COL_MODIFIED);
-  if (chosen)
-  {
-    csString name = chosen->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
-    value = wxString::FromUTF8 (name);
-    return true;
-  }
-  return false;
-}
-
-// -----------------------------------------------------------------------
-// Classes Property
-// -----------------------------------------------------------------------
-
-class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxClassesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
-{
-  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxClassesProperty))
-  EntityMode* emode;
-
-public:
-  wxPG_PROPCLASS(wxClassesProperty)( const wxString& label = wxPG_LABEL,
-      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
-  virtual ~wxPG_PROPCLASS(wxClassesProperty)();
-  virtual void GenerateValueAsString();
-  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
-  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
-  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
-  void SetEntityMode (EntityMode* emode)
-  {
-    this->emode = emode;
-  }
-  WX_PG_DECLARE_VALIDATOR_METHODS()
-};
-
-
-WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxClassesProperty, wxT (','), wxT ("Browse"))
-
-bool wxClassesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
-{
-  using namespace Ares;
-  Value* classes = emode->Get3DView ()->GetModelRepository ()->GetClassesValue ();
-  iUIManager* ui = emode->GetApplication ()->GetUI ();
-  Value* chosen = ui->AskDialog ("Select a class", classes, "Class,Description", CLASS_COL_NAME,
-	    CLASS_COL_DESCRIPTION);
-  if (chosen)
-  {
-    csString name = chosen->GetStringArrayValue ()->Get (CLASS_COL_NAME);
-    value = wxString::FromUTF8 (name);
-    return true;
-  }
-  return false;
-}
-
-// -----------------------------------------------------------------------
-
-void EntityMode::AppendTemplatesPar (
-    wxPGProperty* parentProp, iCelEntityTemplateIterator* it, const char* partype)
-{
-  wxArrayString parentArray;
-  while (it->HasNext ())
-  {
-    iCelEntityTemplate* parent = it->Next ();
-    parentArray.Add (wxString::FromUTF8 (parent->GetName ()));
-  }
-  wxTemplatesProperty* tempProp = new wxTemplatesProperty (
-	wxString::FromUTF8 (partype),
-	wxPG_LABEL,
-	parentArray);
-  tempProp->SetEntityMode (this);
-  detailGrid->AppendIn (parentProp, tempProp);
-}
-
-void EntityMode::AppendClassesPar (
-    wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it, const char* partype)
-{
-  wxArrayString classesArray;
-  while (it->HasNext ())
-  {
-    csStringID classID = it->Next ();
-    csString className = pl->FetchString (classID);
-    classesArray.Add (wxString::FromUTF8 (className));
-  }
-  wxClassesProperty* classProp = new wxClassesProperty (
-	wxString::FromUTF8 (partype),
-	wxPG_LABEL,
-	classesArray);
-  classProp->SetEntityMode (this);
-  detailGrid->AppendIn (parentProp, classProp);
-}
-
-void EntityMode::AppendCharacteristics (wxPGProperty* parentProp, iCelEntityTemplate* tpl)
-{
-    csRef<iCharacteristicsIterator> it = tpl->GetCharacteristics ()->GetAllCharacteristics ();
-    while (it->HasNext ())
-    {
-      float f;
-      csString name = it->Next (f);
-      csString value;
-      value.Format ("%g", f);
-      AppendPar (parentProp, "Char", name, CEL_DATA_NONE, value);
-    }
-}
 
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
 {
@@ -1172,98 +1297,10 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
   csString s;
   s.Format ("Template (%s)", tpl->GetName ());
   wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
+  templateEditor->Fill (templateProp, 0);
 
-  csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
-  AppendTemplatesPar (templateProp, parentIt, "Parents");
-
-  const csSet<csStringID>& classes = tpl->GetClasses ();
-  csSet<csStringID>::GlobalIterator classIt = classes.GetIterator ();
-  AppendClassesPar (templateProp, &classIt, "Classes");
-
-  AppendCharacteristics (templateProp, tpl);
-
-  for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
-  {
-    iCelPropertyClassTemplate* pctpl = tpl->GetPropertyClassTemplate (i);
-    s.Format ("PC:%d", int (i));
-    wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
-      new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
-
-    detailGrid->AppendIn (pcProp, new wxEnumProperty (wxT ("Type"), wxPG_LABEL,
-	pctypesArray, wxArrayInt(), pctypesArray.Index (wxString::FromUTF8 (pctpl->GetName ()))));
-    detailGrid->AppendIn (pcProp, new wxStringProperty (wxT ("Tag"), wxPG_LABEL,
-	wxString::FromUTF8 (pctpl->GetTag ())));
-
-    PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
-    if (editor) editor->Fill (pcProp, pctpl);
-  }
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
-}
-
-csString EntityMode::GetPropertyValueAsString (const csString& property, const char* sub)
-{
-  wxString wxValue = detailGrid->GetPropertyValueAsString (wxString::FromUTF8 (
-	property + "." + sub));
-  csString value = (const char*)wxValue.mb_str (wxConvUTF8);
-  return value;
-}
-
-int EntityMode::GetPropertyValueAsInt (const csString& property, const char* sub)
-{
-  int value = detailGrid->GetPropertyValueAsInt (wxString::FromUTF8 (
-	property + "." + sub));
-  return value;
-}
-
-bool EntityMode::ValidateGridChange (iCelPropertyClassTemplate* pctpl,
-    const csString& pcPropName, const csString& selectedPropName, const csString& value)
-{
-  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-  if (selectedPropName == "Tag")
-  {
-    iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pctpl->GetName (), value);
-    if (pc && pc != pctpl)
-    {
-      iUIManager* ui = view3d->GetApplication ()->GetUI ();
-      return ui->Error ("Property class with this name and tag already exists!");
-    }
-  }
-
-  csString type = GetPropertyValueAsString (pcPropName, "Type");
-  PcEditorSupport* editor = editors.Get (pctpl->GetName (), 0);
-  if (editor)
-    return editor->Validate (pctpl, pcPropName, selectedPropName, value);
-
-  return true;
-}
-
-bool EntityMode::UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname,
-    const csString& selectedPropName)
-{
-  csString tag = GetPropertyValueAsString (propname, "Tag");
-  if (tag != pctpl->GetTag ())
-  {
-    if (tag.IsEmpty ())
-      pctpl->SetTag (0);
-    else
-      pctpl->SetTag (tag);
-    return true;
-  }
-
-  csString type = GetPropertyValueAsString (propname, "Type");
-  if (type != pctpl->GetName ())
-  {
-    pctpl->SetName (type);
-    pctpl->RemoveAllProperties ();
-    return true;
-  }
-
-  PcEditorSupport* editor = editors.Get (type, 0);
-  if (editor)
-    return editor->Update (pctpl, propname, selectedPropName);
-
-  return false;
 }
 
 void EntityMode::OnDeleteCharacteristic ()
@@ -1410,7 +1447,7 @@ void EntityMode::PcQuest_OnNewParameter ()
   }
 
   celDataType type = InspectTools::StringToType (typeS);
-  InspectTools::AddActionParameter (pl, GetPM (), pctpl, "NewQuest", "name", type, value);
+  InspectTools::AddActionParameter (pl, GetPM (), pctpl, "NewQuest", name, type, value);
   PCWasEdited (pctpl);
 }
 
@@ -2086,6 +2123,10 @@ iQuestStateFactory* EntityMode::GetSelectedState (const char* key)
   return questFact->GetState (n);
 }
 
+iCelEntityTemplate* EntityMode::GetCurrentTemplate ()
+{
+  return pl->FindEntityTemplate (currentTemplate);
+}
 
 iCelPropertyClassTemplate* EntityMode::GetPCTemplate (const char* key)
 {
@@ -3114,13 +3155,6 @@ void EntityMode::AllocContextHandlers (wxFrame* frame)
   idRewardDown = ui->AllocContextMenuID ();
   frame->Connect (idRewardDown, wxEVT_COMMAND_MENU_SELECTED,
 	  wxCommandEventHandler (EntityMode::Panel::OnRewardDown), 0, panel);
-
-  idNewChar = ui->AllocContextMenuID ();
-  frame->Connect (idNewChar, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic), 0, panel);
-  idDelChar = ui->AllocContextMenuID ();
-  frame->Connect (idDelChar, wxEVT_COMMAND_MENU_SELECTED,
-	  wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic), 0, panel);
 }
 
 csString EntityMode::GetContextMenuNode ()

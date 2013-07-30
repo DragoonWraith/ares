@@ -107,8 +107,27 @@ protected:
   iParameterManager* pm;
   csString name;
   EntityMode* emode;
+  wxPropertyGrid* detailGrid;
+
+  wxArrayString typesArray;
+  wxArrayInt typesArrayIdx;
 
   int RegisterContextMenu (wxObjectEventFunction handler);
+  void AppendButtonPar (
+    wxPGProperty* parent, const char* partype, const char* type, const char* name);
+  void AppendPar (
+    wxPGProperty* parent, const char* partype,
+    const char* name, celDataType type, const char* value);
+  wxPGProperty* AppendStringPar (wxPGProperty* parent,
+    const char* label, const char* name, const char* value);
+  wxPGProperty* AppendIntPar (wxPGProperty* parent,
+    const char* label, const char* name, int value);
+  wxPGProperty* AppendEnumPar (wxPGProperty* parent,
+    const char* label, const char* name, const wxArrayString& labels, const wxArrayInt& values,
+    int value = 0);
+
+  csString GetPropertyValueAsString (const csString& property, const char* sub);
+  int GetPropertyValueAsInt (const csString& property, const char* sub);
 
 public:
   PcEditorSupport (const char* name, EntityMode* emode);
@@ -118,10 +137,10 @@ public:
 
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl) = 0;
   virtual bool Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName) = 0;
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
-      const csString& value) = 0;
+      const csString& value, const wxPropertyGridEvent& event) = 0;
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 };
@@ -143,20 +162,12 @@ private:
   // Last property as detected by the context menu handler.
   wxPGProperty* contextLastProperty;
 
-  csHash<csRef<PcEditorSupport>, csString> editors;
+  csRef<PcEditorSupport> templateEditor;
 
-  bool UpdatePCFromGrid (iCelPropertyClassTemplate* pctpl, const csString& propname,
-      const csString& selectedPropName);
-  bool ValidateGridChange (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, const csString& value);
-  void UpdateTemplateParentsFromGrid ();
-  void UpdateTemplateClassesFromGrid ();
-  void UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName);
-  bool ValidateTemplateParentsFromGrid (wxPropertyGridEvent& event);
-
-  void RegisterEditor (PcEditorSupport* editor);
   void BuildDetailGrid ();
   void FillDetailGrid (iCelEntityTemplate* tpl);
+  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
+      csString& selectedPropName);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -215,8 +226,6 @@ private:
   int idDelete, idCreate, idEditQuest, idNewState, idNewSequence, idDefaultState;
   int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;
   int idRewardUp, idRewardDown;
-
-  int idNewChar, idDelChar;
 
   // Fetch a property class template from a given graph key.
   iCelPropertyClassTemplate* GetPCTemplate (const char* key);
@@ -283,6 +292,8 @@ public:
     return GetPCTemplate (GetContextMenuNode ());
   }
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
+  iCelEntityTemplate* GetCurrentTemplate ();
+  wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
 
   /// Register modification of the current template and refresh the visuals.
   void RegisterModification (iCelEntityTemplate* tpl = 0);
@@ -350,29 +361,6 @@ public:
 
   void PCWasEdited (iCelPropertyClassTemplate* pctpl);
   void ActivateNode (const char* nodeName);
-
-  // Property grid support stuff.
-  void AppendPar (
-    wxPGProperty* parent, const char* partype,
-    const char* name, celDataType type, const char* value);
-  void AppendButtonPar (
-    wxPGProperty* parent, const char* partype, const char* type, const char* name);
-  void AppendTemplatesPar (wxPGProperty* parent, iCelEntityTemplateIterator* it, const char* partype);
-  void AppendClassesPar (wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it,
-      const char* partype);
-  void AppendCharacteristics (wxPGProperty* parentProp, iCelEntityTemplate* tpl);
-
-  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
-      csString& selectedPropName);
-  csString GetPropertyValueAsString (const csString& property, const char* sub);
-  int GetPropertyValueAsInt (const csString& property, const char* sub);
-  wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
-
-  wxArrayString typesArray;
-  wxArrayInt typesArrayIdx;
-  wxArrayString pctypesArray;
-  wxArrayString trigtypesArray;
-  //---
 
   class Panel : public wxPanel
   {
