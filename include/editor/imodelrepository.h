@@ -95,6 +95,12 @@ enum ClassValueColumns
   CLASS_COL_DESCRIPTION,
 };
 
+enum ActionValueColumns
+{
+  ACTION_COL_NAME = 0,
+  ACTION_COL_DESCRIPTION,
+};
+
 /**
  * A repository of all values useful for the editor.
  */
@@ -153,6 +159,11 @@ struct iModelRepository : public virtual iBase
    * Get a value for all classes.
    */
   virtual Ares::Value* GetClassesValue () const = 0;
+
+  /**
+   * Get a value for all actions.
+   */
+  virtual Ares::Value* GetActionsValue () const = 0;
 
   /**
    * Refresh all standard values.

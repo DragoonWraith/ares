@@ -450,6 +450,50 @@ int PcEditorSupport::RegisterContextMenu (wxObjectEventFunction handler)
 
 // ------------------------------------------------------------------------
 
+class PcEditorSupportWire : public PcEditorSupport
+{
+private:
+  int idNewPar;
+  int idDelPar;
+  int idSuggestPar;
+
+public:
+  PcEditorSupportWire (EntityMode* emode) : PcEditorSupport ("pclogic.wire", emode)
+  {
+    idNewPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnNewParameter));
+    idDelPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnDelParameter));
+    idSuggestPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnSuggestParameters));
+  }
+
+  virtual ~PcEditorSupportWire () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl, "AddInput", "mask");
+    AppendButtonPar (pcProp, "Input", "A:", inputMask);
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+  }
+};
+
+// ------------------------------------------------------------------------
+
 class PcEditorSupportQuest : public PcEditorSupport
 {
 private:
@@ -1026,6 +1070,7 @@ public:
     idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
 
     RegisterEditor (new PcEditorSupportQuest (emode));
+    RegisterEditor (new PcEditorSupportWire (emode));
     RegisterEditor (new PcEditorSupportProperties (emode));
     RegisterEditor (new PcEditorSupportTrigger (emode));
   }
@@ -1223,6 +1268,13 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       chosen = ui->AskDialog ("Select a class", objects, "Class,Description", CLASS_COL_NAME,
 	    CLASS_COL_DESCRIPTION);
       col = CLASS_COL_NAME;
+    }
+    else if (propName.StartsWith ("A:"))
+    {
+      Value* objects = view3d->GetModelRepository ()->GetActionsValue ();
+      chosen = ui->AskDialog ("Select an action", objects, "Action,Description", ACTION_COL_NAME,
+	    ACTION_COL_DESCRIPTION);
+      col = ACTION_COL_NAME;
     }
     if (chosen)
     {

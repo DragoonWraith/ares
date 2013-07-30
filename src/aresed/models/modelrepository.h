@@ -35,6 +35,7 @@ class FactoriesValue;
 class ObjectsValue;
 class TemplatesValue;
 class ClassesValue;
+class ActionsValue;
 
 /**
  * The model repository.
@@ -48,6 +49,7 @@ private:
   csRef<ObjectsValue> objectsValue;
   csRef<TemplatesValue> templatesValue;
   csRef<ClassesValue> classesValue;
+  csRef<ActionsValue> actionsValue;
 
   /// Debug drawing enabled.
 public:
@@ -69,6 +71,7 @@ public:
   virtual csRef<Ares::Value> GetResourcesValue () const;
   virtual csRef<Ares::Value> GetQuestsValue () const;
   virtual Ares::Value* GetClassesValue () const;
+  virtual Ares::Value* GetActionsValue () const;
   virtual csRef<Ares::Value> GetObjectsWithEntityValue () const;
   virtual void RefreshObjectsValue ();
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);

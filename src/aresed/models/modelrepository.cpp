@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "resources.h"
 #include "quests.h"
 #include "classes.h"
+#include "actions.h"
 #include "modelrepository.h"
 
 
@@ -43,6 +44,7 @@ ModelRepository::ModelRepository (AresEdit3DView* view3d, AppAresEditWX* app) :
   objectsValue.AttachNew (new ObjectsValue (app));
   templatesValue.AttachNew (new TemplatesValue (app));
   classesValue.AttachNew (new ClassesValue ());
+  actionsValue.AttachNew (new ActionsValue (app));
 }
 
 ModelRepository::~ModelRepository ()
@@ -111,6 +113,12 @@ Ares::Value* ModelRepository::GetClassesValue () const
 {
   classesValue->RefreshModel ();
   return classesValue;
+}
+
+Ares::Value* ModelRepository::GetActionsValue () const
+{
+  actionsValue->RefreshModel ();
+  return actionsValue;
 }
 
 Ares::Value* ModelRepository::GetFactoriesValue () const
