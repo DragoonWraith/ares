@@ -292,6 +292,7 @@ public:
     return GetPCTemplate (GetContextMenuNode ());
   }
   csString GetQuestName (iCelPropertyClassTemplate* pctpl);
+  iQuestFactory* GetQuestFactory (iCelPropertyClassTemplate* pctpl);
   iCelEntityTemplate* GetCurrentTemplate ();
   wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
 
@@ -335,6 +336,7 @@ public:
   void OnTemplateSelect ();
   void OnQuestSelect ();
   void OnDelete ();
+  void OnDeletePC ();
   void OnCreatePC ();
   void OnEditQuest ();
   void OnNewState ();
@@ -347,6 +349,7 @@ public:
 
   void PcQuest_OnNewParameter ();
   void PcQuest_OnDelParameter ();
+  void PcQuest_OnSuggestParameters ();
   void PcProp_OnNewProperty ();
   void PcProp_OnDelProperty ();
   void OnNewCharacteristic ();
@@ -389,10 +392,12 @@ public:
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
     void PcQuest_OnNewParameter (wxCommandEvent& event) { s->PcQuest_OnNewParameter (); }
     void PcQuest_OnDelParameter (wxCommandEvent& event) { s->PcQuest_OnDelParameter (); }
+    void PcQuest_OnSuggestParameters (wxCommandEvent& event) { s->PcQuest_OnSuggestParameters (); }
     void PcProp_OnNewProperty (wxCommandEvent& event) { s->PcProp_OnNewProperty (); }
     void PcProp_OnDelProperty (wxCommandEvent& event) { s->PcProp_OnDelProperty (); }
     void OnNewCharacteristic (wxCommandEvent& event) { s->OnNewCharacteristic (); }
     void OnDeleteCharacteristic (wxCommandEvent& event) { s->OnDeleteCharacteristic (); }
+    void OnDeletePC (wxCommandEvent& event) { s->OnDeletePC (); }
 
   private:
     EntityMode* s;

@@ -455,21 +455,42 @@ class PcEditorSupportQuest : public PcEditorSupport
 private:
   int idNewPar;
   int idDelPar;
+  int idSuggestPar;
 
 public:
   PcEditorSupportQuest (EntityMode* emode) : PcEditorSupport ("pclogic.quest", emode)
   {
     idNewPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnNewParameter));
     idDelPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnDelParameter));
+    idSuggestPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnSuggestParameters));
   }
 
   virtual ~PcEditorSupportQuest () { }
 
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
   {
-    csString questName = InspectTools::GetActionParameterValueString (pl, pctpl,
-      "NewQuest", "name");
+    iQuestFactory* questFact = emode->GetQuestFactory (pctpl);
+    csString questName = questFact ? questFact->GetName () : "";
     AppendButtonPar (pcProp, "Quest", "Q:", questName);
+
+    csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
+    wxArrayString states;
+    states.Add (wxT ("-"));
+    int idx = 1, defState = 0;
+    if (questFact)
+    {
+      csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+      while (it->HasNext ())
+      {
+        iQuestStateFactory* stateFact = it->Next ();
+        states.Add (wxString::FromUTF8 (stateFact->GetName ()));
+        if (defaultState == stateFact->GetName ())
+	  defState = idx;
+        idx++;
+      }
+    }
+    AppendEnumPar (pcProp, "State", "State", states, wxArrayInt (), defState);
+
     size_t nqIdx = pctpl->FindProperty (pl->FetchStringID ("NewQuest"));
     if (nqIdx != csArrayItemNotFound)
     {
@@ -497,6 +518,13 @@ public:
     {
       pctpl->RemoveAllProperties ();
       InspectTools::AddActionParameter (pl, pm, pctpl, "NewQuest", "name", CEL_DATA_STRING, questName);
+      return true;
+    }
+
+    if (selectedPropName == "State")
+    {
+      csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+      InspectTools::SetProperty (pl, pctpl, CEL_DATA_STRING, "state", value);
       return true;
     }
 
@@ -544,6 +572,7 @@ public:
     contextMenu->Append (idNewPar, wxT ("New Quest Parameter..."));
     if (selectedPropName.StartsWith ("Par:"))
       contextMenu->Append (idDelPar, wxT ("Delete Quest Parameter"));
+    contextMenu->Append (idSuggestPar, wxT ("Suggest Quest Parameters"));
   }
 };
 
@@ -806,7 +835,7 @@ public:
 class PcEditorSupportTemplate : public PcEditorSupport
 {
 private:
-  int idNewChar, idDelChar;
+  int idNewChar, idDelChar, idCreatePC, idDelPC;
   wxArrayString pctypesArray;
   csHash<csRef<PcEditorSupport>, csString> editors;
 
@@ -993,6 +1022,8 @@ public:
 
     idNewChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic));
     idDelChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic));
+    idCreatePC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreatePC));
+    idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
 
     RegisterEditor (new PcEditorSupportQuest (emode));
     RegisterEditor (new PcEditorSupportProperties (emode));
@@ -1130,8 +1161,10 @@ public:
     contextMenu->Append (idNewChar, wxT ("New characteristic..."));
     if (selectedPropName.StartsWith ("Char:"))
       contextMenu->Append (idDelChar, wxT ("Delete characteristic"));
+    contextMenu->Append (idCreatePC, wxT ("Create Property Class..."));
     if (pctpl)
     {
+      contextMenu->Append (idDelPC, wxT ("Delete Property Class"));
       PcEditorSupport* editor = GetEditor (pctpl->GetName ());
       if (editor)
 	editor->DoContext (pctpl, pcPropName, selectedPropName, contextMenu);
@@ -1399,6 +1432,27 @@ void EntityMode::PcProp_OnNewProperty ()
 
   celDataType type = InspectTools::StringToType (typeS);
   InspectTools::SetProperty (pl, pctpl, type, name, value);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcQuest_OnSuggestParameters ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iQuestFactory* questFact = GetQuestFactory (pctpl);
+  if (!questFact) return;
+
+  csHash<ParameterDomain,csStringID> suggestions = InspectTools::GetQuestParameters (pl, questFact);
+  csHash<ParameterDomain,csStringID>::GlobalIterator it = suggestions.GetIterator ();
+  while (it.HasNext ())
+  {
+    csStringID parID;
+    ParameterDomain type = it.Next (parID);
+    csString name = pl->FetchString (parID);
+    csRef<iParameter> par = GetPM ()->GetParameter ("", type.type);
+    if (!par) break;	// @@@ Report error?
+    InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
+  }
   PCWasEdited (pctpl);
 }
 
@@ -1844,6 +1898,17 @@ void EntityMode::BuildStateGraph (iQuestStateFactory* state,
   }
 }
 
+iQuestFactory* EntityMode::GetQuestFactory (iCelPropertyClassTemplate* pctpl)
+{
+  csString questName = GetQuestName (pctpl);
+  if (questName.IsEmpty ()) return 0;
+
+  csRef<iQuestManager> quest_mgr = csQueryRegistryOrLoad<iQuestManager> (
+    GetObjectRegistry (), "cel.manager.quests");
+  iQuestFactory* questFact = quest_mgr->GetQuestFactory (questName);
+  return questFact;
+}
+
 csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 {
   if (editQuestMode)
@@ -1880,14 +1945,11 @@ void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey,
 void EntityMode::BuildQuestGraph (iCelPropertyClassTemplate* pctpl,
     const char* pcKey)
 {
-  csString questName = GetQuestName (pctpl);
-  if (questName.IsEmpty ()) return;
+  iQuestFactory* questFact = GetQuestFactory (pctpl);
+  if (!questFact) return;
 
   csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
-
-  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
-  // @@@ Error check
-  if (questFact) BuildQuestGraph (questFact, pcKey, false, defaultState);
+  BuildQuestGraph (questFact, pcKey, false, defaultState);
 }
 
 csString EntityMode::GetExtraPCInfo (iCelPropertyClassTemplate* pctpl)
@@ -1998,9 +2060,7 @@ iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
 {
   if (editQuestMode) return editQuestMode;
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (key);
-  csString questName = GetQuestName (pctpl);
-  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
-  return questFact;
+  return GetQuestFactory (pctpl);
 }
 
 bool EntityMode::IsOnInit (const char* key)
@@ -2487,6 +2547,17 @@ void EntityMode::OnTemplateDel (const char* tplName)
     view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
     ActivateNode (0);
   }
+}
+
+void EntityMode::OnDeletePC ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
+  tpl->RemovePropertyClassTemplate (pctpl);
+  RegisterModification (tpl);
+  editQuestMode = 0;
+  RefreshView ();
 }
 
 void EntityMode::OnDelete ()
@@ -2981,10 +3052,7 @@ void EntityMode::OnDefaultState ()
   if (GetContextMenuNode ().IsEmpty ()) return;
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
 
-  csString questName = GetQuestName (pctpl);
-  if (questName.IsEmpty ()) return;
-
-  iQuestFactory* questFact = questMgr->GetQuestFactory (questName);
+  iQuestFactory* questFact = GetQuestFactory (pctpl);
   if (!questFact) return;
 
   csStringArray tokens (GetContextMenuNode (), ",");
