@@ -276,6 +276,21 @@ public:
       iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName);
   static iParameter* GetActionParameterValue (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName);
+  static csString GetActionParameterValueExpression (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
+      bool* valid = 0);
+  static csString GetActionParameterValueExpression (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid = 0);
+  static csString GetActionParameterValueString (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid = 0);
+  static long GetActionParameterValueLong (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid = 0);
+  static bool GetActionParameterValueBool (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid = 0);
   static csString GetActionParameterValueString (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
       bool* valid = 0);

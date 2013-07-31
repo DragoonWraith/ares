@@ -120,6 +120,8 @@ protected:
     const char* name, celDataType type, const char* value);
   wxPGProperty* AppendStringPar (wxPGProperty* parent,
     const char* label, const char* name, const char* value);
+  wxPGProperty* AppendBoolPar (wxPGProperty* parent,
+    const char* label, const char* name, bool value);
   wxPGProperty* AppendIntPar (wxPGProperty* parent,
     const char* label, const char* name, int value);
   wxPGProperty* AppendEnumPar (wxPGProperty* parent,
@@ -335,6 +337,7 @@ public:
   void OnPropertyGridChanged (wxPGProperty* selectedProperty);
   void OnPropertyGridChanged (wxPropertyGridEvent& event);
   void OnPropertyGridButton (wxCommandEvent& event);
+  void OnPropertyGridRight (wxPropertyGridEvent& event);
   void OnTemplateSelect ();
   void OnQuestSelect ();
   void OnDelete ();
@@ -349,6 +352,14 @@ public:
   void OnRewardMove (int dir);
   void OnContextMenu (wxContextMenuEvent& event);
 
+  void PcMsg_OnNewSlot ();
+  void PcMsg_OnDelSlot ();
+  void PcMsg_OnNewType ();
+  void PcMsg_OnDelType ();
+  void PcSpawn_OnNewTemplate ();
+  void PcSpawn_OnDelTemplate ();
+  void PcInv_OnNewTemplate ();
+  void PcInv_OnDelTemplate ();
   void PcWire_OnNewOutput ();
   void PcWire_OnDelOutput ();
   void PcWire_OnNewParameter ();
@@ -398,7 +409,16 @@ public:
     void OnPropertyGridChanging (wxPropertyGridEvent& event) { s->OnPropertyGridChanging (event); }
     void OnPropertyGridChanged (wxPropertyGridEvent& event) { s->OnPropertyGridChanged (event); }
     void OnPropertyGridButton (wxCommandEvent& event) { s->OnPropertyGridButton (event); }
+    void OnPropertyGridRight (wxPropertyGridEvent& event) { s->OnPropertyGridRight (event); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
+    void PcMsg_OnNewSlot (wxCommandEvent& event) { s->PcMsg_OnNewSlot (); }
+    void PcMsg_OnDelSlot (wxCommandEvent& event) { s->PcMsg_OnDelSlot (); }
+    void PcMsg_OnNewType (wxCommandEvent& event) { s->PcMsg_OnNewType (); }
+    void PcMsg_OnDelType (wxCommandEvent& event) { s->PcMsg_OnDelType (); }
+    void PcSpawn_OnNewTemplate (wxCommandEvent& event) { s->PcSpawn_OnNewTemplate (); }
+    void PcSpawn_OnDelTemplate (wxCommandEvent& event) { s->PcSpawn_OnDelTemplate (); }
+    void PcInv_OnNewTemplate (wxCommandEvent& event) { s->PcInv_OnNewTemplate (); }
+    void PcInv_OnDelTemplate (wxCommandEvent& event) { s->PcInv_OnDelTemplate (); }
     void PcWire_OnNewOutput (wxCommandEvent& event) { s->PcWire_OnNewOutput (); }
     void PcWire_OnDelOutput (wxCommandEvent& event) { s->PcWire_OnDelOutput (); }
     void PcWire_OnNewParameter (wxCommandEvent& event) { s->PcWire_OnNewParameter (); }

@@ -63,6 +63,9 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_LIST_ITEM_SELECTED (XRCID("quest_List"), EntityMode::Panel::OnQuestSelect)
   EVT_PG_CHANGING (PG_ID, EntityMode::Panel::OnPropertyGridChanging)
   EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
+#ifdef CS_PLATFORM_WIN32
+  EVT_PG_RIGHT_CLICK (PG_ID, EntityMode::Panel::OnPropertyGridRight)
+#endif
   EVT_BUTTON (PG_ID, EntityMode::Panel::OnPropertyGridButton)
   EVT_CONTEXT_MENU (EntityMode::Panel::OnContextMenu)
   EVT_IDLE (EntityMode::Panel::OnIdle)
@@ -403,6 +406,14 @@ wxPGProperty* PcEditorSupport::AppendStringPar (wxPGProperty* parent,
 	wxString::FromUTF8 (name), wxString::FromUTF8 (value)));
 }
 
+wxPGProperty* PcEditorSupport::AppendBoolPar (wxPGProperty* parent,
+    const char* label, const char* name, bool value)
+{
+  return detailGrid->AppendIn (parent,
+      new wxBoolProperty (wxString::FromUTF8 (label),
+	wxString::FromUTF8 (name), value));
+}
+
 wxPGProperty* PcEditorSupport::AppendIntPar (wxPGProperty* parent,
     const char* label, const char* name, int value)
 {
@@ -451,6 +462,571 @@ int PcEditorSupport::RegisterContextMenu (wxObjectEventFunction handler)
   emode->panel->Connect (id, wxEVT_COMMAND_MENU_SELECTED, handler, 0, emode->panel);
   return id;
 }
+
+// ------------------------------------------------------------------------
+
+class PcEditorSupportMessenger : public PcEditorSupport
+{
+private:
+  int idNewSlot;
+  int idDelSlot;
+  int idNewType;
+  int idDelType;
+  wxArrayString anchorArray;
+
+public:
+  PcEditorSupportMessenger (EntityMode* emode) : PcEditorSupport ("pctools.messenger", emode)
+  {
+    idNewSlot = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcMsg_OnNewSlot));
+    idDelSlot = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcMsg_OnDelSlot));
+    idNewType = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcMsg_OnNewType));
+    idDelType = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcMsg_OnDelType));
+
+    anchorArray.Add (wxT ("c"));
+    anchorArray.Add (wxT ("nw"));
+    anchorArray.Add (wxT ("n"));
+    anchorArray.Add (wxT ("ne"));
+    anchorArray.Add (wxT ("e"));
+    anchorArray.Add (wxT ("se"));
+    anchorArray.Add (wxT ("s"));
+    anchorArray.Add (wxT ("sw"));
+    anchorArray.Add (wxT ("s"));
+  }
+
+  virtual ~PcEditorSupportMessenger () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "DefineSlot")
+      {
+        csString slotName = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "name");
+        csString position = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "position");
+        bool queue = InspectTools::GetActionParameterValueBool (pl, pctpl, idx, "queue");
+        csString screenanchor = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "screenanchor");
+        csString boxanchor = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "boxanchor");
+        csString sizex = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "sizex");
+        csString sizey = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "sizey");
+        csString maxsizex = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "maxsizex");
+        csString maxsizey = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "maxsizey");
+        csString borderwidth = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "borderwidth");
+        csString roundness = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "roundness");
+        csString maxmessages = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "maxmessages");
+        csString boxfadetime = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "boxfadetime");
+
+	csString s;
+	s.Format ("Slot:%d", int (idx));
+	wxPGProperty* outputProp = AppendStringPar (pcProp, "Slot", s, "<composed>");
+
+	AppendStringPar (outputProp, "Name", "Name", slotName);
+	AppendStringPar (outputProp, "Position", "Position", position);
+	AppendBoolPar (outputProp, "Queue", "Queue", queue);
+	AppendStringPar (outputProp, "Size X", "SizeX", sizex);
+	AppendStringPar (outputProp, "Size Y", "SizeY", sizey);
+	AppendStringPar (outputProp, "Max Size X", "MaxSizeX", maxsizex);
+	AppendStringPar (outputProp, "Max Size Y", "MaxSizeY", maxsizey);
+        AppendEnumPar (outputProp, "Screen Anchor", "ScreenAnchor", anchorArray, wxArrayInt(),
+	  anchorArray.Index (wxString::FromUTF8 (screenanchor)));
+        AppendEnumPar (outputProp, "Box Anchor", "BoxAnchor", anchorArray, wxArrayInt(),
+	  anchorArray.Index (wxString::FromUTF8 (boxanchor)));
+	AppendStringPar (outputProp, "Border Width", "BorderWidth", borderwidth);
+	AppendStringPar (outputProp, "Roundness", "Roundness", roundness);
+	AppendStringPar (outputProp, "Max Messages", "MaxMessages", maxmessages);
+	AppendStringPar (outputProp, "Box Fade Time", "BoxFadeTime", boxfadetime);
+      }
+    }
+
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "DefineType")
+      {
+        csString type = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "type");
+        csString slot = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "slot");
+        csString timeout = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "timeout");
+        csString fadetime = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "fadetime");
+        bool click = InspectTools::GetActionParameterValueBool (pl, pctpl, idx, "click");
+        bool log = InspectTools::GetActionParameterValueBool (pl, pctpl, idx, "log");
+
+	csString s;
+	s.Format ("Type:%d", int (idx));
+	wxPGProperty* outputProp = AppendStringPar (pcProp, "Type", s, "<composed>");
+
+	AppendStringPar (outputProp, "Type", "Type", type);
+	AppendStringPar (outputProp, "Slot", "Slot", slot);
+	AppendStringPar (outputProp, "Timeout", "Timeout", timeout);
+	AppendStringPar (outputProp, "Fadetime", "Fadetime", fadetime);
+	AppendBoolPar (outputProp, "Click", "Click", click);
+	AppendBoolPar (outputProp, "Log", "Log", log);
+      }
+    }
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+
+    if (selectedPropName.StartsWith ("Slot:"))
+    {
+      size_t dot = selectedPropName.FindLast ('.');
+      int idx;
+      if (dot == csArrayItemNotFound) return false;
+      csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Slot:"), "%d", &idx);
+      printf ("UpdateMsg:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
+      if (selectedPropName.EndsWith (".Name"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "name", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Position"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "position", CEL_DATA_VECTOR2, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Queue"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "queue", CEL_DATA_BOOL, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".ScreenAnchor"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "screenanchor", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".BoxAnchor"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "boxanchor", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".SizeX"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "sizex", CEL_DATA_LONG, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".SizeY"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "sizey", CEL_DATA_LONG, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".MaxSizeX"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "maxsizex", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".MaxSizeY"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "maxsizey", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".BorderWidth"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "borderwidth", CEL_DATA_FLOAT, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Roundness"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "roundness", CEL_DATA_LONG, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".MaxMessages"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "maxmessages", CEL_DATA_LONG, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".BoxFadeTime"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "boxfadetime", CEL_DATA_LONG, value);
+        return true;
+      }
+    }
+
+    if (selectedPropName.StartsWith ("Type:"))
+    {
+      size_t dot = selectedPropName.FindLast ('.');
+      int idx;
+      if (dot == csArrayItemNotFound) return false;
+      csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Type:"), "%d", &idx);
+      printf ("UpdateMsg:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
+      if (selectedPropName.EndsWith (".Type"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "type", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Slot"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "slot", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Timeout"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "timeout", CEL_DATA_FLOAT, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Fadetime"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "fadetime", CEL_DATA_FLOAT, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Click"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "click", CEL_DATA_BOOL, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Log"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "log", CEL_DATA_BOOL, value);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+    contextMenu->Append (idNewSlot, wxT ("New Slot..."));
+    if (selectedPropName.StartsWith ("Slot:"))
+    {
+      contextMenu->Append (idDelSlot, wxT ("Delete Slot"));
+    }
+    contextMenu->Append (idNewType, wxT ("New Type..."));
+    if (selectedPropName.StartsWith ("Type:"))
+    {
+      contextMenu->Append (idDelType, wxT ("Delete Type"));
+    }
+  }
+};
+
+// ------------------------------------------------------------------------
+
+class PcEditorSupportDynworld : public PcEditorSupport
+{
+public:
+  PcEditorSupportDynworld (EntityMode* emode) : PcEditorSupport ("pcworld.dynamic", emode)
+  {
+  }
+
+  virtual ~PcEditorSupportDynworld () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    bool valid;
+    bool physics = InspectTools::GetPropertyValueBool (pl, pctpl, "physics", &valid);
+    AppendBoolPar (pcProp, "Physics", "Physics", valid ? physics : true);
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+    if (selectedPropName == "Physics")
+    {
+      InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, "physics", value);
+      return true;
+    }
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+  }
+};
+
+// ------------------------------------------------------------------------
+
+class PcEditorSupportSpawn : public PcEditorSupport
+{
+private:
+  int idNewTemplate;
+  int idDelTemplate;
+
+public:
+  PcEditorSupportSpawn (EntityMode* emode) : PcEditorSupport ("pclogic.spawn", emode)
+  {
+    idNewTemplate = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcSpawn_OnNewTemplate));
+    idDelTemplate = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcSpawn_OnDelTemplate));
+  }
+
+  virtual ~PcEditorSupportSpawn () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+  // @@@ TODO AddSpawnPosition
+    bool repeat = InspectTools::GetActionParameterValueBool (pl, pctpl, "SetTiming", "repeat");
+    AppendBoolPar (pcProp, "Repeat", "Repeat", repeat);
+    bool random = InspectTools::GetActionParameterValueBool (pl, pctpl, "SetTiming", "random");
+    AppendBoolPar (pcProp, "Random", "Random", random);
+    bool valid;
+    long mindelay = InspectTools::GetActionParameterValueLong (pl, pctpl, "SetTiming", "mindelay", &valid);
+    AppendIntPar (pcProp, "MinDelay", "MinDelay", valid ? mindelay : 0);
+    long maxdelay = InspectTools::GetActionParameterValueLong (pl, pctpl, "SetTiming", "maxdelay", &valid);
+    AppendIntPar (pcProp, "MaxDelay", "MaxDelay", valid ? maxdelay : 0);
+
+    bool spawnunique = InspectTools::GetPropertyValueBool (pl, pctpl, "spawnunique");
+    AppendBoolPar (pcProp, "SpawnUnique", "SpawnUnique", spawnunique);
+    bool namecounter = InspectTools::GetPropertyValueBool (pl, pctpl, "namecounter");
+    AppendBoolPar (pcProp, "NameCounter", "NameCounter", namecounter);
+
+    long inhibit = InspectTools::GetActionParameterValueLong (pl, pctpl, "Inhibit", "count", &valid);
+    AppendIntPar (pcProp, "Inhibit", "Inhibit", valid ? inhibit : 0); // @@@ 0?
+
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddEntityTemplateType")
+      {
+        csString tplName = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "template");
+
+	csString s;
+	s.Format ("Template:%d", int (idx));
+	wxPGProperty* outputProp = AppendStringPar (pcProp, "Output", s, "<composed>");
+
+	AppendButtonPar (outputProp, "Template", "T:", tplName);
+	// @@@ Todo spawn supports more parameters for the template.
+      }
+    }
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+
+    if (selectedPropName == "Repeat")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "repeat", CEL_DATA_BOOL, value);
+      return true;
+    }
+    if (selectedPropName == "Random")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "random", CEL_DATA_BOOL, value);
+      return true;
+    }
+    if (selectedPropName == "MinDelay")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "mindelay", CEL_DATA_LONG, value);
+      return true;
+    }
+    if (selectedPropName == "MaxDelay")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "maxdelay", CEL_DATA_LONG, value);
+      return true;
+    }
+    if (selectedPropName == "SpawnUnique")
+    {
+      InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, "spawnunique", value);
+      return true;
+    }
+    if (selectedPropName == "NameCounter")
+    {
+      InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, "namecounter", value);
+      return true;
+    }
+    if (selectedPropName == "Inhibit")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "Inhibit", "count", CEL_DATA_LONG, value);
+      return true;
+    }
+  
+    if (selectedPropName.StartsWith ("Template:"))
+    {
+      size_t dot = selectedPropName.FindLast ('.');
+      int idx;
+      if (dot == csArrayItemNotFound) return false;
+      csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
+      printf ("UpdateSpawn:selectedPropName=%s index=%d\n", selectedPropName.GetData (), idx); fflush (stdout);
+      if (selectedPropName.EndsWith (".T:Template"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "template", CEL_DATA_STRING, value);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+    contextMenu->Append (idNewTemplate, wxT ("New Template..."));
+    if (selectedPropName.StartsWith ("Template:"))
+    {
+      contextMenu->Append (idDelTemplate, wxT ("Delete Template"));
+    }
+  }
+};
+
+// ------------------------------------------------------------------------
+
+class PcEditorSupportOldCamera : public PcEditorSupport
+{
+private:
+  wxArrayString modesArray;
+
+public:
+  PcEditorSupportOldCamera (EntityMode* emode) : PcEditorSupport ("pccamera.old", emode)
+  {
+    modesArray.Add (wxT ("freelook"));
+    modesArray.Add (wxT ("firstperson"));
+    modesArray.Add (wxT ("thirdperson"));
+    modesArray.Add (wxT ("m64_thirdperson"));
+    modesArray.Add (wxT ("lara_thirdperson"));
+  }
+
+  virtual ~PcEditorSupportOldCamera () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl, "SetCamera", "modename");
+    AppendEnumPar (pcProp, "Mode", "Mode", modesArray, wxArrayInt (),
+	  modesArray.Index (wxString::FromUTF8 (inputMask)));
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+
+    if (selectedPropName == "Mode")
+    {
+      InspectTools::AddActionParameter (pl, pm, pctpl, "SetCamera", "modename", CEL_DATA_STRING, value);
+      return true;
+    }
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+  }
+};
+
+// ------------------------------------------------------------------------
+
+class PcEditorSupportInventory : public PcEditorSupport
+{
+private:
+  int idNewTemplate;
+  int idDelTemplate;
+
+public:
+  PcEditorSupportInventory (EntityMode* emode) : PcEditorSupport ("pctools.inventory", emode)
+  {
+    idNewTemplate = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcInv_OnNewTemplate));
+    idDelTemplate = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcInv_OnDelTemplate));
+  }
+
+  virtual ~PcEditorSupportInventory () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddTemplate")
+      {
+        csString tplName = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "name");
+        csString amount = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "amount");
+
+	csString s;
+	s.Format ("Template:%d", int (idx));
+	wxPGProperty* outputProp = AppendStringPar (pcProp, "Template", s, "<composed>");
+
+	AppendButtonPar (outputProp, "Template", "T:", tplName);
+	AppendStringPar (outputProp, "Amount", "Amount", amount);
+      }
+    }
+  }
+
+  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+
+    if (selectedPropName.StartsWith ("Template:"))
+    {
+      size_t dot = selectedPropName.FindLast ('.');
+      int idx;
+      if (dot == csArrayItemNotFound) return false;
+      csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
+      printf ("UpdateInv:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
+      if (selectedPropName.EndsWith (".T:Template"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "name", CEL_DATA_STRING, value);
+        return true;
+      }
+      else if (selectedPropName.EndsWith (".Amount"))
+      {
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "amount", CEL_DATA_LONG, value);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+    contextMenu->Append (idNewTemplate, wxT ("New Template..."));
+    if (selectedPropName.StartsWith ("Template:"))
+    {
+      contextMenu->Append (idDelTemplate, wxT ("Delete Template"));
+    }
+  }
+};
 
 // ------------------------------------------------------------------------
 
@@ -538,18 +1114,17 @@ public:
     {
       size_t dot = selectedPropName.FindLast ('.');
       int idx;
+      if (dot == csArrayItemNotFound) return false;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
       printf ("UpdateWire:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
       if (selectedPropName.EndsWith (".E:Entity"))
       {
-        csRef<iParameter> par = pm->GetParameter (value, CEL_DATA_STRING);
-        InspectTools::AddActionParameter (pl, pctpl, size_t (idx), "entity", par);
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "entity", CEL_DATA_STRING, value);
         return true;
       }
       else if (selectedPropName.EndsWith (".A:Message"))
       {
-        csRef<iParameter> par = pm->GetParameter (value, CEL_DATA_STRING);
-        InspectTools::AddActionParameter (pl, pctpl, size_t (idx), "msgid", par);
+        InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "msgid", CEL_DATA_STRING, value);
         return true;
       }
       else if (selectedPropName.EndsWith (".Name"))
@@ -853,34 +1428,34 @@ public:
     if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Sphere"));
-      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "radius");
-      AppendStringPar (typeProp, "Radius", "Radius", par ? par->GetOriginalExpression () : "");
-      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerSphere", "position");
-      AppendStringPar (typeProp, "Position", "Position", par ? par->GetOriginalExpression () : "");
+      csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerSphere", "radius");
+      AppendStringPar (typeProp, "Radius", "Radius", par);
+      par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerSphere", "position");
+      AppendStringPar (typeProp, "Position", "Position", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Box"));
-      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "minbox");
-      AppendStringPar (typeProp, "MinBox", "MinBox", par ? par->GetOriginalExpression () : "");
-      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBox", "maxbox");
-      AppendStringPar (typeProp, "MaxBox", "MaxBox", par ? par->GetOriginalExpression () : "");
+      csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBox", "minbox");
+      AppendStringPar (typeProp, "MinBox", "MinBox", par);
+      par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBox", "maxbox");
+      AppendStringPar (typeProp, "MaxBox", "MaxBox", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Beam"));
-      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "start");
-      AppendStringPar (typeProp, "Start", "Start", par ? par->GetOriginalExpression () : "");
-      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerBeam", "end");
-      AppendStringPar (typeProp, "End", "End", par ? par->GetOriginalExpression () : "");
+      csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBeam", "start");
+      AppendStringPar (typeProp, "Start", "Start", par);
+      par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBeam", "end");
+      AppendStringPar (typeProp, "End", "End", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Above"));
-      iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "entity");
-      AppendButtonPar (typeProp, "Entity", "E:", par ? par->GetOriginalExpression () : "");
-      par = InspectTools::GetActionParameterValue (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
-      AppendStringPar (typeProp, "MaxDistance", "MaxDistance", par ? par->GetOriginalExpression () : "");
+      csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerAboveMesh", "entity");
+      AppendButtonPar (typeProp, "Entity", "E:", par);
+      par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
+      AppendStringPar (typeProp, "MaxDistance", "MaxDistance", par);
     }
     else
     {
@@ -1179,6 +1754,7 @@ public:
     pctypesArray.Add (wxT ("pcmove.actor.dynamic"));
     pctypesArray.Add (wxT ("pcmove.actor.standard"));
     pctypesArray.Add (wxT ("pcmove.actor.wasd"));
+    pctypesArray.Add (wxT ("pcmove.linear"));
     pctypesArray.Add (wxT ("pcworld.dynamic"));
     pctypesArray.Add (wxT ("ares.gamecontrol"));
 
@@ -1189,6 +1765,11 @@ public:
 
     RegisterEditor (new PcEditorSupportQuest (emode));
     RegisterEditor (new PcEditorSupportWire (emode));
+    RegisterEditor (new PcEditorSupportOldCamera (emode));
+    RegisterEditor (new PcEditorSupportDynworld (emode));
+    RegisterEditor (new PcEditorSupportSpawn (emode));
+    RegisterEditor (new PcEditorSupportInventory (emode));
+    RegisterEditor (new PcEditorSupportMessenger (emode));
     RegisterEditor (new PcEditorSupportProperties (emode));
     RegisterEditor (new PcEditorSupportTrigger (emode));
   }
@@ -1348,7 +1929,6 @@ static wxPGProperty* FindPCProperty (wxPGProperty* prop)
   return prop;
 }
 
-
 void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 {
   using namespace Ares;
@@ -1396,6 +1976,13 @@ printf ("propName:%s\n", propName.GetData ()); fflush (stdout);
 	    ACTION_COL_DESCRIPTION);
       col = ACTION_COL_NAME;
     }
+    else if (propName.StartsWith ("T:"))
+    {
+      Value* objects = view3d->GetModelRepository ()->GetTemplatesValue ();
+      chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
+	    TEMPLATE_COL_MODIFIED);
+      col = TEMPLATE_COL_NAME;
+    }
     if (chosen)
     {
       csString n = chosen->GetStringArrayValue ()->Get (col);
@@ -1421,8 +2008,31 @@ iCelPropertyClassTemplate* EntityMode::GetPCForProperty (wxPGProperty* property,
   return 0;
 }
 
+// @@@ This should not be needed but for some reason on windows the EVT_CONTEXT_MENU
+// is not generated when hovering on the property grid.
+void EntityMode::OnPropertyGridRight (wxPropertyGridEvent& event)
+{
+  printf ("OnPropertyGridRight\n"); fflush (stdout);
+  contextLastProperty = event.GetProperty ();
+
+  if (contextLastProperty)
+  {
+printf ("GR DoContext1\n"); fflush (stdout);
+    csString selectedPropName, pcPropName;
+    iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty,
+	  pcPropName, selectedPropName);
+    wxMenu contextMenu;
+printf ("GR DoContext2\n"); fflush (stdout);
+    templateEditor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
+printf ("GR DoContext3\n"); fflush (stdout);
+    panel->PopupMenu (&contextMenu);
+printf ("GR DoContext4\n"); fflush (stdout);
+  }
+}
+
 void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 {
+printf ("OnContextMenu\n"); fflush (stdout);
   wxWindow* gridWindow = wxStaticCast (detailGrid, wxWindow);
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
   while (gridWindow != component && component)
@@ -1434,12 +2044,16 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 
     if (contextLastProperty)
     {
+printf ("DoContext1\n"); fflush (stdout);
       csString selectedPropName, pcPropName;
       iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty,
 	  pcPropName, selectedPropName);
       wxMenu contextMenu;
+printf ("DoContext2\n"); fflush (stdout);
       templateEditor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
+printf ("DoContext3\n"); fflush (stdout);
       panel->PopupMenu (&contextMenu);
+printf ("DoContext4\n"); fflush (stdout);
     }
   }
 }
@@ -1643,6 +2257,180 @@ void EntityMode::PcQuest_OnSuggestParameters ()
     if (!par) break;	// @@@ Report error?
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
   }
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcMsg_OnDelSlot ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  int idx;
+  if (dot == csArrayItemNotFound)
+    csScanStr (selectedPropName.GetData () + strlen ("Slot:"), "%d", &idx);
+  else
+    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Slot:"), "%d", &idx);
+
+  pctpl->RemovePropertyByIndex (idx);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcMsg_OnNewSlot ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Slot");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString name = result.Get ("Name", (const char*)0);
+
+  if (name.IsEmpty ())
+  {
+    ui->Error ("Empty slot name is not allowed!");
+    return;
+  }
+
+  InspectTools::AddAction (pl, GetPM (), pctpl, "DefineSlot",
+      CEL_DATA_STRING, "name", name.GetData (),
+      CEL_DATA_NONE);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcMsg_OnDelType ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  int idx;
+  if (dot == csArrayItemNotFound)
+    csScanStr (selectedPropName.GetData () + strlen ("Type:"), "%d", &idx);
+  else
+    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Type:"), "%d", &idx);
+
+  pctpl->RemovePropertyByIndex (idx);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcMsg_OnNewType ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Type");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString name = result.Get ("Name", (const char*)0);
+
+  if (name.IsEmpty ())
+  {
+    ui->Error ("Empty type name is not allowed!");
+    return;
+  }
+
+  InspectTools::AddAction (pl, GetPM (), pctpl, "DefineType",
+      CEL_DATA_STRING, "type", name.GetData (),
+      CEL_DATA_NONE);
+  PCWasEdited (pctpl);
+}
+
+// @@@ Duplicate of PcInv_OnDelTemplate
+void EntityMode::PcSpawn_OnDelTemplate ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  int idx;
+  if (dot == csArrayItemNotFound)
+    csScanStr (selectedPropName.GetData () + strlen ("Template:"), "%d", &idx);
+  else
+    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
+
+  pctpl->RemovePropertyByIndex (idx);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcSpawn_OnNewTemplate ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Spawn Template");
+  dialog->AddRow ();
+  dialog->AddLabel ("Template:");
+  dialog->AddTypedText (SPT_TEMPLATE, "Template");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString tpl = result.Get ("Template", (const char*)0);
+
+  if (tpl.IsEmpty ())
+  {
+    ui->Error ("Empty template is not allowed!");
+    return;
+  }
+
+  InspectTools::AddAction (pl, GetPM (), pctpl, "AddEntityTemplateType",
+      CEL_DATA_STRING, "template", tpl.GetData (),
+      CEL_DATA_NONE);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcInv_OnDelTemplate ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  int idx;
+  if (dot == csArrayItemNotFound)
+    csScanStr (selectedPropName.GetData () + strlen ("Template:"), "%d", &idx);
+  else
+    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
+
+  pctpl->RemovePropertyByIndex (idx);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcInv_OnNewTemplate ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Inventory Template");
+  dialog->AddRow ();
+  dialog->AddLabel ("Template:");
+  dialog->AddTypedText (SPT_TEMPLATE, "Template");
+  dialog->AddRow ();
+  dialog->AddLabel ("Amount:");
+  dialog->AddText ("Amount");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString tpl = result.Get ("Template", (const char*)0);
+  csString amount = result.Get ("Amount", (const char*)0);
+
+  if (tpl.IsEmpty ())
+  {
+    ui->Error ("Empty template is not allowed!");
+    return;
+  }
+
+  InspectTools::AddAction (pl, GetPM (), pctpl, "AddTemplate",
+      CEL_DATA_STRING, "name", tpl.GetData (),
+      CEL_DATA_LONG, "amount", amount.GetData (),
+      CEL_DATA_NONE);
   PCWasEdited (pctpl);
 }
 
@@ -2978,6 +3766,7 @@ void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
   RefreshView (pctpl);
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
+  view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
 }
 
 void EntityMode::ClearCopy ()

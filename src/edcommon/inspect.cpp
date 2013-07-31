@@ -196,6 +196,16 @@ iParameter* InspectTools::GetActionParameterValue (iCelPlLayer* pl,
   return GetActionParameterValue (pl, pctpl, idx, parName);
 }
 
+csString InspectTools::GetActionParameterValueExpression (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
+      bool* valid)
+{
+  iParameter* par = GetActionParameterValue (pl, pctpl, actionName, parName);
+  if (valid) *valid = par != 0;
+  if (par) return par->GetOriginalExpression ();
+  return "";
+}
+
 csString InspectTools::GetActionParameterValueString (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
       bool* valid)
@@ -206,6 +216,36 @@ csString InspectTools::GetActionParameterValueString (iCelPlLayer* pl,
   return "";
 }
 
+csString InspectTools::GetActionParameterValueString (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid)
+{
+  iParameter* par = GetActionParameterValue (pl, pctpl, idx, parName);
+  if (valid) *valid = par != 0;
+  if (par) return par->Get (0);
+  return "";
+}
+
+csString InspectTools::GetActionParameterValueExpression (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid)
+{
+  iParameter* par = GetActionParameterValue (pl, pctpl, idx, parName);
+  if (valid) *valid = par != 0;
+  if (par) return par->GetOriginalExpression ();
+  return "";
+}
+
+bool InspectTools::GetActionParameterValueBool (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid)
+{
+  iParameter* par = GetActionParameterValue (pl, pctpl, idx, parName);
+  if (valid) *valid = par != 0;
+  if (par) return par->GetBool (0);
+  return false;
+}
+
 bool InspectTools::GetActionParameterValueBool (iCelPlLayer* pl,
       iCelPropertyClassTemplate* pctpl, const char* actionName, const char* parName,
       bool* valid)
@@ -214,6 +254,16 @@ bool InspectTools::GetActionParameterValueBool (iCelPlLayer* pl,
   if (valid) *valid = par != 0;
   if (par) return par->GetBool (0);
   return false;
+}
+
+long InspectTools::GetActionParameterValueLong (iCelPlLayer* pl,
+      iCelPropertyClassTemplate* pctpl, size_t idx, const char* parName,
+      bool* valid)
+{
+  iParameter* par = GetActionParameterValue (pl, pctpl, idx, parName);
+  if (valid) *valid = par != 0;
+  if (par) return par->GetLong (0);
+  return 0;
 }
 
 long InspectTools::GetActionParameterValueLong (iCelPlLayer* pl,
