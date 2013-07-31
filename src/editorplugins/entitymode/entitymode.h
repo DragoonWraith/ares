@@ -49,7 +49,6 @@ struct iParameterManager;
 struct iParameter;
 struct iUIManager;
 
-class PropertyClassPanel;
 class TriggerPanel;
 class RewardPanel;
 class SequencePanel;
@@ -221,7 +220,6 @@ private:
   void SelectQuest (iQuestFactory* tpl);
   void SelectPC (iCelPropertyClassTemplate* pctpl);
 
-  PropertyClassPanel* pcPanel;
   TriggerPanel* triggerPanel;
   RewardPanel* rewardPanel;
   SequencePanel* sequencePanel;

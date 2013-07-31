@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include "edcommon/uitools.h"
 #include "entitymode.h"
 #include "templatepanel.h"
-#include "pcpanel.h"
 #include "triggerpanel.h"
 #include "rewardpanel.h"
 #include "sequencepanel.h"
@@ -2608,9 +2607,6 @@ void EntityMode::BuildMainPanel (wxWindow* parent)
 
   wxPanel* childPanel = XRCCTRL (*panel, "childPanel", wxPanel);
 
-  pcPanel = new PropertyClassPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
-  pcPanel->Hide ();
-
   triggerPanel = new TriggerPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   triggerPanel->Hide ();
 
@@ -2797,7 +2793,6 @@ void EntityMode::Start ()
   view3d->GetApplication ()->HideCameraWindow ();
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
   graphView->SetVisible (true);
-  pcPanel->Hide ();
   triggerPanel->Hide ();
   rewardPanel->Hide ();
   sequencePanel->Hide ();
@@ -4003,7 +3998,6 @@ csString EntityMode::GetActiveNode ()
 void EntityMode::ActivateNode (const char* nodeName)
 {
   tplPanel->Hide ();
-  pcPanel->Hide ();
   triggerPanel->Hide ();
   rewardPanel->Hide ();
   sequencePanel->Hide ();
@@ -4019,8 +4013,6 @@ void EntityMode::ActivateNode (const char* nodeName)
       iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
       iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
 printf ("activeNode=%s pctpl=%p\n", activeNode.GetData (), pctpl);
-      pcPanel->SwitchToPC (tpl, pctpl);
-      pcPanel->Show ();
     }
   }
   else if (type == 'T')
