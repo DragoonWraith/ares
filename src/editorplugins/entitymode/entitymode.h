@@ -163,6 +163,8 @@ private:
   wxPGProperty* contextLastProperty;
 
   csRef<PcEditorSupport> templateEditor;
+  bool doDelayedRefresh;
+  iCelPropertyClassTemplate* refreshPctpl;
 
   void BuildDetailGrid ();
   void FillDetailGrid (iCelEntityTemplate* tpl);
@@ -346,8 +348,11 @@ public:
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
   void OnRewardMove (int dir);
   void OnContextMenu (wxContextMenuEvent& event);
-  void OnIdle ();
 
+  void PcWire_OnNewOutput ();
+  void PcWire_OnDelOutput ();
+  void PcWire_OnNewParameter ();
+  void PcWire_OnDelParameter ();
   void PcQuest_OnNewParameter ();
   void PcQuest_OnDelParameter ();
   void PcQuest_OnSuggestParameters ();
@@ -355,6 +360,9 @@ public:
   void PcProp_OnDelProperty ();
   void OnNewCharacteristic ();
   void OnDeleteCharacteristic ();
+
+  void OnIdle ();
+  void DelayedRefresh (iCelPropertyClassTemplate* pctpl);
 
   void AskNewTemplate ();
   void OnTemplateDel (const char* tplName);
@@ -391,6 +399,10 @@ public:
     void OnPropertyGridChanged (wxPropertyGridEvent& event) { s->OnPropertyGridChanged (event); }
     void OnPropertyGridButton (wxCommandEvent& event) { s->OnPropertyGridButton (event); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
+    void PcWire_OnNewOutput (wxCommandEvent& event) { s->PcWire_OnNewOutput (); }
+    void PcWire_OnDelOutput (wxCommandEvent& event) { s->PcWire_OnDelOutput (); }
+    void PcWire_OnNewParameter (wxCommandEvent& event) { s->PcWire_OnNewParameter (); }
+    void PcWire_OnDelParameter (wxCommandEvent& event) { s->PcWire_OnDelParameter (); }
     void PcQuest_OnNewParameter (wxCommandEvent& event) { s->PcQuest_OnNewParameter (); }
     void PcQuest_OnDelParameter (wxCommandEvent& event) { s->PcQuest_OnDelParameter (); }
     void PcQuest_OnSuggestParameters (wxCommandEvent& event) { s->PcQuest_OnSuggestParameters (); }

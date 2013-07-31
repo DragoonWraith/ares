@@ -251,6 +251,13 @@ public:
    * Add a parameter to an action.
    */
   static void AddActionParameter (iCelPlLayer* pl, iParameterManager* pm,
+      iCelPropertyClassTemplate* pctpl, size_t idx,
+      const char* parName, celDataType type, const char* value);
+
+  /**
+   * Add a parameter to an action.
+   */
+  static void AddActionParameter (iCelPlLayer* pl, iParameterManager* pm,
       iCelPropertyClassTemplate* pctpl, const char* actionName,
       const char* parName, celDataType type, const char* value);
 

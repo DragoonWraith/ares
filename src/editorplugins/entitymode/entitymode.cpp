@@ -38,6 +38,7 @@ THE SOFTWARE.
 #include "editor/iuimanager.h"
 #include "editor/iuidialog.h"
 #include "editor/imodelrepository.h"
+#include "editor/iconfig.h"
 #include "iassetmanager.h"
 
 #include "celtool/stdparams.h"
@@ -331,6 +332,8 @@ EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
   name = "Entity";
   panel = 0;
   contextLastProperty = 0;
+  doDelayedRefresh = false;
+  refreshPctpl = 0;
 }
 
 bool EntityMode::Initialize (iObjectRegistry* object_reg)
@@ -456,14 +459,16 @@ class PcEditorSupportWire : public PcEditorSupport
 private:
   int idNewPar;
   int idDelPar;
-  int idSuggestPar;
+  int idNewOutput;
+  int idDelOutput;
 
 public:
   PcEditorSupportWire (EntityMode* emode) : PcEditorSupport ("pclogic.wire", emode)
   {
-    idNewPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnNewParameter));
-    idDelPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnDelParameter));
-    idSuggestPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcQuest_OnSuggestParameters));
+    idNewPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcWire_OnNewParameter));
+    idDelPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcWire_OnDelParameter));
+    idNewOutput = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcWire_OnNewOutput));
+    idDelOutput = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcWire_OnDelOutput));
   }
 
   virtual ~PcEditorSupportWire () { }
@@ -547,21 +552,39 @@ public:
         InspectTools::AddActionParameter (pl, pctpl, size_t (idx), "msgid", par);
         return true;
       }
-#if 0
       else if (selectedPropName.EndsWith (".Name"))
       {
         size_t dot1 = selectedPropName.FindFirst ('.');
 	csString oldParName = selectedPropName.Slice (dot1+5, dot-dot1-5);
-printf ("oldParName=%s value=%s\n", oldParName.GetData (), value.GetData ()); fflush (stdout);
         if (oldParName != value)
 	{
-	  iParameter* par = InspectTools::GetActionParameterValue (pl, pctpl, size_t (idx),
+	  csRef<iParameter> par = InspectTools::GetActionParameterValue (pl, pctpl, size_t (idx),
 	      oldParName);
+	  InspectTools::DeleteActionParameter (pl, pctpl, size_t (idx), oldParName);
           InspectTools::AddActionParameter (pl, pctpl, size_t (idx), value, par);
 	  return true;
 	}
       }
-#endif
+      else if (selectedPropName.EndsWith (".Value"))
+      {
+        size_t dot1 = selectedPropName.FindFirst ('.');
+	csString parName = selectedPropName.Slice (dot1+5, dot-dot1-5);
+	csRef<iParameter> par = InspectTools::GetActionParameterValue (pl, pctpl, size_t (idx),
+	    parName);
+	par = pm->GetParameter (value, par->GetPossibleType ());
+	InspectTools::AddActionParameter (pl, pctpl, size_t (idx), parName, par);
+	return true;
+      }
+      else if (selectedPropName.EndsWith (".Type"))
+      {
+        size_t dot1 = selectedPropName.FindFirst ('.');
+	csString parName = selectedPropName.Slice (dot1+5, dot-dot1-5);
+	csRef<iParameter> par = InspectTools::GetActionParameterValue (pl, pctpl, size_t (idx),
+	    parName);
+	par = pm->GetParameter (par->GetOriginalExpression (), InspectTools::StringToType (value));
+	InspectTools::AddActionParameter (pl, pctpl, size_t (idx), parName, par);
+	return true;
+      }
     }
 
     return false;
@@ -577,6 +600,14 @@ printf ("oldParName=%s value=%s\n", oldParName.GetData (), value.GetData ()); ff
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->Append (idNewOutput, wxT ("New Output..."));
+    if (selectedPropName.StartsWith ("Output:"))
+    {
+      contextMenu->Append (idDelOutput, wxT ("Delete Output"));
+      contextMenu->Append (idNewPar, wxT ("New Wire Parameter..."));
+      if (selectedPropName.Find (".Par:") != csArrayItemNotFound)
+        contextMenu->Append (idDelPar, wxT ("Delete Wire Parameter"));
+    }
   }
 };
 
@@ -1415,7 +1446,21 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 
 void EntityMode::OnIdle ()
 {
-  printf ("Idle!\n"); fflush (stdout);
+  if (doDelayedRefresh)
+  {
+    printf ("Delayed refresh!\n"); fflush (stdout);
+    PCWasEdited (refreshPctpl);
+    if (!refreshPctpl)
+      SelectTemplate (GetCurrentTemplate ());
+    doDelayedRefresh = false;
+    refreshPctpl = 0;
+  }
+}
+
+void EntityMode::DelayedRefresh (iCelPropertyClassTemplate* pctpl)
+{
+  doDelayedRefresh = true;
+  refreshPctpl = pctpl;
 }
 
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
@@ -1431,6 +1476,7 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
+printf ("OnPropertyGridChanged!\n"); fflush (stdout);
   wxPGProperty* selectedProperty = event.GetProperty ();
   OnPropertyGridChanged (selectedProperty);
 }
@@ -1442,9 +1488,7 @@ void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
   printf ("PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
   if (templateEditor->Update (pctpl, pcPropName, selectedPropName, selectedProperty))
   {
-    PCWasEdited (pctpl);
-    if (!pctpl)
-      SelectTemplate (GetCurrentTemplate ());
+    DelayedRefresh (pctpl);
   }
 }
 
@@ -1599,6 +1643,114 @@ void EntityMode::PcQuest_OnSuggestParameters ()
     if (!par) break;	// @@@ Report error?
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
   }
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcWire_OnDelOutput ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  int idx;
+  csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
+
+  pctpl->RemovePropertyByIndex (idx);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcWire_OnNewOutput ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Wire Output");
+  dialog->AddRow ();
+  dialog->AddLabel ("Message:");
+  iEditorConfig* config = app->GetConfig ();
+  csStringArray messageArray;
+  const csArray<KnownMessage>& messages = config->GetMessages ();
+  for (size_t i = 0 ; i < messages.GetSize () ; i++)
+    messageArray.Push (messages.Get (i).name);
+  dialog->AddCombo ("Message", messageArray);
+  dialog->AddRow ();
+  dialog->AddLabel ("Entity:");
+  dialog->AddTypedText (SPT_ENTITY, "Entity");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString message = result.Get ("Message", (const char*)0);
+  csString entity = result.Get ("Entity", (const char*)0);
+
+  if (message.IsEmpty ())
+  {
+    ui->Error ("Empty message is not allowed!");
+    return;
+  }
+
+  InspectTools::AddAction (pl, GetPM (), pctpl, "AddOutput",
+      CEL_DATA_STRING, "msgid", message.GetData (),
+      CEL_DATA_STRING, "entity", entity.GetData (),
+      CEL_DATA_NONE);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcWire_OnDelParameter ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  size_t dot1 = selectedPropName.FindFirst ('.');
+  int idx;
+  csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
+  csString parName;
+  if (dot1 == dot)
+    parName = selectedPropName.Slice (dot1+5);
+  else
+    parName = selectedPropName.Slice (dot1+5, dot-dot1-5);
+
+  InspectTools::DeleteActionParameter (pl, pctpl, size_t (idx), parName);
+  PCWasEdited (pctpl);
+}
+
+void EntityMode::PcWire_OnNewParameter ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t dot = selectedPropName.FindLast ('.');
+  int idx;
+  csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Wire Parameter");
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddChoice ("Type", "string", "float", "long", "bool",
+      "vector2", "vector3", "color", (const char*)0);
+  dialog->AddRow ();
+  dialog->AddMultiText ("Value");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString name = result.Get ("Name", (const char*)0);
+  csString value = result.Get ("Value", (const char*)0);
+  csString typeS = result.Get ("Type", (const char*)0);
+
+  if (name.IsEmpty ())
+  {
+    ui->Error ("Empty name is not allowed!");
+    return;
+  }
+  else if (InspectTools::GetActionParameterValue (pl, pctpl, size_t (idx), name))
+  {
+    ui->Error ("There is already a parameter with this name!");
+    return;
+  }
+
+  celDataType type = InspectTools::StringToType (typeS);
+  InspectTools::AddActionParameter (pl, GetPM (), pctpl, size_t (idx), name, type, value);
   PCWasEdited (pctpl);
 }
 
@@ -2163,6 +2315,8 @@ void EntityMode::Refresh ()
   questsValue->Refresh ();
   ActivateNode (0);
   RefreshView ();
+  doDelayedRefresh = false;
+  refreshPctpl = 0;
 }
 
 void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
