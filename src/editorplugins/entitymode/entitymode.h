@@ -52,7 +52,6 @@ struct iUIManager;
 class TriggerPanel;
 class RewardPanel;
 class SequencePanel;
-class EntityTemplatePanel;
 class EntityMode;
 struct iAresEditor;
 
@@ -234,7 +233,6 @@ private:
   TriggerPanel* triggerPanel;
   RewardPanel* rewardPanel;
   SequencePanel* sequencePanel;
-  EntityTemplatePanel* tplPanel;
 
   int idDelete, idCreate, idEditQuest, idNewState, idNewSequence, idDefaultState;
   int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;

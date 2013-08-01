@@ -18,7 +18,6 @@
 	  <resource file="TriggerPanel.xrc" />
 	  <resource file="SequencePanel.xrc" />
 	  <resource file="RewardPanel.xrc" />
-	  <resource file="EntityTemplatePanel.xrc" />
       </plugin>
       <plugin plugin="ares.editor.modes.decal"
       		tooltip="Decal painter">

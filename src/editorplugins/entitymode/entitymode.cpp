@@ -28,7 +28,6 @@ THE SOFTWARE.
 #include "edcommon/inspect.h"
 #include "edcommon/uitools.h"
 #include "entitymode.h"
-#include "templatepanel.h"
 #include "triggerpanel.h"
 #include "rewardpanel.h"
 #include "sequencepanel.h"
@@ -2662,9 +2661,6 @@ void EntityMode::BuildMainPanel (wxWindow* parent)
   sequencePanel = new SequencePanel (childPanel, view3d->GetApplication ()->GetUI (), this);
   sequencePanel->Hide ();
 
-  tplPanel = new EntityTemplatePanel (childPanel, view3d->GetApplication ()->GetUI (), this);
-  tplPanel->Hide ();
-
   BuildDetailGrid ();
 
   graphView = markerMgr->CreateGraphView ();
@@ -2842,7 +2838,6 @@ void EntityMode::Start ()
   triggerPanel->Hide ();
   rewardPanel->Hide ();
   sequencePanel->Hide ();
-  tplPanel->Hide ();
   contextMenuNode = "";
   questsValue->Refresh ();
 }
@@ -4084,7 +4079,6 @@ csString EntityMode::GetActiveNode ()
 
 void EntityMode::ActivateNode (const char* nodeName)
 {
-  tplPanel->Hide ();
   triggerPanel->Hide ();
   rewardPanel->Hide ();
   sequencePanel->Hide ();
@@ -4103,9 +4097,6 @@ printf ("activeNode=%s pctpl=%p\n", activeNode.GetData (), pctpl);
   }
   else if (type == 'T')
   {
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    tplPanel->SwitchToTpl (tpl);
-    tplPanel->Show ();
   }
   else if (type == 't')
   {
