@@ -304,6 +304,7 @@ public:
 
   // General property deletion function.
   void OnDeleteProperty ();
+  void OnDeleteActionParameter ();
 
   void PcMsg_OnNewSlot ();
   void PcMsg_OnNewType ();
@@ -311,9 +312,7 @@ public:
   void PcInv_OnNewTemplate ();
   void PcWire_OnNewOutput ();
   void PcWire_OnNewParameter ();
-  void PcWire_OnDelParameter ();
   void PcQuest_OnNewParameter ();
-  void PcQuest_OnDelParameter ();
   void PcQuest_OnSuggestParameters ();
   void PcProp_OnNewProperty ();
   void PcProp_OnDelProperty ();
@@ -369,9 +368,9 @@ public:
     void PcWire_OnNewOutput (wxCommandEvent& event) { s->PcWire_OnNewOutput (); }
     void PcWire_OnDelOutput (wxCommandEvent& event) { s->OnDeleteProperty (); }
     void PcWire_OnNewParameter (wxCommandEvent& event) { s->PcWire_OnNewParameter (); }
-    void PcWire_OnDelParameter (wxCommandEvent& event) { s->PcWire_OnDelParameter (); }
+    void PcWire_OnDelParameter (wxCommandEvent& event) { s->OnDeleteActionParameter (); }
     void PcQuest_OnNewParameter (wxCommandEvent& event) { s->PcQuest_OnNewParameter (); }
-    void PcQuest_OnDelParameter (wxCommandEvent& event) { s->PcQuest_OnDelParameter (); }
+    void PcQuest_OnDelParameter (wxCommandEvent& event) { s->OnDeleteActionParameter (); }
     void PcQuest_OnSuggestParameters (wxCommandEvent& event) { s->PcQuest_OnSuggestParameters (); }
     void PcProp_OnNewProperty (wxCommandEvent& event) { s->PcProp_OnNewProperty (); }
     void PcProp_OnDelProperty (wxCommandEvent& event) { s->PcProp_OnDelProperty (); }

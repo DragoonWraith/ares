@@ -651,6 +651,28 @@ void EntityMode::PcQuest_OnSuggestParameters ()
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
+void EntityMode::OnDeleteActionParameter ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+
+  size_t colon = selectedPropName.FindFirst (':');
+  size_t dot = selectedPropName.FindLast ('.');
+  size_t dot1 = selectedPropName.FindFirst ('.');
+  size_t colon2 = selectedPropName.FindFirst (':', dot1+1);
+  int lenparname = colon2 - dot1 + 1;
+  int idx;
+  csScanStr (selectedPropName.Slice (0, dot).GetData () + (colon+1), "%d", &idx);
+  csString parName;
+  if (dot1 == dot)
+    parName = selectedPropName.Slice (dot1+lenparname);
+  else
+    parName = selectedPropName.Slice (dot1+lenparname, dot-dot1-lenparname);
+
+  InspectTools::DeleteActionParameter (pl, pctpl, size_t (idx), parName);
+  PCWasEdited (pctpl, REFRESH_PC);
+}
+
 void EntityMode::OnDeleteProperty ()
 {
   csString selectedPropName, pcPropName;
@@ -813,25 +835,6 @@ void EntityMode::PcWire_OnNewOutput ()
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
-void EntityMode::PcWire_OnDelParameter ()
-{
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-
-  size_t dot = selectedPropName.FindLast ('.');
-  size_t dot1 = selectedPropName.FindFirst ('.');
-  int idx;
-  csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
-  csString parName;
-  if (dot1 == dot)
-    parName = selectedPropName.Slice (dot1+5);
-  else
-    parName = selectedPropName.Slice (dot1+5, dot-dot1-5);
-
-  InspectTools::DeleteActionParameter (pl, pctpl, size_t (idx), parName);
-  PCWasEdited (pctpl, REFRESH_PC);
-}
-
 void EntityMode::PcWire_OnNewParameter ()
 {
   csString selectedPropName, pcPropName;
@@ -869,20 +872,6 @@ void EntityMode::PcWire_OnNewParameter ()
 
   celDataType type = InspectTools::StringToType (typeS);
   InspectTools::AddActionParameter (pl, GetPM (), pctpl, size_t (idx), name, type, value);
-  PCWasEdited (pctpl, REFRESH_PC);
-}
-
-void EntityMode::PcQuest_OnDelParameter ()
-{
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-  size_t dot = selectedPropName.FindFirst ('.');
-  csString name;
-  if (dot == csArrayItemNotFound)
-    name = selectedPropName.Slice (4);
-  else
-    name = selectedPropName.Slice (4, dot-4);
-  InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
