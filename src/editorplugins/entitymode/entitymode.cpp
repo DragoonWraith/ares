@@ -1735,6 +1735,16 @@ private:
     return false;
   }
 
+  void FillPC (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    AppendEnumPar (pcProp, "Type", "Type", pctypesArray, wxArrayInt(),
+	pctypesArray.Index (wxString::FromUTF8 (pctpl->GetName ())));
+    AppendStringPar (pcProp, "Tag", "Tag", pctpl->GetTag ());
+
+    PcEditorSupport* editor = GetEditor (pctpl->GetName ());
+    if (editor) editor->Fill (pcProp, pctpl);
+  }
+
 public:
   PcEditorSupportTemplate (EntityMode* emode) : PcEditorSupport ("template", emode)
   {
@@ -1779,6 +1789,12 @@ public:
     csString s;
     iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
 
+    if (pctpl)
+    {
+      // Special case to refresh only the PC in the grid.
+      FillPC (templateProp, pctpl);
+      return;
+    }
     csRef<iCelEntityTemplateIterator> parentIt = tpl->GetParents ();
     AppendTemplatesPar (templateProp, parentIt, "Parents");
 
@@ -1794,13 +1810,7 @@ public:
       s.Format ("PC:%d", int (i));
       wxPGProperty* pcProp = detailGrid->AppendIn (templateProp,
 	new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s)));
-
-      AppendEnumPar (pcProp, "Type", "Type", pctypesArray, wxArrayInt(),
-	  pctypesArray.Index (wxString::FromUTF8 (pctpl->GetName ())));
-      AppendStringPar (pcProp, "Tag", "Tag", pctpl->GetTag ());
-
-      PcEditorSupport* editor = GetEditor (pctpl->GetName ());
-      if (editor) editor->Fill (pcProp, pctpl);
+      FillPC (pcProp, pctpl);
     }
   }
 
@@ -2119,21 +2129,56 @@ void EntityMode::BuildDetailGrid ()
 
 // -----------------------------------------------------------------------
 
-void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl)
+void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
 {
-  detailGrid->Freeze ();
-  detailGrid->Clear ();
-
-  if (!tpl)
-  {
-    detailGrid->Thaw ();
-    return;
-  }
-
   csString s;
-  s.Format ("Template (%s)", tpl->GetName ());
-  wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
-  templateEditor->Fill (templateProp, 0);
+  detailGrid->Freeze ();
+
+  if (pctpl)
+  {
+    for (size_t i = 0 ; i < tpl->GetPropertyClassTemplateCount () ; i++)
+    {
+      iCelPropertyClassTemplate* pc = tpl->GetPropertyClassTemplate (i);
+      if (pc == pctpl)
+      {
+        s.Format ("PC:%d", int (i));
+	wxPGProperty* pcProp = detailGrid->GetPropertyByName (wxString::FromUTF8 (s));
+	if (!pcProp)
+	{
+	  // There is no property for this PC yet. We insert one at the appropriate
+	  // place.
+	  csString ss;
+	  ss.Format ("Template (%s)", tpl->GetName ());
+	  wxPGProperty* templateProp = detailGrid->GetPropertyByName (wxString::FromUTF8 (ss));
+	  wxPropertyCategory* propCat = new wxPropertyCategory (wxT ("PC"), wxString::FromUTF8 (s));
+	  if (i == tpl->GetPropertyClassTemplateCount ()-1)
+	    pcProp = detailGrid->AppendIn (templateProp, propCat);
+	  else
+	    pcProp = detailGrid->Insert (templateProp, i, propCat);
+	}
+
+	if (pcProp)
+	{
+	  pcProp->Empty ();
+          templateEditor->Fill (pcProp, pctpl);
+	}
+	break;
+      }
+    }
+  }
+  else
+  {
+    detailGrid->Clear ();
+    if (!tpl)
+    {
+      detailGrid->Thaw ();
+      return;
+    }
+
+    s.Format ("Template (%s)", tpl->GetName ());
+    wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
+    templateEditor->Fill (templateProp, 0);
+  }
 
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
@@ -3120,14 +3165,14 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
     graphView->FinishRefresh ();
     graphView->SetVisible (true);
     app->SetObjectForComment ("quest", editQuestMode->QueryObject ());
-    FillDetailGrid (0);
+    FillDetailGrid (0, 0);
   }
   else
   {
     BuildTemplateGraph (currentTemplate);
     if (pctpl) SelectPC (pctpl);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    FillDetailGrid (tpl);
+    FillDetailGrid (tpl, pctpl);
   }
 }
 

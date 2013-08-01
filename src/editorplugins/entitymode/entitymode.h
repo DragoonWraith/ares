@@ -168,7 +168,7 @@ private:
   iCelPropertyClassTemplate* refreshPctpl;
 
   void BuildDetailGrid ();
-  void FillDetailGrid (iCelEntityTemplate* tpl);
+  void FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
   //-----------------------
