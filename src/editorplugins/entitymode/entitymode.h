@@ -302,16 +302,14 @@ public:
   void OnRewardMove (int dir);
   void OnContextMenu (wxContextMenuEvent& event);
 
+  // General property deletion function.
+  void OnDeleteProperty ();
+
   void PcMsg_OnNewSlot ();
-  void PcMsg_OnDelSlot ();
   void PcMsg_OnNewType ();
-  void PcMsg_OnDelType ();
   void PcSpawn_OnNewTemplate ();
-  void PcSpawn_OnDelTemplate ();
   void PcInv_OnNewTemplate ();
-  void PcInv_OnDelTemplate ();
   void PcWire_OnNewOutput ();
-  void PcWire_OnDelOutput ();
   void PcWire_OnNewParameter ();
   void PcWire_OnDelParameter ();
   void PcQuest_OnNewParameter ();
@@ -361,15 +359,15 @@ public:
     void OnPropertyGridRight (wxPropertyGridEvent& event) { s->OnPropertyGridRight (event); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
     void PcMsg_OnNewSlot (wxCommandEvent& event) { s->PcMsg_OnNewSlot (); }
-    void PcMsg_OnDelSlot (wxCommandEvent& event) { s->PcMsg_OnDelSlot (); }
+    void PcMsg_OnDelSlot (wxCommandEvent& event) { s->OnDeleteProperty (); }
     void PcMsg_OnNewType (wxCommandEvent& event) { s->PcMsg_OnNewType (); }
-    void PcMsg_OnDelType (wxCommandEvent& event) { s->PcMsg_OnDelType (); }
+    void PcMsg_OnDelType (wxCommandEvent& event) { s->OnDeleteProperty (); }
     void PcSpawn_OnNewTemplate (wxCommandEvent& event) { s->PcSpawn_OnNewTemplate (); }
-    void PcSpawn_OnDelTemplate (wxCommandEvent& event) { s->PcSpawn_OnDelTemplate (); }
+    void PcSpawn_OnDelTemplate (wxCommandEvent& event) { s->OnDeleteProperty (); }
     void PcInv_OnNewTemplate (wxCommandEvent& event) { s->PcInv_OnNewTemplate (); }
-    void PcInv_OnDelTemplate (wxCommandEvent& event) { s->PcInv_OnDelTemplate (); }
+    void PcInv_OnDelTemplate (wxCommandEvent& event) { s->OnDeleteProperty (); }
     void PcWire_OnNewOutput (wxCommandEvent& event) { s->PcWire_OnNewOutput (); }
-    void PcWire_OnDelOutput (wxCommandEvent& event) { s->PcWire_OnDelOutput (); }
+    void PcWire_OnDelOutput (wxCommandEvent& event) { s->OnDeleteProperty (); }
     void PcWire_OnNewParameter (wxCommandEvent& event) { s->PcWire_OnNewParameter (); }
     void PcWire_OnDelParameter (wxCommandEvent& event) { s->PcWire_OnDelParameter (); }
     void PcQuest_OnNewParameter (wxCommandEvent& event) { s->PcQuest_OnNewParameter (); }

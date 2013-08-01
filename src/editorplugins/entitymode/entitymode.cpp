@@ -297,11 +297,9 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
     csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
     iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
-printf ("propName:%s\n", propName.GetData ()); fflush (stdout);
     size_t dot = propName.FindFirst ('.');
     if (dot != csArrayItemNotFound)
       propName = propName.Slice (dot+1);
-printf ("propName:%s\n", propName.GetData ()); fflush (stdout);
 
     Value* chosen = 0;
     int col;
@@ -448,7 +446,6 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 {
-printf ("OnPropertyGridChanged!\n"); fflush (stdout);
   wxPGProperty* selectedProperty = event.GetProperty ();
   OnPropertyGridChanged (selectedProperty);
 }
@@ -476,8 +473,6 @@ void EntityMode::BuildDetailGrid ()
 
   templateEditor.AttachNew (new PcEditorSupportTemplate (this));
 }
-
-// -----------------------------------------------------------------------
 
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
 {
@@ -533,6 +528,8 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTempl
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
 }
+
+// -----------------------------------------------------------------------
 
 void EntityMode::OnDeleteCharacteristic ()
 {
@@ -654,17 +651,18 @@ void EntityMode::PcQuest_OnSuggestParameters ()
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
-void EntityMode::PcMsg_OnDelSlot ()
+void EntityMode::OnDeleteProperty ()
 {
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
+  size_t colon = selectedPropName.FindFirst (':');
   size_t dot = selectedPropName.FindLast ('.');
   int idx;
   if (dot == csArrayItemNotFound)
-    csScanStr (selectedPropName.GetData () + strlen ("Slot:"), "%d", &idx);
+    csScanStr (selectedPropName.GetData () + (colon+1), "%d", &idx);
   else
-    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Slot:"), "%d", &idx);
+    csScanStr (selectedPropName.Slice (0, dot).GetData () + (colon+1), "%d", &idx);
 
   pctpl->RemovePropertyByIndex (idx);
   PCWasEdited (pctpl, REFRESH_PC);
@@ -696,22 +694,6 @@ void EntityMode::PcMsg_OnNewSlot ()
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
-void EntityMode::PcMsg_OnDelType ()
-{
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-
-  size_t dot = selectedPropName.FindLast ('.');
-  int idx;
-  if (dot == csArrayItemNotFound)
-    csScanStr (selectedPropName.GetData () + strlen ("Type:"), "%d", &idx);
-  else
-    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Type:"), "%d", &idx);
-
-  pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl, REFRESH_PC);
-}
-
 void EntityMode::PcMsg_OnNewType ()
 {
   csString selectedPropName, pcPropName;
@@ -738,23 +720,6 @@ void EntityMode::PcMsg_OnNewType ()
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
-// @@@ Duplicate of PcInv_OnDelTemplate
-void EntityMode::PcSpawn_OnDelTemplate ()
-{
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-
-  size_t dot = selectedPropName.FindLast ('.');
-  int idx;
-  if (dot == csArrayItemNotFound)
-    csScanStr (selectedPropName.GetData () + strlen ("Template:"), "%d", &idx);
-  else
-    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
-
-  pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl, REFRESH_PC);
-}
-
 void EntityMode::PcSpawn_OnNewTemplate ()
 {
   csString selectedPropName, pcPropName;
@@ -778,22 +743,6 @@ void EntityMode::PcSpawn_OnNewTemplate ()
   InspectTools::AddAction (pl, GetPM (), pctpl, "AddEntityTemplateType",
       CEL_DATA_STRING, "template", tpl.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl, REFRESH_PC);
-}
-
-void EntityMode::PcInv_OnDelTemplate ()
-{
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-
-  size_t dot = selectedPropName.FindLast ('.');
-  int idx;
-  if (dot == csArrayItemNotFound)
-    csScanStr (selectedPropName.GetData () + strlen ("Template:"), "%d", &idx);
-  else
-    csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
-
-  pctpl->RemovePropertyByIndex (idx);
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
@@ -825,19 +774,6 @@ void EntityMode::PcInv_OnNewTemplate ()
       CEL_DATA_STRING, "name", tpl.GetData (),
       CEL_DATA_LONG, "amount", amount.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl, REFRESH_PC);
-}
-
-void EntityMode::PcWire_OnDelOutput ()
-{
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
-
-  size_t dot = selectedPropName.FindLast ('.');
-  int idx;
-  csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
-
-  pctpl->RemovePropertyByIndex (idx);
   PCWasEdited (pctpl, REFRESH_PC);
 }
 
