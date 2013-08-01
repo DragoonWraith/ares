@@ -98,6 +98,17 @@ struct QuestCopy
 
 //==================================================================================
 
+// Refresh types are ordered by priority.
+// More important refresh types come later.
+enum RefreshType
+{
+  REFRESH_NOCHANGE = 0,		// Nothing has changed, no refresh needed.
+  REFRESH_NO,			// There was a change but no refresh needed.
+  REFRESH_PC,			// Only PC has to be refreshed.
+  REFRESH_TEMPLATE,		// Only template stuff has to be refreshed.
+  REFRESH_FULL			// Full refresh is required.
+};
+
 class PcEditorSupport : public csRefCount
 {
 protected:
@@ -137,7 +148,7 @@ public:
   const csString& GetName () { return name; }
 
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl) = 0;
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
@@ -164,7 +175,7 @@ private:
   wxPGProperty* contextLastProperty;
 
   csRef<PcEditorSupport> templateEditor;
-  bool doDelayedRefresh;
+  RefreshType delayedRefreshType;
   iCelPropertyClassTemplate* refreshPctpl;
 
   void BuildDetailGrid ();
@@ -273,6 +284,8 @@ private:
   void ClearCopy ();
   bool HasPaste ();
 
+  void PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
+
 public:
   EntityMode (iBase* parent);
   virtual ~EntityMode ();
@@ -303,8 +316,10 @@ public:
   /// Register modification of a quest and refresh the visuals.
   void RegisterModification (iQuestFactory* quest);
 
-  /// Refresh the view. The tiven pctpl is optional and will be used if given.
+  /// Refresh the view. The given pctpl is optional and will be used if given.
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
+  /// Refresh the grid.
+  void RefreshGrid (iCelPropertyClassTemplate* pctpl = 0);
 
   /// Refresh the mode.
   virtual void Refresh ();
@@ -371,7 +386,7 @@ public:
   void OnDeleteCharacteristic ();
 
   void OnIdle ();
-  void DelayedRefresh (iCelPropertyClassTemplate* pctpl);
+  void DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
   void AskNewTemplate ();
   void OnTemplateDel (const char* tplName);
@@ -380,7 +395,6 @@ public:
   void OnRenameQuest (const char* questName);
   void OnRenameTemplate (const char* questName);
 
-  void PCWasEdited (iCelPropertyClassTemplate* pctpl);
   void ActivateNode (const char* nodeName);
 
   class Panel : public wxPanel

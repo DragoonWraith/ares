@@ -414,6 +414,7 @@ void RewardPanel::UpdateReward ()
     }
   }
   emode->RefreshView ();
+  emode->RefreshGrid ();
 }
 
 // -----------------------------------------------------------------------

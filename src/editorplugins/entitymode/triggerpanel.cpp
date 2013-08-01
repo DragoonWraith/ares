@@ -376,6 +376,7 @@ void TriggerPanel::UpdateTrigger ()
     }
   }
   emode->RefreshView ();
+  emode->RefreshGrid ();
 }
 
 // -----------------------------------------------------------------------

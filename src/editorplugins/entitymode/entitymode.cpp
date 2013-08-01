@@ -334,7 +334,7 @@ EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
   name = "Entity";
   panel = 0;
   contextLastProperty = 0;
-  doDelayedRefresh = false;
+  delayedRefreshType = REFRESH_NOCHANGE;
   refreshPctpl = 0;
 }
 
@@ -569,7 +569,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
@@ -578,73 +578,73 @@ public:
     {
       size_t dot = selectedPropName.FindLast ('.');
       int idx;
-      if (dot == csArrayItemNotFound) return false;
+      if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Slot:"), "%d", &idx);
       printf ("UpdateMsg:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
       if (selectedPropName.EndsWith (".Name"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "name", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Position"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "position", CEL_DATA_VECTOR2, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Queue"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "queue", CEL_DATA_BOOL, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".ScreenAnchor"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "screenanchor", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".BoxAnchor"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "boxanchor", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".SizeX"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "sizex", CEL_DATA_LONG, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".SizeY"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "sizey", CEL_DATA_LONG, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".MaxSizeX"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "maxsizex", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".MaxSizeY"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "maxsizey", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".BorderWidth"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "borderwidth", CEL_DATA_FLOAT, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Roundness"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "roundness", CEL_DATA_LONG, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".MaxMessages"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "maxmessages", CEL_DATA_LONG, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".BoxFadeTime"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "boxfadetime", CEL_DATA_LONG, value);
-        return true;
+        return REFRESH_NO;
       }
     }
 
@@ -652,42 +652,42 @@ public:
     {
       size_t dot = selectedPropName.FindLast ('.');
       int idx;
-      if (dot == csArrayItemNotFound) return false;
+      if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Type:"), "%d", &idx);
       printf ("UpdateMsg:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
       if (selectedPropName.EndsWith (".Type"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "type", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Slot"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "slot", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Timeout"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "timeout", CEL_DATA_FLOAT, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Fadetime"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "fadetime", CEL_DATA_FLOAT, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Click"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "click", CEL_DATA_BOOL, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Log"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "log", CEL_DATA_BOOL, value);
-        return true;
+        return REFRESH_NO;
       }
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -731,16 +731,16 @@ public:
     AppendBoolPar (pcProp, "Physics", "Physics", valid ? physics : true);
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
     if (selectedPropName == "Physics")
     {
       InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, "physics", value);
-      return true;
+      return REFRESH_NO;
     }
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -814,7 +814,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
@@ -822,54 +822,54 @@ public:
     if (selectedPropName == "Repeat")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "repeat", CEL_DATA_BOOL, value);
-      return true;
+      return REFRESH_NO;
     }
     if (selectedPropName == "Random")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "random", CEL_DATA_BOOL, value);
-      return true;
+      return REFRESH_NO;
     }
     if (selectedPropName == "MinDelay")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "mindelay", CEL_DATA_LONG, value);
-      return true;
+      return REFRESH_NO;
     }
     if (selectedPropName == "MaxDelay")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetTiming", "maxdelay", CEL_DATA_LONG, value);
-      return true;
+      return REFRESH_NO;
     }
     if (selectedPropName == "SpawnUnique")
     {
       InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, "spawnunique", value);
-      return true;
+      return REFRESH_NO;
     }
     if (selectedPropName == "NameCounter")
     {
       InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, "namecounter", value);
-      return true;
+      return REFRESH_NO;
     }
     if (selectedPropName == "Inhibit")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "Inhibit", "count", CEL_DATA_LONG, value);
-      return true;
+      return REFRESH_NO;
     }
   
     if (selectedPropName.StartsWith ("Template:"))
     {
       size_t dot = selectedPropName.FindLast ('.');
       int idx;
-      if (dot == csArrayItemNotFound) return false;
+      if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
       printf ("UpdateSpawn:selectedPropName=%s index=%d\n", selectedPropName.GetData (), idx); fflush (stdout);
       if (selectedPropName.EndsWith (".T:Template"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "template", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -916,7 +916,7 @@ public:
 	  modesArray.Index (wxString::FromUTF8 (inputMask)));
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
@@ -924,9 +924,9 @@ public:
     if (selectedPropName == "Mode")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetCamera", "modename", CEL_DATA_STRING, value);
-      return true;
+      return REFRESH_NO;
     }
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -982,7 +982,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
@@ -991,22 +991,22 @@ public:
     {
       size_t dot = selectedPropName.FindLast ('.');
       int idx;
-      if (dot == csArrayItemNotFound) return false;
+      if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
       printf ("UpdateInv:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
       if (selectedPropName.EndsWith (".T:Template"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "name", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Amount"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "amount", CEL_DATA_LONG, value);
-        return true;
+        return REFRESH_NO;
       }
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -1098,7 +1098,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
@@ -1106,25 +1106,25 @@ public:
     if (selectedPropName == "A:Input")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "AddInput", "mask", CEL_DATA_STRING, value);
-      return true;
+      return REFRESH_NO;
     }
   
     if (selectedPropName.StartsWith ("Output:"))
     {
       size_t dot = selectedPropName.FindLast ('.');
       int idx;
-      if (dot == csArrayItemNotFound) return false;
+      if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
       printf ("UpdateWire:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
       if (selectedPropName.EndsWith (".E:Entity"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "entity", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".A:Message"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "msgid", CEL_DATA_STRING, value);
-        return true;
+        return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Name"))
       {
@@ -1136,7 +1136,7 @@ public:
 	      oldParName);
 	  InspectTools::DeleteActionParameter (pl, pctpl, size_t (idx), oldParName);
           InspectTools::AddActionParameter (pl, pctpl, size_t (idx), value, par);
-	  return true;
+	  return REFRESH_NO;
 	}
       }
       else if (selectedPropName.EndsWith (".Value"))
@@ -1147,7 +1147,7 @@ public:
 	    parName);
 	par = pm->GetParameter (value, par->GetPossibleType ());
 	InspectTools::AddActionParameter (pl, pctpl, size_t (idx), parName, par);
-	return true;
+	return REFRESH_NO;
       }
       else if (selectedPropName.EndsWith (".Type"))
       {
@@ -1157,11 +1157,11 @@ public:
 	    parName);
 	par = pm->GetParameter (par->GetOriginalExpression (), InspectTools::StringToType (value));
 	InspectTools::AddActionParameter (pl, pctpl, size_t (idx), parName, par);
-	return true;
+	return REFRESH_NO;
       }
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -1246,7 +1246,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString questName = GetPropertyValueAsString (pcPropName, "Q:Quest");
@@ -1255,14 +1255,14 @@ public:
     {
       pctpl->RemoveAllProperties ();
       InspectTools::AddActionParameter (pl, pm, pctpl, "NewQuest", "name", CEL_DATA_STRING, questName);
-      return true;
+      return REFRESH_PC;
     }
 
     if (selectedPropName == "State")
     {
       csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
       InspectTools::SetProperty (pl, pctpl, CEL_DATA_STRING, "state", value);
-      return true;
+      return REFRESH_NO;
     }
 
     if (selectedPropName.StartsWith ("Par:") && !selectedPropName.EndsWith (".Value")
@@ -1277,10 +1277,10 @@ public:
 	InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", oldParName);
       celDataType newType = InspectTools::StringToType (newTypeS);
       InspectTools::AddActionParameter (pl, pm, pctpl, "NewQuest", newParName, newType, newValue);
-      return true;
+      return REFRESH_NO;
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -1342,7 +1342,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     if (selectedPropName.StartsWith ("Prop:") && !selectedPropName.EndsWith (".Value")
@@ -1359,10 +1359,10 @@ public:
 	pctpl->RemoveProperty (pl->FetchStringID (oldParName));
       celDataType newType = InspectTools::StringToType (newTypeS);
       InspectTools::SetProperty (pl, pctpl, newType, newParName, newValue);
-      return true;
+      return REFRESH_NO;
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -1462,7 +1462,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     csString value = GetPropertyValueAsString (pcPropName, selectedPropName);
@@ -1470,23 +1470,23 @@ public:
     {
       long delay = GetPropertyValueAsInt (pcPropName, selectedPropName);
       pctpl->SetProperty (pl->FetchStringID ("delay"), delay);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "Jitter")
     {
       long jitter = GetPropertyValueAsInt (pcPropName, selectedPropName);
       pctpl->SetProperty (pl->FetchStringID ("jitter"), jitter);
-      return true;
+      return REFRESH_NO;
     }
-    else if (selectedPropName == "Monitor")
+    else if (selectedPropName == "E:Monitor")
     {
       pctpl->SetProperty (pl->FetchStringID ("monitor"), value.GetData ());
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "Class")
     {
       pctpl->SetProperty (pl->FetchStringID ("class"), value.GetData ());
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType")
     {
@@ -1497,65 +1497,65 @@ public:
       if (value == "Sphere")
       {
 	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerSphere", CEL_DATA_NONE);
-	return true;
+	return REFRESH_PC;
       }
       else if (value == "Box")
       {
 	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerBox", CEL_DATA_NONE);
-	return true;
+	return REFRESH_PC;
       }
       else if (value == "Beam")
       {
 	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerBeam", CEL_DATA_NONE);
-	return true;
+	return REFRESH_PC;
       }
       else if (value == "Above")
       {
 	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerAboveMesh", CEL_DATA_NONE);
-	return true;
+	return REFRESH_PC;
       }
     }
     else if (selectedPropName == "TrigType.Radius")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerSphere", "radius", CEL_DATA_FLOAT, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.Position")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerSphere", "position", CEL_DATA_VECTOR3, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.MinBox")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBox", "minbox", CEL_DATA_VECTOR3, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.MaxBox")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBox", "maxbox", CEL_DATA_VECTOR3, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.Start")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBeam", "start", CEL_DATA_VECTOR3, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.End")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBeam", "end", CEL_DATA_VECTOR3, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.E:Entity")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerAboveMesh", "entity", CEL_DATA_STRING, value);
-      return true;
+      return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType.MaxDistance")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerAboveMesh", "maxdistance", CEL_DATA_FLOAT, value);
-      return true;
+      return REFRESH_NO;
     }
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -1647,7 +1647,7 @@ private:
     detailGrid->AppendIn (parentProp, classProp);
   }
 
-  bool UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName)
+  RefreshType UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName)
   {
     iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
     csString oldname = propName.Slice (5);
@@ -1661,10 +1661,10 @@ private:
     float value;
     csScanStr (newvalue, "%f", &value);
     tpl->GetCharacteristics ()->SetCharacteristic (newname, value);
-    return true;
+    return REFRESH_NO;
   }
 
-  bool UpdateTemplateClassesFromGrid ()
+  RefreshType UpdateTemplateClassesFromGrid ()
   {
     iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
     wxArrayString classes = detailGrid->GetPropertyValueAsArrayString (wxT ("Classes"));
@@ -1696,12 +1696,12 @@ private:
 	csStringID id = pl->FetchStringID (classesToRemove.Get (i));
 	tpl->RemoveClass (id);
       }
-      return true;
+      return REFRESH_NO;
     }
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
-  bool UpdateTemplateParentsFromGrid ()
+  RefreshType UpdateTemplateParentsFromGrid ()
   {
     iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
     wxArrayString templates = detailGrid->GetPropertyValueAsArrayString (wxT ("Parents"));
@@ -1730,9 +1730,9 @@ private:
 	iCelEntityTemplate* parent = pl->FindEntityTemplate (templatesToRemove.Get (i));
 	tpl->RemoveParent (parent);
       }
-      return true;
+      return REFRESH_NO;
     }
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   void FillPC (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
@@ -1814,7 +1814,7 @@ public:
     }
   }
 
-  virtual bool Update (iCelPropertyClassTemplate* pctpl,
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
     if (pctpl)
@@ -1826,7 +1826,7 @@ public:
 	  pctpl->SetTag (0);
 	else
 	  pctpl->SetTag (tag);
-	return true;
+	return REFRESH_NO;
       }
 
       csString type = GetPropertyValueAsString (pcPropName, "Type");
@@ -1834,7 +1834,7 @@ public:
       {
 	pctpl->SetName (type);
 	pctpl->RemoveAllProperties ();
-	return true;
+	return REFRESH_PC;
       }
 
       PcEditorSupport* editor = GetEditor (type);
@@ -1855,7 +1855,7 @@ public:
       return UpdateCharacteristicFromGrid (selectedProperty, selectedPropName);
     }
 
-    return false;
+    return REFRESH_NOCHANGE;
   }
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -2069,20 +2069,20 @@ printf ("DoContext4\n"); fflush (stdout);
 
 void EntityMode::OnIdle ()
 {
-  if (doDelayedRefresh)
+  if (delayedRefreshType != REFRESH_NOCHANGE)
   {
-    printf ("Delayed refresh!\n"); fflush (stdout);
-    PCWasEdited (refreshPctpl);
+    printf ("Delayed refresh %d!\n", delayedRefreshType); fflush (stdout);
+    PCWasEdited (refreshPctpl, delayedRefreshType);
     if (!refreshPctpl)
       SelectTemplate (GetCurrentTemplate ());
-    doDelayedRefresh = false;
+    delayedRefreshType = REFRESH_NOCHANGE;
     refreshPctpl = 0;
   }
 }
 
-void EntityMode::DelayedRefresh (iCelPropertyClassTemplate* pctpl)
+void EntityMode::DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType)
 {
-  doDelayedRefresh = true;
+  delayedRefreshType = refreshType;
   refreshPctpl = pctpl;
 }
 
@@ -2109,9 +2109,10 @@ void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
   printf ("PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
-  if (templateEditor->Update (pctpl, pcPropName, selectedPropName, selectedProperty))
+  RefreshType refreshType = templateEditor->Update (pctpl, pcPropName, selectedPropName, selectedProperty);
+  if (refreshType != REFRESH_NOCHANGE)
   {
-    DelayedRefresh (pctpl);
+    DelayedRefresh (pctpl, refreshType);
   }
 }
 
@@ -2187,7 +2188,7 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTempl
 void EntityMode::OnDeleteCharacteristic ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   size_t dot = selectedPropName.FindFirst ('.');
   csString name;
   if (dot == csArrayItemNotFound)
@@ -2196,14 +2197,14 @@ void EntityMode::OnDeleteCharacteristic ()
     name = selectedPropName.Slice (5, dot-5);
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   tpl->GetCharacteristics ()->ClearCharacteristic (name);
-  PCWasEdited (0);
+  PCWasEdited (0, REFRESH_TEMPLATE);
   SelectTemplate (tpl);
 }
 
 void EntityMode::OnNewCharacteristic ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Characteristic Parameter");
   dialog->AddRow ();
@@ -2230,7 +2231,7 @@ void EntityMode::OnNewCharacteristic ()
   float v;
   csScanStr (value, "%f", &v);
   tpl->GetCharacteristics ()->SetCharacteristic (name, v);
-  PCWasEdited (0);
+  PCWasEdited (0, REFRESH_TEMPLATE);
   SelectTemplate (tpl);
 }
 
@@ -2245,7 +2246,7 @@ void EntityMode::PcProp_OnDelProperty ()
   else
     name = selectedPropName.Slice (5, dot-5);
   pctpl->RemoveProperty (pl->FetchStringID (name));
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcProp_OnNewProperty ()
@@ -2280,7 +2281,7 @@ void EntityMode::PcProp_OnNewProperty ()
 
   celDataType type = InspectTools::StringToType (typeS);
   InspectTools::SetProperty (pl, pctpl, type, name, value);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcQuest_OnSuggestParameters ()
@@ -2301,7 +2302,7 @@ void EntityMode::PcQuest_OnSuggestParameters ()
     if (!par) break;	// @@@ Report error?
     InspectTools::AddActionParameter (pl, pctpl, "NewQuest", name, par);
   }
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcMsg_OnDelSlot ()
@@ -2317,7 +2318,7 @@ void EntityMode::PcMsg_OnDelSlot ()
     csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Slot:"), "%d", &idx);
 
   pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcMsg_OnNewSlot ()
@@ -2343,7 +2344,7 @@ void EntityMode::PcMsg_OnNewSlot ()
   InspectTools::AddAction (pl, GetPM (), pctpl, "DefineSlot",
       CEL_DATA_STRING, "name", name.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcMsg_OnDelType ()
@@ -2359,7 +2360,7 @@ void EntityMode::PcMsg_OnDelType ()
     csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Type:"), "%d", &idx);
 
   pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcMsg_OnNewType ()
@@ -2385,7 +2386,7 @@ void EntityMode::PcMsg_OnNewType ()
   InspectTools::AddAction (pl, GetPM (), pctpl, "DefineType",
       CEL_DATA_STRING, "type", name.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 // @@@ Duplicate of PcInv_OnDelTemplate
@@ -2402,7 +2403,7 @@ void EntityMode::PcSpawn_OnDelTemplate ()
     csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
 
   pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcSpawn_OnNewTemplate ()
@@ -2428,7 +2429,7 @@ void EntityMode::PcSpawn_OnNewTemplate ()
   InspectTools::AddAction (pl, GetPM (), pctpl, "AddEntityTemplateType",
       CEL_DATA_STRING, "template", tpl.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcInv_OnDelTemplate ()
@@ -2444,7 +2445,7 @@ void EntityMode::PcInv_OnDelTemplate ()
     csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
 
   pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcInv_OnNewTemplate ()
@@ -2475,7 +2476,7 @@ void EntityMode::PcInv_OnNewTemplate ()
       CEL_DATA_STRING, "name", tpl.GetData (),
       CEL_DATA_LONG, "amount", amount.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcWire_OnDelOutput ()
@@ -2488,7 +2489,7 @@ void EntityMode::PcWire_OnDelOutput ()
   csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
 
   pctpl->RemovePropertyByIndex (idx);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcWire_OnNewOutput ()
@@ -2524,7 +2525,7 @@ void EntityMode::PcWire_OnNewOutput ()
       CEL_DATA_STRING, "msgid", message.GetData (),
       CEL_DATA_STRING, "entity", entity.GetData (),
       CEL_DATA_NONE);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcWire_OnDelParameter ()
@@ -2543,7 +2544,7 @@ void EntityMode::PcWire_OnDelParameter ()
     parName = selectedPropName.Slice (dot1+5, dot-dot1-5);
 
   InspectTools::DeleteActionParameter (pl, pctpl, size_t (idx), parName);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcWire_OnNewParameter ()
@@ -2583,7 +2584,7 @@ void EntityMode::PcWire_OnNewParameter ()
 
   celDataType type = InspectTools::StringToType (typeS);
   InspectTools::AddActionParameter (pl, GetPM (), pctpl, size_t (idx), name, type, value);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcQuest_OnDelParameter ()
@@ -2597,7 +2598,7 @@ void EntityMode::PcQuest_OnDelParameter ()
   else
     name = selectedPropName.Slice (4, dot-4);
   InspectTools::DeleteActionParameter (pl, pctpl, "NewQuest", name);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 void EntityMode::PcQuest_OnNewParameter ()
@@ -2632,7 +2633,7 @@ void EntityMode::PcQuest_OnNewParameter ()
 
   celDataType type = InspectTools::StringToType (typeS);
   InspectTools::AddActionParameter (pl, GetPM (), pctpl, "NewQuest", name, type, value);
-  PCWasEdited (pctpl);
+  PCWasEdited (pctpl, REFRESH_PC);
 }
 
 // ------------------------------------------------------------------------
@@ -3143,7 +3144,8 @@ void EntityMode::Refresh ()
   questsValue->Refresh ();
   ActivateNode (0);
   RefreshView ();
-  doDelayedRefresh = false;
+  RefreshGrid ();
+  delayedRefreshType = REFRESH_NOCHANGE;
   refreshPctpl = 0;
 }
 
@@ -3165,12 +3167,23 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
     graphView->FinishRefresh ();
     graphView->SetVisible (true);
     app->SetObjectForComment ("quest", editQuestMode->QueryObject ());
-    FillDetailGrid (0, 0);
   }
   else
   {
     BuildTemplateGraph (currentTemplate);
     if (pctpl) SelectPC (pctpl);
+  }
+}
+
+void EntityMode::RefreshGrid (iCelPropertyClassTemplate* pctpl)
+{
+  if (!started) return;
+  if (editQuestMode)
+  {
+    FillDetailGrid (0, 0);
+  }
+  else
+  {
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     FillDetailGrid (tpl, pctpl);
   }
@@ -3349,6 +3362,7 @@ void EntityMode::OnQuestSelect ()
   editQuestMode = questMgr->GetQuestFactory (questName);
   currentTemplate = "";
   RefreshView ();
+  RefreshGrid ();
 }
 
 void EntityMode::OnTemplateSelect ()
@@ -3365,12 +3379,14 @@ void EntityMode::OnTemplateSelect ()
     editQuestMode = 0;
     currentTemplate = templateName;
     RefreshView ();
+    RefreshGrid ();
     ActivateNode (0);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     app->SetObjectForComment ("template", tpl->QueryObject ());
   }
 }
 
+// @@@ Check if needed?
 void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
 {
   if (!tpl)
@@ -3378,6 +3394,7 @@ void EntityMode::RegisterModification (iCelEntityTemplate* tpl)
   view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
   RefreshView ();
+  RefreshGrid ();
 }
 
 void EntityMode::RegisterModification (iQuestFactory* quest)
@@ -3441,6 +3458,7 @@ void EntityMode::SelectQuest (iQuestFactory* questFact)
   ActivateNode (0);
   app->SetObjectForComment ("quest", questFact->QueryObject ());
   RefreshView ();
+  RefreshGrid ();
 }
 
 void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
@@ -3496,6 +3514,7 @@ void EntityMode::OnRenameTemplate (const char* tplName)
     view3d->GetModelRepository ()->GetObjectsValue ()->Refresh ();
     SelectTemplate (tpl);
     RefreshView ();
+    RefreshGrid ();
   }
 }
 
@@ -3542,6 +3561,7 @@ void EntityMode::OnRenameQuest (const char* questName)
     questsValue->Refresh ();
     SelectQuest (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
 }
 
@@ -3583,6 +3603,7 @@ void EntityMode::OnQuestDel (const char* questName)
     editQuestMode = 0;
     ActivateNode (0);
     RefreshView ();
+    RefreshGrid ();
   }
 }
 
@@ -3686,6 +3707,7 @@ void EntityMode::OnDeletePC ()
   RegisterModification (tpl);
   editQuestMode = 0;
   RefreshView ();
+  RefreshGrid ();
 }
 
 void EntityMode::OnDelete ()
@@ -3717,6 +3739,7 @@ void EntityMode::DeleteItem (const char* item)
       RegisterModification (tpl);
       editQuestMode = 0;
       RefreshView ();
+      RefreshGrid ();
     }
   }
   else if (type == 'S')
@@ -3725,8 +3748,10 @@ void EntityMode::DeleteItem (const char* item)
     csString state = GetSelectedStateName (item);
     iQuestFactory* questFact = GetSelectedQuest (item);
     questFact->RemoveState (state);
+    // @@@ Too much refresh!
     RegisterModification (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
   else if (type == 't')
   {
@@ -3739,6 +3764,7 @@ void EntityMode::DeleteItem (const char* item)
     responses->Delete (resp);
     RegisterModification (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
   else if (type == 'r')
   {
@@ -3750,6 +3776,7 @@ void EntityMode::DeleteItem (const char* item)
     iQuestFactory* questFact = GetSelectedQuest (item);
     RegisterModification (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
   else if (type == 's')
   {
@@ -3759,6 +3786,7 @@ void EntityMode::DeleteItem (const char* item)
     questFact->RemoveSequence (sequence->GetName ());
     RegisterModification (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
 }
 
@@ -3796,14 +3824,27 @@ void EntityMode::OnCreatePC ()
 
       view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
       RefreshView (pc);
+      RefreshGrid (pc);
     }
-
   }
 }
 
-void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl)
+void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refreshType)
 {
   RefreshView (pctpl);
+  switch (refreshType)
+  {
+    case REFRESH_NOCHANGE:
+    case REFRESH_NO:
+      break;
+    case REFRESH_PC:
+      RefreshGrid (pctpl);
+      break;
+    case REFRESH_TEMPLATE:	// @@@ Todo: implement
+    case REFRESH_FULL:
+      RefreshGrid ();
+      break;
+  }
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
@@ -3992,6 +4033,7 @@ void EntityMode::Paste ()
     pcCopy.Create (this, tpl, tag->GetData ());
     RegisterModification (tpl);
     RefreshView ();
+    RefreshGrid ();
   }
   else if (!entityCopy.name.IsEmpty ())
   {
@@ -4055,7 +4097,6 @@ void EntityMode::ActivateNode (const char* nodeName)
   {
     if (!editQuestMode)
     {
-      iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
       iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
 printf ("activeNode=%s pctpl=%p\n", activeNode.GetData (), pctpl);
     }
@@ -4111,6 +4152,7 @@ void EntityMode::OnRewardMove (int dir)
   graphView->ActivateNode (0);
   ActivateNode (0);
   RefreshView ();
+  RefreshGrid ();
 }
 
 void EntityMode::OnCreateReward (int type)
@@ -4144,6 +4186,7 @@ void EntityMode::OnCreateReward (int type)
     iQuestFactory* questFact = GetSelectedQuest (activeNode);
     RegisterModification (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
 }
 
@@ -4170,6 +4213,7 @@ void EntityMode::OnCreateTrigger ()
     resp->SetTriggerFactory (triggerFact);
     RegisterModification (questFact);
     RefreshView ();
+    RefreshGrid ();
   }
 }
 
@@ -4190,6 +4234,7 @@ void EntityMode::OnDefaultState ()
   RegisterModification ();
 
   RefreshView (pctpl);
+  RefreshGrid (pctpl);
 }
 
 void EntityMode::OnNewSequence ()
@@ -4215,6 +4260,7 @@ void EntityMode::OnNewSequence ()
   questFact->CreateSequence (name->GetData ());
   RegisterModification (questFact);
   RefreshView (pctpl);
+  RefreshGrid (pctpl);
 }
 
 void EntityMode::OnNewState ()
@@ -4240,6 +4286,7 @@ void EntityMode::OnNewState ()
   questFact->CreateState (name->GetData ());
   RegisterModification (questFact);
   RefreshView (pctpl);
+  RefreshGrid (pctpl);
 }
 
 void EntityMode::OnEditQuest ()
@@ -4256,6 +4303,7 @@ void EntityMode::OnEditQuest ()
   currentTemplate = "";
 
   RefreshView ();
+  RefreshGrid ();
 }
 
 bool EntityMode::Command (csStringID id, const csString& args)
