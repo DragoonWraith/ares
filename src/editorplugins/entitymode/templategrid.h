@@ -140,6 +140,9 @@ public:
 
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu);
+
+  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
+      csString& selectedPropName);
 };
 
 #endif // __aresed_templategrid_h

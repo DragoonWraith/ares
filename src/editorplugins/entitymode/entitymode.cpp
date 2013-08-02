@@ -276,17 +276,6 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 {
 }
 
-static wxPGProperty* FindPCProperty (wxPGProperty* prop)
-{
-  while (prop)
-  {
-    csString propName = (const char*)prop->GetName ().mb_str (wxConvUTF8);
-    if (propName.StartsWith ("PC:")) return prop;
-    prop = prop->GetParent ();
-  }
-  return prop;
-}
-
 void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 {
   using namespace Ares;
@@ -348,22 +337,6 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
   }
 }
 
-iCelPropertyClassTemplate* EntityMode::GetPCForProperty (wxPGProperty* property,
-    csString& pcPropName, csString& selectedPropName)
-{
-  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
-  wxPGProperty* pcProperty = FindPCProperty (property);
-  if (pcProperty)
-  {
-    pcPropName = (const char*)pcProperty->GetName ().mb_str (wxConvUTF8);
-    int idx;
-    csScanStr (pcPropName.GetData () + 3, "%d", &idx);
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    return tpl->GetPropertyClassTemplate (idx);
-  }
-  return 0;
-}
-
 // @@@ This should not be needed but for some reason on windows the EVT_CONTEXT_MENU
 // is not generated when hovering on the property grid.
 void EntityMode::OnPropertyGridRight (wxPropertyGridEvent& event)
@@ -375,7 +348,7 @@ void EntityMode::OnPropertyGridRight (wxPropertyGridEvent& event)
   {
 printf ("GR DoContext1\n"); fflush (stdout);
     csString selectedPropName, pcPropName;
-    iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty,
+    iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty,
 	  pcPropName, selectedPropName);
     wxMenu contextMenu;
 printf ("GR DoContext2\n"); fflush (stdout);
@@ -402,7 +375,7 @@ printf ("OnContextMenu\n"); fflush (stdout);
     {
 printf ("DoContext1\n"); fflush (stdout);
       csString selectedPropName, pcPropName;
-      iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty,
+      iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty,
 	  pcPropName, selectedPropName);
       wxMenu contextMenu;
 printf ("DoContext2\n"); fflush (stdout);
@@ -437,7 +410,7 @@ void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 {
   wxPGProperty* selectedProperty = event.GetProperty ();
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
   printf ("PG changing %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
   csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
   if (!templateEditor->Validate (pctpl, pcPropName, selectedPropName, value, event))
@@ -453,7 +426,7 @@ void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
   printf ("PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
   RefreshType refreshType = templateEditor->Update (pctpl, pcPropName, selectedPropName, selectedProperty);
   if (refreshType != REFRESH_NOCHANGE)
@@ -534,7 +507,7 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTempl
 void EntityMode::OnDeleteCharacteristic ()
 {
   csString selectedPropName, pcPropName;
-  GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   size_t dot = selectedPropName.FindFirst ('.');
   csString name;
   if (dot == csArrayItemNotFound)
@@ -550,7 +523,7 @@ void EntityMode::OnDeleteCharacteristic ()
 void EntityMode::OnNewCharacteristic ()
 {
   csString selectedPropName, pcPropName;
-  GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Characteristic Parameter", "LName:;TName\nTValue");
   if (dialog->Show (0) == 0) return;
@@ -579,7 +552,7 @@ void EntityMode::OnNewCharacteristic ()
 void EntityMode::PcProp_OnDelProperty ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   size_t dot = selectedPropName.FindFirst ('.');
   csString name;
   if (dot == csArrayItemNotFound)
@@ -593,7 +566,7 @@ void EntityMode::PcProp_OnDelProperty ()
 void EntityMode::PcProp_OnNewProperty ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter",
       "LName:;TName;CType,string,float,long,bool,vector2,vector3,color\nMValue");
@@ -622,7 +595,7 @@ void EntityMode::PcProp_OnNewProperty ()
 void EntityMode::PcQuest_OnSuggestParameters ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iQuestFactory* questFact = GetQuestFactory (pctpl);
   if (!questFact) return;
 
@@ -643,7 +616,7 @@ void EntityMode::PcQuest_OnSuggestParameters ()
 void EntityMode::OnDeleteActionParameter ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   size_t colon = selectedPropName.FindFirst (':');
   size_t dot = selectedPropName.FindLast ('.');
@@ -665,7 +638,7 @@ void EntityMode::OnDeleteActionParameter ()
 void EntityMode::OnDeleteProperty ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   size_t colon = selectedPropName.FindFirst (':');
   size_t dot = selectedPropName.FindLast ('.');
@@ -682,7 +655,7 @@ void EntityMode::OnDeleteProperty ()
 void EntityMode::PcMsg_OnNewSlot ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Slot", "LName:;TName");
@@ -705,7 +678,7 @@ void EntityMode::PcMsg_OnNewSlot ()
 void EntityMode::PcMsg_OnNewType ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Type", "LName:;TName");
@@ -728,7 +701,7 @@ void EntityMode::PcMsg_OnNewType ()
 void EntityMode::PcSpawn_OnNewTemplate ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Spawn Template", "LTemplate:;ETTemplate");
@@ -751,7 +724,7 @@ void EntityMode::PcSpawn_OnNewTemplate ()
 void EntityMode::PcInv_OnNewTemplate ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Inventory Template",
@@ -777,7 +750,7 @@ void EntityMode::PcInv_OnNewTemplate ()
 void EntityMode::PcWire_OnNewOutput ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Wire Output");
@@ -813,7 +786,7 @@ void EntityMode::PcWire_OnNewOutput ()
 void EntityMode::PcWire_OnNewParameter ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   size_t dot = selectedPropName.FindLast ('.');
   int idx;
@@ -847,7 +820,7 @@ void EntityMode::PcWire_OnNewParameter ()
 void EntityMode::PcQuest_OnNewParameter ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter",
       "LName:;TName;CType,string,float,long,bool,vector2,vector3,color\nMValue");
@@ -1934,7 +1907,7 @@ void EntityMode::OnTemplateDel (const char* tplName)
 void EntityMode::OnDeletePC ()
 {
   csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
+  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   tpl->RemovePropertyClassTemplate (pctpl);
   RegisterModification (tpl);

@@ -1674,3 +1674,30 @@ void PcEditorSupportTemplate::DoContext (iCelPropertyClassTemplate* pctpl,
   }
 }
 
+static wxPGProperty* FindPCProperty (wxPGProperty* prop)
+{
+  while (prop)
+  {
+    csString propName = (const char*)prop->GetName ().mb_str (wxConvUTF8);
+    if (propName.StartsWith ("PC:")) return prop;
+    prop = prop->GetParent ();
+  }
+  return prop;
+}
+
+iCelPropertyClassTemplate* PcEditorSupportTemplate::GetPCForProperty (wxPGProperty* property,
+    csString& pcPropName, csString& selectedPropName)
+{
+  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
+  wxPGProperty* pcProperty = FindPCProperty (property);
+  if (pcProperty)
+  {
+    pcPropName = (const char*)pcProperty->GetName ().mb_str (wxConvUTF8);
+    int idx;
+    csScanStr (pcPropName.GetData () + 3, "%d", &idx);
+    iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();
+    return tpl->GetPropertyClassTemplate (idx);
+  }
+  return 0;
+}
+

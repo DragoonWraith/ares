@@ -112,14 +112,12 @@ private:
   // Last property as detected by the context menu handler.
   wxPGProperty* contextLastProperty;
 
-  csRef<PcEditorSupport> templateEditor;
+  csRef<PcEditorSupportTemplate> templateEditor;
   RefreshType delayedRefreshType;
   iCelPropertyClassTemplate* refreshPctpl;
 
   void BuildDetailGrid ();
   void FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
-  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
-      csString& selectedPropName);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
