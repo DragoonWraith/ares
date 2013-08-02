@@ -164,10 +164,6 @@ private:
   csString contextMenuNode;	// Node that is being used for the context menu.
   csString GetContextMenuNode ();
 
-  void SelectTemplate (iCelEntityTemplate* tpl);
-  void SelectQuest (iQuestFactory* tpl);
-  void SelectPC (iCelPropertyClassTemplate* pctpl);
-
   TriggerPanel* triggerPanel;
   RewardPanel* rewardPanel;
   SequencePanel* sequencePanel;
@@ -220,8 +216,6 @@ private:
   void ClearCopy ();
   bool HasPaste ();
 
-  void PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
-
 public:
   EntityMode (iBase* parent);
   virtual ~EntityMode ();
@@ -247,6 +241,10 @@ public:
   iCelEntityTemplate* GetCurrentTemplate ();
   wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
 
+  void SelectTemplate (iCelEntityTemplate* tpl);
+  void SelectQuest (iQuestFactory* tpl);
+  void SelectPC (iCelPropertyClassTemplate* pctpl);
+
   /// Register modification of the current template and refresh the visuals.
   void RegisterModification (iCelEntityTemplate* tpl = 0);
   /// Register modification of a quest and refresh the visuals.
@@ -256,6 +254,10 @@ public:
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
   /// Refresh the grid.
   void RefreshGrid (iCelPropertyClassTemplate* pctpl = 0);
+
+  PcEditorSupportTemplate* GetTemplateEditor () const { return templateEditor; }
+  wxPGProperty* GetContextLastProperty () const { return contextLastProperty; }
+  void PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
   /// Refresh the mode.
   virtual void Refresh ();
@@ -301,23 +303,6 @@ public:
   void OnRewardMove (int dir);
   void OnContextMenu (wxContextMenuEvent& event);
 
-  // General property deletion function.
-  void OnDeleteProperty ();
-  void OnDeleteActionParameter ();
-
-  void PcMsg_OnNewSlot ();
-  void PcMsg_OnNewType ();
-  void PcSpawn_OnNewTemplate ();
-  void PcInv_OnNewTemplate ();
-  void PcWire_OnNewOutput ();
-  void PcWire_OnNewParameter ();
-  void PcQuest_OnNewParameter ();
-  void PcQuest_OnSuggestParameters ();
-  void PcProp_OnNewProperty ();
-  void PcProp_OnDelProperty ();
-  void OnNewCharacteristic ();
-  void OnDeleteCharacteristic ();
-
   void OnIdle ();
   void DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
@@ -356,25 +341,25 @@ public:
     void OnPropertyGridButton (wxCommandEvent& event) { s->OnPropertyGridButton (event); }
     void OnPropertyGridRight (wxPropertyGridEvent& event) { s->OnPropertyGridRight (event); }
     void OnContextMenu (wxContextMenuEvent& event) { s->OnContextMenu (event); }
-    void PcMsg_OnNewSlot (wxCommandEvent& event) { s->PcMsg_OnNewSlot (); }
-    void PcMsg_OnDelSlot (wxCommandEvent& event) { s->OnDeleteProperty (); }
-    void PcMsg_OnNewType (wxCommandEvent& event) { s->PcMsg_OnNewType (); }
-    void PcMsg_OnDelType (wxCommandEvent& event) { s->OnDeleteProperty (); }
-    void PcSpawn_OnNewTemplate (wxCommandEvent& event) { s->PcSpawn_OnNewTemplate (); }
-    void PcSpawn_OnDelTemplate (wxCommandEvent& event) { s->OnDeleteProperty (); }
-    void PcInv_OnNewTemplate (wxCommandEvent& event) { s->PcInv_OnNewTemplate (); }
-    void PcInv_OnDelTemplate (wxCommandEvent& event) { s->OnDeleteProperty (); }
-    void PcWire_OnNewOutput (wxCommandEvent& event) { s->PcWire_OnNewOutput (); }
-    void PcWire_OnDelOutput (wxCommandEvent& event) { s->OnDeleteProperty (); }
-    void PcWire_OnNewParameter (wxCommandEvent& event) { s->PcWire_OnNewParameter (); }
-    void PcWire_OnDelParameter (wxCommandEvent& event) { s->OnDeleteActionParameter (); }
-    void PcQuest_OnNewParameter (wxCommandEvent& event) { s->PcQuest_OnNewParameter (); }
-    void PcQuest_OnDelParameter (wxCommandEvent& event) { s->OnDeleteActionParameter (); }
-    void PcQuest_OnSuggestParameters (wxCommandEvent& event) { s->PcQuest_OnSuggestParameters (); }
-    void PcProp_OnNewProperty (wxCommandEvent& event) { s->PcProp_OnNewProperty (); }
-    void PcProp_OnDelProperty (wxCommandEvent& event) { s->PcProp_OnDelProperty (); }
-    void OnNewCharacteristic (wxCommandEvent& event) { s->OnNewCharacteristic (); }
-    void OnDeleteCharacteristic (wxCommandEvent& event) { s->OnDeleteCharacteristic (); }
+    void PcMsg_OnNewSlot (wxCommandEvent& event) { s->GetTemplateEditor ()->PcMsg_OnNewSlot (); }
+    void PcMsg_OnDelSlot (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteProperty (); }
+    void PcMsg_OnNewType (wxCommandEvent& event) { s->GetTemplateEditor ()->PcMsg_OnNewType (); }
+    void PcMsg_OnDelType (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteProperty (); }
+    void PcSpawn_OnNewTemplate (wxCommandEvent& event) { s->GetTemplateEditor ()->PcSpawn_OnNewTemplate (); }
+    void PcSpawn_OnDelTemplate (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteProperty (); }
+    void PcInv_OnNewTemplate (wxCommandEvent& event) { s->GetTemplateEditor ()->PcInv_OnNewTemplate (); }
+    void PcInv_OnDelTemplate (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteProperty (); }
+    void PcWire_OnNewOutput (wxCommandEvent& event) { s->GetTemplateEditor ()->PcWire_OnNewOutput (); }
+    void PcWire_OnDelOutput (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteProperty (); }
+    void PcWire_OnNewParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->PcWire_OnNewParameter (); }
+    void PcWire_OnDelParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteActionParameter (); }
+    void PcQuest_OnNewParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->PcQuest_OnNewParameter (); }
+    void PcQuest_OnDelParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteActionParameter (); }
+    void PcQuest_OnSuggestParameters (wxCommandEvent& event) { s->GetTemplateEditor ()->PcQuest_OnSuggestParameters (); }
+    void PcProp_OnNewProperty (wxCommandEvent& event) { s->GetTemplateEditor ()->PcProp_OnNewProperty (); }
+    void PcProp_OnDelProperty (wxCommandEvent& event) { s->GetTemplateEditor ()->PcProp_OnDelProperty (); }
+    void OnNewCharacteristic (wxCommandEvent& event) { s->GetTemplateEditor ()->OnNewCharacteristic (); }
+    void OnDeleteCharacteristic (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteCharacteristic (); }
     void OnDeletePC (wxCommandEvent& event) { s->OnDeletePC (); }
     void OnIdle (wxIdleEvent& event) { s->OnIdle (); }
 

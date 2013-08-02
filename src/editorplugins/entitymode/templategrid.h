@@ -143,6 +143,24 @@ public:
 
   iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
       csString& selectedPropName);
+
+  // General property deletion function.
+  void OnDeleteProperty ();
+  void OnDeleteActionParameter ();
+
+  void PcProp_OnNewProperty ();
+  void PcProp_OnDelProperty ();
+  void PcMsg_OnNewSlot ();
+  void PcMsg_OnNewType ();
+  void PcSpawn_OnNewTemplate ();
+  void PcInv_OnNewTemplate ();
+  void PcWire_OnNewOutput ();
+  void PcWire_OnNewParameter ();
+  void PcQuest_OnNewParameter ();
+  void PcQuest_OnSuggestParameters ();
+  void OnNewCharacteristic ();
+  void OnDeleteCharacteristic ();
+
 };
 
 #endif // __aresed_templategrid_h
