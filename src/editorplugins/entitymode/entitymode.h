@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "templategrid.h"
 
 #include "cseditor/wx/propgrid/propgrid.h"
+#include <wx/listbase.h>
 
 struct iGeometryGenerator;
 struct iCelEntityTemplate;
