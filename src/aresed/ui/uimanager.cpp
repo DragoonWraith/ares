@@ -702,6 +702,43 @@ csPtr<iUIDialog> UIManager::CreateDialog (const char* title, int width)
   return static_cast<iUIDialog*> (dialog);
 }
 
+csPtr<iUIDialog> UIManager::CreateDialog (const char* title, const char* format, int width)
+{
+  UIDialog* dialog = new UIDialog (parent, title, this, width);
+
+  csStringArray rows (format, "\n");
+  for (size_t i = 0 ; i < rows.GetSize () ; i++)
+  {
+    dialog->AddRow ();
+    csStringArray components (rows.Get (i), ";");
+    for (size_t j = 0 ; j < components.GetSize () ; j++)
+    {
+      csString cmp = components.Get (j);
+      if (cmp.StartsWith ("L")) dialog->AddLabel (cmp.GetData () + 1);
+      else if (cmp.StartsWith ("T")) dialog->AddText (cmp.GetData () + 1);
+      else if (cmp.StartsWith ("M")) dialog->AddMultiText (cmp.GetData () + 1);
+      else if (cmp.StartsWith ("C"))
+      {
+	csStringArray pars (cmp.GetData () + 1, ",");
+	csString name = pars.Get (0);
+	pars.DeleteIndex (0);
+	dialog->AddChoice (name, pars);
+      }
+      else if (cmp.StartsWith ("E"))
+      {
+	SmartPickerType type = SPT_NONE;
+	if (cmp.GetAt (1) == 'T') type = SPT_TEMPLATE;
+	else if (cmp.GetAt (1) == 'E') type = SPT_ENTITY;
+	else if (cmp.GetAt (1) == 'Q') type = SPT_QUEST;
+	else printf ("Internal error: bad type for typed text in dialog!\n");
+	dialog->AddTypedText (type, cmp.GetData () + 2);
+      }
+    }
+  }
+
+  return static_cast<iUIDialog*> (dialog);
+}
+
 csPtr<iUIDialog> UIManager::CreateDialog (wxWindow* par, const char* title, int width)
 {
   UIDialog* dialog = new UIDialog (par, title, this, width);

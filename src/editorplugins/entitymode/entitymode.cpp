@@ -552,12 +552,7 @@ void EntityMode::OnNewCharacteristic ()
   csString selectedPropName, pcPropName;
   GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Characteristic Parameter");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("Name");
-  dialog->AddRow ();
-  dialog->AddText ("Value");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Characteristic Parameter", "LName:;TName\nTValue");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString name = result.Get ("Name", (const char*)0);
@@ -600,14 +595,8 @@ void EntityMode::PcProp_OnNewProperty ()
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("Name");
-  dialog->AddChoice ("Type", "string", "float", "long", "bool",
-      "vector2", "vector3", "color", (const char*)0);
-  dialog->AddRow ();
-  dialog->AddMultiText ("Value");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter",
+      "LName:;TName;CType,string,float,long,bool,vector2,vector3,color\nMValue");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString name = result.Get ("Name", (const char*)0);
@@ -696,10 +685,7 @@ void EntityMode::PcMsg_OnNewSlot ()
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Slot");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("Name");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Slot", "LName:;TName");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString name = result.Get ("Name", (const char*)0);
@@ -722,10 +708,7 @@ void EntityMode::PcMsg_OnNewType ()
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Type");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("Name");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Type", "LName:;TName");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString name = result.Get ("Name", (const char*)0);
@@ -748,10 +731,7 @@ void EntityMode::PcSpawn_OnNewTemplate ()
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Spawn Template");
-  dialog->AddRow ();
-  dialog->AddLabel ("Template:");
-  dialog->AddTypedText (SPT_TEMPLATE, "Template");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Spawn Template", "LTemplate:;ETTemplate");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString tpl = result.Get ("Template", (const char*)0);
@@ -774,13 +754,8 @@ void EntityMode::PcInv_OnNewTemplate ()
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Inventory Template");
-  dialog->AddRow ();
-  dialog->AddLabel ("Template:");
-  dialog->AddTypedText (SPT_TEMPLATE, "Template");
-  dialog->AddRow ();
-  dialog->AddLabel ("Amount:");
-  dialog->AddText ("Amount");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Inventory Template",
+      "LTemplate:;ETTemplate\nLAmount:;TAmount");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString tpl = result.Get ("Template", (const char*)0);
@@ -845,14 +820,8 @@ void EntityMode::PcWire_OnNewParameter ()
   csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Wire Parameter");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("Name");
-  dialog->AddChoice ("Type", "string", "float", "long", "bool",
-      "vector2", "vector3", "color", (const char*)0);
-  dialog->AddRow ();
-  dialog->AddMultiText ("Value");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Wire Parameter",
+      "LName:;TName;CType,string,float,long,bool,vector2,vector3,color\nMValue");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString name = result.Get ("Name", (const char*)0);
@@ -880,14 +849,8 @@ void EntityMode::PcQuest_OnNewParameter ()
   csString selectedPropName, pcPropName;
   iCelPropertyClassTemplate* pctpl = GetPCForProperty (contextLastProperty, pcPropName, selectedPropName);
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddText ("Name");
-  dialog->AddChoice ("Type", "string", "float", "long", "bool",
-      "vector2", "vector3", "color", (const char*)0);
-  dialog->AddRow ();
-  dialog->AddMultiText ("Value");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest Parameter",
+      "LName:;TName;CType,string,float,long,bool,vector2,vector3,color\nMValue");
   if (dialog->Show (0) == 0) return;
   DialogResult result = dialog->GetFieldContents ();
   csString name = result.Get ("Name", (const char*)0);
@@ -2063,19 +2026,8 @@ void EntityMode::DeleteItem (const char* item)
 void EntityMode::OnCreatePC ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New PropertyClass");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddChoice ("name", "pcobject.mesh", "pctools.properties",
-      "pctools.inventory", "pclogic.quest", "pclogic.spawn", "pclogic.trigger",
-      "pclogic.wire", "pctools.messenger",
-      "pcinput.standard", "pcphysics.object", "pcphysics.system", "pccamera.old",
-      "pcmove.actor.dynamic", "pcmove.actor.standard", "pcmove.actor.wasd",
-      "pcworld.dynamic", "ares.gamecontrol",
-      (const char*)0);
-  dialog->AddRow ();
-  dialog->AddLabel ("Tag:");
-  dialog->AddText ("tag");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New PropertyClass",
+      "LName:;Cname,pcobject.mesh,pctools.properties,pctools.inventory,pclogic.quest,pclogic.spawn,pclogic.trigger,pclogic.wire,pctools.messenger,pcinput.standard,pcphysics.object,pcphysics.system,pccamera.old,pcmove.actor.dynamic,pcmove.actor.standard,pcmove.actor.wasd,pcworld.dynamic,ares.gamecontrol\nLTab:;TTag");
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
@@ -2425,12 +2377,8 @@ void EntityMode::OnCreateReward (int type)
 {
   if (GetContextMenuNode ().IsEmpty ()) return;
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Reward");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddChoice ("name", "newstate", "debugprint", "action", "changeproperty",
-      "createentity", "destroyentity", "changeclass", "inventory", "message", "cssequence",
-      "sequence", "sequencefinish", (const char*)0);
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Reward",
+      "LName:;Cname,newstate,debugprint,action,changeproperty,createentity,destroyentity,changeclass,inventory,message,cssequence,sequence,sequencefinish");
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
@@ -2460,12 +2408,8 @@ void EntityMode::OnCreateTrigger ()
 {
   if (GetContextMenuNode ().IsEmpty ()) return;
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("New Trigger");
-  dialog->AddRow ();
-  dialog->AddLabel ("Name:");
-  dialog->AddChoice ("name", "entersector", "meshentersector", "inventory",
-      "meshselect", "message", "operation", "propertychange", "sequencefinish",
-      "timeout", "trigger", "watch", (const char*)0);
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Trigger",
+      "LName:;Cname,entersector,meshentersector,inventory,meshselect,message,operation,propertychange,sequencefinish,timeout,trigger,watch");
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();

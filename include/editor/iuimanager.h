@@ -61,8 +61,21 @@ struct iUIManager : public virtual iBase
 
   /**
    * Create a dynamically buildable dialog.
+   * The version with 'format' allows for a compact way to describe the dialog contents. The
+   * format is as follows:
+   *     <format> := <row> { NL <row> }
+   *     <row> := <component> { ';' <component> }
+   *     <component> := <label> | <text> | <choice> | <multitext> | <typedtext>
+   *     <label> := 'L' <string>
+   *     <text> := 'T' <name>
+   *     <multitext> := 'M' <name>
+   *     <choice> := 'C' <name> ',' <string> { ',' <string> }
+   *     <typedtext> := 'E' <type> <name>
+   *     <type> := 'T' | 'Q' | 'E'
+   *     <name> := <string>
    */
   virtual csPtr<iUIDialog> CreateDialog (const char* title, int width = -1) = 0;
+  virtual csPtr<iUIDialog> CreateDialog (const char* title, const char* format, int width = -1) = 0;
   virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title, int width = -1) = 0;
 
   /**

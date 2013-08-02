@@ -222,6 +222,7 @@ public:
 
   /// Create a dynamically buildable dialog.
   virtual csPtr<iUIDialog> CreateDialog (const char* title, int width = -1);
+  virtual csPtr<iUIDialog> CreateDialog (const char* title, const char* format, int width = -1);
   virtual csPtr<iUIDialog> CreateDialog (wxWindow* par, const char* title, int width = -1);
 
   virtual int AllocContextMenuID () { contextMenuID++; return contextMenuID; }
