@@ -46,15 +46,10 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
-  QuestEditorSupport ("main", emode)
+QuestEditorSupportTrigger::QuestEditorSupportTrigger (const char* name, EntityMode* emode)
+  : GridSupport (name, emode)
 {
 #if 0
-  idNewChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic));
-  idDelChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic));
-  idCreatePC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreatePC));
-  idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
-
   RegisterEditor (new PcEditorSupportQuest (emode));
   RegisterEditor (new PcEditorSupportWire (emode));
   RegisterEditor (new PcEditorSupportOldCamera (emode));
@@ -67,39 +62,69 @@ QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
 #endif
 }
 
-void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, iQuestStateFactory* state)
+void QuestEditorSupportTrigger::Fill (wxPGProperty* pcProp, iTriggerFactory* triggerFact)
+{
+  csString type = emode->GetTriggerType (triggerFact);
+  csString s;
+  s.Format ("Trigger (%s)", type.GetData ());
+  wxPGProperty* outputProp = AppendStringPar (pcProp, s, "Trigger", "<composed>");
+}
+
+//---------------------------------------------------------------------------
+
+QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
+  GridSupport ("main", emode)
+{
+#if 0
+  idNewChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic));
+  idDelChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic));
+  idCreatePC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreatePC));
+  idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
+#endif
+
+  triggerEditor.AttachNew (new QuestEditorSupportTrigger ("main", emode));
+}
+
+void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state)
 {
   csString s;
   csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
   for (size_t i = 0 ; i < responses->GetSize () ; i++)
   {
+    printf ("%d\n", i); fflush (stdout);
     iQuestTriggerResponseFactory* response = responses->Get (i);
-    s.Format ("Trigger:%d", int (i));
-    wxPGProperty* triggerProp = detailGrid->AppendIn (stateProp,
-      new wxPropertyCategory (wxT ("Trigger"), wxString::FromUTF8 (s)));
+    s.Format ("%d:Response:%d", int (idx), int (i));
+    wxPGProperty* responseProp = detailGrid->AppendIn (stateProp,
+      new wxPropertyCategory (wxT ("Response"), wxString::FromUTF8 (s)));
+    iTriggerFactory* triggerFact = response->GetTriggerFactory ();
+    triggerEditor->Fill (responseProp, triggerFact);
   }
 
 }
 
-void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, iQuestStateFactory* state)
+void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, size_t idx,
+    iQuestStateFactory* state)
 {
   csString s;
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
   if (initRewards->GetSize () > 0)
   {
+    s.Format ("OnInit:%d", int (idx));
     wxPGProperty* oninitProp = detailGrid->AppendIn (stateProp,
-      new wxPropertyCategory (wxT ("OnInit"), wxPG_LABEL));
+      new wxPropertyCategory (wxT ("OnInit"), wxString::FromUTF8 (s)));
   }
 }
 
-void QuestEditorSupportMain::FillOnExit (wxPGProperty* stateProp, iQuestStateFactory* state)
+void QuestEditorSupportMain::FillOnExit (wxPGProperty* stateProp, size_t idx,
+    iQuestStateFactory* state)
 {
   csString s;
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
   if (exitRewards->GetSize () > 0)
   {
+    s.Format ("OnExit:%d", int (idx));
     wxPGProperty* oninitProp = detailGrid->AppendIn (stateProp,
-      new wxPropertyCategory (wxT ("OnExit"), wxPG_LABEL));
+      new wxPropertyCategory (wxT ("OnExit"), wxString::FromUTF8 (s)));
   }
 }
 
@@ -107,6 +132,7 @@ void QuestEditorSupportMain::Fill (wxPGProperty* questProp, iQuestFactory* quest
 {
   csString s, ss;
 
+  size_t idx = 0;
   csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
   while (it->HasNext ())
   {
@@ -115,9 +141,10 @@ void QuestEditorSupportMain::Fill (wxPGProperty* questProp, iQuestFactory* quest
     ss.Format ("State (%s)", stateFact->GetName ());
     wxPGProperty* stateProp = detailGrid->AppendIn (questProp,
       new wxPropertyCategory (wxString::FromUTF8 (ss), wxString::FromUTF8 (s)));
-    FillOnInit (stateProp, stateFact);
-    FillResponses (stateProp, stateFact);
-    FillOnExit (stateProp, stateFact);
+    FillOnInit (stateProp, idx, stateFact);
+    FillResponses (stateProp, idx, stateFact);
+    FillOnExit (stateProp, idx, stateFact);
+    idx++;
   }
   csRef<iCelSequenceFactoryIterator> seqIt = questFact->GetSequences ();
   while (seqIt->HasNext ())

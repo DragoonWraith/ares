@@ -135,8 +135,6 @@ private:
   void BuildTemplateGraph (const char* templateName);
   csString GetExtraPCInfo (iCelPropertyClassTemplate* pctpl);
   void GetPCKeyLabel (iCelPropertyClassTemplate* pctpl, csString& key, csString& label);
-  const char* GetRewardType (iRewardFactory* reward);
-  const char* GetTriggerType (iTriggerFactory* reward);
 
   iMarkerColor* thinLinkColor;
   iMarkerColor* arrowLinkColor;
@@ -243,6 +241,9 @@ public:
   iQuestFactory* GetQuestFactory (iCelPropertyClassTemplate* pctpl);
   iCelEntityTemplate* GetCurrentTemplate ();
   wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
+
+  const char* GetRewardType (iRewardFactory* reward);
+  const char* GetTriggerType (iTriggerFactory* reward);
 
   void SelectTemplate (iCelEntityTemplate* tpl);
   void SelectQuest (iQuestFactory* tpl);

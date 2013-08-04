@@ -36,6 +36,7 @@ struct iCelEntityTemplateIterator;
 struct iParameterManager;
 struct iQuestFactory;
 struct iQuestStateFactory;
+struct iTriggerFactory;
 
 //==================================================================================
 
@@ -52,29 +53,10 @@ enum RefreshType
 };
 #endif
 
-class QuestEditorSupport : public GridSupport
-{
-public:
-  QuestEditorSupport (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
-  virtual ~QuestEditorSupport () { }
-
-  virtual void Fill (wxPGProperty* pcProp, iQuestFactory* questFact) = 0;
-#if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
-  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName,
-      const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
-#endif
-};
-
-class QuestEditorSupportMain : public QuestEditorSupport
+class QuestEditorSupportTrigger : public GridSupport
 {
 private:
 #if 0
-  int idNewChar, idDelChar, idCreatePC, idDelPC;
   csHash<csRef<PcEditorSupport>, csString> editors;
 
   void RegisterEditor (PcEditorSupport* editor)
@@ -87,15 +69,40 @@ private:
     return editors.Get (name, 0);
   }
 #endif
-  void FillResponses (wxPGProperty* stateProp, iQuestStateFactory* state);
-  void FillOnInit (wxPGProperty* stateProp, iQuestStateFactory* state);
-  void FillOnExit (wxPGProperty* stateProp, iQuestStateFactory* state);
+
+public:
+  QuestEditorSupportTrigger (const char* name, EntityMode* emode);
+  virtual ~QuestEditorSupportTrigger () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iTriggerFactory* triggerFact);
+#if 0
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
+};
+
+class QuestEditorSupportMain : public GridSupport
+{
+private:
+#if 0
+  int idNewChar, idDelChar, idCreatePC, idDelPC;
+#endif
+  csRef<QuestEditorSupportTrigger> triggerEditor;
+
+  void FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
+  void FillOnInit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
+  void FillOnExit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
 
 public:
   QuestEditorSupportMain (EntityMode* emode);
   virtual ~QuestEditorSupportMain () { }
 
-  virtual void Fill (wxPGProperty* templateProp, iQuestFactory* questFact);
+  void Fill (wxPGProperty* templateProp, iQuestFactory* questFact);
 };
 
 #endif // __aresed_questgrid_h
