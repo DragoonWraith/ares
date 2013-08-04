@@ -30,6 +30,7 @@ THE SOFTWARE.
 #include "edcommon/model.h"
 #include "physicallayer/datatype.h"
 #include "templategrid.h"
+#include "questgrid.h"
 
 #include "cseditor/wx/propgrid/propgrid.h"
 #include <wx/listbase.h>
@@ -114,10 +115,12 @@ private:
   wxPGProperty* contextLastProperty;
 
   csRef<PcEditorSupportTemplate> templateEditor;
+  csRef<QuestEditorSupportMain> questEditor;
   RefreshType delayedRefreshType;
   iCelPropertyClassTemplate* refreshPctpl;
 
   void BuildDetailGrid ();
+  void FillDetailGrid (iQuestFactory* questFact);
   void FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
   //-----------------------
 

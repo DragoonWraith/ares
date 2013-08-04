@@ -22,21 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __aresed_templategrid_h
-#define __aresed_templategrid_h
+#ifndef __aresed_questgrid_h
+#define __aresed_questgrid_h
 
 #include "csutil/csstring.h"
 #include "edcommon/model.h"
+#include "physicallayer/datatype.h"
 #include "gridsupport.h"
 
 class EntityMode;
 struct iUIManager;
 struct iCelEntityTemplateIterator;
 struct iParameterManager;
-struct iCelPropertyClassTemplate;
+struct iQuestFactory;
+struct iQuestStateFactory;
 
 //==================================================================================
 
+#if 0
 // Refresh types are ordered by priority.
 // More important refresh types come later.
 enum RefreshType
@@ -47,14 +50,16 @@ enum RefreshType
   REFRESH_TEMPLATE,		// Only template stuff has to be refreshed.
   REFRESH_FULL			// Full refresh is required.
 };
+#endif
 
-class PcEditorSupport : public GridSupport
+class QuestEditorSupport : public GridSupport
 {
 public:
-  PcEditorSupport (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
-  virtual ~PcEditorSupport () { }
+  QuestEditorSupport (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
+  virtual ~QuestEditorSupport () { }
 
-  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl) = 0;
+  virtual void Fill (wxPGProperty* pcProp, iQuestFactory* questFact) = 0;
+#if 0
   virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
@@ -62,13 +67,14 @@ public:
       const csString& value, const wxPropertyGridEvent& event) = 0;
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
 };
 
-class PcEditorSupportTemplate : public PcEditorSupport
+class QuestEditorSupportMain : public QuestEditorSupport
 {
 private:
+#if 0
   int idNewChar, idDelChar, idCreatePC, idDelPC;
-  wxArrayString pctypesArray;
   csHash<csRef<PcEditorSupport>, csString> editors;
 
   void RegisterEditor (PcEditorSupport* editor)
@@ -80,55 +86,17 @@ private:
   {
     return editors.Get (name, 0);
   }
-
-  bool ValidateTemplateParentsFromGrid (const wxPropertyGridEvent& event);
-  void AppendCharacteristics (wxPGProperty* parentProp, iCelEntityTemplate* tpl);
-  void AppendTemplatesPar (wxPGProperty* parentProp, iCelEntityTemplateIterator* it, const char* partype);
-  void AppendClassesPar (wxPGProperty* parentProp, csSet<csStringID>::GlobalIterator* it, const char* partype);
-
-  RefreshType UpdateCharacteristicFromGrid (wxPGProperty* property, const csString& propName);
-  RefreshType UpdateTemplateClassesFromGrid ();
-  RefreshType UpdateTemplateParentsFromGrid ();
-
-  void FillPC (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl);
+#endif
+  void FillResponses (wxPGProperty* stateProp, iQuestStateFactory* state);
+  void FillOnInit (wxPGProperty* stateProp, iQuestStateFactory* state);
+  void FillOnExit (wxPGProperty* stateProp, iQuestStateFactory* state);
 
 public:
-  PcEditorSupportTemplate (EntityMode* emode);
-  virtual ~PcEditorSupportTemplate () { }
+  QuestEditorSupportMain (EntityMode* emode);
+  virtual ~QuestEditorSupportMain () { }
 
-  virtual void Fill (wxPGProperty* templateProp, iCelPropertyClassTemplate* pctpl);
-
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty);
-
-  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName,
-      const csString& value, const wxPropertyGridEvent& event);
-
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu);
-
-  iCelPropertyClassTemplate* GetPCForProperty (wxPGProperty* property, csString& pcPropName,
-      csString& selectedPropName);
-
-  // General property deletion function.
-  void OnDeleteProperty ();
-  void OnDeleteActionParameter ();
-
-  void PcProp_OnNewProperty ();
-  void PcProp_OnDelProperty ();
-  void PcMsg_OnNewSlot ();
-  void PcMsg_OnNewType ();
-  void PcSpawn_OnNewTemplate ();
-  void PcInv_OnNewTemplate ();
-  void PcWire_OnNewOutput ();
-  void PcWire_OnNewParameter ();
-  void PcQuest_OnNewParameter ();
-  void PcQuest_OnSuggestParameters ();
-  void OnNewCharacteristic ();
-  void OnDeleteCharacteristic ();
-
+  virtual void Fill (wxPGProperty* templateProp, iQuestFactory* questFact);
 };
 
-#endif // __aresed_templategrid_h
+#endif // __aresed_questgrid_h
 

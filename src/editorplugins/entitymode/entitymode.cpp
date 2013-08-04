@@ -445,6 +445,28 @@ void EntityMode::BuildDetailGrid ()
   //detailGrid->SetColumnCount (3);
 
   templateEditor.AttachNew (new PcEditorSupportTemplate (this));
+  questEditor.AttachNew (new QuestEditorSupportMain (this));
+}
+
+void EntityMode::FillDetailGrid (iQuestFactory* questFact)
+{
+  csString s;
+  detailGrid->Freeze ();
+
+  if (questFact)
+  {
+    detailGrid->Clear ();
+    s.Format ("Quest (%s)", questFact->GetName ());
+    wxPGProperty* questProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
+    questEditor->Fill (questProp, questFact);
+  }
+  else
+  {
+    detailGrid->Clear ();
+  }
+
+  detailGrid->FitColumns ();
+  detailGrid->Thaw ();
 }
 
 void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
@@ -1042,7 +1064,7 @@ void EntityMode::RefreshGrid (iCelPropertyClassTemplate* pctpl)
   if (!started) return;
   if (editQuestMode)
   {
-    FillDetailGrid (0, 0);
+    FillDetailGrid (editQuestMode);
   }
   else
   {
