@@ -1678,7 +1678,7 @@ void EntityMode::OnCreatePC ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New PropertyClass",
-      "LName:;Cname,pcobject.mesh,pctools.properties,pctools.inventory,pclogic.quest,pclogic.spawn,pclogic.trigger,pclogic.wire,pctools.messenger,pcinput.standard,pcphysics.object,pcphysics.system,pccamera.old,pcmove.actor.dynamic,pcmove.actor.standard,pcmove.actor.wasd,pcworld.dynamic,ares.gamecontrol\nLTab:;TTag");
+      "LName:;Cname,pcobject.mesh,pctools.properties,pctools.inventory,pclogic.quest,pclogic.spawn,pclogic.trigger,pclogic.wire,pctools.messenger,pcinput.standard,pcphysics.object,pcphysics.system,pccamera.old,pcmove.actor.dynamic,pcmove.actor.standard,pcmove.actor.wasd,pcworld.dynamic,ares.gamecontrol\nLTag:;Ttag");
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
