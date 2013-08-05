@@ -88,6 +88,8 @@ private:
     return editors.Get (name, 0);
   }
 
+  wxArrayString rewardtypesArray;
+
 public:
   RewardSupportDriver (const char* name, EntityMode* emode);
   virtual ~RewardSupportDriver () { }
@@ -138,6 +140,8 @@ private:
   {
     return editors.Get (name, 0);
   }
+
+  wxArrayString trigtypesArray;
 
 public:
   TriggerSupportDriver (const char* name, EntityMode* emode);

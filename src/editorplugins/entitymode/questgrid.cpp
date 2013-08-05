@@ -49,21 +49,33 @@ THE SOFTWARE.
 RewardSupportDriver::RewardSupportDriver (const char* name, EntityMode* emode)
   : GridSupport (name, emode)
 {
+  rewardtypesArray.Add (wxT ("NewState"));
+  rewardtypesArray.Add (wxT ("DbPrint"));
+  rewardtypesArray.Add (wxT ("Inventory"));
+  rewardtypesArray.Add (wxT ("Sequence"));
+  rewardtypesArray.Add (wxT ("CsSequence"));
+  rewardtypesArray.Add (wxT ("SeqFinish"));
+  rewardtypesArray.Add (wxT ("ChangeProp"));
+  rewardtypesArray.Add (wxT ("CreateEnt"));
+  rewardtypesArray.Add (wxT ("DestroyEnt"));
+  rewardtypesArray.Add (wxT ("ChangeClass"));
+  rewardtypesArray.Add (wxT ("Action"));
+  rewardtypesArray.Add (wxT ("Message"));
 }
 
 void RewardSupportDriver::Fill (wxPGProperty* responseProp,
     iRewardFactory* rewardFact)
 {
   csString type = emode->GetRewardType (rewardFact);
-  csString s;
-  s.Format ("Reward (%s)", type.GetData ());
-  wxPGProperty* outputProp = AppendStringPar (responseProp, s, "Reward", "<composed>");
+  wxPGProperty* outputProp = AppendStringPar (responseProp, "Reward", "Reward", "<composed>");
+  wxPGProperty* typeProp = AppendEnumPar (outputProp, "Type", "RewType", rewardtypesArray,
+      wxArrayInt (), rewardtypesArray.Index (wxString::FromUTF8 (type)));
   RewardSupport* editor = GetEditor (type);
   if (editor)
   {
     editor->Fill (outputProp, rewardFact);
-    detailGrid->Collapse (outputProp);
   }
+  detailGrid->Collapse (outputProp);
 }
 
 void RewardSupportDriver::FillRewards (wxPGProperty* responseProp,
@@ -78,38 +90,44 @@ void RewardSupportDriver::FillRewards (wxPGProperty* responseProp,
 
 //---------------------------------------------------------------------------
 
-class QESTriggerTimeout : public TriggerSupport
+class TSTimeout : public TriggerSupport
 {
 public:
-  QESTriggerTimeout (EntityMode* emode) : TriggerSupport ("Timeout", emode) { }
-  virtual ~QESTriggerTimeout () { }
+  TSTimeout (EntityMode* emode) : TriggerSupport ("Timeout", emode) { }
+  virtual ~TSTimeout () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
+    csRef<iTimeoutTriggerFactory> tf = scfQueryInterface<iTimeoutTriggerFactory> (triggerFact);
+    AppendStringPar (responseProp, "Timeout", "Timeout", tf->GetTimeout ());
   }
 };
 
 
 //---------------------------------------------------------------------------
 
-class QESTriggerEnterSect : public TriggerSupport
+class TSEnterSect : public TriggerSupport
 {
 public:
-  QESTriggerEnterSect (EntityMode* emode) : TriggerSupport ("EnterSect", emode) { }
-  virtual ~QESTriggerEnterSect () { }
+  TSEnterSect (EntityMode* emode) : TriggerSupport ("EnterSect", emode) { }
+  virtual ~TSEnterSect () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
+    csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendStringPar (responseProp, "Sector", "Sector", tf->GetSector ());	// @@@Button?
   }
 };
 
 //---------------------------------------------------------------------------
 
-class QESTriggerSeqFinish : public TriggerSupport
+class TSSeqFinish : public TriggerSupport
 {
 public:
-  QESTriggerSeqFinish (EntityMode* emode) : TriggerSupport ("SeqFinish", emode) { }
-  virtual ~QESTriggerSeqFinish () { }
+  TSSeqFinish (EntityMode* emode) : TriggerSupport ("SeqFinish", emode) { }
+  virtual ~TSSeqFinish () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
@@ -120,30 +138,156 @@ public:
   }
 };
 
+//---------------------------------------------------------------------------
+
+class TSInventory : public TriggerSupport
+{
+public:
+  TSInventory (EntityMode* emode) : TriggerSupport ("Inventory", emode) { }
+  virtual ~TSInventory () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendButtonPar (responseProp, "Child", "E:", tf->GetChildEntity ());
+    AppendButtonPar (responseProp, "ChildTemplate", "T:", tf->GetChildTemplate ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class TSMeshSelect : public TriggerSupport
+{
+public:
+  TSMeshSelect (EntityMode* emode) : TriggerSupport ("MeshSelect", emode) { }
+  virtual ~TSMeshSelect () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class TSMessage : public TriggerSupport
+{
+public:
+  TSMessage (EntityMode* emode) : TriggerSupport ("Message", emode) { }
+  virtual ~TSMessage () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (responseProp, "Mask", "A:", tf->GetMask ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class TSPropertyChange : public TriggerSupport
+{
+public:
+  TSPropertyChange (EntityMode* emode) : TriggerSupport ("PropChange", emode) { }
+  virtual ~TSPropertyChange () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendStringPar (responseProp, "Property", "Property", tf->GetProperty ());
+    AppendStringPar (responseProp, "Value", "Value", tf->GetValue ());
+    AppendStringPar (responseProp, "Operation", "Operation", tf->GetOperation ());	// @TODO Enum
+    AppendBoolPar (responseProp, "ChangeOnly", "ChangeOnly", tf->IsOnChangeOnly ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class TSTrigger : public TriggerSupport
+{
+public:
+  TSTrigger (EntityMode* emode) : TriggerSupport ("Trigger", emode) { }
+  virtual ~TSTrigger () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendBoolPar (responseProp, "Leave", "Leave", tf->IsLeaveEnabled ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class TSWatch : public TriggerSupport
+{
+public:
+  TSWatch (EntityMode* emode) : TriggerSupport ("Watch", emode) { }
+  virtual ~TSWatch () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendButtonPar (responseProp, "Target", "E:", tf->GetTargetEntity ());
+    AppendStringPar (responseProp, "Target Tag", "Tag", tf->GetTargetTag ());
+    AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
+    AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
+    AppendStringPar (responseProp, "Offset X", "OffsetX", tf->GetOffsetX ());	// @@@ Make vector!
+    AppendStringPar (responseProp, "Offset Y", "OffsetY", tf->GetOffsetY ());
+    AppendStringPar (responseProp, "Offset Z", "OffsetZ", tf->GetOffsetZ ());
+  }
+};
 
 //---------------------------------------------------------------------------
 
 TriggerSupportDriver::TriggerSupportDriver (const char* name, EntityMode* emode)
   : GridSupport (name, emode)
 {
-  RegisterEditor (new QESTriggerTimeout (emode));
-  RegisterEditor (new QESTriggerEnterSect (emode));
-  RegisterEditor (new QESTriggerSeqFinish (emode));
+  RegisterEditor (new TSTimeout (emode));
+  RegisterEditor (new TSEnterSect (emode));
+  RegisterEditor (new TSSeqFinish (emode));
+  RegisterEditor (new TSInventory (emode));
+  RegisterEditor (new TSMeshSelect (emode));
+  RegisterEditor (new TSMessage (emode));
+  RegisterEditor (new TSPropertyChange (emode));
+  RegisterEditor (new TSTrigger (emode));
+  RegisterEditor (new TSWatch (emode));
+
+  trigtypesArray.Add (wxT ("Timeout"));
+  trigtypesArray.Add (wxT ("EnterSect"));
+  trigtypesArray.Add (wxT ("SeqFinish"));
+  trigtypesArray.Add (wxT ("PropChange"));
+  trigtypesArray.Add (wxT ("Trigger"));
+  trigtypesArray.Add (wxT ("Watch"));
+  trigtypesArray.Add (wxT ("Operation"));
+  trigtypesArray.Add (wxT ("Inventory"));
+  trigtypesArray.Add (wxT ("Message"));
+  trigtypesArray.Add (wxT ("MeshSel"));
 }
 
 void TriggerSupportDriver::Fill (wxPGProperty* responseProp,
     iTriggerFactory* triggerFact)
 {
   csString type = emode->GetTriggerType (triggerFact);
-  csString s;
-  s.Format ("Trigger (%s)", type.GetData ());
-  wxPGProperty* outputProp = AppendStringPar (responseProp, s, "Trigger", "<composed>");
+  wxPGProperty* outputProp = AppendStringPar (responseProp, "Trigger", "Trigger", "<composed>");
+  wxPGProperty* typeProp = AppendEnumPar (outputProp, "Type", "TrigType", trigtypesArray,
+      wxArrayInt (), trigtypesArray.Index (wxString::FromUTF8 (type)));
   TriggerSupport* editor = GetEditor (type);
   if (editor)
   {
     editor->Fill (outputProp, triggerFact);
-    detailGrid->Collapse (outputProp);
   }
+  detailGrid->Collapse (outputProp);
 }
 
 //---------------------------------------------------------------------------
