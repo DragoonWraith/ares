@@ -46,30 +46,19 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-QuestEditorSupportRewardMain::QuestEditorSupportRewardMain (const char* name, EntityMode* emode)
-  : QuestEditorSupportReward (name, emode)
+RewardSupportDriver::RewardSupportDriver (const char* name, EntityMode* emode)
+  : GridSupport (name, emode)
 {
-#if 0
-  RegisterEditor (new PcEditorSupportQuest (emode));
-  RegisterEditor (new PcEditorSupportWire (emode));
-  RegisterEditor (new PcEditorSupportOldCamera (emode));
-  RegisterEditor (new PcEditorSupportDynworld (emode));
-  RegisterEditor (new PcEditorSupportSpawn (emode));
-  RegisterEditor (new PcEditorSupportInventory (emode));
-  RegisterEditor (new PcEditorSupportMessenger (emode));
-  RegisterEditor (new PcEditorSupportProperties (emode));
-  RegisterEditor (new PcEditorSupportTrigger (emode));
-#endif
 }
 
-void QuestEditorSupportRewardMain::Fill (wxPGProperty* responseProp,
+void RewardSupportDriver::Fill (wxPGProperty* responseProp,
     iRewardFactory* rewardFact)
 {
   csString type = emode->GetRewardType (rewardFact);
   csString s;
   s.Format ("Reward (%s)", type.GetData ());
   wxPGProperty* outputProp = AppendStringPar (responseProp, s, "Reward", "<composed>");
-  QuestEditorSupportReward* editor = GetEditor (type);
+  RewardSupport* editor = GetEditor (type);
   if (editor)
   {
     editor->Fill (outputProp, rewardFact);
@@ -77,7 +66,7 @@ void QuestEditorSupportRewardMain::Fill (wxPGProperty* responseProp,
   }
 }
 
-void QuestEditorSupportRewardMain::FillRewards (wxPGProperty* responseProp,
+void RewardSupportDriver::FillRewards (wxPGProperty* responseProp,
     iRewardFactoryArray* rewards)
 {
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
@@ -89,10 +78,10 @@ void QuestEditorSupportRewardMain::FillRewards (wxPGProperty* responseProp,
 
 //---------------------------------------------------------------------------
 
-class QESTriggerTimeout : public QuestEditorSupportTrigger
+class QESTriggerTimeout : public TriggerSupport
 {
 public:
-  QESTriggerTimeout (EntityMode* emode) : QuestEditorSupportTrigger ("Timeout", emode) { }
+  QESTriggerTimeout (EntityMode* emode) : TriggerSupport ("Timeout", emode) { }
   virtual ~QESTriggerTimeout () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
@@ -103,10 +92,10 @@ public:
 
 //---------------------------------------------------------------------------
 
-class QESTriggerEnterSect : public QuestEditorSupportTrigger
+class QESTriggerEnterSect : public TriggerSupport
 {
 public:
-  QESTriggerEnterSect (EntityMode* emode) : QuestEditorSupportTrigger ("EnterSect", emode) { }
+  QESTriggerEnterSect (EntityMode* emode) : TriggerSupport ("EnterSect", emode) { }
   virtual ~QESTriggerEnterSect () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
@@ -116,10 +105,10 @@ public:
 
 //---------------------------------------------------------------------------
 
-class QESTriggerSeqFinish : public QuestEditorSupportTrigger
+class QESTriggerSeqFinish : public TriggerSupport
 {
 public:
-  QESTriggerSeqFinish (EntityMode* emode) : QuestEditorSupportTrigger ("SeqFinish", emode) { }
+  QESTriggerSeqFinish (EntityMode* emode) : TriggerSupport ("SeqFinish", emode) { }
   virtual ~QESTriggerSeqFinish () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
@@ -134,22 +123,22 @@ public:
 
 //---------------------------------------------------------------------------
 
-QuestEditorSupportTriggerMain::QuestEditorSupportTriggerMain (const char* name, EntityMode* emode)
-  : QuestEditorSupportTrigger (name, emode)
+TriggerSupportDriver::TriggerSupportDriver (const char* name, EntityMode* emode)
+  : GridSupport (name, emode)
 {
   RegisterEditor (new QESTriggerTimeout (emode));
   RegisterEditor (new QESTriggerEnterSect (emode));
   RegisterEditor (new QESTriggerSeqFinish (emode));
 }
 
-void QuestEditorSupportTriggerMain::Fill (wxPGProperty* responseProp,
+void TriggerSupportDriver::Fill (wxPGProperty* responseProp,
     iTriggerFactory* triggerFact)
 {
   csString type = emode->GetTriggerType (triggerFact);
   csString s;
   s.Format ("Trigger (%s)", type.GetData ());
   wxPGProperty* outputProp = AppendStringPar (responseProp, s, "Trigger", "<composed>");
-  QuestEditorSupportTrigger* editor = GetEditor (type);
+  TriggerSupport* editor = GetEditor (type);
   if (editor)
   {
     editor->Fill (outputProp, triggerFact);
@@ -169,8 +158,8 @@ QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
   idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
 #endif
 
-  triggerEditor.AttachNew (new QuestEditorSupportTriggerMain ("main", emode));
-  rewardEditor.AttachNew (new QuestEditorSupportRewardMain ("main", emode));
+  triggerEditor.AttachNew (new TriggerSupportDriver ("main", emode));
+  rewardEditor.AttachNew (new RewardSupportDriver ("main", emode));
 }
 
 void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state)

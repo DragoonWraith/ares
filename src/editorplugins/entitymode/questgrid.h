@@ -55,26 +55,11 @@ enum RefreshType
 };
 #endif
 
-class QuestEditorSupportReward : public GridSupport
+class RewardSupport : public GridSupport
 {
-private:
-#if 0
-  csHash<csRef<PcEditorSupport>, csString> editors;
-
-  void RegisterEditor (PcEditorSupport* editor)
-  {
-    editors.Put (editor->GetName (), editor);
-    editor->DecRef ();
-  }
-  PcEditorSupport* GetEditor (const char* name)
-  {
-    return editors.Get (name, 0);
-  }
-#endif
-
 public:
-  QuestEditorSupportReward (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
-  virtual ~QuestEditorSupportReward () { }
+  RewardSupport (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
+  virtual ~RewardSupport () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact) = 0;
 #if 0
@@ -88,26 +73,26 @@ public:
 #endif
 };
 
-class QuestEditorSupportRewardMain : public QuestEditorSupportReward
+class RewardSupportDriver : public GridSupport
 {
 private:
-  csHash<csRef<QuestEditorSupportReward>, csString> editors;
+  csHash<csRef<RewardSupport>, csString> editors;
 
-  void RegisterEditor (QuestEditorSupportReward* editor)
+  void RegisterEditor (RewardSupport* editor)
   {
     editors.Put (editor->GetName (), editor);
     editor->DecRef ();
   }
-  QuestEditorSupportReward* GetEditor (const char* name)
+  RewardSupport* GetEditor (const char* name)
   {
     return editors.Get (name, 0);
   }
 
 public:
-  QuestEditorSupportRewardMain (const char* name, EntityMode* emode);
-  virtual ~QuestEditorSupportRewardMain () { }
+  RewardSupportDriver (const char* name, EntityMode* emode);
+  virtual ~RewardSupportDriver () { }
 
-  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact);
+  void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact);
 
   void FillRewards (wxPGProperty* responseProp, iRewardFactoryArray* rewards);
 #if 0
@@ -121,24 +106,11 @@ public:
 #endif
 };
 
-class QuestEditorSupportTrigger : public GridSupport
+class TriggerSupport : public GridSupport
 {
-private:
-  csHash<csRef<QuestEditorSupportTrigger>, csString> editors;
-
-  void RegisterEditor (QuestEditorSupportTrigger* editor)
-  {
-    editors.Put (editor->GetName (), editor);
-    editor->DecRef ();
-  }
-  QuestEditorSupportTrigger* GetEditor (const char* name)
-  {
-    return editors.Get (name, 0);
-  }
-
 public:
-  QuestEditorSupportTrigger (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
-  virtual ~QuestEditorSupportTrigger () { }
+  TriggerSupport (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
+  virtual ~TriggerSupport () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact) = 0;
 #if 0
@@ -152,26 +124,26 @@ public:
 #endif
 };
 
-class QuestEditorSupportTriggerMain : public QuestEditorSupportTrigger
+class TriggerSupportDriver : public GridSupport
 {
 private:
-  csHash<csRef<QuestEditorSupportTrigger>, csString> editors;
+  csHash<csRef<TriggerSupport>, csString> editors;
 
-  void RegisterEditor (QuestEditorSupportTrigger* editor)
+  void RegisterEditor (TriggerSupport* editor)
   {
     editors.Put (editor->GetName (), editor);
     editor->DecRef ();
   }
-  QuestEditorSupportTrigger* GetEditor (const char* name)
+  TriggerSupport* GetEditor (const char* name)
   {
     return editors.Get (name, 0);
   }
 
 public:
-  QuestEditorSupportTriggerMain (const char* name, EntityMode* emode);
-  virtual ~QuestEditorSupportTriggerMain () { }
+  TriggerSupportDriver (const char* name, EntityMode* emode);
+  virtual ~TriggerSupportDriver () { }
 
-  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact);
+  void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact);
 #if 0
   virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
@@ -189,8 +161,8 @@ private:
 #if 0
   int idNewChar, idDelChar, idCreatePC, idDelPC;
 #endif
-  csRef<QuestEditorSupportTriggerMain> triggerEditor;
-  csRef<QuestEditorSupportRewardMain> rewardEditor;
+  csRef<TriggerSupportDriver> triggerEditor;
+  csRef<RewardSupportDriver> rewardEditor;
 
   void FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
   void FillOnInit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
