@@ -46,8 +46,8 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
-QuestEditorSupportTrigger::QuestEditorSupportTrigger (const char* name, EntityMode* emode)
-  : GridSupport (name, emode)
+QuestEditorSupportRewardMain::QuestEditorSupportRewardMain (const char* name, EntityMode* emode)
+  : QuestEditorSupportReward (name, emode)
 {
 #if 0
   RegisterEditor (new PcEditorSupportQuest (emode));
@@ -62,12 +62,99 @@ QuestEditorSupportTrigger::QuestEditorSupportTrigger (const char* name, EntityMo
 #endif
 }
 
-void QuestEditorSupportTrigger::Fill (wxPGProperty* pcProp, iTriggerFactory* triggerFact)
+void QuestEditorSupportRewardMain::Fill (wxPGProperty* responseProp,
+    iRewardFactory* rewardFact)
+{
+  csString type = emode->GetRewardType (rewardFact);
+  csString s;
+  s.Format ("Reward (%s)", type.GetData ());
+  wxPGProperty* outputProp = AppendStringPar (responseProp, s, "Reward", "<composed>");
+  QuestEditorSupportReward* editor = GetEditor (type);
+  if (editor)
+  {
+    editor->Fill (outputProp, rewardFact);
+    detailGrid->Collapse (outputProp);
+  }
+}
+
+void QuestEditorSupportRewardMain::FillRewards (wxPGProperty* responseProp,
+    iRewardFactoryArray* rewards)
+{
+  for (size_t j = 0 ; j < rewards->GetSize () ; j++)
+  {
+    iRewardFactory* reward = rewards->Get (j);
+    Fill (responseProp, reward);
+  }
+}
+
+//---------------------------------------------------------------------------
+
+class QESTriggerTimeout : public QuestEditorSupportTrigger
+{
+public:
+  QESTriggerTimeout (EntityMode* emode) : QuestEditorSupportTrigger ("Timeout", emode) { }
+  virtual ~QESTriggerTimeout () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+  }
+};
+
+
+//---------------------------------------------------------------------------
+
+class QESTriggerEnterSect : public QuestEditorSupportTrigger
+{
+public:
+  QESTriggerEnterSect (EntityMode* emode) : QuestEditorSupportTrigger ("EnterSect", emode) { }
+  virtual ~QESTriggerEnterSect () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class QESTriggerSeqFinish : public QuestEditorSupportTrigger
+{
+public:
+  QESTriggerSeqFinish (EntityMode* emode) : QuestEditorSupportTrigger ("SeqFinish", emode) { }
+  virtual ~QESTriggerSeqFinish () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
+  {
+    csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@Combo!
+  }
+};
+
+
+//---------------------------------------------------------------------------
+
+QuestEditorSupportTriggerMain::QuestEditorSupportTriggerMain (const char* name, EntityMode* emode)
+  : QuestEditorSupportTrigger (name, emode)
+{
+  RegisterEditor (new QESTriggerTimeout (emode));
+  RegisterEditor (new QESTriggerEnterSect (emode));
+  RegisterEditor (new QESTriggerSeqFinish (emode));
+}
+
+void QuestEditorSupportTriggerMain::Fill (wxPGProperty* responseProp,
+    iTriggerFactory* triggerFact)
 {
   csString type = emode->GetTriggerType (triggerFact);
   csString s;
   s.Format ("Trigger (%s)", type.GetData ());
-  wxPGProperty* outputProp = AppendStringPar (pcProp, s, "Trigger", "<composed>");
+  wxPGProperty* outputProp = AppendStringPar (responseProp, s, "Trigger", "<composed>");
+  QuestEditorSupportTrigger* editor = GetEditor (type);
+  if (editor)
+  {
+    editor->Fill (outputProp, triggerFact);
+    detailGrid->Collapse (outputProp);
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -82,7 +169,8 @@ QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
   idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
 #endif
 
-  triggerEditor.AttachNew (new QuestEditorSupportTrigger ("main", emode));
+  triggerEditor.AttachNew (new QuestEditorSupportTriggerMain ("main", emode));
+  rewardEditor.AttachNew (new QuestEditorSupportRewardMain ("main", emode));
 }
 
 void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state)
@@ -91,13 +179,14 @@ void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx,
   csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
   for (size_t i = 0 ; i < responses->GetSize () ; i++)
   {
-    printf ("%d\n", i); fflush (stdout);
     iQuestTriggerResponseFactory* response = responses->Get (i);
-    s.Format ("%d:Response:%d", int (idx), int (i));
+    s.Format ("Response:%d:%d", int (idx), int (i));
     wxPGProperty* responseProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("Response"), wxString::FromUTF8 (s)));
     iTriggerFactory* triggerFact = response->GetTriggerFactory ();
     triggerEditor->Fill (responseProp, triggerFact);
+    csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
+    rewardEditor->FillRewards (responseProp, rewards);
   }
 
 }
@@ -112,6 +201,7 @@ void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, size_t idx,
     s.Format ("OnInit:%d", int (idx));
     wxPGProperty* oninitProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("OnInit"), wxString::FromUTF8 (s)));
+    rewardEditor->FillRewards (oninitProp, initRewards);
   }
 }
 
@@ -123,8 +213,9 @@ void QuestEditorSupportMain::FillOnExit (wxPGProperty* stateProp, size_t idx,
   if (exitRewards->GetSize () > 0)
   {
     s.Format ("OnExit:%d", int (idx));
-    wxPGProperty* oninitProp = detailGrid->AppendIn (stateProp,
+    wxPGProperty* onexitProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("OnExit"), wxString::FromUTF8 (s)));
+    rewardEditor->FillRewards (onexitProp, exitRewards);
   }
 }
 

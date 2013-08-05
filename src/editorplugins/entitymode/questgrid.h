@@ -37,6 +37,8 @@ struct iParameterManager;
 struct iQuestFactory;
 struct iQuestStateFactory;
 struct iTriggerFactory;
+struct iRewardFactory;
+struct iRewardFactoryArray;
 
 //==================================================================================
 
@@ -53,7 +55,7 @@ enum RefreshType
 };
 #endif
 
-class QuestEditorSupportTrigger : public GridSupport
+class QuestEditorSupportReward : public GridSupport
 {
 private:
 #if 0
@@ -71,10 +73,105 @@ private:
 #endif
 
 public:
-  QuestEditorSupportTrigger (const char* name, EntityMode* emode);
+  QuestEditorSupportReward (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
+  virtual ~QuestEditorSupportReward () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact) = 0;
+#if 0
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
+};
+
+class QuestEditorSupportRewardMain : public QuestEditorSupportReward
+{
+private:
+  csHash<csRef<QuestEditorSupportReward>, csString> editors;
+
+  void RegisterEditor (QuestEditorSupportReward* editor)
+  {
+    editors.Put (editor->GetName (), editor);
+    editor->DecRef ();
+  }
+  QuestEditorSupportReward* GetEditor (const char* name)
+  {
+    return editors.Get (name, 0);
+  }
+
+public:
+  QuestEditorSupportRewardMain (const char* name, EntityMode* emode);
+  virtual ~QuestEditorSupportRewardMain () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact);
+
+  void FillRewards (wxPGProperty* responseProp, iRewardFactoryArray* rewards);
+#if 0
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
+};
+
+class QuestEditorSupportTrigger : public GridSupport
+{
+private:
+  csHash<csRef<QuestEditorSupportTrigger>, csString> editors;
+
+  void RegisterEditor (QuestEditorSupportTrigger* editor)
+  {
+    editors.Put (editor->GetName (), editor);
+    editor->DecRef ();
+  }
+  QuestEditorSupportTrigger* GetEditor (const char* name)
+  {
+    return editors.Get (name, 0);
+  }
+
+public:
+  QuestEditorSupportTrigger (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
   virtual ~QuestEditorSupportTrigger () { }
 
-  virtual void Fill (wxPGProperty* pcProp, iTriggerFactory* triggerFact);
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact) = 0;
+#if 0
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
+};
+
+class QuestEditorSupportTriggerMain : public QuestEditorSupportTrigger
+{
+private:
+  csHash<csRef<QuestEditorSupportTrigger>, csString> editors;
+
+  void RegisterEditor (QuestEditorSupportTrigger* editor)
+  {
+    editors.Put (editor->GetName (), editor);
+    editor->DecRef ();
+  }
+  QuestEditorSupportTrigger* GetEditor (const char* name)
+  {
+    return editors.Get (name, 0);
+  }
+
+public:
+  QuestEditorSupportTriggerMain (const char* name, EntityMode* emode);
+  virtual ~QuestEditorSupportTriggerMain () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact);
 #if 0
   virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
@@ -92,7 +189,8 @@ private:
 #if 0
   int idNewChar, idDelChar, idCreatePC, idDelPC;
 #endif
-  csRef<QuestEditorSupportTrigger> triggerEditor;
+  csRef<QuestEditorSupportTriggerMain> triggerEditor;
+  csRef<QuestEditorSupportRewardMain> rewardEditor;
 
   void FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
   void FillOnInit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
