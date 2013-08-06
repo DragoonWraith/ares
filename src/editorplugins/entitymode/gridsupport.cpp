@@ -119,6 +119,28 @@ void GridSupport::AppendPar (
   detailGrid->Collapse (parProp);
 }
 
+void GridSupport::AppendColorPar (
+    wxPGProperty* parent, const char* label, const char* name,
+    const char* red, const char* green, const char* blue)
+{
+  wxPGProperty* parProp = AppendStringPar (parent, label, name, "<composed>");
+  AppendStringPar (parProp, "Red", "Red", red);
+  AppendStringPar (parProp, "Green", "Green", green);
+  AppendStringPar (parProp, "Blue", "Blue", blue);
+  detailGrid->Collapse (parProp);
+}
+
+void GridSupport::AppendVectorPar (
+    wxPGProperty* parent, const char* label, const char* name,
+    const char* x, const char* y, const char* z)
+{
+  wxPGProperty* parProp = AppendStringPar (parent, label, name, "<composed>");
+  AppendStringPar (parProp, "X", "X", x);
+  AppendStringPar (parProp, "Y", "Y", y);
+  AppendStringPar (parProp, "Z", "Z", z);
+  detailGrid->Collapse (parProp);
+}
+
 void GridSupport::AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name)
 {

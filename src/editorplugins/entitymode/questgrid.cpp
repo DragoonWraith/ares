@@ -385,9 +385,7 @@ void RewardSupportDriver::Fill (wxPGProperty* responseProp,
       wxArrayInt (), rewardtypesArray.Index (wxString::FromUTF8 (type)));
   RewardSupport* editor = GetEditor (type);
   if (editor)
-  {
     editor->Fill (outputProp, rewardFact);
-  }
   detailGrid->Collapse (outputProp);
 }
 
@@ -555,9 +553,8 @@ public:
     AppendStringPar (responseProp, "Target Tag", "Tag", tf->GetTargetTag ());
     AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
     AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
-    AppendStringPar (responseProp, "Offset X", "OffsetX", tf->GetOffsetX ());	// @@@ Make vector!
-    AppendStringPar (responseProp, "Offset Y", "OffsetY", tf->GetOffsetY ());
-    AppendStringPar (responseProp, "Offset Z", "OffsetZ", tf->GetOffsetZ ());
+    AppendVectorPar (responseProp, "Offset", "Offset",
+	tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
   }
 };
 
@@ -597,10 +594,221 @@ void TriggerSupportDriver::Fill (wxPGProperty* responseProp,
       wxArrayInt (), trigtypesArray.Index (wxString::FromUTF8 (type)));
   TriggerSupport* editor = GetEditor (type);
   if (editor)
-  {
     editor->Fill (outputProp, triggerFact);
-  }
   detailGrid->Collapse (outputProp);
+}
+
+//---------------------------------------------------------------------------
+
+class SSDelay : public SequenceSupport
+{
+public:
+  SSDelay (EntityMode* emode) : SequenceSupport ("Delay", emode) { }
+  virtual ~SSDelay () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class SSDebugPrint : public SequenceSupport
+{
+public:
+  SSDebugPrint (EntityMode* emode) : SequenceSupport ("Debugprint", emode) { }
+  virtual ~SSDebugPrint () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+    csRef<iDebugPrintSeqOpFactory> tf = scfQueryInterface<iDebugPrintSeqOpFactory> (seqopFact);
+    AppendStringPar (seqProp, "Message", "Message", tf->GetMessage ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class SSAmbientMesh : public SequenceSupport
+{
+public:
+  SSAmbientMesh (EntityMode* emode) : SequenceSupport ("Ambientmesh", emode) { }
+  virtual ~SSAmbientMesh () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+    csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
+    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
+    AppendColorPar (seqProp, "Relative Color", "RelColor",
+	tf->GetRelColorRed (),
+	tf->GetRelColorGreen (),
+	tf->GetRelColorBlue ());
+    AppendColorPar (seqProp, "Absolute Color", "AbsColor",
+	tf->GetAbsColorRed (),
+	tf->GetAbsColorGreen (),
+	tf->GetAbsColorBlue ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class SSLight : public SequenceSupport
+{
+public:
+  SSLight (EntityMode* emode) : SequenceSupport ("Light", emode) { }
+  virtual ~SSLight () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+    csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
+    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
+    AppendColorPar (seqProp, "Relative Color", "RelColor",
+	tf->GetRelColorRed (),
+	tf->GetRelColorGreen (),
+	tf->GetRelColorBlue ());
+    AppendColorPar (seqProp, "Absolute Color", "AbsColor",
+	tf->GetAbsColorRed (),
+	tf->GetAbsColorGreen (),
+	tf->GetAbsColorBlue ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class SSMovePath : public SequenceSupport
+{
+public:
+  SSMovePath (EntityMode* emode) : SequenceSupport ("Movepath", emode) { }
+  virtual ~SSMovePath () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+    // @@@ TODO
+    wxPGProperty* outputProp = AppendStringPar (seqProp, "TODO", "TODO", "<composed>");
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class SSTransform : public SequenceSupport
+{
+public:
+  SSTransform (EntityMode* emode) : SequenceSupport ("Transform", emode) { }
+  virtual ~SSTransform () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+    csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
+    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
+    AppendVectorPar (seqProp, "Vector", "Vector",
+	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
+    wxArrayString rotaxisArray;
+    rotaxisArray.Add (wxT ("none"));
+    rotaxisArray.Add (wxT ("x"));
+    rotaxisArray.Add (wxT ("y"));
+    rotaxisArray.Add (wxT ("z"));
+    AppendEnumPar (seqProp, "Rotation Axis", "RotAxis", rotaxisArray,
+      wxArrayInt (), tf->GetRotationAxis ());
+    AppendStringPar (seqProp, "Angle", "Angle", tf->GetRotationAngle ());
+    AppendBoolPar (seqProp, "Reversed", "Reversed", tf->IsReversed ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class SSProperty : public SequenceSupport
+{
+public:
+  SSProperty (EntityMode* emode) : SequenceSupport ("Property", emode) { }
+  virtual ~SSProperty () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
+  {
+    csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
+    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (seqProp, "PC", "PC", tf->GetPC ());
+    AppendStringPar (seqProp, "PC Tag", "Tag", tf->GetPCTag ());
+    AppendStringPar (seqProp, "Property", "Property", tf->GetProperty ());
+    AppendStringPar (seqProp, "Float", "Float", tf->GetFloat ());
+    AppendStringPar (seqProp, "Long", "Long", tf->GetLong ());
+    AppendVectorPar (seqProp, "Vector", "Vector",
+	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
+    AppendBoolPar (seqProp, "Relative", "Relative", tf->IsRelative ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+SequenceSupportDriver::SequenceSupportDriver (const char* name, EntityMode* emode) :
+  GridSupport (name, emode)
+{
+  RegisterEditor (new SSDelay (emode));
+  RegisterEditor (new SSDebugPrint (emode));
+  RegisterEditor (new SSAmbientMesh (emode));
+  RegisterEditor (new SSLight (emode));
+  RegisterEditor (new SSMovePath (emode));
+  RegisterEditor (new SSTransform (emode));
+  RegisterEditor (new SSProperty (emode));
+
+  seqoptypesArray.Add (wxT ("Delay"));
+  seqoptypesArray.Add (wxT ("Debugprint"));
+  seqoptypesArray.Add (wxT ("Ambientmesh"));
+  seqoptypesArray.Add (wxT ("Light"));
+  seqoptypesArray.Add (wxT ("Movepath"));
+  seqoptypesArray.Add (wxT ("Transform"));
+  seqoptypesArray.Add (wxT ("Property"));
+}
+
+void SequenceSupportDriver::FillSeqOps (wxPGProperty* seqProp, size_t idx,
+    iCelSequenceFactory* state)
+{
+  csString s;
+  for (size_t i = 0 ; i < state->GetSeqOpFactoryCount () ; i++)
+  {
+    iSeqOpFactory* seqopFact = state->GetSeqOpFactory (i);
+    s.Format ("Operation:%d:%d", int (idx), int (i));
+    wxPGProperty* outputProp = AppendStringPar (seqProp, "Operation", s, "<composed>");
+
+    csString type;
+    if (seqopFact)
+    {
+      type = seqopFact->GetSeqOpType ()->GetName ();
+      if (type.StartsWith ("cel.seqops.")) type = type.Slice (11);
+      csString first = type.Slice (0, 1);
+      first.Upcase ();
+      type = first + type.Slice (1);
+    }
+    else type = "Delay";
+
+    AppendEnumPar (outputProp, "Type", "SeqType", seqoptypesArray,
+      wxArrayInt (), seqoptypesArray.Index (wxString::FromUTF8 (type)));
+    AppendStringPar (outputProp, "Duration", "Duration", state->GetSeqOpFactoryDuration (i));
+
+    SequenceSupport* editor = GetEditor (type);
+    if (editor)
+      editor->Fill (outputProp, seqopFact);
+
+    detailGrid->Collapse (outputProp);
+  }
+}
+
+void SequenceSupportDriver::Fill (wxPGProperty* questProp, iQuestFactory* questFact)
+{
+  csString s, ss;
+  size_t idx = 0;
+  csRef<iCelSequenceFactoryIterator> seqIt = questFact->GetSequences ();
+  while (seqIt->HasNext ())
+  {
+    iCelSequenceFactory* seqFact = seqIt->Next ();
+    s.Format ("Sequence:%s", seqFact->GetName ());
+    ss.Format ("Sequence (%s)", seqFact->GetName ());
+    wxPGProperty* seqProp = detailGrid->AppendIn (questProp,
+      new wxPropertyCategory (wxString::FromUTF8 (ss), wxString::FromUTF8 (s)));
+    FillSeqOps (seqProp, idx, seqFact);
+    idx++;
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -617,6 +825,7 @@ QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
 
   triggerEditor.AttachNew (new TriggerSupportDriver ("main", emode));
   rewardEditor.AttachNew (new RewardSupportDriver ("main", emode));
+  sequenceEditor.AttachNew (new SequenceSupportDriver ("main", emode));
 }
 
 void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state)
@@ -683,14 +892,6 @@ void QuestEditorSupportMain::Fill (wxPGProperty* questProp, iQuestFactory* quest
     FillOnExit (stateProp, idx, stateFact);
     idx++;
   }
-  csRef<iCelSequenceFactoryIterator> seqIt = questFact->GetSequences ();
-  while (seqIt->HasNext ())
-  {
-    iCelSequenceFactory* seqFact = seqIt->Next ();
-    s.Format ("Sequence:%s", seqFact->GetName ());
-    ss.Format ("Sequence (%s)", seqFact->GetName ());
-    wxPGProperty* seqProp = detailGrid->AppendIn (questProp,
-      new wxPropertyCategory (wxString::FromUTF8 (ss), wxString::FromUTF8 (s)));
-  }
+  sequenceEditor->Fill (questProp, questFact);
 }
 

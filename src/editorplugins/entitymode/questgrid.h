@@ -36,6 +36,8 @@ struct iCelEntityTemplateIterator;
 struct iParameterManager;
 struct iQuestFactory;
 struct iQuestStateFactory;
+struct iCelSequenceFactory;
+struct iSeqOpFactory;
 struct iTriggerFactory;
 struct iRewardFactory;
 struct iRewardFactoryArray;
@@ -159,6 +161,59 @@ public:
 #endif
 };
 
+class SequenceSupport : public GridSupport
+{
+public:
+  SequenceSupport (const char* name, EntityMode* emode) : GridSupport (name, emode) { }
+  virtual ~SequenceSupport () { }
+
+  virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact) = 0;
+#if 0
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
+};
+
+class SequenceSupportDriver : public GridSupport
+{
+private:
+  csHash<csRef<SequenceSupport>, csString> editors;
+
+  void RegisterEditor (SequenceSupport* editor)
+  {
+    editors.Put (editor->GetName (), editor);
+    editor->DecRef ();
+  }
+  SequenceSupport* GetEditor (const char* name)
+  {
+    return editors.Get (name, 0);
+  }
+
+  wxArrayString seqoptypesArray;
+
+  void FillSeqOps (wxPGProperty* seqProp, size_t idx, iCelSequenceFactory* state);
+
+public:
+  SequenceSupportDriver (const char* name, EntityMode* emode);
+  virtual ~SequenceSupportDriver () { }
+
+  void Fill (wxPGProperty* questProp, iQuestFactory* questFact);
+#if 0
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event) = 0;
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
+#endif
+};
+
 class QuestEditorSupportMain : public GridSupport
 {
 private:
@@ -167,6 +222,7 @@ private:
 #endif
   csRef<TriggerSupportDriver> triggerEditor;
   csRef<RewardSupportDriver> rewardEditor;
+  csRef<SequenceSupportDriver> sequenceEditor;
 
   void FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
   void FillOnInit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);

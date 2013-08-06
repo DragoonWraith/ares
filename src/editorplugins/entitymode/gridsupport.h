@@ -57,6 +57,12 @@ protected:
   void AppendPar (
     wxPGProperty* parent, const char* partype,
     const char* name, celDataType type, const char* value);
+  void AppendColorPar (
+    wxPGProperty* parent, const char* label, const char* name,
+    const char* red, const char* green, const char* blue);
+  void AppendVectorPar (
+    wxPGProperty* parent, const char* label, const char* name,
+    const char* x, const char* y, const char* z);
   wxPGProperty* AppendStringPar (wxPGProperty* parent,
     const char* label, const char* name, const char* value);
   wxPGProperty* AppendBoolPar (wxPGProperty* parent,
