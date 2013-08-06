@@ -96,6 +96,15 @@ wxPGProperty* GridSupport::AppendEnumPar (wxPGProperty* parent,
 	wxString::FromUTF8 (name), labels, values, value));
 }
 
+wxPGProperty* GridSupport::AppendEditEnumPar (wxPGProperty* parent,
+    const char* label, const char* name, const wxArrayString& labels, const wxArrayInt& values,
+    const char* value)
+{
+  return detailGrid->AppendIn (parent,
+      new wxEditEnumProperty (wxString::FromUTF8 (label),
+	wxString::FromUTF8 (name), labels, values, wxString::FromUTF8 (value)));
+}
+
 void GridSupport::AppendPar (
     wxPGProperty* parent, const char* partype,
     const char* name, celDataType type, const char* value)

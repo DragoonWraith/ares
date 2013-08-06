@@ -66,6 +66,9 @@ protected:
   wxPGProperty* AppendEnumPar (wxPGProperty* parent,
     const char* label, const char* name, const wxArrayString& labels, const wxArrayInt& values,
     int value = 0);
+  wxPGProperty* AppendEditEnumPar (wxPGProperty* parent,
+    const char* label, const char* name, const wxArrayString& labels, const wxArrayInt& values,
+    const char* value = 0);
 
   csString GetPropertyValueAsString (const csString& property, const char* sub);
   int GetPropertyValueAsInt (const csString& property, const char* sub);

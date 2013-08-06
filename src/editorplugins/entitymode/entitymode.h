@@ -180,9 +180,6 @@ private:
   iQuestStateFactory* GetSelectedState (const char* key);
   csString GetSelectedStateName (const char* key);
 
-  // Get the current quest.
-  iQuestFactory* GetSelectedQuest (const char* key);
-
   /**
    * Smart way to get the active node. If no active node is set then
    * this function will check if there is a selected quest or template and then
@@ -241,6 +238,9 @@ public:
   iQuestFactory* GetQuestFactory (iCelPropertyClassTemplate* pctpl);
   iCelEntityTemplate* GetCurrentTemplate ();
   wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
+
+  // Get the current quest.
+  iQuestFactory* GetSelectedQuest (const char* key = 0);
 
   const char* GetRewardType (iRewardFactory* reward);
   const char* GetTriggerType (iTriggerFactory* reward);

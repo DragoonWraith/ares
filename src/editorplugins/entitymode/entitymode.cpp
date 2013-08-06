@@ -1084,6 +1084,7 @@ void EntityMode::SelectPC (iCelPropertyClassTemplate* pctpl)
 iQuestFactory* EntityMode::GetSelectedQuest (const char* key)
 {
   if (editQuestMode) return editQuestMode;
+  if (!key) return 0;
   iCelPropertyClassTemplate* pctpl = GetPCTemplate (key);
   return GetQuestFactory (pctpl);
 }

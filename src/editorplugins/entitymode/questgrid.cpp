@@ -46,9 +46,322 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------
+// Templates Property
+// -----------------------------------------------------------------------
+
+//WX_PG_DECLARE_ARRAYSTRING_PROPERTY_WITH_DECL(wxEntitiesProperty, class wxEMPTY_PARAMETER_VALUE)
+class wxEMPTY_PARAMETER_VALUE wxPG_PROPCLASS(wxEntitiesProperty) : public wxPG_PROPCLASS(wxArrayStringProperty)
+{
+  WX_PG_DECLARE_PROPERTY_CLASS(wxPG_PROPCLASS(wxEntitiesProperty))
+  EntityMode* emode;
+
+public:
+  wxPG_PROPCLASS(wxEntitiesProperty)( const wxString& label = wxPG_LABEL,
+      const wxString& name = wxPG_LABEL, const wxArrayString& value = wxArrayString());
+  virtual ~wxPG_PROPCLASS(wxEntitiesProperty)();
+  virtual void GenerateValueAsString();
+  virtual bool StringToValue( wxVariant& value, const wxString& text, int = 0 ) const;
+  virtual bool OnEvent( wxPropertyGrid* propgrid, wxWindow* primary, wxEvent& event );
+  virtual bool OnCustomStringEdit( wxWindow* parent, wxString& value );
+  void SetEntityMode (EntityMode* emode)
+  {
+    this->emode = emode;
+  }
+  WX_PG_DECLARE_VALIDATOR_METHODS()
+};
+
+
+WX_PG_IMPLEMENT_ARRAYSTRING_PROPERTY(wxEntitiesProperty, wxT (','), wxT ("Browse"))
+
+bool wxEntitiesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
+{
+  using namespace Ares;
+  csRef<Value> objects = emode->Get3DView ()->GetModelRepository ()->GetObjectsWithEntityValue ();
+  iUIManager* ui = emode->GetApplication ()->GetUI ();
+  Value* chosen = ui->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
+      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
+  if (chosen)
+  {
+    csString name = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_ENTITY);
+    value = wxString::FromUTF8 (name);
+    return true;
+  }
+  return false;
+}
+
+//---------------------------------------------------------------------------
+
+class RSNewState : public RewardSupport
+{
+public:
+  RSNewState (EntityMode* emode) : RewardSupport ("NewState", emode) { }
+  virtual ~RSNewState () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (rewardFact);
+    wxArrayString states;
+    states.Add (wxT ("-"));
+    iQuestFactory* questFact = emode->GetSelectedQuest ();
+    if (questFact)
+    {
+      csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
+      while (it->HasNext ())
+      {
+        iQuestStateFactory* stateFact = it->Next ();
+        states.Add (wxString::FromUTF8 (stateFact->GetName ()));
+      }
+    }
+    wxPGProperty* stateProp = AppendEditEnumPar (responseProp, "State", "State", states,
+	wxArrayInt (), tf->GetStateParameter ());
+
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntityParameter ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTagParameter ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClassParameter ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSDbPrint : public RewardSupport
+{
+public:
+  RSDbPrint (EntityMode* emode) : RewardSupport ("DbPrint", emode) { }
+  virtual ~RSDbPrint () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (rewardFact);
+    AppendStringPar (responseProp, "Message", "Message", tf->GetMessage ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSInventory : public RewardSupport
+{
+public:
+  RSInventory (EntityMode* emode) : RewardSupport ("Inventory", emode) { }
+  virtual ~RSInventory () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendButtonPar (responseProp, "ChildEntity", "E:", tf->GetChildEntity ());
+    AppendStringPar (responseProp, "ChildTag", "Tag", tf->GetChildTag ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSSequence : public RewardSupport
+{
+public:
+  RSSequence (EntityMode* emode) : RewardSupport ("Sequence", emode) { }
+  virtual ~RSSequence () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
+    AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSCsSequence : public RewardSupport
+{
+public:
+  RSCsSequence (EntityMode* emode) : RewardSupport ("CsSequence", emode) { }
+  virtual ~RSCsSequence () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iCsSequenceRewardFactory> tf = scfQueryInterface<iCsSequenceRewardFactory> (rewardFact);
+    AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
+    AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSSeqFinish : public RewardSupport
+{
+public:
+  RSSeqFinish (EntityMode* emode) : RewardSupport ("SeqFinish", emode) { }
+  virtual ~RSSeqFinish () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSChangeProp : public RewardSupport
+{
+public:
+  RSChangeProp (EntityMode* emode) : RewardSupport ("ChangeProp", emode) { }
+  virtual ~RSChangeProp () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendStringPar (responseProp, "PC", "PC", tf->GetPC ());	// @@@ Enum?
+    AppendStringPar (responseProp, "PC Tag", "PCTag", tf->GetPCTag ());
+    AppendStringPar (responseProp, "Property", "Property", tf->GetProperty ());
+    AppendStringPar (responseProp, "String", "String", tf->GetString ());
+    AppendStringPar (responseProp, "Long", "Long", tf->GetLong ());
+    AppendStringPar (responseProp, "Float", "Float", tf->GetFloat ());
+    AppendStringPar (responseProp, "Bool", "Bool", tf->GetBool ());
+    AppendStringPar (responseProp, "Diff", "Diff", tf->GetDiff ());
+    AppendBoolPar (responseProp, "Toggle", "Toggle", tf->IsToggle ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSCreateEnt : public RewardSupport
+{
+public:
+  RSCreateEnt (EntityMode* emode) : RewardSupport ("CreateEnt", emode) { }
+  virtual ~RSCreateEnt () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Template", "T:", tf->GetEntityTemplate ());
+    AppendStringPar (responseProp, "Name", "Name", tf->GetName ());
+    // @@@ Add support for parameters
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSDestroyEnt : public RewardSupport
+{
+public:
+  RSDestroyEnt (EntityMode* emode) : RewardSupport ("DestroyEnt", emode) { }
+  virtual ~RSDestroyEnt () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSChangeClass : public RewardSupport
+{
+public:
+  RSChangeClass (EntityMode* emode) : RewardSupport ("ChangeClass", emode) { }
+  virtual ~RSChangeClass () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+
+    wxArrayString entitiesArray;
+    if (tf->GetEntities ())
+    {
+      csStringArray array (tf->GetEntities (), ",");
+      for (size_t i = 0 ; i < array.GetSize () ; i++)
+        entitiesArray.Add (wxString::FromUTF8 (array.Get (i)));
+    }
+    wxEntitiesProperty* tempProp = new wxEntitiesProperty (
+	  wxT ("Entities"), wxPG_LABEL, entitiesArray);
+    tempProp->SetEntityMode (emode);
+    detailGrid->AppendIn (responseProp, tempProp);
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSAction : public RewardSupport
+{
+public:
+  RSAction (EntityMode* emode) : RewardSupport ("Action", emode) { }
+  virtual ~RSAction () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendButtonPar (responseProp, "Action", "A:", tf->GetID ());
+    AppendStringPar (responseProp, "PC", "PC", tf->GetPropertyClass ());	// @@@ Enum?
+    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+  }
+};
+
+//---------------------------------------------------------------------------
+
+class RSMessage : public RewardSupport
+{
+public:
+  RSMessage (EntityMode* emode) : RewardSupport ("Message", emode) { }
+  virtual ~RSMessage () { }
+
+  virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
+  {
+    csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
+    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+
+    wxArrayString entitiesArray;
+    if (tf->GetEntities ())
+    {
+      csStringArray array (tf->GetEntities (), ",");
+      for (size_t i = 0 ; i < array.GetSize () ; i++)
+        entitiesArray.Add (wxString::FromUTF8 (array.Get (i)));
+    }
+    wxEntitiesProperty* tempProp = new wxEntitiesProperty (
+	  wxT ("Entities"), wxPG_LABEL, entitiesArray);
+    tempProp->SetEntityMode (emode);
+    detailGrid->AppendIn (responseProp, tempProp);
+
+    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendButtonPar (responseProp, "Message", "A:", tf->GetID ());
+  }
+};
+
+
+//---------------------------------------------------------------------------
+
 RewardSupportDriver::RewardSupportDriver (const char* name, EntityMode* emode)
   : GridSupport (name, emode)
 {
+  RegisterEditor (new RSNewState (emode));
+  RegisterEditor (new RSDbPrint (emode));
+  RegisterEditor (new RSInventory (emode));
+  RegisterEditor (new RSSequence (emode));
+  RegisterEditor (new RSCsSequence (emode));
+  RegisterEditor (new RSSeqFinish (emode));
+  RegisterEditor (new RSChangeProp (emode));
+  RegisterEditor (new RSCreateEnt (emode));
+  RegisterEditor (new RSDestroyEnt (emode));
+  RegisterEditor (new RSChangeClass (emode));
+  RegisterEditor (new RSAction (emode));
+  RegisterEditor (new RSMessage (emode));
+
   rewardtypesArray.Add (wxT ("NewState"));
   rewardtypesArray.Add (wxT ("DbPrint"));
   rewardtypesArray.Add (wxT ("Inventory"));
@@ -68,7 +381,7 @@ void RewardSupportDriver::Fill (wxPGProperty* responseProp,
 {
   csString type = emode->GetRewardType (rewardFact);
   wxPGProperty* outputProp = AppendStringPar (responseProp, "Reward", "Reward", "<composed>");
-  wxPGProperty* typeProp = AppendEnumPar (outputProp, "Type", "RewType", rewardtypesArray,
+  AppendEnumPar (outputProp, "Type", "RewType", rewardtypesArray,
       wxArrayInt (), rewardtypesArray.Index (wxString::FromUTF8 (type)));
   RewardSupport* editor = GetEditor (type);
   if (editor)
@@ -280,7 +593,7 @@ void TriggerSupportDriver::Fill (wxPGProperty* responseProp,
 {
   csString type = emode->GetTriggerType (triggerFact);
   wxPGProperty* outputProp = AppendStringPar (responseProp, "Trigger", "Trigger", "<composed>");
-  wxPGProperty* typeProp = AppendEnumPar (outputProp, "Type", "TrigType", trigtypesArray,
+  AppendEnumPar (outputProp, "Type", "TrigType", trigtypesArray,
       wxArrayInt (), trigtypesArray.Index (wxString::FromUTF8 (type)));
   TriggerSupport* editor = GetEditor (type);
   if (editor)
@@ -376,7 +689,7 @@ void QuestEditorSupportMain::Fill (wxPGProperty* questProp, iQuestFactory* quest
     iCelSequenceFactory* seqFact = seqIt->Next ();
     s.Format ("Sequence:%s", seqFact->GetName ());
     ss.Format ("Sequence (%s)", seqFact->GetName ());
-    wxPGProperty* stateProp = detailGrid->AppendIn (questProp,
+    wxPGProperty* seqProp = detailGrid->AppendIn (questProp,
       new wxPropertyCategory (wxString::FromUTF8 (ss), wxString::FromUTF8 (s)));
   }
 }
