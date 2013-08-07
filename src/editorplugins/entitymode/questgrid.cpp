@@ -769,8 +769,14 @@ public:
     AppendStringPar (responseProp, "Timeout", "Timeout", tf->GetTimeout ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iTimeoutTriggerFactory> tf = scfQueryInterface<iTimeoutTriggerFactory> (triggerFact);
+    if (field == "Timeout")
+    {
+      tf->SetTimeoutParameter (value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -792,8 +798,24 @@ public:
     AppendStringPar (responseProp, "Sector", "Sector", tf->GetSector ());	// @@@Button?
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Sector")
+    {
+      tf->SetSectorParameter (value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -814,8 +836,24 @@ public:
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@Combo!
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Sequence")
+    {
+      tf->SetSequenceParameter (value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -837,8 +875,29 @@ public:
     AppendButtonPar (responseProp, "ChildTemplate", "T:", tf->GetChildTemplate ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "E:Child")
+    {
+      tf->SetChildEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "T:ChildTemplate")
+    {
+      tf->SetChildTemplateParameter (value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -858,8 +917,19 @@ public:
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -879,8 +949,19 @@ public:
     AppendButtonPar (responseProp, "Mask", "A:", tf->GetMask ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "A:Mask")
+    {
+      tf->SetMaskParameter (value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -904,8 +985,39 @@ public:
     AppendBoolPar (responseProp, "ChangeOnly", "ChangeOnly", tf->IsOnChangeOnly ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Property")
+    {
+      tf->SetPropertyParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Value")
+    {
+      tf->SetValueParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Operation")
+    {
+      tf->SetOperationParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "ChangeOnly")
+    {
+      tf->SetOnChangeOnly (ToBool (value));
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -926,8 +1038,24 @@ public:
     AppendBoolPar (responseProp, "Leave", "Leave", tf->IsLeaveEnabled ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Leave")
+    {
+      tf->EnableLeave (ToBool (value));
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -946,15 +1074,61 @@ public:
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
     AppendButtonPar (responseProp, "Target", "E:", tf->GetTargetEntity ());
-    AppendStringPar (responseProp, "Target Tag", "Tag", tf->GetTargetTag ());
+    AppendStringPar (responseProp, "Target Tag", "TargetTag", tf->GetTargetTag ());
     AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
     AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
     AppendVectorPar (responseProp, "Offset", "Offset",
 	tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
+    csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "E:Target")
+    {
+      tf->SetTargetEntityParameter (value, tf->GetTargetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "TargetTag")
+    {
+      tf->SetTargetEntityParameter (tf->GetTargetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "CheckTime")
+    {
+      tf->SetChecktimeParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Radius")
+    {
+      tf->SetRadiusParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Offset.X")
+    {
+      tf->SetOffsetParameter (value, tf->GetOffsetY (), tf->GetOffsetZ ());
+      return REFRESH_NO;
+    }
+    else if (field == "Offset.Y")
+    {
+      tf->SetOffsetParameter (tf->GetOffsetX (), value, tf->GetOffsetZ ());
+      return REFRESH_NO;
+    }
+    else if (field == "Offset.Z")
+    {
+      tf->SetOffsetParameter (tf->GetOffsetX (), tf->GetOffsetY (), value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
