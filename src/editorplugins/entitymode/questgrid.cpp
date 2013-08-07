@@ -113,7 +113,7 @@ public:
         states.Add (wxString::FromUTF8 (stateFact->GetName ()));
       }
     }
-    wxPGProperty* stateProp = AppendEditEnumPar (responseProp, "State", "State", states,
+    AppendEditEnumPar (responseProp, "State", "State", states,
 	wxArrayInt (), tf->GetStateParameter ());
 
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntityParameter ());
@@ -125,26 +125,16 @@ public:
   {
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (rewardFact);
     if (field == "State")
-    {
       tf->SetStateParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTagParameter ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntityParameter (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -195,26 +185,16 @@ public:
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "E:ChildEntity")
-    {
       tf->SetChildEntityParameter (value, tf->GetChildTag ());
-      return REFRESH_NO;
-    }
     else if (field == "ChildTag")
-    {
       tf->SetChildEntityParameter (tf->GetChildEntity (), value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -240,31 +220,18 @@ public:
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Sequence")
-    {
       tf->SetSequenceParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Delay")
-    {
       tf->SetDelayParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -287,16 +254,12 @@ public:
   {
     csRef<iCsSequenceRewardFactory> tf = scfQueryInterface<iCsSequenceRewardFactory> (rewardFact);
     if (field == "Sequence")
-    {
       tf->SetSequenceParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Delay")
-    {
       tf->SetDelayParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -321,26 +284,16 @@ public:
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Sequence")
-    {
       tf->SetSequenceParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -378,61 +331,30 @@ public:
   {
     csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "PCTag")
-    {
       tf->SetPCParameter (tf->GetPC (), value);
-      return REFRESH_NO;
-    }
     else if (field == "PC")
-    {
       tf->SetPCParameter (value, tf->GetPCTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Property")
-    {
       tf->SetPropertyParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "String")
-    {
       tf->SetStringParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Long")
-    {
       tf->SetLongParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Float")
-    {
       tf->SetFloatParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Bool")
-    {
       tf->SetBoolParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Diff")
-    {
       tf->SetDiffParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Toggle")
-    {
       tf->SetToggle (ToBool (value));
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -456,16 +378,12 @@ public:
   {
     csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (rewardFact);
     if (field == "T:Template")
-    {
       tf->SetEntityTemplateParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Name")
-    {
       tf->SetNameParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -488,16 +406,12 @@ public:
   {
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -533,26 +447,16 @@ public:
   {
     csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Entities")
-    {
       tf->SetEntitiesParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Remove")
-    {
       tf->SetRemove (ToBool (value));
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -578,31 +482,18 @@ public:
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetTagParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "PC")
-    {
       tf->SetPropertyClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "A:Action")
-    {
       tf->SetIDParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -640,27 +531,17 @@ public:
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Entities")
-    {
       tf->SetEntitiesParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Class")
-    {
       tf->SetClassParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "A:Message")
-    {
       tf->SetIDParameter (value);
-      return REFRESH_NO;
-    }
+    else
+      return REFRESH_NOCHANGE;
     // @@@ TODO Parameters
-    return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -802,21 +683,14 @@ public:
   {
     csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Sector")
-    {
       tf->SetSectorParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -840,21 +714,14 @@ public:
   {
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Sequence")
-    {
       tf->SetSequenceParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -879,26 +746,16 @@ public:
   {
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "E:Child")
-    {
       tf->SetChildEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "T:ChildTemplate")
-    {
       tf->SetChildTemplateParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -921,16 +778,12 @@ public:
   {
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -953,16 +806,12 @@ public:
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "A:Mask")
-    {
       tf->SetMaskParameter (value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -989,36 +838,20 @@ public:
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Property")
-    {
       tf->SetPropertyParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Value")
-    {
       tf->SetValueParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Operation")
-    {
       tf->SetOperationParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "ChangeOnly")
-    {
       tf->SetOnChangeOnly (ToBool (value));
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -1042,21 +875,14 @@ public:
   {
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "Leave")
-    {
       tf->EnableLeave (ToBool (value));
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -1085,51 +911,26 @@ public:
   {
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerFact);
     if (field == "E:Entity")
-    {
       tf->SetEntityParameter (value, tf->GetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "Tag")
-    {
       tf->SetEntityParameter (tf->GetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "E:Target")
-    {
       tf->SetTargetEntityParameter (value, tf->GetTargetTag ());
-      return REFRESH_NO;
-    }
     else if (field == "TargetTag")
-    {
       tf->SetTargetEntityParameter (tf->GetTargetEntity (), value);
-      return REFRESH_NO;
-    }
     else if (field == "CheckTime")
-    {
       tf->SetChecktimeParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Radius")
-    {
       tf->SetRadiusParameter (value);
-      return REFRESH_NO;
-    }
     else if (field == "Offset.X")
-    {
       tf->SetOffsetParameter (value, tf->GetOffsetY (), tf->GetOffsetZ ());
-      return REFRESH_NO;
-    }
     else if (field == "Offset.Y")
-    {
       tf->SetOffsetParameter (tf->GetOffsetX (), value, tf->GetOffsetZ ());
-      return REFRESH_NO;
-    }
     else if (field == "Offset.Z")
-    {
       tf->SetOffsetParameter (tf->GetOffsetX (), tf->GetOffsetY (), value);
-      return REFRESH_NO;
-    }
-    return REFRESH_NOCHANGE;
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -1218,7 +1019,7 @@ public:
   {
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
     return REFRESH_NOCHANGE;
   }
@@ -1238,8 +1039,14 @@ public:
     AppendStringPar (seqProp, "Message", "Message", tf->GetMessage ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
+    csRef<iDebugPrintSeqOpFactory> tf = scfQueryInterface<iDebugPrintSeqOpFactory> (seqopFact);
+    if (field == "Message")
+    {
+      tf->SetMessageParameter (value);
+      return REFRESH_NO;
+    }
     return REFRESH_NOCHANGE;
   }
 };
@@ -1267,9 +1074,28 @@ public:
 	tf->GetAbsColorBlue ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
-    return REFRESH_NOCHANGE;
+    csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
+    if (field == "E:Entity")
+      tf->SetEntityParameter (value, tf->GetTag ());
+    else if (field == "Tag")
+      tf->SetEntityParameter (tf->GetEntity (), value);
+    else if (field == "RelColor.Red")
+      tf->SetRelColorParameter (value, tf->GetRelColorGreen (), tf->GetRelColorBlue ());
+    else if (field == "RelColor.Green")
+      tf->SetRelColorParameter (tf->GetRelColorRed (), value, tf->GetRelColorBlue ());
+    else if (field == "RelColor.Blue")
+      tf->SetRelColorParameter (tf->GetRelColorRed (), tf->GetRelColorGreen (), value);
+    else if (field == "AbsColor.Red")
+      tf->SetAbsColorParameter (value, tf->GetAbsColorGreen (), tf->GetAbsColorBlue ());
+    else if (field == "AbsColor.Green")
+      tf->SetAbsColorParameter (tf->GetAbsColorRed (), value, tf->GetAbsColorBlue ());
+    else if (field == "AbsColor.Blue")
+      tf->SetAbsColorParameter (tf->GetAbsColorRed (), tf->GetAbsColorGreen (), value);
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -1296,9 +1122,28 @@ public:
 	tf->GetAbsColorBlue ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
-    return REFRESH_NOCHANGE;
+    csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
+    if (field == "E:Entity")
+      tf->SetEntityParameter (value, tf->GetTag ());
+    else if (field == "Tag")
+      tf->SetEntityParameter (tf->GetEntity (), value);
+    else if (field == "RelColor.Red")
+      tf->SetRelColorParameter (value, tf->GetRelColorGreen (), tf->GetRelColorBlue ());
+    else if (field == "RelColor.Green")
+      tf->SetRelColorParameter (tf->GetRelColorRed (), value, tf->GetRelColorBlue ());
+    else if (field == "RelColor.Blue")
+      tf->SetRelColorParameter (tf->GetRelColorRed (), tf->GetRelColorGreen (), value);
+    else if (field == "AbsColor.Red")
+      tf->SetAbsColorParameter (value, tf->GetAbsColorGreen (), tf->GetAbsColorBlue ());
+    else if (field == "AbsColor.Green")
+      tf->SetAbsColorParameter (tf->GetAbsColorRed (), value, tf->GetAbsColorBlue ());
+    else if (field == "AbsColor.Blue")
+      tf->SetAbsColorParameter (tf->GetAbsColorRed (), tf->GetAbsColorGreen (), value);
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -1316,7 +1161,7 @@ public:
     wxPGProperty* outputProp = AppendStringPar (seqProp, "TODO", "TODO", "<composed>");
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
     return REFRESH_NOCHANGE;
   }
@@ -1348,9 +1193,33 @@ public:
     AppendBoolPar (seqProp, "Reversed", "Reversed", tf->IsReversed ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
-    return REFRESH_NOCHANGE;
+    csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
+    if (field == "E:Entity")
+      tf->SetEntityParameter (value, tf->GetTag ());
+    else if (field == "Tag")
+      tf->SetEntityParameter (tf->GetEntity (), value);
+    else if (field == "Vector.X")
+      tf->SetVectorParameter (value, tf->GetVectorY (), tf->GetVectorZ ());
+    else if (field == "Vector.Y")
+      tf->SetVectorParameter (tf->GetVectorX (), value, tf->GetVectorZ ());
+    else if (field == "Vector.Z")
+      tf->SetVectorParameter (tf->GetVectorX (), tf->GetVectorY (), value);
+    else if (field == "Angle")
+      tf->SetRotationParameter (tf->GetRotationAxis (), value);
+    else if (field == "RotAxis")
+    {
+      if (value == "none") tf->SetRotationParameter (-1, tf->GetRotationAngle ());
+      else if (value == "x") tf->SetRotationParameter (0, tf->GetRotationAngle ());
+      else if (value == "y") tf->SetRotationParameter (1, tf->GetRotationAngle ());
+      else if (value == "z") tf->SetRotationParameter (2, tf->GetRotationAngle ());
+    }
+    else if (field == "Reversed")
+      tf->SetReversed (ToBool (value));
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
@@ -1376,9 +1245,32 @@ public:
     AppendBoolPar (seqProp, "Relative", "Relative", tf->IsRelative ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
-      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
-    return REFRESH_NOCHANGE;
+    csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
+    if (field == "E:Entity")
+      tf->SetEntityParameter (value);
+    else if (field == "PC")
+      tf->SetPCParameter (value, tf->GetPCTag ());
+    else if (field == "Tag")
+      tf->SetPCParameter (tf->GetPC (), value);
+    else if (field == "Property")
+      tf->SetPropertyParameter (value);
+    else if (field == "Float")
+      tf->SetFloatParameter (value);
+    else if (field == "Long")
+      tf->SetLongParameter (value);
+    else if (field == "Vector.X")
+      tf->SetVector3Parameter (value, tf->GetVectorY (), tf->GetVectorZ ());
+    else if (field == "Vector.Y")
+      tf->SetVector3Parameter (tf->GetVectorX (), value, tf->GetVectorZ ());
+    else if (field == "Vector.Z")
+      tf->SetVector3Parameter (tf->GetVectorX (), tf->GetVectorY (), value);
+    else if (field == "Relative")
+      tf->SetRelative (ToBool (value));
+    else
+      return REFRESH_NOCHANGE;
+    return REFRESH_NO;
   }
 };
 
