@@ -1467,6 +1467,15 @@ void PcEditorSupportTemplate::Fill (wxPGProperty* templateProp, iCelPropertyClas
   }
 }
 
+RefreshType PcEditorSupportTemplate::Update (wxPGProperty* selectedProperty,
+    iCelPropertyClassTemplate*& pctpl)
+{
+  csString selectedPropName, pcPropName;
+  pctpl = GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+  printf ("PC/PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
+  return Update (pctpl, pcPropName, selectedPropName, selectedProperty);
+}
+
 RefreshType PcEditorSupportTemplate::Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
 {

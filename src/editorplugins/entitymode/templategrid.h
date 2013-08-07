@@ -37,17 +37,6 @@ struct iCelPropertyClassTemplate;
 
 //==================================================================================
 
-// Refresh types are ordered by priority.
-// More important refresh types come later.
-enum RefreshType
-{
-  REFRESH_NOCHANGE = 0,		// Nothing has changed, no refresh needed.
-  REFRESH_NO,			// There was a change but no refresh needed.
-  REFRESH_PC,			// Only PC has to be refreshed.
-  REFRESH_TEMPLATE,		// Only template stuff has to be refreshed.
-  REFRESH_FULL			// Full refresh is required.
-};
-
 class PcEditorSupport : public GridSupport
 {
 public:
@@ -100,6 +89,7 @@ public:
 
   virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty);
+  RefreshType Update (wxPGProperty* selectedProperty, iCelPropertyClassTemplate*& pctpl);
 
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,

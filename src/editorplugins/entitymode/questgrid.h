@@ -36,6 +36,7 @@ struct iCelEntityTemplateIterator;
 struct iParameterManager;
 struct iQuestFactory;
 struct iQuestStateFactory;
+struct iQuestTriggerResponseFactory;
 struct iCelSequenceFactory;
 struct iSeqOpFactory;
 struct iTriggerFactory;
@@ -44,19 +45,6 @@ struct iRewardFactoryArray;
 
 //==================================================================================
 
-#if 0
-// Refresh types are ordered by priority.
-// More important refresh types come later.
-enum RefreshType
-{
-  REFRESH_NOCHANGE = 0,		// Nothing has changed, no refresh needed.
-  REFRESH_NO,			// There was a change but no refresh needed.
-  REFRESH_PC,			// Only PC has to be refreshed.
-  REFRESH_TEMPLATE,		// Only template stuff has to be refreshed.
-  REFRESH_FULL			// Full refresh is required.
-};
-#endif
-
 class RewardSupport : public GridSupport
 {
 public:
@@ -64,9 +52,9 @@ public:
   virtual ~RewardSupport () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact) = 0;
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact) = 0;
 #if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
@@ -96,12 +84,12 @@ public:
   RewardSupportDriver (const char* name, EntityMode* emode);
   virtual ~RewardSupportDriver () { }
 
-  void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact);
+  void Fill (wxPGProperty* responseProp, size_t idx, iRewardFactory* rewardFact);
+  RefreshType Update (const csString& field, wxPGProperty* selectedProperty,
+      iRewardFactoryArray* rewards, size_t idx);
 
   void FillRewards (wxPGProperty* responseProp, iRewardFactoryArray* rewards);
 #if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
@@ -117,9 +105,9 @@ public:
   virtual ~TriggerSupport () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact) = 0;
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFact) = 0;
 #if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
@@ -149,10 +137,10 @@ public:
   TriggerSupportDriver (const char* name, EntityMode* emode);
   virtual ~TriggerSupportDriver () { }
 
-  void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact);
+  void Fill (wxPGProperty* responseProp, size_t idx, iTriggerFactory* triggerFact);
+  RefreshType Update (const csString& field, wxPGProperty* selectedProperty,
+      iQuestTriggerResponseFactory* response);
 #if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
@@ -168,9 +156,9 @@ public:
   virtual ~SequenceSupport () { }
 
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact) = 0;
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory) = 0;
 #if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
@@ -203,9 +191,9 @@ public:
   virtual ~SequenceSupportDriver () { }
 
   void Fill (wxPGProperty* questProp, iQuestFactory* questFact);
+  RefreshType Update (const csString& field, wxPGProperty* selectedProperty,
+      iCelSequenceFactory* seqFact, size_t index);
 #if 0
-  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty) = 0;
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
@@ -228,11 +216,25 @@ private:
   void FillOnInit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
   void FillOnExit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
 
+  RefreshType Update (iQuestFactory* questFact, iQuestStateFactory* stateFact,
+      wxPGProperty* selectedProperty, const csString& selectedPropName,
+      int responseIndex);
+
+  RefreshType Update (iQuestFactory* questFact, iCelSequenceFactory* seqFact,
+      wxPGProperty* selectedProperty, const csString& selectedPropName);
+
+  iQuestStateFactory* GetStateForProperty (wxPGProperty* property,
+    csString& selectedPropName, int& responseIndex);
+  iCelSequenceFactory* GetSequenceForProperty (wxPGProperty* property,
+    csString& selectedPropName);
+
 public:
   QuestEditorSupportMain (EntityMode* emode);
   virtual ~QuestEditorSupportMain () { }
 
   void Fill (wxPGProperty* templateProp, iQuestFactory* questFact);
+  RefreshType Update (wxPGProperty* selectedProperty, iQuestStateFactory*& stateFact,
+      iCelSequenceFactory*& sequence);
 };
 
 #endif // __aresed_questgrid_h

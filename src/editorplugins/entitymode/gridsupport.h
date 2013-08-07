@@ -38,6 +38,19 @@ struct iParameterManager;
 class EntityMode;
 
 
+// Refresh types are ordered by priority.
+// More important refresh types come later.
+enum RefreshType
+{
+  REFRESH_NOCHANGE = 0,		// Nothing has changed, no refresh needed.
+  REFRESH_NO,			// There was a change but no refresh needed.
+  REFRESH_PC,			// Only PC has to be refreshed.
+  REFRESH_STATE,		// Only state has to be refreshed.
+  REFRESH_SEQUENCE,		// Only sequence has to be refreshed.
+  REFRESH_TEMPLATE,		// Only template stuff has to be refreshed.
+  REFRESH_FULL			// Full refresh is required.
+};
+
 class GridSupport : public csRefCount
 {
 protected:

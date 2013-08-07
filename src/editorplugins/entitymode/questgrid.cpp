@@ -120,6 +120,32 @@ public:
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTagParameter ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClassParameter ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (rewardFact);
+    if (field == "State")
+    {
+      tf->SetStateParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTagParameter ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntityParameter (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -127,13 +153,24 @@ public:
 class RSDbPrint : public RewardSupport
 {
 public:
-  RSDbPrint (EntityMode* emode) : RewardSupport ("DbPrint", emode) { }
+  RSDbPrint (EntityMode* emode) : RewardSupport ("DebugPrint", emode) { }
   virtual ~RSDbPrint () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (rewardFact);
     AppendStringPar (responseProp, "Message", "Message", tf->GetMessage ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iDebugPrintRewardFactory> tf = scfQueryInterface<iDebugPrintRewardFactory> (rewardFact);
+    if (field == "Message")
+    {
+      tf->SetMessageParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -151,7 +188,33 @@ public:
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
     AppendButtonPar (responseProp, "ChildEntity", "E:", tf->GetChildEntity ());
-    AppendStringPar (responseProp, "ChildTag", "Tag", tf->GetChildTag ());
+    AppendStringPar (responseProp, "ChildTag", "ChildTag", tf->GetChildTag ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "E:ChildEntity")
+    {
+      tf->SetChildEntityParameter (value, tf->GetChildTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "ChildTag")
+    {
+      tf->SetChildEntityParameter (tf->GetChildEntity (), value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -172,6 +235,37 @@ public:
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
     AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Sequence")
+    {
+      tf->SetSequenceParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Delay")
+    {
+      tf->SetDelayParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -188,6 +282,22 @@ public:
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
     AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iCsSequenceRewardFactory> tf = scfQueryInterface<iCsSequenceRewardFactory> (rewardFact);
+    if (field == "Sequence")
+    {
+      tf->SetSequenceParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Delay")
+    {
+      tf->SetDelayParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -195,7 +305,7 @@ public:
 class RSSeqFinish : public RewardSupport
 {
 public:
-  RSSeqFinish (EntityMode* emode) : RewardSupport ("SeqFinish", emode) { }
+  RSSeqFinish (EntityMode* emode) : RewardSupport ("SequenceFinish", emode) { }
   virtual ~RSSeqFinish () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
@@ -206,14 +316,46 @@ public:
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value, tf->GetTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetEntityParameter (tf->GetEntity (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Sequence")
+    {
+      tf->SetSequenceParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
 
+static bool ToBool (const char* value)
+{
+  csString lvalue = csString (value).Downcase ();
+  return lvalue == "1" || lvalue == "true" || lvalue == "yes" || lvalue == "on";
+}
+
 class RSChangeProp : public RewardSupport
 {
 public:
-  RSChangeProp (EntityMode* emode) : RewardSupport ("ChangeProp", emode) { }
+  RSChangeProp (EntityMode* emode) : RewardSupport ("ChangeProperty", emode) { }
   virtual ~RSChangeProp () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
@@ -231,6 +373,67 @@ public:
     AppendStringPar (responseProp, "Diff", "Diff", tf->GetDiff ());
     AppendBoolPar (responseProp, "Toggle", "Toggle", tf->IsToggle ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "PCTag")
+    {
+      tf->SetPCParameter (tf->GetPC (), value);
+      return REFRESH_NO;
+    }
+    else if (field == "PC")
+    {
+      tf->SetPCParameter (value, tf->GetPCTag ());
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Property")
+    {
+      tf->SetPropertyParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "String")
+    {
+      tf->SetStringParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Long")
+    {
+      tf->SetLongParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Float")
+    {
+      tf->SetFloatParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Bool")
+    {
+      tf->SetBoolParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Diff")
+    {
+      tf->SetDiffParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Toggle")
+    {
+      tf->SetToggle (ToBool (value));
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -238,7 +441,7 @@ public:
 class RSCreateEnt : public RewardSupport
 {
 public:
-  RSCreateEnt (EntityMode* emode) : RewardSupport ("CreateEnt", emode) { }
+  RSCreateEnt (EntityMode* emode) : RewardSupport ("CreateEntity", emode) { }
   virtual ~RSCreateEnt () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
@@ -248,6 +451,22 @@ public:
     AppendStringPar (responseProp, "Name", "Name", tf->GetName ());
     // @@@ Add support for parameters
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (rewardFact);
+    if (field == "T:Template")
+    {
+      tf->SetEntityTemplateParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Name")
+    {
+      tf->SetNameParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -255,7 +474,7 @@ public:
 class RSDestroyEnt : public RewardSupport
 {
 public:
-  RSDestroyEnt (EntityMode* emode) : RewardSupport ("DestroyEnt", emode) { }
+  RSDestroyEnt (EntityMode* emode) : RewardSupport ("DestroyEntity", emode) { }
   virtual ~RSDestroyEnt () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
@@ -263,6 +482,22 @@ public:
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -291,6 +526,33 @@ public:
 	  wxT ("Entities"), wxPG_LABEL, entitiesArray);
     tempProp->SetEntityMode (emode);
     detailGrid->AppendIn (responseProp, tempProp);
+    AppendBoolPar (responseProp, "Remove", "Remove", tf->IsRemove ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Entities")
+    {
+      tf->SetEntitiesParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Remove")
+    {
+      tf->SetRemove (ToBool (value));
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -310,6 +572,37 @@ public:
     AppendButtonPar (responseProp, "Action", "A:", tf->GetID ());
     AppendStringPar (responseProp, "PC", "PC", tf->GetPropertyClass ());	// @@@ Enum?
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Tag")
+    {
+      tf->SetTagParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "PC")
+    {
+      tf->SetPropertyClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "A:Action")
+    {
+      tf->SetIDParameter (value);
+      return REFRESH_NO;
+    }
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -340,6 +633,34 @@ public:
 
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
     AppendButtonPar (responseProp, "Message", "A:", tf->GetID ());
+    // @@@ Support for message parameters!
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
+  {
+    csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
+    if (field == "E:Entity")
+    {
+      tf->SetEntityParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Entities")
+    {
+      tf->SetEntitiesParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "Class")
+    {
+      tf->SetClassParameter (value);
+      return REFRESH_NO;
+    }
+    else if (field == "A:Message")
+    {
+      tf->SetIDParameter (value);
+      return REFRESH_NO;
+    }
+    // @@@ TODO Parameters
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -363,25 +684,27 @@ RewardSupportDriver::RewardSupportDriver (const char* name, EntityMode* emode)
   RegisterEditor (new RSMessage (emode));
 
   rewardtypesArray.Add (wxT ("NewState"));
-  rewardtypesArray.Add (wxT ("DbPrint"));
+  rewardtypesArray.Add (wxT ("DebugPrint"));
   rewardtypesArray.Add (wxT ("Inventory"));
   rewardtypesArray.Add (wxT ("Sequence"));
   rewardtypesArray.Add (wxT ("CsSequence"));
-  rewardtypesArray.Add (wxT ("SeqFinish"));
-  rewardtypesArray.Add (wxT ("ChangeProp"));
-  rewardtypesArray.Add (wxT ("CreateEnt"));
-  rewardtypesArray.Add (wxT ("DestroyEnt"));
+  rewardtypesArray.Add (wxT ("SequenceFinish"));
+  rewardtypesArray.Add (wxT ("ChangeProperty"));
+  rewardtypesArray.Add (wxT ("CreateEntity"));
+  rewardtypesArray.Add (wxT ("DestroyEntity"));
   rewardtypesArray.Add (wxT ("ChangeClass"));
   rewardtypesArray.Add (wxT ("Action"));
   rewardtypesArray.Add (wxT ("Message"));
 }
 
 void RewardSupportDriver::Fill (wxPGProperty* responseProp,
-    iRewardFactory* rewardFact)
+    size_t idx, iRewardFactory* rewardFact)
 {
   csString type = emode->GetRewardType (rewardFact);
-  wxPGProperty* outputProp = AppendStringPar (responseProp, "Reward", "Reward", "<composed>");
-  AppendEnumPar (outputProp, "Type", "RewType", rewardtypesArray,
+  csString s;
+  s.Format ("Reward:%d", int (idx));
+  wxPGProperty* outputProp = AppendStringPar (responseProp, "Reward", s, "<composed>");
+  AppendEnumPar (outputProp, "Type", "Type", rewardtypesArray,
       wxArrayInt (), rewardtypesArray.Index (wxString::FromUTF8 (type)));
   RewardSupport* editor = GetEditor (type);
   if (editor)
@@ -395,8 +718,41 @@ void RewardSupportDriver::FillRewards (wxPGProperty* responseProp,
   for (size_t j = 0 ; j < rewards->GetSize () ; j++)
   {
     iRewardFactory* reward = rewards->Get (j);
-    Fill (responseProp, reward);
+    Fill (responseProp, j, reward);
   }
+}
+
+RefreshType RewardSupportDriver::Update (const csString& field,
+    wxPGProperty* selectedProperty, iRewardFactoryArray* rewards, size_t idx)
+{
+  iRewardFactory* rewardFact = rewards->Get (idx);
+  csString type = emode->GetRewardType (rewardFact);
+  csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+  printf ("Update '%s' in reward '%s' with value '%s'\n",
+      field.GetData (), type.GetData (), value.GetData ()); fflush (stdout);
+  if (field == "Type")
+  {
+    if (value != type)
+    {
+      value.Downcase ();
+      iRewardType* rewardtype = emode->GetQuestManager ()->GetRewardType ("cel.rewards."+value);
+      if (!rewardtype)
+      {
+	csPrintf ("INTERNAL ERROR: Unknown reward type '%s'!\n", value.GetData ());
+	return REFRESH_NOCHANGE;
+      }
+      csRef<iRewardFactory> newRewardFact = rewardtype->CreateRewardFactory ();
+      rewards->Put (idx, newRewardFact);
+      return REFRESH_STATE;
+    }
+  }
+  else
+  {
+    RewardSupport* editor = GetEditor (type);
+    if (editor)
+      return editor->Update (field, value, selectedProperty, rewardFact);
+  }
+  return REFRESH_NOCHANGE;
 }
 
 //---------------------------------------------------------------------------
@@ -412,6 +768,11 @@ public:
     csRef<iTimeoutTriggerFactory> tf = scfQueryInterface<iTimeoutTriggerFactory> (triggerFact);
     AppendStringPar (responseProp, "Timeout", "Timeout", tf->GetTimeout ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 
@@ -420,7 +781,7 @@ public:
 class TSEnterSect : public TriggerSupport
 {
 public:
-  TSEnterSect (EntityMode* emode) : TriggerSupport ("EnterSect", emode) { }
+  TSEnterSect (EntityMode* emode) : TriggerSupport ("EnterSector", emode) { }
   virtual ~TSEnterSect () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
@@ -430,6 +791,11 @@ public:
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
     AppendStringPar (responseProp, "Sector", "Sector", tf->GetSector ());	// @@@Button?
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -437,7 +803,7 @@ public:
 class TSSeqFinish : public TriggerSupport
 {
 public:
-  TSSeqFinish (EntityMode* emode) : TriggerSupport ("SeqFinish", emode) { }
+  TSSeqFinish (EntityMode* emode) : TriggerSupport ("SequenceFinish", emode) { }
   virtual ~TSSeqFinish () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
@@ -446,6 +812,11 @@ public:
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@Combo!
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -465,6 +836,11 @@ public:
     AppendButtonPar (responseProp, "Child", "E:", tf->GetChildEntity ());
     AppendButtonPar (responseProp, "ChildTemplate", "T:", tf->GetChildTemplate ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -480,6 +856,11 @@ public:
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -497,6 +878,11 @@ public:
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendButtonPar (responseProp, "Mask", "A:", tf->GetMask ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -504,7 +890,7 @@ public:
 class TSPropertyChange : public TriggerSupport
 {
 public:
-  TSPropertyChange (EntityMode* emode) : TriggerSupport ("PropChange", emode) { }
+  TSPropertyChange (EntityMode* emode) : TriggerSupport ("PropertyChange", emode) { }
   virtual ~TSPropertyChange () { }
 
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
@@ -516,6 +902,11 @@ public:
     AppendStringPar (responseProp, "Value", "Value", tf->GetValue ());
     AppendStringPar (responseProp, "Operation", "Operation", tf->GetOperation ());	// @TODO Enum
     AppendBoolPar (responseProp, "ChangeOnly", "ChangeOnly", tf->IsOnChangeOnly ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -533,6 +924,11 @@ public:
     AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
     AppendBoolPar (responseProp, "Leave", "Leave", tf->IsLeaveEnabled ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -556,6 +952,11 @@ public:
     AppendVectorPar (responseProp, "Offset", "Offset",
 	tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iTriggerFactory* triggerFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -574,28 +975,61 @@ TriggerSupportDriver::TriggerSupportDriver (const char* name, EntityMode* emode)
   RegisterEditor (new TSWatch (emode));
 
   trigtypesArray.Add (wxT ("Timeout"));
-  trigtypesArray.Add (wxT ("EnterSect"));
-  trigtypesArray.Add (wxT ("SeqFinish"));
-  trigtypesArray.Add (wxT ("PropChange"));
+  trigtypesArray.Add (wxT ("EnterSector"));
+  trigtypesArray.Add (wxT ("SequenceFinish"));
+  trigtypesArray.Add (wxT ("PropertyChange"));
   trigtypesArray.Add (wxT ("Trigger"));
   trigtypesArray.Add (wxT ("Watch"));
   trigtypesArray.Add (wxT ("Operation"));
   trigtypesArray.Add (wxT ("Inventory"));
   trigtypesArray.Add (wxT ("Message"));
-  trigtypesArray.Add (wxT ("MeshSel"));
+  trigtypesArray.Add (wxT ("MeshSelect"));
 }
 
 void TriggerSupportDriver::Fill (wxPGProperty* responseProp,
-    iTriggerFactory* triggerFact)
+    size_t idx, iTriggerFactory* triggerFact)
 {
   csString type = emode->GetTriggerType (triggerFact);
   wxPGProperty* outputProp = AppendStringPar (responseProp, "Trigger", "Trigger", "<composed>");
-  AppendEnumPar (outputProp, "Type", "TrigType", trigtypesArray,
+  AppendEnumPar (outputProp, "Type", "Type", trigtypesArray,
       wxArrayInt (), trigtypesArray.Index (wxString::FromUTF8 (type)));
   TriggerSupport* editor = GetEditor (type);
   if (editor)
     editor->Fill (outputProp, triggerFact);
   detailGrid->Collapse (outputProp);
+}
+
+RefreshType TriggerSupportDriver::Update (const csString& field,
+    wxPGProperty* selectedProperty, iQuestTriggerResponseFactory* response)
+{
+  iTriggerFactory* triggerFact = response->GetTriggerFactory ();
+  csString type = emode->GetTriggerType (triggerFact);
+  csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+  printf ("Update '%s' in trigger '%s' with value '%s'\n",
+      field.GetData (), type.GetData (), value.GetData ()); fflush (stdout);
+  if (field == "Type")
+  {
+    if (value != type)
+    {
+      value.Downcase ();
+      iTriggerType* triggertype = emode->GetQuestManager ()->GetTriggerType ("cel.triggers."+value);
+      if (!triggertype)
+      {
+	csPrintf ("INTERNAL ERROR: Unknown trigger type '%s'!\n", value.GetData ());
+	return REFRESH_NOCHANGE;
+      }
+      csRef<iTriggerFactory> newTriggerFact = triggertype->CreateTriggerFactory ();
+      response->SetTriggerFactory (newTriggerFact);
+      return REFRESH_STATE;
+    }
+  }
+  else
+  {
+    TriggerSupport* editor = GetEditor (type);
+    if (editor)
+      return editor->Update (field, value, selectedProperty, triggerFact);
+  }
+  return REFRESH_NOCHANGE;
 }
 
 //---------------------------------------------------------------------------
@@ -609,6 +1043,11 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -616,13 +1055,18 @@ public:
 class SSDebugPrint : public SequenceSupport
 {
 public:
-  SSDebugPrint (EntityMode* emode) : SequenceSupport ("Debugprint", emode) { }
+  SSDebugPrint (EntityMode* emode) : SequenceSupport ("DebugPrint", emode) { }
   virtual ~SSDebugPrint () { }
 
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iDebugPrintSeqOpFactory> tf = scfQueryInterface<iDebugPrintSeqOpFactory> (seqopFact);
     AppendStringPar (seqProp, "Message", "Message", tf->GetMessage ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -631,7 +1075,7 @@ public:
 class SSAmbientMesh : public SequenceSupport
 {
 public:
-  SSAmbientMesh (EntityMode* emode) : SequenceSupport ("Ambientmesh", emode) { }
+  SSAmbientMesh (EntityMode* emode) : SequenceSupport ("AmbientMesh", emode) { }
   virtual ~SSAmbientMesh () { }
 
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
@@ -647,6 +1091,11 @@ public:
 	tf->GetAbsColorRed (),
 	tf->GetAbsColorGreen (),
 	tf->GetAbsColorBlue ());
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -672,6 +1121,11 @@ public:
 	tf->GetAbsColorGreen (),
 	tf->GetAbsColorBlue ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -679,13 +1133,18 @@ public:
 class SSMovePath : public SequenceSupport
 {
 public:
-  SSMovePath (EntityMode* emode) : SequenceSupport ("Movepath", emode) { }
+  SSMovePath (EntityMode* emode) : SequenceSupport ("MovePath", emode) { }
   virtual ~SSMovePath () { }
 
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     // @@@ TODO
     wxPGProperty* outputProp = AppendStringPar (seqProp, "TODO", "TODO", "<composed>");
+  }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
   }
 };
 
@@ -714,6 +1173,11 @@ public:
     AppendStringPar (seqProp, "Angle", "Angle", tf->GetRotationAngle ());
     AppendBoolPar (seqProp, "Reversed", "Reversed", tf->IsReversed ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -737,6 +1201,11 @@ public:
 	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     AppendBoolPar (seqProp, "Relative", "Relative", tf->IsRelative ());
   }
+  virtual RefreshType Update (const csString& field, const csString& value,
+      wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory)
+  {
+    return REFRESH_NOCHANGE;
+  }
 };
 
 //---------------------------------------------------------------------------
@@ -753,10 +1222,10 @@ SequenceSupportDriver::SequenceSupportDriver (const char* name, EntityMode* emod
   RegisterEditor (new SSProperty (emode));
 
   seqoptypesArray.Add (wxT ("Delay"));
-  seqoptypesArray.Add (wxT ("Debugprint"));
-  seqoptypesArray.Add (wxT ("Ambientmesh"));
+  seqoptypesArray.Add (wxT ("DebugPrint"));
+  seqoptypesArray.Add (wxT ("AmbientMesh"));
   seqoptypesArray.Add (wxT ("Light"));
-  seqoptypesArray.Add (wxT ("Movepath"));
+  seqoptypesArray.Add (wxT ("MovePath"));
   seqoptypesArray.Add (wxT ("Transform"));
   seqoptypesArray.Add (wxT ("Property"));
 }
@@ -768,21 +1237,12 @@ void SequenceSupportDriver::FillSeqOps (wxPGProperty* seqProp, size_t idx,
   for (size_t i = 0 ; i < state->GetSeqOpFactoryCount () ; i++)
   {
     iSeqOpFactory* seqopFact = state->GetSeqOpFactory (i);
-    s.Format ("Operation:%d:%d", int (idx), int (i));
+    s.Format ("Operation:%d", int (i));
     wxPGProperty* outputProp = AppendStringPar (seqProp, "Operation", s, "<composed>");
 
-    csString type;
-    if (seqopFact)
-    {
-      type = seqopFact->GetSeqOpType ()->GetName ();
-      if (type.StartsWith ("cel.seqops.")) type = type.Slice (11);
-      csString first = type.Slice (0, 1);
-      first.Upcase ();
-      type = first + type.Slice (1);
-    }
-    else type = "Delay";
+    csString type = emode->GetSeqOpType (seqopFact);;
 
-    AppendEnumPar (outputProp, "Type", "SeqType", seqoptypesArray,
+    AppendEnumPar (outputProp, "Type", "Type", seqoptypesArray,
       wxArrayInt (), seqoptypesArray.Index (wxString::FromUTF8 (type)));
     AppendStringPar (outputProp, "Duration", "Duration", state->GetSeqOpFactoryDuration (i));
 
@@ -811,7 +1271,128 @@ void SequenceSupportDriver::Fill (wxPGProperty* questProp, iQuestFactory* questF
   }
 }
 
+RefreshType SequenceSupportDriver::Update (const csString& field,
+    wxPGProperty* selectedProperty, iCelSequenceFactory* seqFact, size_t index)
+{
+  iSeqOpFactory* seqOpFact = seqFact->GetSeqOpFactory (index);
+  csString type = emode->GetSeqOpType (seqOpFact);
+  csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+  printf ("Update '%s' in seqop '%s' with value '%s'\n",
+      field.GetData (), type.GetData (), value.GetData ()); fflush (stdout);
+  if (field == "Type")
+  {
+    if (value != type)
+    {
+      value.Downcase ();
+      csRef<iSeqOpFactory> newSeqopFact;
+      if (value != "delay")
+      {
+        iSeqOpType* seqoptype = emode->GetQuestManager ()->GetSeqOpType ("cel.seqops."+value);
+        if (!seqoptype)
+        {
+	  csPrintf ("INTERNAL ERROR: Unknown seqop type '%s'!\n", value.GetData ());
+	  return REFRESH_NOCHANGE;
+        }
+        newSeqopFact = seqoptype->CreateSeqOpFactory ();
+      }
+      csString duration = seqFact->GetSeqOpFactoryDuration (index);
+      seqFact->UpdateSeqOpFactory (index, newSeqopFact, duration);
+      return REFRESH_SEQUENCE;
+    }
+  }
+  else if (field == "Duration")
+  {
+    seqFact->UpdateSeqOpFactory (index, seqOpFact, value);
+    return REFRESH_NO;
+  }
+  else
+  {
+    SequenceSupport* editor = GetEditor (type);
+    if (editor)
+      return editor->Update (field, value, selectedProperty, seqOpFact);
+  }
+  return REFRESH_NOCHANGE;
+}
+
 //---------------------------------------------------------------------------
+
+static wxPGProperty* FindSequenceProperty (wxPGProperty* prop)
+{
+  while (prop)
+  {
+    csString propName = (const char*)prop->GetName ().mb_str (wxConvUTF8);
+    if (propName.StartsWith ("Sequence:")) return prop;
+    prop = prop->GetParent ();
+  }
+  return prop;
+}
+
+static wxPGProperty* FindStateProperty (wxPGProperty* prop)
+{
+  while (prop)
+  {
+    csString propName = (const char*)prop->GetName ().mb_str (wxConvUTF8);
+    if (propName.StartsWith ("State:")) return prop;
+    prop = prop->GetParent ();
+  }
+  return prop;
+}
+
+#define ONINIT_INDEX -3
+#define ONEXIT_INDEX -2
+
+static int FindResponseProperty (wxPGProperty* prop)
+{
+  while (prop)
+  {
+    csString propName = (const char*)prop->GetName ().mb_str (wxConvUTF8);
+    if (propName.StartsWith ("Response:"))
+    {
+      int idx;
+      csScanStr (propName.GetData () + 9, "%d:", &idx);
+      return idx;
+    }
+    else if (propName.StartsWith ("OnInit:")) return ONINIT_INDEX;
+    else if (propName.StartsWith ("OnExit:")) return ONEXIT_INDEX;
+    prop = prop->GetParent ();
+  }
+  return -1;
+}
+
+iCelSequenceFactory* QuestEditorSupportMain::GetSequenceForProperty (wxPGProperty* property,
+    csString& selectedPropName)
+{
+  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
+
+  wxPGProperty* seqProperty = FindSequenceProperty (property);
+  if (seqProperty)
+  {
+    csString seqPropName = (const char*)seqProperty->GetName ().mb_str (wxConvUTF8);
+    csString seqName = seqPropName.Slice (9);
+    iQuestFactory* questFact = emode->GetSelectedQuest ();
+    return questFact->GetSequence (seqName);
+  }
+  return 0;
+}
+
+
+iQuestStateFactory* QuestEditorSupportMain::GetStateForProperty (wxPGProperty* property,
+    csString& selectedPropName, int& responseIndex)
+{
+  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
+
+  responseIndex = FindResponseProperty (property);
+
+  wxPGProperty* stateProperty = FindStateProperty (property);
+  if (stateProperty)
+  {
+    csString statePropName = (const char*)stateProperty->GetName ().mb_str (wxConvUTF8);
+    csString stateName = statePropName.Slice (6);
+    iQuestFactory* questFact = emode->GetSelectedQuest ();
+    return questFact->GetState (stateName);
+  }
+  return 0;
+}
 
 QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
   GridSupport ("main", emode)
@@ -835,11 +1416,11 @@ void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx,
   for (size_t i = 0 ; i < responses->GetSize () ; i++)
   {
     iQuestTriggerResponseFactory* response = responses->Get (i);
-    s.Format ("Response:%d:%d", int (idx), int (i));
+    s.Format ("Response:%d:%d", int (i), int (idx));
     wxPGProperty* responseProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("Response"), wxString::FromUTF8 (s)));
     iTriggerFactory* triggerFact = response->GetTriggerFactory ();
-    triggerEditor->Fill (responseProp, triggerFact);
+    triggerEditor->Fill (responseProp, i, triggerFact);
     csRef<iRewardFactoryArray> rewards = response->GetRewardFactories ();
     rewardEditor->FillRewards (responseProp, rewards);
   }
@@ -849,11 +1430,11 @@ void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx,
 void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, size_t idx,
     iQuestStateFactory* state)
 {
-  csString s;
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
   if (initRewards->GetSize () > 0)
   {
-    s.Format ("OnInit:%d", int (idx));
+    csString s;
+    s.Format ("OnInit:%d\n", int (idx));
     wxPGProperty* oninitProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("OnInit"), wxString::FromUTF8 (s)));
     rewardEditor->FillRewards (oninitProp, initRewards);
@@ -863,11 +1444,11 @@ void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, size_t idx,
 void QuestEditorSupportMain::FillOnExit (wxPGProperty* stateProp, size_t idx,
     iQuestStateFactory* state)
 {
-  csString s;
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
   if (exitRewards->GetSize () > 0)
   {
-    s.Format ("OnExit:%d", int (idx));
+    csString s;
+    s.Format ("OnExit:%d\n", int (idx));
     wxPGProperty* onexitProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("OnExit"), wxString::FromUTF8 (s)));
     rewardEditor->FillRewards (onexitProp, exitRewards);
@@ -893,5 +1474,78 @@ void QuestEditorSupportMain::Fill (wxPGProperty* questProp, iQuestFactory* quest
     idx++;
   }
   sequenceEditor->Fill (questProp, questFact);
+}
+
+RefreshType QuestEditorSupportMain::Update (iQuestFactory* questFact,
+    iQuestStateFactory* stateFact, wxPGProperty* selectedProperty,
+    const csString& selectedPropName, int responseIndex)
+{
+  size_t idx = selectedPropName.FindFirst ('.');
+  if (idx == csArrayItemNotFound) return REFRESH_NOCHANGE;
+
+  csString field = selectedPropName.Slice (idx+1);
+
+  if (selectedPropName.StartsWith ("Trigger"))
+  {
+    csRef<iQuestTriggerResponseFactoryArray> responses = stateFact->GetTriggerResponseFactories ();
+    iQuestTriggerResponseFactory* response = responses->Get (responseIndex);
+    return triggerEditor->Update (field, selectedProperty, response);
+  }
+  else if (selectedPropName.StartsWith ("Reward:"))
+  {
+    int rewardIndex;
+    csScanStr (selectedPropName.GetData () + 7, "%d", &rewardIndex);
+    csRef<iRewardFactoryArray> rewards;
+    if (responseIndex == ONINIT_INDEX)
+      rewards = stateFact->GetInitRewardFactories ();
+    else if (responseIndex == ONEXIT_INDEX)
+      rewards = stateFact->GetExitRewardFactories ();
+    else
+    {
+      csRef<iQuestTriggerResponseFactoryArray> responses = stateFact->GetTriggerResponseFactories ();
+      iQuestTriggerResponseFactory* response = responses->Get (responseIndex);
+      rewards = response->GetRewardFactories ();
+    }
+    return rewardEditor->Update (field, selectedProperty, rewards, size_t (rewardIndex));
+  }
+
+  return REFRESH_NOCHANGE;
+}
+
+RefreshType QuestEditorSupportMain::Update (iQuestFactory* questFact,
+    iCelSequenceFactory* seqFact, wxPGProperty* selectedProperty,
+    const csString& selectedPropName)
+{
+  size_t idx = selectedPropName.FindFirst ('.');
+  if (idx == csArrayItemNotFound) return REFRESH_NOCHANGE;
+
+  csString field = selectedPropName.Slice (idx+1);
+
+  int operationIndex;
+  csScanStr (selectedPropName.GetData () + 10, "%d", &operationIndex);
+  return sequenceEditor->Update (field, selectedProperty, seqFact, size_t (operationIndex));
+}
+
+RefreshType QuestEditorSupportMain::Update (wxPGProperty* selectedProperty,
+    iQuestStateFactory*& state, iCelSequenceFactory*& sequence)
+{
+  csString selectedPropName;
+  int responseIndex;
+  sequence = GetSequenceForProperty (selectedProperty, selectedPropName);
+  state = GetStateForProperty (selectedProperty, selectedPropName, responseIndex);
+  if (state)
+  {
+    printf ("Quest/PG changed %s state=%s response=%d!\n", selectedPropName.GetData (),
+        state ? state->GetName () : "-", responseIndex); fflush (stdout);
+    return Update (emode->GetSelectedQuest (), state, selectedProperty, selectedPropName,
+        responseIndex);
+  }
+  else if (sequence)
+  {
+    printf ("Quest/PG changed %s sequence=%s!\n", selectedPropName.GetData (),
+        sequence ? sequence->GetName () : "-"); fflush (stdout);
+    return Update (emode->GetSelectedQuest (), sequence, selectedProperty, selectedPropName);
+  }
+  return REFRESH_NOCHANGE;
 }
 

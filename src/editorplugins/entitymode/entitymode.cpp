@@ -248,6 +248,8 @@ EntityMode::EntityMode (iBase* parent) : scfImplementationType (this, parent)
   contextLastProperty = 0;
   delayedRefreshType = REFRESH_NOCHANGE;
   refreshPctpl = 0;
+  refreshStateFact = 0;
+  refreshSeqFact = 0;
 }
 
 bool EntityMode::Initialize (iObjectRegistry* object_reg)
@@ -392,18 +394,38 @@ void EntityMode::OnIdle ()
   if (delayedRefreshType != REFRESH_NOCHANGE)
   {
     printf ("Delayed refresh %d!\n", delayedRefreshType); fflush (stdout);
-    PCWasEdited (refreshPctpl, delayedRefreshType);
-    if (!refreshPctpl)
-      SelectTemplate (GetCurrentTemplate ());
+    if (editQuestMode)
+    {
+      QuestWasEdited (refreshStateFact, refreshSeqFact, delayedRefreshType);
+    }
+    else
+    {
+      PCWasEdited (refreshPctpl, delayedRefreshType);
+      if (!refreshPctpl)
+        SelectTemplate (GetCurrentTemplate ());
+    }
     delayedRefreshType = REFRESH_NOCHANGE;
     refreshPctpl = 0;
+    refreshStateFact = 0;
+    refreshSeqFact = 0;
   }
+}
+
+void EntityMode::DelayedRefresh (iQuestStateFactory* stateFact, iCelSequenceFactory* seqFact,
+      RefreshType refreshType)
+{
+  delayedRefreshType = refreshType;
+  refreshPctpl = 0;
+  refreshStateFact = stateFact;
+  refreshSeqFact = seqFact;
 }
 
 void EntityMode::DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType)
 {
   delayedRefreshType = refreshType;
   refreshPctpl = pctpl;
+  refreshStateFact = 0;
+  refreshSeqFact = 0;
 }
 
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
@@ -425,13 +447,20 @@ void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
 
 void EntityMode::OnPropertyGridChanged (wxPGProperty* selectedProperty)
 {
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
-  printf ("PG changed %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
-  RefreshType refreshType = templateEditor->Update (pctpl, pcPropName, selectedPropName, selectedProperty);
-  if (refreshType != REFRESH_NOCHANGE)
+  if (editQuestMode)
   {
-    DelayedRefresh (pctpl, refreshType);
+    iQuestStateFactory* stateFact;
+    iCelSequenceFactory* seqFact;
+    RefreshType refreshType = questEditor->Update (selectedProperty, stateFact, seqFact);
+    if (refreshType != REFRESH_NOCHANGE)
+      DelayedRefresh (stateFact, seqFact, refreshType);
+  }
+  else
+  {
+    iCelPropertyClassTemplate* pctpl;
+    RefreshType refreshType = templateEditor->Update (selectedProperty, pctpl);
+    if (refreshType != REFRESH_NOCHANGE)
+      DelayedRefresh (pctpl, refreshType);
   }
 }
 
@@ -737,6 +766,37 @@ void EntityMode::Stop ()
   graphView->SetVisible (false);
 }
 
+const char* EntityMode::GetSeqOpType (iSeqOpFactory* seqop)
+{
+  if (!seqop) return "Delay";
+
+  {
+    csRef<iDebugPrintSeqOpFactory> s = scfQueryInterface<iDebugPrintSeqOpFactory> (seqop);
+    if (s) return "DebugPrint";
+  }
+  {
+    csRef<iAmbientMeshSeqOpFactory> s = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqop);
+    if (s) return "AmbientMesh";
+  }
+  {
+    csRef<iLightSeqOpFactory> s = scfQueryInterface<iLightSeqOpFactory> (seqop);
+    if (s) return "Light";
+  }
+  {
+    csRef<iMovePathSeqOpFactory> s = scfQueryInterface<iMovePathSeqOpFactory> (seqop);
+    if (s) return "MovePath";
+  }
+  {
+    csRef<iTransformSeqOpFactory> s = scfQueryInterface<iTransformSeqOpFactory> (seqop);
+    if (s) return "Transform";
+  }
+  {
+    csRef<iPropertySeqOpFactory> s = scfQueryInterface<iPropertySeqOpFactory> (seqop);
+    if (s) return "Property";
+  }
+  return "?";
+}
+
 const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
 {
   {
@@ -745,15 +805,15 @@ const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
   }
   {
     csRef<iEnterSectorTriggerFactory> s = scfQueryInterface<iEnterSectorTriggerFactory> (trigger);
-    if (s) return "EnterSect";
+    if (s) return "EnterSector";
   }
   {
     csRef<iSequenceFinishTriggerFactory> s = scfQueryInterface<iSequenceFinishTriggerFactory> (trigger);
-    if (s) return "SeqFinish";
+    if (s) return "SequenceFinish";
   }
   {
     csRef<iPropertyChangeTriggerFactory> s = scfQueryInterface<iPropertyChangeTriggerFactory> (trigger);
-    if (s) return "PropChange";
+    if (s) return "PropertyChange";
   }
   {
     csRef<iTriggerTriggerFactory> s = scfQueryInterface<iTriggerTriggerFactory> (trigger);
@@ -777,7 +837,7 @@ const char* EntityMode::GetTriggerType (iTriggerFactory* trigger)
   }
   {
     csRef<iMeshSelectTriggerFactory> s = scfQueryInterface<iMeshSelectTriggerFactory> (trigger);
-    if (s) return "MeshSel";
+    if (s) return "MeshSelect";
   }
   return "?";
 }
@@ -790,7 +850,7 @@ const char* EntityMode::GetRewardType (iRewardFactory* reward)
   }
   {
     csRef<iDebugPrintRewardFactory> s = scfQueryInterface<iDebugPrintRewardFactory> (reward);
-    if (s) return "DbPrint";
+    if (s) return "DebugPrint";
   }
   {
     csRef<iInventoryRewardFactory> s = scfQueryInterface<iInventoryRewardFactory> (reward);
@@ -806,19 +866,19 @@ const char* EntityMode::GetRewardType (iRewardFactory* reward)
   }
   {
     csRef<iSequenceFinishRewardFactory> s = scfQueryInterface<iSequenceFinishRewardFactory> (reward);
-    if (s) return "SeqFinish";
+    if (s) return "SequenceFinish";
   }
   {
     csRef<iChangePropertyRewardFactory> s = scfQueryInterface<iChangePropertyRewardFactory> (reward);
-    if (s) return "ChangeProp";
+    if (s) return "ChangeProperty";
   }
   {
     csRef<iCreateEntityRewardFactory> s = scfQueryInterface<iCreateEntityRewardFactory> (reward);
-    if (s) return "CreateEnt";
+    if (s) return "CreateEntity";
   }
   {
     csRef<iDestroyEntityRewardFactory> s = scfQueryInterface<iDestroyEntityRewardFactory> (reward);
-    if (s) return "DestroyEnt";
+    if (s) return "DestroyEntity";
   }
   {
     csRef<iChangeClassRewardFactory> s = scfQueryInterface<iChangeClassRewardFactory> (reward);
@@ -1703,6 +1763,27 @@ void EntityMode::OnCreatePC ()
   }
 }
 
+void EntityMode::QuestWasEdited (iQuestStateFactory* stateFact, iCelSequenceFactory* seqFact,
+      RefreshType refreshType)
+{
+  RefreshView ();
+  switch (refreshType)
+  {
+    case REFRESH_NOCHANGE:
+    case REFRESH_NO:
+      break;
+    case REFRESH_STATE:		// @@@ Todo: implement
+    case REFRESH_SEQUENCE:
+    case REFRESH_FULL:
+      RefreshGrid ();
+      break;
+    default:
+      break;			// Other types can't happen here.
+  }
+  view3d->GetApplication ()->RegisterModification (editQuestMode->QueryObject ());
+  questsValue->Refresh ();
+}
+
 void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refreshType)
 {
   RefreshView (pctpl);
@@ -1718,6 +1799,8 @@ void EntityMode::PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refr
     case REFRESH_FULL:
       RefreshGrid ();
       break;
+    default:
+      break;			// Other types can't happen here.
   }
   iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
   view3d->GetApplication ()->RegisterModification (tpl->QueryObject ());

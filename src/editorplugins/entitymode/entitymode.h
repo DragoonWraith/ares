@@ -118,6 +118,8 @@ private:
   csRef<QuestEditorSupportMain> questEditor;
   RefreshType delayedRefreshType;
   iCelPropertyClassTemplate* refreshPctpl;
+  iQuestStateFactory* refreshStateFact;
+  iCelSequenceFactory* refreshSeqFact;
 
   void BuildDetailGrid ();
   void FillDetailGrid (iQuestFactory* questFact);
@@ -244,6 +246,7 @@ public:
 
   const char* GetRewardType (iRewardFactory* reward);
   const char* GetTriggerType (iTriggerFactory* reward);
+  const char* GetSeqOpType (iSeqOpFactory* seqop);
 
   void SelectTemplate (iCelEntityTemplate* tpl);
   void SelectQuest (iQuestFactory* tpl);
@@ -261,6 +264,8 @@ public:
 
   PcEditorSupportTemplate* GetTemplateEditor () const { return templateEditor; }
   wxPGProperty* GetContextLastProperty () const { return contextLastProperty; }
+  void QuestWasEdited (iQuestStateFactory* stateFact, iCelSequenceFactory* seqFact,
+      RefreshType refreshType);
   void PCWasEdited (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
   /// Refresh the mode.
@@ -308,6 +313,8 @@ public:
   void OnContextMenu (wxContextMenuEvent& event);
 
   void OnIdle ();
+  void DelayedRefresh (iQuestStateFactory* stateFact, iCelSequenceFactory* seqFact,
+      RefreshType refreshType);
   void DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
   void AskNewTemplate ();
