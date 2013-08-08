@@ -52,9 +52,6 @@ struct iParameterManager;
 struct iParameter;
 struct iUIManager;
 
-class TriggerPanel;
-class RewardPanel;
-class SequencePanel;
 class EntityMode;
 struct iAresEditor;
 
@@ -166,10 +163,6 @@ private:
   iQuestFactory* editQuestMode;	// If true we're editing a quest.
   csString contextMenuNode;	// Node that is being used for the context menu.
   csString GetContextMenuNode ();
-
-  TriggerPanel* triggerPanel;
-  RewardPanel* rewardPanel;
-  SequencePanel* sequencePanel;
 
   int idDelete, idCreate, idEditQuest, idNewState, idNewSequence, idDefaultState;
   int idCreateTrigger, idCreateReward, idCreateRewardOnInit, idCreateRewardOnExit;

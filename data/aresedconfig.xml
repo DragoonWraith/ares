@@ -15,9 +15,6 @@
       <plugin plugin="ares.editor.modes.entity"
       		tooltip="Editing of game logic, quests, and entities">
 	  <resource file="EntityModePanel.xrc" />
-	  <resource file="TriggerPanel.xrc" />
-	  <resource file="SequencePanel.xrc" />
-	  <resource file="RewardPanel.xrc" />
       </plugin>
       <plugin plugin="ares.editor.modes.decal"
       		tooltip="Decal painter">

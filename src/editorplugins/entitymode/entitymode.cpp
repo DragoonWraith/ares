@@ -28,9 +28,6 @@ THE SOFTWARE.
 #include "edcommon/inspect.h"
 #include "edcommon/uitools.h"
 #include "entitymode.h"
-#include "triggerpanel.h"
-#include "rewardpanel.h"
-#include "sequencepanel.h"
 #include "editor/i3dview.h"
 #include "editor/iapp.h"
 #include "editor/iuimanager.h"
@@ -49,6 +46,7 @@ THE SOFTWARE.
 
 #include <wx/xrc/xmlres.h>
 #include <wx/listbox.h>
+#include <wx/notebook.h>
 #include "cseditor/wx/propgrid/propdev.h"
 
 //---------------------------------------------------------------------------
@@ -567,17 +565,6 @@ void EntityMode::BuildMainPanel (wxWindow* parent)
   parent->GetSizer ()->Add (panel, 1, wxALL | wxEXPAND);
   wxXmlResource::Get()->LoadPanel (panel, parent, wxT ("EntityModePanel"));
 
-  wxPanel* childPanel = XRCCTRL (*panel, "childPanel", wxPanel);
-
-  triggerPanel = new TriggerPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
-  triggerPanel->Hide ();
-
-  rewardPanel = new RewardPanel (childPanel, view3d->GetApplication ()->GetUI (), this);
-  rewardPanel->Hide ();
-
-  sequencePanel = new SequencePanel (childPanel, view3d->GetApplication ()->GetUI (), this);
-  sequencePanel->Hide ();
-
   BuildDetailGrid ();
 
   graphView = markerMgr->CreateGraphView ();
@@ -752,9 +739,6 @@ void EntityMode::Start ()
   view3d->GetApplication ()->HideCameraWindow ();
   view3d->GetModelRepository ()->GetTemplatesValue ()->Refresh ();
   graphView->SetVisible (true);
-  triggerPanel->Hide ();
-  rewardPanel->Hide ();
-  sequencePanel->Hide ();
   contextMenuNode = "";
   questsValue->Refresh ();
 }
@@ -2056,50 +2040,9 @@ csString EntityMode::GetActiveNode ()
 
 void EntityMode::ActivateNode (const char* nodeName)
 {
-  triggerPanel->Hide ();
-  rewardPanel->Hide ();
-  sequencePanel->Hide ();
   activeNode = nodeName;
   app->SetMenuState ();
-  if (!nodeName) return;
   printf ("ActivateNode %s\n", nodeName); fflush (stdout);
-  const char type = activeNode.operator[] (0);
-  if (type == 'P')
-  {
-    if (!editQuestMode)
-    {
-      iCelPropertyClassTemplate* pctpl = GetPCTemplate (activeNode);
-printf ("activeNode=%s pctpl=%p\n", activeNode.GetData (), pctpl);
-    }
-  }
-  else if (type == 'T')
-  {
-  }
-  else if (type == 't')
-  {
-    iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (activeNode);
-    if (!resp || !resp->GetTriggerFactory ()) return;
-    iQuestFactory* questFact = GetSelectedQuest (activeNode);
-    triggerPanel->SwitchTrigger (questFact, resp);
-    triggerPanel->Show ();
-  }
-  else if (type == 'r')
-  {
-    size_t idx;
-    csRef<iRewardFactoryArray> array = GetSelectedReward (activeNode, idx);
-    if (!array) return;
-    iRewardFactory* reward = array->Get (idx);
-    rewardPanel->SwitchReward (GetSelectedQuest (activeNode), array, idx, reward);
-    rewardPanel->Show ();
-  }
-  else if (type == 's')
-  {
-    iCelSequenceFactory* sequence = GetSelectedSequence (activeNode);
-    if (!sequence) return;
-    iQuestFactory* questFact = GetSelectedQuest (activeNode);
-    sequencePanel->SwitchSequence (questFact, sequence);
-    sequencePanel->Show ();
-  }
 }
 
 void EntityMode::OnSeqOpMove (int dir)
