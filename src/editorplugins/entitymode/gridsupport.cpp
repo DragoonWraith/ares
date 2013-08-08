@@ -159,5 +159,10 @@ int GridSupport::RegisterContextMenu (wxObjectEventFunction handler)
   return id;
 }
 
+csString GridSupport::GetPropertyName (wxPGProperty* property)
+{
+  return (const char*)property->GetName ().mb_str (wxConvUTF8);
+}
+
 // ------------------------------------------------------------------------
 

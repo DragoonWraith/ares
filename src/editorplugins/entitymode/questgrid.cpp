@@ -501,8 +501,15 @@ public:
 
 class RSMessage : public RewardSupport
 {
+private:
+  int idNewPar, idDelPar;
+
 public:
-  RSMessage (EntityMode* emode) : RewardSupport ("Message", emode) { }
+  RSMessage (EntityMode* emode) : RewardSupport ("Message", emode)
+  {
+    idNewPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::Message_OnCreatePar));
+    idDelPar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::Message_OnDeletePar));
+  }
   virtual ~RSMessage () { }
 
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
@@ -524,7 +531,15 @@ public:
 
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
     AppendButtonPar (responseProp, "Message", "A:", tf->GetID ());
-    // @@@ Support for message parameters!
+
+    for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
+    {
+      csStringID id = tf->GetParameterID (i);
+      csString name = pl->FetchString (id);
+      csString value = tf->GetParameterValue (i);
+      celDataType type = tf->GetParameterType (i);
+      AppendPar (responseProp, "Par", name, type, value);
+    }
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
@@ -538,10 +553,90 @@ public:
       tf->SetClassParameter (value);
     else if (field == "A:Message")
       tf->SetIDParameter (value);
+    else if (field.StartsWith ("Par:") && field.EndsWith (".Type"))
+    {
+      size_t idx = field.FindFirst ('.');
+      csString par = field.Slice (4, idx-4);
+      csStringID id = pl->FetchStringID (par);
+      size_t paridx = tf->GetParameterIndex (id);
+      csString parValue = tf->GetParameterValue (paridx);
+      tf->AddParameter (InspectTools::StringToType (value), id, parValue);
+    }
+    else if (field.StartsWith ("Par:") && field.EndsWith (".Name"))
+    {
+      size_t idx = field.FindFirst ('.');
+      csString par = field.Slice (4, idx-4);
+      csStringID id = pl->FetchStringID (par);
+      size_t paridx = tf->GetParameterIndex (id);
+      celDataType type = tf->GetParameterType (paridx);
+      csString parValue = tf->GetParameterValue (paridx);
+      tf->RemoveParameter (id);
+      csStringID newID = pl->FetchStringID (value);
+      tf->AddParameter (type, newID, parValue);
+
+    }
+    else if (field.StartsWith ("Par:") && field.EndsWith (".Value"))
+    {
+      size_t idx = field.FindFirst ('.');
+      csString par = field.Slice (4, idx-4);
+      csStringID id = pl->FetchStringID (par);
+      size_t paridx = tf->GetParameterIndex (id);
+      celDataType type = tf->GetParameterType (paridx);
+      tf->AddParameter (type, id, value);
+    }
     else
       return REFRESH_NOCHANGE;
-    // @@@ TODO Parameters
     return REFRESH_NO;
+  }
+
+  virtual void DoContext (const csString& field, iRewardFactory* rewardFact,
+      wxMenu* contextMenu, csString& todelete)
+  {
+    contextMenu->AppendSeparator ();
+    contextMenu->Append (idNewPar, wxT ("New Parameter..."));
+    if (field.StartsWith ("Par:"))
+      contextMenu->Append (idDelPar, wxT ("Delete Parameter..."));
+  }
+  virtual bool OnCreatePar (wxPGProperty* property, iRewardFactory* rewardFact)
+  {
+    csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
+    csRef<iUIDialog> dialog = ui->CreateDialog ("New Message Parameter",
+        "LName:;TName;CType,string,float,long,bool,vector2,vector3,color\nMValue");
+    if (dialog->Show (0) == 0) return false;
+    DialogResult result = dialog->GetFieldContents ();
+    csString name = result.Get ("Name", (const char*)0);
+    csString value = result.Get ("Value", (const char*)0);
+    csString typeS = result.Get ("Type", (const char*)0);
+    csStringID id = pl->FetchStringID (name);
+
+    if (name.IsEmpty ())
+    {
+      ui->Error ("Empty name is not allowed!");
+      return false;
+    }
+    else if (tf->GetParameterIndex (id) != csArrayItemNotFound)
+    {
+      ui->Error ("There is already a parameter with this name!");
+      return false;
+    }
+
+    celDataType type = InspectTools::StringToType (typeS);
+    tf->AddParameter (type, id, value);
+    return true;
+  }
+  virtual bool OnDeletePar (wxPGProperty* property, iRewardFactory* rewardFact)
+  {
+    csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
+    csString field = GetPropertyName (property);
+    size_t paridx = field.Find (".Par:");
+    csString par = field.Slice (paridx+5);
+    size_t idx = par.FindFirst ('.');
+    if (idx != csArrayItemNotFound)
+      par = par.Slice (0, idx);
+    printf ("Delete parameter (%s) '%s'\n", field.GetData (), par.GetData ()); fflush (stdout);
+    csStringID id = pl->FetchStringID (par);
+    tf->RemoveParameter (id);
+    return true;
   }
 };
 
@@ -551,6 +646,12 @@ public:
 RewardSupportDriver::RewardSupportDriver (const char* name, EntityMode* emode)
   : GridSupport (name, emode)
 {
+  idCreateReward = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreateReward));
+  idMoveTop = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnRewardTop));
+  idMoveBottom = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnRewardBottom));
+  idMoveUp = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnRewardUp));
+  idMoveDown = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnRewardDown));
+
   RegisterEditor (new RSNewState (emode));
   RegisterEditor (new RSDbPrint (emode));
   RegisterEditor (new RSInventory (emode));
@@ -634,6 +735,46 @@ RefreshType RewardSupportDriver::Update (const csString& field,
       return editor->Update (field, value, selectedProperty, rewardFact);
   }
   return REFRESH_NOCHANGE;
+}
+
+void RewardSupportDriver::DoContext (const csString& field,
+      iRewardFactoryArray* rewards, size_t idx, wxMenu* contextMenu, csString& todelete)
+{
+  contextMenu->AppendSeparator ();
+  contextMenu->Append (idCreateReward, wxT ("Create Reward..."));
+  contextMenu->Append (idMoveTop, wxT ("Move First"));
+  contextMenu->Append (idMoveUp, wxT ("Move Up"));
+  contextMenu->Append (idMoveDown, wxT ("Move Down"));
+  contextMenu->Append (idMoveBottom, wxT ("Move Last"));
+
+  iRewardFactory* rewardFact = rewards->Get (idx);
+  csString type = emode->GetRewardType (rewardFact);
+  printf ("Context for field '%s' in reward '%s'\n", field.GetData (), type.GetData ()); fflush (stdout);
+  RewardSupport* editor = GetEditor (type);
+  if (editor)
+  {
+    editor->DoContext (field, rewardFact, contextMenu, todelete);
+    if (todelete.IsEmpty ())
+      todelete = "Reward";
+  }
+}
+
+bool RewardSupportDriver::OnCreatePar (wxPGProperty* property, iRewardFactory* reward)
+{
+  csString type = emode->GetRewardType (reward);
+  RewardSupport* editor = GetEditor (type);
+  if (editor)
+    return editor->OnCreatePar (property, reward);
+  return false;
+}
+
+bool RewardSupportDriver::OnDeletePar (wxPGProperty* property, iRewardFactory* reward)
+{
+  csString type = emode->GetRewardType (reward);
+  RewardSupport* editor = GetEditor (type);
+  if (editor)
+    return editor->OnDeletePar (property, reward);
+  return false;
 }
 
 //---------------------------------------------------------------------------
@@ -939,6 +1080,8 @@ public:
 TriggerSupportDriver::TriggerSupportDriver (const char* name, EntityMode* emode)
   : GridSupport (name, emode)
 {
+  idCreateReward = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreateReward));
+
   RegisterEditor (new TSTimeout (emode));
   RegisterEditor (new TSEnterSect (emode));
   RegisterEditor (new TSSeqFinish (emode));
@@ -1005,6 +1148,24 @@ RefreshType TriggerSupportDriver::Update (const csString& field,
       return editor->Update (field, value, selectedProperty, triggerFact);
   }
   return REFRESH_NOCHANGE;
+}
+
+void TriggerSupportDriver::DoContext (const csString& field,
+    iQuestTriggerResponseFactory* response, wxMenu* contextMenu, csString& todelete)
+{
+  contextMenu->AppendSeparator ();
+  contextMenu->Append (idCreateReward, wxT ("Create Reward..."));
+
+  iTriggerFactory* triggerFact = response->GetTriggerFactory ();
+  csString type = emode->GetTriggerType (triggerFact);
+  printf ("Context for field '%s' in trigger '%s'\n", field.GetData (), type.GetData ()); fflush (stdout);
+  TriggerSupport* editor = GetEditor (type);
+  if (editor)
+  {
+    editor->DoContext (field, triggerFact, contextMenu, todelete);
+    if (todelete.IsEmpty ())
+      todelete = "Trigger";
+  }
 }
 
 //---------------------------------------------------------------------------
@@ -1158,7 +1319,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     // @@@ TODO
-    wxPGProperty* outputProp = AppendStringPar (seqProp, "TODO", "TODO", "<composed>");
+    /*wxPGProperty* outputProp = */ AppendStringPar (seqProp, "TODO", "TODO", "<composed>");
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
@@ -1279,6 +1440,12 @@ public:
 SequenceSupportDriver::SequenceSupportDriver (const char* name, EntityMode* emode) :
   GridSupport (name, emode)
 {
+  idCreateSeqOp = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreateSeqOp));
+  idMoveTop = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnSeqOpTop));
+  idMoveBottom = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnSeqOpBottom));
+  idMoveUp = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnSeqOpUp));
+  idMoveDown = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnSeqOpDown));
+
   RegisterEditor (new SSDelay (emode));
   RegisterEditor (new SSDebugPrint (emode));
   RegisterEditor (new SSAmbientMesh (emode));
@@ -1380,6 +1547,28 @@ RefreshType SequenceSupportDriver::Update (const csString& field,
   return REFRESH_NOCHANGE;
 }
 
+void SequenceSupportDriver::DoContext (const csString& field,
+    iCelSequenceFactory* seqFact, size_t index, wxMenu* contextMenu, csString& todelete)
+{
+  contextMenu->AppendSeparator ();
+  contextMenu->Append (idCreateSeqOp, wxT ("Create Operation..."));
+  contextMenu->Append (idMoveTop, wxT ("Move First"));
+  contextMenu->Append (idMoveUp, wxT ("Move Up"));
+  contextMenu->Append (idMoveDown, wxT ("Move Down"));
+  contextMenu->Append (idMoveBottom, wxT ("Move Last"));
+
+  iSeqOpFactory* seqOpFact = seqFact->GetSeqOpFactory (index);
+  csString type = emode->GetSeqOpType (seqOpFact);
+  printf ("Context for field '%s' in seqop '%s'\n", field.GetData (), type.GetData ()); fflush (stdout);
+  SequenceSupport* editor = GetEditor (type);
+  if (editor)
+  {
+    editor->DoContext (field, seqOpFact, contextMenu, todelete);
+    if (todelete.IsEmpty ())
+      todelete = "Sequence Operation";
+  }
+}
+
 //---------------------------------------------------------------------------
 
 static wxPGProperty* FindSequenceProperty (wxPGProperty* prop)
@@ -1425,15 +1614,12 @@ static int FindResponseProperty (wxPGProperty* prop)
   return -1;
 }
 
-iCelSequenceFactory* QuestEditorSupportMain::GetSequenceForProperty (wxPGProperty* property,
-    csString& selectedPropName)
+iCelSequenceFactory* QuestEditorSupportMain::GetSequenceForProperty (wxPGProperty* property)
 {
-  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
-
   wxPGProperty* seqProperty = FindSequenceProperty (property);
   if (seqProperty)
   {
-    csString seqPropName = (const char*)seqProperty->GetName ().mb_str (wxConvUTF8);
+    csString seqPropName = GetPropertyName (seqProperty);
     csString seqName = seqPropName.Slice (9);
     iQuestFactory* questFact = emode->GetSelectedQuest ();
     return questFact->GetSequence (seqName);
@@ -1441,18 +1627,15 @@ iCelSequenceFactory* QuestEditorSupportMain::GetSequenceForProperty (wxPGPropert
   return 0;
 }
 
-
 iQuestStateFactory* QuestEditorSupportMain::GetStateForProperty (wxPGProperty* property,
-    csString& selectedPropName, int& responseIndex)
+    int& responseIndex)
 {
-  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
-
   responseIndex = FindResponseProperty (property);
 
   wxPGProperty* stateProperty = FindStateProperty (property);
   if (stateProperty)
   {
-    csString statePropName = (const char*)stateProperty->GetName ().mb_str (wxConvUTF8);
+    csString statePropName = GetPropertyName (stateProperty);
     csString stateName = statePropName.Slice (6);
     iQuestFactory* questFact = emode->GetSelectedQuest ();
     return questFact->GetState (stateName);
@@ -1460,15 +1643,49 @@ iQuestStateFactory* QuestEditorSupportMain::GetStateForProperty (wxPGProperty* p
   return 0;
 }
 
+size_t QuestEditorSupportMain::GetSeqOpForProperty (wxPGProperty* property)
+{
+  int operationIndex;
+  csString propName = GetPropertyName (property);
+  csScanStr (propName.GetData () + 10, "%d", &operationIndex);
+  return operationIndex;
+}
+
+csRef<iRewardFactoryArray> QuestEditorSupportMain::GetRewardForProperty (
+    wxPGProperty* property, size_t& index)
+{
+  int responseIndex;
+  iQuestStateFactory* state = GetStateForProperty (property, responseIndex);
+  if (!state) return 0;
+
+  csString propName = GetPropertyName (property);
+  if (!propName.StartsWith ("Reward:")) return 0;
+
+  int rewardIndex;
+  csScanStr (propName.GetData () + 7, "%d", &rewardIndex);
+  index = size_t (rewardIndex);
+
+  if (responseIndex == ONINIT_INDEX)
+    return state->GetInitRewardFactories ();
+  else if (responseIndex == ONEXIT_INDEX)
+    return state->GetExitRewardFactories ();
+  else
+  {
+    csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
+    iQuestTriggerResponseFactory* response = responses->Get (responseIndex);
+    return response->GetRewardFactories ();
+  }
+}
+
 QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
   GridSupport ("main", emode)
 {
-#if 0
-  idNewChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewCharacteristic));
-  idDelChar = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeleteCharacteristic));
-  idCreatePC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreatePC));
-  idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
-#endif
+  idNewState = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewState));
+  idNewSequence = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnNewSequence));
+  idDelete = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDelete));
+  idCreateTrigger = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreateTrigger));
+  idCreateRewardOnInit = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreateRewardOnInit));
+  idCreateRewardOnExit = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnCreateRewardOnExit));
 
   triggerEditor.AttachNew (new TriggerSupportDriver ("main", emode));
   rewardEditor.AttachNew (new RewardSupportDriver ("main", emode));
@@ -1595,10 +1812,10 @@ RefreshType QuestEditorSupportMain::Update (iQuestFactory* questFact,
 RefreshType QuestEditorSupportMain::Update (wxPGProperty* selectedProperty,
     iQuestStateFactory*& state, iCelSequenceFactory*& sequence)
 {
-  csString selectedPropName;
+  csString selectedPropName = GetPropertyName (selectedProperty);
   int responseIndex;
-  sequence = GetSequenceForProperty (selectedProperty, selectedPropName);
-  state = GetStateForProperty (selectedProperty, selectedPropName, responseIndex);
+  sequence = GetSequenceForProperty (selectedProperty);
+  state = GetStateForProperty (selectedProperty, responseIndex);
   if (state)
   {
     printf ("Quest/PG changed %s state=%s response=%d!\n", selectedPropName.GetData (),
@@ -1614,4 +1831,143 @@ RefreshType QuestEditorSupportMain::Update (wxPGProperty* selectedProperty,
   }
   return REFRESH_NOCHANGE;
 }
+
+void QuestEditorSupportMain::DoContext (iQuestStateFactory* state,
+    const csString& selectedPropName, int responseIndex, wxMenu* contextMenu)
+{
+  contextMenu->AppendSeparator ();
+  contextMenu->Append (idCreateTrigger, wxT ("Create trigger..."));
+  contextMenu->Append (idCreateRewardOnInit, wxT ("Create on-init reward..."));
+  contextMenu->Append (idCreateRewardOnExit, wxT ("Create on-exit reward..."));
+
+  size_t idx = selectedPropName.FindFirst ('.');
+  csString field;
+  if (idx != csArrayItemNotFound)
+    field = selectedPropName.Slice (idx+1);
+
+  if (selectedPropName.StartsWith ("Trigger"))
+  {
+    csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
+    iQuestTriggerResponseFactory* response = responses->Get (responseIndex);
+    triggerEditor->DoContext (field, response, contextMenu, todelete);
+  }
+  else if (selectedPropName.StartsWith ("Reward:"))
+  {
+    int rewardIndex;
+    csScanStr (selectedPropName.GetData () + 7, "%d", &rewardIndex);
+    csRef<iRewardFactoryArray> rewards;
+    if (responseIndex == ONINIT_INDEX)
+      rewards = state->GetInitRewardFactories ();
+    else if (responseIndex == ONEXIT_INDEX)
+      rewards = state->GetExitRewardFactories ();
+    else
+    {
+      csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
+      iQuestTriggerResponseFactory* response = responses->Get (responseIndex);
+      rewards = response->GetRewardFactories ();
+    }
+    rewardEditor->DoContext (field, rewards, size_t (rewardIndex),
+	contextMenu, todelete);
+  }
+  if (todelete.IsEmpty ())
+    todelete = "State";
+}
+
+void QuestEditorSupportMain::DoContext (iCelSequenceFactory* seq,
+    const csString& selectedPropName, wxMenu* contextMenu)
+{
+  size_t idx = selectedPropName.FindFirst ('.');
+
+  csString field;
+  if (idx != csArrayItemNotFound)
+    field = selectedPropName.Slice (idx+1);
+
+  int operationIndex;
+  csScanStr (selectedPropName.GetData () + 10, "%d", &operationIndex);
+  sequenceEditor->DoContext (field, seq, size_t (operationIndex), contextMenu, todelete);
+  if (todelete.IsEmpty ())
+    todelete = "Sequence";
+}
+
+void QuestEditorSupportMain::DoContext (wxPGProperty* property, wxMenu* contextMenu)
+{
+  contextMenu->Append (idNewState, wxT ("New State..."));
+  contextMenu->Append (idNewSequence, wxT ("New Sequence..."));
+
+  todelete.Empty ();
+
+  csString selectedPropName = GetPropertyName (property);
+  int responseIndex;
+  iCelSequenceFactory* sequence = GetSequenceForProperty (property);
+  iQuestStateFactory* state = GetStateForProperty (property, responseIndex);
+  if (state)
+  {
+    printf ("Quest/PG context %s state=%s response=%d!\n", selectedPropName.GetData (),
+        state ? state->GetName () : "-", responseIndex); fflush (stdout);
+    DoContext (state, selectedPropName, responseIndex, contextMenu);
+  }
+  else if (sequence)
+  {
+    printf ("Quest/PG context %s sequence=%s!\n", selectedPropName.GetData (),
+        sequence ? sequence->GetName () : "-"); fflush (stdout);
+    DoContext (sequence, selectedPropName, contextMenu);
+  }
+  if (!todelete.IsEmpty ())
+  {
+    csString label = "Delete ";
+    label += todelete;
+    contextMenu->AppendSeparator ();
+    contextMenu->Append (idDelete, wxString::FromUTF8 (label));
+  }
+}
+
+bool QuestEditorSupportMain::DeleteFromContext (wxPGProperty* contextProperty,
+    iQuestFactory* questFact)
+{
+  int responseIndex;
+  iQuestStateFactory* state = GetStateForProperty (contextProperty, responseIndex);
+  iCelSequenceFactory* sequence = GetSequenceForProperty (contextProperty);
+  if (todelete == "State")
+    questFact->RemoveState (state->GetName ());
+  else if (todelete == "Sequence")
+    questFact->RemoveSequence (sequence->GetName ());
+  else if (todelete == "Reward")
+  {
+    size_t rewardIndex;
+    csRef<iRewardFactoryArray> rewards = GetRewardForProperty (contextProperty, rewardIndex);
+    rewards->DeleteIndex (rewardIndex);
+  }
+  else if (todelete == "Trigger")
+  {
+    csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
+    responses->DeleteIndex (responseIndex);
+  }
+  else if (todelete == "Sequence Operation")
+  {
+    csString propName = GetPropertyName (contextProperty);
+    int operationIndex;
+    csScanStr (propName.GetData () + 10, "%d", &operationIndex);
+    sequence->RemoveSeqOpFactory (operationIndex);
+  }
+  else
+    return false;
+  return true;
+}
+
+bool QuestEditorSupportMain::OnCreatePar (wxPGProperty* contextProperty)
+{
+  size_t index;
+  csRef<iRewardFactoryArray> rewards = GetRewardForProperty (contextProperty, index);
+  iRewardFactory* reward = rewards->Get (index);
+  return rewardEditor->OnCreatePar (contextProperty, reward);
+}
+
+bool QuestEditorSupportMain::OnDeletePar (wxPGProperty* contextProperty)
+{
+  size_t index;
+  csRef<iRewardFactoryArray> rewards = GetRewardForProperty (contextProperty, index);
+  iRewardFactory* reward = rewards->Get (index);
+  return rewardEditor->OnDeletePar (contextProperty, reward);
+}
+
 

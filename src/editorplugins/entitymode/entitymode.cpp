@@ -63,9 +63,10 @@ BEGIN_EVENT_TABLE(EntityMode::Panel, wxPanel)
   EVT_PG_CHANGED (PG_ID, EntityMode::Panel::OnPropertyGridChanged)
 #ifdef CS_PLATFORM_WIN32
   EVT_PG_RIGHT_CLICK (PG_ID, EntityMode::Panel::OnPropertyGridRight)
+#else
+  EVT_CONTEXT_MENU (EntityMode::Panel::OnContextMenu)
 #endif
   EVT_BUTTON (PG_ID, EntityMode::Panel::OnPropertyGridButton)
-  EVT_CONTEXT_MENU (EntityMode::Panel::OnContextMenu)
   EVT_IDLE (EntityMode::Panel::OnIdle)
 END_EVENT_TABLE()
 
@@ -348,22 +349,17 @@ void EntityMode::OnPropertyGridRight (wxPropertyGridEvent& event)
 
   if (contextLastProperty)
   {
-printf ("GR DoContext1\n"); fflush (stdout);
-    csString selectedPropName, pcPropName;
-    iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty,
-	  pcPropName, selectedPropName);
     wxMenu contextMenu;
-printf ("GR DoContext2\n"); fflush (stdout);
-    templateEditor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
-printf ("GR DoContext3\n"); fflush (stdout);
+    if (editQuestMode)
+      questEditor->DoContext (contextLastProperty, &contextMenu);
+    else
+      templateEditor->DoContext (contextLastProperty, &contextMenu);
     panel->PopupMenu (&contextMenu);
-printf ("GR DoContext4\n"); fflush (stdout);
   }
 }
 
 void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 {
-printf ("OnContextMenu\n"); fflush (stdout);
   wxWindow* gridWindow = wxStaticCast (detailGrid, wxWindow);
   wxWindow* component = wxStaticCast (event.GetEventObject (), wxWindow);
   while (gridWindow != component && component)
@@ -375,16 +371,12 @@ printf ("OnContextMenu\n"); fflush (stdout);
 
     if (contextLastProperty)
     {
-printf ("DoContext1\n"); fflush (stdout);
       csString selectedPropName, pcPropName;
       iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty,
 	  pcPropName, selectedPropName);
       wxMenu contextMenu;
-printf ("DoContext2\n"); fflush (stdout);
       templateEditor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
-printf ("DoContext3\n"); fflush (stdout);
       panel->PopupMenu (&contextMenu);
-printf ("DoContext4\n"); fflush (stdout);
     }
   }
 }
@@ -431,12 +423,19 @@ void EntityMode::DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType r
 void EntityMode::OnPropertyGridChanging (wxPropertyGridEvent& event)
 {
   wxPGProperty* selectedProperty = event.GetProperty ();
-  csString selectedPropName, pcPropName;
-  iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
-  printf ("PG changing %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
-  csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
-  if (!templateEditor->Validate (pctpl, pcPropName, selectedPropName, value, event))
-    event.Veto ();
+  if (editQuestMode)
+  {
+    // @@@ Todo?
+  }
+  else
+  {
+    csString selectedPropName, pcPropName;
+    iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (selectedProperty, pcPropName, selectedPropName);
+    printf ("PG changing %s/%s!\n", selectedPropName.GetData (), pcPropName.GetData ()); fflush (stdout);
+    csString value = (const char*)event.GetValue ().GetString ().mb_str (wxConvUTF8);
+    if (!templateEditor->Validate (pctpl, pcPropName, selectedPropName, value, event))
+      event.Veto ();
+  }
 }
 
 void EntityMode::OnPropertyGridChanged (wxPropertyGridEvent& event)
@@ -984,9 +983,13 @@ csString EntityMode::GetQuestName (iCelPropertyClassTemplate* pctpl)
 {
   if (editQuestMode)
     return editQuestMode->GetName ();
-  else
+  else if (pctpl)
     return InspectTools::GetActionParameterValueString (pl, pctpl,
       "NewQuest", "name");
+  else if (GetContextMenuNode ().IsEmpty ())
+    return "";
+  else
+    return GetQuestName (GetPCTemplate (GetContextMenuNode ()));
 }
 
 void EntityMode::BuildQuestGraph (iQuestFactory* questFact, const char* pcKey,
@@ -1657,8 +1660,20 @@ void EntityMode::OnDeletePC ()
 
 void EntityMode::OnDelete ()
 {
-  if (GetContextMenuNode ().IsEmpty ()) return;
-  DeleteItem (contextMenuNode);
+  if (editQuestMode && contextLastProperty)
+  {
+    if (questEditor->DeleteFromContext (contextLastProperty, editQuestMode))
+    {
+      RegisterModification (editQuestMode);
+      RefreshView ();
+      RefreshGrid ();
+    }
+  }
+  else
+  {
+    if (GetContextMenuNode ().IsEmpty ()) return;
+    DeleteItem (contextMenuNode);
+  }
 }
 
 void EntityMode::DeleteItem (const char* item)
@@ -2087,18 +2102,82 @@ printf ("activeNode=%s pctpl=%p\n", activeNode.GetData (), pctpl);
   }
 }
 
+void EntityMode::OnSeqOpMove (int dir)
+{
+  iCelSequenceFactory* seqFact = questEditor->GetSequenceForProperty (contextLastProperty);
+  if (!seqFact) return;
+
+  size_t idx = questEditor->GetSeqOpForProperty (contextLastProperty);
+  csRef<iSeqOpFactory> seqOpFact = seqFact->GetSeqOpFactory (idx);
+  csString duration = seqFact->GetSeqOpFactoryDuration (idx);
+
+  if (dir <= -1 && idx <= 0) return;
+  if (dir >= 1 && idx >= seqFact->GetSeqOpFactoryCount ()-1) return;
+
+  seqFact->RemoveSeqOpFactory (idx);
+
+  // Make a copy of the seqops.
+  csRefArray<iSeqOpFactory> seqops;
+  csStringArray durations;
+  while (seqFact->GetSeqOpFactoryCount () > 0)
+  {
+    seqops.Push (seqFact->GetSeqOpFactory (0));
+    durations.Push (seqFact->GetSeqOpFactoryDuration (0));
+    seqFact->RemoveSeqOpFactory (0);
+  }
+
+  int newindex = int (idx) + dir;
+  if (newindex <= 0)
+  {
+    seqops.Insert (0, seqOpFact);
+    durations.Insert (0, duration);
+  }
+  else if (newindex >= int (seqops.GetSize ()))
+  {
+    seqops.Push (seqOpFact);
+    durations.Push (duration);
+  }
+  else
+  {
+    seqops.Insert (size_t (newindex), seqOpFact);
+    durations.Insert (size_t (newindex), duration);
+  }
+
+  for (size_t i = 0 ; i < seqops.GetSize () ; i++)
+    seqFact->AddSeqOpFactory (seqops.Get (i), durations.Get (i));
+
+  iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
+  RegisterModification (questFact);
+  graphView->ActivateNode (0);
+  ActivateNode (0);
+  RefreshView ();
+  RefreshGrid ();
+}
+
 void EntityMode::OnRewardMove (int dir)
 {
-  if (GetContextMenuNode ().IsEmpty ()) return;
   size_t idx;
-  csRef<iRewardFactoryArray> array = GetSelectedReward (GetContextMenuNode (), idx);
+  csRef<iRewardFactoryArray> array;
+
+  if (editQuestMode && contextLastProperty)
+    array = questEditor->GetRewardForProperty (contextLastProperty, idx);
+  else if (!GetContextMenuNode ().IsEmpty ())
+    array = GetSelectedReward (GetContextMenuNode (), idx);
+
   if (!array) return;
-  if (dir == -1 && idx <= 0) return;
-  if (dir == 1 && idx >= array->GetSize ()-1) return;
+
+  if (dir <= -1 && idx <= 0) return;
+  if (dir >= 1 && idx >= array->GetSize ()-1) return;
 
   csRef<iRewardFactory> rf = array->Get (idx);
   array->DeleteIndex (idx);
-  array->Insert (idx + dir, rf);
+  int newindex = int (idx) + dir;
+  if (newindex <= 0)
+    array->Insert (0, rf);
+  else if (newindex >= int (array->GetSize ()))
+    array->Push (rf);
+  else
+    array->Insert (size_t (newindex), rf);
 
   iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
   RegisterModification (questFact);
@@ -2110,7 +2189,11 @@ void EntityMode::OnRewardMove (int dir)
 
 void EntityMode::OnCreateReward (int type)
 {
-  if (GetContextMenuNode ().IsEmpty ()) return;
+  iQuestFactory* questFact;
+  iQuestStateFactory* questState;
+  iQuestTriggerResponseFactory* resp;
+  if (!GetQuestContextInfo (questFact, questState, resp)) return;
+
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Reward",
       "LName:;Cname,newstate,debugprint,action,changeproperty,createentity,destroyentity,changeclass,inventory,message,cssequence,sequence,sequencefinish");
@@ -2120,20 +2203,85 @@ void EntityMode::OnCreateReward (int type)
     csString name = fields.Get ("name", "");
     iRewardType* rewardType = questMgr->GetRewardType ("cel.rewards."+name);
     csRef<iRewardFactory> fact = rewardType->CreateRewardFactory ();
-    if (type == 0)
-    {
-      iQuestTriggerResponseFactory* resp = GetSelectedTriggerResponse (GetContextMenuNode ());
-      if (!resp) return;
-      resp->AddRewardFactory (fact);
-    }
-    else
-    {
-      iQuestStateFactory* state = GetSelectedState (GetContextMenuNode ());
-      if (type == 1) state->AddInitRewardFactory (fact);
-      else state->AddExitRewardFactory (fact);
-    }
-    iQuestFactory* questFact = GetSelectedQuest (activeNode);
+    if (type == 0) resp->AddRewardFactory (fact);
+    else if (type == 1) questState->AddInitRewardFactory (fact);
+    else questState->AddExitRewardFactory (fact);
+
     RegisterModification (questFact);
+    RefreshView ();
+    RefreshGrid ();
+  }
+}
+
+bool EntityMode::GetQuestContextInfo (iQuestFactory*& questFact,
+    iQuestStateFactory*& stateFact, iQuestTriggerResponseFactory*& resp)
+{
+  questFact = GetSelectedQuest (GetContextMenuNode ());
+  if (!questFact) return false;
+
+  if (editQuestMode && contextLastProperty)
+  {
+    int idx;
+    stateFact = questEditor->GetStateForProperty (contextLastProperty, idx);
+    csRef<iQuestTriggerResponseFactoryArray> responses = stateFact->GetTriggerResponseFactories ();
+    if (idx >= 0)
+      resp = responses->Get (idx);
+    else
+      resp = 0;
+  }
+  else if (GetContextMenuNode ().IsEmpty ())
+    return false;
+  else
+  {
+    csString state = GetSelectedStateName (GetContextMenuNode ());
+    stateFact = questFact->GetState (state);
+    resp = GetSelectedTriggerResponse (GetContextMenuNode ());
+  }
+
+  return stateFact != 0;
+}
+
+void EntityMode::Message_OnCreatePar ()
+{
+  if (questEditor->OnCreatePar (contextLastProperty))
+  {
+    // @@@ Smarter refresh?
+    RegisterModification (editQuestMode);
+    RefreshView ();
+    RefreshGrid ();
+  }
+}
+
+void EntityMode::Message_OnDeletePar ()
+{
+  if (questEditor->OnDeletePar (contextLastProperty))
+  {
+    // @@@ Smarter refresh?
+    RegisterModification (editQuestMode);
+    RefreshView ();
+    RefreshGrid ();
+  }
+}
+
+void EntityMode::OnCreateSeqOp ()
+{
+  iCelSequenceFactory* seqFact = questEditor->GetSequenceForProperty (contextLastProperty);
+  if (!seqFact) return;
+
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Sequence Operation",
+      "LType:;CType,delay,debugprint,ambientmesh,light,movepath,transform\nLDuration:;TDuration");
+  if (dialog->Show (0))
+  {
+    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    csString type = fields.Get ("Type", "");
+    csString duration = fields.Get ("Duration", "");
+
+    iSeqOpType* seqoptype = questMgr->GetSeqOpType ("cel.seqops."+type);
+    csRef<iSeqOpFactory> seqopFact = seqoptype->CreateSeqOpFactory ();
+    seqFact->AddSeqOpFactory (seqopFact, duration);
+
+    RegisterModification (editQuestMode);
     RefreshView ();
     RefreshGrid ();
   }
@@ -2141,7 +2289,11 @@ void EntityMode::OnCreateReward (int type)
 
 void EntityMode::OnCreateTrigger ()
 {
-  if (GetContextMenuNode ().IsEmpty ()) return;
+  iQuestFactory* questFact;
+  iQuestStateFactory* questState;
+  iQuestTriggerResponseFactory* resp;
+  if (!GetQuestContextInfo (questFact, questState, resp)) return;
+
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New Trigger",
       "LName:;Cname,entersector,meshentersector,inventory,meshselect,message,operation,propertychange,sequencefinish,timeout,trigger,watch");
@@ -2149,10 +2301,6 @@ void EntityMode::OnCreateTrigger ()
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
     csString name = fields.Get ("name", "");
-    csString state = GetSelectedStateName (GetContextMenuNode ());
-    iQuestFactory* questFact = GetSelectedQuest (GetContextMenuNode ());
-    iQuestStateFactory* questState = questFact->GetState (state);
-    iQuestTriggerResponseFactory* resp = questState->CreateTriggerResponseFactory ();
     iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+name);
     csRef<iTriggerFactory> triggerFact = triggertype->CreateTriggerFactory ();
     resp->SetTriggerFactory (triggerFact);
@@ -2184,9 +2332,7 @@ void EntityMode::OnDefaultState ()
 
 void EntityMode::OnNewSequence ()
 {
-  if (GetContextMenuNode ().IsEmpty ()) return;
-  iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
-  csString questName = GetQuestName (pctpl);
+  csString questName = GetQuestName (0);
   if (questName.IsEmpty ()) return;
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
@@ -2203,16 +2349,17 @@ void EntityMode::OnNewSequence ()
     return;
   }
   questFact->CreateSequence (name->GetData ());
+
   RegisterModification (questFact);
+
+  iCelPropertyClassTemplate* pctpl = GetSelectedPC ();
   RefreshView (pctpl);
   RefreshGrid (pctpl);
 }
 
 void EntityMode::OnNewState ()
 {
-  if (GetContextMenuNode ().IsEmpty ()) return;
-  iCelPropertyClassTemplate* pctpl = GetPCTemplate (GetContextMenuNode ());
-  csString questName = GetQuestName (pctpl);
+  csString questName = GetQuestName (0);
   if (questName.IsEmpty ()) return;
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
@@ -2229,7 +2376,10 @@ void EntityMode::OnNewState ()
     return;
   }
   questFact->CreateState (name->GetData ());
+
   RegisterModification (questFact);
+
+  iCelPropertyClassTemplate* pctpl = GetSelectedPC ();
   RefreshView (pctpl);
   RefreshGrid (pctpl);
 }
@@ -2356,6 +2506,7 @@ csString EntityMode::GetContextMenuNode ()
 
 void EntityMode::AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY)
 {
+  contextLastProperty = 0;
   contextMenuNode = graphView->FindHitNode (mouseX, mouseY);
   if (!contextMenuNode.IsEmpty ())
   {

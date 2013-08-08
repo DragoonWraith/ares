@@ -54,18 +54,25 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact) = 0;
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact) = 0;
+  virtual void DoContext (const csString& field, iRewardFactory* rewardFact,
+      wxMenu* contextMenu, csString& todelete) { }
+
+  virtual bool OnCreatePar (wxPGProperty* property, iRewardFactory* rewardFact) { return false; }
+  virtual bool OnDeletePar (wxPGProperty* property, iRewardFactory* rewardFact) { return false; }
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 #endif
 };
 
 class RewardSupportDriver : public GridSupport
 {
 private:
+  int idCreateReward;
+  int idMoveTop, idMoveBottom;
+  int idMoveUp, idMoveDown;
+
   csHash<csRef<RewardSupport>, csString> editors;
 
   void RegisterEditor (RewardSupport* editor)
@@ -87,14 +94,16 @@ public:
   void Fill (wxPGProperty* responseProp, size_t idx, iRewardFactory* rewardFact);
   RefreshType Update (const csString& field, wxPGProperty* selectedProperty,
       iRewardFactoryArray* rewards, size_t idx);
+  void DoContext (const csString& field, iRewardFactoryArray* rewards, size_t idx,
+      wxMenu* contextMenu, csString& todelete);
+  bool OnCreatePar (wxPGProperty* property, iRewardFactory* rewardFact);
+  bool OnDeletePar (wxPGProperty* property, iRewardFactory* rewardFact);
 
   void FillRewards (wxPGProperty* responseProp, iRewardFactoryArray* rewards);
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 #endif
 };
 
@@ -107,18 +116,20 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact) = 0;
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact) = 0;
+  virtual void DoContext (const csString& field, iTriggerFactory* triggerFact,
+      wxMenu* contextMenu, csString& todelete) { }
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 #endif
 };
 
 class TriggerSupportDriver : public GridSupport
 {
 private:
+  int idCreateReward;
+
   csHash<csRef<TriggerSupport>, csString> editors;
 
   void RegisterEditor (TriggerSupport* editor)
@@ -140,12 +151,12 @@ public:
   void Fill (wxPGProperty* responseProp, size_t idx, iTriggerFactory* triggerFact);
   RefreshType Update (const csString& field, wxPGProperty* selectedProperty,
       iQuestTriggerResponseFactory* response);
+  void DoContext (const csString& field, iQuestTriggerResponseFactory* response,
+      wxMenu* contextMenu, csString& todelete);
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 #endif
 };
 
@@ -158,18 +169,22 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact) = 0;
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iSeqOpFactory* seqOpFactory) = 0;
+  virtual void DoContext (const csString& field, iSeqOpFactory* seqOpFactory,
+      wxMenu* contextMenu, csString& todelete) { }
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 #endif
 };
 
 class SequenceSupportDriver : public GridSupport
 {
 private:
+  int idCreateSeqOp;
+  int idMoveTop, idMoveBottom;
+  int idMoveUp, idMoveDown;
+
   csHash<csRef<SequenceSupport>, csString> editors;
 
   void RegisterEditor (SequenceSupport* editor)
@@ -193,21 +208,25 @@ public:
   void Fill (wxPGProperty* questProp, iQuestFactory* questFact);
   RefreshType Update (const csString& field, wxPGProperty* selectedProperty,
       iCelSequenceFactory* seqFact, size_t index);
+  void DoContext (const csString& field, iCelSequenceFactory* seqFact, size_t index,
+      wxMenu* contextMenu, csString& todelete);
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
       const csString& value, const wxPropertyGridEvent& event) = 0;
-  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
-      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu) { }
 #endif
 };
 
 class QuestEditorSupportMain : public GridSupport
 {
 private:
-#if 0
-  int idNewChar, idDelChar, idCreatePC, idDelPC;
-#endif
+  int idNewState, idNewSequence;
+  int idDelete;
+  int idCreateTrigger, idCreateRewardOnInit, idCreateRewardOnExit;
+
+  // If anything has something useful to delete then the 'todelete' string will be set.
+  csString todelete;
+
   csRef<TriggerSupportDriver> triggerEditor;
   csRef<RewardSupportDriver> rewardEditor;
   csRef<SequenceSupportDriver> sequenceEditor;
@@ -223,10 +242,10 @@ private:
   RefreshType Update (iQuestFactory* questFact, iCelSequenceFactory* seqFact,
       wxPGProperty* selectedProperty, const csString& selectedPropName);
 
-  iQuestStateFactory* GetStateForProperty (wxPGProperty* property,
-    csString& selectedPropName, int& responseIndex);
-  iCelSequenceFactory* GetSequenceForProperty (wxPGProperty* property,
-    csString& selectedPropName);
+  void DoContext (iQuestStateFactory* state, const csString& selectedPropName,
+      int responseIndex, wxMenu* contextMenu);
+  void DoContext (iCelSequenceFactory* seq, const csString& selectedPropName,
+      wxMenu* contextMenu);
 
 public:
   QuestEditorSupportMain (EntityMode* emode);
@@ -235,6 +254,16 @@ public:
   void Fill (wxPGProperty* templateProp, iQuestFactory* questFact);
   RefreshType Update (wxPGProperty* selectedProperty, iQuestStateFactory*& stateFact,
       iCelSequenceFactory*& sequence);
+  void DoContext (wxPGProperty* property, wxMenu* contextMenu);
+
+  iQuestStateFactory* GetStateForProperty (wxPGProperty* property, int& responseIndex);
+  iCelSequenceFactory* GetSequenceForProperty (wxPGProperty* property);
+  csRef<iRewardFactoryArray> GetRewardForProperty (wxPGProperty* property, size_t& index);
+  size_t GetSeqOpForProperty (wxPGProperty* property);
+
+  bool DeleteFromContext (wxPGProperty* contextProperty, iQuestFactory* questFact);
+  bool OnCreatePar (wxPGProperty* contextProperty);
+  bool OnDeletePar (wxPGProperty* contextProperty);
 };
 
 #endif // __aresed_questgrid_h

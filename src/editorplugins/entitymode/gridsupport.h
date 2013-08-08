@@ -92,6 +92,8 @@ protected:
   csString GetPropertyValueAsString (const csString& property, const char* sub);
   int GetPropertyValueAsInt (const csString& property, const char* sub);
 
+  csString GetPropertyName (wxPGProperty* property);
+
 public:
   GridSupport (const char* name, EntityMode* emode);
   virtual ~GridSupport () { }

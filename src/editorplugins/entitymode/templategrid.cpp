@@ -371,6 +371,7 @@ public:
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->AppendSeparator ();
     contextMenu->Append (idNewSlot, wxT ("New Slot..."));
     if (selectedPropName.StartsWith ("Slot:"))
     {
@@ -553,6 +554,7 @@ public:
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->AppendSeparator ();
     contextMenu->Append (idNewTemplate, wxT ("New Template..."));
     if (selectedPropName.StartsWith ("Template:"))
     {
@@ -690,6 +692,7 @@ public:
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->AppendSeparator ();
     contextMenu->Append (idNewTemplate, wxT ("New Template..."));
     if (selectedPropName.StartsWith ("Template:"))
     {
@@ -845,6 +848,7 @@ public:
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->AppendSeparator ();
     contextMenu->Append (idNewOutput, wxT ("New Output..."));
     if (selectedPropName.StartsWith ("Output:"))
     {
@@ -976,6 +980,7 @@ public:
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->AppendSeparator ();
     contextMenu->Append (idNewPar, wxT ("New Quest Parameter..."));
     if (selectedPropName.StartsWith ("Par:"))
       contextMenu->Append (idDelPar, wxT ("Delete Quest Parameter"));
@@ -1057,6 +1062,7 @@ public:
   virtual void DoContext (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
   {
+    contextMenu->AppendSeparator ();
     contextMenu->Append (idNewProp, wxT ("New Property..."));
     if (selectedPropName.StartsWith ("Prop:"))
       contextMenu->Append (idDelProp, wxT ("Delete Property"));
@@ -1586,6 +1592,14 @@ void PcEditorSupportTemplate::DoContext (iCelPropertyClassTemplate* pctpl,
   }
 }
 
+void PcEditorSupportTemplate::DoContext (wxPGProperty* property, wxMenu* contextMenu)
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (property,
+	pcPropName, selectedPropName);
+  DoContext (pctpl, pcPropName, selectedPropName, contextMenu);
+}
+
 static wxPGProperty* FindPCProperty (wxPGProperty* prop)
 {
   while (prop)
@@ -1600,11 +1614,11 @@ static wxPGProperty* FindPCProperty (wxPGProperty* prop)
 iCelPropertyClassTemplate* PcEditorSupportTemplate::GetPCForProperty (wxPGProperty* property,
     csString& pcPropName, csString& selectedPropName)
 {
-  selectedPropName = (const char*)property->GetName ().mb_str (wxConvUTF8);
+  selectedPropName = GetPropertyName (property);
   wxPGProperty* pcProperty = FindPCProperty (property);
   if (pcProperty)
   {
-    pcPropName = (const char*)pcProperty->GetName ().mb_str (wxConvUTF8);
+    pcPropName = GetPropertyName (pcProperty);
     int idx;
     csScanStr (pcPropName.GetData () + 3, "%d", &idx);
     iCelEntityTemplate* tpl = emode->GetCurrentTemplate ();

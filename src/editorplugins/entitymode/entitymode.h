@@ -240,6 +240,8 @@ public:
   iQuestFactory* GetQuestFactory (iCelPropertyClassTemplate* pctpl);
   iCelEntityTemplate* GetCurrentTemplate ();
   wxPropertyGrid* GetDetailGrid () const { return detailGrid; }
+  bool GetQuestContextInfo (iQuestFactory*& questFact, iQuestStateFactory*& stateFact,
+      iQuestTriggerResponseFactory*& resp);
 
   // Get the current quest.
   iQuestFactory* GetSelectedQuest (const char* key = 0);
@@ -263,6 +265,7 @@ public:
   void RefreshGrid (iCelPropertyClassTemplate* pctpl = 0);
 
   PcEditorSupportTemplate* GetTemplateEditor () const { return templateEditor; }
+  QuestEditorSupportMain* GetQuestEditor () const { return questEditor; }
   wxPGProperty* GetContextLastProperty () const { return contextLastProperty; }
   void QuestWasEdited (iQuestStateFactory* stateFact, iCelSequenceFactory* seqFact,
       RefreshType refreshType);
@@ -307,10 +310,14 @@ public:
   void OnNewState ();
   void OnNewSequence ();
   void OnDefaultState ();
+  void OnCreateSeqOp ();
   void OnCreateTrigger ();
   void OnCreateReward (int type); // 0 == normal, 1 == oninit, 2 == onexit
   void OnRewardMove (int dir);
+  void OnSeqOpMove (int dir);
   void OnContextMenu (wxContextMenuEvent& event);
+  void Message_OnCreatePar ();
+  void Message_OnDeletePar ();
 
   void OnIdle ();
   void DelayedRefresh (iQuestStateFactory* stateFact, iCelSequenceFactory* seqFact,
@@ -339,12 +346,19 @@ public:
     void OnNewState (wxCommandEvent& event) { s->OnNewState (); }
     void OnNewSequence (wxCommandEvent& event) { s->OnNewSequence (); }
     void OnDefaultState (wxCommandEvent& event) { s->OnDefaultState (); }
+    void OnCreateSeqOp (wxCommandEvent& event) { s->OnCreateSeqOp (); }
     void OnCreateTrigger (wxCommandEvent& event) { s->OnCreateTrigger (); }
     void OnCreateReward (wxCommandEvent& event) { s->OnCreateReward (0); }
     void OnCreateRewardOnInit (wxCommandEvent& event) { s->OnCreateReward (1); }
     void OnCreateRewardOnExit (wxCommandEvent& event) { s->OnCreateReward (2); }
+    void OnRewardTop (wxCommandEvent& event) { s->OnRewardMove (-1000); }
+    void OnRewardBottom (wxCommandEvent& event) { s->OnRewardMove (1000); }
     void OnRewardUp (wxCommandEvent& event) { s->OnRewardMove (-1); }
     void OnRewardDown (wxCommandEvent& event) { s->OnRewardMove (1); }
+    void OnSeqOpTop (wxCommandEvent& event) { s->OnSeqOpMove (-1000); }
+    void OnSeqOpBottom (wxCommandEvent& event) { s->OnSeqOpMove (1000); }
+    void OnSeqOpUp (wxCommandEvent& event) { s->OnSeqOpMove (-1); }
+    void OnSeqOpDown (wxCommandEvent& event) { s->OnSeqOpMove (1); }
     void OnTemplateSelect (wxListEvent& event) { s->OnTemplateSelect (); }
     void OnQuestSelect (wxListEvent& event) { s->OnQuestSelect (); }
     void OnPropertyGridChanging (wxPropertyGridEvent& event) { s->OnPropertyGridChanging (event); }
@@ -371,6 +385,8 @@ public:
     void PcProp_OnDelProperty (wxCommandEvent& event) { s->GetTemplateEditor ()->PcProp_OnDelProperty (); }
     void OnNewCharacteristic (wxCommandEvent& event) { s->GetTemplateEditor ()->OnNewCharacteristic (); }
     void OnDeleteCharacteristic (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteCharacteristic (); }
+    void Message_OnCreatePar (wxCommandEvent& event) { s->Message_OnCreatePar (); }
+    void Message_OnDeletePar (wxCommandEvent& event) { s->Message_OnDeletePar (); }
     void OnDeletePC (wxCommandEvent& event) { s->OnDeletePC (); }
     void OnIdle (wxIdleEvent& event) { s->OnIdle (); }
 
