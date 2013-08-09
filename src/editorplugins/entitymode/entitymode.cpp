@@ -458,11 +458,11 @@ void EntityMode::OnContextMenu (wxContextMenuEvent& event)
 
     if (contextLastProperty)
     {
-      csString selectedPropName, pcPropName;
-      iCelPropertyClassTemplate* pctpl = templateEditor->GetPCForProperty (contextLastProperty,
-	  pcPropName, selectedPropName);
       wxMenu contextMenu;
-      templateEditor->DoContext (pctpl, pcPropName, selectedPropName, &contextMenu);
+      if (editQuestMode)
+        questEditor->DoContext (contextLastProperty, &contextMenu);
+      else
+        templateEditor->DoContext (contextLastProperty, &contextMenu);
       panel->PopupMenu (&contextMenu);
     }
   }
