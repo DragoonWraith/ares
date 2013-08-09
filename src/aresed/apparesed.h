@@ -262,7 +262,8 @@ public:
     return 0;
   }
 
-  CameraWindow* GetCameraWindow () const { return camwin; }
+  CameraWindow* GetInternalCameraWindow () const { return camwin; }
+  virtual iCameraWindow* GetCameraWindow () const;
   virtual void ShowCameraWindow ();
   virtual void HideCameraWindow ();
 

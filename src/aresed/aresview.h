@@ -52,7 +52,6 @@ THE SOFTWARE.
 
 #define USE_DECAL 1
 
-class CameraWindow;
 class AppAresEditWX;
 class AresEdit3DView;
 class Asset;

@@ -34,6 +34,7 @@ struct i3DView;
 struct iAssetManager;
 struct iObject;
 struct iDynamicObject;
+struct iCameraWindow;
 
 /**
  * The editor application.
@@ -46,6 +47,7 @@ struct iAresEditor : public virtual iBase
   virtual iUIManager* GetUI () const = 0;
   virtual i3DView* Get3DView () const = 0;
   virtual iAssetManager* GetAssetManager () const = 0;
+  virtual iCameraWindow* GetCameraWindow () const = 0;
 
   virtual bool ReportError (const char* description, ...) = 0;
 

@@ -1044,7 +1044,7 @@ public:
     AppendStringPar (responseProp, "Target Tag", "TargetTag", tf->GetTargetTag ());
     AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
     AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
-    AppendVectorPar (responseProp, "Offset", "Offset",
+    AppendVectorPar (responseProp, "Offset", "V:",
 	tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
@@ -1063,11 +1063,11 @@ public:
       tf->SetChecktimeParameter (value);
     else if (field == "Radius")
       tf->SetRadiusParameter (value);
-    else if (field == "Offset.X")
+    else if (field == "V:Offset.X")
       tf->SetOffsetParameter (value, tf->GetOffsetY (), tf->GetOffsetZ ());
-    else if (field == "Offset.Y")
+    else if (field == "V:Offset.Y")
       tf->SetOffsetParameter (tf->GetOffsetX (), value, tf->GetOffsetZ ());
-    else if (field == "Offset.Z")
+    else if (field == "V:Offset.Z")
       tf->SetOffsetParameter (tf->GetOffsetX (), tf->GetOffsetY (), value);
     else
       return REFRESH_NOCHANGE;
@@ -1341,7 +1341,7 @@ public:
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
     AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
-    AppendVectorPar (seqProp, "Vector", "Vector",
+    AppendVectorPar (seqProp, "Vector", "V:",
 	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     wxArrayString rotaxisArray;
     rotaxisArray.Add (wxT ("none"));
@@ -1361,11 +1361,11 @@ public:
       tf->SetEntityParameter (value, tf->GetTag ());
     else if (field == "Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "Vector.X")
+    else if (field == "V:Vector.X")
       tf->SetVectorParameter (value, tf->GetVectorY (), tf->GetVectorZ ());
-    else if (field == "Vector.Y")
+    else if (field == "V:Vector.Y")
       tf->SetVectorParameter (tf->GetVectorX (), value, tf->GetVectorZ ());
-    else if (field == "Vector.Z")
+    else if (field == "V:Vector.Z")
       tf->SetVectorParameter (tf->GetVectorX (), tf->GetVectorY (), value);
     else if (field == "Angle")
       tf->SetRotationParameter (tf->GetRotationAxis (), value);
@@ -1401,7 +1401,7 @@ public:
     AppendStringPar (seqProp, "Property", "Property", tf->GetProperty ());
     AppendStringPar (seqProp, "Float", "Float", tf->GetFloat ());
     AppendStringPar (seqProp, "Long", "Long", tf->GetLong ());
-    AppendVectorPar (seqProp, "Vector", "Vector",
+    AppendVectorPar (seqProp, "Vector", "V:",
 	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     AppendBoolPar (seqProp, "Relative", "Relative", tf->IsRelative ());
   }
@@ -1421,11 +1421,11 @@ public:
       tf->SetFloatParameter (value);
     else if (field == "Long")
       tf->SetLongParameter (value);
-    else if (field == "Vector.X")
+    else if (field == "V:Vector.X")
       tf->SetVector3Parameter (value, tf->GetVectorY (), tf->GetVectorZ ());
-    else if (field == "Vector.Y")
+    else if (field == "V:Vector.Y")
       tf->SetVector3Parameter (tf->GetVectorX (), value, tf->GetVectorZ ());
-    else if (field == "Vector.Z")
+    else if (field == "V:Vector.Z")
       tf->SetVector3Parameter (tf->GetVectorX (), tf->GetVectorY (), value);
     else if (field == "Relative")
       tf->SetRelative (ToBool (value));

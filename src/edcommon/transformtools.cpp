@@ -66,7 +66,8 @@ csVector3 TransformTools::GetCenterSelected (iSelection* selection)
     const csReversibleTransform& tr = dynobj->GetTransform ();
     center += tr.This2Other (box.GetCenter ());
   }
-  center /= selection->GetSize ();
+  if (selection->GetSize () > 0)
+    center /= selection->GetSize ();
   return center;
 }
 

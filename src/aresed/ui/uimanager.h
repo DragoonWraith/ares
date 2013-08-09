@@ -72,6 +72,9 @@ private:
   csHash<wxChoice*,csString> choiceFields;
   csHash<wxComboBox*,csString> comboFields;
 
+  int wizardButtonIndex;
+  csHash<int,csString> wizardButtons;
+
   csHash<ValueListInfo,csString> valueListFields;
 
   SmartPickerLogic spl;
@@ -114,6 +117,8 @@ public:
   virtual void AddMultiText (const char* name);
   /// Add a button in the current row.
   virtual void AddButton (const char* str);
+  /// Add a wizard button in the current row.
+  virtual void AddWizardButton (const char* str);
   /// Add a combobox control in the current row with the given choices (end with 0).
   virtual void AddCombo (const char* name, ...);
   virtual void AddCombo (const char* name, const csStringArray& choiceArray);

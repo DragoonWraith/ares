@@ -65,7 +65,7 @@ protected:
   wxArrayInt typesArrayIdx;
 
   int RegisterContextMenu (wxObjectEventFunction handler);
-  void AppendButtonPar (
+  wxPGProperty* AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name);
   void AppendPar (
     wxPGProperty* parent, const char* partype,

@@ -198,8 +198,8 @@ iEditorCamera* AresEdit3DView::GetEditorCamera () const
 void AresEdit3DView::SelectionChanged (const csArray<iDynamicObject*>& current_objects)
 {
   modelRepository->GetObjectsValueInt ()->RefreshModel ();
-  if (app->GetCameraWindow ())
-    app->GetCameraWindow ()->CurrentObjectsChanged (current_objects);
+  if (app->GetInternalCameraWindow ())
+    app->GetInternalCameraWindow ()->CurrentObjectsChanged (current_objects);
 
   bool curveTabEnable = false;
   if (selection->GetSize () == 1)

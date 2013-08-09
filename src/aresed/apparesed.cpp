@@ -784,6 +784,11 @@ void AppAresEditWX::RegisterModification (const csArray<iObject*>& resources)
   UpdateTitle ();
 }
 
+iCameraWindow* AppAresEditWX::GetCameraWindow () const
+{
+  return camwin;
+}
+
 void AppAresEditWX::RegisterModification (iObject* resource)
 {
   if (!resource)

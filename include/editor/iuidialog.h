@@ -83,6 +83,8 @@ struct iUIDialog : public virtual iBase
   virtual void AddMultiText (const char* name) = 0;
   /// Add a button in the current row.
   virtual void AddButton (const char* str) = 0;
+  /// Add a wizard button in the current row.
+  virtual void AddWizardButton (const char* str) = 0;
   /// Add a combobox control in the current row with the given choices (end with 0).
   virtual void AddCombo (const char* name, ...) = 0;
   virtual void AddCombo (const char* name, const csStringArray& choiceArray) = 0;

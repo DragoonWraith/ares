@@ -134,14 +134,14 @@ void GridSupport::AppendVectorPar (
     wxPGProperty* parent, const char* label, const char* name,
     const char* x, const char* y, const char* z)
 {
-  wxPGProperty* parProp = AppendStringPar (parent, label, name, "<composed>");
+  wxPGProperty* parProp = AppendButtonPar (parent, label, name, "<composed>");
   AppendStringPar (parProp, "X", "X", x);
   AppendStringPar (parProp, "Y", "Y", y);
   AppendStringPar (parProp, "Z", "Z", z);
   detailGrid->Collapse (parProp);
 }
 
-void GridSupport::AppendButtonPar (
+wxPGProperty* GridSupport::AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name)
 {
   wxStringProperty* prop = new wxStringProperty (
@@ -150,6 +150,7 @@ void GridSupport::AppendButtonPar (
       wxString::FromUTF8 (name));
   detailGrid->AppendIn (parent, prop);
   detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
+  return prop;
 }
 
 int GridSupport::RegisterContextMenu (wxObjectEventFunction handler)

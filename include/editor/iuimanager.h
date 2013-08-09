@@ -66,7 +66,10 @@ struct iUIManager : public virtual iBase
    *     <format> := <row> { NL <row> }
    *     <row> := <component> { ';' <component> }
    *     <component> := <label> | <text> | <choice> | <multitext> | <typedtext>
+   *                    <button> | <wizardbutton>
    *     <label> := 'L' <string>
+   *     <button> := 'B' <string>
+   *     <wizardbutton> := 'W' <string>
    *     <text> := 'T' <name>
    *     <multitext> := 'M' <name>
    *     <choice> := 'C' <name> ',' <string> { ',' <string> }

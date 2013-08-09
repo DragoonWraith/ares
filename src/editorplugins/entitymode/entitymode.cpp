@@ -26,6 +26,7 @@ THE SOFTWARE.
 #include "imap/objectcomment.h"
 #include "edcommon/listctrltools.h"
 #include "edcommon/inspect.h"
+#include "edcommon/transformtools.h"
 #include "edcommon/uitools.h"
 #include "entitymode.h"
 #include "editor/i3dview.h"
@@ -34,6 +35,7 @@ THE SOFTWARE.
 #include "editor/iuidialog.h"
 #include "editor/imodelrepository.h"
 #include "editor/iconfig.h"
+#include "editor/icamerawin.h"
 #include "iassetmanager.h"
 
 #include "celtool/stdparams.h"
@@ -277,6 +279,30 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 {
 }
 
+static void Set3Value (EntityMode* emode, wxPGProperty* prop, const char* v1,
+    const char* v2, const char* v3)
+{
+  prop->Item (0)->SetValue (wxString::FromUTF8 (v1));
+  prop->Item (1)->SetValue (wxString::FromUTF8 (v2));
+  prop->Item (2)->SetValue (wxString::FromUTF8 (v3));
+  csString composed;
+  composed.Format ("%s; %s; %s", v1, v2, v3);
+  prop->SetValue (wxString::FromUTF8 (composed));
+
+  emode->OnPropertyGridChanged (prop->Item (0));
+  emode->OnPropertyGridChanged (prop->Item (1));
+  emode->OnPropertyGridChanged (prop->Item (2));
+}
+
+static void Set3Value (EntityMode* emode, wxPGProperty* prop, const csVector3& v)
+{
+  csString s1, s2, s3;
+  s1.Format ("%g", v.x);
+  s2.Format ("%g", v.y);
+  s3.Format ("%g", v.z);
+  Set3Value (emode, prop, s1, s2, s3);
+}
+
 void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 {
   using namespace Ares;
@@ -328,6 +354,55 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
 	    TEMPLATE_COL_MODIFIED);
       col = TEMPLATE_COL_NAME;
+    }
+    else if (propName.StartsWith ("V:"))
+    {
+      csRef<iUIDialog> dialog = ui->CreateDialog ("Position Wizard",
+	  "WOrigin\nWFrom an object...\nWCurrent 3D View Camera Position\nWCurrent Selected Object\nWStored Position 1\nWStored Position 2\nWStored Position 3");
+      int result = dialog->Show (0);
+      switch (result)
+      {
+	case 0:
+	case 1:
+	  break;
+	case 2:
+	  Set3Value (this, selectedProperty, "0", "0", "0");
+	  break;
+	case 3:
+	  {
+            Value* objects = view3d->GetModelRepository ()->GetObjectsValue ();
+	    chosen = ui->AskDialog ("Select an object", objects,
+		"Entity,Template,Dynfact,X,Y,Z",
+		DYNOBJ_COL_X, DYNOBJ_COL_Y, DYNOBJ_COL_Z,
+		DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
+	    if (chosen)
+	    {
+	      csString x = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_X);
+	      csString y = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_Y);
+	      csString z = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_Z);
+	      Set3Value (this, selectedProperty, x, y, z);
+	    }
+	  }
+	  break;
+	case 4:
+	  Set3Value (this, selectedProperty,
+	      view3d->GetCsCamera ()->GetTransform ().GetOrigin ());
+	  break;
+	case 5:
+	  Set3Value (this, selectedProperty, TransformTools::GetCenterSelected (
+		  view3d->GetSelection ()));
+	  break;
+	case 6:
+	  Set3Value (this, selectedProperty, app->GetCameraWindow ()->GetStoredLocation (0));
+	  break;
+	case 7:
+	  Set3Value (this, selectedProperty, app->GetCameraWindow ()->GetStoredLocation (1));
+	  break;
+	case 8:
+	  Set3Value (this, selectedProperty, app->GetCameraWindow ()->GetStoredLocation (2));
+	  break;
+      }
+      return;
     }
     if (chosen)
     {
@@ -1111,6 +1186,7 @@ void EntityMode::RefreshGrid (iCelPropertyClassTemplate* pctpl)
   if (!started) return;
   if (editQuestMode)
   {
+printf ("FillDetailGrid\n"); fflush (stdout);
     FillDetailGrid (editQuestMode);
   }
   else
@@ -1291,10 +1367,14 @@ void EntityMode::OnQuestSelect ()
   Ares::Value* v = view.GetSelectedValue (list);
   if (!v) return;
   csString questName = v->GetStringArrayValue ()->Get (QUEST_COL_NAME);
-  editQuestMode = questMgr->GetQuestFactory (questName);
-  currentTemplate = "";
-  RefreshView ();
-  RefreshGrid ();
+  iQuestFactory* selectedQuest = questMgr->GetQuestFactory (questName);
+  if (editQuestMode != selectedQuest)
+  {
+    editQuestMode = selectedQuest;
+    currentTemplate = "";
+    RefreshView ();
+    RefreshGrid ();
+  }
 }
 
 void EntityMode::OnTemplateSelect ()
@@ -2246,6 +2326,7 @@ void EntityMode::OnCreateTrigger ()
     csString name = fields.Get ("name", "");
     iTriggerType* triggertype = questMgr->GetTriggerType ("cel.triggers."+name);
     csRef<iTriggerFactory> triggerFact = triggertype->CreateTriggerFactory ();
+    resp = questState->CreateTriggerResponseFactory ();
     resp->SetTriggerFactory (triggerFact);
     RegisterModification (questFact);
     RefreshView ();

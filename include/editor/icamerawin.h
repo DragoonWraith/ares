@@ -33,6 +33,9 @@ THE SOFTWARE.
 struct iCameraWindow : public virtual iBase
 {
   SCF_INTERFACE(iCameraWindow,0,0,1);
+
+  /// Get the stored location at the given index (index 0, 1, or 2 supported).
+  virtual const csVector3& GetStoredLocation (int r) const = 0;
 };
 
 

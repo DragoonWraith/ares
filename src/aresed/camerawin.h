@@ -73,6 +73,10 @@ public:
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
+  virtual const csVector3& GetStoredLocation (int r) const
+  {
+    return trans[r].pos;
+  }
 
   void Show () { panel->Show (); parentSizer->Layout (); }
   void Hide () { panel->Hide (); parentSizer->Layout (); }

@@ -63,6 +63,7 @@ UIDialog::UIDialog (wxWindow* parent, const char* title, iUIManager* uiManager,
   okCancelAdded = false;
   mainPanel->SetMinSize (wxSize (width, height));
   mainSizer->Add (mainPanel, 1, wxALL, 5);
+  wizardButtonIndex = 2;
 }
 
 UIDialog::~UIDialog ()
@@ -264,6 +265,18 @@ void UIDialog::AddButton (const char* str)
   button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
 	UIDialog::OnButtonClicked), 0, this);
   buttons.Push (button);
+}
+
+void UIDialog::AddWizardButton (const char* str)
+{
+  CS_ASSERT (lastRowSizer != 0);
+  wxButton* button = new wxButton (mainPanel, wxID_ANY, wxString::FromUTF8 (str),
+      wxDefaultPosition, wxDefaultSize, 0);
+  lastRowSizer->Add (button, 1, wxEXPAND | wxALL | wxALIGN_CENTER_VERTICAL, 5);
+  button->Connect (wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler (
+	UIDialog::OnButtonClicked), 0, this);
+  buttons.Push (button);
+  wizardButtons.Put (str, wizardButtonIndex++);
 }
 
 void UIDialog::SetValue (const char* name, const char* value)
@@ -495,6 +508,14 @@ void UIDialog::ProcessButton (const csString& buttonLabel)
       Close ();
     return;
   }
+  else if (wizardButtons.Contains (buttonLabel))
+  {
+    if (IsModal ())
+      EndModal (wizardButtons.Get (buttonLabel, 1));
+    else
+      Close ();
+    return;
+  }
 
   if (callback) callback->ButtonPressed (this, buttonLabel);
 }
@@ -716,6 +737,8 @@ csPtr<iUIDialog> UIManager::CreateDialog (const char* title, const char* format,
       csString cmp = components.Get (j);
       if (cmp.StartsWith ("L")) dialog->AddLabel (cmp.GetData () + 1);
       else if (cmp.StartsWith ("T")) dialog->AddText (cmp.GetData () + 1);
+      else if (cmp.StartsWith ("B")) dialog->AddButton (cmp.GetData () + 1);
+      else if (cmp.StartsWith ("W")) dialog->AddWizardButton (cmp.GetData () + 1);
       else if (cmp.StartsWith ("M")) dialog->AddMultiText (cmp.GetData () + 1);
       else if (cmp.StartsWith ("C"))
       {
