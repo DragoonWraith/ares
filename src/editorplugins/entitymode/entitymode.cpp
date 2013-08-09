@@ -563,31 +563,87 @@ void EntityMode::BuildDetailGrid ()
   questEditor.AttachNew (new QuestEditorSupportMain (this));
 }
 
-void EntityMode::FillDetailGrid (iQuestFactory* questFact)
+void EntityMode::FillDetailGrid (iQuestFactory* questFact, iQuestStateFactory* state,
+    iCelSequenceFactory* sequence, bool rememberState)
 {
   csString s;
   detailGrid->Freeze ();
 
+  wxString gridState;
+  if (rememberState)
+    gridState = detailGrid->SaveEditableState ();
+
   if (questFact)
   {
-    detailGrid->Clear ();
-    s.Format ("Quest (%s)", questFact->GetName ());
-    wxPGProperty* questProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
-    questEditor->Fill (questProp, questFact);
+    if (state)
+    {
+      wxPGProperty* stateProp = questEditor->Find (state);
+      if (!stateProp)
+      {
+	// There is no property for this state yet. We insert one at the appropriate place.
+	csString ss;
+	ss.Format ("State (%s)", state->GetName ());
+	wxPGProperty* questProp = detailGrid->GetPropertyByName (wxT ("Quest"));
+        s.Format ("State:%s", state->GetName ());
+	wxPropertyCategory* propCat = new wxPropertyCategory (wxString::FromUTF8 (ss),
+	    wxString::FromUTF8 (s));
+	stateProp = detailGrid->AppendIn (questProp, propCat);
+      }
+      if (stateProp)
+      {
+	stateProp->Empty ();
+        questEditor->FillState (stateProp, state);
+      }
+    }
+    else if (sequence)
+    {
+      wxPGProperty* seqProp = questEditor->Find (sequence);
+      if (!seqProp)
+      {
+	// There is no property for this sequence yet. We insert one at the appropriate place.
+	csString ss;
+	ss.Format ("Sequence (%s)", sequence->GetName ());
+	wxPGProperty* questProp = detailGrid->GetPropertyByName (wxT ("Quest"));
+        s.Format ("Sequence:%s", sequence->GetName ());
+	wxPropertyCategory* propCat = new wxPropertyCategory (wxString::FromUTF8 (ss),
+	    wxString::FromUTF8 (s));
+	seqProp = detailGrid->AppendIn (questProp, propCat);
+      }
+      if (seqProp)
+      {
+	seqProp->Empty ();
+        questEditor->GetSequenceEditor ()->FillSequence (seqProp, sequence);
+      }
+    }
+    else
+    {
+      detailGrid->Clear ();
+      s.Format ("Quest (%s)", questFact->GetName ());
+      wxPGProperty* questProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s), wxT ("Quest")));
+      questEditor->Fill (questProp, questFact);
+    }
   }
   else
   {
     detailGrid->Clear ();
   }
 
+  if (!gridState.IsEmpty ())
+    detailGrid->RestoreEditableState (gridState);
+
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
 }
 
-void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl)
+void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
+    bool rememberState)
 {
   csString s;
   detailGrid->Freeze ();
+
+  wxString gridState;
+  if (rememberState)
+    gridState = detailGrid->SaveEditableState ();
 
   if (pctpl)
   {
@@ -600,8 +656,7 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTempl
 	wxPGProperty* pcProp = detailGrid->GetPropertyByName (wxString::FromUTF8 (s));
 	if (!pcProp)
 	{
-	  // There is no property for this PC yet. We insert one at the appropriate
-	  // place.
+	  // There is no property for this PC yet. We insert one at the appropriate place.
 	  csString ss;
 	  ss.Format ("Template (%s)", tpl->GetName ());
 	  wxPGProperty* templateProp = detailGrid->GetPropertyByName (wxString::FromUTF8 (ss));
@@ -634,6 +689,9 @@ void EntityMode::FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTempl
     wxPGProperty* templateProp = detailGrid->Append (new wxPropertyCategory (wxString::FromUTF8 (s)));
     templateEditor->Fill (templateProp, 0);
   }
+
+  if (!gridState.IsEmpty ())
+    detailGrid->RestoreEditableState (gridState);
 
   detailGrid->FitColumns ();
   detailGrid->Thaw ();
@@ -1164,7 +1222,7 @@ void EntityMode::Refresh ()
   questsValue->Refresh ();
   ActivateNode (0);
   RefreshView ();
-  RefreshGrid ();
+  RefreshGrid (0, 0, 0, false);
   delayedRefreshType = REFRESH_NOCHANGE;
   refreshPctpl = 0;
 }
@@ -1195,18 +1253,19 @@ void EntityMode::RefreshView (iCelPropertyClassTemplate* pctpl)
   }
 }
 
-void EntityMode::RefreshGrid (iCelPropertyClassTemplate* pctpl)
+void EntityMode::RefreshGrid (iCelPropertyClassTemplate* pctpl,
+    iQuestStateFactory* state, iCelSequenceFactory* sequence,
+    bool rememberState)
 {
   if (!started) return;
   if (editQuestMode)
   {
-printf ("FillDetailGrid\n"); fflush (stdout);
-    FillDetailGrid (editQuestMode);
+    FillDetailGrid (editQuestMode, state, sequence, rememberState);
   }
   else
   {
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
-    FillDetailGrid (tpl, pctpl);
+    FillDetailGrid (tpl, pctpl, rememberState);
   }
 }
 
@@ -1387,7 +1446,7 @@ void EntityMode::OnQuestSelect ()
     editQuestMode = selectedQuest;
     currentTemplate = "";
     RefreshView ();
-    RefreshGrid ();
+    RefreshGrid (0, 0, 0, false);
   }
 }
 
@@ -1405,7 +1464,7 @@ void EntityMode::OnTemplateSelect ()
     editQuestMode = 0;
     currentTemplate = templateName;
     RefreshView ();
-    RefreshGrid ();
+    RefreshGrid (0, 0, 0, false);
     ActivateNode (0);
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (currentTemplate);
     app->SetObjectForComment ("template", tpl->QueryObject ());
@@ -1467,6 +1526,7 @@ void EntityMode::SelectResource (iObject* resource)
 void EntityMode::SelectQuest (iQuestFactory* questFact)
 {
   currentTemplate = "";
+  bool rememberState = editQuestMode == questFact;
   editQuestMode = questFact;
   BuildTemplateGraph (currentTemplate);
   questsValue->Refresh ();
@@ -1484,7 +1544,7 @@ void EntityMode::SelectQuest (iQuestFactory* questFact)
   ActivateNode (0);
   app->SetObjectForComment ("quest", questFact->QueryObject ());
   RefreshView ();
-  RefreshGrid ();
+  RefreshGrid (0, 0, 0, rememberState);
 }
 
 void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
@@ -1740,7 +1800,7 @@ void EntityMode::OnDelete ()
 {
   if (editQuestMode && contextLastProperty)
   {
-    if (questEditor->DeleteFromContext (contextLastProperty, editQuestMode))
+    if (questEditor->OnDeleteFromContext (contextLastProperty, editQuestMode))
     {
       RegisterModification (editQuestMode);
       RefreshView ();
@@ -1802,7 +1862,7 @@ void EntityMode::DeleteItem (const char* item)
     responses->Delete (resp);
     RegisterModification (questFact);
     RefreshView ();
-    RefreshGrid ();
+    RefreshGrid (0, questState, 0);
   }
   else if (type == 'r')
   {
@@ -1814,7 +1874,9 @@ void EntityMode::DeleteItem (const char* item)
     iQuestFactory* questFact = GetSelectedQuest (item);
     RegisterModification (questFact);
     RefreshView ();
-    RefreshGrid ();
+    csString state = GetSelectedStateName (item);
+    iQuestStateFactory* questState = questFact->GetState (state);
+    RefreshGrid (0, questState, 0);
   }
   else if (type == 's')
   {
@@ -1865,8 +1927,12 @@ void EntityMode::QuestWasEdited (iQuestStateFactory* stateFact, iCelSequenceFact
     case REFRESH_NOCHANGE:
     case REFRESH_NO:
       break;
-    case REFRESH_STATE:		// @@@ Todo: implement
+    case REFRESH_STATE:
+      RefreshGrid (0, stateFact, 0);
+      break;
     case REFRESH_SEQUENCE:
+      RefreshGrid (0, 0, seqFact);
+      break;
     case REFRESH_FULL:
       RefreshGrid ();
       break;
@@ -2188,7 +2254,7 @@ void EntityMode::OnSeqOpMove (int dir)
   graphView->ActivateNode (0);
   ActivateNode (0);
   RefreshView ();
-  RefreshGrid ();
+  RefreshGrid (0, 0, seqFact);
 }
 
 void EntityMode::OnRewardMove (int dir)
@@ -2221,7 +2287,13 @@ void EntityMode::OnRewardMove (int dir)
   graphView->ActivateNode (0);
   ActivateNode (0);
   RefreshView ();
-  RefreshGrid ();
+  if (contextLastProperty)
+  {
+    iQuestStateFactory* stateFact = questEditor->GetStateForProperty (contextLastProperty);
+    RefreshGrid (0, stateFact, 0);
+  }
+  else
+    RefreshGrid ();
 }
 
 void EntityMode::OnCreateReward (int type)
@@ -2246,7 +2318,7 @@ void EntityMode::OnCreateReward (int type)
 
     RegisterModification (questFact);
     RefreshView ();
-    RefreshGrid ();
+    RefreshGrid (0, questState, 0);
   }
 }
 
@@ -2258,8 +2330,8 @@ bool EntityMode::GetQuestContextInfo (iQuestFactory*& questFact,
 
   if (editQuestMode && contextLastProperty)
   {
-    int idx;
-    stateFact = questEditor->GetStateForProperty (contextLastProperty, idx);
+    int idx = questEditor->GetResponseIndexForProperty (contextLastProperty);;
+    stateFact = questEditor->GetStateForProperty (contextLastProperty);
     csRef<iQuestTriggerResponseFactoryArray> responses = stateFact->GetTriggerResponseFactories ();
     if (idx >= 0)
       resp = responses->Get (idx);
@@ -2282,10 +2354,10 @@ void EntityMode::Message_OnCreatePar ()
 {
   if (questEditor->OnCreatePar (contextLastProperty))
   {
-    // @@@ Smarter refresh?
     RegisterModification (editQuestMode);
     RefreshView ();
-    RefreshGrid ();
+    iQuestStateFactory* stateFact = questEditor->GetStateForProperty (contextLastProperty);
+    RefreshGrid (0, stateFact, 0);
   }
 }
 
@@ -2293,10 +2365,10 @@ void EntityMode::Message_OnDeletePar ()
 {
   if (questEditor->OnDeletePar (contextLastProperty))
   {
-    // @@@ Smarter refresh?
     RegisterModification (editQuestMode);
     RefreshView ();
-    RefreshGrid ();
+    iQuestStateFactory* stateFact = questEditor->GetStateForProperty (contextLastProperty);
+    RefreshGrid (0, stateFact, 0);
   }
 }
 
@@ -2320,7 +2392,7 @@ void EntityMode::OnCreateSeqOp ()
 
     RegisterModification (editQuestMode);
     RefreshView ();
-    RefreshGrid ();
+    RefreshGrid (0, 0, seqFact);
   }
 }
 
@@ -2344,7 +2416,7 @@ void EntityMode::OnCreateTrigger ()
     resp->SetTriggerFactory (triggerFact);
     RegisterModification (questFact);
     RefreshView ();
-    RefreshGrid ();
+    RefreshGrid (0, questState, 0);
   }
 }
 

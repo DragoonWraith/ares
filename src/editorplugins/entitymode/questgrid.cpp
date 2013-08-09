@@ -1463,8 +1463,7 @@ SequenceSupportDriver::SequenceSupportDriver (const char* name, EntityMode* emod
   seqoptypesArray.Add (wxT ("Property"));
 }
 
-void SequenceSupportDriver::FillSeqOps (wxPGProperty* seqProp, size_t idx,
-    iCelSequenceFactory* state)
+void SequenceSupportDriver::FillSequence (wxPGProperty* seqProp, iCelSequenceFactory* state)
 {
   csString s;
   for (size_t i = 0 ; i < state->GetSeqOpFactoryCount () ; i++)
@@ -1490,7 +1489,6 @@ void SequenceSupportDriver::FillSeqOps (wxPGProperty* seqProp, size_t idx,
 void SequenceSupportDriver::Fill (wxPGProperty* questProp, iQuestFactory* questFact)
 {
   csString s, ss;
-  size_t idx = 0;
   csRef<iCelSequenceFactoryIterator> seqIt = questFact->GetSequences ();
   while (seqIt->HasNext ())
   {
@@ -1499,8 +1497,7 @@ void SequenceSupportDriver::Fill (wxPGProperty* questProp, iQuestFactory* questF
     ss.Format ("Sequence (%s)", seqFact->GetName ());
     wxPGProperty* seqProp = detailGrid->AppendIn (questProp,
       new wxPropertyCategory (wxString::FromUTF8 (ss), wxString::FromUTF8 (s)));
-    FillSeqOps (seqProp, idx, seqFact);
-    idx++;
+    FillSequence (seqProp, seqFact);
   }
 }
 
@@ -1596,7 +1593,7 @@ static wxPGProperty* FindStateProperty (wxPGProperty* prop)
 #define ONINIT_INDEX -3
 #define ONEXIT_INDEX -2
 
-static int FindResponseProperty (wxPGProperty* prop)
+int QuestEditorSupportMain::GetResponseIndexForProperty (wxPGProperty* prop)
 {
   while (prop)
   {
@@ -1627,11 +1624,8 @@ iCelSequenceFactory* QuestEditorSupportMain::GetSequenceForProperty (wxPGPropert
   return 0;
 }
 
-iQuestStateFactory* QuestEditorSupportMain::GetStateForProperty (wxPGProperty* property,
-    int& responseIndex)
+iQuestStateFactory* QuestEditorSupportMain::GetStateForProperty (wxPGProperty* property)
 {
-  responseIndex = FindResponseProperty (property);
-
   wxPGProperty* stateProperty = FindStateProperty (property);
   if (stateProperty)
   {
@@ -1654,8 +1648,8 @@ size_t QuestEditorSupportMain::GetSeqOpForProperty (wxPGProperty* property)
 csRef<iRewardFactoryArray> QuestEditorSupportMain::GetRewardForProperty (
     wxPGProperty* property, size_t& index)
 {
-  int responseIndex;
-  iQuestStateFactory* state = GetStateForProperty (property, responseIndex);
+  int responseIndex = GetResponseIndexForProperty (property);;
+  iQuestStateFactory* state = GetStateForProperty (property);
   if (!state) return 0;
 
   csString propName = GetPropertyName (property);
@@ -1692,14 +1686,21 @@ QuestEditorSupportMain::QuestEditorSupportMain (EntityMode* emode) :
   sequenceEditor.AttachNew (new SequenceSupportDriver ("main", emode));
 }
 
-void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state)
+static csString ReplaceDot (const char* s)
+{
+  csString str = s;
+  str.ReplaceAll (".", "");
+  return str;
+}
+
+void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, iQuestStateFactory* state)
 {
   csString s;
   csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
   for (size_t i = 0 ; i < responses->GetSize () ; i++)
   {
     iQuestTriggerResponseFactory* response = responses->Get (i);
-    s.Format ("Response:%d:%d", int (i), int (idx));
+    s.Format ("Response:%d:%s", int (i), ReplaceDot (state->GetName ()).GetData ());
     wxPGProperty* responseProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("Response"), wxString::FromUTF8 (s)));
     iTriggerFactory* triggerFact = response->GetTriggerFactory ();
@@ -1710,51 +1711,51 @@ void QuestEditorSupportMain::FillResponses (wxPGProperty* stateProp, size_t idx,
 
 }
 
-void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, size_t idx,
-    iQuestStateFactory* state)
+void QuestEditorSupportMain::FillOnInit (wxPGProperty* stateProp, iQuestStateFactory* state)
 {
   csRef<iRewardFactoryArray> initRewards = state->GetInitRewardFactories ();
   if (initRewards->GetSize () > 0)
   {
     csString s;
-    s.Format ("OnInit:%d\n", int (idx));
+    s.Format ("OnInit:%s\n", ReplaceDot (state->GetName ()).GetData ());
     wxPGProperty* oninitProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("OnInit"), wxString::FromUTF8 (s)));
     rewardEditor->FillRewards (oninitProp, initRewards);
   }
 }
 
-void QuestEditorSupportMain::FillOnExit (wxPGProperty* stateProp, size_t idx,
-    iQuestStateFactory* state)
+void QuestEditorSupportMain::FillOnExit (wxPGProperty* stateProp, iQuestStateFactory* state)
 {
   csRef<iRewardFactoryArray> exitRewards = state->GetExitRewardFactories ();
   if (exitRewards->GetSize () > 0)
   {
     csString s;
-    s.Format ("OnExit:%d\n", int (idx));
+    s.Format ("OnExit:%s\n", ReplaceDot (state->GetName ()).GetData ());
     wxPGProperty* onexitProp = detailGrid->AppendIn (stateProp,
       new wxPropertyCategory (wxT ("OnExit"), wxString::FromUTF8 (s)));
     rewardEditor->FillRewards (onexitProp, exitRewards);
   }
 }
 
+void QuestEditorSupportMain::FillState (wxPGProperty* stateProp, iQuestStateFactory* state)
+{
+  FillOnInit (stateProp, state);
+  FillResponses (stateProp, state);
+  FillOnExit (stateProp, state);
+}
+
 void QuestEditorSupportMain::Fill (wxPGProperty* questProp, iQuestFactory* questFact)
 {
   csString s, ss;
-
-  size_t idx = 0;
   csRef<iQuestStateFactoryIterator> it = questFact->GetStates ();
   while (it->HasNext ())
   {
-    iQuestStateFactory* stateFact = it->Next ();
-    s.Format ("State:%s", stateFact->GetName ());
-    ss.Format ("State (%s)", stateFact->GetName ());
+    iQuestStateFactory* state = it->Next ();
+    s.Format ("State:%s", state->GetName ());
+    ss.Format ("State (%s)", state->GetName ());
     wxPGProperty* stateProp = detailGrid->AppendIn (questProp,
       new wxPropertyCategory (wxString::FromUTF8 (ss), wxString::FromUTF8 (s)));
-    FillOnInit (stateProp, idx, stateFact);
-    FillResponses (stateProp, idx, stateFact);
-    FillOnExit (stateProp, idx, stateFact);
-    idx++;
+    FillState (stateProp, state);
   }
   sequenceEditor->Fill (questProp, questFact);
 }
@@ -1813,9 +1814,9 @@ RefreshType QuestEditorSupportMain::Update (wxPGProperty* selectedProperty,
     iQuestStateFactory*& state, iCelSequenceFactory*& sequence)
 {
   csString selectedPropName = GetPropertyName (selectedProperty);
-  int responseIndex;
   sequence = GetSequenceForProperty (selectedProperty);
-  state = GetStateForProperty (selectedProperty, responseIndex);
+  int responseIndex = GetResponseIndexForProperty (selectedProperty);
+  state = GetStateForProperty (selectedProperty);
   if (state)
   {
     printf ("Quest/PG changed %s state=%s response=%d!\n", selectedPropName.GetData (),
@@ -1897,9 +1898,9 @@ void QuestEditorSupportMain::DoContext (wxPGProperty* property, wxMenu* contextM
   todelete.Empty ();
 
   csString selectedPropName = GetPropertyName (property);
-  int responseIndex;
   iCelSequenceFactory* sequence = GetSequenceForProperty (property);
-  iQuestStateFactory* state = GetStateForProperty (property, responseIndex);
+  int responseIndex = GetResponseIndexForProperty (property);;
+  iQuestStateFactory* state = GetStateForProperty (property);
   if (state)
   {
     printf ("Quest/PG context %s state=%s response=%d!\n", selectedPropName.GetData (),
@@ -1921,11 +1922,10 @@ void QuestEditorSupportMain::DoContext (wxPGProperty* property, wxMenu* contextM
   }
 }
 
-bool QuestEditorSupportMain::DeleteFromContext (wxPGProperty* contextProperty,
+bool QuestEditorSupportMain::OnDeleteFromContext (wxPGProperty* contextProperty,
     iQuestFactory* questFact)
 {
-  int responseIndex;
-  iQuestStateFactory* state = GetStateForProperty (contextProperty, responseIndex);
+  iQuestStateFactory* state = GetStateForProperty (contextProperty);
   iCelSequenceFactory* sequence = GetSequenceForProperty (contextProperty);
   if (todelete == "State")
     questFact->RemoveState (state->GetName ());
@@ -1939,6 +1939,7 @@ bool QuestEditorSupportMain::DeleteFromContext (wxPGProperty* contextProperty,
   }
   else if (todelete == "Trigger")
   {
+    int responseIndex = GetResponseIndexForProperty (contextProperty);;
     csRef<iQuestTriggerResponseFactoryArray> responses = state->GetTriggerResponseFactories ();
     responses->DeleteIndex (responseIndex);
   }
@@ -1970,4 +1971,19 @@ bool QuestEditorSupportMain::OnDeletePar (wxPGProperty* contextProperty)
   return rewardEditor->OnDeletePar (contextProperty, reward);
 }
 
+wxPGProperty* QuestEditorSupportMain::Find (iQuestStateFactory* state)
+{
+  csString s;
+  s.Format ("State:%s", state->GetName ());
+  wxPGProperty* stateProp = detailGrid->GetPropertyByName (wxString::FromUTF8 (s));
+  return stateProp;
+}
+
+wxPGProperty* QuestEditorSupportMain::Find (iCelSequenceFactory* sequence)
+{
+  csString s;
+  s.Format ("Sequence:%s", sequence->GetName ());
+  wxPGProperty* seqProp = detailGrid->GetPropertyByName (wxString::FromUTF8 (s));
+  return seqProp;
+}
 

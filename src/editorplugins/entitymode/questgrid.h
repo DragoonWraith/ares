@@ -199,8 +199,6 @@ private:
 
   wxArrayString seqoptypesArray;
 
-  void FillSeqOps (wxPGProperty* seqProp, size_t idx, iCelSequenceFactory* state);
-
 public:
   SequenceSupportDriver (const char* name, EntityMode* emode);
   virtual ~SequenceSupportDriver () { }
@@ -210,6 +208,8 @@ public:
       iCelSequenceFactory* seqFact, size_t index);
   void DoContext (const csString& field, iCelSequenceFactory* seqFact, size_t index,
       wxMenu* contextMenu, csString& todelete);
+
+  void FillSequence (wxPGProperty* seqProp, iCelSequenceFactory* state);
 #if 0
   virtual bool Validate (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName,
@@ -231,9 +231,9 @@ private:
   csRef<RewardSupportDriver> rewardEditor;
   csRef<SequenceSupportDriver> sequenceEditor;
 
-  void FillResponses (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
-  void FillOnInit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
-  void FillOnExit (wxPGProperty* stateProp, size_t idx, iQuestStateFactory* state);
+  void FillResponses (wxPGProperty* stateProp, iQuestStateFactory* state);
+  void FillOnInit (wxPGProperty* stateProp, iQuestStateFactory* state);
+  void FillOnExit (wxPGProperty* stateProp, iQuestStateFactory* state);
 
   RefreshType Update (iQuestFactory* questFact, iQuestStateFactory* stateFact,
       wxPGProperty* selectedProperty, const csString& selectedPropName,
@@ -251,17 +251,26 @@ public:
   QuestEditorSupportMain (EntityMode* emode);
   virtual ~QuestEditorSupportMain () { }
 
+  void FillState (wxPGProperty* stateProp, iQuestStateFactory* state);
   void Fill (wxPGProperty* templateProp, iQuestFactory* questFact);
   RefreshType Update (wxPGProperty* selectedProperty, iQuestStateFactory*& stateFact,
       iCelSequenceFactory*& sequence);
   void DoContext (wxPGProperty* property, wxMenu* contextMenu);
 
-  iQuestStateFactory* GetStateForProperty (wxPGProperty* property, int& responseIndex);
+  // Given a property, return context related objects that are being selected.
+  int GetResponseIndexForProperty (wxPGProperty* property);
+  iQuestStateFactory* GetStateForProperty (wxPGProperty* property);
   iCelSequenceFactory* GetSequenceForProperty (wxPGProperty* property);
   csRef<iRewardFactoryArray> GetRewardForProperty (wxPGProperty* property, size_t& index);
   size_t GetSeqOpForProperty (wxPGProperty* property);
 
-  bool DeleteFromContext (wxPGProperty* contextProperty, iQuestFactory* questFact);
+  // Given a context, find the related property that encloses it.
+  wxPGProperty* Find (iQuestStateFactory* state);
+  wxPGProperty* Find (iCelSequenceFactory* sequence);
+
+  SequenceSupportDriver* GetSequenceEditor () const { return sequenceEditor; }
+
+  bool OnDeleteFromContext (wxPGProperty* contextProperty, iQuestFactory* questFact);
   bool OnCreatePar (wxPGProperty* contextProperty);
   bool OnDeletePar (wxPGProperty* contextProperty);
 };

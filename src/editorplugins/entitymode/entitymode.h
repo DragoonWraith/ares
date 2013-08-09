@@ -119,8 +119,14 @@ private:
   iCelSequenceFactory* refreshSeqFact;
 
   void BuildDetailGrid ();
-  void FillDetailGrid (iQuestFactory* questFact);
-  void FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl);
+  void FillDetailGrid (iQuestFactory* questFact, iQuestStateFactory* state,
+      iCelSequenceFactory* sequence, bool rememberState = true);
+  void FillDetailGrid (iCelEntityTemplate* tpl, iCelPropertyClassTemplate* pctpl,
+      bool rememberState = true);
+  /// Refresh the grid.
+  void RefreshGrid (iCelPropertyClassTemplate* pctpl = 0,
+      iQuestStateFactory* state = 0, iCelSequenceFactory* sequence = 0,
+      bool rememberState = true);
   //-----------------------
 
   csString GetRewardsLabel (iRewardFactoryArray* rewards);
@@ -254,8 +260,6 @@ public:
 
   /// Refresh the view. The given pctpl is optional and will be used if given.
   void RefreshView (iCelPropertyClassTemplate* pctpl = 0);
-  /// Refresh the grid.
-  void RefreshGrid (iCelPropertyClassTemplate* pctpl = 0);
 
   PcEditorSupportTemplate* GetTemplateEditor () const { return templateEditor; }
   QuestEditorSupportMain* GetQuestEditor () const { return questEditor; }
