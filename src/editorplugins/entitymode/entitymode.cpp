@@ -49,6 +49,7 @@ THE SOFTWARE.
 #include <wx/xrc/xmlres.h>
 #include <wx/listbox.h>
 #include <wx/notebook.h>
+#include <wx/colordlg.h>
 #include "cseditor/wx/propgrid/propdev.h"
 
 //---------------------------------------------------------------------------
@@ -354,6 +355,19 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
 	    TEMPLATE_COL_MODIFIED);
       col = TEMPLATE_COL_NAME;
+    }
+    else if (propName.StartsWith ("c:"))
+    {
+      wxColour color = wxGetColourFromUser (panel, wxColour ());
+      if (color.IsOk ())
+      {
+	csString red, green, blue;
+	red.Format ("%d", int (color.Red ()));
+	green.Format ("%d", int (color.Green ()));
+	blue.Format ("%d", int (color.Blue ()));
+	Set3Value (this, selectedProperty, red, green, blue);
+      }
+      return;
     }
     else if (propName.StartsWith ("V:"))
     {

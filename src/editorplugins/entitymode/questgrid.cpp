@@ -1225,11 +1225,11 @@ public:
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
     AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
-    AppendColorPar (seqProp, "Relative Color", "RelColor",
+    AppendColorPar (seqProp, "Relative Color", "c:",
 	tf->GetRelColorRed (),
 	tf->GetRelColorGreen (),
 	tf->GetRelColorBlue ());
-    AppendColorPar (seqProp, "Absolute Color", "AbsColor",
+    AppendColorPar (seqProp, "Absolute Color", "c:",
 	tf->GetAbsColorRed (),
 	tf->GetAbsColorGreen (),
 	tf->GetAbsColorBlue ());
@@ -1242,17 +1242,17 @@ public:
       tf->SetEntityParameter (value, tf->GetTag ());
     else if (field == "Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "RelColor.Red")
+    else if (field == "c:Relative Color.Red")
       tf->SetRelColorParameter (value, tf->GetRelColorGreen (), tf->GetRelColorBlue ());
-    else if (field == "RelColor.Green")
+    else if (field == "c:Relative Color.Green")
       tf->SetRelColorParameter (tf->GetRelColorRed (), value, tf->GetRelColorBlue ());
-    else if (field == "RelColor.Blue")
+    else if (field == "c:Relative Color.Blue")
       tf->SetRelColorParameter (tf->GetRelColorRed (), tf->GetRelColorGreen (), value);
-    else if (field == "AbsColor.Red")
+    else if (field == "c:Absolute Color.Red")
       tf->SetAbsColorParameter (value, tf->GetAbsColorGreen (), tf->GetAbsColorBlue ());
-    else if (field == "AbsColor.Green")
+    else if (field == "c:Absolute Color.Green")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), value, tf->GetAbsColorBlue ());
-    else if (field == "AbsColor.Blue")
+    else if (field == "c:Absolute Color.Blue")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), tf->GetAbsColorGreen (), value);
     else
       return REFRESH_NOCHANGE;
@@ -1273,11 +1273,11 @@ public:
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
     AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
-    AppendColorPar (seqProp, "Relative Color", "RelColor",
+    AppendColorPar (seqProp, "Relative Color", "c:",
 	tf->GetRelColorRed (),
 	tf->GetRelColorGreen (),
 	tf->GetRelColorBlue ());
-    AppendColorPar (seqProp, "Absolute Color", "AbsColor",
+    AppendColorPar (seqProp, "Absolute Color", "c:",
 	tf->GetAbsColorRed (),
 	tf->GetAbsColorGreen (),
 	tf->GetAbsColorBlue ());
@@ -1290,17 +1290,17 @@ public:
       tf->SetEntityParameter (value, tf->GetTag ());
     else if (field == "Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "RelColor.Red")
+    else if (field == "c:Relative Color.Red")
       tf->SetRelColorParameter (value, tf->GetRelColorGreen (), tf->GetRelColorBlue ());
-    else if (field == "RelColor.Green")
+    else if (field == "c:Relative Color.Green")
       tf->SetRelColorParameter (tf->GetRelColorRed (), value, tf->GetRelColorBlue ());
-    else if (field == "RelColor.Blue")
+    else if (field == "c:Relative Color.Blue")
       tf->SetRelColorParameter (tf->GetRelColorRed (), tf->GetRelColorGreen (), value);
-    else if (field == "AbsColor.Red")
+    else if (field == "c:Absolute Color.Red")
       tf->SetAbsColorParameter (value, tf->GetAbsColorGreen (), tf->GetAbsColorBlue ());
-    else if (field == "AbsColor.Green")
+    else if (field == "c:Absolute Color.Green")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), value, tf->GetAbsColorBlue ());
-    else if (field == "AbsColor.Blue")
+    else if (field == "c:Absolute Color.Blue")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), tf->GetAbsColorGreen (), value);
     else
       return REFRESH_NOCHANGE;

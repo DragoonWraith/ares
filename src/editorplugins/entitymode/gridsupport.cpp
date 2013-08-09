@@ -123,7 +123,7 @@ void GridSupport::AppendColorPar (
     wxPGProperty* parent, const char* label, const char* name,
     const char* red, const char* green, const char* blue)
 {
-  wxPGProperty* parProp = AppendStringPar (parent, label, name, "<composed>");
+  wxPGProperty* parProp = AppendButtonPar (parent, label, name, "<composed>");
   AppendStringPar (parProp, "Red", "Red", red);
   AppendStringPar (parProp, "Green", "Green", green);
   AppendStringPar (parProp, "Blue", "Blue", blue);
