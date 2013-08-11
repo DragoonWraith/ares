@@ -38,6 +38,15 @@ namespace Ares
   class Value;
 }
 
+enum PCValueColumns
+{
+  PC_COL_ID = 0,
+  PC_COL_ENTITY,
+  PC_COL_TAG,
+  PC_COL_TEMPLATE,
+  PC_COL_FACTORY
+};
+
 enum DynObjValueColumns
 {
   DYNOBJ_COL_ID = 0,
@@ -129,6 +138,11 @@ struct iModelRepository : public virtual iBase
    * Get a value with all objects that have an entity.
    */
   virtual csRef<Ares::Value> GetObjectsWithEntityValue () const = 0;
+
+  /**
+   * Get a value with all property classes.
+   */
+  virtual csRef<Ares::Value> GetPropertyClassesValue (const char* pcname) const = 0;
 
   /**
    * Get the value for all the templates.

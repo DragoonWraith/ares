@@ -33,6 +33,7 @@ THE SOFTWARE.
 #include "quests.h"
 #include "classes.h"
 #include "actions.h"
+#include "propertyclasses.h"
 #include "modelrepository.h"
 
 
@@ -63,6 +64,14 @@ csRef<Ares::Value> ModelRepository::GetObjectsWithEntityValue () const
 {
   csRef<Ares::Value> value;
   value.AttachNew (new ObjectsValue (app, true));
+  value->Refresh ();
+  return value;
+}
+
+csRef<Ares::Value> ModelRepository::GetPropertyClassesValue (const char* pcname) const
+{
+  csRef<Ares::Value> value;
+  value.AttachNew (new PCValue (app, pcname));
   value->Refresh ();
   return value;
 }

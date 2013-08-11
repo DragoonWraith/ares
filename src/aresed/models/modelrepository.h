@@ -73,6 +73,7 @@ public:
   virtual Ares::Value* GetClassesValue () const;
   virtual Ares::Value* GetActionsValue () const;
   virtual csRef<Ares::Value> GetObjectsWithEntityValue () const;
+  virtual csRef<Ares::Value> GetPropertyClassesValue (const char* pcname) const;
   virtual void RefreshObjectsValue ();
   virtual iDynamicObject* GetDynamicObjectFromObjects (Ares::Value* value);
   virtual iObject* GetResourceFromResources (Ares::Value* value);
