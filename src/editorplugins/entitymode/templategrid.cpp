@@ -1107,23 +1107,23 @@ public:
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerSphere", "radius");
       AppendStringPar (typeProp, "Radius", "Radius", par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerSphere", "position");
-      AppendStringPar (typeProp, "Position", "Position", par);
+      AppendVectorPar (typeProp, "Position", "v:", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Box"));
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBox", "minbox");
-      AppendStringPar (typeProp, "MinBox", "MinBox", par);
+      AppendVectorPar (typeProp, "MinBox", "v:", par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBox", "maxbox");
-      AppendStringPar (typeProp, "MaxBox", "MaxBox", par);
+      AppendVectorPar (typeProp, "MaxBox", "v:", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Beam"));
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBeam", "start");
-      AppendStringPar (typeProp, "Start", "Start", par);
+      AppendVectorPar (typeProp, "Start", "v:", par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBeam", "end");
-      AppendStringPar (typeProp, "End", "End", par);
+      AppendVectorPar (typeProp, "End", "v:", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
     {
@@ -1197,27 +1197,27 @@ public:
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerSphere", "radius", CEL_DATA_FLOAT, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.Position")
+    else if (selectedPropName == "TrigType.v:Position")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerSphere", "position", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.MinBox")
+    else if (selectedPropName == "TrigType.v:MinBox")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBox", "minbox", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.MaxBox")
+    else if (selectedPropName == "TrigType.v:MaxBox")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBox", "maxbox", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.Start")
+    else if (selectedPropName == "TrigType.v:Start")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBeam", "start", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.End")
+    else if (selectedPropName == "TrigType.v:End")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBeam", "end", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;

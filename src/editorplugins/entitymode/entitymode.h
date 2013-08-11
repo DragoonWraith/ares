@@ -195,6 +195,8 @@ private:
   csRef<iRewardFactoryArray> GetSelectedReward (const char* key, size_t& idx);
   iCelSequenceFactory* GetSelectedSequence (const char* key);
 
+  bool AskPositionWizard (csVector3& vec);
+
   csRef<iFont> font;
   csRef<iFont> fontBold;
   csRef<iFont> fontLarge;

@@ -304,6 +304,59 @@ static void Set3Value (EntityMode* emode, wxPGProperty* prop, const csVector3& v
   Set3Value (emode, prop, s1, s2, s3);
 }
 
+bool EntityMode::AskPositionWizard (csVector3& vec)
+{
+  using namespace Ares;
+  iUIManager* ui = view3d->GetApplication ()->GetUI ();
+  csRef<iUIDialog> dialog = ui->CreateDialog ("Position Wizard",
+      "WOrigin\nWFrom an object...\nWCurrent 3D View Camera Position\nWCurrent Selected Object\nWStored Position 1\nWStored Position 2\nWStored Position 3");
+  int result = dialog->Show (0);
+  switch (result)
+  {
+    case 0:
+    case 1:
+      return false;
+    case 2:
+      vec.Set (0, 0, 0);
+      return true;
+    case 3:
+      {
+	Value* objects = view3d->GetModelRepository ()->GetObjectsValue ();
+	Value* chosen = ui->AskDialog ("Select an object", objects,
+	    "Entity,Template,Dynfact,X,Y,Z",
+	    DYNOBJ_COL_X, DYNOBJ_COL_Y, DYNOBJ_COL_Z,
+	    DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
+	if (chosen)
+	{
+	  csString x = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_X);
+	  csString y = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_Y);
+	  csString z = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_Z);
+	  csScanStr (x, "%f", &vec.x);
+	  csScanStr (y, "%f", &vec.y);
+	  csScanStr (z, "%f", &vec.z);
+	  return true;
+	}
+      }
+      break;
+    case 4:
+      vec = view3d->GetCsCamera ()->GetTransform ().GetOrigin ();
+      return true;
+    case 5:
+      vec = TransformTools::GetCenterSelected (view3d->GetSelection ());
+      return true;
+    case 6:
+      vec = app->GetCameraWindow ()->GetStoredLocation (0);
+      return true;
+    case 7:
+      vec = app->GetCameraWindow ()->GetStoredLocation (1);
+      return true;
+    case 8:
+      vec = app->GetCameraWindow ()->GetStoredLocation (2);
+      return true;
+  }
+  return false;
+}
+
 void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 {
   using namespace Ares;
@@ -369,53 +422,23 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       }
       return;
     }
+    else if (propName.StartsWith ("v:"))
+    {
+      csVector3 vec;
+      if (AskPositionWizard (vec))
+      {
+        csString composed;
+        composed.Format ("%g,%g,%g", vec.x, vec.y, vec.z);
+	selectedProperty->SetValue (wxString::FromUTF8 (composed));
+	OnPropertyGridChanged (selectedProperty);
+      }
+      return;
+    }
     else if (propName.StartsWith ("V:"))
     {
-      csRef<iUIDialog> dialog = ui->CreateDialog ("Position Wizard",
-	  "WOrigin\nWFrom an object...\nWCurrent 3D View Camera Position\nWCurrent Selected Object\nWStored Position 1\nWStored Position 2\nWStored Position 3");
-      int result = dialog->Show (0);
-      switch (result)
-      {
-	case 0:
-	case 1:
-	  break;
-	case 2:
-	  Set3Value (this, selectedProperty, "0", "0", "0");
-	  break;
-	case 3:
-	  {
-            Value* objects = view3d->GetModelRepository ()->GetObjectsValue ();
-	    chosen = ui->AskDialog ("Select an object", objects,
-		"Entity,Template,Dynfact,X,Y,Z",
-		DYNOBJ_COL_X, DYNOBJ_COL_Y, DYNOBJ_COL_Z,
-		DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
-	    if (chosen)
-	    {
-	      csString x = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_X);
-	      csString y = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_Y);
-	      csString z = chosen->GetStringArrayValue ()->Get (DYNOBJ_COL_Z);
-	      Set3Value (this, selectedProperty, x, y, z);
-	    }
-	  }
-	  break;
-	case 4:
-	  Set3Value (this, selectedProperty,
-	      view3d->GetCsCamera ()->GetTransform ().GetOrigin ());
-	  break;
-	case 5:
-	  Set3Value (this, selectedProperty, TransformTools::GetCenterSelected (
-		  view3d->GetSelection ()));
-	  break;
-	case 6:
-	  Set3Value (this, selectedProperty, app->GetCameraWindow ()->GetStoredLocation (0));
-	  break;
-	case 7:
-	  Set3Value (this, selectedProperty, app->GetCameraWindow ()->GetStoredLocation (1));
-	  break;
-	case 8:
-	  Set3Value (this, selectedProperty, app->GetCameraWindow ()->GetStoredLocation (2));
-	  break;
-      }
+      csVector3 vec;
+      if (AskPositionWizard (vec))
+	Set3Value (this, selectedProperty, vec);
       return;
     }
     if (chosen)

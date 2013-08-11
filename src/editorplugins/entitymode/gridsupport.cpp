@@ -141,6 +141,13 @@ void GridSupport::AppendVectorPar (
   detailGrid->Collapse (parProp);
 }
 
+void GridSupport::AppendVectorPar (
+    wxPGProperty* parent, const char* label, const char* name,
+    const char* vec)
+{
+  AppendButtonPar (parent, label, name, vec);
+}
+
 wxPGProperty* GridSupport::AppendButtonPar (
     wxPGProperty* parent, const char* partype, const char* type, const char* name)
 {

@@ -75,6 +75,9 @@ protected:
     const char* red, const char* green, const char* blue);
   void AppendVectorPar (
     wxPGProperty* parent, const char* label, const char* name,
+    const char* vec);
+  void AppendVectorPar (
+    wxPGProperty* parent, const char* label, const char* name,
     const char* x, const char* y, const char* z);
   wxPGProperty* AppendStringPar (wxPGProperty* parent,
     const char* label, const char* name, const char* value);
