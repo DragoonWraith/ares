@@ -120,10 +120,10 @@ void GridSupport::AppendPar (
 }
 
 void GridSupport::AppendColorPar (
-    wxPGProperty* parent, const char* label, const char* name,
+    wxPGProperty* parent, const char* label,
     const char* red, const char* green, const char* blue)
 {
-  wxPGProperty* parProp = AppendButtonPar (parent, label, name, "<composed>");
+  wxPGProperty* parProp = AppendButtonPar (parent, label, "c:", "<composed>");
   AppendStringPar (parProp, "Red", "Red", red);
   AppendStringPar (parProp, "Green", "Green", green);
   AppendStringPar (parProp, "Blue", "Blue", blue);
@@ -131,10 +131,10 @@ void GridSupport::AppendColorPar (
 }
 
 void GridSupport::AppendVectorPar (
-    wxPGProperty* parent, const char* label, const char* name,
+    wxPGProperty* parent, const char* label,
     const char* x, const char* y, const char* z)
 {
-  wxPGProperty* parProp = AppendButtonPar (parent, label, name, "<composed>");
+  wxPGProperty* parProp = AppendButtonPar (parent, label, "V:", "<composed>");
   AppendStringPar (parProp, "X", "X", x);
   AppendStringPar (parProp, "Y", "Y", y);
   AppendStringPar (parProp, "Z", "Z", z);
@@ -142,10 +142,24 @@ void GridSupport::AppendVectorPar (
 }
 
 void GridSupport::AppendVectorPar (
-    wxPGProperty* parent, const char* label, const char* name,
+    wxPGProperty* parent, const char* label,
     const char* vec)
 {
-  AppendButtonPar (parent, label, name, vec);
+  AppendButtonPar (parent, label, "v:", vec);
+}
+
+void GridSupport::AppendPCPar (wxPGProperty* parent, const char* label, const char* name,
+    const char* prefix, const char* entity, const char* tag, const char* clazz)
+{
+  csString s;
+  wxPGProperty* parProp = AppendButtonPar (parent, label, name, "<composed>");
+  s.Format ("%s%sEntity", prefix ? prefix : "", prefix ? " " : "");
+  AppendButtonPar (parProp, s, "E:", entity);
+  s.Format ("%s%sTag", prefix ? prefix : "", prefix ? " " : "");
+  AppendStringPar (parProp, "Tag", s, tag);
+  s.Format ("%s%sClass", prefix ? prefix : "", prefix ? " " : "");
+  AppendStringPar (parProp, "Class", s, clazz);
+  detailGrid->Collapse (parProp);
 }
 
 wxPGProperty* GridSupport::AppendButtonPar (

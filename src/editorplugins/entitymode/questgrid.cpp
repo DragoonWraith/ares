@@ -116,9 +116,8 @@ public:
     AppendEditEnumPar (responseProp, "State", "State", states,
 	wxArrayInt (), tf->GetStateParameter ());
 
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntityParameter ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTagParameter ());
-    AppendStringPar (responseProp, "Class", "Class", tf->GetClassParameter ());
+    AppendPCPar (responseProp, "PC Quest", "pquest:", 0,
+	tf->GetEntityParameter (), tf->GetTagParameter (), tf->GetClassParameter ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
@@ -126,11 +125,11 @@ public:
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (rewardFact);
     if (field == "State")
       tf->SetStateParameter (value);
-    else if (field == "E:Entity")
+    else if (field == "pquest:PC Quest.E:Entity")
       tf->SetEntityParameter (value, tf->GetTagParameter ());
-    else if (field == "Tag")
+    else if (field == "pcquest:PC Quest.Tag")
       tf->SetEntityParameter (tf->GetEntityParameter (), value);
-    else if (field == "Class")
+    else if (field == "pcquest:PC Quest.Class")
       tf->SetClassParameter (value);
     else
       return REFRESH_NOCHANGE;
@@ -209,9 +208,8 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
-    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendPCPar (responseProp, "PC Quest", "pquest:", 0,
+	tf->GetEntity (), tf->GetTag (), tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
     AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
   }
@@ -219,11 +217,11 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "pquest:PC Quest.E:Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "pquest:PC Quest.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "Class")
+    else if (field == "pquest:PC Quest.Class")
       tf->SetClassParameter (value);
     else if (field == "Sequence")
       tf->SetSequenceParameter (value);
@@ -274,20 +272,19 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
-    AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
+    AppendPCPar (responseProp, "PC Quest", "pquest:", 0,
+	tf->GetEntity (), tf->GetTag (), tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "pcquest:PC Quest.E:Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "pcquest:PC Quest.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "Class")
+    else if (field == "pcquest:PC Quest.Class")
       tf->SetClassParameter (value);
     else if (field == "Sequence")
       tf->SetSequenceParameter (value);
@@ -1044,8 +1041,7 @@ public:
     AppendStringPar (responseProp, "Target Tag", "TargetTag", tf->GetTargetTag ());
     AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
     AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
-    AppendVectorPar (responseProp, "Offset", "V:",
-	tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
+    AppendVectorPar (responseProp, "Offset", tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
@@ -1225,11 +1221,11 @@ public:
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
     AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
-    AppendColorPar (seqProp, "Relative Color", "c:",
+    AppendColorPar (seqProp, "Relative Color",
 	tf->GetRelColorRed (),
 	tf->GetRelColorGreen (),
 	tf->GetRelColorBlue ());
-    AppendColorPar (seqProp, "Absolute Color", "c:",
+    AppendColorPar (seqProp, "Absolute Color",
 	tf->GetAbsColorRed (),
 	tf->GetAbsColorGreen (),
 	tf->GetAbsColorBlue ());
@@ -1273,11 +1269,11 @@ public:
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
     AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
-    AppendColorPar (seqProp, "Relative Color", "c:",
+    AppendColorPar (seqProp, "Relative Color",
 	tf->GetRelColorRed (),
 	tf->GetRelColorGreen (),
 	tf->GetRelColorBlue ());
-    AppendColorPar (seqProp, "Absolute Color", "c:",
+    AppendColorPar (seqProp, "Absolute Color",
 	tf->GetAbsColorRed (),
 	tf->GetAbsColorGreen (),
 	tf->GetAbsColorBlue ());
@@ -1341,8 +1337,7 @@ public:
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
     AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
     AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
-    AppendVectorPar (seqProp, "Vector", "V:",
-	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
+    AppendVectorPar (seqProp, "Vector", tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     wxArrayString rotaxisArray;
     rotaxisArray.Add (wxT ("none"));
     rotaxisArray.Add (wxT ("x"));
@@ -1401,8 +1396,7 @@ public:
     AppendStringPar (seqProp, "Property", "Property", tf->GetProperty ());
     AppendStringPar (seqProp, "Float", "Float", tf->GetFloat ());
     AppendStringPar (seqProp, "Long", "Long", tf->GetLong ());
-    AppendVectorPar (seqProp, "Vector", "V:",
-	tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
+    AppendVectorPar (seqProp, "Vector", tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     AppendBoolPar (seqProp, "Relative", "Relative", tf->IsRelative ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,

@@ -367,7 +367,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
     csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
     iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
-    size_t dot = propName.FindFirst ('.');
+    size_t dot = propName.FindLast ('.');
     if (dot != csArrayItemNotFound)
       propName = propName.Slice (dot+1);
 
@@ -408,6 +408,16 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
 	    TEMPLATE_COL_MODIFIED);
       col = TEMPLATE_COL_NAME;
+    }
+    else if (propName.StartsWith ("pquest:"))
+    {
+      csRef<Value> objects = view3d->GetModelRepository ()->GetPropertyClassesValue ("pclogic.quest");
+      chosen = ui->AskDialog ("Select a property class", objects, "Entity,Tag,Template,Factory",
+	  PC_COL_ENTITY, PC_COL_TAG, PC_COL_TEMPLATE, PC_COL_FACTORY);
+      csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
+      csString tag = chosen->GetStringArrayValue ()->Get (PC_COL_TAG);
+      Set3Value (this, selectedProperty, entity, tag, "");
+      return;
     }
     else if (propName.StartsWith ("c:"))
     {

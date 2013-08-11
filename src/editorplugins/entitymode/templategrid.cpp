@@ -1107,23 +1107,23 @@ public:
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerSphere", "radius");
       AppendStringPar (typeProp, "Radius", "Radius", par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerSphere", "position");
-      AppendVectorPar (typeProp, "Position", "v:", par);
+      AppendVectorPar (typeProp, "Position", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBox")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Box"));
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBox", "minbox");
-      AppendVectorPar (typeProp, "MinBox", "v:", par);
+      AppendVectorPar (typeProp, "MinBox", par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBox", "maxbox");
-      AppendVectorPar (typeProp, "MaxBox", "v:", par);
+      AppendVectorPar (typeProp, "MaxBox", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerBeam")) != csArrayItemNotFound)
     {
       typeProp->SetValue (wxT ("Beam"));
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBeam", "start");
-      AppendVectorPar (typeProp, "Start", "v:", par);
+      AppendVectorPar (typeProp, "Start", par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerBeam", "end");
-      AppendVectorPar (typeProp, "End", "v:", par);
+      AppendVectorPar (typeProp, "End", par);
     }
     else if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerAboveMesh")) != csArrayItemNotFound)
     {
