@@ -480,7 +480,7 @@ public:
 	s.Format ("Template:%d", int (idx));
 	wxPGProperty* outputProp = AppendStringPar (pcProp, "Output", s, "<composed>");
 
-	AppendButtonPar (outputProp, "Template", "T:", tplName);
+	AppendButtonPar (outputProp, "Template", "Template", WIZARD_TEMPLATE, tplName);
 	// @@@ Todo spawn supports more parameters for the template.
       }
     }
@@ -534,7 +534,7 @@ public:
       if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
       printf ("UpdateSpawn:selectedPropName=%s index=%d\n", selectedPropName.GetData (), idx); fflush (stdout);
-      if (selectedPropName.EndsWith (".T:Template"))
+      if (selectedPropName.EndsWith (".Template"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "template", CEL_DATA_STRING, value);
         return REFRESH_NO;
@@ -649,7 +649,7 @@ public:
 	s.Format ("Template:%d", int (idx));
 	wxPGProperty* outputProp = AppendStringPar (pcProp, "Template", s, "<composed>");
 
-	AppendButtonPar (outputProp, "Template", "T:", tplName);
+	AppendButtonPar (outputProp, "Template", "Template", WIZARD_TEMPLATE, tplName);
 	AppendStringPar (outputProp, "Amount", "Amount", amount);
       }
     }
@@ -667,7 +667,7 @@ public:
       if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Template:"), "%d", &idx);
       printf ("UpdateInv:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
-      if (selectedPropName.EndsWith (".T:Template"))
+      if (selectedPropName.EndsWith (".Template"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "name", CEL_DATA_STRING, value);
         return REFRESH_NO;
@@ -725,7 +725,7 @@ public:
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
   {
     csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl, "AddInput", "mask");
-    AppendButtonPar (pcProp, "Input", "A:", inputMask);
+    AppendButtonPar (pcProp, "Input", "Input", WIZARD_ACTION, inputMask);
 
     csStringID msgID = pl->FetchStringID ("msgid");
     csStringID entityID = pl->FetchStringID ("entity");
@@ -759,8 +759,8 @@ public:
 	s.Format ("Output:%d", int (idx));
 	wxPGProperty* outputProp = AppendStringPar (pcProp, "Output", s, "<composed>");
 
-	AppendButtonPar (outputProp, "Message", "A:", msg);
-	AppendButtonPar (outputProp, "Entity", "E:", entity);
+	AppendButtonPar (outputProp, "Message", "Message", WIZARD_ACTION, msg);
+	AppendButtonPar (outputProp, "Entity", "Entity", WIZARD_ENTITY, entity);
 
 	for (size_t i = 0 ; i < ids.GetSize () ; i++)
 	{
@@ -777,7 +777,7 @@ public:
   {
     csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
 
-    if (selectedPropName == "A:Input")
+    if (selectedPropName == "Input")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "AddInput", "mask", CEL_DATA_STRING, value);
       return REFRESH_NO;
@@ -790,12 +790,12 @@ public:
       if (dot == csArrayItemNotFound) return REFRESH_NOCHANGE;
       csScanStr (selectedPropName.Slice (0, dot).GetData () + strlen ("Output:"), "%d", &idx);
       printf ("UpdateWire:selectedPropName=%s\n", selectedPropName.GetData ()); fflush (stdout);
-      if (selectedPropName.EndsWith (".E:Entity"))
+      if (selectedPropName.EndsWith (".Entity"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "entity", CEL_DATA_STRING, value);
         return REFRESH_NO;
       }
-      else if (selectedPropName.EndsWith (".A:Message"))
+      else if (selectedPropName.EndsWith (".Message"))
       {
         InspectTools::AddActionParameter (pl, pm, pctpl, size_t (idx), "msgid", CEL_DATA_STRING, value);
         return REFRESH_NO;
@@ -883,7 +883,7 @@ public:
   {
     iQuestFactory* questFact = emode->GetQuestFactory (pctpl);
     csString questName = questFact ? questFact->GetName () : "";
-    AppendButtonPar (pcProp, "Quest", "Q:", questName);
+    AppendButtonPar (pcProp, "Quest", "Quest", WIZARD_QUEST, questName);
 
     csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
     wxArrayString states;
@@ -924,7 +924,7 @@ public:
   virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
       const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
   {
-    csString questName = GetPropertyValueAsString (pcPropName, "Q:Quest");
+    csString questName = GetPropertyValueAsString (pcPropName, "Quest");
     csString oldQuestName = emode->GetQuestName (pctpl);
     if (questName != oldQuestName)
     {
@@ -1095,10 +1095,10 @@ public:
     AppendIntPar (pcProp, "Jitter", "Jitter", valid ? jitter : 10);
 
     csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
-    AppendButtonPar (pcProp, "Monitor", "E:", monitor);
+    AppendButtonPar (pcProp, "Monitor", "Monitor", WIZARD_ENTITY, monitor);
 
     csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
-    AppendButtonPar (pcProp, "Class", "C:", clazz);
+    AppendButtonPar (pcProp, "Class", "Class", WIZARD_CLASS, clazz);
 
     wxPGProperty* typeProp = AppendEnumPar (pcProp, "Type", "TrigType", trigtypesArray, wxArrayInt ());
     if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
@@ -1129,7 +1129,7 @@ public:
     {
       typeProp->SetValue (wxT ("Above"));
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerAboveMesh", "entity");
-      AppendButtonPar (typeProp, "Entity", "E:", par);
+      AppendButtonPar (typeProp, "Entity", "Entity", WIZARD_ENTITY, par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
       AppendStringPar (typeProp, "MaxDistance", "MaxDistance", par);
     }
@@ -1155,7 +1155,7 @@ public:
       pctpl->SetProperty (pl->FetchStringID ("jitter"), jitter);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "E:Monitor")
+    else if (selectedPropName == "Monitor")
     {
       pctpl->SetProperty (pl->FetchStringID ("monitor"), value.GetData ());
       return REFRESH_NO;
@@ -1197,32 +1197,32 @@ public:
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerSphere", "radius", CEL_DATA_FLOAT, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.v:Position")
+    else if (selectedPropName == "TrigType.Position")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerSphere", "position", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.v:MinBox")
+    else if (selectedPropName == "TrigType.MinBox")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBox", "minbox", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.v:MaxBox")
+    else if (selectedPropName == "TrigType.MaxBox")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBox", "maxbox", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.v:Start")
+    else if (selectedPropName == "TrigType.Start")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBeam", "start", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.v:End")
+    else if (selectedPropName == "TrigType.End")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerBeam", "end", CEL_DATA_VECTOR3, value);
       return REFRESH_NO;
     }
-    else if (selectedPropName == "TrigType.E:Entity")
+    else if (selectedPropName == "TrigType.Entity")
     {
       InspectTools::AddActionParameter (pl, pm, pctpl, "SetupTriggerAboveMesh", "entity", CEL_DATA_STRING, value);
       return REFRESH_NO;

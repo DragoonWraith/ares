@@ -283,16 +283,24 @@ void EntityMode::SetTopLevelParent (wxWindow* toplevel)
 static void Set3Value (EntityMode* emode, wxPGProperty* prop, const char* v1,
     const char* v2, const char* v3)
 {
+  csString composed;
   prop->Item (0)->SetValue (wxString::FromUTF8 (v1));
   prop->Item (1)->SetValue (wxString::FromUTF8 (v2));
-  prop->Item (2)->SetValue (wxString::FromUTF8 (v3));
-  csString composed;
-  composed.Format ("%s; %s; %s", v1, v2, v3);
+  if (prop->GetChildCount () > 2)
+  {
+    prop->Item (2)->SetValue (wxString::FromUTF8 (v3));
+    composed.Format ("%s; %s; %s", v1, v2, v3);
+  }
+  else
+  {
+    composed.Format ("%s; %s", v1, v2);
+  }
   prop->SetValue (wxString::FromUTF8 (composed));
 
   emode->OnPropertyGridChanged (prop->Item (0));
   emode->OnPropertyGridChanged (prop->Item (1));
-  emode->OnPropertyGridChanged (prop->Item (2));
+  if (prop->GetChildCount () > 2)
+    emode->OnPropertyGridChanged (prop->Item (2));
 }
 
 static void Set3Value (EntityMode* emode, wxPGProperty* prop, const csVector3& v)
@@ -357,6 +365,29 @@ bool EntityMode::AskPositionWizard (csVector3& vec)
   return false;
 }
 
+static const char* PropertyClassesForType[] =
+{
+  "pclogic.quest",
+  "pctools.inventory",
+  "pcobject.mesh",
+  "pccamera.old",
+  "pctools.properties",
+  "pclogic.trigger",
+  "pcobject.light",
+};
+
+static const char* PropertyClassNamesForType[] =
+{
+  "quest",
+  "inventory",
+  "mesh",
+  "camera",
+  "properties",
+  "trigger",
+  "light",
+};
+
+
 void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 {
   using namespace Ares;
@@ -364,92 +395,107 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
   wxPGProperty* selectedProperty = detailGrid->GetSelection ();
   if (selectedProperty)
   {
-    csString propName = (const char*)selectedProperty->GetName ().mb_str (wxConvUTF8);
+    WizardType type = GridSupport::GetWizardType (selectedProperty);
     iUIManager* ui = view3d->GetApplication ()->GetUI ();
-
-    size_t dot = propName.FindLast ('.');
-    if (dot != csArrayItemNotFound)
-      propName = propName.Slice (dot+1);
 
     Value* chosen = 0;
     int col;
-    if (propName.StartsWith ("E:"))
+    switch (type)
     {
-      csRef<Value> objects = view3d->GetModelRepository ()->GetObjectsWithEntityValue ();
-      chosen = ui->AskDialog (
-	  "Select an entity", objects, "Entity,Template,Dynfact,Logic",
-	    DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
-      col = DYNOBJ_COL_ENTITY;
-    }
-    else if (propName.StartsWith ("Q:"))
-    {
-      csRef<Value> objects = view3d->GetModelRepository ()->GetQuestsValue ();
-      chosen = ui->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
-	    QUEST_COL_MODIFIED);
-      col = QUEST_COL_NAME;
-    }
-    else if (propName.StartsWith ("C:"))
-    {
-      Value* objects = view3d->GetModelRepository ()->GetClassesValue ();
-      chosen = ui->AskDialog ("Select a class", objects, "Class,Description", CLASS_COL_NAME,
-	    CLASS_COL_DESCRIPTION);
-      col = CLASS_COL_NAME;
-    }
-    else if (propName.StartsWith ("A:"))
-    {
-      Value* objects = view3d->GetModelRepository ()->GetActionsValue ();
-      chosen = ui->AskDialog ("Select an action", objects, "Action,Description", ACTION_COL_NAME,
-	    ACTION_COL_DESCRIPTION);
-      col = ACTION_COL_NAME;
-    }
-    else if (propName.StartsWith ("T:"))
-    {
-      Value* objects = view3d->GetModelRepository ()->GetTemplatesValue ();
-      chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
-	    TEMPLATE_COL_MODIFIED);
-      col = TEMPLATE_COL_NAME;
-    }
-    else if (propName.StartsWith ("pquest:"))
-    {
-      csRef<Value> objects = view3d->GetModelRepository ()->GetPropertyClassesValue ("pclogic.quest");
-      chosen = ui->AskDialog ("Select a property class", objects, "Entity,Tag,Template,Factory",
-	  PC_COL_ENTITY, PC_COL_TAG, PC_COL_TEMPLATE, PC_COL_FACTORY);
-      csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
-      csString tag = chosen->GetStringArrayValue ()->Get (PC_COL_TAG);
-      Set3Value (this, selectedProperty, entity, tag, "");
-      return;
-    }
-    else if (propName.StartsWith ("c:"))
-    {
-      wxColour color = wxGetColourFromUser (panel, wxColour ());
-      if (color.IsOk ())
+      case WIZARD_NONE:
+	return;
+      case WIZARD_ENTITY:
       {
-	csString red, green, blue;
-	red.Format ("%d", int (color.Red ()));
-	green.Format ("%d", int (color.Green ()));
-	blue.Format ("%d", int (color.Blue ()));
-	Set3Value (this, selectedProperty, red, green, blue);
+        csRef<Value> objects = view3d->GetModelRepository ()->GetObjectsWithEntityValue ();
+        chosen = ui->AskDialog (
+	    "Select an entity", objects, "Entity,Template,Dynfact,Logic",
+	      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
+        col = DYNOBJ_COL_ENTITY;
+	break;
       }
-      return;
-    }
-    else if (propName.StartsWith ("v:"))
-    {
-      csVector3 vec;
-      if (AskPositionWizard (vec))
+      case WIZARD_QUEST:
       {
-        csString composed;
-        composed.Format ("%g,%g,%g", vec.x, vec.y, vec.z);
-	selectedProperty->SetValue (wxString::FromUTF8 (composed));
-	OnPropertyGridChanged (selectedProperty);
+	csRef<Value> objects = view3d->GetModelRepository ()->GetQuestsValue ();
+	chosen = ui->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
+	      QUEST_COL_MODIFIED);
+	col = QUEST_COL_NAME;
+	break;
       }
-      return;
-    }
-    else if (propName.StartsWith ("V:"))
-    {
-      csVector3 vec;
-      if (AskPositionWizard (vec))
-	Set3Value (this, selectedProperty, vec);
-      return;
+      case WIZARD_CLASS:
+      {
+	Value* objects = view3d->GetModelRepository ()->GetClassesValue ();
+	chosen = ui->AskDialog ("Select a class", objects, "Class,Description", CLASS_COL_NAME,
+	      CLASS_COL_DESCRIPTION);
+	col = CLASS_COL_NAME;
+	break;
+      }
+      case WIZARD_ACTION:
+      {
+	Value* objects = view3d->GetModelRepository ()->GetActionsValue ();
+	chosen = ui->AskDialog ("Select an action", objects, "Action,Description", ACTION_COL_NAME,
+	      ACTION_COL_DESCRIPTION);
+	col = ACTION_COL_NAME;
+	break;
+      }
+      case WIZARD_TEMPLATE:
+      {
+	Value* objects = view3d->GetModelRepository ()->GetTemplatesValue ();
+	chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
+	      TEMPLATE_COL_MODIFIED);
+	col = TEMPLATE_COL_NAME;
+	break;
+      }
+      case WIZARD_PCQUEST:
+      case WIZARD_PCINVENTORY:
+      case WIZARD_PCMESH:
+      case WIZARD_PCCAMERA:
+      case WIZARD_PCPROPERTIES:
+      case WIZARD_PCTRIGGER:
+      case WIZARD_PCLIGHT:
+      {
+	csString title; title.Format ("Select a %s property class",
+	    PropertyClassNamesForType[type-WIZARD_PCQUEST]);
+	csRef<Value> objects = view3d->GetModelRepository ()->GetPropertyClassesValue (
+	    PropertyClassesForType[type-WIZARD_PCQUEST]);
+	chosen = ui->AskDialog (title, objects, "Entity,Tag,Template,Factory",
+	    PC_COL_ENTITY, PC_COL_TAG, PC_COL_TEMPLATE, PC_COL_FACTORY);
+	csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
+	csString tag = chosen->GetStringArrayValue ()->Get (PC_COL_TAG);
+	Set3Value (this, selectedProperty, entity, tag, "");
+	return;
+      }
+      case WIZARD_COLOR:
+      {
+	wxColour color = wxGetColourFromUser (panel, wxColour ());
+	if (color.IsOk ())
+	{
+	  csString red, green, blue;
+	  red.Format ("%d", int (color.Red ()));
+	  green.Format ("%d", int (color.Green ()));
+	  blue.Format ("%d", int (color.Blue ()));
+	  Set3Value (this, selectedProperty, red, green, blue);
+	}
+	return;
+      }
+      case WIZARD_VECTOR:
+      {
+	csVector3 vec;
+	if (AskPositionWizard (vec))
+	{
+	  csString composed;
+	  composed.Format ("%g,%g,%g", vec.x, vec.y, vec.z);
+	  selectedProperty->SetValue (wxString::FromUTF8 (composed));
+	  OnPropertyGridChanged (selectedProperty);
+	}
+	return;
+      }
+      case WIZARD_VECTOR3:
+      {
+	csVector3 vec;
+	if (AskPositionWizard (vec))
+	  Set3Value (this, selectedProperty, vec);
+	return;
+      }
     }
     if (chosen)
     {

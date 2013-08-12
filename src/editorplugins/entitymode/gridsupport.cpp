@@ -32,6 +32,26 @@ THE SOFTWARE.
 
 //---------------------------------------------------------------------------
 
+class GridSupportClientData : public wxClientData
+{
+private:
+  WizardType type;
+
+public:
+  GridSupportClientData (WizardType type) : type (type) { }
+  virtual ~GridSupportClientData () { }
+
+  WizardType GetType () const { return type; }
+};
+
+WizardType GridSupport::GetWizardType (wxPGProperty* property)
+{
+  WizardType cd = (WizardType)(int64)property->GetClientData ();
+  return cd;
+}
+
+//---------------------------------------------------------------------------
+
 GridSupport::GridSupport (const char* name, EntityMode* emode) : name (name), emode (emode)
 {
   pl = emode->GetPL ();
@@ -123,7 +143,7 @@ void GridSupport::AppendColorPar (
     wxPGProperty* parent, const char* label,
     const char* red, const char* green, const char* blue)
 {
-  wxPGProperty* parProp = AppendButtonPar (parent, label, "c:", "<composed>");
+  wxPGProperty* parProp = AppendButtonPar (parent, label, label, WIZARD_COLOR, "<composed>");
   AppendStringPar (parProp, "Red", "Red", red);
   AppendStringPar (parProp, "Green", "Green", green);
   AppendStringPar (parProp, "Blue", "Blue", blue);
@@ -134,7 +154,7 @@ void GridSupport::AppendVectorPar (
     wxPGProperty* parent, const char* label,
     const char* x, const char* y, const char* z)
 {
-  wxPGProperty* parProp = AppendButtonPar (parent, label, "V:", "<composed>");
+  wxPGProperty* parProp = AppendButtonPar (parent, label, label, WIZARD_VECTOR3, "<composed>");
   AppendStringPar (parProp, "X", "X", x);
   AppendStringPar (parProp, "Y", "Y", y);
   AppendStringPar (parProp, "Z", "Z", z);
@@ -145,30 +165,38 @@ void GridSupport::AppendVectorPar (
     wxPGProperty* parent, const char* label,
     const char* vec)
 {
-  AppendButtonPar (parent, label, "v:", vec);
+  AppendButtonPar (parent, label, label, WIZARD_VECTOR, vec);
+}
+
+void GridSupport::AppendPCParClass (wxPGProperty* parent, const char* label, const char* name,
+    WizardType type, const char* entity, const char* tag, const char* clazz)
+{
+  csString s;
+  wxPGProperty* parProp = AppendButtonPar (parent, label, name, type, "<composed>");
+  AppendButtonPar (parProp, "Entity", "Entity", WIZARD_ENTITY, entity);
+  AppendStringPar (parProp, "Tag", "Tag", tag);
+  AppendStringPar (parProp, "Class", "Class", clazz);
+  detailGrid->Collapse (parProp);
 }
 
 void GridSupport::AppendPCPar (wxPGProperty* parent, const char* label, const char* name,
-    const char* prefix, const char* entity, const char* tag, const char* clazz)
+    WizardType type, const char* entity, const char* tag)
 {
   csString s;
-  wxPGProperty* parProp = AppendButtonPar (parent, label, name, "<composed>");
-  s.Format ("%s%sEntity", prefix ? prefix : "", prefix ? " " : "");
-  AppendButtonPar (parProp, s, "E:", entity);
-  s.Format ("%s%sTag", prefix ? prefix : "", prefix ? " " : "");
-  AppendStringPar (parProp, "Tag", s, tag);
-  s.Format ("%s%sClass", prefix ? prefix : "", prefix ? " " : "");
-  AppendStringPar (parProp, "Class", s, clazz);
+  wxPGProperty* parProp = AppendButtonPar (parent, label, name, type, "<composed>");
+  AppendButtonPar (parProp, "Entity", "Entity", WIZARD_ENTITY, entity);
+  AppendStringPar (parProp, "Tag", "Tag", tag);
   detailGrid->Collapse (parProp);
 }
 
 wxPGProperty* GridSupport::AppendButtonPar (
-    wxPGProperty* parent, const char* partype, const char* type, const char* name)
+    wxPGProperty* parent, const char* label, const char* name, WizardType type, const char* value)
 {
   wxStringProperty* prop = new wxStringProperty (
-      wxString::FromUTF8 (partype),
-      wxString::FromUTF8 (csString (type) + partype),
-      wxString::FromUTF8 (name));
+      wxString::FromUTF8 (label),
+      wxString::FromUTF8 (name),
+      wxString::FromUTF8 (value));
+  prop->SetClientData ((void*)type);
   detailGrid->AppendIn (parent, prop);
   detailGrid->SetPropertyEditor (prop, wxPGEditor_TextCtrlAndButton);
   return prop;

@@ -51,6 +51,26 @@ enum RefreshType
   REFRESH_FULL			// Full refresh is required.
 };
 
+enum WizardType
+{
+  WIZARD_NONE = 0,
+  WIZARD_ENTITY,
+  WIZARD_TEMPLATE,
+  WIZARD_ACTION,
+  WIZARD_QUEST,
+  WIZARD_CLASS,
+  WIZARD_COLOR,
+  WIZARD_VECTOR3,
+  WIZARD_VECTOR,
+  WIZARD_PCQUEST,
+  WIZARD_PCINVENTORY,
+  WIZARD_PCMESH,
+  WIZARD_PCCAMERA,
+  WIZARD_PCPROPERTIES,
+  WIZARD_PCTRIGGER,
+  WIZARD_PCLIGHT,
+};
+
 class GridSupport : public csRefCount
 {
 protected:
@@ -65,11 +85,10 @@ protected:
   wxArrayInt typesArrayIdx;
 
   int RegisterContextMenu (wxObjectEventFunction handler);
-  wxPGProperty* AppendButtonPar (
-    wxPGProperty* parent, const char* partype, const char* type, const char* name);
-  void AppendPar (
-    wxPGProperty* parent, const char* partype,
-    const char* name, celDataType type, const char* value);
+  wxPGProperty* AppendButtonPar (wxPGProperty* parent, const char* label, const char* name,
+      WizardType type, const char* value);
+  void AppendPar ( wxPGProperty* parent, const char* partype, const char* name,
+      celDataType type, const char* value);
 
   void AppendColorPar (wxPGProperty* parent, const char* label,
     const char* red, const char* green, const char* blue);
@@ -77,8 +96,10 @@ protected:
   void AppendVectorPar (wxPGProperty* parent, const char* label,
     const char* x, const char* y, const char* z);
 
-  void AppendPCPar (wxPGProperty* parent, const char* label, const char* name, const char* prefix,
-      const char* entity, const char* tag, const char* clazz);
+  void AppendPCParClass (wxPGProperty* parent, const char* label, const char* name,
+      WizardType type, const char* entity, const char* tag, const char* clazz);
+  void AppendPCPar (wxPGProperty* parent, const char* label, const char* name,
+      WizardType type, const char* entity, const char* tag);
 
   wxPGProperty* AppendStringPar (wxPGProperty* parent,
     const char* label, const char* name, const char* value);
@@ -103,6 +124,8 @@ public:
   virtual ~GridSupport () { }
 
   const csString& GetName () { return name; }
+
+  static WizardType GetWizardType (wxPGProperty* property);
 };
 
 

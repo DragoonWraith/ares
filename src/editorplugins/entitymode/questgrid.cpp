@@ -116,7 +116,7 @@ public:
     AppendEditEnumPar (responseProp, "State", "State", states,
 	wxArrayInt (), tf->GetStateParameter ());
 
-    AppendPCPar (responseProp, "PC Quest", "pquest:", 0,
+    AppendPCParClass (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
 	tf->GetEntityParameter (), tf->GetTagParameter (), tf->GetClassParameter ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
@@ -125,11 +125,11 @@ public:
     csRef<iNewStateQuestRewardFactory> tf = scfQueryInterface<iNewStateQuestRewardFactory> (rewardFact);
     if (field == "State")
       tf->SetStateParameter (value);
-    else if (field == "pquest:PC Quest.E:Entity")
+    else if (field == "PCQuest.Entity")
       tf->SetEntityParameter (value, tf->GetTagParameter ());
-    else if (field == "pcquest:PC Quest.Tag")
+    else if (field == "PCQuest.Tag")
       tf->SetEntityParameter (tf->GetEntityParameter (), value);
-    else if (field == "pcquest:PC Quest.Class")
+    else if (field == "PCQuest.Class")
       tf->SetClassParameter (value);
     else
       return REFRESH_NOCHANGE;
@@ -174,22 +174,22 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
-    AppendButtonPar (responseProp, "ChildEntity", "E:", tf->GetChildEntity ());
-    AppendStringPar (responseProp, "ChildTag", "ChildTag", tf->GetChildTag ());
+    AppendPCPar (responseProp, "PC Inventory (container)", "PCInv", WIZARD_PCINVENTORY,
+	tf->GetEntity (), tf->GetTag ());
+    AppendPCPar (responseProp, "PC Mesh (child)", "PCMesh", WIZARD_PCMESH,
+	tf->GetChildEntity (), tf->GetChildTag ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "PCInv.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCInv.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "E:ChildEntity")
+    else if (field == "PCMesh.Entity")
       tf->SetChildEntityParameter (value, tf->GetChildTag ());
-    else if (field == "ChildTag")
+    else if (field == "PCMesh.Tag")
       tf->SetChildEntityParameter (tf->GetChildEntity (), value);
     else
       return REFRESH_NOCHANGE;
@@ -208,7 +208,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
-    AppendPCPar (responseProp, "PC Quest", "pquest:", 0,
+    AppendPCParClass (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
 	tf->GetEntity (), tf->GetTag (), tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
     AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
@@ -217,11 +217,11 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
-    if (field == "pquest:PC Quest.E:Entity")
+    if (field == "PCQuest.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "pquest:PC Quest.Tag")
+    else if (field == "PCQuest.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "pquest:PC Quest.Class")
+    else if (field == "PCQuest.Class")
       tf->SetClassParameter (value);
     else if (field == "Sequence")
       tf->SetSequenceParameter (value);
@@ -272,7 +272,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
-    AppendPCPar (responseProp, "PC Quest", "pquest:", 0,
+    AppendPCParClass (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
 	tf->GetEntity (), tf->GetTag (), tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
   }
@@ -280,11 +280,11 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
-    if (field == "pcquest:PC Quest.E:Entity")
+    if (field == "PCQuest.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "pcquest:PC Quest.Tag")
+    else if (field == "PCQuest.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "pcquest:PC Quest.Class")
+    else if (field == "PCQuest.Class")
       tf->SetClassParameter (value);
     else if (field == "Sequence")
       tf->SetSequenceParameter (value);
@@ -311,7 +311,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
     AppendStringPar (responseProp, "PC", "PC", tf->GetPC ());	// @@@ Enum?
     AppendStringPar (responseProp, "PC Tag", "PCTag", tf->GetPCTag ());
@@ -327,7 +327,7 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
     else if (field == "PCTag")
       tf->SetPCParameter (tf->GetPC (), value);
@@ -366,7 +366,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Template", "T:", tf->GetEntityTemplate ());
+    AppendButtonPar (responseProp, "Template", "Template", WIZARD_TEMPLATE, tf->GetEntityTemplate ());
     AppendStringPar (responseProp, "Name", "Name", tf->GetName ());
     // @@@ Add support for parameters
   }
@@ -374,7 +374,7 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (rewardFact);
-    if (field == "T:Template")
+    if (field == "Template")
       tf->SetEntityTemplateParameter (value);
     else if (field == "Name")
       tf->SetNameParameter (value);
@@ -395,14 +395,14 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
     else if (field == "Class")
       tf->SetClassParameter (value);
@@ -423,7 +423,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
 
     wxArrayString entitiesArray;
@@ -443,7 +443,7 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
     else if (field == "Entities")
       tf->SetEntitiesParameter (value);
@@ -468,9 +468,9 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
-    AppendButtonPar (responseProp, "Action", "A:", tf->GetID ());
+    AppendButtonPar (responseProp, "Action", "Action", WIZARD_ACTION, tf->GetID ());
     AppendStringPar (responseProp, "PC", "PC", tf->GetPropertyClass ());	// @@@ Enum?
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
   }
@@ -478,7 +478,7 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
     else if (field == "Tag")
       tf->SetTagParameter (value);
@@ -486,7 +486,7 @@ public:
       tf->SetClassParameter (value);
     else if (field == "PC")
       tf->SetPropertyClassParameter (value);
-    else if (field == "A:Action")
+    else if (field == "Action")
       tf->SetIDParameter (value);
     else
       return REFRESH_NOCHANGE;
@@ -512,7 +512,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
 
     wxArrayString entitiesArray;
     if (tf->GetEntities ())
@@ -527,7 +527,7 @@ public:
     detailGrid->AppendIn (responseProp, tempProp);
 
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
-    AppendButtonPar (responseProp, "Message", "A:", tf->GetID ());
+    AppendButtonPar (responseProp, "Message", "Message", WIZARD_ACTION, tf->GetID ());
 
     for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
     {
@@ -542,13 +542,13 @@ public:
       wxPGProperty* selectedProperty, iRewardFactory* rewardFact)
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
     else if (field == "Entities")
       tf->SetEntitiesParameter (value);
     else if (field == "Class")
       tf->SetClassParameter (value);
-    else if (field == "A:Message")
+    else if (field == "Message")
       tf->SetIDParameter (value);
     else if (field.StartsWith ("Par:") && field.EndsWith (".Type"))
     {
@@ -812,17 +812,17 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (responseProp, "PC Camera (player)", "PCCam", WIZARD_PCCAMERA,
+	tf->GetEntity (), tf->GetTag ());
     AppendStringPar (responseProp, "Sector", "Sector", tf->GetSector ());	// @@@Button?
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "PCCam.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCCam.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
     else if (field == "Sector")
       tf->SetSectorParameter (value);
@@ -843,17 +843,17 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
+	tf->GetEntity (), tf->GetTag ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@Combo!
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "PCQuest.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCQuest.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
     else if (field == "Sequence")
       tf->SetSequenceParameter (value);
@@ -874,22 +874,22 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
-    AppendButtonPar (responseProp, "Child", "E:", tf->GetChildEntity ());
-    AppendButtonPar (responseProp, "ChildTemplate", "T:", tf->GetChildTemplate ());
+    AppendPCPar (responseProp, "PC Inventory (container)", "PCInv", WIZARD_PCINVENTORY,
+	tf->GetEntity (), tf->GetTag ());
+    AppendButtonPar (responseProp, "Child", "Child", WIZARD_ENTITY, tf->GetChildEntity ());
+    AppendButtonPar (responseProp, "ChildTemplate", "ChildTemplate", WIZARD_TEMPLATE, tf->GetChildTemplate ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "PCInv.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCInv.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "E:Child")
+    else if (field == "Child")
       tf->SetChildEntityParameter (value);
-    else if (field == "T:ChildTemplate")
+    else if (field == "ChildTemplate")
       tf->SetChildTemplateParameter (value);
     else
       return REFRESH_NOCHANGE;
@@ -908,16 +908,16 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (responseProp, "PC Mesh", "PCMesh", WIZARD_PCMESH,
+	tf->GetEntity (), tf->GetTag ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "PCMesh.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCMesh.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
     else
       return REFRESH_NOCHANGE;
@@ -936,16 +936,16 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendButtonPar (responseProp, "Mask", "A:", tf->GetMask ());
+    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Mask", "Mask", WIZARD_ACTION, tf->GetMask ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
-    else if (field == "A:Mask")
+    else if (field == "Mask")
       tf->SetMaskParameter (value);
     else
       return REFRESH_NOCHANGE;
@@ -964,8 +964,8 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (responseProp, "PC Properties", "PCProperties", WIZARD_PCPROPERTIES,
+	tf->GetEntity (), tf->GetTag ());
     AppendStringPar (responseProp, "Property", "Property", tf->GetProperty ());
     AppendStringPar (responseProp, "Value", "Value", tf->GetValue ());
     AppendStringPar (responseProp, "Operation", "Operation", tf->GetOperation ());	// @TODO Enum
@@ -975,9 +975,9 @@ public:
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "PCProperties.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCProperties.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
     else if (field == "Property")
       tf->SetPropertyParameter (value);
@@ -1004,17 +1004,17 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (responseProp, "PC Trigger", "PCTrigger", WIZARD_PCTRIGGER,
+	tf->GetEntity (), tf->GetTag ());
     AppendBoolPar (responseProp, "Leave", "Leave", tf->IsLeaveEnabled ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "PCTrigger.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCTrigger.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
     else if (field == "Leave")
       tf->EnableLeave (ToBool (value));
@@ -1035,10 +1035,10 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
-    AppendButtonPar (responseProp, "Target", "E:", tf->GetTargetEntity ());
-    AppendStringPar (responseProp, "Target Tag", "TargetTag", tf->GetTargetTag ());
+    AppendPCPar (responseProp, "PC Mesh (source)", "Source", WIZARD_PCMESH,
+	tf->GetEntity (), tf->GetTag ());
+    AppendPCPar (responseProp, "PC Mesh (target)", "Target", WIZARD_PCMESH,
+	tf->GetTargetEntity (), tf->GetTargetTag ());
     AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
     AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
     AppendVectorPar (responseProp, "Offset", tf->GetOffsetX (), tf->GetOffsetY (), tf->GetOffsetZ ());
@@ -1047,23 +1047,23 @@ public:
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
   {
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerFact);
-    if (field == "E:Entity")
+    if (field == "Source.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "Source.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "E:Target")
+    else if (field == "Target.Entity")
       tf->SetTargetEntityParameter (value, tf->GetTargetTag ());
-    else if (field == "TargetTag")
+    else if (field == "Target.Tag")
       tf->SetTargetEntityParameter (tf->GetTargetEntity (), value);
     else if (field == "CheckTime")
       tf->SetChecktimeParameter (value);
     else if (field == "Radius")
       tf->SetRadiusParameter (value);
-    else if (field == "V:Offset.X")
+    else if (field == "Offset.X")
       tf->SetOffsetParameter (value, tf->GetOffsetY (), tf->GetOffsetZ ());
-    else if (field == "V:Offset.Y")
+    else if (field == "Offset.Y")
       tf->SetOffsetParameter (tf->GetOffsetX (), value, tf->GetOffsetZ ());
-    else if (field == "V:Offset.Z")
+    else if (field == "Offset.Z")
       tf->SetOffsetParameter (tf->GetOffsetX (), tf->GetOffsetY (), value);
     else
       return REFRESH_NOCHANGE;
@@ -1219,8 +1219,8 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
-    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (seqProp, "PC Mesh", "PCMesh", WIZARD_PCMESH,
+	tf->GetEntity (), tf->GetTag ());
     AppendColorPar (seqProp, "Relative Color",
 	tf->GetRelColorRed (),
 	tf->GetRelColorGreen (),
@@ -1234,21 +1234,21 @@ public:
       wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
-    if (field == "E:Entity")
+    if (field == "PCMesh.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCMesh.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "c:Relative Color.Red")
+    else if (field == "Relative Color.Red")
       tf->SetRelColorParameter (value, tf->GetRelColorGreen (), tf->GetRelColorBlue ());
-    else if (field == "c:Relative Color.Green")
+    else if (field == "Relative Color.Green")
       tf->SetRelColorParameter (tf->GetRelColorRed (), value, tf->GetRelColorBlue ());
-    else if (field == "c:Relative Color.Blue")
+    else if (field == "Relative Color.Blue")
       tf->SetRelColorParameter (tf->GetRelColorRed (), tf->GetRelColorGreen (), value);
-    else if (field == "c:Absolute Color.Red")
+    else if (field == "Absolute Color.Red")
       tf->SetAbsColorParameter (value, tf->GetAbsColorGreen (), tf->GetAbsColorBlue ());
-    else if (field == "c:Absolute Color.Green")
+    else if (field == "Absolute Color.Green")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), value, tf->GetAbsColorBlue ());
-    else if (field == "c:Absolute Color.Blue")
+    else if (field == "Absolute Color.Blue")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), tf->GetAbsColorGreen (), value);
     else
       return REFRESH_NOCHANGE;
@@ -1267,8 +1267,8 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
-    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (seqProp, "PC Light", "PCLight", WIZARD_PCLIGHT,
+	tf->GetEntity (), tf->GetTag ());
     AppendColorPar (seqProp, "Relative Color",
 	tf->GetRelColorRed (),
 	tf->GetRelColorGreen (),
@@ -1282,21 +1282,21 @@ public:
       wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
-    if (field == "E:Entity")
+    if (field == "PCLight.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCLight.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "c:Relative Color.Red")
+    else if (field == "Relative Color.Red")
       tf->SetRelColorParameter (value, tf->GetRelColorGreen (), tf->GetRelColorBlue ());
-    else if (field == "c:Relative Color.Green")
+    else if (field == "Relative Color.Green")
       tf->SetRelColorParameter (tf->GetRelColorRed (), value, tf->GetRelColorBlue ());
-    else if (field == "c:Relative Color.Blue")
+    else if (field == "Relative Color.Blue")
       tf->SetRelColorParameter (tf->GetRelColorRed (), tf->GetRelColorGreen (), value);
-    else if (field == "c:Absolute Color.Red")
+    else if (field == "Absolute Color.Red")
       tf->SetAbsColorParameter (value, tf->GetAbsColorGreen (), tf->GetAbsColorBlue ());
-    else if (field == "c:Absolute Color.Green")
+    else if (field == "Absolute Color.Green")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), value, tf->GetAbsColorBlue ());
-    else if (field == "c:Absolute Color.Blue")
+    else if (field == "Absolute Color.Blue")
       tf->SetAbsColorParameter (tf->GetAbsColorRed (), tf->GetAbsColorGreen (), value);
     else
       return REFRESH_NOCHANGE;
@@ -1335,8 +1335,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
-    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
-    AppendStringPar (seqProp, "Tag", "Tag", tf->GetTag ());
+    AppendPCPar (seqProp, "PC Mesh", "PCMesh", WIZARD_PCMESH, tf->GetEntity (), tf->GetTag ());
     AppendVectorPar (seqProp, "Vector", tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     wxArrayString rotaxisArray;
     rotaxisArray.Add (wxT ("none"));
@@ -1352,15 +1351,15 @@ public:
       wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
-    if (field == "E:Entity")
+    if (field == "PCMesh.Entity")
       tf->SetEntityParameter (value, tf->GetTag ());
-    else if (field == "Tag")
+    else if (field == "PCMesh.Tag")
       tf->SetEntityParameter (tf->GetEntity (), value);
-    else if (field == "V:Vector.X")
+    else if (field == "Vector.X")
       tf->SetVectorParameter (value, tf->GetVectorY (), tf->GetVectorZ ());
-    else if (field == "V:Vector.Y")
+    else if (field == "Vector.Y")
       tf->SetVectorParameter (tf->GetVectorX (), value, tf->GetVectorZ ());
-    else if (field == "V:Vector.Z")
+    else if (field == "Vector.Z")
       tf->SetVectorParameter (tf->GetVectorX (), tf->GetVectorY (), value);
     else if (field == "Angle")
       tf->SetRotationParameter (tf->GetRotationAxis (), value);
@@ -1390,7 +1389,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
-    AppendButtonPar (seqProp, "Entity", "E:", tf->GetEntity ());
+    AppendButtonPar (seqProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
     AppendStringPar (seqProp, "PC", "PC", tf->GetPC ());
     AppendStringPar (seqProp, "PC Tag", "Tag", tf->GetPCTag ());
     AppendStringPar (seqProp, "Property", "Property", tf->GetProperty ());
@@ -1403,7 +1402,7 @@ public:
       wxPGProperty* selectedProperty, iSeqOpFactory* seqopFact)
   {
     csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
-    if (field == "E:Entity")
+    if (field == "Entity")
       tf->SetEntityParameter (value);
     else if (field == "PC")
       tf->SetPCParameter (value, tf->GetPCTag ());
@@ -1415,11 +1414,11 @@ public:
       tf->SetFloatParameter (value);
     else if (field == "Long")
       tf->SetLongParameter (value);
-    else if (field == "V:Vector.X")
+    else if (field == "Vector.X")
       tf->SetVector3Parameter (value, tf->GetVectorY (), tf->GetVectorZ ());
-    else if (field == "V:Vector.Y")
+    else if (field == "Vector.Y")
       tf->SetVector3Parameter (tf->GetVectorX (), value, tf->GetVectorZ ());
-    else if (field == "V:Vector.Z")
+    else if (field == "Vector.Z")
       tf->SetVector3Parameter (tf->GetVectorX (), tf->GetVectorY (), value);
     else if (field == "Relative")
       tf->SetRelative (ToBool (value));
