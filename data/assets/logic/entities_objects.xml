@@ -87,12 +87,32 @@
         <par name="timeout" float="5" />
       </action>
       <action name="DefineType">
-        <par name="textcolor" color4="1,0,0,1" />
         <par name="type" string="error" />
         <par name="slot" string="top" />
         <par name="timeout" float="5" />
         <par name="font" string="DejaVuSansBold" />
         <par name="fontsize" long="12" />
+        <par name="textcolor" color4="1,0,0,1" />
+      </action>
+    </propclass>
+  </addon>
+  <addon plugin="cel.addons.celentitytpl" entityname="LookTrigger">
+    <propclass name="pcobject.mesh" />
+    <propclass name="pclogic.trigger">
+      <action name="SetupTriggerSphere">
+        <par name="position" vector3="-6.79207,0,23.2127" />
+        <par name="radius" float="5" />
+      </action>
+      <property name="monitor" string="Player" />
+    </propclass>
+    <propclass name="pclogic.wire">
+      <action name="AddInput">
+        <par name="mask" string="cel.trigger.entity.enter" />
+      </action>
+      <action name="AddOutput">
+        <par name="newtarget" string="$this" />
+        <par name="msgid" string="cel.move.actor.action.ChangeTarget" />
+        <par name="entity" string="Player" />
       </action>
     </propclass>
   </addon>

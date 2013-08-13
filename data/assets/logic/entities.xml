@@ -1,5 +1,21 @@
 <library>
   <addon plugin="cel.addons.questdef">
+    <quest name="BridgeSequencerToToggleMessageM">
+      <!--This quest acts as a bridge between the sequencer (on the same entity as this quest) and a DblActivatorMessage quest on another entity.
+@param bar,string is the name of the entity containing the DblActivatorMessage-->
+      <state name="init">
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="one" />
+          <reward type="cel.rewards.message" entities="$bars" id="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+        <trigger type="cel.triggers.sequencefinish">
+          <fireon entity="$this" entity_tag="sequencer" sequence="two" />
+          <reward type="cel.rewards.message" entities="$bars" id="activator.toggle" />
+          <reward type="cel.rewards.newstate" state="init" />
+        </trigger>
+      </state>
+    </quest>
     <quest name="DblActivatorLoop">
       <!--This quest works in combination with a double sequencer and serves as a way to activate the sequence between the two states ('one' and 'two'). Use this in combination with a 'DblSequencer...' quest with tag 'sequencer'. This version is automatically activated and just loops the sequence.-->
       <state name="on">
@@ -243,22 +259,6 @@
         </trigger>
       </state>
     </quest>
-    <quest name="BridgeSequencerToToggleMessageM">
-      <!--This quest acts as a bridge between the sequencer (on the same entity as this quest) and a DblActivatorMessage quest on another entity.
-@param bar,string is the name of the entity containing the DblActivatorMessage-->
-      <state name="init">
-        <trigger type="cel.triggers.sequencefinish">
-          <fireon entity="$this" entity_tag="sequencer" sequence="one" />
-          <reward type="cel.rewards.message" entities="$bars" id="activator.toggle" />
-          <reward type="cel.rewards.newstate" state="init" />
-        </trigger>
-        <trigger type="cel.triggers.sequencefinish">
-          <fireon entity="$this" entity_tag="sequencer" sequence="two" />
-          <reward type="cel.rewards.message" entities="$bars" id="activator.toggle" />
-          <reward type="cel.rewards.newstate" state="init" />
-        </trigger>
-      </state>
-    </quest>
     <quest name="BridgeSequencerToToggleMessage">
       <!--This quest acts as a bridge between the sequencer (on the same entity as this quest) and a DblActivatorMessage quest on another entity.
 @param bar,string is the name of the entity containing the DblActivatorMessage-->
@@ -381,7 +381,7 @@
       <property name="delay" long="200" />
       <property name="jitter" long="10" />
       <action name="SetupTriggerSphere">
-        <par name="position" vector3="0,3.75911e-039,3.75809e-039" />
+        <par name="position" vector3="-6.79207,0,23.2127" />
         <par name="radius" float="5" />
       </action>
     </propclass>

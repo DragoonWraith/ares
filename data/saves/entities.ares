@@ -4,43 +4,42 @@
   <asset path="$#logic/" file="entities.xml" writable="true" />
   <asset path="$#objects/simple.zip" file="library" />
   <asset path="$#logic/" file="entities_objects.xml" writable="true" />
-  <dynworld lastid="1000430000">
+  <dynworld lastid="1000460000">
     <cell name="outside">
-      <obj fact="Barrel" name="Mover" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-1.90185 0.739043 31.0738" id="1000410000" ent="StandardMover">
+      <obj fact="Barrel" name="Mover" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-1.90185 0.739043 31.0738" id="1000440000" ent="StandardMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="1" />
           <par name="y" float="0" />
           <par name="z" float="0" />
         </params>
-	<decal name="test" pos="0,0,0" width="1" height="1" />
       </obj>
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-0.263125 0.6 31.6466" id="1000410001" ent="StandardYRotator">
+      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-0.263125 0.6 31.6466" id="1000440001" ent="StandardYRotator">
         <params>
           <par name="duration" long="1000" />
           <par name="angle" float="1" />
         </params>
       </obj>
-      <obj fact="Barrel" name="b1" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="3.83371 0.6 11.5229" id="1000410002" ent="LoopedYRotator">
+      <obj fact="Barrel" name="b1" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="3.83371 0.6 11.5229" id="1000440002" ent="LoopedYRotator">
         <params>
           <par name="duration" long="10000" />
           <par name="angle" float="3" />
         </params>
       </obj>
-      <obj fact="Barrel" name="b2" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="4.33418 0.6 10.1991" id="1000410003" ent="TimedYRotator">
+      <obj fact="Barrel" name="b2" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="4.33418 0.6 10.1991" id="1000440003" ent="TimedYRotator">
         <params>
           <par name="duration" long="200" />
           <par name="angle" float="1" />
           <par name="timeout" long="500" />
         </params>
       </obj>
-      <obj fact="MicroBox" m="0.988222 0 -0.153026 -0 1 -0 0.153026 -0 0.988222" v="0.171935 0 30.1906" id="1000410004" ent="StandardOtherMover">
+      <obj fact="MicroBox" m="0.988222 0 -0.153026 -0 1 -0 0.153026 -0 0.988222" v="0.171935 0 30.1906" id="1000440004" ent="StandardOtherMover">
         <params>
           <par name="target" string="Mover" />
         </params>
       </obj>
-      <obj fact="Box" name="TriggerBox" m="0.99456 -0 0.104163 0 1 -0 -0.104163 -0 0.99456" v="-16.1855 0 27.7976" id="1000410005" ent="TestTrigger" />
-      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-15.4211 0.6 30.1138" id="1000410006" ent="TriggerMover">
+      <obj fact="Box" name="TriggerBox" m="0.99456 -0 0.104163 0 1 -0 -0.104163 -0 0.99456" v="-16.1855 0 27.7976" id="1000440005" ent="TestTrigger" />
+      <obj fact="Barrel" m="0.960359 -2.64804e-006 0.278767 2.38534e-006 1 1.28154e-006 -0.278767 -5.65785e-007 0.960359" v="-15.4211 0.6 30.1138" id="1000440006" ent="TriggerMover">
         <params>
           <par name="duration" long="1000" />
           <par name="x" float="2" />
@@ -49,8 +48,8 @@
           <par name="trigger" string="TriggerBox" />
         </params>
       </obj>
-      <obj fact="Player" name="Player" m="0.331961 -0 0.943293 0 1 -0 -0.943293 -0 0.331961" v="-5.20402 0.110444 13.159" id="1000410007" ent="Player" />
-      <obj fact="MicroBox" static="true" name="But1" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 1.29977 11.888" id="1000410008" ent="ButtonToBars">
+      <obj fact="Player" name="Player" m="0.331961 -0 0.943293 0 1 -0 -0.943293 -0 0.331961" v="-5.20402 0.110444 13.159" id="1000440007" ent="Player" />
+      <obj fact="MicroBox" static="true" name="But1" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 1.29977 11.888" id="1000440008" ent="ButtonToBars">
         <params>
           <par name="bars" string="Bar1,Bar3" />
           <par name="duration" long="200" />
@@ -59,7 +58,7 @@
           <par name="z" float="-0.02" />
         </params>
       </obj>
-      <obj fact="MicroBox" static="true" name="But2" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 1.08924 11.888" id="1000410009" ent="ButtonToBars">
+      <obj fact="MicroBox" static="true" name="But2" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 1.08924 11.888" id="1000440009" ent="ButtonToBars">
         <params>
           <par name="bars" string="Bar1,Bar4,Bar5" />
           <par name="duration" long="200" />
@@ -68,7 +67,7 @@
           <par name="z" float="-0.02" />
         </params>
       </obj>
-      <obj fact="MicroBox" static="true" name="But3" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 0.878719 11.888" id="1000410010" ent="ButtonToBars">
+      <obj fact="MicroBox" static="true" name="But3" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 0.878719 11.888" id="1000440010" ent="ButtonToBars">
         <params>
           <par name="bars" string="Bar2,Bar3" />
           <par name="duration" long="200" />
@@ -77,7 +76,7 @@
           <par name="z" float="-0.02" />
         </params>
       </obj>
-      <obj fact="MicroBox" static="true" name="But4" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 0.668195 11.888" id="1000410011" ent="ButtonToBars">
+      <obj fact="MicroBox" static="true" name="But4" m="0.0073532 0.999967 0.00341873 -0.929951 0.0080951 -0.367595 -0.36761 -0.000476581 0.92998" v="-12.6703 0.668195 11.888" id="1000440011" ent="ButtonToBars">
         <params>
           <par name="bars" string="Bar2,Bar5" />
           <par name="duration" long="200" />
@@ -86,20 +85,20 @@
           <par name="z" float="-0.02" />
         </params>
       </obj>
-      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-12.4319 0.48234 9.70782" id="1000410012" />
-      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-13.3093 0.48234 11.9441" id="1000410013" ent="ProximityMessage">
+      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-12.4319 0.48234 9.70782" id="1000440012" />
+      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-13.3093 0.48234 11.9441" id="1000440013" ent="ProximityMessage">
         <params>
           <par name="message" string="Use the four buttons to try to get all metal bars down" />
         </params>
       </obj>
-      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-12.4319 1.47873 9.70782" id="1000410014" />
-      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-13.3093 1.47873 11.9441" id="1000410015" />
-      <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-12.3892 1.98448 9.61971" id="1000410016" />
-      <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-12.7577 1.98288 10.5493" id="1000410017" />
-      <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-13.1262 1.9829 11.4789" id="1000410018" />
-      <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-14.5509 0 11.1008" id="1000410019" />
-      <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-13.6511 2.38419e-007 8.92129" id="1000410020" />
-      <obj fact="Bar" static="true" name="Bar5" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.8117 0 11.148" id="1000410021" ent="MessageMover">
+      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-12.4319 1.47873 9.70782" id="1000440014" />
+      <obj fact="Box" static="true" m="-0.00341873 0.999967 0.0073532 0.367595 0.0080951 -0.929951 -0.92998 -0.000476581 -0.36761" v="-13.3093 1.47873 11.9441" id="1000440015" />
+      <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-12.3892 1.98448 9.61971" id="1000440016" />
+      <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-12.7577 1.98288 10.5493" id="1000440017" />
+      <obj fact="Box" static="true" m="0.92962 0 0.36852 -0 1 -0 -0.36852 0 0.92962" v="-13.1262 1.9829 11.4789" id="1000440018" />
+      <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-14.5509 0 11.1008" id="1000440019" />
+      <obj fact="Wall" static="true" m="-0.942339 0 -0.33466 0 1 -0 0.33466 0 -0.942339" v="-13.6511 2.38419e-007 8.92129" id="1000440020" />
+      <obj fact="Bar" static="true" name="Bar5" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.8117 0 11.148" id="1000440021" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
@@ -107,7 +106,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Bar" static="true" name="Bar4" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.7058 4.76837e-007 10.8567" id="1000410022" ent="MessageMover">
+      <obj fact="Bar" static="true" name="Bar4" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.7058 4.76837e-007 10.8567" id="1000440022" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
@@ -115,7 +114,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Bar" static="true" name="Bar3" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.5999 4.76837e-007 10.5653" id="1000410023" ent="MessageMover">
+      <obj fact="Bar" static="true" name="Bar3" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.5999 4.76837e-007 10.5653" id="1000440023" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
@@ -123,7 +122,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Bar" static="true" name="Bar2" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.494 0 10.274" id="1000410024" ent="MessageMover">
+      <obj fact="Bar" static="true" name="Bar2" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.494 0 10.274" id="1000440024" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
@@ -131,7 +130,7 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Bar" static="true" name="Bar1" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.3881 0 9.98262" id="1000410025" ent="MessageMover">
+      <obj fact="Bar" static="true" name="Bar1" m="-0.341609 0 0.939842 0 1 -0 -0.939842 0 -0.341609" v="-12.3881 0 9.98262" id="1000440025" ent="MessageMover">
         <params>
           <par name="duration" long="200" />
           <par name="x" float="0" />
@@ -139,41 +138,42 @@
           <par name="z" float="0" />
         </params>
       </obj>
-      <obj fact="Box" static="true" name="Teleporter" m="0.683586 -0 0.72987 0 1 -0 -0.72987 -0 0.683586" v="-0.574675 0 3.37796" id="1000410026" ent="Teleporter">
+      <obj fact="Box" static="true" name="Teleporter" m="0.683586 -0 0.72987 0 1 -0 -0.72987 -0 0.683586" v="-0.574675 0 3.37796" id="1000440026" ent="Teleporter">
         <params>
           <par name="destination" string="DestInside" />
         </params>
       </obj>
-      <obj fact="MicroBox" m="0.736923 0 -0.675977 -0 1 -0 0.675977 -0 0.736923" v="-0.678397 0.6 3.26223" id="1000410027" ent="ProximityMessage">
+      <obj fact="MicroBox" m="0.736923 0 -0.675977 -0 1 -0 0.675977 -0 0.736923" v="-0.678397 0.6 3.26223" id="1000440027" ent="ProximityMessage">
         <params>
           <par name="message" string="If you activate this big box you get teleported to another location" />
         </params>
       </obj>
-      <obj fact="MicroBox" m="0.736923 0 -0.675977 -0 1 -0 0.675977 -0 0.736923" v="4.67472 4.76837e-007 11.1124" id="1000410028" ent="ProximityMessage">
+      <obj fact="MicroBox" m="0.736923 0 -0.675977 -0 1 -0 0.675977 -0 0.736923" v="4.67472 4.76837e-007 11.1124" id="1000440028" ent="ProximityMessage">
         <params>
           <par name="message" string="These two barrels move on their own. Nothing you can do about it" />
         </params>
       </obj>
-      <obj fact="MicroBox" m="0.736923 0 -0.675977 -0 1 -0 0.675977 -0 0.736923" v="-0.230713 -4.76837e-007 31.541" id="1000410029" ent="ProximityMessage">
+      <obj fact="MicroBox" m="0.736923 0 -0.675977 -0 1 -0 0.675977 -0 0.736923" v="-0.230713 -4.76837e-007 31.541" id="1000440029" ent="ProximityMessage">
         <params>
           <par name="message" string="Click on these barrels to move them. Also clicking the small box moves one of the barrels" />
         </params>
       </obj>
-      <obj fact="MicroBox" m="-0.32485 -0 0.945765 0 1 -0 -0.945765 0 -0.32485" v="-16.2037 1.19209e-007 27.7985" id="1000410030" ent="ProximityMessage">
+      <obj fact="MicroBox" m="-0.32485 -0 0.945765 0 1 -0 -0.945765 0 -0.32485" v="-16.2037 1.19209e-007 27.7985" id="1000440030" ent="ProximityMessage">
         <params>
           <par name="message" string="Moving near the box will move the barrel. Moving away again will move it back" />
         </params>
       </obj>
-      <obj fact="Node" name="DestOutside" m="0.868681 0 -0.495371 -0 1 -0 0.495371 -0 0.868681" v="-4.89721 0.1 7.88045" id="1000410031" />
+      <obj fact="Node" name="DestOutside" m="0.868681 0 -0.495371 -0 1 -0 0.495371 -0 0.868681" v="-4.89721 0.1 7.88045" id="1000440031" />
+      <obj fact="Box" name="LookBox" m="1 -0 0 -0 1 -0 0 -0 1" v="-6.79207 0 23.2127" id="1000440032" ent="LookTrigger" />
     </cell>
     <cell name="inside">
-      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-0.216765 8.91418 4.78739" id="1000420000" />
-      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-0.226765 8.91418 2.78279" id="1000420001" />
-      <obj fact="Node" name="DestInside" m="0.710152 0 -0.704048 -0 1 0 0.704048 0 0.710152" v="-2.1675 9.20896 4.15287" id="1000420002" />
-      <obj fact="TestLight" static="true" m="0.988555 -0 0.150858 0 1 -0 -0.150858 -0 0.988556" v="-0.198662 9.30765 5.94616" id="1000420003" />
-      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-2.22831 8.91418 2.79508" id="1000420004" />
-      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-2.22676 8.9036 4.75056" id="1000420005" />
-      <obj fact="Box" static="true" m="0.400237 0 -0.916412 -0 1 -0 0.916412 -0 0.400237" v="0.131708 9.10399 3.67086" id="1000420006" ent="Teleporter">
+      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-0.216765 8.91418 4.78739" id="1000450000" />
+      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-0.226765 8.91418 2.78279" id="1000450001" />
+      <obj fact="Node" name="DestInside" m="0.710152 0 -0.704048 -0 1 0 0.704048 0 0.710152" v="-2.1675 9.20896 4.15287" id="1000450002" />
+      <obj fact="TestLight" static="true" m="0.988555 -0 0.150858 0 1 -0 -0.150858 -0 0.988556" v="-0.198662 9.30765 5.94616" id="1000450003" />
+      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-2.22831 8.91418 2.79508" id="1000450004" />
+      <obj fact="Wall" static="true" m="1 -0 0 0 -0.0114923 0.999934 0 -0.999934 -0.0114923" v="-2.22676 8.9036 4.75056" id="1000450005" />
+      <obj fact="Box" static="true" m="0.400237 0 -0.916412 -0 1 -0 0.916412 -0 0.400237" v="0.131708 9.10399 3.67086" id="1000450006" ent="Teleporter">
         <params>
           <par name="destination" string="DestOutside" />
         </params>
