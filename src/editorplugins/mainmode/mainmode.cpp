@@ -847,7 +847,19 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
       csSegment3 seg = view3d->GetMouseBeam (500);
       csVector3 isect (0);
       view3d->TraceBeamHit (seg, isect);
-      StartKinematicDragging (false, seg, isect, false);
+
+      if (do_kinematic_dragging)
+      {
+	// We are already dragging. In that case we snap the items to the
+	// place where the mouse is pointing and continue dragging.
+	csVector3 offset = dragObjects[0].kineOffset;
+        for (size_t i = 0 ; i < dragObjects.GetSize () ; i++)
+	  dragObjects[i].kineOffset -= offset;
+      }
+      else
+      {
+        StartKinematicDragging (false, seg, isect, false);
+      }
     }
   }
   else if (code == 'x' || code == 'X')
