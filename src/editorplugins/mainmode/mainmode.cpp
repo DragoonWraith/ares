@@ -844,10 +844,6 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   {
     if (view3d->GetSelection ()->HasSelection ())
     {
-      csSegment3 seg = view3d->GetMouseBeam (500);
-      csVector3 isect (0);
-      view3d->TraceBeamHit (seg, isect);
-
       if (do_kinematic_dragging)
       {
 	// We are already dragging. In that case we snap the items to the
@@ -858,6 +854,10 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
       }
       else
       {
+        csSegment3 seg = view3d->GetMouseBeam (500);
+        csVector3 isect (0);
+        view3d->TraceBeamHit (seg, isect);
+
         StartKinematicDragging (false, seg, isect, false);
       }
     }
