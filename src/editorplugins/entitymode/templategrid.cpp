@@ -1071,6 +1071,13 @@ public:
 
 // ------------------------------------------------------------------------
 
+static bool ToBool (const char* value)
+{
+  csString lvalue = csString (value).Downcase ();
+  return lvalue == "1" || lvalue == "true" || lvalue == "yes" || lvalue == "on";
+}
+
+
 class PcEditorSupportTrigger : public PcEditorSupport
 {
 private:
@@ -1099,6 +1106,11 @@ public:
 
     csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
     AppendButtonPar (pcProp, "Class", "Class", WIZARD_CLASS, clazz);
+
+    bool strict = InspectTools::GetPropertyValueBool (pl, pctpl, "strict", &valid);
+    AppendBoolPar (pcProp, "Strict", "Strict", strict);
+    bool follow = InspectTools::GetPropertyValueBool (pl, pctpl, "follow", &valid);
+    AppendBoolPar (pcProp, "Follow", "Follow", follow);
 
     wxPGProperty* typeProp = AppendEnumPar (pcProp, "Type", "TrigType", trigtypesArray, wxArrayInt ());
     if (pctpl->FindProperty (pl->FetchStringID ("SetupTriggerSphere")) != csArrayItemNotFound)
@@ -1163,6 +1175,16 @@ public:
     else if (selectedPropName == "Class")
     {
       pctpl->SetProperty (pl->FetchStringID ("class"), value.GetData ());
+      return REFRESH_NO;
+    }
+    else if (selectedPropName == "Strict")
+    {
+      pctpl->SetProperty (pl->FetchStringID ("strict"), ToBool (value));
+      return REFRESH_NO;
+    }
+    else if (selectedPropName == "Follow")
+    {
+      pctpl->SetProperty (pl->FetchStringID ("follow"), ToBool (value));
       return REFRESH_NO;
     }
     else if (selectedPropName == "TrigType")
