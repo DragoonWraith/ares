@@ -104,6 +104,7 @@
         <par name="radius" float="5" />
       </action>
       <property name="monitor" string="Player" />
+      <property name="follow" bool="1" />
     </propclass>
     <propclass name="pclogic.wire">
       <action name="AddInput">
