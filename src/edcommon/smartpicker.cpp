@@ -135,21 +135,21 @@ void SmartPickerLogic::OnSearchButton (wxCommandEvent& event)
     {
       case SPT_ENTITY:
         objects = rep->GetObjectsWithEntityValue ();
-        chosen = uiManager->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
+        chosen = uiManager->AskDialog ("Select an entity", 500, objects, "Entity,Template,Dynfact,Logic",
 	    DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
 	col = DYNOBJ_COL_ENTITY;
 	break;
 
       case SPT_QUEST:
         objects = rep->GetQuestsValue ();
-	chosen = uiManager->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
+	chosen = uiManager->AskDialog ("Select a quest", 400, objects, "Name,M", QUEST_COL_NAME,
 	    QUEST_COL_MODIFIED);
 	col = QUEST_COL_NAME;
 	break;
 
       case SPT_TEMPLATE:
 	objects = rep->GetTemplatesValue ();
-	chosen = uiManager->AskDialog ("Select a template", objects, "Template,M",
+	chosen = uiManager->AskDialog ("Select a template", 400, objects, "Template,M",
 	    TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
 	col = TEMPLATE_COL_NAME;
 	break;

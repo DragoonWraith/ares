@@ -330,7 +330,7 @@ bool EntityMode::AskPositionWizard (csVector3& vec)
     case 3:
       {
 	Value* objects = view3d->GetModelRepository ()->GetObjectsValue ();
-	Value* chosen = ui->AskDialog ("Select an object", objects,
+	Value* chosen = ui->AskDialog ("Select an object", 500, objects,
 	    "Entity,Template,Dynfact,X,Y,Z",
 	    DYNOBJ_COL_X, DYNOBJ_COL_Y, DYNOBJ_COL_Z,
 	    DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY);
@@ -408,7 +408,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       {
         csRef<Value> objects = view3d->GetModelRepository ()->GetObjectsWithEntityValue ();
         chosen = ui->AskDialog (
-	    "Select an entity", objects, "Entity,Template,Dynfact,Logic",
+	    "Select an entity", 500, objects, "Entity,Template,Dynfact,Logic",
 	      DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
         col = DYNOBJ_COL_ENTITY;
 	break;
@@ -416,7 +416,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       case WIZARD_QUEST:
       {
 	csRef<Value> objects = view3d->GetModelRepository ()->GetQuestsValue ();
-	chosen = ui->AskDialog ("Select a quest", objects, "Name,M", QUEST_COL_NAME,
+	chosen = ui->AskDialog ("Select a quest", 400, objects, "Name,M", QUEST_COL_NAME,
 	      QUEST_COL_MODIFIED);
 	col = QUEST_COL_NAME;
 	break;
@@ -424,7 +424,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       case WIZARD_CLASS:
       {
 	Value* objects = view3d->GetModelRepository ()->GetClassesValue ();
-	chosen = ui->AskDialog ("Select a class", objects, "Class,Description", CLASS_COL_NAME,
+	chosen = ui->AskDialog ("Select a class", 800, objects, "Class,Description", CLASS_COL_NAME,
 	      CLASS_COL_DESCRIPTION);
 	col = CLASS_COL_NAME;
 	break;
@@ -432,7 +432,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       case WIZARD_ACTION:
       {
 	Value* objects = view3d->GetModelRepository ()->GetActionsValue ();
-	chosen = ui->AskDialog ("Select an action", objects, "Action,Description", ACTION_COL_NAME,
+	chosen = ui->AskDialog ("Select an action", 800, objects, "Action,Description", ACTION_COL_NAME,
 	      ACTION_COL_DESCRIPTION);
 	col = ACTION_COL_NAME;
 	break;
@@ -440,7 +440,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
       case WIZARD_TEMPLATE:
       {
 	Value* objects = view3d->GetModelRepository ()->GetTemplatesValue ();
-	chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
+	chosen = ui->AskDialog ("Select a template", 400, objects, "Template,M", TEMPLATE_COL_NAME,
 	      TEMPLATE_COL_MODIFIED);
 	col = TEMPLATE_COL_NAME;
 	break;
@@ -457,7 +457,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	    PropertyClassNamesForType[type-WIZARD_PCQUEST]);
 	csRef<Value> objects = view3d->GetModelRepository ()->GetPropertyClassesValue (
 	    PropertyClassesForType[type-WIZARD_PCQUEST]);
-	chosen = ui->AskDialog (title, objects, "Entity,Tag,Template,Factory",
+	chosen = ui->AskDialog (title, 500, objects, "Entity,Tag,Template,Factory",
 	    PC_COL_ENTITY, PC_COL_TAG, PC_COL_TEMPLATE, PC_COL_FACTORY);
 	csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
 	csString tag = chosen->GetStringArrayValue ()->Get (PC_COL_TAG);
@@ -1642,7 +1642,7 @@ void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
 void EntityMode::AskNewQuest ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New Quest", "Name:");
+  csRef<iString> name = ui->AskDialog ("New Quest", 400, "Name:");
   if (name && !name->IsEmpty ())
   {
     iQuestFactory* questFact = questMgr->GetQuestFactory (name->GetData ());
@@ -1663,7 +1663,7 @@ void EntityMode::OnRenameTemplate (const char* tplName)
   if (!tpl) return;
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New template name", "New name:", tplName);
+  csRef<iString> name = ui->AskDialog ("New template name", 400, "New name:", tplName);
   if (name && !name->IsEmpty ())
   {
     if (csString (tplName) == name->GetData ())
@@ -1689,7 +1689,7 @@ void EntityMode::OnRenameQuest (const char* questName)
   if (!questFact) return;
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New quest name", "New name:", questName);
+  csRef<iString> name = ui->AskDialog ("New quest name", 400, "New name:", questName);
   if (name && !name->IsEmpty ())
   {
     if (csString (questName) == name->GetData ())
@@ -1775,7 +1775,7 @@ void EntityMode::OnQuestDel (const char* questName)
 void EntityMode::AskNewTemplate ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New Template", "Name:");
+  csRef<iString> name = ui->AskDialog ("New Template", 400, "Name:");
   if (name && !name->IsEmpty ())
   {
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (name->GetData ());
@@ -1973,7 +1973,7 @@ void EntityMode::OnCreatePC ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
   csRef<iUIDialog> dialog = ui->CreateDialog ("New PropertyClass",
-      "LName:;Cname,pcobject.mesh,pctools.properties,pctools.inventory,pclogic.quest,pclogic.spawn,pclogic.trigger,pclogic.wire,pctools.messenger,pcinput.standard,pcphysics.object,pcphysics.system,pccamera.old,pcmove.actor.dynamic,pcmove.actor.standard,pcmove.actor.wasd,pcworld.dynamic,ares.gamecontrol\nLTag:;Ttag");
+      "LName:;Cname,pcobject.mesh,pctools.properties,pctools.inventory,pctools.bag,pclogic.quest,pclogic.spawn,pclogic.trigger,pclogic.wire,pctools.messenger,pcinput.standard,pcphysics.object,pcphysics.system,pccamera.old,pcmove.actor.dynamic,pcmove.actor.standard,pcmove.actor.wasd,pcworld.dynamic,ares.gamecontrol\nLTag:;Ttag");
   if (dialog->Show (0))
   {
     const csHash<csString,csString>& fields = dialog->GetFieldContents ();
@@ -2199,7 +2199,7 @@ void EntityMode::Paste ()
   if (questCopy.node)
   {
     csString title = "Enter new name for quest factory";
-    csRef<iString> name = ui->AskDialog (title, "Name:", questCopy.name);
+    csRef<iString> name = ui->AskDialog (title, 400, "Name:", questCopy.name);
     if (!name) return;
     iQuestFactory* questFact = questMgr->GetQuestFactory (name->GetData ());
     if (questFact)
@@ -2217,7 +2217,7 @@ void EntityMode::Paste ()
     if (!tpl) return;
     csString title;
     title.Format ("Enter new tag for property class '%s'", pcCopy.name.GetData ());
-    csRef<iString> tag = ui->AskDialog (title, "Tag:", pcCopy.tag);
+    csRef<iString> tag = ui->AskDialog (title, 400, "Tag:", pcCopy.tag);
     if (!tag) return;
     iCelPropertyClassTemplate* pc = tpl->FindPropertyClassTemplate (pcCopy.name, tag->GetData ());
     if (pc)
@@ -2233,7 +2233,7 @@ void EntityMode::Paste ()
   else if (!entityCopy.name.IsEmpty ())
   {
     csString title = "Enter new name for entity template";
-    csRef<iString> name = ui->AskDialog (title, "Name:", entityCopy.name);
+    csRef<iString> name = ui->AskDialog (title, 400, "Name:", entityCopy.name);
     if (!name) return;
     iCelEntityTemplate* tpl = pl->FindEntityTemplate (name->GetData ());
     if (tpl)
@@ -2525,7 +2525,7 @@ void EntityMode::OnNewSequence ()
   if (questName.IsEmpty ()) return;
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New Sequence", "Name:");
+  csRef<iString> name = ui->AskDialog ("New Sequence", 400, "Name:");
   if (!name) return;
   if (name->IsEmpty ()) return;
 
@@ -2552,7 +2552,7 @@ void EntityMode::OnNewState ()
   if (questName.IsEmpty ()) return;
 
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New State", "Name:");
+  csRef<iString> name = ui->AskDialog ("New State", 400, "Name:");
   if (!name) return;
   if (name->IsEmpty ()) return;
 

@@ -645,9 +645,10 @@ THE SOFTWARE."));
   wxAboutBox (info);
 }
 
-csRef<iString> UIManager::AskDialog (const char* description, const char* label, const char* value)
+csRef<iString> UIManager::AskDialog (const char* description, int width,
+    const char* label, const char* value)
 {
-  csRef<iUIDialog> dialog = CreateDialog (description, 600);
+  csRef<iUIDialog> dialog = CreateDialog (description, width);
   dialog->AddRow ();
   dialog->AddLabel (label);
   dialog->AddText ("name", true);
@@ -664,10 +665,10 @@ csRef<iString> UIManager::AskDialog (const char* description, const char* label,
   return 0;
 }
 
-Value* UIManager::AskDialog (const char* description, Value* collection,
-    const char* heading, ...)
+Value* UIManager::AskDialog (const char* description, int width,
+    Value* collection, const char* heading, ...)
 {
-  csRef<iUIDialog> dialog = CreateDialog (description, 400);
+  csRef<iUIDialog> dialog = CreateDialog (description, width);
   dialog->AddRow ();
   va_list args;
   va_start (args, heading);

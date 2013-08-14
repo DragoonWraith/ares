@@ -762,7 +762,7 @@ void AppAresEditWX::RegisterModification (const csArray<iObject*>& resources)
 	{
 	  csString title = "Select an asset for these resources";
 	  csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
-          Value* assetVal = uiManager->AskDialog (title, assets, "Writable,Path,File,Mount",
+          Value* assetVal = uiManager->AskDialog (title, 500, assets, "Writable,Path,File,Mount",
 	      ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
           if (assetVal)
           {
@@ -802,7 +802,7 @@ void AppAresEditWX::RegisterModification (iObject* resource)
       csString title;
       title.Format ("Select an asset for this resource '%s'", resource->GetName ());
       csRef<Ares::Value> assets = aresed3d->GetModelRepository ()->GetWritableAssetsValue ();
-      Value* assetVal = uiManager->AskDialog (title, assets, "Writable,Path,File,Mount",
+      Value* assetVal = uiManager->AskDialog (title, 500, assets, "Writable,Path,File,Mount",
 	      ASSET_COL_WRITABLE, ASSET_COL_PATH, ASSET_COL_FILE, ASSET_COL_MOUNT);
       if (assetVal)
       {

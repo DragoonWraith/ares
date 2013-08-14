@@ -79,8 +79,8 @@ bool wxTemplatesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value 
   using namespace Ares;
   csRef<Value> objects = emode->Get3DView ()->GetModelRepository ()->GetTemplatesValue ();
   iUIManager* ui = emode->GetApplication ()->GetUI ();
-  Value* chosen = ui->AskDialog ("Select a template", objects, "Template,M", TEMPLATE_COL_NAME,
-	    TEMPLATE_COL_MODIFIED);
+  Value* chosen = ui->AskDialog ("Select a template", 400, objects,
+      "Template,M", TEMPLATE_COL_NAME, TEMPLATE_COL_MODIFIED);
   if (chosen)
   {
     csString name = chosen->GetStringArrayValue ()->Get (TEMPLATE_COL_NAME);
@@ -122,7 +122,7 @@ bool wxClassesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
   using namespace Ares;
   Value* classes = emode->Get3DView ()->GetModelRepository ()->GetClassesValue ();
   iUIManager* ui = emode->GetApplication ()->GetUI ();
-  Value* chosen = ui->AskDialog ("Select a class", classes, "Class,Description", CLASS_COL_NAME,
+  Value* chosen = ui->AskDialog ("Select a class", 700, classes, "Class,Description", CLASS_COL_NAME,
 	    CLASS_COL_DESCRIPTION);
   if (chosen)
   {
@@ -862,6 +862,73 @@ public:
 
 // ------------------------------------------------------------------------
 
+class PcEditorSupportBag : public PcEditorSupport
+{
+private:
+  int idNewString;
+  int idDelString;
+
+public:
+  PcEditorSupportBag (EntityMode* emode) : PcEditorSupport ("pctools.bag", emode)
+  {
+    idNewString = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcBag_OnNewString));
+    idDelString = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::PcBag_OnDelString));
+  }
+
+  virtual ~PcEditorSupportBag () { }
+
+  virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
+  {
+    for (size_t idx = 0 ; idx < pctpl->GetPropertyCount () ; idx++)
+    {
+      csStringID id;
+      celData data;
+      csRef<iCelParameterIterator> params = pctpl->GetProperty (idx, id, data);
+      csString name = pl->FetchString (id);
+      if (name == "AddString")
+      {
+	csString str = InspectTools::GetActionParameterValueExpression (pl, pctpl, idx, "string");
+	csString s;
+	s.Format ("String:%d", int (idx));
+	AppendStringPar (pcProp, "String", s, str);
+      }
+    }
+  }
+
+  virtual RefreshType Update (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxPGProperty* selectedProperty)
+  {
+    csString value = (const char*)selectedProperty->GetValueAsString ().mb_str (wxConvUTF8);
+    if (selectedPropName.StartsWith ("String:"))
+    {
+      int idx;
+      csScanStr (selectedPropName.GetData () + 7, "%d", &idx);
+      InspectTools::AddActionParameter (pl, pm, pctpl, idx, "string", CEL_DATA_STRING, value);
+      return REFRESH_NO;
+    }
+
+    return REFRESH_NOCHANGE;
+  }
+
+  virtual bool Validate (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName,
+      const csString& value, const wxPropertyGridEvent& event)
+  {
+    return true;
+  }
+
+  virtual void DoContext (iCelPropertyClassTemplate* pctpl,
+      const csString& pcPropName, const csString& selectedPropName, wxMenu* contextMenu)
+  {
+    contextMenu->AppendSeparator ();
+    contextMenu->Append (idNewString, wxT ("New String..."));
+    if (selectedPropName.StartsWith ("String:"))
+      contextMenu->Append (idDelString, wxT ("Delete String"));
+  }
+};
+
+// ------------------------------------------------------------------------
+
 class PcEditorSupportQuest : public PcEditorSupport
 {
 private:
@@ -1433,6 +1500,7 @@ PcEditorSupportTemplate::PcEditorSupportTemplate (EntityMode* emode) :
   pctypesArray.Add (wxT ("pcobject.mesh"));
   pctypesArray.Add (wxT ("pctools.properties"));
   pctypesArray.Add (wxT ("pctools.inventory"));
+  pctypesArray.Add (wxT ("pctools.bag"));
   pctypesArray.Add (wxT ("pclogic.quest"));
   pctypesArray.Add (wxT ("pclogic.spawn"));
   pctypesArray.Add (wxT ("pclogic.trigger"));
@@ -1455,6 +1523,7 @@ PcEditorSupportTemplate::PcEditorSupportTemplate (EntityMode* emode) :
   idDelPC = RegisterContextMenu (wxCommandEventHandler (EntityMode::Panel::OnDeletePC));
 
   RegisterEditor (new PcEditorSupportQuest (emode));
+  RegisterEditor (new PcEditorSupportBag (emode));
   RegisterEditor (new PcEditorSupportWire (emode));
   RegisterEditor (new PcEditorSupportOldCamera (emode));
   RegisterEditor (new PcEditorSupportDynworld (emode));
@@ -1885,6 +1954,34 @@ void PcEditorSupportTemplate::PcInv_OnNewTemplate ()
       CEL_DATA_STRING, "name", tpl.GetData (),
       CEL_DATA_LONG, "amount", amount.GetData (),
       CEL_DATA_NONE);
+  emode->PCWasEdited (pctpl, REFRESH_PC);
+}
+
+void PcEditorSupportTemplate::PcBag_OnNewString ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (emode->GetContextLastProperty (), pcPropName, selectedPropName);
+
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Bag String",
+      "LString:;TString");
+  if (dialog->Show (0) == 0) return;
+  DialogResult result = dialog->GetFieldContents ();
+  csString str = result.Get ("String", (const char*)0);
+
+  InspectTools::AddAction (pl, pm, pctpl, "AddString",
+      CEL_DATA_STRING, "string", str.GetData (),
+      CEL_DATA_NONE);
+  emode->PCWasEdited (pctpl, REFRESH_PC);
+}
+
+void PcEditorSupportTemplate::PcBag_OnDelString ()
+{
+  csString selectedPropName, pcPropName;
+  iCelPropertyClassTemplate* pctpl = GetPCForProperty (emode->GetContextLastProperty (), pcPropName, selectedPropName);
+
+  int idx;
+  csScanStr (selectedPropName.GetData () + 7, "%d", &idx);
+  pctpl->RemovePropertyByIndex (idx);
   emode->PCWasEdited (pctpl, REFRESH_PC);
 }
 

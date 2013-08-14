@@ -94,38 +94,302 @@
 
     <knownmessages>
         <message name="cel.messenger.action.Message"
-		description="Usual destination: 'World' entity. This will display an on-screen message to the player">
+		description="Usually on 'World'. This will display an on-screen message to the player">
 	    <par name="type" type="string" value="std" />
 	    <par name="id" type="string" value="" />
 	    <par name="msg1" type="string" value="..." />
 	</message>
         <message name="ares.controller.Spawn"
-		description="Usual destination: 'World' entity. This will spawn a new dynamic object in front of the camera">
+		description="Usually on 'World'. This will spawn a new dynamic object in front of the camera">
 	    <par name="factory" type="string" value="... factory ..." />
 	</message>
         <message name="ares.controller.CreateEntity"
-		description="Usual destination: 'World' entity. This will create a new entity from an entity template">
+		description="Usually on 'World'. This will create a new entity from an entity template">
 	    <par name="template" type="string" value="... template ..." />
 	    <par name="name" type="string" value="... name ..." />
 	</message>
         <message name="ares.controller.StartDrag"
-		description="Usual destination: 'World' entity. This will start dragging the object in front of the camera" />
+		description="Usually on 'World'. This will start dragging the object in front of the camera" />
         <message name="ares.controller.StopDrag"
-       		description="Usual destination: 'World' entity. This will stop the current dragging operation" />
+       		description="Usually on 'World'. This will stop the current dragging operation" />
         <message name="ares.controller.Examine"
-		description="Usual destination: 'World' entity. This will show a description of the object in front of the camera if that object has a description" />
+		description="Usually on 'World'. This will show a description of the object in front of the camera if that object has a description" />
         <message name="ares.controller.Pickup"
-		description="Usual destination: 'World' entity. This will pick up the item in front of the camera if that item can be picked up" />
+		description="Usually on 'World'. This will pick up the item in front of the camera if that item can be picked up" />
         <message name="ares.controller.Inventory"
-		description="Usual destination: 'World' entity. This will open the player inventory" />
+		description="Usually on 'World'. This will open the player inventory" />
         <message name="ares.controller.Teleport"
-		description="Usual destination: 'World' entity. This will teleport the player">
+		description="Usually on 'World'. This will teleport the player">
 	    <par name="destination" type="string" value="... dest ..." />
 	</message>
         <message name="ares.controller.Activate"
-		description="Usual destination: 'World' entity. This will activate the object in front of the camera. If the object has an assiciated entity then it will get a message of type 'ares.Activate'. If the item can be picked up then it will be picked up. Otherwise the player will start dragging it" />
+		description="Usually on 'World'. This will activate the object in front of the camera. If the object has an assiciated entity then it will get a message of type 'ares.Activate'. If the item can be picked up then it will be picked up. Otherwise the player will start dragging it" />
         <message name="ares.Activate"
 		description="Usual destination: any entity. This message is typically sent from the game controller when an entity is activated" />
+
+        <message name="cel.move.actor.action.Subscribe"
+		description="Usually on 'Player'. Subscribe to 'cel.input' messages usually sent by the input property class. This will make the actormovement react to movement keys automatically">
+	</message>
+        <message name="cel.move.actor.action.SetSpeed"
+		description="Usually on 'Player'. Set the movement speed of the player">
+	    <par name="movement" type="float" value="2.0" />
+	    <par name="running" type="float" value="5.0" />
+	</message>
+        <message name="cel.move.actor.action.Forward"
+	  description="Usually on 'Player'. Start/stop moving forward">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.Backward"
+	  description="Usually on 'Player'. Start/stop moving backward">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.StafeLeft"
+	  description="Usually on 'Player'. Start/stop moving left">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.StafeRight"
+	  description="Usually on 'Player'. Start/stop moving right">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.RotateLeft"
+	  description="Usually on 'Player'. Start/stop rotating left">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.RotateRight"
+	  description="Usually on 'Player'. Start/stop rotating right">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.Run"
+	  description="Usually on 'Player'. Start/stop running">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.AutoRun"
+	  description="Usually on 'Player'. Start/stop automatic running">
+	    <par name="start" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.Clear"
+	  description="Usually on 'Player'. Clear all movement and rotation">
+	</message>
+        <message name="cel.move.actor.action.Jump"
+	  description="Usually on 'Player'. Jump">
+	</message>
+        <message name="cel.move.actor.action.SetAnimation"
+	  description="Usually on 'Player'. Set animation">
+	    <par name="name" type="string" value="..." />
+	    <par name="cycle" type="bool" value="true" />
+	</message>
+        <message name="cel.move.actor.action.SetAnimationName"
+	  description="Usually on 'Player'. Set animation for a type of movement ('idle', 'walk', 'run', or 'jump')">
+	    <par name="mapping" type="string" value="..." />
+	    <par name="name" type="string" value="..." />
+	</message>
+        <message name="cel.move.actor.action.RotateTo"
+	  description="Usually on 'Player'. Rotate until a given angle">
+	    <par name="yrot" type="float" value="0" />
+	</message>
+        <message name="cel.move.actor.action.MouseMove"
+	  description="Usually on 'Player'. Handle mouse movement">
+	    <par name="x" type="float" value="0" />
+	    <par name="y" type="float" value="0" />
+	</message>
+        <message name="cel.move.actor.action.ChangeTarget"
+	  description="Usually on 'Player'. Slowly let the camera look at some entity">
+	    <par name="newtarget" type="string" value="..." />
+	</message>
+
+        <message name="cel.trigger.action.SetupTriggerSphere"
+	  description="Setup the trigger with a sphere around a certain position">
+	    <par name="sector" type="string" value="..." />
+	    <par name="position" type="vector3" value="0,0,0" />
+	    <par name="radius" type="float" value="10" />
+	</message>
+        <message name="cel.trigger.action.SetupTriggerBox"
+	  description="Setup the trigger with a box at a certain position">
+	    <par name="sector" type="string" value="..." />
+	    <par name="minbox" type="vector3" value="0,0,0" />
+	    <par name="maxbox" type="vector3" value="0,0,0" />
+	</message>
+        <message name="cel.trigger.action.SetupTriggerBeam"
+	  description="Setup the trigger with a beam">
+	    <par name="sector" type="string" value="..." />
+	    <par name="start" type="vector3" value="0,0,0" />
+	    <par name="end" type="vector3" value="0,0,0" />
+	</message>
+        <message name="cel.trigger.action.SetupTriggerAboveMesh"
+	  description="Setup the trigger to fire above another mesh">
+	    <par name="entity" type="string" value="..." />
+	    <par name="maxdistance" type="float" value="0" />
+	</message>
+        <message name="cel.trigger.entity.enter"
+	  description="Sent by pctrigger to trigger entity. An entity enters this trigger">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.trigger.entity.leave"
+	  description="Sent by pctrigger to trigger entity. An entity leaves this trigger">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.trigger.entity.enter.this"
+	  description="Sent by pctrigger to triggering entity. This entity enters a trigger">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.trigger.entity.leave.this"
+	  description="Sent by pctrigger to triggering entity. This entity leaves a trigger">
+	    <par name="entity" type="string" value="..." />
+	</message>
+
+        <message name="cel.camera.default.action.SetCamera"
+	  description="Usually on 'Player'. Setup camera details">
+	    <par name="modename" type="string" value="..." />
+	    <par name="spring" type="vector3" value="0,0,0" />
+	    <par name="turnspeed" type="float" value="1" />
+	    <par name="swingcoef" type="float" value="0.7" />
+	    <par name="fpoffset" type="vector3" value="0,1,0" />
+	    <par name="tpoffset" type="vector3" value="0,1,3" />
+	    <par name="pitch" type="float" value="0.0" />
+	    <par name="pitchvelocity" type="float" value="0.0" />
+	    <par name="yaw" type="float" value="0.0" />
+	    <par name="yawvelocity" type="float" value="0.0" />
+	    <par name="distance" type="vector3" value="0,0,0" />
+	</message>
+        <message name="cel.camera.default.action.SetFollowEntity"
+	  description="Usually on 'Player'. Setup the camera to follow another entity">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.camera.default.action.CenterCamera"
+	  description="Usually on 'Player'. Center the camera on the following entity">
+	</message>
+        <message name="cel.camera.default.action.PointCamera"
+	  description="Usually on 'Player'. Point the camera to a start position in the map">
+	    <par name="start" type="string" value="..." />
+	</message>
+        <message name="cel.camera.default.action.SetRectangle"
+	  description="Usually on 'Player'. Set the camera rectangle">
+	    <par name="x" type="long" value="0" />
+	    <par name="y" type="long" value="0" />
+	    <par name="w" type="long" value="0" />
+	    <par name="h" type="long" value="0" />
+	</message>
+        <message name="cel.camera.default.action.SetPerspectiveCenter"
+	  description="Usually on 'Player'. Set the camera perspective center">
+	    <par name="x" type="float" value="0" />
+	    <par name="y" type="float" value="0" />
+	</message>
+
+        <message name="cel.commandinput.action.Activate"
+	  description="Usually on 'Player'. Activate or deactivate input">
+	    <par name="activate" type="bool" value="true" />
+	</message>
+        <message name="cel.commandinput.action.Bind"
+	  description="Usually on 'Player'. Bind a specific trigger to a command">
+	    <par name="trigger" type="string" value="..." />
+	    <par name="command" type="string" value="..." />
+	</message>
+        <message name="cel.commandinput.action.RemoveBind"
+	  description="Usually on 'Player'. Remove a bound command">
+	    <par name="trigger" type="string" value="..." />
+	    <par name="command" type="string" value="..." />
+	</message>
+        <message name="cel.commandinput.action.RemoveAllBinds"
+	  description="Usually on 'Player'. Remove all bound commands">
+	</message>
+        <message name="cel.commandinput.action.LoadConfig"
+	  description="Usually on 'Player'. Load configuration with a given prefix from the configuration manager">
+	    <par name="prefix" type="string" value="..." />
+	</message>
+        <message name="cel.commandinput.action.SaveConfig"
+	  description="Usually on 'Player'. Save configuration with a given prefix to the configuration manager">
+	    <par name="prefix" type="string" value="..." />
+	</message>
+
+        <message name="cel.inventory.action.AddTemplate"
+	  description="Add an amount of a template to an inventory">
+	    <par name="name" type="string" value="..." />
+	    <par name="amount" type="long" value="1" />
+	</message>
+        <message name="cel.inventory.action.RemoveTemplate"
+	  description="Remove an amount of a template from an inventory">
+	    <par name="name" type="string" value="..." />
+	    <par name="amount" type="long" value="1" />
+	</message>
+        <message name="cel.inventory.action.SetLootGenerator"
+	  description="Set a loot generator on this inventory">
+	    <par name="name" type="string" value="..." />
+	</message>
+        <message name="cel.inventory.action.GenerateLoot"
+	  description="Generate loot from the loot generator">
+	</message>
+        <message name="cel.entity.add"
+	  description="Sent by pcinventory to container. A new child entity will be added">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.entity.add.this"
+	  description="Sent by pcinventory to child. This entity will be added to an inventory">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.entity.add.template"
+	  description="Sent by pcinventory to container. A new child template will be added">
+	    <par name="template" type="string" value="..." />
+	    <par name="amount" type="long" value="1" />
+	</message>
+        <message name="cel.entity.remove"
+	  description="Sent by pcinventory to container. A child entity will be removed">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.entity.remove.this"
+	  description="Sent by pcinventory to child. This entity will be removed from an inventory">
+	    <par name="entity" type="string" value="..." />
+	</message>
+        <message name="cel.entity.remove.template"
+	  description="Sent by pcinventory to container. A child template will be removed">
+	    <par name="template" type="string" value="..." />
+	    <par name="amount" type="long" value="1" />
+	</message>
+
+        <message name="cel.messenger.action.Message"
+	  description="Usually on 'World'. Send a message to be shown to the user or logged">
+	    <par name="type" type="string" value="..." />
+	    <par name="id" type="string" value="..." />
+	    <par name="msg1" type="string" value="..." />
+	</message>
+        <message name="cel.messenger.action.SetDefaultType"
+	  description="Usually on 'World'. Set the default message type">
+	    <par name="type" type="string" value="..." />
+	</message>
+        <message name="cel.messenger.action.ClearID"
+	  description="Usually on 'World'. Clear all messages with a given ID">
+	    <par name="id" type="string" value="..." />
+	</message>
+
+        <message name="cel.properties.action.SetProperty"
+	  description="Set a property with a given type">
+	    <par name="name" type="string" value="..." />
+	    <par name="value" type="string" value="..." />
+	</message>
+        <message name="cel.properties.set"
+	  description="Sent by pcproperty. A specific property was set">
+	    <par name="index" type="long" value="0" />
+	</message>
+        <message name="cel.properties.clear"
+	  description="Sent by pcproperty. A specific property was cleared">
+	    <par name="index" type="long" value="0" />
+	</message>
+
+        <message name="cel.bag.action.AddString"
+	  description="Add a string to a bag">
+	    <par name="value" type="string" value="..." />
+	</message>
+        <message name="cel.bag.action.RemoveString"
+	  description="Remove a string from a bag">
+	    <par name="value" type="string" value="..." />
+	</message>
+        <message name="cel.bag.action.Clear"
+	  description="Clear all strings in a bag">
+	</message>
+        <message name="cel.bag.action.SendMessage"
+	  description="Treat all strings in this bag as entities and send a message to them with the given parameters">
+	    <par name="msgid" type="string" value="..." />
+	    <par name="par" type="string" value="...various params..." />
+	</message>
     </knownmessages>
 </config>
 

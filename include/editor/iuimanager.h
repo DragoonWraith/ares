@@ -49,14 +49,14 @@ struct iUIManager : public virtual iBase
   /**
    * Ask a question to the user and return the answer as a string.
    */
-  virtual csRef<iString> AskDialog (const char* description, const char* label,
+  virtual csRef<iString> AskDialog (const char* description, int width, const char* label,
       const char* value = 0) = 0;
 
   /**
    * Ask the user to select a value out of a list and return the selected
    * value. This only works with indexed values.
    */
-  virtual Ares::Value* AskDialog (const char* description, Ares::Value* collection,
+  virtual Ares::Value* AskDialog (const char* description, int width, Ares::Value* collection,
       const char* heading, ...) = 0;
 
   /**

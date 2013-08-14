@@ -115,6 +115,8 @@ public:
   void PcInv_OnNewTemplate ();
   void PcWire_OnNewOutput ();
   void PcWire_OnNewParameter ();
+  void PcBag_OnNewString ();
+  void PcBag_OnDelString ();
   void PcQuest_OnNewParameter ();
   void PcQuest_OnSuggestParameters ();
   void OnNewCharacteristic ();

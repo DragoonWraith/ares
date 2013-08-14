@@ -211,10 +211,10 @@ public:
   virtual void Message (const char* description, ...);
   virtual bool Error (const char* description, ...);
   virtual bool Ask (const char* description, ...);
-  virtual csRef<iString> AskDialog (const char* description, const char* label,
-      const char* value = 0);
-  virtual Ares::Value* AskDialog (const char* description, Ares::Value* collection,
-      const char* heading, ...);
+  virtual csRef<iString> AskDialog (const char* description, int width,
+      const char* label, const char* value = 0);
+  virtual Ares::Value* AskDialog (const char* description, int width,
+      Ares::Value* collection, const char* heading, ...);
 
   FileReq* GetFileReqDialog () const { return filereqDialog; }
   ManageAssetsDialog* GetManageAssetsDialog () const { return manageassetsDialog; }

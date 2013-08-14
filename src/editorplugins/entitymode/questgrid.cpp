@@ -79,7 +79,8 @@ bool wxEntitiesProperty::OnCustomStringEdit( wxWindow* parent, wxString& value )
   using namespace Ares;
   csRef<Value> objects = emode->Get3DView ()->GetModelRepository ()->GetObjectsWithEntityValue ();
   iUIManager* ui = emode->GetApplication ()->GetUI ();
-  Value* chosen = ui->AskDialog ("Select an entity", objects, "Entity,Template,Dynfact,Logic",
+  Value* chosen = ui->AskDialog ("Select an entity", 500, objects,
+      "Entity,Template,Dynfact,Logic",
       DYNOBJ_COL_ENTITY, DYNOBJ_COL_TEMPLATE, DYNOBJ_COL_FACTORY, DYNOBJ_COL_LOGIC);
   if (chosen)
   {

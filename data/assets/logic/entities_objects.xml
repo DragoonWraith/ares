@@ -100,7 +100,7 @@
     <propclass name="pcobject.mesh" />
     <propclass name="pclogic.trigger">
       <action name="SetupTriggerSphere">
-        <par name="position" vector3="-6.79207,0,23.2127" />
+        <par name="position" vector3="0,0,0" />
         <par name="radius" float="5" />
       </action>
       <property name="monitor" string="Player" />

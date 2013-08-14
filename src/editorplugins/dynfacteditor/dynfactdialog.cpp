@@ -1909,7 +1909,8 @@ public:
   {
     iDynamicFactory* fact = dialog->GetCurrentFactory ();
     if (!fact) return false;
-    csRef<iString> dimS = dialog->GetUIManager ()->AskDialog ("Thickness of box sides", "Thickness:");
+    csRef<iString> dimS = dialog->GetUIManager ()->AskDialog (
+	"Thickness of box sides", 600, "Thickness:");
     if (!dimS) return false;
     if (dimS->IsEmpty ()) return false;
     float dim;

@@ -377,6 +377,8 @@ public:
     void PcWire_OnDelOutput (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteProperty (); }
     void PcWire_OnNewParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->PcWire_OnNewParameter (); }
     void PcWire_OnDelParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteActionParameter (); }
+    void PcBag_OnNewString (wxCommandEvent& event) { s->GetTemplateEditor ()->PcBag_OnNewString (); }
+    void PcBag_OnDelString (wxCommandEvent& event) { s->GetTemplateEditor ()->PcBag_OnDelString (); }
     void PcQuest_OnNewParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->PcQuest_OnNewParameter (); }
     void PcQuest_OnDelParameter (wxCommandEvent& event) { s->GetTemplateEditor ()->OnDeleteActionParameter (); }
     void PcQuest_OnSuggestParameters (wxCommandEvent& event) { s->GetTemplateEditor ()->PcQuest_OnSuggestParameters (); }
