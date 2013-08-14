@@ -76,6 +76,77 @@ bool AresConfig::ParsePlugins (iDocumentNode* pluginsNode)
   return true;
 }
 
+bool AresConfig::ParseWizard (iDocumentNode* node, Wizard* wizard)
+{
+  wizard->name = node->GetAttributeValue ("name");
+  wizard->description = node->GetAttributeValue ("description");
+  wizard->node = node;
+
+  csRef<iDocumentNodeIterator> it = node->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "ask")
+    {
+      WizardParameter par;
+      par.name = child->GetAttributeValue ("name");
+      par.type = child->GetAttributeValue ("type");
+      par.description = child->GetAttributeValue ("description");
+      wizard->parameters.Push (par);
+    }
+  }
+
+  return true;
+}
+
+bool AresConfig::ParseWizards (iDocumentNode* wizardsNode)
+{
+  csRef<iDocumentNodeIterator> it = wizardsNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "template")
+    {
+      Wizard* wizard = new Wizard ();;
+      if (!ParseWizard (child, wizard))
+	return false;
+      templateWizards.Push (wizard);
+    }
+    else if (value == "quest")
+    {
+      Wizard* wizard = new Wizard ();;
+      if (!ParseWizard (child, wizard))
+	return false;
+      questWizards.Push (wizard);
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
+}
+
+Wizard* AresConfig::FindTemplateWizard (const char* name) const
+{
+  for (size_t i = 0 ; i < templateWizards.GetSize () ; i++)
+    if (templateWizards.Get (i)->name == name)
+      return templateWizards.Get (i);
+  return 0;
+}
+
+Wizard* AresConfig::FindQuestWizard (const char* name) const
+{
+  for (size_t i = 0 ; i < questWizards.GetSize () ; i++)
+    if (questWizards.Get (i)->name == name)
+      return questWizards.Get (i);
+  return 0;
+}
+
 bool AresConfig::ParseKnownMessages (iDocumentNode* knownmessagesNode)
 {
   csRef<iDocumentNodeIterator> it = knownmessagesNode->GetNodes ();
@@ -132,13 +203,14 @@ bool AresConfig::ParseKnownMessages (iDocumentNode* knownmessagesNode)
 
 csRef<iDocument> AresConfig::ReadConfigDocument ()
 {
+  if (doc) return doc;
   csRef<iVFS> vfs = csQueryRegistry<iVFS> (app->GetObjectRegistry ());
   csRef<iDocumentSystem> docsys;
   docsys = csQueryRegistry<iDocumentSystem> (app->GetObjectRegistry ());
   if (!docsys)
     docsys.AttachNew (new csTinyDocumentSystem ());
 
-  csRef<iDocument> doc = docsys->CreateDocument ();
+  doc = docsys->CreateDocument ();
   csRef<iDataBuffer> buf = vfs->ReadFile ("/appdata/aresedconfig.xml");
   if (!buf)
   {
@@ -156,7 +228,7 @@ csRef<iDocument> AresConfig::ReadConfigDocument ()
 
 bool AresConfig::ReadConfig ()
 {
-  csRef<iDocument> doc = ReadConfigDocument ();
+  ReadConfigDocument ();
   if (!doc) return false;
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> configNode = root->GetNode ("config");
@@ -172,6 +244,12 @@ bool AresConfig::ReadConfig ()
   if (pluginsNode)
   {
     if (!ParsePlugins (pluginsNode))
+      return false;
+  }
+  csRef<iDocumentNode> wizardsNode = configNode->GetNode ("wizards");
+  if (wizardsNode)
+  {
+    if (!ParseWizards (wizardsNode))
       return false;
   }
   return true;
@@ -267,7 +345,7 @@ bool AresConfig::ParseMenus (wxMenuBar* menuBar, iDocumentNode* menusNode)
 
 wxMenuBar* AresConfig::BuildMenuBar ()
 {
-  csRef<iDocument> doc = ReadConfigDocument ();
+  ReadConfigDocument ();
   if (!doc) return 0;
   csRef<iDocumentNode> root = doc->GetRoot ();
   csRef<iDocumentNode> configNode = root->GetNode ("config");

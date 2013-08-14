@@ -656,7 +656,7 @@ csRef<iString> UIManager::AskDialog (const char* description, int width,
     dialog->SetValue ("name", value);
   if (dialog->Show (0))
   {
-    const csHash<csString,csString>& fields = dialog->GetFieldContents ();
+    const DialogResult& fields = dialog->GetFieldContents ();
     csRef<iString> result;
     result.AttachNew (new scfString ());
     result->Replace (fields.Get ("name", ""));

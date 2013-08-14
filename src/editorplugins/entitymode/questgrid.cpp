@@ -117,7 +117,7 @@ public:
     AppendEditEnumPar (responseProp, "State", "State", states,
 	wxArrayInt (), tf->GetStateParameter ());
 
-    AppendPCParClass (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
+    AppendPCParClass (responseProp, "PC Quest", "PCQuest", BUTTON_PCQUEST,
 	tf->GetEntityParameter (), tf->GetTagParameter (), tf->GetClassParameter ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
@@ -175,9 +175,9 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iInventoryRewardFactory> tf = scfQueryInterface<iInventoryRewardFactory> (rewardFact);
-    AppendPCPar (responseProp, "PC Inventory (container)", "PCInv", WIZARD_PCINVENTORY,
+    AppendPCPar (responseProp, "PC Inventory (container)", "PCInv", BUTTON_PCINVENTORY,
 	tf->GetEntity (), tf->GetTag ());
-    AppendPCPar (responseProp, "PC Mesh (child)", "PCMesh", WIZARD_PCMESH,
+    AppendPCPar (responseProp, "PC Mesh (child)", "PCMesh", BUTTON_PCMESH,
 	tf->GetChildEntity (), tf->GetChildTag ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
@@ -209,7 +209,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iSequenceRewardFactory> tf = scfQueryInterface<iSequenceRewardFactory> (rewardFact);
-    AppendPCParClass (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
+    AppendPCParClass (responseProp, "PC Quest", "PCQuest", BUTTON_PCQUEST,
 	tf->GetEntity (), tf->GetTag (), tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
     AppendStringPar (responseProp, "Delay", "Delay", tf->GetDelay ());
@@ -273,7 +273,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iSequenceFinishRewardFactory> tf = scfQueryInterface<iSequenceFinishRewardFactory> (rewardFact);
-    AppendPCParClass (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
+    AppendPCParClass (responseProp, "PC Quest", "PCQuest", BUTTON_PCQUEST,
 	tf->GetEntity (), tf->GetTag (), tf->GetClass ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@ Enum!
   }
@@ -312,7 +312,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iChangePropertyRewardFactory> tf = scfQueryInterface<iChangePropertyRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
     AppendStringPar (responseProp, "PC", "PC", tf->GetPC ());	// @@@ Enum?
     AppendStringPar (responseProp, "PC Tag", "PCTag", tf->GetPCTag ());
@@ -367,7 +367,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iCreateEntityRewardFactory> tf = scfQueryInterface<iCreateEntityRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Template", "Template", WIZARD_TEMPLATE, tf->GetEntityTemplate ());
+    AppendButtonPar (responseProp, "Template", "Template", BUTTON_TEMPLATE, tf->GetEntityTemplate ());
     AppendStringPar (responseProp, "Name", "Name", tf->GetName ());
     // @@@ Add support for parameters
   }
@@ -396,7 +396,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iDestroyEntityRewardFactory> tf = scfQueryInterface<iDestroyEntityRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
@@ -424,7 +424,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iChangeClassRewardFactory> tf = scfQueryInterface<iChangeClassRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
 
     wxArrayString entitiesArray;
@@ -469,9 +469,9 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iActionRewardFactory> tf = scfQueryInterface<iActionRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
-    AppendButtonPar (responseProp, "Action", "Action", WIZARD_ACTION, tf->GetID ());
+    AppendButtonPar (responseProp, "Action", "Action", BUTTON_ACTION, tf->GetID ());
     AppendStringPar (responseProp, "PC", "PC", tf->GetPropertyClass ());	// @@@ Enum?
     AppendStringPar (responseProp, "Tag", "Tag", tf->GetTag ());
   }
@@ -513,7 +513,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iRewardFactory* rewardFact)
   {
     csRef<iMessageRewardFactory> tf = scfQueryInterface<iMessageRewardFactory> (rewardFact);
-    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
 
     wxArrayString entitiesArray;
     if (tf->GetEntities ())
@@ -528,7 +528,7 @@ public:
     detailGrid->AppendIn (responseProp, tempProp);
 
     AppendStringPar (responseProp, "Class", "Class", tf->GetClass ());
-    AppendButtonPar (responseProp, "Message", "Message", WIZARD_ACTION, tf->GetID ());
+    AppendButtonPar (responseProp, "Message", "Message", BUTTON_ACTION, tf->GetID ());
 
     for (size_t i = 0 ; i < tf->GetParameterCount () ; i++)
     {
@@ -813,7 +813,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iEnterSectorTriggerFactory> tf = scfQueryInterface<iEnterSectorTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Camera (player)", "PCCam", WIZARD_PCCAMERA,
+    AppendPCPar (responseProp, "PC Camera (player)", "PCCam", BUTTON_PCCAMERA,
 	tf->GetEntity (), tf->GetTag ());
     AppendStringPar (responseProp, "Sector", "Sector", tf->GetSector ());	// @@@Button?
   }
@@ -844,7 +844,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iSequenceFinishTriggerFactory> tf = scfQueryInterface<iSequenceFinishTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Quest", "PCQuest", WIZARD_PCQUEST,
+    AppendPCPar (responseProp, "PC Quest", "PCQuest", BUTTON_PCQUEST,
 	tf->GetEntity (), tf->GetTag ());
     AppendStringPar (responseProp, "Sequence", "Sequence", tf->GetSequence ());	// @@@Combo!
   }
@@ -875,10 +875,10 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iInventoryTriggerFactory> tf = scfQueryInterface<iInventoryTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Inventory (container)", "PCInv", WIZARD_PCINVENTORY,
+    AppendPCPar (responseProp, "PC Inventory (container)", "PCInv", BUTTON_PCINVENTORY,
 	tf->GetEntity (), tf->GetTag ());
-    AppendButtonPar (responseProp, "Child", "Child", WIZARD_ENTITY, tf->GetChildEntity ());
-    AppendButtonPar (responseProp, "ChildTemplate", "ChildTemplate", WIZARD_TEMPLATE, tf->GetChildTemplate ());
+    AppendButtonPar (responseProp, "Child", "Child", BUTTON_ENTITY, tf->GetChildEntity ());
+    AppendButtonPar (responseProp, "ChildTemplate", "ChildTemplate", BUTTON_TEMPLATE, tf->GetChildTemplate ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
@@ -909,7 +909,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iMeshSelectTriggerFactory> tf = scfQueryInterface<iMeshSelectTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Mesh", "PCMesh", WIZARD_PCMESH,
+    AppendPCPar (responseProp, "PC Mesh", "PCMesh", BUTTON_PCMESH,
 	tf->GetEntity (), tf->GetTag ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
@@ -937,8 +937,8 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iMessageTriggerFactory> tf = scfQueryInterface<iMessageTriggerFactory> (triggerFact);
-    AppendButtonPar (responseProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
-    AppendButtonPar (responseProp, "Mask", "Mask", WIZARD_ACTION, tf->GetMask ());
+    AppendButtonPar (responseProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
+    AppendButtonPar (responseProp, "Mask", "Mask", BUTTON_ACTION, tf->GetMask ());
   }
   virtual RefreshType Update (const csString& field, const csString& value,
       wxPGProperty* selectedProperty, iTriggerFactory* triggerFact)
@@ -965,7 +965,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iPropertyChangeTriggerFactory> tf = scfQueryInterface<iPropertyChangeTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Properties", "PCProperties", WIZARD_PCPROPERTIES,
+    AppendPCPar (responseProp, "PC Properties", "PCProperties", BUTTON_PCPROPERTIES,
 	tf->GetEntity (), tf->GetTag ());
     AppendStringPar (responseProp, "Property", "Property", tf->GetProperty ());
     AppendStringPar (responseProp, "Value", "Value", tf->GetValue ());
@@ -1005,7 +1005,7 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iTriggerTriggerFactory> tf = scfQueryInterface<iTriggerTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Trigger", "PCTrigger", WIZARD_PCTRIGGER,
+    AppendPCPar (responseProp, "PC Trigger", "PCTrigger", BUTTON_PCTRIGGER,
 	tf->GetEntity (), tf->GetTag ());
     AppendBoolPar (responseProp, "Leave", "Leave", tf->IsLeaveEnabled ());
   }
@@ -1036,9 +1036,9 @@ public:
   virtual void Fill (wxPGProperty* responseProp, iTriggerFactory* triggerFact)
   {
     csRef<iWatchTriggerFactory> tf = scfQueryInterface<iWatchTriggerFactory> (triggerFact);
-    AppendPCPar (responseProp, "PC Mesh (source)", "Source", WIZARD_PCMESH,
+    AppendPCPar (responseProp, "PC Mesh (source)", "Source", BUTTON_PCMESH,
 	tf->GetEntity (), tf->GetTag ());
-    AppendPCPar (responseProp, "PC Mesh (target)", "Target", WIZARD_PCMESH,
+    AppendPCPar (responseProp, "PC Mesh (target)", "Target", BUTTON_PCMESH,
 	tf->GetTargetEntity (), tf->GetTargetTag ());
     AppendStringPar (responseProp, "CheckTime", "CheckTimeTag", tf->GetChecktime ());
     AppendStringPar (responseProp, "Radius", "Radius", tf->GetRadius ());
@@ -1220,7 +1220,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iAmbientMeshSeqOpFactory> tf = scfQueryInterface<iAmbientMeshSeqOpFactory> (seqopFact);
-    AppendPCPar (seqProp, "PC Mesh", "PCMesh", WIZARD_PCMESH,
+    AppendPCPar (seqProp, "PC Mesh", "PCMesh", BUTTON_PCMESH,
 	tf->GetEntity (), tf->GetTag ());
     AppendColorPar (seqProp, "Relative Color",
 	tf->GetRelColorRed (),
@@ -1268,7 +1268,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iLightSeqOpFactory> tf = scfQueryInterface<iLightSeqOpFactory> (seqopFact);
-    AppendPCPar (seqProp, "PC Light", "PCLight", WIZARD_PCLIGHT,
+    AppendPCPar (seqProp, "PC Light", "PCLight", BUTTON_PCLIGHT,
 	tf->GetEntity (), tf->GetTag ());
     AppendColorPar (seqProp, "Relative Color",
 	tf->GetRelColorRed (),
@@ -1336,7 +1336,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iTransformSeqOpFactory> tf = scfQueryInterface<iTransformSeqOpFactory> (seqopFact);
-    AppendPCPar (seqProp, "PC Mesh", "PCMesh", WIZARD_PCMESH, tf->GetEntity (), tf->GetTag ());
+    AppendPCPar (seqProp, "PC Mesh", "PCMesh", BUTTON_PCMESH, tf->GetEntity (), tf->GetTag ());
     AppendVectorPar (seqProp, "Vector", tf->GetVectorX (), tf->GetVectorY (), tf->GetVectorZ ());
     wxArrayString rotaxisArray;
     rotaxisArray.Add (wxT ("none"));
@@ -1390,7 +1390,7 @@ public:
   virtual void Fill (wxPGProperty* seqProp, iSeqOpFactory* seqopFact)
   {
     csRef<iPropertySeqOpFactory> tf = scfQueryInterface<iPropertySeqOpFactory> (seqopFact);
-    AppendButtonPar (seqProp, "Entity", "Entity", WIZARD_ENTITY, tf->GetEntity ());
+    AppendButtonPar (seqProp, "Entity", "Entity", BUTTON_ENTITY, tf->GetEntity ());
     AppendStringPar (seqProp, "PC", "PC", tf->GetPC ());
     AppendStringPar (seqProp, "PC Tag", "Tag", tf->GetPCTag ());
     AppendStringPar (seqProp, "Property", "Property", tf->GetProperty ());

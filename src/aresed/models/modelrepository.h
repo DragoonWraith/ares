@@ -36,6 +36,7 @@ class ObjectsValue;
 class TemplatesValue;
 class ClassesValue;
 class ActionsValue;
+class WizardsValue;
 
 /**
  * The model repository.
@@ -50,6 +51,8 @@ private:
   csRef<TemplatesValue> templatesValue;
   csRef<ClassesValue> classesValue;
   csRef<ActionsValue> actionsValue;
+  csRef<WizardsValue> templateWizardsValue;
+  csRef<WizardsValue> questWizardsValue;
 
   /// Debug drawing enabled.
 public:
@@ -72,6 +75,8 @@ public:
   virtual csRef<Ares::Value> GetQuestsValue () const;
   virtual Ares::Value* GetClassesValue () const;
   virtual Ares::Value* GetActionsValue () const;
+  virtual Ares::Value* GetTemplateWizardsValue () const;
+  virtual Ares::Value* GetQuestWizardsValue () const;
   virtual csRef<Ares::Value> GetObjectsWithEntityValue () const;
   virtual csRef<Ares::Value> GetPropertyClassesValue (const char* pcname) const;
   virtual void RefreshObjectsValue ();

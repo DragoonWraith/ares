@@ -51,24 +51,24 @@ enum RefreshType
   REFRESH_FULL			// Full refresh is required.
 };
 
-enum WizardType
+enum ButtonWizardType
 {
-  WIZARD_NONE = 0,
-  WIZARD_ENTITY,
-  WIZARD_TEMPLATE,
-  WIZARD_ACTION,
-  WIZARD_QUEST,
-  WIZARD_CLASS,
-  WIZARD_COLOR,
-  WIZARD_VECTOR3,
-  WIZARD_VECTOR,
-  WIZARD_PCQUEST,
-  WIZARD_PCINVENTORY,
-  WIZARD_PCMESH,
-  WIZARD_PCCAMERA,
-  WIZARD_PCPROPERTIES,
-  WIZARD_PCTRIGGER,
-  WIZARD_PCLIGHT,
+  BUTTON_NONE = 0,
+  BUTTON_ENTITY,
+  BUTTON_TEMPLATE,
+  BUTTON_ACTION,
+  BUTTON_QUEST,
+  BUTTON_CLASS,
+  BUTTON_COLOR,
+  BUTTON_VECTOR3,
+  BUTTON_VECTOR,
+  BUTTON_PCQUEST,
+  BUTTON_PCINVENTORY,
+  BUTTON_PCMESH,
+  BUTTON_PCCAMERA,
+  BUTTON_PCPROPERTIES,
+  BUTTON_PCTRIGGER,
+  BUTTON_PCLIGHT,
 };
 
 class GridSupport : public csRefCount
@@ -86,7 +86,7 @@ protected:
 
   int RegisterContextMenu (wxObjectEventFunction handler);
   wxPGProperty* AppendButtonPar (wxPGProperty* parent, const char* label, const char* name,
-      WizardType type, const char* value);
+      ButtonWizardType type, const char* value);
   void AppendPar ( wxPGProperty* parent, const char* partype, const char* name,
       celDataType type, const char* value);
 
@@ -97,9 +97,9 @@ protected:
     const char* x, const char* y, const char* z);
 
   void AppendPCParClass (wxPGProperty* parent, const char* label, const char* name,
-      WizardType type, const char* entity, const char* tag, const char* clazz);
+      ButtonWizardType type, const char* entity, const char* tag, const char* clazz);
   void AppendPCPar (wxPGProperty* parent, const char* label, const char* name,
-      WizardType type, const char* entity, const char* tag);
+      ButtonWizardType type, const char* entity, const char* tag);
 
   wxPGProperty* AppendStringPar (wxPGProperty* parent,
     const char* label, const char* name, const char* value);
@@ -125,7 +125,7 @@ public:
 
   const csString& GetName () { return name; }
 
-  static WizardType GetWizardType (wxPGProperty* property);
+  static ButtonWizardType GetButtonWizardType (wxPGProperty* property);
 };
 
 

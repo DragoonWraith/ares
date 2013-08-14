@@ -30,6 +30,8 @@ THE SOFTWARE.
 
 #include <wx/wx.h>
 
+struct iDocumentNode;
+
 struct KnownParameter
 {
   csString name;
@@ -45,6 +47,23 @@ struct KnownMessage
   csArray<KnownParameter> parameters;
 };
 
+struct WizardParameter
+{
+  csString name;
+  csString type;		// 'string', 'long', 'entity', 'message', ...
+  csString description;
+};
+
+struct Wizard
+{
+  csString name;
+  csString description;
+
+  csArray<WizardParameter> parameters;
+  csRef<iDocumentNode> node;
+};
+
+
 /**
  * The Ares Editor configuration interface.
  */
@@ -57,6 +76,14 @@ struct iEditorConfig : public virtual iBase
 
   /// Get a known message by name.
   virtual const KnownMessage* GetKnownMessage (const char* name) const = 0;
+
+  /// Get all template wizards.
+  virtual const csPDelArray<Wizard>& GetTemplateWizards () const = 0;
+  virtual Wizard* FindTemplateWizard (const char* name) const = 0;
+
+  /// Get all quest wizards.
+  virtual const csPDelArray<Wizard>& GetQuestWizards () const = 0;
+  virtual Wizard* FindQuestWizard (const char* name) const = 0;
 };
 
 

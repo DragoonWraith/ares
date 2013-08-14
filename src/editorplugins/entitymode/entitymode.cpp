@@ -395,16 +395,16 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
   wxPGProperty* selectedProperty = detailGrid->GetSelection ();
   if (selectedProperty)
   {
-    WizardType type = GridSupport::GetWizardType (selectedProperty);
+    ButtonWizardType type = GridSupport::GetButtonWizardType (selectedProperty);
     iUIManager* ui = view3d->GetApplication ()->GetUI ();
 
     Value* chosen = 0;
     int col;
     switch (type)
     {
-      case WIZARD_NONE:
+      case BUTTON_NONE:
 	return;
-      case WIZARD_ENTITY:
+      case BUTTON_ENTITY:
       {
         csRef<Value> objects = view3d->GetModelRepository ()->GetObjectsWithEntityValue ();
         chosen = ui->AskDialog (
@@ -413,7 +413,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
         col = DYNOBJ_COL_ENTITY;
 	break;
       }
-      case WIZARD_QUEST:
+      case BUTTON_QUEST:
       {
 	csRef<Value> objects = view3d->GetModelRepository ()->GetQuestsValue ();
 	chosen = ui->AskDialog ("Select a quest", 400, objects, "Name,M", QUEST_COL_NAME,
@@ -421,7 +421,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	col = QUEST_COL_NAME;
 	break;
       }
-      case WIZARD_CLASS:
+      case BUTTON_CLASS:
       {
 	Value* objects = view3d->GetModelRepository ()->GetClassesValue ();
 	chosen = ui->AskDialog ("Select a class", 800, objects, "Class,Description", CLASS_COL_NAME,
@@ -429,7 +429,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	col = CLASS_COL_NAME;
 	break;
       }
-      case WIZARD_ACTION:
+      case BUTTON_ACTION:
       {
 	Value* objects = view3d->GetModelRepository ()->GetActionsValue ();
 	chosen = ui->AskDialog ("Select an action", 800, objects, "Action,Description", ACTION_COL_NAME,
@@ -437,7 +437,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	col = ACTION_COL_NAME;
 	break;
       }
-      case WIZARD_TEMPLATE:
+      case BUTTON_TEMPLATE:
       {
 	Value* objects = view3d->GetModelRepository ()->GetTemplatesValue ();
 	chosen = ui->AskDialog ("Select a template", 400, objects, "Template,M", TEMPLATE_COL_NAME,
@@ -445,18 +445,18 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	col = TEMPLATE_COL_NAME;
 	break;
       }
-      case WIZARD_PCQUEST:
-      case WIZARD_PCINVENTORY:
-      case WIZARD_PCMESH:
-      case WIZARD_PCCAMERA:
-      case WIZARD_PCPROPERTIES:
-      case WIZARD_PCTRIGGER:
-      case WIZARD_PCLIGHT:
+      case BUTTON_PCQUEST:
+      case BUTTON_PCINVENTORY:
+      case BUTTON_PCMESH:
+      case BUTTON_PCCAMERA:
+      case BUTTON_PCPROPERTIES:
+      case BUTTON_PCTRIGGER:
+      case BUTTON_PCLIGHT:
       {
 	csString title; title.Format ("Select a %s property class",
-	    PropertyClassNamesForType[type-WIZARD_PCQUEST]);
+	    PropertyClassNamesForType[type-BUTTON_PCQUEST]);
 	csRef<Value> objects = view3d->GetModelRepository ()->GetPropertyClassesValue (
-	    PropertyClassesForType[type-WIZARD_PCQUEST]);
+	    PropertyClassesForType[type-BUTTON_PCQUEST]);
 	chosen = ui->AskDialog (title, 500, objects, "Entity,Tag,Template,Factory",
 	    PC_COL_ENTITY, PC_COL_TAG, PC_COL_TEMPLATE, PC_COL_FACTORY);
 	csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
@@ -464,7 +464,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	Set3Value (this, selectedProperty, entity, tag, "");
 	return;
       }
-      case WIZARD_COLOR:
+      case BUTTON_COLOR:
       {
 	wxColour color = wxGetColourFromUser (panel, wxColour ());
 	if (color.IsOk ())
@@ -477,7 +477,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	}
 	return;
       }
-      case WIZARD_VECTOR:
+      case BUTTON_VECTOR:
       {
 	csVector3 vec;
 	if (AskPositionWizard (vec))
@@ -489,7 +489,7 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	}
 	return;
       }
-      case WIZARD_VECTOR3:
+      case BUTTON_VECTOR3:
       {
 	csVector3 vec;
 	if (AskPositionWizard (vec))
@@ -1775,17 +1775,214 @@ void EntityMode::OnQuestDel (const char* questName)
 void EntityMode::AskNewTemplate ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New Template", 400, "Name:");
-  if (name && !name->IsEmpty ())
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Template", 800);
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Optionally select a wizard below:");
+  dialog->AddRow ();
+  dialog->AddListIndexed ("Wizard", view3d->GetModelRepository ()->GetTemplateWizardsValue (),
+      csArrayItemNotFound, false, 400,
+      "Name,Description", WIZARD_COL_NAME, WIZARD_COL_DESCRIPTION);
+  int result = dialog->Show (0);
+  if (result)
   {
-    iCelEntityTemplate* tpl = pl->FindEntityTemplate (name->GetData ());
+    const DialogResult& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("Name", "");
+    if (name.IsEmpty ())
+    {
+      ui->Error ("Empty name is not allowed!");
+      return;
+    }
+    iCelEntityTemplate* tpl = pl->FindEntityTemplate (name);
     if (tpl)
       ui->Error ("A template with this name already exists!");
     else
     {
-      tpl = pl->CreateEntityTemplate (name->GetData ());
-      RegisterModification (tpl);
+      tpl = pl->CreateEntityTemplate (name);
       SelectTemplate (tpl);
+    }
+
+    const DialogValues& values = dialog->GetFieldValues ();
+    using namespace Ares;
+    Value* row = values.Get ("Wizard", (Ares::Value*)0);
+    if (row)
+    {
+      csString wizardName = row->GetStringArrayValue ()->Get (WIZARD_COL_NAME);
+      ApplyTemplateWizard (wizardName);
+    }
+    else
+    {
+      RegisterModification (tpl);
+    }
+  }
+}
+
+static csString Resolve (const DialogResult& result, const char* v)
+{
+  if (v && *v == '#')
+    return result.Get (v+1, "");
+  else
+    return v;
+}
+
+void EntityMode::ApplyTemplateWizard (const csString& wizardName)
+{
+  iEditorConfig* config = app->GetConfig ();
+  Wizard* wizard = config->FindTemplateWizard (wizardName);
+  if (!wizard)
+  {
+    printf ("Internal error! Cannot find wizard with name '%s'!\n", wizardName.GetData ());
+    fflush (stdout);
+    return;
+  }
+
+  DialogResult result;
+  if (!wizard->parameters.IsEmpty ())
+  {
+    iUIManager* ui = view3d->GetApplication ()->GetUI ();
+    csRef<iUIDialog> dialog = ui->CreateDialog ("Wizard parameters", 400);
+    for (size_t i = 0 ; i < wizard->parameters.GetSize () ; i++)
+    {
+      dialog->AddRow ();
+      WizardParameter& par = wizard->parameters.Get (i);
+      // @@@ TODO: par.description as tooltip?
+      dialog->AddLabel (par.name);
+      if (par.type == "string" || par.type == "long" || par.type == "float")
+        dialog->AddText (par.name);
+      else if (par.type == "bool")
+	dialog->AddCheck (par.name);
+      else if (par.type == "entity")
+	dialog->AddTypedText (SPT_ENTITY, par.name);
+      else if (par.type == "template")
+	dialog->AddTypedText (SPT_TEMPLATE, par.name);
+      else if (par.type == "quest")
+	dialog->AddTypedText (SPT_QUEST, par.name);
+      else if (par.type == "message")
+	dialog->AddTypedText (SPT_MESSAGE, par.name);
+      else
+      {
+        printf ("Internal error! Unknown parameter type '%s'!\n", par.type.GetData ());
+        fflush (stdout);
+        return;
+      }
+    }
+    if (dialog->Show (0))
+      result = dialog->GetFieldContents ();
+    else
+      return;	// Canceled!
+  }
+
+  iCelEntityTemplate* tpl = GetCurrentTemplate ();
+
+  csRef<iDocumentNodeIterator> it = wizard->node->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "propclass")
+    {
+      iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
+      pctpl->SetName (Resolve (result, child->GetAttributeValue ("name")));
+      csString tag = Resolve (result, child->GetAttributeValue ("tag"));
+      if (!tag.IsEmpty ()) pctpl->SetTag (tag);
+      ApplyTemplateWizardPctpl (result, pctpl, child);
+    }
+  }
+
+  RegisterModification (tpl);
+  SelectTemplate (tpl);
+}
+
+void EntityMode::ApplyTemplateWizardPctpl (const DialogResult& parameters,
+    iCelPropertyClassTemplate* pctpl, iDocumentNode* node)
+{
+  csRef<iDocumentNodeIterator> it = node->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "action")
+    {
+      csString name = Resolve (parameters, child->GetAttributeValue ("name"));
+      csStringID id = pl->FetchStringID (name);
+      csHash<csRef<iParameter>, csStringID> params;
+      csRef<iDocumentNodeIterator> parIt = child->GetNodes ();
+      while (parIt->HasNext ())
+      {
+        csRef<iDocumentNode> parChild = parIt->Next ();
+        if (parChild->GetType () != CS_NODE_ELEMENT) continue;
+        csString p = parChild->GetValue ();
+	if (p == "par")
+	{
+	  csRef<iParameter> par;
+	  if (parChild->GetAttribute ("float"))
+	    par = GetPM ()->GetParameter (
+		Resolve (parameters, parChild->GetAttributeValue ("float")),
+		CEL_DATA_FLOAT);
+	  else if (parChild->GetAttribute ("long"))
+	    par = GetPM ()->GetParameter (
+		Resolve (parameters, parChild->GetAttributeValue ("long")),
+		CEL_DATA_LONG);
+	  else if (parChild->GetAttribute ("string"))
+	    par = GetPM ()->GetParameter (
+		Resolve (parameters, parChild->GetAttributeValue ("string")),
+		CEL_DATA_STRING);
+	  else if (parChild->GetAttribute ("bool"))
+	    par = GetPM ()->GetParameter (
+		Resolve (parameters, parChild->GetAttributeValue ("bool")),
+		CEL_DATA_BOOL);
+	  else if (parChild->GetAttribute ("vector2"))
+	    par = GetPM ()->GetParameter (
+		Resolve (parameters, parChild->GetAttributeValue ("vector2")),
+		CEL_DATA_VECTOR2);
+	  else if (parChild->GetAttribute ("vector3"))
+	    par = GetPM ()->GetParameter (
+		Resolve (parameters, parChild->GetAttributeValue ("vector3")),
+		CEL_DATA_VECTOR3);
+	  else
+	  {
+	    printf ("Unknown parameter type for parameter '%s'!\n",
+		parChild->GetAttributeValue ("name"));
+	    return;
+	  }
+	  csStringID parID = pl->FetchStringID (Resolve (parameters,
+	        parChild->GetAttributeValue ("name")));
+	  params.Put (parID, par);
+	}
+      }
+      pctpl->PerformAction (id, params);
+    }
+    else if (value == "property")
+    {
+      csString parName = Resolve (parameters, child->GetAttributeValue ("name"));
+      if (child->GetAttribute ("float"))
+	InspectTools::SetProperty (pl, pctpl, CEL_DATA_FLOAT, parName,
+	    Resolve (parameters, child->GetAttributeValue ("float")));
+      else if (child->GetAttribute ("long"))
+	InspectTools::SetProperty (pl, pctpl, CEL_DATA_LONG, parName,
+	    Resolve (parameters, child->GetAttributeValue ("long")));
+      else if (child->GetAttribute ("string"))
+	InspectTools::SetProperty (pl, pctpl, CEL_DATA_STRING, parName,
+	    Resolve (parameters, child->GetAttributeValue ("string")));
+      else if (child->GetAttribute ("bool"))
+	InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, parName,
+	    Resolve (parameters, child->GetAttributeValue ("bool")));
+      else if (child->GetAttribute ("vector2"))
+	InspectTools::SetProperty (pl, pctpl, CEL_DATA_VECTOR2, parName,
+	    Resolve (parameters, child->GetAttributeValue ("vector2")));
+      else if (child->GetAttribute ("vector3"))
+	InspectTools::SetProperty (pl, pctpl, CEL_DATA_VECTOR3, parName,
+	    Resolve (parameters, child->GetAttributeValue ("vector3")));
+      else
+      {
+	printf ("Unknown parameter type for parameter '%s'!\n",
+	    parName.GetData ());
+	return;
+      }
     }
   }
 }

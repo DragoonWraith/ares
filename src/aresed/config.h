@@ -26,6 +26,7 @@ THE SOFTWARE.
 #define __aresed_config_h
 
 #include "csutil/stringarray.h"
+#include "csutil/parray.h"
 #include "editor/iconfig.h"
 
 class AppAresEditWX;
@@ -47,10 +48,17 @@ private:
   AppAresEditWX* app;
   csArray<KnownMessage> messages;
   csArray<PluginConfig> plugins;
+  csPDelArray<Wizard> templateWizards;
+  csPDelArray<Wizard> questWizards;
+
+  // Reference to the config doc so that we can store refs to nodes for the wizards.
+  csRef<iDocument> doc;
 
   csRef<iDocument> ReadConfigDocument ();
   bool ParseKnownMessages (iDocumentNode* knownmessagesNode);
   bool ParsePlugins (iDocumentNode* pluginsNode);
+  bool ParseWizards (iDocumentNode* wizardsNode);
+  bool ParseWizard (iDocumentNode* node, Wizard* wizard);
   bool ParseMenus (wxMenuBar* menuBar, iDocumentNode* menusNode);
   bool ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode);
 
@@ -64,11 +72,12 @@ public:
    */
   bool ReadConfig ();
 
-  /// Get all known messages.
   virtual const csArray<KnownMessage>& GetMessages () const { return messages; }
-
-  /// Get a known message by name.
   virtual const KnownMessage* GetKnownMessage (const char* name) const;
+  virtual const csPDelArray<Wizard>& GetTemplateWizards () const { return templateWizards; }
+  virtual const csPDelArray<Wizard>& GetQuestWizards () const { return questWizards; }
+  virtual Wizard* FindTemplateWizard (const char* name) const;
+  virtual Wizard* FindQuestWizard (const char* name) const;
 
   /// Get all plugins.
   const csArray<PluginConfig>& GetPlugins () const { return plugins; }

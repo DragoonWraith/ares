@@ -37,7 +37,8 @@ enum SmartPickerType
   SPT_NONE = 0,
   SPT_ENTITY,
   SPT_QUEST,
-  SPT_TEMPLATE
+  SPT_TEMPLATE,
+  SPT_MESSAGE
 };
 
 /**

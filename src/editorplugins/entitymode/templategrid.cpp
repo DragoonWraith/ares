@@ -480,7 +480,7 @@ public:
 	s.Format ("Template:%d", int (idx));
 	wxPGProperty* outputProp = AppendStringPar (pcProp, "Output", s, "<composed>");
 
-	AppendButtonPar (outputProp, "Template", "Template", WIZARD_TEMPLATE, tplName);
+	AppendButtonPar (outputProp, "Template", "Template", BUTTON_TEMPLATE, tplName);
 	// @@@ Todo spawn supports more parameters for the template.
       }
     }
@@ -649,7 +649,7 @@ public:
 	s.Format ("Template:%d", int (idx));
 	wxPGProperty* outputProp = AppendStringPar (pcProp, "Template", s, "<composed>");
 
-	AppendButtonPar (outputProp, "Template", "Template", WIZARD_TEMPLATE, tplName);
+	AppendButtonPar (outputProp, "Template", "Template", BUTTON_TEMPLATE, tplName);
 	AppendStringPar (outputProp, "Amount", "Amount", amount);
       }
     }
@@ -725,7 +725,7 @@ public:
   virtual void Fill (wxPGProperty* pcProp, iCelPropertyClassTemplate* pctpl)
   {
     csString inputMask = InspectTools::GetActionParameterValueString (pl, pctpl, "AddInput", "mask");
-    AppendButtonPar (pcProp, "Input", "Input", WIZARD_ACTION, inputMask);
+    AppendButtonPar (pcProp, "Input", "Input", BUTTON_ACTION, inputMask);
 
     csStringID msgID = pl->FetchStringID ("msgid");
     csStringID entityID = pl->FetchStringID ("entity");
@@ -759,8 +759,8 @@ public:
 	s.Format ("Output:%d", int (idx));
 	wxPGProperty* outputProp = AppendStringPar (pcProp, "Output", s, "<composed>");
 
-	AppendButtonPar (outputProp, "Message", "Message", WIZARD_ACTION, msg);
-	AppendButtonPar (outputProp, "Entity", "Entity", WIZARD_ENTITY, entity);
+	AppendButtonPar (outputProp, "Message", "Message", BUTTON_ACTION, msg);
+	AppendButtonPar (outputProp, "Entity", "Entity", BUTTON_ENTITY, entity);
 
 	for (size_t i = 0 ; i < ids.GetSize () ; i++)
 	{
@@ -950,7 +950,7 @@ public:
   {
     iQuestFactory* questFact = emode->GetQuestFactory (pctpl);
     csString questName = questFact ? questFact->GetName () : "";
-    AppendButtonPar (pcProp, "Quest", "Quest", WIZARD_QUEST, questName);
+    AppendButtonPar (pcProp, "Quest", "Quest", BUTTON_QUEST, questName);
 
     csString defaultState = InspectTools::GetPropertyValueString (pl, pctpl, "state");
     wxArrayString states;
@@ -1169,10 +1169,10 @@ public:
     AppendIntPar (pcProp, "Jitter", "Jitter", valid ? jitter : 10);
 
     csString monitor = InspectTools::GetPropertyValueString (pl, pctpl, "monitor", &valid);
-    AppendButtonPar (pcProp, "Monitor", "Monitor", WIZARD_ENTITY, monitor);
+    AppendButtonPar (pcProp, "Monitor", "Monitor", BUTTON_ENTITY, monitor);
 
     csString clazz = InspectTools::GetPropertyValueString (pl, pctpl, "class", &valid);
-    AppendButtonPar (pcProp, "Class", "Class", WIZARD_CLASS, clazz);
+    AppendButtonPar (pcProp, "Class", "Class", BUTTON_CLASS, clazz);
 
     bool strict = InspectTools::GetPropertyValueBool (pl, pctpl, "strict", &valid);
     AppendBoolPar (pcProp, "Strict", "Strict", strict);
@@ -1208,7 +1208,7 @@ public:
     {
       typeProp->SetValue (wxT ("Above"));
       csString par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerAboveMesh", "entity");
-      AppendButtonPar (typeProp, "Entity", "Entity", WIZARD_ENTITY, par);
+      AppendButtonPar (typeProp, "Entity", "Entity", BUTTON_ENTITY, par);
       par = InspectTools::GetActionParameterValueExpression (pl, pctpl, "SetupTriggerAboveMesh", "maxdistance");
       AppendStringPar (typeProp, "MaxDistance", "MaxDistance", par);
     }

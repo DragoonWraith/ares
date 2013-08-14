@@ -92,6 +92,33 @@
 	</menu>
     </menus>
 
+    <wizards>
+      <template name="Trigger on player with wire" description="This template will contain a trigger centered on the object on which this template will be used. When the player enters the trigger it will send another kind of message through a wire property class">
+	<ask name="Radius" type="string" description="Radius for the trigger" />
+	<ask name="Target" type="entity" description="Target entity which will get the message" />
+	<ask name="Message" type="message" description="The message to send to the target" />
+
+        <propclass name="pcobject.mesh" />
+        <propclass name="pclogic.trigger">
+          <action name="SetupTriggerSphere">
+            <par name="position" vector3="0,0,0" />
+            <par name="radius" float="#Radius" />
+          </action>
+          <property name="monitor" string="Player" />
+          <property name="follow" bool="1" />
+        </propclass>
+        <propclass name="pclogic.wire">
+          <action name="AddInput">
+            <par name="mask" string="cel.trigger.entity.enter" />
+          </action>
+          <action name="AddOutput">
+            <par name="msgid" string="#Message" />
+            <par name="entity" string="#Target" />
+          </action>
+        </propclass>
+      </template>
+    </wizards>
+
     <knownmessages>
         <message name="cel.messenger.action.Message"
 		description="Usually on 'World'. This will display an on-screen message to the player">

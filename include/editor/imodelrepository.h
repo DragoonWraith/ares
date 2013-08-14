@@ -110,6 +110,12 @@ enum ActionValueColumns
   ACTION_COL_DESCRIPTION,
 };
 
+enum WizardValueColumns
+{
+  WIZARD_COL_NAME = 0,
+  WIZARD_COL_DESCRIPTION,
+};
+
 /**
  * A repository of all values useful for the editor.
  */
@@ -178,6 +184,16 @@ struct iModelRepository : public virtual iBase
    * Get a value for all actions.
    */
   virtual Ares::Value* GetActionsValue () const = 0;
+
+  /**
+   * Get a value for all template wizards.
+   */
+  virtual Ares::Value* GetTemplateWizardsValue () const = 0;
+
+  /**
+   * Get a value for all quest wizards.
+   */
+  virtual Ares::Value* GetQuestWizardsValue () const = 0;
 
   /**
    * Refresh all standard values.

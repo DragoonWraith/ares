@@ -154,6 +154,13 @@ void SmartPickerLogic::OnSearchButton (wxCommandEvent& event)
 	col = TEMPLATE_COL_NAME;
 	break;
 
+      case SPT_MESSAGE:
+	objects = rep->GetActionsValue ();
+	chosen = uiManager->AskDialog ("Select a message", 800, objects, "Name,Description",
+	    ACTION_COL_NAME, ACTION_COL_DESCRIPTION);
+	col = ACTION_COL_NAME;
+	break;
+
       case SPT_NONE:
 	CS_ASSERT (false);
     }

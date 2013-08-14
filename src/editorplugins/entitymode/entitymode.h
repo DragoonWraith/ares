@@ -323,6 +323,10 @@ public:
       RefreshType refreshType);
   void DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
+  void ApplyTemplateWizardPctpl (const DialogResult& parameters, iCelPropertyClassTemplate* pctpl,
+      iDocumentNode* node);
+  void ApplyTemplateWizard (const csString& wizardName);
+
   void AskNewTemplate ();
   void OnTemplateDel (const char* tplName);
   void AskNewQuest ();
