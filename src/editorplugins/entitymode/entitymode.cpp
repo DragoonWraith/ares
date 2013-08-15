@@ -77,6 +77,14 @@ static csStringID ID_Copy = csInvalidStringID;
 static csStringID ID_Paste = csInvalidStringID;
 static csStringID ID_Delete = csInvalidStringID;
 
+static csString Resolve (const DialogResult& result, const char* v)
+{
+  if (v && *v == '#')
+    return result.Get (v+1, "");
+  else
+    return v;
+}
+
 //---------------------------------------------------------------------------
 
 class GraphNodeCallback : public iGraphNodeCallback
@@ -1642,19 +1650,148 @@ void EntityMode::SelectTemplate (iCelEntityTemplate* tpl)
 void EntityMode::AskNewQuest ()
 {
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iString> name = ui->AskDialog ("New Quest", 400, "Name:");
-  if (name && !name->IsEmpty ())
+  csRef<iUIDialog> dialog = ui->CreateDialog ("New Quest", 800);
+  dialog->AddRow ();
+  dialog->AddLabel ("Name:");
+  dialog->AddText ("Name");
+  dialog->AddRow ();
+  dialog->AddLabel ("Optionally select a wizard below:");
+  dialog->AddRow ();
+  dialog->AddListIndexed ("Wizard", view3d->GetModelRepository ()->GetQuestWizardsValue (),
+      csArrayItemNotFound, false, 400,
+      "Name,Description", WIZARD_COL_NAME, WIZARD_COL_DESCRIPTION);
+  int result = dialog->Show (0);
+  if (result)
   {
-    iQuestFactory* questFact = questMgr->GetQuestFactory (name->GetData ());
+    const DialogResult& fields = dialog->GetFieldContents ();
+    csString name = fields.Get ("Name", "");
+    if (name.IsEmpty ())
+    {
+      ui->Error ("Empty name is not allowed!");
+      return;
+    }
+
+    iQuestFactory* questFact = questMgr->GetQuestFactory (name);
     if (questFact)
       ui->Error ("A quest with this name already exists!");
     else
     {
-      questFact = questMgr->CreateQuestFactory (name->GetData ());
-      RegisterModification (questFact);
+      questFact = questMgr->CreateQuestFactory (name);
       SelectQuest (questFact);
     }
+
+    const DialogValues& values = dialog->GetFieldValues ();
+    using namespace Ares;
+    Value* row = values.Get ("Wizard", (Ares::Value*)0);
+    if (row)
+    {
+      csString wizardName = row->GetStringArrayValue ()->Get (WIZARD_COL_NAME);
+      ApplyQuestWizard (wizardName);
+    }
+    else
+    {
+      RegisterModification (questFact);
+    }
   }
+}
+
+bool EntityMode::AskWizardParameters (Wizard* wizard, DialogResult& result)
+{
+  if (!wizard->parameters.IsEmpty ())
+  {
+    iUIManager* ui = view3d->GetApplication ()->GetUI ();
+    csRef<iUIDialog> dialog = ui->CreateDialog ("Wizard parameters", 400);
+    for (size_t i = 0 ; i < wizard->parameters.GetSize () ; i++)
+    {
+      dialog->AddRow ();
+      WizardParameter& par = wizard->parameters.Get (i);
+      // @@@ TODO: par.description as tooltip?
+      dialog->AddLabel (par.name);
+      if (par.type == "string" || par.type == "long" || par.type == "float")
+        dialog->AddText (par.name);
+      else if (par.type == "bool")
+	dialog->AddCheck (par.name);
+      else if (par.type == "entity")
+	dialog->AddTypedText (SPT_ENTITY, par.name);
+      else if (par.type == "template")
+	dialog->AddTypedText (SPT_TEMPLATE, par.name);
+      else if (par.type == "quest")
+	dialog->AddTypedText (SPT_QUEST, par.name);
+      else if (par.type == "message")
+	dialog->AddTypedText (SPT_MESSAGE, par.name);
+      else
+      {
+        printf ("Internal error! Unknown parameter type '%s'!\n", par.type.GetData ());
+        fflush (stdout);
+        return false;
+      }
+    }
+    if (dialog->Show (0))
+    {
+      result = dialog->GetFieldContents ();
+      return true;
+    }
+    else
+      return false;	// Canceled!
+  }
+  return true;
+}
+
+static void ResolveDoc (iDocumentNode* source, iDocumentNode* target, const DialogResult& parameters)
+{
+  csRef<iDocumentAttributeIterator> attrIt = source->GetAttributes ();
+  while (attrIt->HasNext ())
+  {
+    csRef<iDocumentAttribute> attr = attrIt->Next ();
+    target->SetAttribute (
+	Resolve (parameters, attr->GetName ()),
+	Resolve (parameters, attr->GetValue ()));
+  }
+
+  csRef<iDocumentNodeIterator> it = source->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value != "ask")
+    {
+      csRef<iDocumentNode> newChild = target->CreateNodeBefore (CS_NODE_ELEMENT);
+      newChild->SetValue (value);
+      ResolveDoc (child, newChild, parameters);
+    }
+  }
+}
+
+void EntityMode::ApplyQuestWizard (const csString& wizardName)
+{
+  iEditorConfig* config = app->GetConfig ();
+  Wizard* wizard = config->FindQuestWizard (wizardName);
+  if (!wizard)
+  {
+    printf ("Internal error! Cannot find wizard with name '%s'!\n", wizardName.GetData ());
+    fflush (stdout);
+    return;
+  }
+
+  DialogResult result;
+  if (!AskWizardParameters (wizard, result))
+    return;
+
+  iQuestFactory* questFact = GetSelectedQuest ();
+
+  // We make an in-memory copy of the document with all parameters resolved.
+  csRef<iDocumentSystem> docsys;
+  docsys.AttachNew (new csTinyDocumentSystem ());
+  csRef<iDocument> doc = docsys->CreateDocument ();
+  csRef<iDocumentNode> root = doc->CreateRoot ();
+  csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
+  rootNode->SetValue ("quest");
+  ResolveDoc (wizard->node, rootNode, result);
+  questFact->Load (rootNode);
+
+  RegisterModification (questFact);
+  SelectQuest (questFact);
 }
 
 void EntityMode::OnRenameTemplate (const char* tplName)
@@ -1819,14 +1956,6 @@ void EntityMode::AskNewTemplate ()
   }
 }
 
-static csString Resolve (const DialogResult& result, const char* v)
-{
-  if (v && *v == '#')
-    return result.Get (v+1, "");
-  else
-    return v;
-}
-
 void EntityMode::ApplyTemplateWizard (const csString& wizardName)
 {
   iEditorConfig* config = app->GetConfig ();
@@ -1839,40 +1968,8 @@ void EntityMode::ApplyTemplateWizard (const csString& wizardName)
   }
 
   DialogResult result;
-  if (!wizard->parameters.IsEmpty ())
-  {
-    iUIManager* ui = view3d->GetApplication ()->GetUI ();
-    csRef<iUIDialog> dialog = ui->CreateDialog ("Wizard parameters", 400);
-    for (size_t i = 0 ; i < wizard->parameters.GetSize () ; i++)
-    {
-      dialog->AddRow ();
-      WizardParameter& par = wizard->parameters.Get (i);
-      // @@@ TODO: par.description as tooltip?
-      dialog->AddLabel (par.name);
-      if (par.type == "string" || par.type == "long" || par.type == "float")
-        dialog->AddText (par.name);
-      else if (par.type == "bool")
-	dialog->AddCheck (par.name);
-      else if (par.type == "entity")
-	dialog->AddTypedText (SPT_ENTITY, par.name);
-      else if (par.type == "template")
-	dialog->AddTypedText (SPT_TEMPLATE, par.name);
-      else if (par.type == "quest")
-	dialog->AddTypedText (SPT_QUEST, par.name);
-      else if (par.type == "message")
-	dialog->AddTypedText (SPT_MESSAGE, par.name);
-      else
-      {
-        printf ("Internal error! Unknown parameter type '%s'!\n", par.type.GetData ());
-        fflush (stdout);
-        return;
-      }
-    }
-    if (dialog->Show (0))
-      result = dialog->GetFieldContents ();
-    else
-      return;	// Canceled!
-  }
+  if (!AskWizardParameters (wizard, result))
+    return;
 
   iCelEntityTemplate* tpl = GetCurrentTemplate ();
 

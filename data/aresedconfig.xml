@@ -117,6 +117,21 @@
           </action>
         </propclass>
       </template>
+
+      <quest name="Periodic message" description="This quest will periodically send a message to an entity">
+	<ask name="Timeout" type="long" description="Trigger timeout in miliseconds" />
+	<ask name="Target" type="entity" description="Target entity which will get the message" />
+	<ask name="Message" type="message" description="The message to send to the target" />
+
+        <state name="init">
+          <trigger type="cel.triggers.timeout">
+            <fireon timeout="#Timeout" />
+            <reward type="cel.rewards.message" entity="#Target" id="#Message" />
+            <reward type="cel.rewards.newstate" state="init" />
+          </trigger>
+        </state>
+
+      </quest>
     </wizards>
 
     <knownmessages>
