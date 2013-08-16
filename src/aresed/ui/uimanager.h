@@ -56,6 +56,7 @@ struct ValueListInfo
   size_t col;
   bool multi;
   csRef<Ares::Value> collectionValue;
+  ValueListInfo () : list (0) { }
 };
 
 class UIDialog : public scfImplementation1<UIDialog, iUIDialog>,
@@ -74,6 +75,7 @@ private:
 
   int wizardButtonIndex;
   csHash<int,csString> wizardButtons;
+  csHash<wxButton*,csString> wizardButtonsComponents;
 
   csHash<ValueListInfo,csString> valueListFields;
 
@@ -143,11 +145,9 @@ public:
   // Clear all input fields to empty or default values.
   virtual void Clear ();
 
-  /**
-   * Set the value of a given control. This will do the right thing depending
-   * on the type of the control.
-   */
   virtual void SetValue (const char* name, const char* value);
+  virtual void SetToolTip (const char* name, const char* tooltip);
+  virtual void Enable (const char* name, bool enable = true);
 
   /// Set the value of the given text control.
   virtual void SetText (const char* name, const char* value);

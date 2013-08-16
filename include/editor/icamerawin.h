@@ -36,6 +36,9 @@ struct iCameraWindow : public virtual iBase
 
   /// Get the stored location at the given index (index 0, 1, or 2 supported).
   virtual const csVector3& GetStoredLocation (int r) const = 0;
+
+  /// Return true if the given stored location actually contains a location.
+  virtual bool IsLocationStored (int r) const = 0;
 };
 
 

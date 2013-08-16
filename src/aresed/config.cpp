@@ -93,6 +93,7 @@ bool AresConfig::ParseWizard (iDocumentNode* node, Wizard* wizard)
       WizardParameter par;
       par.name = child->GetAttributeValue ("name");
       par.type = child->GetAttributeValue ("type");
+      par.defaultValue = child->GetAttributeValue ("default");
       par.description = child->GetAttributeValue ("description");
       wizard->parameters.Push (par);
     }

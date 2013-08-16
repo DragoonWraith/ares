@@ -277,6 +277,7 @@ void UIDialog::AddWizardButton (const char* str)
 	UIDialog::OnButtonClicked), 0, this);
   buttons.Push (button);
   wizardButtons.Put (str, wizardButtonIndex++);
+  wizardButtonsComponents.Put (str, button);
 }
 
 void UIDialog::SetValue (const char* name, const char* value)
@@ -311,6 +312,38 @@ void UIDialog::SetValue (const char* name, const char* value)
     return;
   }
   SetList (name, value);
+}
+
+void UIDialog::SetToolTip (const char* name, const char* tooltip)
+{
+  wxTextCtrl* text = textFields.Get (name, 0);
+  if (text) { text->SetToolTip (wxString::FromUTF8 (tooltip)); return; }
+  wxCheckBox* check = checkFields.Get (name, 0);
+  if (check) { check->SetToolTip (wxString::FromUTF8 (tooltip)); return; }
+  wxChoice* choice = choiceFields.Get (name, 0);
+  if (choice) { choice->SetToolTip (wxString::FromUTF8 (tooltip)); return; }
+  wxComboBox* combo = comboFields.Get (name, 0);
+  if (combo) { combo->SetToolTip (wxString::FromUTF8 (tooltip)); return; }
+  ValueListInfo info = valueListFields.Get (name, ValueListInfo());
+  if (info.list) { info.list->SetToolTip (wxString::FromUTF8 (tooltip)); return; }
+  wxButton* button = wizardButtonsComponents.Get (name, 0);
+  if (button) { button->SetToolTip (wxString::FromUTF8 (tooltip)); return; }
+}
+
+void UIDialog::Enable (const char* name, bool enable)
+{
+  wxTextCtrl* text = textFields.Get (name, 0);
+  if (text) { text->Enable (enable); return; }
+  wxCheckBox* check = checkFields.Get (name, 0);
+  if (check) { check->Enable (enable); return; }
+  wxChoice* choice = choiceFields.Get (name, 0);
+  if (choice) { choice->Enable (enable); return; }
+  wxComboBox* combo = comboFields.Get (name, 0);
+  if (combo) { combo->Enable (enable); return; }
+  ValueListInfo info = valueListFields.Get (name, ValueListInfo());
+  if (info.list) { info.list->Enable (enable); return; }
+  wxButton* button = wizardButtonsComponents.Get (name, 0);
+  if (button) { button->Enable (enable); return; }
 }
 
 void UIDialog::SetCheck (const char* name, bool value)

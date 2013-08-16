@@ -117,6 +117,16 @@ struct iUIDialog : public virtual iBase
    */
   virtual void SetValue (const char* name, const char* value) = 0;
 
+  /**
+   * Set a tooltip for a given component.
+   */
+  virtual void SetToolTip (const char* name, const char* tooltip) = 0;
+
+  /**
+   * Enable/disable a given component.
+   */
+  virtual void Enable (const char* name, bool enable = true) = 0;
+
   /// Set the value of the given text control.
   virtual void SetText (const char* name, const char* value) = 0;
   /// Set the value of the given checkbox.

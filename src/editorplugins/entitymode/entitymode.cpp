@@ -36,6 +36,7 @@ THE SOFTWARE.
 #include "editor/imodelrepository.h"
 #include "editor/iconfig.h"
 #include "editor/icamerawin.h"
+#include "editor/iselection.h"
 #include "iassetmanager.h"
 
 #include "celtool/stdparams.h"
@@ -324,17 +325,67 @@ bool EntityMode::AskPositionWizard (csVector3& vec)
 {
   using namespace Ares;
   iUIManager* ui = view3d->GetApplication ()->GetUI ();
-  csRef<iUIDialog> dialog = ui->CreateDialog ("Position Wizard",
-      "WOrigin\nWFrom an object...\nWCurrent 3D View Camera Position\nWCurrent Selected Object\nWStored Position 1\nWStored Position 2\nWStored Position 3");
+  csRef<iUIDialog> dialog = ui->CreateDialog ("Position Wizard");
+
+  iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
+  iDynamicObject* player = dynworld->FindObject ("Player");
+  csVector3 playerPos (0, 0, 0);
+  if (player)
+    playerPos = player->GetTransform ().GetOrigin ();
+
+  csVector3 camPos = view3d->GetCsCamera ()->GetTransform ().GetOrigin ();
+  csVector3 selectedPos = TransformTools::GetCenterSelected (view3d->GetSelection ());
+  csVector3 storedPos1 = app->GetCameraWindow ()->GetStoredLocation (0);
+  csVector3 storedPos2 = app->GetCameraWindow ()->GetStoredLocation (1);
+  csVector3 storedPos3 = app->GetCameraWindow ()->GetStoredLocation (2);
+
+  csString s;
+  dialog->AddRow ();
+  dialog->AddWizardButton ("Origin (0,0,0)");
+  dialog->AddRow ();
+  dialog->AddWizardButton ("From an object...");
+
+  dialog->AddRow ();
+  s.Format ("Current Player Position (%g,%g,%g)", playerPos.x, playerPos.y, playerPos.z);
+  dialog->AddWizardButton (s);
+  if (!player)
+    dialog->Enable (s, false);
+
+  s.Format ("3D View Camera Position (%g,%g,%g)", camPos.x, camPos.y, camPos.z);
+  dialog->AddRow ();
+  dialog->AddWizardButton (s);
+
+  s.Format ("Selected Object (%g,%g,%g)", selectedPos.x, selectedPos.y, selectedPos.z);
+  dialog->AddRow ();
+  dialog->AddWizardButton (s);
+  if (!view3d->GetSelection ()->HasSelection ())
+    dialog->Enable (s, false);
+
+  s.Format ("Stored Position 1 (%g,%g,%g)", storedPos1.x, storedPos1.y, storedPos1.z);
+  dialog->AddRow ();
+  dialog->AddWizardButton (s);
+  if (!app->GetCameraWindow ()->IsLocationStored (0))
+    dialog->Enable (s, false);
+
+  s.Format ("Stored Position 2 (%g,%g,%g)", storedPos2.x, storedPos2.y, storedPos2.z);
+  dialog->AddRow ();
+  dialog->AddWizardButton (s);
+  if (!app->GetCameraWindow ()->IsLocationStored (1))
+    dialog->Enable (s, false);
+
+  s.Format ("Stored Position 3 (%g,%g,%g)", storedPos3.x, storedPos3.y, storedPos3.z);
+  dialog->AddRow ();
+  dialog->AddWizardButton (s);
+  if (!app->GetCameraWindow ()->IsLocationStored (2))
+    dialog->Enable (s, false);
+
   int result = dialog->Show (0);
   switch (result)
   {
     case 0:
     case 1:
       return false;
-    case 2:
-      vec.Set (0, 0, 0);
-      return true;
+    case 2: vec.Set (0, 0, 0); return true;
     case 3:
       {
 	Value* objects = view3d->GetModelRepository ()->GetObjectsValue ();
@@ -354,21 +405,12 @@ bool EntityMode::AskPositionWizard (csVector3& vec)
 	}
       }
       break;
-    case 4:
-      vec = view3d->GetCsCamera ()->GetTransform ().GetOrigin ();
-      return true;
-    case 5:
-      vec = TransformTools::GetCenterSelected (view3d->GetSelection ());
-      return true;
-    case 6:
-      vec = app->GetCameraWindow ()->GetStoredLocation (0);
-      return true;
-    case 7:
-      vec = app->GetCameraWindow ()->GetStoredLocation (1);
-      return true;
-    case 8:
-      vec = app->GetCameraWindow ()->GetStoredLocation (2);
-      return true;
+    case 4: vec = playerPos; return true;
+    case 5: vec = camPos; return true;
+    case 6: vec = selectedPos; return true;
+    case 7: vec = storedPos1; return true;
+    case 8: vec = storedPos2; return true;
+    case 9: vec = storedPos3; return true;
   }
   return false;
 }
@@ -1705,7 +1747,6 @@ bool EntityMode::AskWizardParameters (Wizard* wizard, DialogResult& result)
     {
       dialog->AddRow ();
       WizardParameter& par = wizard->parameters.Get (i);
-      // @@@ TODO: par.description as tooltip?
       dialog->AddLabel (par.name);
       if (par.type == "string" || par.type == "long" || par.type == "float")
         dialog->AddText (par.name);
@@ -1725,6 +1766,10 @@ bool EntityMode::AskWizardParameters (Wizard* wizard, DialogResult& result)
         fflush (stdout);
         return false;
       }
+      if (!par.defaultValue.IsEmpty ())
+	dialog->SetValue (par.name, par.defaultValue);
+      if (!par.description.IsEmpty ())
+	dialog->SetToolTip (par.name, par.description);
     }
     if (dialog->Show (0))
     {
@@ -1973,115 +2018,22 @@ void EntityMode::ApplyTemplateWizard (const csString& wizardName)
 
   iCelEntityTemplate* tpl = GetCurrentTemplate ();
 
-  csRef<iDocumentNodeIterator> it = wizard->node->GetNodes ();
-  while (it->HasNext ())
-  {
-    csRef<iDocumentNode> child = it->Next ();
-    if (child->GetType () != CS_NODE_ELEMENT) continue;
-    csString value = child->GetValue ();
-    if (value == "propclass")
-    {
-      iCelPropertyClassTemplate* pctpl = tpl->CreatePropertyClassTemplate ();
-      pctpl->SetName (Resolve (result, child->GetAttributeValue ("name")));
-      csString tag = Resolve (result, child->GetAttributeValue ("tag"));
-      if (!tag.IsEmpty ()) pctpl->SetTag (tag);
-      ApplyTemplateWizardPctpl (result, pctpl, child);
-    }
-  }
+  // We make an in-memory copy of the document with all parameters resolved.
+  csRef<iDocumentSystem> docsys;
+  docsys.AttachNew (new csTinyDocumentSystem ());
+  csRef<iDocument> doc = docsys->CreateDocument ();
+  csRef<iDocumentNode> root = doc->CreateRoot ();
+  csRef<iDocumentNode> rootNode = root->CreateNodeBefore (CS_NODE_ELEMENT);
+  rootNode->SetValue ("template");
+
+  ResolveDoc (wizard->node, rootNode, result);
+  rootNode->SetAttribute ("entityname", tpl->GetName ());
+  csRef<iEntityTemplateLoader> tplLoader = csQueryRegistryOrLoad<iEntityTemplateLoader> (
+      object_reg, "cel.addons.celentitytpl");
+  tplLoader->Load (rootNode, 0);
 
   RegisterModification (tpl);
   SelectTemplate (tpl);
-}
-
-void EntityMode::ApplyTemplateWizardPctpl (const DialogResult& parameters,
-    iCelPropertyClassTemplate* pctpl, iDocumentNode* node)
-{
-  csRef<iDocumentNodeIterator> it = node->GetNodes ();
-  while (it->HasNext ())
-  {
-    csRef<iDocumentNode> child = it->Next ();
-    if (child->GetType () != CS_NODE_ELEMENT) continue;
-    csString value = child->GetValue ();
-    if (value == "action")
-    {
-      csString name = Resolve (parameters, child->GetAttributeValue ("name"));
-      csStringID id = pl->FetchStringID (name);
-      csHash<csRef<iParameter>, csStringID> params;
-      csRef<iDocumentNodeIterator> parIt = child->GetNodes ();
-      while (parIt->HasNext ())
-      {
-        csRef<iDocumentNode> parChild = parIt->Next ();
-        if (parChild->GetType () != CS_NODE_ELEMENT) continue;
-        csString p = parChild->GetValue ();
-	if (p == "par")
-	{
-	  csRef<iParameter> par;
-	  if (parChild->GetAttribute ("float"))
-	    par = GetPM ()->GetParameter (
-		Resolve (parameters, parChild->GetAttributeValue ("float")),
-		CEL_DATA_FLOAT);
-	  else if (parChild->GetAttribute ("long"))
-	    par = GetPM ()->GetParameter (
-		Resolve (parameters, parChild->GetAttributeValue ("long")),
-		CEL_DATA_LONG);
-	  else if (parChild->GetAttribute ("string"))
-	    par = GetPM ()->GetParameter (
-		Resolve (parameters, parChild->GetAttributeValue ("string")),
-		CEL_DATA_STRING);
-	  else if (parChild->GetAttribute ("bool"))
-	    par = GetPM ()->GetParameter (
-		Resolve (parameters, parChild->GetAttributeValue ("bool")),
-		CEL_DATA_BOOL);
-	  else if (parChild->GetAttribute ("vector2"))
-	    par = GetPM ()->GetParameter (
-		Resolve (parameters, parChild->GetAttributeValue ("vector2")),
-		CEL_DATA_VECTOR2);
-	  else if (parChild->GetAttribute ("vector3"))
-	    par = GetPM ()->GetParameter (
-		Resolve (parameters, parChild->GetAttributeValue ("vector3")),
-		CEL_DATA_VECTOR3);
-	  else
-	  {
-	    printf ("Unknown parameter type for parameter '%s'!\n",
-		parChild->GetAttributeValue ("name"));
-	    return;
-	  }
-	  csStringID parID = pl->FetchStringID (Resolve (parameters,
-	        parChild->GetAttributeValue ("name")));
-	  params.Put (parID, par);
-	}
-      }
-      pctpl->PerformAction (id, params);
-    }
-    else if (value == "property")
-    {
-      csString parName = Resolve (parameters, child->GetAttributeValue ("name"));
-      if (child->GetAttribute ("float"))
-	InspectTools::SetProperty (pl, pctpl, CEL_DATA_FLOAT, parName,
-	    Resolve (parameters, child->GetAttributeValue ("float")));
-      else if (child->GetAttribute ("long"))
-	InspectTools::SetProperty (pl, pctpl, CEL_DATA_LONG, parName,
-	    Resolve (parameters, child->GetAttributeValue ("long")));
-      else if (child->GetAttribute ("string"))
-	InspectTools::SetProperty (pl, pctpl, CEL_DATA_STRING, parName,
-	    Resolve (parameters, child->GetAttributeValue ("string")));
-      else if (child->GetAttribute ("bool"))
-	InspectTools::SetProperty (pl, pctpl, CEL_DATA_BOOL, parName,
-	    Resolve (parameters, child->GetAttributeValue ("bool")));
-      else if (child->GetAttribute ("vector2"))
-	InspectTools::SetProperty (pl, pctpl, CEL_DATA_VECTOR2, parName,
-	    Resolve (parameters, child->GetAttributeValue ("vector2")));
-      else if (child->GetAttribute ("vector3"))
-	InspectTools::SetProperty (pl, pctpl, CEL_DATA_VECTOR3, parName,
-	    Resolve (parameters, child->GetAttributeValue ("vector3")));
-      else
-      {
-	printf ("Unknown parameter type for parameter '%s'!\n",
-	    parName.GetData ());
-	return;
-      }
-    }
-  }
 }
 
 void EntityMode::OnTemplateDel (const char* tplName)

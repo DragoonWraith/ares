@@ -89,6 +89,7 @@ void CameraWindow::StoreTrans (int idx)
     case 2: recallButton = XRCCTRL (*panel, "recall3Button", wxButton); break;
   }
   recallButton->Enable ();
+  locationStored[idx] = true;
   CamLocation loc = aresed3d->GetCamera ()->GetCameraLocation ();
   trans[idx] = loc;
 }
@@ -236,6 +237,13 @@ CameraWindow::CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d)
   recallButton->Disable ();
   recallButton  = XRCCTRL (*panel, "recall3Button", wxButton);
   recallButton->Disable ();
+
+  locationStored[0] = false;
+  locationStored[1] = false;
+  locationStored[2] = false;
+  trans[0].pos.Set (0, 0, 0);
+  trans[1].pos.Set (0, 0, 0);
+  trans[2].pos.Set (0, 0, 0);
 }
 
 CameraWindow::~CameraWindow ()

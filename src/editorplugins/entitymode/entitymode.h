@@ -325,8 +325,6 @@ public:
   void DelayedRefresh (iCelPropertyClassTemplate* pctpl, RefreshType refreshType);
 
   bool AskWizardParameters (Wizard* wizard, DialogResult& result);
-  void ApplyTemplateWizardPctpl (const DialogResult& parameters, iCelPropertyClassTemplate* pctpl,
-      iDocumentNode* node);
   void ApplyTemplateWizard (const csString& wizardName);
   void ApplyQuestWizard (const csString& wizardName);
 

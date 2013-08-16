@@ -42,6 +42,7 @@ private:
   int idLookAt, idTopDownSel, idMoveTo, idTopDown;
 
   CamLocation trans[3];
+  bool locationStored[3];
   void StoreTrans (int idx);
   void RecallTrans (int idx);
 
@@ -76,6 +77,10 @@ public:
   virtual const csVector3& GetStoredLocation (int r) const
   {
     return trans[r].pos;
+  }
+  virtual bool IsLocationStored (int r) const
+  {
+    return locationStored[r];
   }
 
   void Show () { panel->Show (); parentSizer->Layout (); }

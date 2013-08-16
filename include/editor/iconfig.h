@@ -52,6 +52,7 @@ struct WizardParameter
   csString name;
   csString type;		// 'string', 'long', 'entity', 'message', ...
   csString description;
+  csString defaultValue;
 };
 
 struct Wizard

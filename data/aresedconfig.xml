@@ -94,8 +94,8 @@
 
     <wizards>
       <template name="Trigger on player with wire" description="This template will contain a trigger centered on the object on which this template will be used. When the player enters the trigger it will send another kind of message through a wire property class">
-	<ask name="Radius" type="string" description="Radius for the trigger" />
-	<ask name="Target" type="entity" description="Target entity which will get the message" />
+	<ask name="Radius" type="float" default="10" description="Radius for the trigger" />
+	<ask name="Target" type="entity" default="$this" description="Target entity which will get the message" />
 	<ask name="Message" type="message" description="The message to send to the target" />
 
         <propclass name="pcobject.mesh" />
@@ -118,9 +118,55 @@
         </propclass>
       </template>
 
+      <template name="Simple wire" description="A very simple wire which will delegate one message to another">
+	<ask name="SourceMessage" type="message" default="ares.Activate" description="Source message" />
+	<ask name="Target" type="entity" default="$this" description="Target entity which will get the message" />
+	<ask name="DestinationMessage" type="message" description="The message to send to the target" />
+
+        <propclass name="pclogic.wire">
+          <action name="AddInput">
+            <par name="mask" string="#SourceMessage" />
+          </action>
+          <action name="AddOutput">
+            <par name="msgid" string="#DestinationMessage" />
+            <par name="entity" string="#Target" />
+          </action>
+        </propclass>
+      </template>
+
+      <template name="Countdown" description="Template to be used together with the Countdown quest wizard">
+	<ask name="CountdownQuest" type="quest" default="Countdown" description="Quest created from the Countdown wizard (or similar)" />
+
+        <propclass name="pcobject.mesh" />
+        <propclass name="pctools.properties" />
+        <propclass name="pclogic.quest">
+	  <action name="NewQuest">
+	    <par name="name" string="#CountdownQuest" />
+	  </action>
+	  <property name="state" string="init" />
+        </propclass>
+      </template>
+
+      <template name="Activator/Sequencer combo" description="This template combines an 'activator' style quest with a 'sequencer' style quest">
+	<ask name="ActivatorQuest" type="quest" default="DblActivatorStandard" description="Quest conforming to the activator standard" />
+	<ask name="SequencerQuest" type="quest" default="DblSequencerMove" description="Quest conforming to the sequencer standard" />
+          <propclass name="pclogic.quest" tag="activator">
+            <action name="NewQuest">
+              <par name="name" string="#ActivatorQuest" />
+            </action>
+            <property name="state" string="init" />
+          </propclass>
+          <propclass name="pcobject.mesh" />
+          <propclass name="pclogic.quest" tag="sequencer">
+            <action name="NewQuest">
+              <par name="name" string="#SequencerQuest" />
+            </action>
+          </propclass>
+      </template>
+
       <quest name="Periodic message" description="This quest will periodically send a message to an entity">
-	<ask name="Timeout" type="long" description="Trigger timeout in miliseconds" />
-	<ask name="Target" type="entity" description="Target entity which will get the message" />
+	<ask name="Timeout" type="long" default="60000" description="Trigger timeout in miliseconds" />
+	<ask name="Target" type="entity" default="$this" description="Target entity which will get the message" />
 	<ask name="Message" type="message" description="The message to send to the target" />
 
         <state name="init">
@@ -130,6 +176,57 @@
             <reward type="cel.rewards.newstate" state="init" />
           </trigger>
         </state>
+
+      </quest>
+
+      <quest name="Generic toggle" description="Generic toggle that will toggle between sending two messages whenever it receives a specific message itself">
+	<ask name="SourceMessage" type="message" default="ares.Activate" description="Message which will cause this quest to toggle" />
+	<ask name="Target" type="entity" default="$this" description="Target entity which will get the messages" />
+	<ask name="TargetMessage1" type="message" description="The first message to send to the target" />
+	<ask name="TargetMessage2" type="message" description="The second message to send to the target" />
+
+        <state name="first">
+          <trigger type="cel.triggers.message">
+            <fireon entity="$this" mask="#SourceMessage" />
+            <reward type="cel.rewards.message" entity="#Target" id="#TargetMessage1" />
+            <reward type="cel.rewards.newstate" state="second" />
+          </trigger>
+        </state>
+        <state name="second">
+          <trigger type="cel.triggers.message">
+            <fireon entity="$this" mask="#SourceMessage" />
+            <reward type="cel.rewards.message" entity="#Target" id="#TargetMessage2" />
+            <reward type="cel.rewards.newstate" state="first" />
+          </trigger>
+        </state>
+
+      </quest>
+
+      <quest name="Countdown" description="Countdown quest which will decrement a counter every time it gets some message and it will finally send a message when the counter reaches zero. Requires a pcproperties PC in the template">
+	<ask name="Counter" type="long" default="10" description="How many times to count down" />
+	<ask name="SourceMessage" type="message" default="ares.Activate" description="Message which will cause this quest to count down" />
+	<ask name="Target" type="entity" default="$this" description="Target entity which will get the messages when counter reaches zero" />
+	<ask name="TargetMessage" type="message" description="The message to send to the target" />
+
+        <state name="init">
+	  <oninit>
+	      <reward type="cel.rewards.changeproperty" entity="$this" property="counter" long="#Counter" />
+              <reward type="cel.rewards.newstate" state="countdown" />
+	  </oninit>
+	</state>
+        <state name="countdown">
+          <trigger type="cel.triggers.propertychange">
+            <fireon entity="$this" property="counter" operation="lt" value="0" />
+            <reward type="cel.rewards.message" entity="#Target" id="#TargetMessage" />
+            <reward type="cel.rewards.newstate" state="done" />
+          </trigger>
+          <trigger type="cel.triggers.message">
+            <fireon entity="$this" mask="#SourceMessage" />
+            <reward type="cel.rewards.changeproperty" entity="$this" property="counter" diff="-1" />
+            <reward type="cel.rewards.newstate" state="countdown" />
+          </trigger>
+        </state>
+	<state name="done" />
 
       </quest>
     </wizards>
