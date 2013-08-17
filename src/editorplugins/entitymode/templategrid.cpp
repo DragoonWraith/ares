@@ -1153,6 +1153,7 @@ private:
 public:
   PcEditorSupportTrigger (EntityMode* emode) : PcEditorSupport ("pclogic.trigger", emode)
   {
+    trigtypesArray.Add (wxT ("..."));
     trigtypesArray.Add (wxT ("Sphere"));
     trigtypesArray.Add (wxT ("Box"));
     trigtypesArray.Add (wxT ("Beam"));
@@ -1214,6 +1215,7 @@ public:
     }
     else
     {
+      typeProp->SetValue (wxT ("..."));
       printf ("Huh! Unknown trigger type!\n");
     }
   }
@@ -1280,6 +1282,8 @@ public:
 	InspectTools::AddAction (pl, emode->GetPM (), pctpl, "SetupTriggerAboveMesh", CEL_DATA_NONE);
 	return REFRESH_PC;
       }
+      else
+	return REFRESH_PC;
     }
     else if (selectedPropName == "TrigType.Radius")
     {
