@@ -86,7 +86,7 @@ void ResourcesValue::AddChild (const char* type, iObject* resource, int usage)
 void ResourcesValue::BuildModel ()
 {
   wxBusyCursor wait;
-  wxSafeYield ();
+  //wxSafeYield ();
 
   objectsHash.DeleteAll ();
   ReleaseChildren ();
