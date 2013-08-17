@@ -509,9 +509,12 @@ void EntityMode::OnPropertyGridButton (wxCommandEvent& event)
 	    PropertyClassesForType[type-BUTTON_PCQUEST]);
 	chosen = ui->AskDialog (title, 500, objects, "Entity,Tag,Template,Factory",
 	    PC_COL_ENTITY, PC_COL_TAG, PC_COL_TEMPLATE, PC_COL_FACTORY);
-	csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
-	csString tag = chosen->GetStringArrayValue ()->Get (PC_COL_TAG);
-	Set3Value (this, selectedProperty, entity, tag, "");
+	if (chosen)
+	{
+	  csString entity = chosen->GetStringArrayValue ()->Get (PC_COL_ENTITY);
+	  csString tag = chosen->GetStringArrayValue ()->Get (PC_COL_TAG);
+	  Set3Value (this, selectedProperty, entity, tag, "");
+	}
 	return;
       }
       case BUTTON_COLOR:
