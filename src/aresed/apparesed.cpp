@@ -821,11 +821,8 @@ void AppAresEditWX::RegisterModification (iObject* resource)
   UpdateTitle ();
 }
 
-bool AppAresEditWX::InitWX ()
+bool AppAresEditWX::InitResources ()
 {
-  // Load the frame from an XRC file
-  wxXmlResource::Get ()->InitAllHandlers ();
-
   csRef<iDataBuffer> buf = vfs->GetRealPath ("/ares/data/windows");
   csString path (buf->GetData ());
   wxString searchPath (wxString::FromUTF8 (path));
@@ -838,6 +835,29 @@ bool AppAresEditWX::InitWX ()
   if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ObjectFinderDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ResourceMoverDialog.xrc", searchPath)) return false;
+  return true;
+}
+
+bool AppAresEditWX::InitToolbar ()
+{
+  csRef<iDataBuffer> buf = vfs->GetRealPath ("/ares/data/icons/toolbar");
+  csString path (buf->GetData ());
+  path += CS_PATH_SEPARATOR;
+
+  wxToolBar* toolbar = XRCCTRL (*this, "mainToolbar", wxToolBar);
+  wxImage image (32, 32);
+  image.LoadFile (wxString::FromUTF8 (path + "tool_label.png"));
+  toolbar->AddTool (wxID_ANY, wxT ("Labels"), wxBitmap (image), wxT ("Toggle labels in 3D view"));
+  return true;
+}
+
+bool AppAresEditWX::InitWX ()
+{
+  // Load the frame from an XRC file
+  wxXmlResource::Get ()->InitAllHandlers ();
+
+  if (!InitResources ())
+    return false;
 
   wxPanel* mainPanel = wxXmlResource::Get ()->LoadPanel (this, wxT ("AresMainPanel"));
   if (!mainPanel) return ReportError ("Can't find main panel!");
@@ -856,6 +876,9 @@ bool AppAresEditWX::InitWX ()
   wxPanel* panel1 = new AppAresEditWX::Panel (panel, this);
   panel->GetSizer ()->Add (panel1, 1, wxALL | wxEXPAND);
   wxwindow->SetParent (panel1);
+
+  if (!InitToolbar ())
+    return false;
 
   Show (true);
 

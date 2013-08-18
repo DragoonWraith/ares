@@ -214,8 +214,12 @@ public:
 
   bool Initialize ();
   bool ParseCommandLine ();
+
   bool InitPlugins ();
   bool InitWX ();
+  bool InitResources ();
+  bool InitToolbar ();
+
   void PushFrame ();
   void OnClose (wxCloseEvent& event);
   void OnIconize (wxIconizeEvent& event);
