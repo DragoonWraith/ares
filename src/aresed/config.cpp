@@ -303,7 +303,8 @@ bool AresConfig::ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode)
       int id = StringToId (idString);
       if (id == wxID_ANY)
 	id = app->GetUIManager ()->AllocContextMenuID ();
-      app->AppendMenuItem (menu, id, name, target, command, args, help);
+      app->AllocateMenuCommand (id, name, target, command, args, help);
+      app->AppendMenuItem (menu, id, name, help);
     }
     else if (value == "sep")
     {
@@ -369,4 +370,97 @@ wxMenuBar* AresConfig::BuildMenuBar ()
   return 0;
 }
 
+bool AresConfig::ParseToolbarItems (wxToolBar* toolbar, iDocumentNode* sectionNode)
+{
+  csRef<iDataBuffer> buf = app->GetVFS ()->GetRealPath ("/ares/data/icons/toolbar/32x32");
+  csString path (buf->GetData ());
+  path += CS_PATH_SEPARATOR;
+  wxImage image (32, 32);
+
+  csRef<iDocumentNodeIterator> it = sectionNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "item")
+    {
+      csString name = child->GetAttributeValue ("name");
+      csString idString = child->GetAttributeValue ("id");
+      csString target = child->GetAttributeValue ("target");
+      csString imageFile = child->GetAttributeValue ("image");
+      csString command = child->GetAttributeValue ("command");
+      csString help = child->GetAttributeValue ("help");
+      csString args = child->GetAttributeValue ("args");
+      bool toggle = child->GetAttributeValueAsBool ("toggle");
+      int id = StringToId (idString);
+      if (id == wxID_ANY)
+	id = app->GetUIManager ()->AllocContextMenuID ();
+      app->AllocateMenuCommand (id, name, target, command, args, help);
+      image.LoadFile (wxString::FromUTF8 (path + imageFile));
+      toolbar->AddTool (id, wxString::FromUTF8 (name), wxBitmap (image), wxString::FromUTF8 (help),
+	  toggle ? wxITEM_CHECK : wxITEM_NORMAL);
+    }
+    else if (value == "sep")
+    {
+      toolbar->AddSeparator ();
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
+}
+
+bool AresConfig::ParseToolbar (wxToolBar* toolbar, iDocumentNode* toolbarNode)
+{
+  bool first = true;
+  csRef<iDocumentNodeIterator> it = toolbarNode->GetNodes ();
+  while (it->HasNext ())
+  {
+    csRef<iDocumentNode> child = it->Next ();
+    if (child->GetType () != CS_NODE_ELEMENT) continue;
+    csString value = child->GetValue ();
+    if (value == "section")
+    {
+      csString name = child->GetAttributeValue ("name");
+      if (first)
+      {
+	toolbar->AddSeparator ();
+	first = false;
+      }
+      if (!ParseToolbarItems (toolbar, child))
+      {
+	return false;
+      }
+    }
+    else
+    {
+      return app->ReportError ("Error parsing 'aresedconfig.xml', unknown element '%s'!", value.GetData ());
+    }
+  }
+  return true;
+}
+
+bool AresConfig::BuildToolBar (wxToolBar* toolbar)
+{
+  ReadConfigDocument ();
+  if (!doc) return 0;
+  csRef<iDocumentNode> root = doc->GetRoot ();
+  csRef<iDocumentNode> configNode = root->GetNode ("config");
+  if (!configNode)
+  {
+    app->ReportError ("Error 'aresedconfig.xml' is missing a 'config' node!");
+    return false;
+  }
+  csRef<iDocumentNode> toolbarNode = configNode->GetNode ("toolbar");
+  if (toolbarNode)
+  {
+    if (!ParseToolbar (toolbar, toolbarNode))
+      return false;
+    return true;
+  }
+  return true;
+}
 

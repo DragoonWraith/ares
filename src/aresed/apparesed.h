@@ -209,8 +209,12 @@ public:
   virtual void ClearStatus ();
 
   /// Append a menu item.
-  void AppendMenuItem (wxMenu* menu, int id, const char* label,
+  void AppendMenuItem (wxMenu* menu, int id, const char* label, const char* help);
+  /// Allocate a new command for menu or toolbar.
+  void AllocateMenuCommand (int id, const char* label,
        const char* targetName, const char* command, const char* args, const char* help);
+  /// Set the state of a toggle menu/toolbar to a specific value.
+  virtual void SetMenuItemState (const char* command, bool checked);
 
   bool Initialize ();
   bool ParseCommandLine ();
@@ -257,7 +261,7 @@ public:
   virtual void SetMenuState ();
 
   /// Command handler functions.
-  virtual bool Command (csStringID id, const csString& args);
+  virtual bool Command (csStringID id, const csString& args, bool checked);
   virtual bool IsCommandValid (csStringID id, const csString& args,
       iSelection* selection, size_t pastesize);
   virtual csPtr<iString> GetAlternativeLabel (csStringID id,

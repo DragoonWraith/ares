@@ -61,6 +61,8 @@ private:
   bool ParseWizard (iDocumentNode* node, Wizard* wizard);
   bool ParseMenus (wxMenuBar* menuBar, iDocumentNode* menusNode);
   bool ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode);
+  bool ParseToolbarItems (wxToolBar* toolbar, iDocumentNode* sectionNode);
+  bool ParseToolbar (wxToolBar* toolbar, iDocumentNode* toolbarNode);
 
 public:
   AresConfig (AppAresEditWX* app);
@@ -86,6 +88,11 @@ public:
    * Build the menu bar out of the config.
    */
   wxMenuBar* BuildMenuBar ();
+
+  /**
+   * Fill the toolbar from the config.
+   */
+  bool BuildToolBar (wxToolBar* toolbar);
 };
 
 #endif // __aresed_config_h

@@ -32,6 +32,17 @@
 -->
     </plugins>
 
+    <toolbar>
+      <section name="General">
+	 <item name="&amp;Open..." id="Open" image="folder.png" command="Open" help="Open a new project" />
+	 <item name="&amp;Save" id="Save" image="disk.png" command="Save" help="Save the current project and all modified and writable assets" />
+	 <item name="&amp;Play" id="Preview" image="control_play_blue.png" command="SwitchMode" args="Play" help="Enter game preview mode" />
+      </section>
+      <section name="Main">
+	 <item name="&amp;Labels" image="tag_blue.png" target="Main" command="ToggleLabels" toggle="true" help="Toggle display of labels" />
+      </section>
+    </toolbar>
+
     <menus>
     	<menu name="&amp;File">
 	    <item name="&amp;New project..." id="New" command="NewProject" help="Open a new project" />

@@ -840,15 +840,31 @@ bool AppAresEditWX::InitResources ()
 
 bool AppAresEditWX::InitToolbar ()
 {
-  csRef<iDataBuffer> buf = vfs->GetRealPath ("/ares/data/icons/toolbar");
-  csString path (buf->GetData ());
-  path += CS_PATH_SEPARATOR;
-
   wxToolBar* toolbar = XRCCTRL (*this, "mainToolbar", wxToolBar);
-  wxImage image (32, 32);
-  image.LoadFile (wxString::FromUTF8 (path + "tool_label.png"));
-  toolbar->AddTool (wxID_ANY, wxT ("Labels"), wxBitmap (image), wxT ("Toggle labels in 3D view"));
+  toolbar->SetToolSeparation (20);
+  if (!config->BuildToolBar (toolbar))
+    return false;
+
+  toolbar->Realize ();
   return true;
+}
+
+void AppAresEditWX::SetMenuItemState (const char* command, bool checked)
+{
+  wxToolBar* toolbar = XRCCTRL (*this, "mainToolbar", wxToolBar);
+  csHash<MenuCommand,int>::GlobalIterator it = menuCommands.GetIterator ();
+  int id = -1;
+  while (it.HasNext ())
+  {
+    MenuCommand mc = it.Next (id);
+    if (mc.command == command)
+      break;
+    id = -1;
+  }
+  if (id != -1)
+  {
+    toolbar->ToggleTool (id, checked);
+  }
 }
 
 bool AppAresEditWX::InitWX ()
@@ -876,9 +892,6 @@ bool AppAresEditWX::InitWX ()
   wxPanel* panel1 = new AppAresEditWX::Panel (panel, this);
   panel->GetSizer ()->Add (panel1, 1, wxALL | wxEXPAND);
   wxwindow->SetParent (panel1);
-
-  if (!InitToolbar ())
-    return false;
 
   Show (true);
 
@@ -914,6 +927,8 @@ bool AppAresEditWX::InitWX ()
 
   RefreshModes ();
 
+  if (!InitToolbar ())
+    return false;
   if (!SetupMenuBar ())
     return false;
 
@@ -1085,7 +1100,7 @@ void AppAresEditWX::ViewControls ()
   View3D ();
 }
 
-bool AppAresEditWX::Command (csStringID id, const csString& args)
+bool AppAresEditWX::Command (csStringID id, const csString& args, bool checked)
 {
   if (id == ID_NewProject) NewProject ();
   else if (id == ID_ProjectData)
@@ -1161,12 +1176,15 @@ void AppAresEditWX::OnMenuItem (wxCommandEvent& event)
   csRef<iCommandHandler> handler = mc.target;
   if (editMode && !handler) handler = scfQueryInterface<iCommandHandler> (editMode);
   if (handler)
-    handler->Command (mc.commandID, mc.args);
+    handler->Command (mc.commandID, mc.args, event.IsChecked ());
 }
 
-void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
+void AppAresEditWX::AllocateMenuCommand (int id, const char* label,
     const char* targetName, const char* command, const char* args, const char* help)
 {
+  if (menuCommands.Contains (id))
+    return;
+
   csRef<iCommandHandler> target;
   if (targetName && *targetName == '*' && !*(targetName+1))
   {
@@ -1181,7 +1199,6 @@ void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
   }
   else if (!target) target = static_cast<iCommandHandler*> (this);
 
-  menu->Append (id, wxString::FromUTF8 (label));
   MenuCommand mc;
   mc.target = target;
   mc.command = command;
@@ -1190,9 +1207,14 @@ void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
   mc.args = args;
   mc.help = help;
 
-  menu->SetHelpString (id, wxString::FromUTF8 (mc.help));
-
   menuCommands.Put (id, mc);
+}
+
+void AppAresEditWX::AppendMenuItem (wxMenu* menu, int id, const char* label,
+    const char* help)
+{
+  menu->Append (id, wxString::FromUTF8 (label));
+  menu->SetHelpString (id, wxString::FromUTF8 (help));
 }
 
 bool AppAresEditWX::SetupMenuBar ()

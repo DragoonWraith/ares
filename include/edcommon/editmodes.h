@@ -85,7 +85,7 @@ public:
 
   virtual bool Initialize (iObjectRegistry* object_reg);
 
-  virtual bool Command (csStringID id, const csString& args)
+  virtual bool Command (csStringID id, const csString& args, bool checked)
   {
     return false;
   }

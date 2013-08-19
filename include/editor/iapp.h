@@ -71,6 +71,10 @@ struct iAresEditor : public virtual iBase
 
   /// Set the state of the menus correctly depending on context.
   virtual void SetMenuState () = 0;
+
+  /// Set the state of a toggle menu/toolbar to a specific value.
+  virtual void SetMenuItemState (const char* command, bool checked) = 0;
+
   /**
    * Update the title of this frame. Useful to call after making a modification to
    * make sure the '*' is added.

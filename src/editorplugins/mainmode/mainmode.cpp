@@ -68,6 +68,7 @@ static csStringID ID_StackObj = csInvalidStringID;
 static csStringID ID_Copy = csInvalidStringID;
 static csStringID ID_Paste = csInvalidStringID;
 static csStringID ID_Delete = csInvalidStringID;
+static csStringID ID_ToggleLabels = csInvalidStringID;
 
 //---------------------------------------------------------------------------
 
@@ -137,6 +138,7 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
   ID_Copy = pl->FetchStringID ("Copy");
   ID_Paste = pl->FetchStringID ("Paste");
   ID_Delete = pl->FetchStringID ("Delete");
+  ID_ToggleLabels = pl->FetchStringID ("ToggleLabels");
 
   labelMgr = new LabelManager (object_reg);
 
@@ -220,6 +222,7 @@ void MainMode::Start ()
   SetTransformationMarkerStatus ();
   Refresh ();
   active = true;
+  app->SetMenuItemState ("ToggleLabels", showLabels);
 }
 
 void MainMode::Stop ()
@@ -275,6 +278,7 @@ void MainMode::Refresh ()
     wxTreeItemId rootId = tree->GetRootItem ();
     tree->SelectItem (rootId);
     tree->Expand (rootId);
+    app->SetMenuItemState ("ToggleLabels", showLabels);
   }
 }
 
@@ -339,7 +343,7 @@ void MainMode::SetTransformationMarkerStatus ()
     transformationMarker->SetVisible (false);
 }
 
-bool MainMode::Command (csStringID id, const csString& args)
+bool MainMode::Command (csStringID id, const csString& args, bool checked)
 {
   if (id == ID_RotReset) TransformTools::RotResetSelectedObjects (view3d->GetSelection ());
   else if (id == ID_RotLeft) TransformTools::Rotate (view3d->GetSelection (), PI/2.0);
@@ -353,6 +357,7 @@ bool MainMode::Command (csStringID id, const csString& args)
   else if (id == ID_Copy) view3d->GetPaster ()->CopySelection ();
   else if (id == ID_Paste) view3d->GetPaster ()->StartPasteSelection ();
   else if (id == ID_Delete) view3d->DeleteSelectedObjects ();
+  else if (id == ID_ToggleLabels) ToggleLabels (checked);
   else return false;
   return true;
 }
@@ -784,6 +789,13 @@ void MainMode::ToggleKinematicMode (int axis, bool shift)
       doDragRestrict[CS_AXIS_Z]);
 }
 
+void MainMode::ToggleLabels (bool checked)
+{
+  labelMgr->Cleanup ();
+  showLabels = checked;
+  app->SetMenuItemState ("ToggleLabels", showLabels);
+}
+
 bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
 {
   if (ViewMode::OnKeyboard (ev, code))
@@ -828,8 +840,7 @@ bool MainMode::OnKeyboard (iEvent& ev, utf32_char code)
   }
   else if (code == 'l')
   {
-    labelMgr->Cleanup ();
-    showLabels = !showLabels;
+    ToggleLabels (!showLabels);
   }
   else if (code == 'e')
   {

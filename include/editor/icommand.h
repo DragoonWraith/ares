@@ -44,7 +44,7 @@ struct iCommandHandler : public virtual iBase
    * Accept a general command. Return false if command is not
    * understood.
    */
-  virtual bool Command (csStringID id, const csString& args) = 0;
+  virtual bool Command (csStringID id, const csString& args, bool checked) = 0;
 
   /**
    * Check if the command is valid right now.

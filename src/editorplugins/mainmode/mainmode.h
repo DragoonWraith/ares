@@ -95,6 +95,8 @@ private:
 
   csString GetSelectedItem ();
 
+  void ToggleLabels (bool checked);
+
 public:
   MainMode (iBase* parent);
   virtual ~MainMode ();
@@ -152,7 +154,7 @@ public:
       const csReversibleTransform& transform);
   void MarkerStopDragging (iMarker* marker, iMarkerHitArea* area);
 
-  virtual bool Command (csStringID id, const csString& args);
+  virtual bool Command (csStringID id, const csString& args, bool checked);
   virtual bool IsCommandValid (csStringID id, const csString& args,
       iSelection* selection, size_t pastesize);
   virtual csPtr<iString> GetAlternativeLabel (csStringID id,

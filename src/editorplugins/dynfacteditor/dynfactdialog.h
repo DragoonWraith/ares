@@ -345,7 +345,7 @@ public:
   virtual void SetApplication (iAresEditor* app);
   virtual void SetTopLevelParent (wxWindow* parent);
   virtual const char* GetPluginName () const { return "DynfactEditor"; }
-  virtual bool Command (csStringID id, const csString& args)
+  virtual bool Command (csStringID id, const csString& args, bool checked)
   {
     if (id == ID_Show) { Show (); return true; }
     return false;

@@ -19,6 +19,16 @@ Most of the game art is licensed under some Creative Commons license. Check
 the manifest file with every asset for full details.
 
 
+Credits
+-------
+
+AresEd uses some of the icons from Mark James
+(http://www.famfamfam.com/lab/icons/silk/). They can be found in
+data/icons/toolbar/32x32 and are licensed
+under a Creative Commons Attribution 2.5 License.
+(http://creativecommons.org/licenses/by/2.5/)
+
+
 Resources
 ---------
 

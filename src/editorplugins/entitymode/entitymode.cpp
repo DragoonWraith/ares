@@ -2839,7 +2839,7 @@ void EntityMode::OnEditQuest ()
   RefreshGrid ();
 }
 
-bool EntityMode::Command (csStringID id, const csString& args)
+bool EntityMode::Command (csStringID id, const csString& args, bool checked)
 {
   if (id == ID_Copy) { CopySelected (); return true; }
   if (id == ID_Paste) { Paste (); return true; }

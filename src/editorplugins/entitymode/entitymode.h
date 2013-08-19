@@ -277,7 +277,7 @@ public:
   virtual void Start ();
   virtual void Stop ();
 
-  virtual bool Command (csStringID id, const csString& args);
+  virtual bool Command (csStringID id, const csString& args, bool checked);
   virtual bool IsCommandValid (csStringID id, const csString& args,
       iSelection* selection, size_t pastesize);
   csPtr<iString> GetAlternativeLabel (csStringID id,
