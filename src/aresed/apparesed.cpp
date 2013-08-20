@@ -199,6 +199,9 @@ static csStringID ID_ViewComments = csInvalidStringID;
 static csStringID ID_View3D = csInvalidStringID;
 static csStringID ID_ViewControls = csInvalidStringID;
 static csStringID ID_SanityChecker = csInvalidStringID;
+static csStringID ID_LookAt = csInvalidStringID;
+static csStringID ID_MoveTo = csInvalidStringID;
+static csStringID ID_TogglePan = csInvalidStringID;
 
 // The global pointer to AresEd
 AppAresEditWX* aresed = 0;
@@ -248,6 +251,7 @@ void AppAresEditWX::RefreshModes ()
     if (mode)
       mode->Refresh ();
   }
+  SetMenuItemState ("TogglePan", aresed3d->GetCamera ()->IsPanningEnabled ());
   UpdateTitle ();
   aresed3d->GetModelRepository ()->Refresh ();
 }
@@ -620,6 +624,9 @@ bool AppAresEditWX::Initialize ()
     ID_View3D = pl->FetchStringID ("View3D");
     ID_ViewControls = pl->FetchStringID ("ViewControls");
     ID_SanityChecker = pl->FetchStringID ("SanityChecker");
+    ID_LookAt = pl->FetchStringID ("LookAt");
+    ID_MoveTo = pl->FetchStringID ("MoveTo");
+    ID_TogglePan = pl->FetchStringID ("TogglePan");
   }
 
   if (!config->ReadConfig ())
@@ -1129,6 +1136,9 @@ bool AppAresEditWX::Command (csStringID id, const csString& args, bool checked)
   else if (id == ID_View3D) View3D ();
   else if (id == ID_ViewControls) ViewControls ();
   else if (id == ID_SanityChecker) uiManager->GetSanityCheckerDialog ()->Show ();
+  else if (id == ID_LookAt) camwin->OnLookAtButton ();
+  else if (id == ID_MoveTo) camwin->MoveToSelection ();
+  else if (id == ID_TogglePan) camwin->TogglePan (checked);
   else return false;
   return true;
 }
@@ -1140,6 +1150,9 @@ bool AppAresEditWX::IsCommandValid (csStringID id, const csString& args,
   if (id == ID_Join) return selsize == 2 && editMode == mainMode;
   if (id == ID_Unjoin) return selsize > 0 && editMode == mainMode;
   if (id == ID_EntityParameters) return selsize == 1 && editMode == mainMode;
+  if (id == ID_LookAt) return selsize > 0 && editMode == mainMode;
+  if (id == ID_MoveTo) return selsize > 0 && editMode == mainMode;
+  if (id == ID_TogglePan) return editMode == mainMode;
 
   return true;
 }

@@ -36,10 +36,16 @@
       <section name="General">
 	 <item name="&amp;Open..." id="Open" image="folder.png" command="Open" help="Open a new project" />
 	 <item name="&amp;Save" id="Save" image="disk.png" command="Save" help="Save the current project and all modified and writable assets" />
+	 <item name="&amp;Copy" target="*" image="page_copy.png" id="Copy" command="Copy" help="Copy the current selection" />
+	 <item name="&amp;Paste" target="*" image="page_paste.png" id="Paste" command="Paste" help="Paste the contents of the clipboard" />
+	 <item name="&amp;Delete" id="Delete" image="page_delete.png" target="*" command="Delete" help="Delete the current selection" />
 	 <item name="&amp;Play" id="Preview" image="control_play_blue.png" command="SwitchMode" args="Play" help="Enter game preview mode" />
       </section>
       <section name="Main">
 	 <item name="&amp;Labels" image="tag_blue.png" target="Main" command="ToggleLabels" toggle="true" help="Toggle display of labels" />
+	 <item name="&amp;Look At" image="page_find.png" command="LookAt" help="Orient camera towards current selection" />
+	 <item name="&amp;Move To" image="page_go.png" command="MoveTo" help="Move camera towards current selection" />
+	 <item name="&amp;Pan" image="eye.png" toggle="true" command="TogglePan" help="Pan camera around selection" />
       </section>
     </toolbar>
 

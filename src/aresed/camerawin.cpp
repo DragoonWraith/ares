@@ -45,11 +45,8 @@ BEGIN_EVENT_TABLE(CameraWindow::Panel, wxPanel)
   EVT_BUTTON (XRCID("recall3Button"), CameraWindow::Panel::OnR3Button)
 
   EVT_BUTTON (XRCID("topDownButton"), CameraWindow::Panel::OnTopDownButton)
-  EVT_BUTTON (XRCID("lookButton"), CameraWindow::Panel::OnLookAtButton)
-  EVT_BUTTON (XRCID("moveButton"), CameraWindow::Panel::OnMoveToButton)
 
   EVT_CHECKBOX (XRCID("gravityCheckBox"), CameraWindow::Panel::OnGravitySelected)
-  EVT_CHECKBOX (XRCID("panCheckBox"), CameraWindow::Panel::OnPanSelected)
 END_EVENT_TABLE()
 
 //---------------------------------------------------------------------------
@@ -129,32 +126,6 @@ void CameraWindow::OnR3Button ()
   RecallTrans (2);
 }
 
-void CameraWindow::CurrentObjectsChanged (const csArray<iDynamicObject*>& current)
-{
-  wxCheckBox* panCheck = XRCCTRL (*panel, "panCheckBox", wxCheckBox);
-  wxButton* lookAtButton = XRCCTRL (*panel, "lookButton", wxButton);
-  wxButton* moveToButton = XRCCTRL (*panel, "moveButton", wxButton);
-  if (current.GetSize () == 0)
-  {
-    lookAtButton->Disable();
-    moveToButton->Disable();
-  }
-  else
-  {
-    lookAtButton->Enable();
-    moveToButton->Enable();
-  }
-
-  if (panCheck->IsChecked ())
-  {
-    if (current.GetSize () > 0)
-    {
-      csVector3 center = TransformTools::GetCenterSelected (aresed3d->GetSelection ());
-      aresed3d->GetCamera ()->EnablePanning (center);
-    }
-  }
-}
-
 void CameraWindow::OnTopDownSelButton ()
 {
   csBox3 box = TransformTools::GetBoxSelected (aresed3d->GetSelection ());
@@ -191,15 +162,9 @@ void CameraWindow::MoveToSelection ()
   }
 }
 
-void CameraWindow::OnMoveToButton ()
+void CameraWindow::TogglePan (bool checked)
 {
-  MoveToSelection ();
-}
-
-void CameraWindow::OnPanSelected ()
-{
-  wxCheckBox* panCheck = XRCCTRL (*panel, "panCheckBox", wxCheckBox);
-  if (panCheck->IsChecked ())
+  if (checked)
   {
     if (aresed3d->GetSelection ()->HasSelection ())
     {

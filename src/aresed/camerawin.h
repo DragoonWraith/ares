@@ -58,19 +58,17 @@ private:
   void OnS3Button ();
   void OnR3Button ();
 
-  void OnTopDownButton ();
-  void OnLookAtButton ();
-  void OnMoveToButton ();
-  void OnTopDownSelButton ();
-
-  void OnGravitySelected ();
-  void OnPanSelected ();
-
 public:
   CameraWindow (wxWindow* parent, AresEdit3DView* aresed3d);
   virtual ~CameraWindow();
 
-  void CurrentObjectsChanged (const csArray<iDynamicObject*>& current);
+  void OnTopDownButton ();
+  void OnLookAtButton ();
+  void OnTopDownSelButton ();
+
+  void OnGravitySelected ();
+  void OnPanSelected ();
+  void TogglePan (bool checked);
 
   virtual void AllocContextHandlers (wxFrame* frame);
   virtual void AddContextMenu (wxMenu* contextMenu, int mouseX, int mouseY);
@@ -110,11 +108,10 @@ public:
 
     void OnTopDownButton (wxCommandEvent& event) { s->OnTopDownButton (); }
     void OnLookAtButton (wxCommandEvent& event) { s->OnLookAtButton (); }
-    void OnMoveToButton (wxCommandEvent& event) { s->OnMoveToButton (); }
+    void OnMoveToButton (wxCommandEvent& event) { s->MoveToSelection (); }
     void OnTopDownSelButton (wxCommandEvent& event) { s->OnTopDownSelButton (); }
 
     void OnGravitySelected (wxCommandEvent& event) { s->OnGravitySelected (); }
-    void OnPanSelected (wxCommandEvent& event) { s->OnPanSelected (); }
 
   private:
     CameraWindow* s;

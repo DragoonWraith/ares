@@ -3,255 +3,118 @@
 	<object class="wxPanel" name="CameraPanel">
 		<style>wxTAB_TRAVERSAL</style>
 		<size>500,300</size>
-		<object class="wxBoxSizer">
-			<minsize>280,-1</minsize>
-			<orient>wxHORIZONTAL</orient>
+		<object class="wxStaticBoxSizer">
+			<orient>wxVERTICAL</orient>
+			<label>Camera</label>
 			<object class="sizeritem">
 				<option>1</option>
 				<flag>wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxStaticBoxSizer">
-					<orient>wxVERTICAL</orient>
-					<label>Camera</label>
+				<object class="wxBoxSizer">
+					<orient>wxHORIZONTAL</orient>
 					<object class="sizeritem">
-						<option>1</option>
-						<flag>wxEXPAND</flag>
+						<option>0</option>
+						<flag></flag>
 						<border>5</border>
 						<object class="wxBoxSizer">
-							<orient>wxHORIZONTAL</orient>
+							<orient>wxVERTICAL</orient>
 							<object class="sizeritem">
 								<option>0</option>
-								<flag></flag>
+								<flag>wxALL|wxEXPAND</flag>
 								<border>5</border>
-								<object class="wxBoxSizer">
-									<orient>wxVERTICAL</orient>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
-										<object class="wxCheckBox" name="gravityCheckBox">
-											<label>Gravity</label>
-											<checked>0</checked>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>0</option>
-										<flag>wxALL|wxEXPAND</flag>
-										<border>5</border>
-										<object class="wxButton" name="topDownButton">
-											<size>-1,20</size>
-											<label>Top down</label>
-											<default>0</default>
-										</object>
-									</object>
-									<object class="sizeritem">
-										<option>1</option>
-										<flag>wxEXPAND</flag>
-										<border>5</border>
-										<object class="wxBoxSizer">
-											<orient>wxHORIZONTAL</orient>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxEXPAND</flag>
-												<border>5</border>
-												<object class="wxButton" name="northButton">
-													<size>20,20</size>
-													<label>N</label>
-													<default>0</default>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxEXPAND</flag>
-												<border>5</border>
-												<object class="wxButton" name="southButton">
-													<size>20,20</size>
-													<label>S</label>
-													<default>0</default>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-												<border>5</border>
-												<object class="wxButton" name="eastButton">
-													<size>20,20</size>
-													<label>E</label>
-													<default>0</default>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-												<border>5</border>
-												<object class="wxButton" name="westButton">
-													<size>20,20</size>
-													<label>W</label>
-													<default>0</default>
-												</object>
-											</object>
-										</object>
-									</object>
+								<object class="wxCheckBox" name="gravityCheckBox">
+									<label>Gravity</label>
+									<checked>0</checked>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxALL|wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxButton" name="topDownButton">
+									<size>-1,20</size>
+									<label>Top down</label>
+									<default>0</default>
 								</object>
 							</object>
 							<object class="sizeritem">
 								<option>1</option>
-								<flag></flag>
+								<flag>wxEXPAND</flag>
 								<border>5</border>
 								<object class="wxBoxSizer">
-									<orient>wxVERTICAL</orient>
+									<orient>wxHORIZONTAL</orient>
 									<object class="sizeritem">
 										<option>0</option>
-										<flag>wxEXPAND</flag>
+										<flag>wxALL|wxEXPAND</flag>
 										<border>5</border>
-										<object class="wxBoxSizer">
-											<orient>wxHORIZONTAL</orient>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-												<border>5</border>
-												<object class="wxStaticText" name="m_staticText2">
-													<label>1</label>
-													<wrap>-1</wrap>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL</flag>
-												<border>5</border>
-												<object class="wxButton" name="store1Button">
-													<size>20,20</size>
-													<label>S</label>
-													<default>0</default>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL</flag>
-												<border>5</border>
-												<object class="wxButton" name="recall1Button">
-													<size>20,20</size>
-													<label>R</label>
-													<default>0</default>
-												</object>
-											</object>
+										<object class="wxButton" name="northButton">
+											<size>20,20</size>
+											<label>N</label>
+											<default>0</default>
 										</object>
 									</object>
 									<object class="sizeritem">
 										<option>0</option>
-										<flag>wxEXPAND</flag>
+										<flag>wxALL|wxEXPAND</flag>
 										<border>5</border>
-										<object class="wxBoxSizer">
-											<orient>wxHORIZONTAL</orient>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-												<border>5</border>
-												<object class="wxStaticText" name="m_staticText3">
-													<label>2</label>
-													<wrap>-1</wrap>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL</flag>
-												<border>5</border>
-												<object class="wxButton" name="store2Button">
-													<size>20,20</size>
-													<label>S</label>
-													<default>0</default>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL</flag>
-												<border>5</border>
-												<object class="wxButton" name="recall2Button">
-													<size>20,20</size>
-													<label>R</label>
-													<default>0</default>
-												</object>
-											</object>
+										<object class="wxButton" name="southButton">
+											<size>20,20</size>
+											<label>S</label>
+											<default>0</default>
 										</object>
 									</object>
 									<object class="sizeritem">
-										<option>1</option>
-										<flag>wxEXPAND</flag>
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 										<border>5</border>
-										<object class="wxBoxSizer">
-											<orient>wxHORIZONTAL</orient>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
-												<border>5</border>
-												<object class="wxStaticText" name="m_staticText31">
-													<label>3</label>
-													<wrap>-1</wrap>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL</flag>
-												<border>5</border>
-												<object class="wxButton" name="store3Button">
-													<size>20,20</size>
-													<label>S</label>
-													<default>0</default>
-												</object>
-											</object>
-											<object class="sizeritem">
-												<option>0</option>
-												<flag>wxALL</flag>
-												<border>5</border>
-												<object class="wxButton" name="recall3Button">
-													<size>20,20</size>
-													<label>R</label>
-													<default>0</default>
-												</object>
-											</object>
+										<object class="wxButton" name="eastButton">
+											<size>20,20</size>
+											<label>E</label>
+											<default>0</default>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxButton" name="westButton">
+											<size>20,20</size>
+											<label>W</label>
+											<default>0</default>
 										</object>
 									</object>
 								</object>
 							</object>
 						</object>
 					</object>
-				</object>
-			</object>
-			<object class="sizeritem">
-				<option>0</option>
-				<flag>wxEXPAND</flag>
-				<border>5</border>
-				<object class="wxStaticBoxSizer">
-					<orient>wxVERTICAL</orient>
-					<label>Selection</label>
 					<object class="sizeritem">
 						<option>1</option>
-						<flag>wxEXPAND</flag>
+						<flag></flag>
 						<border>5</border>
 						<object class="wxBoxSizer">
 							<orient>wxVERTICAL</orient>
 							<object class="sizeritem">
-								<option>1</option>
+								<option>0</option>
 								<flag>wxEXPAND</flag>
 								<border>5</border>
 								<object class="wxBoxSizer">
-									<orient>wxVERTICAL</orient>
+									<orient>wxHORIZONTAL</orient>
 									<object class="sizeritem">
 										<option>0</option>
-										<flag>wxALL|wxEXPAND</flag>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
 										<border>5</border>
-										<object class="wxCheckBox" name="panCheckBox">
-											<label>Pan</label>
-											<checked>0</checked>
+										<object class="wxStaticText" name="m_staticText2">
+											<label>1</label>
+											<wrap>-1</wrap>
 										</object>
 									</object>
 									<object class="sizeritem">
 										<option>0</option>
 										<flag>wxALL</flag>
 										<border>5</border>
-										<object class="wxButton" name="lookButton">
-											<size>45,20</size>
-											<label>Look</label>
+										<object class="wxButton" name="store1Button">
+											<size>20,20</size>
+											<label>S</label>
 											<default>0</default>
 										</object>
 									</object>
@@ -259,9 +122,83 @@
 										<option>0</option>
 										<flag>wxALL</flag>
 										<border>5</border>
-										<object class="wxButton" name="moveButton">
-											<size>45,20</size>
-											<label>Move</label>
+										<object class="wxButton" name="recall1Button">
+											<size>20,20</size>
+											<label>R</label>
+											<default>0</default>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>0</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="m_staticText3">
+											<label>2</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="store2Button">
+											<size>20,20</size>
+											<label>S</label>
+											<default>0</default>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="recall2Button">
+											<size>20,20</size>
+											<label>R</label>
+											<default>0</default>
+										</object>
+									</object>
+								</object>
+							</object>
+							<object class="sizeritem">
+								<option>1</option>
+								<flag>wxEXPAND</flag>
+								<border>5</border>
+								<object class="wxBoxSizer">
+									<orient>wxHORIZONTAL</orient>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<object class="wxStaticText" name="m_staticText31">
+											<label>3</label>
+											<wrap>-1</wrap>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="store3Button">
+											<size>20,20</size>
+											<label>S</label>
+											<default>0</default>
+										</object>
+									</object>
+									<object class="sizeritem">
+										<option>0</option>
+										<flag>wxALL</flag>
+										<border>5</border>
+										<object class="wxButton" name="recall3Button">
+											<size>20,20</size>
+											<label>R</label>
 											<default>0</default>
 										</object>
 									</object>
