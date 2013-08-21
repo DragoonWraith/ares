@@ -705,42 +705,108 @@ void MainMode::WriteLine (int x, int& y, const char* txt)
 {
   iGraphics2D* g2d = g3d->GetDriver2D ();
   g2d->Write (font, g2d->GetWidth ()-x, y, colorWhite, colorTransp, txt);
-  y += 16;
+  y += font->GetTextHeight ();
 }
 
 void MainMode::Frame2D()
 {
   ViewMode::Frame2D ();
   int y = 20;
-  int dx = 330;
+  int dx = 340;
+
+  iSelection* sel = view3d->GetSelection ();
 
   if (do_dragging || do_kinematic_dragging)
   {
-    WriteLine (dx, y, "LMB: place object                      ");
-    WriteLine (dx, y, "RMB: cancel dragging                   ");
+    WriteLine (dx, y, "LMB: place object and stop dragging     ");
+    WriteLine (dx, y, "RMB: cancel dragging                    ");
   }
   else
   {
-    WriteLine (dx, y, "LMB (marker): start kinematic drag     ");
-    WriteLine (dx, y, "LMB: (de)select object                 ");
-    WriteLine (dx, y, "Shift+LMB: add/remove to selection     ");
-    WriteLine (dx, y, "Ctrl+LMB: start kinematic drag         ");
-    WriteLine (dx, y, "Alt+LMB: start kinematic drag (y-plane)");
-    WriteLine (dx, y, "LMB: start physics drag                ");
+    WriteLine (dx, y, "LMB (marker): start kinematic drag      ");
+    if (sel->GetSize () == 0)
+      WriteLine (dx, y, "LMB: select object                      ");
+    else
+      WriteLine (dx, y, "LMB: (de)select object                  ");
+    WriteLine (dx, y, "Shift+LMB: add/remove to selection      ");
+    WriteLine (dx, y, "Ctrl+LMB: start kinematic drag          ");
+    WriteLine (dx, y, "Alt+LMB: start kinematic drag (y-plane) ");
+    WriteLine (dx, y, "LMB: start physics drag                 ");
   }
-  if (view3d->GetPaster ()->IsPasteSelectionActive () || do_kinematic_dragging)
+
+  if (view3d->GetPaster ()->IsPasteSelectionActive ())
   {
-    WriteLine (dx, y, "q: toggle grid mode                    ");
-    WriteLine (dx, y, "x/X: toggle x-axis constraint          ");
-    WriteLine (dx, y, "y/Y: toggle y-axis constraint          ");
-    WriteLine (dx, y, "z/Z: toggle z-axis constraint          ");
+    WriteLine (dx, y, "q: toggle grid mode                     ");
+    int mode = view3d->GetPaster ()->GetPasteConstrain ();
+    if (mode == CONSTRAIN_XPLANE)
+      WriteLine (dx, y, "x/X: disable x-axis constraint          ");
+    else
+      WriteLine (dx, y, "x/X: set constraint on x-axis           ");
+    if (mode == CONSTRAIN_YPLANE)
+      WriteLine (dx, y, "y/Y: disable y-axis constraint          ");
+    else
+      WriteLine (dx, y, "y/Y: set constraint on y-axis           ");
+    if (mode == CONSTRAIN_ZPLANE)
+      WriteLine (dx, y, "z/Z: disable z-axis constraint          ");
+    else
+      WriteLine (dx, y, "z/Z: set constraint on Z-axis           ");
   }
-  if (view3d->GetSelection ()->HasSelection ())
+  else if (do_kinematic_dragging)
+  {
+    WriteLine (dx, y, "q: toggle grid mode                     ");
+    bool drx = doDragRestrict[CS_AXIS_X];
+    bool dry = doDragRestrict[CS_AXIS_Y];
+    bool drz = doDragRestrict[CS_AXIS_Z];
+    bool local = doDragLocal;
+    if (drx || dry || drz)
+    {
+      if (!drx && dry && drz && !local)
+        WriteLine (dx, y, "x: switch to local constraint           ");
+      else
+        WriteLine (dx, y, "x: disable constraint on x-axis/plane   ");
+
+      if (!dry && drx && drz && !local)
+        WriteLine (dx, y, "y: switch to local constraint           ");
+      else
+        WriteLine (dx, y, "y: disable constraint on y-axis/plane   ");
+
+      if (!drz && drx && dry && !local)
+        WriteLine (dx, y, "z: switch to local constraint           ");
+      else
+        WriteLine (dx, y, "z: disable constraint on z-axis/plane   ");
+
+      if (drx && !dry && !drz && !local)
+        WriteLine (dx, y, "X: switch to local constraint           ");
+      else
+        WriteLine (dx, y, "X: disable constraint on x-axis/plane   ");
+
+      if (dry && !drx && !drz && !local)
+        WriteLine (dx, y, "Y: switch to local constraint           ");
+      else
+        WriteLine (dx, y, "Y: disable constraint on y-axis/plane   ");
+
+      if (drz && !drx && !dry && !local)
+        WriteLine (dx, y, "Z: switch to local constraint           ");
+      else
+        WriteLine (dx, y, "Z: disable constraint on z-axis/plane   ");
+    }
+    else
+    {
+      WriteLine (dx, y, "x: enable constraint on x-axis (global) ");
+      WriteLine (dx, y, "y: enable constraint on y-axis (global) ");
+      WriteLine (dx, y, "z: enable constraint on z-axis (global) ");
+      WriteLine (dx, y, "X: enable constraint on x-plane (global)");
+      WriteLine (dx, y, "Y: enable constraint on y-plane (global)");
+      WriteLine (dx, y, "Z: enable constraint on z-plane (global)");
+    }
+  }
+
+  if (sel->HasSelection () && !do_dragging)
   {
     if (do_kinematic_dragging)
-      WriteLine (dx, y, "g: snap object to cursor               ");
+      WriteLine (dx, y, "g: snap object to cursor                ");
     else
-      WriteLine (dx, y, "g: enable grabbing                     ");
+      WriteLine (dx, y, "g: enable grabbing                      ");
   }
 }
 
