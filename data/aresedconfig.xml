@@ -64,6 +64,8 @@
 	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" help="Open a new project" />
 	    <item name="&amp;Save   	Ctrl+S" id="Save" command="Save" help="Save the current project and all modified and writable assets" />
 	    <item name="&amp;Save As..." id="SaveAs" command="SaveAs" help="Save the current project with a new name (doesn't affect assets)" />
+	    <sep />
+	    <item name="&amp;Settings..." command="SettingsDialog" help="Open Settings Dialog" />
 	    <item name="&amp;Exit..." id="Exit" command="Exit" help="Exit Ares Editor" />
 	</menu>
 	<menu name="&amp;Edit">

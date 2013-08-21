@@ -34,6 +34,7 @@ THE SOFTWARE.
 #include "ui/projectdata.h"
 #include "ui/celldialog.h"
 #include "ui/objectfinder.h"
+#include "ui/settingsdialog.h"
 #include "ui/resourcemover.h"
 #include "ui/sanitychecker.h"
 #include "camera.h"
@@ -187,6 +188,7 @@ static csStringID ID_SaveAs = csInvalidStringID;
 static csStringID ID_Exit = csInvalidStringID;
 static csStringID ID_UpdateObjects = csInvalidStringID;
 static csStringID ID_FindObjectDialog = csInvalidStringID;
+static csStringID ID_SettingsDialog = csInvalidStringID;
 static csStringID ID_ConvertPhysics = csInvalidStringID;
 static csStringID ID_ConvertOpcode = csInvalidStringID;
 static csStringID ID_Join = csInvalidStringID;
@@ -241,6 +243,11 @@ void AppAresEditWX::FindObject ()
 {
   aresed3d->GetModelRepository ()->RefreshObjectsValue ();
   uiManager->GetObjectFinderDialog ()->Show ();
+}
+
+void AppAresEditWX::Settings ()
+{
+  uiManager->GetSettingsDialog ()->Show ();
 }
 
 void AppAresEditWX::RefreshModes ()
@@ -378,6 +385,12 @@ void AppAresEditWX::SetCurrentFile (const char* path, const char* file)
   currentFile = file;
   currentPath = path;
   UpdateTitle ();
+}
+
+void AppAresEditWX::ReadConfig ()
+{
+  for (size_t i = 0 ; i < plugins.GetSize () ; i++)
+    plugins.Get (i)->ReadConfig ();
 }
 
 void AppAresEditWX::UpdateTitle ()
@@ -612,6 +625,7 @@ bool AppAresEditWX::Initialize ()
     ID_Exit = pl->FetchStringID ("Exit");
     ID_UpdateObjects = pl->FetchStringID ("UpdateObjects");
     ID_FindObjectDialog = pl->FetchStringID ("FindObjectDialog");
+    ID_SettingsDialog = pl->FetchStringID ("SettingsDialog");
     ID_ConvertPhysics = pl->FetchStringID ("ConvertPhysics");
     ID_ConvertOpcode = pl->FetchStringID ("ConvertOpcode");
     ID_Join = pl->FetchStringID ("Join");
@@ -842,6 +856,7 @@ bool AppAresEditWX::InitResources ()
   if (!LoadResourceFile ("EntityParameterDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ObjectFinderDialog.xrc", searchPath)) return false;
   if (!LoadResourceFile ("ResourceMoverDialog.xrc", searchPath)) return false;
+  if (!LoadResourceFile ("SettingsDialog.xrc", searchPath)) return false;
   return true;
 }
 
@@ -878,6 +893,7 @@ bool AppAresEditWX::InitWX ()
 {
   // Load the frame from an XRC file
   wxXmlResource::Get ()->InitAllHandlers ();
+  wxPGInitResourceModule ();
 
   if (!InitResources ())
     return false;
@@ -1124,6 +1140,7 @@ bool AppAresEditWX::Command (csStringID id, const csString& args, bool checked)
   else if (id == ID_Exit) Quit ();
   else if (id == ID_UpdateObjects) aresed3d->UpdateObjects ();
   else if (id == ID_FindObjectDialog) FindObject ();
+  else if (id == ID_SettingsDialog) Settings ();
   else if (id == ID_ConvertPhysics) aresed3d->ConvertPhysics ();
   else if (id == ID_ConvertOpcode) aresed3d->ConvertOpcode ();
   else if (id == ID_Join) aresed3d->JoinObjects ();

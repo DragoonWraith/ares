@@ -15,6 +15,7 @@ ExternalLibs aresed : CRYSTAL ;
 ExternalLibs aresed : CEL ;
 LinkWith aresed : edcommon ;
 ExternalLibs aresed : CEL ;
+ExternalLibs aresed : CSE ;
 ExternalLibs aresed : WX ;
 
 if $(HAVE_CS_STATIC_PLUGINS) = "yes"

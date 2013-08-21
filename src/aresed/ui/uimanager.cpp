@@ -31,6 +31,7 @@ THE SOFTWARE.
 #include "celldialog.h"
 #include "entityparameters.h"
 #include "objectfinder.h"
+#include "settingsdialog.h"
 #include "resourcemover.h"
 #include "sanitychecker.h"
 #include "edcommon/listctrltools.h"
@@ -616,6 +617,7 @@ UIManager::UIManager (AppAresEditWX* app, wxWindow* parent) :
   cellDialog = new CellDialog (parent, this);
   entityParameterDialog = new EntityParameterDialog (parent, this);
   objectFinderDialog = new ObjectFinderDialog (parent, this);
+  settingsDialog = new SettingsDialog (parent, this);
   resourceMoverDialog = new ResourceMoverDialog (parent, this);
   sanityCheckerDialog = new SanityCheckerUI (this);
   contextMenuID = ID_FirstContextItem;
@@ -631,6 +633,7 @@ UIManager::~UIManager ()
   delete objectFinderDialog;
   delete resourceMoverDialog;
   delete sanityCheckerDialog;
+  delete settingsDialog;
 }
 
 iAresEditor* UIManager::GetApplication () const

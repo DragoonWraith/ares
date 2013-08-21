@@ -82,6 +82,7 @@ public:
   virtual void SetTopLevelParent (wxWindow* toplevel) { }
   virtual bool HasMainPanel () const { return false; }
   virtual void BuildMainPanel (wxWindow* parent) { }
+  virtual void ReadConfig () { }
 
   virtual bool Initialize (iObjectRegistry* object_reg);
 

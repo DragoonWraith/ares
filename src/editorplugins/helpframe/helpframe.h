@@ -57,6 +57,7 @@ public:
   virtual ~HelpFrame ();
 
   virtual bool Initialize (iObjectRegistry* object_reg);
+  virtual void ReadConfig () { }
 
   virtual void SetApplication (iAresEditor* app);
   virtual void SetTopLevelParent (wxWindow* parent);

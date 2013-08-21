@@ -39,6 +39,7 @@ class UIDialog;
 class SimpleListCtrlView;
 class EntityParameterDialog;
 class ObjectFinderDialog;
+class SettingsDialog;
 class ResourceMoverDialog;
 class SanityCheckerUI;
 
@@ -195,6 +196,7 @@ private:
   CellDialog* cellDialog;
   EntityParameterDialog* entityParameterDialog;
   ObjectFinderDialog* objectFinderDialog;
+  SettingsDialog* settingsDialog;
   ResourceMoverDialog* resourceMoverDialog;
   SanityCheckerUI* sanityCheckerDialog;
 
@@ -222,6 +224,7 @@ public:
   CellDialog* GetCellDialog () const { return cellDialog; }
   EntityParameterDialog* GetEntityParameterDialog () const { return entityParameterDialog; }
   ObjectFinderDialog* GetObjectFinderDialog () const { return objectFinderDialog; }
+  SettingsDialog* GetSettingsDialog () const { return settingsDialog; }
   ResourceMoverDialog* GetResourceMoverDialog () const { return resourceMoverDialog; }
   SanityCheckerUI* GetSanityCheckerDialog () const { return sanityCheckerDialog; }
 

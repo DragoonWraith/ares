@@ -1,7 +1,7 @@
 /*
 The MIT License
 
-Copyright (c) 2012 by Jorrit Tyberghein
+Copyright (c) 2013 by Jorrit Tyberghein
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,44 +22,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 
-#ifndef __iplugin_h__
-#define __iplugin_h__
+#ifndef __appares_settingsdialog_h
+#define __appares_settingsdialog_h
 
-#include "csutil/scf.h"
+#include <crystalspace.h>
+
 #include <wx/wx.h>
+#include <wx/xrc/xmlres.h>
 
-#include "editor/icommand.h"
+#include "cseditor/wx/propgrid/propgrid.h"
 
-struct iDynamicObject;
-struct i3DView;
-struct iAresEditor;
+class UIManager;
 
-/**
- * A plugin for the editor.
- */
-struct iEditorPlugin : public virtual iBase
+using namespace Ares;
+
+class SettingsDialog : public wxDialog
 {
-  SCF_INTERFACE(iEditorPlugin,0,0,1);
+private:
+  UIManager* uiManager;
+  wxPropertyGrid* settingsGrid;
 
-  /**
-   * Set the application.
-   */
-  virtual void SetApplication (iAresEditor* app) = 0;
+  void OnOkButton (wxCommandEvent& event);
+  void OnCancelButton (wxCommandEvent& event);
 
-  /**
-   * Set the wxWindow parent toplevel window.
-   */
-  virtual void SetTopLevelParent (wxWindow* parent) = 0;
+  void FillGrid ();
+  void Save ();
 
-  /**
-   * The name of this plugin.
-   */
-  virtual const char* GetPluginName () const = 0;
+  void CheckBool (iConfigManager* cfgmgr,
+    const char* configName, const char* gridName,
+    bool& changed, bool* restart = 0);
+  void CheckInt (iConfigManager* cfgmgr,
+    const char* configName, const char* gridName,
+    bool& changed, bool* restart = 0);
 
-  /// After changing config settings, let the plugin read the config again.
-  virtual void ReadConfig () = 0;
+public:
+  SettingsDialog (wxWindow* parent, UIManager* uiManager);
+  ~SettingsDialog ();
+
+  void Show ();
+
+  DECLARE_EVENT_TABLE ();
 };
 
-
-#endif // __iplugin_h__
+#endif // __appares_settingsdialog_h
 

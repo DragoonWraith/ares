@@ -81,6 +81,9 @@ struct iAresEditor : public virtual iBase
    */
   virtual void UpdateTitle () = 0;
 
+  /// After changing config settings, let the application read the config again.
+  virtual void ReadConfig () = 0;
+
   /// Set the help status message at the bottom of the frame.
   virtual void SetStatus (const char* statusmsg, ...) = 0;
   /// Clear the help status message (go back to default).

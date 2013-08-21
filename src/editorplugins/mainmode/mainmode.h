@@ -55,8 +55,11 @@ private:
   float linearDampening, angularDampening;
   float dragDistance;
 
+  bool helpOverlay;
   int colorTransp;
   void WriteLine (int x, int& y, const char* txt);
+
+  void ReadConfig ();
 
   bool active;	// Main mode is active.
 
@@ -103,6 +106,12 @@ private:
 public:
   MainMode (iBase* parent);
   virtual ~MainMode ();
+
+  virtual void SetApplication (iAresEditor* app)
+  {
+    ViewMode::SetApplication (app);
+    ReadConfig ();
+  }
 
   virtual bool Initialize (iObjectRegistry* object_reg);
   virtual void SetTopLevelParent (wxWindow* toplevel);

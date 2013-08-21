@@ -161,6 +161,7 @@ private:
   void SaveCurrentFile ();
   void Quit ();
   void FindObject ();
+  void Settings ();
   void SetCurrentFile (const char* path, const char* file);
 
   void OnChoicebookChange (wxChoicebookEvent& event);
@@ -243,6 +244,8 @@ public:
   void SetCurveModeEnabled (bool cm);
   iEditingMode* GetMainMode () const { return mainMode; }
   iEditorConfig* GetConfig () const;
+
+  virtual void ReadConfig ();
 
   /**
    * Return true if we are in play mode.
