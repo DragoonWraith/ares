@@ -55,6 +55,9 @@ private:
   float linearDampening, angularDampening;
   float dragDistance;
 
+  int colorTransp;
+  void WriteLine (int x, int& y, const char* txt);
+
   bool active;	// Main mode is active.
 
   // If we are busy changing the 3D selection from the object list then we set this flag

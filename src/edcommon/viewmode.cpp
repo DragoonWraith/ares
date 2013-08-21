@@ -50,7 +50,6 @@ bool ViewMode::Initialize (iObjectRegistry* object_reg)
   nature = csQueryRegistry<iNature> (object_reg);
   vc = csQueryRegistry<iVirtualClock> (object_reg);
   dyn = csQueryRegistry<CS::Physics::iPhysicalSystem> (object_reg);
-  colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   return true;
 }
 

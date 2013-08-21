@@ -72,6 +72,7 @@ bool EditingMode::Initialize (iObjectRegistry* object_reg)
   markerMgr = csQueryRegistry<iMarkerManager> (object_reg);
   g3d = csQueryRegistry<iGraphics3D> (object_reg);
   kbd = csQueryRegistry<iKeyboardDriver> (object_reg);
+  colorWhite = g3d->GetDriver2D ()->FindRGB (255, 255, 255);
   return true;
 }
 

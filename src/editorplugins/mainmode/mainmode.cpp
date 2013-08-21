@@ -142,6 +142,8 @@ bool MainMode::Initialize (iObjectRegistry* object_reg)
 
   labelMgr = new LabelManager (object_reg);
 
+  colorTransp = g3d->GetDriver2D ()->FindRGB (100, 150, 80, 128);
+
   return true;
 }
 
@@ -699,9 +701,47 @@ void MainMode::Frame3D()
   ViewMode::Frame3D ();
 }
 
+void MainMode::WriteLine (int x, int& y, const char* txt)
+{
+  iGraphics2D* g2d = g3d->GetDriver2D ();
+  g2d->Write (font, g2d->GetWidth ()-x, y, colorWhite, colorTransp, txt);
+  y += 16;
+}
+
 void MainMode::Frame2D()
 {
   ViewMode::Frame2D ();
+  int y = 20;
+  int dx = 330;
+
+  if (do_dragging || do_kinematic_dragging)
+  {
+    WriteLine (dx, y, "LMB: place object                      ");
+    WriteLine (dx, y, "RMB: cancel dragging                   ");
+  }
+  else
+  {
+    WriteLine (dx, y, "LMB (marker): start kinematic drag     ");
+    WriteLine (dx, y, "LMB: (de)select object                 ");
+    WriteLine (dx, y, "Shift+LMB: add/remove to selection     ");
+    WriteLine (dx, y, "Ctrl+LMB: start kinematic drag         ");
+    WriteLine (dx, y, "Alt+LMB: start kinematic drag (y-plane)");
+    WriteLine (dx, y, "LMB: start physics drag                ");
+  }
+  if (view3d->GetPaster ()->IsPasteSelectionActive () || do_kinematic_dragging)
+  {
+    WriteLine (dx, y, "q: toggle grid mode                    ");
+    WriteLine (dx, y, "x/X: toggle x-axis constraint          ");
+    WriteLine (dx, y, "y/Y: toggle y-axis constraint          ");
+    WriteLine (dx, y, "z/Z: toggle z-axis constraint          ");
+  }
+  if (view3d->GetSelection ()->HasSelection ())
+  {
+    if (do_kinematic_dragging)
+      WriteLine (dx, y, "g: snap object to cursor               ");
+    else
+      WriteLine (dx, y, "g: enable grabbing                     ");
+  }
 }
 
 static void CorrectFactoryName (csString& name)

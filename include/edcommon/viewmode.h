@@ -37,7 +37,7 @@ struct iNature;
  */
 class ARES_EDCOMMON_EXPORT ViewMode : public EditingMode
 {
-private:
+protected:
   csRef<iFont> font;
   csRef<iNature> nature;
   csRef<iVirtualClock> vc;
