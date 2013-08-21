@@ -54,6 +54,9 @@ private:
   void CheckInt (iConfigManager* cfgmgr,
     const char* configName, const char* gridName,
     bool& changed, bool* restart = 0);
+  void CheckString (iConfigManager* cfgmgr,
+    const char* configName, const char* gridName,
+    bool& changed, bool* restart = 0);
 
 public:
   SettingsDialog (wxWindow* parent, UIManager* uiManager);

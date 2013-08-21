@@ -219,6 +219,7 @@ AppAresEditWX::AppAresEditWX (iObjectRegistry* object_reg, int w, int h, long st
   FocusLost = csevFocusLost (object_reg);
   config.AttachNew (new AresConfig (this));
   wantsFocus3D = 0;
+  toolbarWithText = true;
 
   lastMessageSeverity = -1;
 }
@@ -391,6 +392,9 @@ void AppAresEditWX::ReadConfig ()
 {
   for (size_t i = 0 ; i < plugins.GetSize () ; i++)
     plugins.Get (i)->ReadConfig ();
+
+  csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
+  toolbarWithText = cfgmgr->GetBool ("Ares.ToolbarText", true);
 }
 
 void AppAresEditWX::UpdateTitle ()
@@ -646,6 +650,9 @@ bool AppAresEditWX::Initialize ()
   if (!config->ReadConfig ())
     return false;
 
+  csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (object_reg);
+  toolbarWithText = cfgmgr->GetBool ("Ares.ToolbarText", true);
+
   if (!InitWX ())
     return false;
 
@@ -864,6 +871,12 @@ bool AppAresEditWX::InitToolbar ()
 {
   wxToolBar* toolbar = XRCCTRL (*this, "mainToolbar", wxToolBar);
   toolbar->SetToolSeparation (20);
+
+  if (toolbarWithText)
+    toolbar->SetWindowStyleFlag (toolbar->GetWindowStyleFlag () | wxTB_TEXT);
+  else
+    toolbar->SetWindowStyleFlag (toolbar->GetWindowStyleFlag () & ~wxTB_TEXT);
+
   if (!config->BuildToolBar (toolbar))
     return false;
 
@@ -1093,7 +1106,7 @@ void AppAresEditWX::ViewBottomPage (const char* name, bool toggle)
   {
     wxSize totsize = GetSize ();
     topBottomSplitter->Unsplit ();
-    topBottomSplitter->SplitHorizontally (topPanel, bottomPanel, totsize.y - 250);
+    topBottomSplitter->SplitHorizontally (topPanel, bottomPanel, totsize.y - 340);
     notebook->ChangeSelection (idx);
   }
 }
