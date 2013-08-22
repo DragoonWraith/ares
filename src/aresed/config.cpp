@@ -295,6 +295,7 @@ bool AresConfig::ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode)
     if (value == "item")
     {
       csString name = child->GetAttributeValue ("name");
+      csString hotkey = child->GetAttributeValue ("key");
       csString idString = child->GetAttributeValue ("id");
       csString target = child->GetAttributeValue ("target");
       csString command = child->GetAttributeValue ("command");
@@ -303,6 +304,12 @@ bool AresConfig::ParseMenuItems (wxMenu* menu, iDocumentNode* itemsNode)
       int id = StringToId (idString);
       if (id == wxID_ANY)
 	id = app->GetUIManager ()->AllocContextMenuID ();
+      if (!hotkey.IsEmpty())
+      {
+        name.SetCapacity (name.Length() + 1 + hotkey.Length());
+        name.Append ("\t");
+        name.Append (hotkey);
+      }
       app->AllocateMenuCommand (id, name, target, command, args, help);
       app->AppendMenuItem (menu, id, name, help);
     }
