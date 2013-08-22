@@ -96,13 +96,6 @@ void SettingsDialog::CheckString (iConfigManager* cfgmgr,
   }
 }
 
-#define SETTING_MAXIMIZED "Window maximized"
-#define SETTING_WINDOWWIDTH "Window width (when not maximized)"
-#define SETTING_WINDOWHEIGHT "Window height (when not maximized)"
-#define SETTING_HELPOVERLAY "Help overlay in 3D view"
-#define SETTING_TOOLBARTEXT "Show text on toolbar"
-#define SETTING_RENDERMANAGER "Rendermanager"
-
 void SettingsDialog::Save ()
 {
   bool restart = false;
@@ -111,12 +104,23 @@ void SettingsDialog::Save ()
   csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (
       uiManager->GetApplication ()->GetObjectRegistry ());
 
-  CheckBool (cfgmgr, "Video.Maximized", SETTING_MAXIMIZED, changed, &restart);
-  CheckInt (cfgmgr, "Video.ScreenWidth", SETTING_WINDOWWIDTH, changed, &restart);
-  CheckInt (cfgmgr, "Video.ScreenHeight", SETTING_WINDOWHEIGHT, changed, &restart);
-  CheckBool (cfgmgr, "Ares.HelpOverlay", SETTING_HELPOVERLAY, changed);
-  CheckBool (cfgmgr, "Ares.ToolbarText", SETTING_TOOLBARTEXT, changed, &restart);
-  CheckString (cfgmgr, "Engine.RenderManager.Default", SETTING_RENDERMANAGER, changed, &restart);
+  for (size_t i = 0 ; i < settings.GetSize () ; i++)
+  {
+    Setting& s = settings.Get (i);
+    switch (s.type)
+    {
+      case TYPE_BOOL:
+	CheckBool (cfgmgr, s.configName, s.gridName, changed, s.restart ? &restart : 0);
+	break;
+      case TYPE_LONG:
+	CheckInt (cfgmgr, s.configName, s.gridName, changed, s.restart ? &restart : 0);
+	break;
+      case TYPE_STRING:
+      case TYPE_ENUM:
+	CheckString (cfgmgr, s.configName, s.gridName, changed, s.restart ? &restart : 0);
+	break;
+    }
+  }
 
   if (changed)
   {
@@ -135,23 +139,45 @@ void SettingsDialog::FillGrid ()
   csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (
       uiManager->GetApplication ()->GetObjectRegistry ());
 
-  bool maximized = cfgmgr->GetBool ("Video.Maximized");
-  settingsGrid->Append (new wxBoolProperty (wxT (SETTING_MAXIMIZED), wxPG_LABEL, maximized));
-  int screenwidth = cfgmgr->GetInt ("Video.ScreenWidth");
-  settingsGrid->Append (new wxIntProperty (wxT (SETTING_WINDOWWIDTH), wxPG_LABEL, screenwidth));
-  int screenheight = cfgmgr->GetInt ("Video.ScreenHeight");
-  settingsGrid->Append (new wxIntProperty (wxT (SETTING_WINDOWHEIGHT), wxPG_LABEL, screenheight));
-  bool helpOverlay = cfgmgr->GetBool ("Ares.HelpOverlay", true);
-  settingsGrid->Append (new wxBoolProperty (wxT (SETTING_HELPOVERLAY), wxPG_LABEL, helpOverlay));
-  bool toolbarText = cfgmgr->GetBool ("Ares.ToolbarText", true);
-  settingsGrid->Append (new wxBoolProperty (wxT (SETTING_TOOLBARTEXT), wxPG_LABEL, toolbarText));
-  csString rendermanager = cfgmgr->GetStr ("Engine.RenderManager.Default");
-  wxArrayString rendermanagers;
-  rendermanagers.Add (wxT ("crystalspace.rendermanager.unshadowed"));
-  rendermanagers.Add (wxT ("crystalspace.rendermanager.deferred"));
-  settingsGrid->Append (new wxEnumProperty (wxT (SETTING_RENDERMANAGER), wxPG_LABEL,
-	rendermanagers, wxArrayInt (), rendermanagers.Index (
-	  wxString::FromUTF8 (rendermanager))));
+  wxPropertyCategory* propVideo = new wxPropertyCategory (wxT ("Video"), wxPG_LABEL);
+  settingsGrid->Append (propVideo);
+  wxPropertyCategory* propUI = new wxPropertyCategory (wxT ("UI"), wxPG_LABEL);
+  settingsGrid->Append (propUI);
+
+  for (size_t i = 0 ; i < settings.GetSize () ; i++)
+  {
+    Setting& s = settings.Get (i);
+    wxPGProperty* prop = 0;
+    switch (s.type)
+    {
+      case TYPE_BOOL:
+	prop = new wxBoolProperty (wxString::FromUTF8 (s.gridName), wxPG_LABEL,
+	    cfgmgr->GetBool (s.configName));
+	break;
+      case TYPE_LONG:
+	prop = new wxIntProperty (wxString::FromUTF8 (s.gridName), wxPG_LABEL,
+	    cfgmgr->GetInt (s.configName));
+	break;
+      case TYPE_STRING:
+	prop = new wxStringProperty (wxString::FromUTF8 (s.gridName), wxPG_LABEL,
+	    wxString::FromUTF8 (cfgmgr->GetStr (s.configName)));
+	break;
+      case TYPE_ENUM:
+	prop = new wxEnumProperty (wxString::FromUTF8 (s.gridName), wxPG_LABEL,
+	    s.choices, wxArrayInt (), s.choices.Index (wxString::FromUTF8 (
+	      cfgmgr->GetStr (s.configName))));
+	break;
+    }
+    if (prop)
+    {
+      wxPGProperty* catProp = settingsGrid->GetProperty (wxString::FromUTF8 (s.category));
+      settingsGrid->AppendIn (catProp, prop);
+    }
+    else
+    {
+      csPrintf ("Huh!!!\n");
+    }
+  }
 
   settingsGrid->FitColumns ();
   settingsGrid->Thaw ();
@@ -176,6 +202,19 @@ SettingsDialog::SettingsDialog (wxWindow* parent, UIManager* uiManager) :
   wxPanel* mainPanel = XRCCTRL (*this, "mainPanel", wxPanel);
   settingsGrid = new wxPropertyGrid (mainPanel);
   mainPanel->GetSizer ()->Add (settingsGrid, 1, wxALL | wxEXPAND);
+
+  settings.Push (Setting ("Video", "Video.Maximized", "Window maximized", TYPE_BOOL, true));
+  settings.Push (Setting ("Video", "Video.ScreenWidth", "Window width (when not maximized)", TYPE_LONG, true));
+  settings.Push (Setting ("Video", "Video.ScreenHeight", "Window height (when not maximized)", TYPE_LONG, true));
+
+  wxArrayString rendermanagers;
+  rendermanagers.Add (wxT ("crystalspace.rendermanager.unshadowed"));
+  rendermanagers.Add (wxT ("crystalspace.rendermanager.deferred"));
+  settings.Push (Setting ("Video", "Engine.RenderManager.Default", "Rendermanager", TYPE_ENUM,
+	rendermanagers, true));
+
+  settings.Push (Setting ("UI", "Ares.HelpOverlay", "Help overlay in 3D view", TYPE_BOOL));
+  settings.Push (Setting ("UI", "Ares.ToolbarText", "Show text on toolbar", TYPE_BOOL, true));
 }
 
 SettingsDialog::~SettingsDialog ()

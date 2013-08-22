@@ -36,11 +36,37 @@ class UIManager;
 
 using namespace Ares;
 
+#define TYPE_BOOL 1
+#define TYPE_LONG 2
+#define TYPE_STRING 3
+#define TYPE_ENUM 4
+
+
+struct Setting
+{
+  csString category;
+  csString configName;
+  csString gridName;
+  int type;
+  bool restart;
+  wxArrayString choices;
+
+  Setting (const char* category, const char* configName, const char* gridName, int type,
+      bool restart = false) :
+    category (category), configName (configName), gridName (gridName), type (type), restart (restart) { }
+  Setting (const char* category, const char* configName, const char* gridName, int type,
+      const wxArrayString& choices, bool restart = false) :
+    category (category), configName (configName), gridName (gridName), type (type), restart (restart),
+    choices (choices) { }
+};
+
 class SettingsDialog : public wxDialog
 {
 private:
   UIManager* uiManager;
   wxPropertyGrid* settingsGrid;
+
+  csArray<Setting> settings;
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
