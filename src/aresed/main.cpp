@@ -110,7 +110,7 @@ bool MyApp::OnInit (void)
   //if (!aresed->Application ()) return false;
 
   if (!celInitializer::SetupConfigManager (object_reg,
-      "/appdata/AppAresEdit.cfg", "ares"))
+      "/appdata/AppAresEdit.cfg", "AresEditor"))
   {
     printf ("Failed to setup config manager!\n");
     fflush (stdout);
