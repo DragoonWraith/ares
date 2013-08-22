@@ -2,14 +2,14 @@
 <resource xmlns="http://www.wxwindows.org/wxxrc" version="2.3.0.1">
 	<object class="wxDialog" name="SettingsDialog">
 		<style>wxDEFAULT_DIALOG_STYLE</style>
-		<title></title>
+		<title>Settings</title>
 		<centered>1</centered>
 		<object class="wxBoxSizer">
 			<minsize>600,500</minsize>
 			<orient>wxVERTICAL</orient>
 			<object class="sizeritem">
 				<option>1</option>
-				<flag>wxEXPAND | wxALL</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
 				<object class="wxPanel" name="mainPanel">
 					<style>wxTAB_TRAVERSAL</style>
