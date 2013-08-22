@@ -34,7 +34,7 @@
 
     <toolbar>
       <section name="General">
-	 <item name="Open..." id="Open" image="folder.png" command="Open" help="Open a new project" />
+	 <item name="Open" id="Open" image="folder.png" command="Open" help="Open a new project" />
 	 <item name="Save" id="Save" image="disk.png" command="Save" help="Save the current project and all modified and writable assets" />
 	 <item name="Copy" target="*" image="page_copy.png" id="Copy" command="Copy" help="Copy the current selection" />
 	 <item name="Paste" target="*" image="page_paste.png" id="Paste" command="Paste" help="Paste the contents of the clipboard" />
