@@ -59,10 +59,10 @@
 	    <item name="&amp;Manage Cells..." command="ManageCells" help="Create and remove cells, set the default cell" />
 	    <item name="&amp;Manage Dynamic Factories..." target="DynfactEditor" command="Show" help="Create and remove dynamic factories and edit their attributes" />
 	    <sep />
-	    <item name="&amp;Play	Ctrl+P" id="Preview" command="SwitchMode" args="Play" help="Enter game preview mode" />
+	    <item name="&amp;Play" key="Ctrl+P" id="Preview" command="SwitchMode" args="Play" help="Enter game preview mode" />
 	    <sep />
-	    <item name="&amp;Open...	Ctrl+O" id="Open" command="Open" help="Open a new project" />
-	    <item name="&amp;Save   	Ctrl+S" id="Save" command="Save" help="Save the current project and all modified and writable assets" />
+	    <item name="&amp;Open..." key="Ctrl+O" id="Open" command="Open" help="Open a new project" />
+	    <item name="&amp;Save" key="Ctrl+S" id="Save" command="Save" help="Save the current project and all modified and writable assets" />
 	    <item name="&amp;Save As..." id="SaveAs" command="SaveAs" help="Save the current project with a new name (doesn't affect assets)" />
 	    <sep />
 	    <item name="&amp;Settings..." command="SettingsDialog" help="Open Settings Dialog" />
@@ -70,18 +70,18 @@
 	    <item name="&amp;Exit" id="Exit" command="Exit" help="Exit Ares Editor" />
 	</menu>
 	<menu name="&amp;Edit">
-	    <item name="&amp;Copy	Ctrl+C" target="*" id="Copy" command="Copy" help="Copy the current selection" />
-	    <item name="&amp;Paste	Ctrl+V" target="*" id="Paste" command="Paste" help="Paste the contents of the clipboard" />
+	    <item name="&amp;Copy" key="Ctrl+C" target="*" id="Copy" command="Copy" help="Copy the current selection" />
+	    <item name="&amp;Paste" key="Ctrl+V" target="*" id="Paste" command="Paste" help="Paste the contents of the clipboard" />
 	    <item name="&amp;Delete" id="Delete" target="*" command="Delete" help="Delete the current selection" />
 	    <sep />
 	    <!--<item name="&amp;Find Object..." target="FindObjectDialog" command="Show" />-->
-	    <item name="&amp;Find Object...	Ctrl+F" id="Find" command="FindObjectDialog" help="Tool to help find objects in the world" />
+	    <item name="&amp;Find Object..." key="Ctrl+F" id="Find" command="FindObjectDialog" help="Tool to help find objects in the world" />
 	    <item name="&amp;Update Objects" command="UpdateObjects" help="Update all objects after making changes to entities or dynamic factories" />
 	    <sep />
 	    <item name="&amp;Convert to Physics..." command="ConvertPhysics" help="Convert the current project to using physics (Bullet)" />
 	    <item name="&amp;Convert to Opcode..." command="ConvertOpcode" help="Convert the current project to using simple collision detection (Opcode)" />
 	    <sep />
-	    <item name="&amp;Join	Ctrl+J" command="Join" help="Join two objects using a joint defined on the first object" />
+	    <item name="&amp;Join" key="Ctrl+J" command="Join" help="Join two objects using a joint defined on the first object" />
 	    <item name="&amp;Unjoin" command="Unjoin" help="Remove the joint between two or more objects" />
 	</menu>
 	<menu name="&amp;Layout">
@@ -101,13 +101,13 @@
 	    <item name="&amp;Sanity Checker..." command="SanityChecker" help="Sanity check the current project" />
 	</menu>
 	<menu name="&amp;View">
-	    <item name="&amp;View Messages	Ctrl+M" command="ViewMessages" help="Toggle the view of the message pane" />
+	    <item name="&amp;View Messages" key="Ctrl+M" command="ViewMessages" help="Toggle the view of the message pane" />
 	    <item name="&amp;View Comments" command="ViewComments" help="Toggle the view of the comments pane" />
 	    <item name="&amp;View Controls" command="ViewControls" help="Unhide the controls pane (after it has been hidden)" />
 	    <item name="&amp;View 3D" command="View3D" help="Unhide the 3D view (after it has been hidden)" />
 	</menu>
 	<menu name="&amp;Help">
-	    <item name="&amp;Online Help...	F1" id="Help" target="Help" command="Show" help="Show online help in a seperate window" />
+	    <item name="&amp;Online Help..." key="F1" id="Help" target="Help" command="Show" help="Show online help in a seperate window" />
 	    <item name="&amp;About..." id="About" command="About" help="Show the About window" />
 	</menu>
     </menus>
