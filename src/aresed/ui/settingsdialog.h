@@ -70,6 +70,7 @@ private:
 
   void OnOkButton (wxCommandEvent& event);
   void OnCancelButton (wxCommandEvent& event);
+  void OnResetButton (wxCommandEvent& event);
 
   void FillGrid ();
   void Save ();

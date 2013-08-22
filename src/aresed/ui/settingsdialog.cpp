@@ -35,6 +35,7 @@ THE SOFTWARE.
 BEGIN_EVENT_TABLE(SettingsDialog, wxDialog)
   EVT_BUTTON (XRCID("okButton"), SettingsDialog :: OnOkButton)
   EVT_BUTTON (XRCID("cancelButton"), SettingsDialog :: OnCancelButton)
+  EVT_BUTTON (XRCID("resetButton"), SettingsDialog :: OnResetButton)
 END_EVENT_TABLE()
 
 //--------------------------------------------------------------------------
@@ -48,6 +49,17 @@ void SettingsDialog::OnOkButton (wxCommandEvent& event)
 void SettingsDialog::OnCancelButton (wxCommandEvent& event)
 {
   EndModal (TRUE);
+}
+
+void SettingsDialog::OnResetButton (wxCommandEvent& event)
+{
+  csRef<iConfigManager> cfgmgr = csQueryRegistry<iConfigManager> (
+      uiManager->GetApplication ()->GetObjectRegistry ());
+  cfgmgr->GetDynamicDomain ()->Clear ();
+  FillGrid ();
+  cfgmgr->Save ();
+  uiManager->Message ("A restart might be needed to apply some of the changed values");
+  uiManager->GetApplication ()->ReadConfig ();
 }
 
 void SettingsDialog::CheckBool (iConfigManager* cfgmgr,
