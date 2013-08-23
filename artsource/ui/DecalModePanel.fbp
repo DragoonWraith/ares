@@ -90,7 +90,7 @@
                         <property name="id">wxID_ANY</property>
                         <property name="maximum_size"></property>
                         <property name="minimum_size"></property>
-                        <property name="name">materialListBox</property>
+                        <property name="name">templateListBox</property>
                         <property name="permission">protected</property>
                         <property name="pos"></property>
                         <property name="size"></property>

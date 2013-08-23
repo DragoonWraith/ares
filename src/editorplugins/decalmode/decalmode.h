@@ -28,16 +28,15 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "edcommon/viewmode.h"
 
-struct iMeshGenerator;
+struct iDecalManager;
 
 class DecalMode : public scfImplementationExt1<DecalMode, ViewMode, iComponent>
 {
 private:
-  iMeshGenerator* meshgen;
-  csRef<iNature> nature;
+  /// Update the list of decal templates.
+  void UpdateTemplateList ();
 
-  /// Update the list of types.
-  void UpdateTypeList ();
+  csRef<iDecalManager> decalMgr;
 
 public:
   DecalMode (iBase* parent);

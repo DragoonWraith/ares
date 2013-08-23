@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include "csutil/csstring.h"
 #include "csutil/scfstr.h"
 #include "edcommon/editmodes.h"
+#include "inature.h"
 
 struct iGeometryGenerator;
 struct iNature;

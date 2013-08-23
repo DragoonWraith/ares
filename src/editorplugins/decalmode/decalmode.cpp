@@ -26,7 +26,6 @@ THE SOFTWARE.
 #include "decalmode.h"
 #include "iengine/sector.h"
 #include "iengine/meshgen.h"
-#include "inature.h"
 #include "editor/i3dview.h"
 
 #include <wx/xrc/xmlres.h>
@@ -65,24 +64,24 @@ void DecalMode::BuildMainPanel (wxWindow* parent)
 bool DecalMode::Initialize (iObjectRegistry* object_reg)
 {
   if (!ViewMode::Initialize (object_reg)) return false;
-  nature = csQueryRegistry<iNature> (object_reg);
+  decalMgr = csQueryRegistry<iDecalManager> (object_reg);
   return true;
 }
 
-void DecalMode::UpdateTypeList ()
+void DecalMode::UpdateTemplateList ()
 {
-#if 0
-  wxListBox* foliageList = XRCCTRL (*panel, "foliageListBox", wxListBox);
-  foliageList->Clear ();
-  wxArrayString foliage;
+  wxListBox* tplList = XRCCTRL (*panel, "templateListBox", wxListBox);
+  tplList->Clear ();
+  wxArrayString templates;
 
+#if 0
   for (size_t i = 0 ; i < nature->GetFoliageDensityMapCount () ; i++)
   {
     wxString name = wxString::FromUTF8 (nature->GetFoliageDensityMapName (i));
     foliage.Add (name);
   }
-  foliageList->InsertItems (foliage, 0);
 #endif
+  tplList->InsertItems (templates, 0);
 }
 
 #if 0
@@ -95,13 +94,7 @@ bool DecalMode::OnTypeListSelection (const CEGUI::EventArgs&)
 void DecalMode::Start ()
 {
   ViewMode::Start ();
-  UpdateTypeList ();
-  // @@@ Hardcoded!
-  iSector* sector = view3d->GetCsCamera ()->GetSector ();
-  if (sector)
-    meshgen = sector->GetMeshGeneratorByName ("grass");
-  else
-    meshgen = 0;
+  UpdateTemplateList ();
 }
 
 void DecalMode::Stop ()

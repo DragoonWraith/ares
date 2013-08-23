@@ -9,7 +9,7 @@
 				<option>1</option>
 				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
-				<object class="wxListBox" name="materialListBox">
+				<object class="wxListBox" name="templateListBox">
 					<content />
 				</object>
 			</object>
