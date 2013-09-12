@@ -348,12 +348,6 @@ void AppAres::Frame ()
     nature->UpdateTime (currentTime, camera);
     currentTime += csTicks (elapsed_time * 1000);
 
-    //if (do_simulation)
-    {
-      float dynamicSpeed = 1.0f;
-      dyn->Step (elapsed_time / dynamicSpeed);
-    }
-
     dynworld->PrepareView (camera, elapsed_time);
   }
 }

@@ -88,12 +88,6 @@ void ViewMode::FramePre ()
     camlight->GetMovable ()->UpdateMove ();
   }
 
-  if (view3d->IsSimulation ())
-  {
-    float dynamicSpeed = 1.0f;
-    dyn->Step (elapsed_time / dynamicSpeed);
-  }
-
   iPcDynamicWorld* dynworld = view3d->GetDynamicWorld ();
   if (dynworld->GetCurrentCell ())
     dynworld->PrepareView (camera, elapsed_time);
