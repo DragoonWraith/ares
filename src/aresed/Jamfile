@@ -58,6 +58,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     foliagemode
     helpframe
     mainmode
+    decalmode
     playmode
     marker
   :
