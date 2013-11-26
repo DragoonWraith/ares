@@ -70,8 +70,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     particlesldr
     ptanimimg
     ptpdlight
-    rendloop_loader
-    rendstep_std
     reporter
     sequence
     shadermgr
