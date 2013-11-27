@@ -90,6 +90,7 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
     terrainldr
     trans_std
     vfs
+    bullet
     xmlread
     xmlshader
     vproc_std
@@ -101,7 +102,6 @@ if $(HAVE_CS_STATIC_PLUGINS) = "yes"
   # The plugins that are nice to have if present
   #
   STATIC.OPTIONALPLUGINLIST =
-    bullet
     csjngimg
     glshader_cg
     glshader_ps1

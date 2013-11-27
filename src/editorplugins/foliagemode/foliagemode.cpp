@@ -54,7 +54,8 @@ void FoliageMode::BuildMainPanel (wxWindow* parent)
 {
   if (panel)
   {
-    parent->GetSizer ()->Remove (panel);
+    //parent->GetSizer ()->Remove (panel);
+    parent->GetSizer ()->Detach (panel);
     delete panel;
   }
   panel = new Panel (this);
