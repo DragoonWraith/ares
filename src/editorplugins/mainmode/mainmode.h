@@ -96,7 +96,7 @@ private:
   void HandleKinematicDragging ();
   void HandlePhysicalDragging ();
 
-  void AddForce (iRigidBody* hitBody, bool pull,
+  void AddForce (CS::Physics::iRigidBody* hitBody, bool pull,
       const csSegment3& beam, const csVector3& isect);
 
   csString GetSelectedItem ();

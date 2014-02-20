@@ -317,8 +317,8 @@ bool Camera::OnMouseMove (iEvent& ev, int mouseX, int mouseY)
   }
   else if (do_mouse_dragging)
   {
-    csVector2 v2d (mouseX, aresed3d->GetG2D ()->GetHeight () - mouseY);
-    csVector3 v3d = camera->InvPerspective (v2d, 1000.0f);
+    csVector2 v2d (mouseX, mouseY);
+    csVector3 v3d = aresed3d->GetView ()->InvProject (v2d, 1000.0f);
     csVector3 startBeam = camera->GetTransform ().GetOrigin ();
     csVector3 endBeam = camera->GetTransform ().This2Other (v3d);
     csVector3 isect;
@@ -482,8 +482,8 @@ void Camera::CamZoom (int x, int y, bool forward)
   }
   else camdist = 10.0f;
 
-  csVector2 v2d (x, aresed3d->GetG2D ()->GetHeight () - y);
-  csVector3 v3d = camera->InvPerspective (v2d, camdist);
+  csVector2 v2d (x, y);
+  csVector3 v3d = aresed3d->GetView ()->InvProject (v2d, camdist);
   csVector3 endBeamMove = camera->GetTransform ().This2Other (forward ? v3d : -v3d);
   csVector3 endBeamLookAt = camera->GetTransform ().This2Other (v3d);
 

@@ -1231,21 +1231,22 @@ float InvBoxMarkerHitArea::CheckHit (int x, int y,
     const csOrthoTransform& camtrans, const csReversibleTransform& meshtrans,
     MarkerManager* mgr, const csVector2& pos)
 {
+  printf ("InvBoxMarkerHitArea::CheckHit\n");
   csVector3 c1 = TransPointCam (camtrans, meshtrans, space, box.Min ());
   csVector3 c2 = TransPointCam (camtrans, meshtrans, space, box.Max ());
   if (space == MARKER_2D || (c1.z > .5 && c2.z > .5))
   {
-    csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
+    csVector2 f (x, y);
     csVector2 s1, s2;
     if (space != MARKER_2D)
     {
-      s1 = mgr->camera->Perspective (c1) + pos;
-      s2 = mgr->camera->Perspective (c2) + pos;
+      s1 = mgr->view->Project (c1) + pos;
+      s2 = mgr->view->Project (c2) + pos;
     }
     else
     {
-      s1.Set (pos.x + c1.x, mgr->g2d->GetHeight () - (pos.y + c1.y));
-      s2.Set (pos.x + c2.x, mgr->g2d->GetHeight () - (pos.y + c2.y));
+      s1.Set (pos.x + c1.x, pos.y + c1.y);
+      s2.Set (pos.x + c2.x, pos.y + c2.y);
     }
     if (f.x >= s1.x && f.x <= s2.x && f.y >= s2.y && f.y <= s1.y)	// s1.y and s2.y are swapped!
     {
@@ -1276,14 +1277,13 @@ void CircleMarkerHitArea::Render3D (const csOrthoTransform& camtrans,
     csVector3 c = TransPointCam (camtrans, meshtrans, space, center);
     if (space == MARKER_2D || c.z > .5)
     {
-      int h = mgr->g2d->GetHeight ();
       csVector2 s;
       if (space != MARKER_2D)
-	s = mgr->camera->Perspective (c) + pos;
+	s = mgr->view->Project (c) + pos;
       else
-	s.Set (pos.x + c.x, h - (pos.y + c.y));
+	s.Set (pos.x + c.x, pos.y + c.y);
       int x = int (s.x);
-      int y = h - int (s.y);
+      int y = int (s.y);
       int mouseX = mgr->GetMouseX ();
       int mouseY = mgr->GetMouseY ();
       csVector2 r;
@@ -1306,12 +1306,12 @@ float CircleMarkerHitArea::CheckHit (int x, int y,
   csVector3 c = TransPointCam (camtrans, meshtrans, space, center);
   if (space == MARKER_2D || c.z > .5)
   {
-    csVector2 f (float (x), float (mgr->g2d->GetHeight () - y));
+    csVector2 f (x, y);
     csVector2 s;
     if (space != MARKER_2D)
-      s = mgr->camera->Perspective (c) + pos;
+      s = mgr->view->Project (c) + pos;
     else
-      s.Set (pos.x + c.x, mgr->g2d->GetHeight () - (pos.y + c.y));
+      s.Set (pos.x + c.x, pos.y + c.y);
     float d = sqrt (SqDistance2d (s, f));
     csVector2 r;
     if (space != MARKER_2D)
@@ -1349,24 +1349,23 @@ void MarkerLine::Render3D (const csOrthoTransform& camtrans,
   // @@@ Do proper clipping?
   if (space == MARKER_2D || (v1.z > .5 && v2.z > .5))
   {
-    int h = mgr->g2d->GetHeight ();
     csPen* pen = color->GetPen (selectionLevel);
     csVector2 s1, s2;
     if (space != MARKER_2D)
     {
-      s1 = mgr->camera->Perspective (v1);
-      s2 = mgr->camera->Perspective (v2);
+      s1 = mgr->view->Project (v1);
+      s2 = mgr->view->Project (v2);
     }
     else
     {
-      s1.Set (v1.x, h-v1.y);
-      s2.Set (v2.x, h-v2.y);
+      s1.Set (v1.x, v1.y);
+      s2.Set (v2.x, v2.y);
     }
 
     int x1 = int (s1.x);
-    int y1 = h - int (s1.y);
+    int y1 = int (s1.y);
     int x2 = int (s2.x);
-    int y2 = h - int (s2.y);
+    int y2 = int (s2.y);
 
     pen->DrawLine (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2);
 
@@ -1392,24 +1391,23 @@ void MarkerRoundedBox::Render3D (const csOrthoTransform& camtrans,
   // @@@ Do proper clipping?
   if (space == MARKER_2D || (v1.z > .5 && v2.z > .5))
   {
-    int h = mgr->g2d->GetHeight ();
     csPen* pen = color->GetPen (selectionLevel);
     csVector2 s1, s2;
     if (space != MARKER_2D)
     {
-      s1 = mgr->camera->Perspective (v1);
-      s2 = mgr->camera->Perspective (v2);
+      s1 = mgr->view->Project (v1);
+      s2 = mgr->view->Project (v2);
     }
     else
     {
-      s1.Set (v1.x, h-v1.y);
-      s2.Set (v2.x, h-v2.y);
+      s1.Set (v1.x, v1.y);
+      s2.Set (v2.x, v2.y);
     }
 
     int x1 = int (s1.x);
-    int y1 = h - int (s1.y);
+    int y1 = int (s1.y);
     int x2 = int (s2.x);
-    int y2 = h - int (s2.y);
+    int y2 = int (s2.y);
 
     pen->DrawRoundedRect (pos.x + x1, pos.y + y1, pos.x + x2, pos.y + y2,
 	roundness);
@@ -1424,16 +1422,15 @@ void MarkerText::Render2D (const csOrthoTransform& camtrans,
   // @@@ Do proper clipping?
   if (space == MARKER_2D || v.z > .5)
   {
-    int h = mgr->g2d->GetHeight ();
     csPen* pen = color->GetPen (selectionLevel);
     csVector2 s;
     if (space != MARKER_2D)
-      s = mgr->camera->Perspective (v);
+      s = mgr->view->Project (v);
     else
-      s.Set (v.x, h-v.y);
+      s.Set (v.x, v.y);
 
     int x1 = int (s.x);
-    int y1 = h - int (s.y);
+    int y1 = int (s.y);
     iFont* thisFont = font;
     if (!thisFont) thisFont = mgr->GetFont ();
 
@@ -1817,8 +1814,8 @@ void MarkerManager::HandleDrag ()
     }
     else
     {
-      csVector2 v2d (mouseX, g2d->GetHeight () - mouseY);
-      csVector3 v3d = camera->InvPerspective (v2d, 100.0f);
+      csVector2 v2d (mouseX, mouseY);
+      csVector3 v3d = view->InvProject (v2d, 100.0f);
       csVector3 start = camera->GetTransform ().GetOrigin ();
       csVector3 end = camera->GetTransform ().This2Other (v3d);
       if (cp & CONSTRAIN_MESH)

@@ -221,8 +221,8 @@ bool AresEdit3DView::TraceBeamTerrain (const csVector3& start,
 csSegment3 AresEdit3DView::GetBeam (int x, int y, float maxdist)
 {
   iCamera* cam = GetCsCamera ();
-  csVector2 v2d (x, GetG2D ()->GetHeight () - y);
-  csVector3 v3d = cam->InvPerspective (v2d, maxdist);
+  csVector2 v2d (x, y);
+  csVector3 v3d = view->InvProject (v2d, maxdist);
   csVector3 start = cam->GetTransform ().GetOrigin ();
   csVector3 end = cam->GetTransform ().This2Other (v3d);
   return csSegment3 (start, end);
@@ -531,10 +531,11 @@ void AresEdit3DView::ResizeView (int width, int height)
   view_width = width;
   view_height = height;
 
-  //view->GetPerspectiveCamera ()->SetFOV ((float) (width) / (float) (height), 1.0f);
-  view->GetCamera ()->SetViewportSize (view_width, view_height);
+  view->SetWidth (view_width);
+  view->SetHeight (view_height);
   view->SetRectangle (0, 0, view_width, view_height, false);
-  view->GetCamera ()->SetFOV (view_height, view_width);
+  view->GetPerspectiveCamera ()->SetAspectRatio
+    ((float) (width) / (float) (height));
 }
 
 iAresEditor* AresEdit3DView::GetApplication  ()
@@ -652,7 +653,7 @@ bool AresEdit3DView::Setup ()
   font = g3d->GetDriver2D ()->GetFontServer ()->LoadFont (CSFONT_COURIER);
 
   // We need a View to the virtual world.
-  view.AttachNew(new csView (engine, g3d));
+  view.AttachNew (new csView (engine, g3d));
   view->SetAutoResize (false);
   // We use the full window to draw the world.
   //view_width = (int)(g2d->GetWidth () * 0.86);
@@ -660,9 +661,11 @@ bool AresEdit3DView::Setup ()
   //view_height = g2d->GetHeight ();
   view_width = 640;
   view_height = 480;
-  view->GetCamera ()->SetViewportSize (view_width, view_height);
+  view->SetWidth (view_width);
+  view->SetHeight (view_height);
   view->SetRectangle (0, 0, view_width, view_height);
-  view->GetCamera ()->SetFOV (view_height, view_width);
+  view->GetPerspectiveCamera ()->SetAspectRatio
+    ((float) (view_width) / (float) (view_height));
 
   markerMgr->SetView (view);
 

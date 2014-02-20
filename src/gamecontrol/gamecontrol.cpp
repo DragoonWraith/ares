@@ -25,6 +25,7 @@ THE SOFTWARE.
 #include "cssysdef.h"
 #include "csutil/csinput.h"
 #include "cstool/cspixmap.h"
+#include "cstool/enginetools.h"
 #include "csgeom/math3d.h"
 #include "iutil/objreg.h"
 #include "iutil/virtclk.h"
@@ -329,8 +330,9 @@ void celPcGameController::Spawn (const char* factname)
   if (!cam) return;
   int x = mouse->GetLastX ();
   int y = mouse->GetLastY ();
-  csVector2 v2d (x, g2d->GetHeight () - y);
-  csVector3 v3d = cam->InvPerspective (v2d, 0.5f);
+  csVector2 v2d = csEngineTools::ScreenToNormalized
+    (csVector2 (x, y), g2d->GetWidth (), g2d->GetHeight ());
+  csVector3 v3d = cam->InvProject (v2d, 0.5f);
   csVector3 end = cam->GetTransform ().This2Other (v3d);
   csReversibleTransform trans = cam->GetTransform ();
   trans.SetOrigin (end);
@@ -747,8 +749,8 @@ void celPcGameController::TickEveryFrame ()
     }
     else
     {
-      csVector2 v2d (x, sh - y);
-      csVector3 v3d = cam->InvPerspective (v2d, 3.0f);
+      csVector2 v2d = csEngineTools::ScreenToNormalized (csVector2 (x, y), sw, sh);
+      csVector3 v3d = cam->InvProject (v2d, 3.0f);
       csVector3 start = cam->GetTransform ().GetOrigin ();
       csVector3 end = cam->GetTransform ().This2Other (v3d);
       newPosition = end - start;

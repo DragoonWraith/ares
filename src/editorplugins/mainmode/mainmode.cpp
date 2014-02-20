@@ -1151,7 +1151,7 @@ void MainMode::StartPhysicalDragging (CS::Physics::iRigidBody* hitBody,
 #endif
 }
 
-void MainMode::AddForce (iRigidBody* hitBody, bool pull,
+void MainMode::AddForce (CS::Physics::iRigidBody* hitBody, bool pull,
       const csSegment3& beam, const csVector3& isect)
 {
   // Add a force at the point clicked
@@ -1161,7 +1161,7 @@ void MainMode::AddForce (iRigidBody* hitBody, bool pull,
     force *= -hitBody->GetMass ();
   else
     force *= hitBody->GetMass ();
-  hitBody->AddForceAtPos (force, isect);
+  hitBody->ApplyImpulse (force, isect);
 }
 
 bool MainMode::OnMouseDown (iEvent& ev, uint but, int mouseX, int mouseY)
